@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Diary {
+  id           BigInt        @id @default(autoincrement())
+  title        String        @db.VarChar(255)
+  content      String?       @db.Text
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  alerts       Alert[]
+  transactions Transaction[]
+
+  @@map("diaries")
+}
+
+model Alert {
+  id          BigInt   @id @default(autoincrement())
+  diaryId     BigInt   @map("diary_id")
+  message     String   @db.VarChar(500)
+  triggerAt   DateTime @map("trigger_at")
+  isDismissed Boolean  @default(false) @map("is_dismissed")
+  createdAt   DateTime @default(now()) @map("created_at")
+  diary       Diary    @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+
+  @@index([diaryId], map: "alerts_diary_id_fkey")
+  @@map("alerts")
+}
+
+model Transaction {
+  id        BigInt          @id @default(autoincrement())
+  diaryId   BigInt          @map("diary_id")
+  symbol    String          @db.VarChar(20)
+  type      TransactionType
+  quantity  Decimal         @db.Decimal(15, 4)
+  price     Decimal         @db.Decimal(15, 4)
+  tradeDate DateTime        @map("trade_date")
+  createdAt DateTime        @default(now()) @map("created_at")
+  diary     Diary           @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+
+  @@index([diaryId], map: "transactions_diary_id_fkey")
+  @@map("transactions")
+}
+
+enum TransactionType {
+  BUY
+  SELL
+}

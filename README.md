@@ -173,25 +173,25 @@ erDiagram
 
 ### 階段 1：資料庫設定
 
-- [ ] 安裝 MySQL 相關套件（`@prisma/client`、`prisma`、`zod`）
-- [ ] 設定 Nuxt 模組（`@nuxtjs/tailwindcss`、`@nuxtjs/mdc`、`@nuxt/icon`）
-- [ ] 設計資料庫架構（diaries、alerts、transactions 表格）
-- [ ] 建立 Prisma schema 檔案（`prisma/schema.prisma`）
-- [ ] 設定資料庫連線和環境變數
+- [x] 安裝 MySQL 相關套件（`@prisma/client`、`prisma`、`zod`）
+- [x] 設定 Nuxt 模組（`@nuxtjs/tailwindcss`、`@nuxtjs/mdc`、`@nuxt/icon`）
+- [x] 設計資料庫架構（diaries、alerts、transactions 表格）
+- [x] 建立 Prisma schema 檔案（`prisma/schema.prisma`）
+- [x] 設定資料庫連線和環境變數
 - [ ] 執行 Prisma 遷移建立表格
-- [ ] 建立資料庫種子腳本（選用）
+- [x] 建立資料庫種子腳本（選用）
 
 ### 階段 2：後端 API 路由（Nuxt Server）
 
-- [ ] 建立日記條目的 API 路由（`server/api/diaries.post.ts`）
-- [ ] 建立取得日記條目的 API 路由（`server/api/diaries.get.ts`）
-- [ ] 建立更新日記條目的 API 路由（`server/api/diaries/[id].put.ts`）
-- [ ] 建立刪除日記條目的 API 路由（`server/api/diaries/[id].delete.ts`）
-- [ ] 建立建立提醒的 API 路由（`server/api/alerts.post.ts`）
-- [ ] 建立取得有效提醒的 API 路由（`server/api/alerts.get.ts`）
-- [ ] 建立關閉提醒的 API 路由（`server/api/alerts/[id]/dismiss.put.ts`）
-- [ ] 建立取得最新交易的 API 路由（`server/api/transactions/latest.get.ts`）
-- [ ] 建立 Nitro cron 任務用於檢查和觸發提醒
+- [x] 建立日記條目的 API 路由（`server/api/diaries.post.ts`）
+- [x] 建立取得日記條目的 API 路由（`server/api/diaries.get.ts`）
+- [x] 建立更新日記條目的 API 路由（`server/api/diaries/[id].put.ts`）
+- [x] 建立刪除日記條目的 API 路由（`server/api/diaries/[id].delete.ts`）
+- [x] 建立建立提醒的 API 路由（`server/api/alerts.post.ts`）
+- [x] 建立取得有效提醒的 API 路由（`server/api/alerts.get.ts`）
+- [x] 建立關閉提醒的 API 路由（`server/api/alerts/[id]/dismiss.put.ts`）
+- [x] 建立取得最新交易的 API 路由（`server/api/transactions/latest.get.ts`）
+- [x] 建立 Nitro cron 任務用於檢查和觸發提醒
 
 ### 階段 3：前端 UI 元件（Nuxt 頁面）
 
