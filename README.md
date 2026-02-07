@@ -195,15 +195,15 @@ erDiagram
 
 ### 階段 3：前端 UI 元件（Nuxt 頁面）
 
-- [ ] 更新應用程式版面配置，加入導航和標頭（`app.vue` 或 `layouts/default.vue`）
-- [ ] 建立日記列表頁面（`pages/diaries/index.vue`）
-- [ ] 建立日記編輯頁面（`pages/diaries/new.vue`、`pages/diaries/[id]/edit.vue`）
-- [ ] 建立日記詳情頁面（`pages/diaries/[id].vue`）
-- [ ] 建立提醒管理頁面（`pages/alerts/index.vue`）
-- [ ] 建立提醒通知元件（`components/AlertNotification.vue`）
-- [ ] 建立交易輸入元件（`components/TransactionInput.vue`）
-- [ ] 建立持股顯示元件（`components/HoldingsDisplay.vue`）
-- [ ] 加入響應式設計和深色模式支援
+- [x] 更新應用程式版面配置，加入導航和標頭（`app.vue` 或 `layouts/default.vue`）
+- [x] 建立日記列表頁面（`pages/diaries/index.vue`）
+- [x] 建立日記編輯頁面（`pages/diaries/new.vue`、`pages/diaries/[id]/edit.vue`）
+- [x] 建立日記詳情頁面（`pages/diaries/[id].vue`）
+- [x] 建立提醒管理頁面（`pages/alerts/index.vue`）
+- [x] 建立提醒通知元件（`components/AlertNotification.vue`）
+- [x] 建立交易輸入元件（`components/TransactionInput.vue`）
+- [x] 建立持股顯示元件（`components/HoldingsDisplay.vue`）
+- [x] 加入響應式設計和深色模式支援
 
 ### 階段 4：核心功能實作
 
