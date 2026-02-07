@@ -12,8 +12,8 @@
 |-------------|-------------|
 | **撰寫日記** | 使用 Markdown 格式建立和編輯日記條目 |
 | **設定提醒** | 建立在應用程式內的提醒，在指定時間觸發 |
-| **追蹤持股** | 儲存和管理每篇日記的股票部位 |
-| **重複使用持股** | 建立新日記時複製最新日記的持股資料 |
+| **追蹤持股** | 記錄買入/賣出交易，系統自動計算持股部位 |
+| **重複使用持股** | 建立新日記時可從最新交易記錄複製 |
 | **資料庫** | 使用 MySQL 進行資料持久化 |
 | **使用者類型** | 僅限個人使用（單一使用者，無需驗證） |
 
@@ -29,7 +29,7 @@ graph TB
         D[提醒管理頁面 - pages/alerts/index.vue] --> E[提醒通知元件]
         A --> F[導航與標頭 - components/Navigation.vue]
         B --> G[Markdown 編輯器與預覽 - components/DiaryEditor.vue]
-        B --> H[持股輸入元件 - components/HoldingsInput.vue]
+        B --> H[交易輸入元件 - components/TransactionInput.vue]
         C --> I[持股顯示元件 - components/HoldingsDisplay.vue]
     end
     
@@ -41,7 +41,7 @@ graph TB
         N[POST /api/alerts - server/api/alerts.post.ts]
         O[GET /api/alerts - server/api/alerts.get.ts]
         P[PUT /api/alerts/[id]/dismiss - server/api/alerts/[id]/dismiss.put.ts]
-        Q[GET /api/holdings/latest - server/api/holdings/latest.get.ts]
+        Q[GET /api/transactions/latest - server/api/transactions/latest.get.ts]
     end
     
     subgraph 背景工作
@@ -51,7 +51,7 @@ graph TB
     subgraph 資料庫
         S[(MySQL - diaries 表)]
         T[(MySQL - alerts 表)]
-        U[(MySQL - holdings 表)]
+        U[(MySQL - transactions 表)]
     end
     
     A --> K
@@ -85,7 +85,7 @@ graph TB
 ```mermaid
 erDiagram
     DIARIES ||--o{ ALERTS : has
-    DIARIES ||--o{ HOLDINGS : contains
+    DIARIES ||--o{ TRANSACTIONS : contains
     
     DIARIES {
         bigint id PK
@@ -104,14 +104,15 @@ erDiagram
         datetime created_at
     }
     
-    HOLDINGS {
+    TRANSACTIONS {
         bigint id PK
         bigint diary_id FK
         string symbol
+        enum type (BUY/SELL)
         decimal quantity
-        decimal avg_cost
+        decimal price
+        datetime trade_date
         datetime created_at
-        datetime updated_at
     }
 ```
 
@@ -136,16 +137,19 @@ erDiagram
 | is_dismissed | BOOLEAN | 提醒是否已關閉 |
 | created_at | DATETIME | 提醒建立時間戳記 |
 
-#### `holdings` 表格
+#### `transactions` 表格
 | 欄位 | 類型 | 說明 |
 |--------|------|-------------|
 | id | BIGINT | 主鍵，自動遞增 |
 | diary_id | BIGINT | diaries 表的外鍵 |
 | symbol | VARCHAR(20) | 股票代碼（如 AAPL、TSLA） |
-| quantity | DECIMAL(15, 4) | 持有股數 |
-| avg_cost | DECIMAL(15, 4) | 平均成本 |
+| type | ENUM | 交易類型（BUY 或 SELL） |
+| quantity | DECIMAL(15, 4) | 交易數量 |
+| price | DECIMAL(15, 4) | 交易價格 |
+| trade_date | DATETIME | 交易日期時間 |
 | created_at | DATETIME | 記錄建立時間戳記 |
-| updated_at | DATETIME | 最後更新時間戳記 |
+
+**注意：** 持股資訊（包含平均成本）由系統根據所有交易記錄動態計算，不儲存在資料庫中。計算採用 FIFO（先進先出）原則。
 
 ---
 
@@ -171,7 +175,7 @@ erDiagram
 
 - [ ] 安裝 MySQL 相關套件（`@prisma/client`、`prisma`、`zod`）
 - [ ] 設定 Nuxt 模組（`@nuxtjs/tailwindcss`、`@nuxtjs/mdc`、`@nuxt/icon`）
-- [ ] 設計資料庫架構（diaries、alerts、 Holdings 表格）
+- [ ] 設計資料庫架構（diaries、alerts、transactions 表格）
 - [ ] 建立 Prisma schema 檔案（`prisma/schema.prisma`）
 - [ ] 設定資料庫連線和環境變數
 - [ ] 執行 Prisma 遷移建立表格
@@ -186,7 +190,7 @@ erDiagram
 - [ ] 建立建立提醒的 API 路由（`server/api/alerts.post.ts`）
 - [ ] 建立取得有效提醒的 API 路由（`server/api/alerts.get.ts`）
 - [ ] 建立關閉提醒的 API 路由（`server/api/alerts/[id]/dismiss.put.ts`）
-- [ ] 建立取得最新持股的 API 路由（`server/api/holdings/latest.get.ts`）
+- [ ] 建立取得最新交易的 API 路由（`server/api/transactions/latest.get.ts`）
 - [ ] 建立 Nitro cron 任務用於檢查和觸發提醒
 
 ### 階段 3：前端 UI 元件（Nuxt 頁面）
@@ -197,7 +201,7 @@ erDiagram
 - [ ] 建立日記詳情頁面（`pages/diaries/[id].vue`）
 - [ ] 建立提醒管理頁面（`pages/alerts/index.vue`）
 - [ ] 建立提醒通知元件（`components/AlertNotification.vue`）
-- [ ] 建立持股輸入元件（`components/HoldingsInput.vue`）
+- [ ] 建立交易輸入元件（`components/TransactionInput.vue`）
 - [ ] 建立持股顯示元件（`components/HoldingsDisplay.vue`）
 - [ ] 加入響應式設計和深色模式支援
 
@@ -205,8 +209,9 @@ erDiagram
 
 - [ ] 使用 `@nuxtjs/mdc` 實作 Markdown 編輯器與預覽
 - [ ] 使用 MySQL 實作日記 CRUD 操作
-- [ ] 實作持股管理（新增、編輯、刪除持股）
-- [ ] 實作從最新日記重複使用持股
+- [ ] 實作交易管理（新增買入/賣出交易）
+- [ ] 實作從交易記錄計算持股（FIFO 原則）
+- [ ] 實作從最新交易複製到新日記
 - [ ] 實作使用日期/時間選擇器建立提醒
 - [ ] 實作提醒檢查和顯示邏輯
 - [ ] 加入日記的日期篩選和排序功能
@@ -241,16 +246,20 @@ erDiagram
 {
   "title": "市場分析 - 2025年2月",
   "content": "# AAPL 分析\n\n強勁的財報...",
-  "holdings": [
+  "transactions": [
     {
       "symbol": "AAPL",
+      "type": "BUY",
       "quantity": 100,
-      "avg_cost": 150.25
+      "price": 150.25,
+      "trade_date": "2025-02-01T09:30:00Z"
     },
     {
       "symbol": "TSLA",
+      "type": "BUY",
       "quantity": 50,
-      "avg_cost": 200.50
+      "price": 200.50,
+      "trade_date": "2025-02-01T10:00:00Z"
     }
   ]
 }
@@ -262,18 +271,22 @@ erDiagram
   "content": "# AAPL 分析\n\n強勁的財報...",
   "created_at": "2025-02-07T12:00:00Z",
   "updated_at": "2025-02-07T12:00:00Z",
-  "holdings": [
+  "transactions": [
     {
       "id": 1,
       "symbol": "AAPL",
+      "type": "BUY",
       "quantity": 100,
-      "avg_cost": 150.25
+      "price": 150.25,
+      "trade_date": "2025-02-01T09:30:00Z"
     },
     {
       "id": 2,
       "symbol": "TSLA",
+      "type": "BUY",
       "quantity": 50,
-      "avg_cost": 200.50
+      "price": 200.50,
+      "trade_date": "2025-02-01T10:00:00Z"
     }
   ]
 }
@@ -309,34 +322,64 @@ erDiagram
 }
 ```
 
-### 持股端點
+### 交易端點
 
 | 方法 | 端點 | 說明 |
 |--------|----------|-------------|
-| GET | `/api/holdings/latest` | 取得最新日記的持股資料 |
+| GET | `/api/transactions/latest` | 取得最新日記的交易記錄 |
+| POST | `/api/transactions` | 建立新的交易記錄 |
 
 #### 請求/回應範例
 
-**GET /api/holdings/latest**
+**GET /api/transactions/latest**
 ```json
 // 回應
 {
   "diary_id": 5,
   "diary_date": "2025-02-07T12:00:00Z",
-  "holdings": [
+  "transactions": [
     {
       "id": 1,
       "symbol": "AAPL",
+      "type": "BUY",
       "quantity": 100,
-      "avg_cost": 150.25
+      "price": 150.25,
+      "trade_date": "2025-02-01T09:30:00Z"
     },
     {
       "id": 2,
       "symbol": "TSLA",
+      "type": "BUY",
       "quantity": 50,
-      "avg_cost": 200.50
+      "price": 200.50,
+      "trade_date": "2025-02-01T10:00:00Z"
     }
   ]
+}
+```
+
+**POST /api/transactions**
+```json
+// 請求
+{
+  "diary_id": 1,
+  "symbol": "AAPL",
+  "type": "BUY",
+  "quantity": 50,
+  "price": 155.00,
+  "trade_date": "2025-02-15T09:30:00Z"
+}
+
+// 回應
+{
+  "id": 3,
+  "diary_id": 1,
+  "symbol": "AAPL",
+  "type": "BUY",
+  "quantity": 50,
+  "price": 155.00,
+  "trade_date": "2025-02-15T09:30:00Z",
+  "created_at": "2025-02-15T09:30:00Z"
 }
 ```
 
@@ -363,7 +406,7 @@ invest-diary/
 │   ├── DiaryList.vue
 │   ├── DiaryCard.vue
 │   ├── AlertNotification.vue
-│   ├── HoldingsInput.vue
+│   ├── TransactionInput.vue
 │   ├── HoldingsDisplay.vue
 │   └── Navigation.vue
 ├── server/
@@ -381,7 +424,7 @@ invest-diary/
 │   │   │   └── [id]/
 │   │   │       └── dismiss/
 │   │   │           └── index.put.ts
-│   │   └── holdings/
+│   │   └── transactions/
 │   │       └── latest/
 │   │           └── index.get.ts
 │   └── routes/
@@ -466,5 +509,6 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 - 提醒檢查將實作為定期執行的 Nitro cron 任務
 - 系統使用 Nuxt 3 和 Vue 3 以獲得最佳效能和開發體驗
 - 所有元件將支援響應式設計和透過 Tailwind CSS 支援深色模式
-- 持股資料儲存在每篇日記中，建立新日記時可以重複使用
-- 建立新日記時，系統會提議從最新的日記條目複製持股資料
+- 交易記錄儲存在每篇日記中，系統根據所有交易記錄動態計算持股資訊
+- 平均成本採用 FIFO（先進先出）原則計算
+- 建立新日記時，系統會提議從最新的交易記錄複製到新日記
