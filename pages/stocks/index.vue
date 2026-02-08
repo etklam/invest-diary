@@ -54,7 +54,7 @@
               持股種類
             </dt>
             <dd class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">
-              {{ holdings.length }}
+              {{ holdings?.length ?? 0 }}
             </dd>
           </div>
         </div>
@@ -131,7 +131,7 @@
                   </span>
                 </td>
               </tr>
-              <tr v-if="holdings.length === 0">
+              <tr v-if="!holdings || holdings.length === 0">
                 <td colspan="5" class="px-6 py-12 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
                   <div class="flex flex-col items-center">
                     <Icon name="heroicons:document" class="h-12 w-12 text-gray-400 mb-2" />
@@ -176,8 +176,14 @@ interface Holding {
   totalCost: number
 }
 
-// Fetch holdings from API (lazy to avoid SSR auth issues)
-const { data: holdings, pending, error, refresh } = await useLazyFetch<Holding[]>('/api/stocks/holdings')
+// Fetch holdings from API (client-only to avoid auth mismatch on SSR)
+const { data: holdings, pending, error, refresh } = await useLazyFetch<Holding[]>(
+  '/api/stocks/holdings',
+  {
+    server: false,
+    default: () => []
+  }
+)
 
 // Sort holdings by symbol
 const sortedHoldings = computed(() => {
