@@ -127,9 +127,43 @@ const removeAlert = (index: number) => {
   form.alerts.splice(index, 1)
 }
 
+// Validate transactions before saving
+const validateTransactions = (): string | null => {
+  const holdings = new Map<string, number>()
+
+  for (const tx of form.transactions) {
+    if (!tx.symbol?.trim()) continue
+
+    const symbol = tx.symbol.toUpperCase()
+    const current = holdings.get(symbol) || 0
+
+    if (tx.type === 'BUY') {
+      holdings.set(symbol, current + (tx.quantity || 0))
+    } else if (tx.type === 'SELL') {
+      const available = holdings.get(symbol) || 0
+      if (available <= 0) {
+        return `股票 ${symbol} 沒有持股可賣，請先添加買入記錄`
+      }
+      if ((tx.quantity || 0) > available) {
+        return `股票 ${symbol} 賣出數量 (${tx.quantity}) 超過持股數量 (${available})`
+      }
+      holdings.set(symbol, available - (tx.quantity || 0))
+    }
+  }
+
+  return null
+}
+
 const saveDiary = async () => {
   if (!form.title) {
     alert('請輸入標題')
+    return
+  }
+
+  // Validate transactions
+  const validationError = validateTransactions()
+  if (validationError) {
+    alert('交易記錄驗證失敗：\n' + validationError)
     return
   }
 
