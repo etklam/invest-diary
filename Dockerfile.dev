@@ -1,0 +1,57 @@
+# =============================================================================
+# Development Dockerfile
+# This Dockerfile is optimized for local development with hot-reload
+# Usage: docker-compose -f docker-compose.dev.yml up
+# =============================================================================
+
+FROM node:20.18-alpine
+
+# Set development environment
+ENV NODE_ENV=development \
+    PORT=3000 \
+    HOST="0.0.0.0" \
+    NUXT_TELEMETRY_DISABLED=1
+
+# Set working directory
+WORKDIR /app
+
+# Install development dependencies
+RUN apk add --no-cache \
+    openssl \
+    curl \
+    git \
+    # Install tini for proper signal handling
+    tini
+
+# Create app user (for consistency with production)
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --ingroup nodejs nuxt
+
+# Copy package files
+COPY --chown=nuxt:nodejs package.json package-lock.json* ./
+
+# Install all dependencies (including dev)
+RUN npm ci && npm cache clean --force
+
+# Copy Prisma schema
+COPY --chown=nuxt:nodejs prisma ./prisma
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Copy application files
+COPY --chown=nuxt:nodejs . .
+
+# Switch to app user
+USER nuxt
+
+# Expose ports
+EXPOSE 3000 24678
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Use tini and start development server
+ENTRYPOINT ["tini", "--"]
+CMD ["npm", "run", "dev"]

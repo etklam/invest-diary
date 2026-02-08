@@ -732,6 +732,177 @@ git push --no-verify
 
 ---
 
+## Docker 部署
+
+專案提供完整的 Docker 支援，包含生產環境和開發環境的配置。
+
+### 生產環境部署
+
+使用 Docker Compose 快速部署應用程式和 MySQL 資料庫：
+
+```bash
+# 1. 設定環境變數（可選，已包含預設值）
+cp .env.example .env
+# 編輯 .env 檔案，特別是 JWT_SECRET
+
+# 2. 建構並啟動服務
+docker-compose up -d
+
+# 3. 查看日誌
+docker-compose logs -f app
+
+# 4. 檢查服務狀態
+docker-compose ps
+
+# 5. 停止服務
+docker-compose down
+
+# 6. 停止並移除所有資料（包含資料庫 volume）
+docker-compose down -v
+```
+
+**服務訪問：**
+- 應用程式：http://localhost:3000
+- MySQL：localhost:3306
+
+### 開發環境部署
+
+開發環境支援熱重載（Hot Reload），適合本地開發：
+
+```bash
+# 使用開發配置啟動
+docker-compose -f docker-compose.dev.yml up
+
+# 在背景執行
+docker-compose -f docker-compose.dev.yml up -d
+
+# 查看日誌
+docker-compose -f docker-compose.dev.yml logs -f app
+
+# 停止服務
+docker-compose -f docker-compose.dev.yml down
+```
+
+**開發環境服務：**
+- 應用程式：http://localhost:3000
+- Nuxt WebSocket（熱重載）：localhost:24678
+- MySQL：localhost:3307（避免與生產環境衝突）
+
+### Docker 環境變數
+
+| 變數 | 說明 | 預設值 |
+|------|------|--------|
+| `DATABASE_URL` | MySQL 連線字串 | mysql://diary_user:diary_password@mysql:3306/invest_diary |
+| `JWT_SECRET` | JWT Token 簽名金鑰 | **必須在生產環境設定** |
+| `NUXT_PUBLIC_APP_NAME` | 應用程式名稱 | 投資日記 |
+| `NODE_ENV` | 執行環境 | production |
+| `PORT` | 應用程式端口 | 3000 |
+| `HOST` | 應用程式主機 | 0.0.0.0 |
+| `RUN_MIGRATIONS` | 啟動時執行資料庫遷移 | true（生產） |
+| `SEED_DATABASE` | 啟動時執行資料庫種子 | false（開發可設為 true） |
+
+### 手動執行資料庫遷移
+
+```bash
+# 在執行中的容器中執行遷移
+docker-compose exec app npx prisma migrate deploy
+
+# 執行種子腳本（僅開發環境）
+docker-compose exec app npm run seed
+```
+
+### 進入容器除錯
+
+```bash
+# 進入應用程式容器
+docker-compose exec app sh
+
+# 進入 MySQL 容器
+docker-compose exec mysql mysql -u diary_user -pdiary_password invest_diary
+```
+
+### Dockerfile 特性
+
+生產環境 Dockerfile 包含以下優化：
+
+| 特性 | 說明 |
+|------|------|
+| **多階段建構** | 分離建置和執行環境，減少最終映像大小 |
+| **Alpine Linux** | 使用輕量級基礎映像 |
+| **非 Root 使用者** | 以 UID 1001 執行，提升安全性 |
+| **層級快取優化** | 先複製依賴配置檔案，優化建置速度 |
+| **Tini Init** | 正確處理信號和殭屬程序 |
+| **健康檢查** | 自動監控應用程式健康狀態 |
+| **自動遷移** | 啟動時自動執行 Prisma 遷移 |
+| **開發者支援** | 提供開發環境 Dockerfile 支援熱重載 |
+
+### 故障排除
+
+**容器無法啟動：**
+```bash
+# 查看詳細日誌
+docker-compose logs app
+
+# 檢查容器狀態
+docker-compose ps
+
+# 重新建置映像
+docker-compose up -d --build
+```
+
+**資料庫連線失敗：**
+```bash
+# 確認 MySQL 容器健康狀態
+docker-compose logs mysql
+
+# 等待 MySQL 完全啟動（最多 30 秒）
+docker-compose up -d
+docker-compose logs -f mysql
+```
+
+**無法訪問應用程式：**
+```bash
+# 確認端口是否正確對映
+docker-compose port app 3000
+
+# 檢查防火牆設定
+# macOS/Linux: 確保端口 3000 未被佔用
+lsof -i :3000
+```
+
+**生產環境安全性檢查清單：**
+
+- [ ] 修改 `docker-compose.yml` 中的 MySQL root 密碼
+- [ ] 設定強大的 `JWT_SECRET`（至少 32 字元隨機字串）
+- [ ] 修改 MySQL 使用者密碼（`MYSQL_PASSWORD`）
+- [ ] 使用 HTTPS 反向代理（如 Nginx 或 Traefik）
+- [ ] 限制資料庫端口僅內網訪問
+- [ ] 定期備份 MySQL 資料卷
+- [ ] 設定資源限制（CPU、記憶體）
+- [ ] 啟用 Docker 日誌輪轉
+
+### 備份與還原
+
+**備份 MySQL 資料庫：**
+```bash
+# 備份到本地檔案
+docker-compose exec mysql mysqldump -u diary_user -pdiary_password invest_diary > backup.sql
+
+# 從 volume 備份
+docker run --rm -v diary-vue_mysql_data:/data -v $(pwd):/backup alpine tar czf /backup/mysql-backup.tar.gz -C /data .
+```
+
+**還原 MySQL 資料庫：**
+```bash
+# 從備份檔案還原
+cat backup.sql | docker-compose exec -T mysql mysql -u diary_user -pdiary_password invest_diary
+
+# 從 volume 還原
+docker run --rm -v diary-vue_mysql_data:/data -v $(pwd):/backup alpine tar xzf /backup/mysql-backup.tar.gz -C /data
+```
+
+---
+
 ## 測試與品質保證
 
 專案採用全面的測試與品質保證機制：
