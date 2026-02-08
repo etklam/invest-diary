@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **Personal Investment Diary System** (投資日記系統) - a multi-user application for tracking investment diaries with Markdown writing, in-app alerts, and stock portfolio management using FIFO cost basis calculation. Features JWT-based authentication with bcrypt password hashing.
 
-**Tech Stack:** Nuxt 3 + Vue 3 + TypeScript + MySQL + Prisma ORM + Tailwind CSS + JWT + bcrypt
+**Tech Stack:** Nuxt 3 + Vue 3 + TypeScript + MySQL + Prisma ORM + Tailwind CSS + JWT + bcrypt + @nuxtjs/color-mode
 
 **Language:** Chinese (Traditional) is the primary language for UI and documentation.
 
@@ -168,8 +168,12 @@ RESTful pattern in `server/api/`:
 - `pages/auth/` - Authentication pages (login, register)
 - `pages/settings/` - User settings page
 - `pages/stocks/` - Stock holdings dashboard
+- `pages/timeline/` - Timeline view of diaries with date range filtering
 - `components/` - Reusable Vue components (auto-imported)
-- `composables/` - Vue composables (useAuth.ts for auth state)
+  - `UserMenu.vue` - Dropdown menu for authenticated users with logout
+  - `Navigation.vue` - Responsive navigation with mobile menu
+  - `DiaryEditor.vue`, `HoldingsDisplay.vue`, `TransactionInput.vue`, etc.
+- `composables/` - Vue composables (useAuth.ts, useNavigation.ts)
 - `middleware/` - Route middleware (auth.ts for route protection)
 - `layouts/` - Layout wrappers (currently using default from `app.vue`)
 
@@ -220,6 +224,31 @@ Holdings use average cost method (simplified FIFO):
 - Password change with old password verification
 - Settings page at `pages/settings/index.vue`
 
+### Timeline View
+- Visual timeline of all diaries grouped by year/month
+- Date range filtering (from/to dates)
+- Shows transaction and alert counts per diary
+- Responsive design with mobile support
+- Page at `pages/timeline/index.vue`
+
+### Color Mode (Dark/Light Theme)
+- Uses `@nuxtjs/color-mode` module
+- Toggle button in navigation bar
+- Persists user preference
+- System preference detection as fallback
+- All components support both modes via Tailwind `dark:` classes
+
+### Navigation Composable
+- `useNavigation()` provides navigation state and helpers
+- `visibleNavItems` - Auth-aware navigation items
+- `isActive(path)` - Check if route is active
+- Handles authenticated vs guest navigation
+
+### Toast Composable
+- `useToast()` provides toast notification functionality
+- `showToast(message, type)` - Display toast messages
+- Auto-dismiss after timeout
+
 ### Transaction Reuse
 When creating new diaries, users can copy holdings from the latest transaction record via `/api/transactions/latest`.
 
@@ -243,6 +272,9 @@ Based on README.md checklist:
 - ✅ Authentication system (complete)
 - ✅ Stock holdings dashboard (complete)
 - ✅ User settings management (complete)
+- ✅ Timeline view with filtering (complete)
+- ✅ Dark/Light mode toggle (complete)
+- ✅ Mobile-responsive navigation (complete)
 
 ## Important Notes
 
@@ -255,3 +287,5 @@ Based on README.md checklist:
 - MySQL is running in docker
 - Seed script uses `tsx` to run TypeScript directly
 - Alert cron jobs are planned but not yet implemented
+- Timeline view uses client-side fetching (`useLazyFetch`) to avoid SSR auth issues
+- Color mode preference persists in localStorage and syncs with system preference

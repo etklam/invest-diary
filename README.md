@@ -186,6 +186,7 @@ erDiagram
 | 框架 | Nuxt 3 | Vue 3 框架，具備自動導入功能 |
 | UI 函式庫 | Vue 3.5+ | 元件函式庫 |
 | 樣式 | Tailwind CSS v3 | 實用優先的 CSS 框架 |
+| 深色模式 | @nuxtjs/color-mode | 主題切換功能 |
 | 資料庫 | MySQL 8.0+ | 關聯式資料庫 |
 | ORM | Prisma | 型別安全的資料庫客戶端 |
 | 驗證 | JWT + bcrypt | JSON Web Token + 密碼雜湊 |
@@ -272,6 +273,21 @@ erDiagram
 - [x] 實作詳細持股表格與成本分配
 - [x] 支援用戶端資料獲取以避免 SSR 身份驗證問題
 
+### 階段 9：時間軸檢視 ✅
+
+- [x] 建立時間軸頁面（`pages/timeline/index.vue`）
+- [x] 實作按年/月分組的日記時間軸
+- [x] 新增日期範圍篩選功能
+- [x] 顯示交易與提醒計數
+- [x] 響應式設計與行動裝置支援
+
+### 階段 10：使用者體驗優化 ✅
+
+- [x] 實作深色/淺色主題切換（`@nuxtjs/color-mode`）
+- [x] 建立使用者選單元件（`components/UserMenu.vue`）
+- [x] 實作響應式導航與行動版選單
+- [x] 新增 useNavigation composable 統一導航邏輯
+
 ### 階段 5：設定與文件
 
 - [x] 更新 README.md 的設定說明
@@ -301,6 +317,14 @@ erDiagram
 | POST | `/api/auth/login` | 使用者登入（設定 JWT Cookie） |
 | POST | `/api/auth/logout` | 使用者登出（清除 JWT Cookie） |
 | GET | `/api/auth/me` | 取得目前使用者資料 |
+
+### 使用者設定端點
+
+| 方法 | 端點 | 說明 |
+|--------|----------|-------------|
+| GET | `/api/user/settings` | 取得使用者設定 |
+| PUT | `/api/user/settings` | 更新使用者設定 |
+| PUT | `/api/user/password` | 修改使用者密碼 |
 
 #### 請求/回應範例
 
@@ -558,6 +582,8 @@ diary-vue/
 │   │   └── index.vue          # 使用者設定頁面
 │   ├── stocks/
 │   │   └── index.vue          # 持股儀表板
+│   ├── timeline/
+│   │   └── index.vue          # 時間軸檢視
 │   ├── diaries/
 │   │   ├── index.vue          # 日記列表
 │   │   ├── new.vue            # 建立日記
@@ -573,11 +599,14 @@ diary-vue/
 │   ├── AlertNotification.vue
 │   ├── TransactionInput.vue
 │   ├── HoldingsDisplay.vue
-│   ├── Navigation.vue
+│   ├── Navigation.vue         # 響應式導航元件
+│   ├── UserMenu.vue           # 使用者下拉選單
 │   ├── HealthStatus.vue       # 系統健康狀態指示器
 │   └── Toast.vue
 ├── composables/
-│   └── useAuth.ts             # 身份驗證狀態管理
+│   ├── useAuth.ts             # 身份驗證狀態管理
+│   ├── useNavigation.ts       # 導航狀態管理
+│   └── useToast.ts            # Toast 通知
 ├── middleware/
 │   └── auth.ts                # 路由保護中介層
 ├── server/
@@ -587,9 +616,14 @@ diary-vue/
 │       │   ├── register.post.ts
 │       │   ├── logout.post.ts
 │       │   └── me.get.ts
+│       ├── user/
+│       │   ├── settings.get.ts
+│       │   ├── settings.put.ts
+│       │   └── password.put.ts
 │       ├── diaries/
 │       │   ├── get.ts
 │       │   ├── post.ts
+│       │   ├── by-date.get.ts
 │       │   └── [id]/
 │       │       ├── get.ts
 │       │       ├── put.ts
@@ -938,12 +972,13 @@ docker run --rm -v diary-vue_mysql_data:/data -v $(pwd):/backup alpine tar xzf /
 - [ ] 投資追蹤，包含圖表和績效指標
 - [ ] 投資組合績效分析
 - [ ] 匯出日記為 PDF
-- [ ] 深色/淺色主題切換（已實作基礎版本）
+- [x] 深色/淺色主題切換
 - [ ] 全文搜尋與索引
 - [ ] 資料備份與還原
 - [ ] 行動應用程式（Vue Native）
 - [x] 多使用者身份驗證系統
 - [x] 持股儀表板
+- [x] 時間軸檢視
 - [x] 自動化測試系統
 - [x] 系統健康檢查機制
 
@@ -960,3 +995,6 @@ docker run --rm -v diary-vue_mysql_data:/data -v $(pwd):/backup alpine tar xzf /
 - 交易記錄儲存在每篇日記中，系統根據所有交易記錄動態計算持股資訊
 - 平均成本採用 FIFO（先進先出）原則計算
 - 建立新日記時，系統會提議從最新的交易記錄複製到新日記
+- 時間軸檢視提供按年/月分組的日記列表，支援日期範圍篩選
+- 深色/淺色模式自動儲存使用者偏好，支援系統偏好偵測
+- 響應式導航提供行動版選單，包含漢堡選單和優化的觸控操作
