@@ -4,39 +4,41 @@
     <div class="flex items-center justify-between mb-6">
       <button
         @click="previousMonth"
-        class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        class="p-2 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+        aria-label="上一個月"
       >
         <Icon name="heroicons:chevron-left" class="w-6 h-6" />
       </button>
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
         {{ currentYear }}年 {{ currentMonth + 1 }}月
       </h1>
       <button
         @click="nextMonth"
-        class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        class="p-2 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+        aria-label="下一個月"
       >
         <Icon name="heroicons:chevron-right" class="w-6 h-6" />
       </button>
     </div>
 
     <!-- 星期標題 -->
-    <div class="grid grid-cols-7 gap-2 mb-2">
+    <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
       <div
         v-for="day in weekDays"
         :key="day"
-        class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 py-2"
+        class="text-center text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 py-2"
       >
         {{ day }}
       </div>
     </div>
 
     <!-- 月曆網格 -->
-    <div class="grid grid-cols-7 gap-2">
+    <div class="grid grid-cols-7 gap-1 sm:gap-2">
       <!-- 空白格子（月初前的空白） -->
       <div
         v-for="n in firstDayOfWeek"
         :key="'blank-' + n"
-        class="h-24"
+        class="h-16 sm:h-24"
       ></div>
 
       <!-- 日期格子 -->
@@ -44,28 +46,28 @@
         v-for="day in daysInMonth"
         :key="day"
         @click="handleDateClick(day)"
-        class="h-24 p-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+        class="h-16 sm:h-24 p-1 sm:p-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
         :class="{
           'bg-indigo-50 dark:bg-indigo-900/20': isToday(day),
           'border-indigo-500': isToday(day)
         }"
       >
-        <div class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div class="text-sm sm:text-sm font-medium text-gray-700 dark:text-gray-300">
           {{ day }}
         </div>
 
         <!-- 日記標記 -->
         <div
           v-if="hasDiary(day)"
-          class="absolute bottom-2 right-2"
+          class="absolute bottom-1 sm:bottom-2 right-1 sm:right-2"
         >
-          <div class="w-3 h-3 bg-indigo-500 rounded-full"></div>
+          <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-indigo-500 rounded-full"></div>
         </div>
 
         <!-- 日記標題預覽 -->
         <div
           v-if="hasDiary(day)"
-          class="mt-2 text-xs text-gray-600 dark:text-gray-400 truncate"
+          class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 truncate leading-tight"
         >
           {{ getDiaryTitle(day) }}
         </div>
@@ -76,7 +78,7 @@
     <div class="mt-6 flex justify-center">
       <button
         @click="goToToday"
-        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+        class="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors min-h-[44px] font-medium"
       >
         回到今天
       </button>

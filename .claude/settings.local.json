@@ -25,7 +25,9 @@
       "Bash(SKIP_MIGRATION=true npx prisma migrate dev:*)",
       "Bash(npx prisma db push:*)",
       "Bash(npx tsx:*)",
-      "Bash(npm run health:quick:*)"
+      "Bash(npm run health:quick:*)",
+      "Bash(xargs kill:*)",
+      "Bash(npx nuxi typecheck:*)"
     ]
   }
 }

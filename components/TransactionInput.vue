@@ -5,7 +5,7 @@
       <button
         type="button"
         @click="addTransaction"
-        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 min-h-[44px]"
       >
         <Icon name="heroicons:plus" class="mr-2 h-4 w-4" />
         新增交易
@@ -26,34 +26,35 @@
         <button
           type="button"
           @click="removeTransaction(index)"
-          class="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+          class="absolute top-2 right-2 text-gray-400 hover:text-red-500 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label="刪除交易"
         >
           <Icon name="heroicons:x-mark" class="h-5 w-5" />
         </button>
 
         <div class="grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-6">
           <div class="sm:col-span-1">
-            <label :for="`symbol-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">代碼</label>
+            <label :for="`symbol-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">代碼</label>
             <div class="mt-1">
               <input
                 type="text"
                 :id="`symbol-${index}`"
                 :value="transaction.symbol"
                 @input="updateSymbol(index, $event)"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white uppercase"
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white uppercase min-h-[44px] px-3"
                 placeholder="AAPL"
               />
             </div>
           </div>
 
           <div class="sm:col-span-1">
-            <label :for="`type-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">類型</label>
+            <label :for="`type-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">類型</label>
             <div class="mt-1">
               <select
                 :id="`type-${index}`"
                 v-model="transaction.type"
                 @change="validateTransaction(index)"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[44px] px-3"
               >
                 <option value="BUY">買入</option>
                 <option value="SELL">賣出</option>
@@ -62,7 +63,7 @@
           </div>
 
           <div class="sm:col-span-1">
-            <label :for="`quantity-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+            <label :for="`quantity-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">
               數量
               <span v-if="transaction.type === 'SELL' && getCurrentHolding(transaction.symbol)" class="text-xs text-gray-500 dark:text-gray-400">
                 (可用: {{ formatQuantity(getCurrentHolding(transaction.symbol)) }})
@@ -76,14 +77,14 @@
                 @input="validateTransaction(index)"
                 step="0.0001"
                 min="0"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[44px] px-3"
                 :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-500': getValidationError(transaction) }"
               />
             </div>
           </div>
 
           <div class="sm:col-span-1">
-            <label :for="`price-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">價格</label>
+            <label :for="`price-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">價格</label>
             <div class="mt-1">
               <input
                 type="number"
@@ -91,19 +92,19 @@
                 v-model.number="transaction.price"
                 step="0.01"
                 min="0"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[44px] px-3"
               />
             </div>
           </div>
 
           <div class="sm:col-span-2">
-            <label :for="`date-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">日期時間</label>
+            <label :for="`date-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">日期時間</label>
             <div class="mt-1">
               <input
                 type="datetime-local"
                 :id="`date-${index}`"
                 v-model="transaction.trade_date"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[44px] px-3"
               />
             </div>
           </div>

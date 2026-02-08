@@ -25,11 +25,11 @@ const displayName = computed(() => {
     <!-- User menu button -->
     <button
       @click="isOpen = !isOpen"
-      class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
       aria-label="用戶選單"
     >
       <!-- User avatar icon -->
-      <div class="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center">
+      <div class="h-10 w-10 sm:h-8 sm:w-8 rounded-full bg-indigo-600 flex items-center justify-center">
         <Icon name="heroicons:user" class="h-5 w-5 text-white" />
       </div>
       <!-- User name (hidden on mobile) -->
@@ -39,7 +39,7 @@ const displayName = computed(() => {
       <!-- Dropdown arrow -->
       <Icon
         name="heroicons:chevron-down"
-        class="h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform"
+        class="h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform"
         :class="{ 'rotate-180': isOpen }"
       />
     </button>
@@ -71,7 +71,7 @@ const displayName = computed(() => {
           <NuxtLink
             to="/diaries/new"
             @click="closeDropdown"
-            class="group flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            class="group flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
           >
             <Icon name="heroicons:pencil-square" class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
             寫日記
@@ -80,7 +80,7 @@ const displayName = computed(() => {
           <NuxtLink
             to="/settings"
             @click="closeDropdown"
-            class="group flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            class="group flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
           >
             <Icon name="heroicons:cog-6-tooth" class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
             設定
@@ -90,7 +90,7 @@ const displayName = computed(() => {
 
           <button
             @click="handleLogout"
-            class="group flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            class="group flex w-full items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
           >
             <Icon name="heroicons:arrow-left-on-rectangle" class="mr-3 h-5 w-5" />
             登出

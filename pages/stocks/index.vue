@@ -87,66 +87,121 @@
           </button>
         </div>
 
-        <div v-else class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  代碼
-                </th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  數量
-                </th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  平均成本
-                </th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  總成本
-                </th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  成本占比
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-for="holding in sortedHoldings" :key="holding.symbol">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                  {{ holding.symbol }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
-                  {{ formatQuantity(holding.quantity) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">
-                  {{ formatCurrency(holding.avgCost) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
-                  {{ formatCurrency(holding.totalCost) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    :class="getPercentageClass(holding.totalCost)"
-                  >
-                    {{ formatPercentage(holding.totalCost) }}
-                  </span>
-                </td>
-              </tr>
-              <tr v-if="!holdings || holdings.length === 0">
-                <td colspan="5" class="px-6 py-12 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
-                  <div class="flex flex-col items-center">
-                    <Icon name="heroicons:document" class="h-12 w-12 text-gray-400 mb-2" />
-                    <p>目前無持股</p>
-                    <NuxtLink
-                      to="/diaries/new"
-                      class="mt-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+        <div v-else>
+          <!-- Desktop Table -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    代碼
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    數量
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    平均成本
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    總成本
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    成本占比
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr v-for="holding in sortedHoldings" :key="holding.symbol">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                    {{ holding.symbol }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
+                    {{ formatQuantity(holding.quantity) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">
+                    {{ formatCurrency(holding.avgCost) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
+                    {{ formatCurrency(holding.totalCost) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      :class="getPercentageClass(holding.totalCost)"
                     >
-                      建立新日記並新增交易
-                    </NuxtLink>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                      {{ formatPercentage(holding.totalCost) }}
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="!holdings || holdings.length === 0">
+                  <td colspan="5" class="px-6 py-12 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
+                    <div class="flex flex-col items-center">
+                      <Icon name="heroicons:document" class="h-12 w-12 text-gray-400 mb-2" />
+                      <p>目前無持股</p>
+                      <NuxtLink
+                        to="/diaries/new"
+                        class="mt-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+                      >
+                        建立新日記並新增交易
+                      </NuxtLink>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Card Layout -->
+          <div class="md:hidden space-y-4 px-4 py-4">
+            <div v-if="!holdings || holdings.length === 0" class="text-center py-8">
+              <Icon name="heroicons:document" class="h-12 w-12 text-gray-400 mb-2 mx-auto" />
+              <p class="text-sm text-gray-500 dark:text-gray-400">目前無持股</p>
+              <NuxtLink
+                to="/diaries/new"
+                class="mt-2 inline-block text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+              >
+                建立新日記並新增交易
+              </NuxtLink>
+            </div>
+
+            <div
+              v-for="holding in sortedHoldings"
+              :key="holding.symbol"
+              class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+            >
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-lg font-semibold text-indigo-600 dark:text-indigo-400">
+                  {{ holding.symbol }}
+                </h4>
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  :class="getPercentageClass(holding.totalCost)"
+                >
+                  {{ formatPercentage(holding.totalCost) }}
+                </span>
+              </div>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-500 dark:text-gray-400">數量</span>
+                  <span class="font-medium text-gray-900 dark:text-white">
+                    {{ formatQuantity(holding.quantity) }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500 dark:text-gray-400">平均成本</span>
+                  <span class="font-medium text-gray-900 dark:text-white">
+                    {{ formatCurrency(holding.avgCost) }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500 dark:text-gray-400">總成本</span>
+                  <span class="font-medium text-gray-900 dark:text-white">
+                    {{ formatCurrency(holding.totalCost) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
