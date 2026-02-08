@@ -31,6 +31,7 @@ npm run generate               # Generate static site (SSG)
 npm test                       # Run all tests
 npm run test:watch             # Run tests in watch mode
 npm run test:coverage          # Generate coverage report
+npm run test:ui                # Run tests with visual UI
 
 # Health Checks
 npm run health:check           # Run comprehensive health check (Git pre-commit)

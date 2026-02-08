@@ -945,11 +945,35 @@ docker run --rm -v diary-vue_mysql_data:/data -v $(pwd):/backup alpine tar xzf /
 - **Vitest**: 快速的單元測試框架
 - **@nuxt/test-utils**: Nuxt 元件與整合測試工具
 - **happy-dom**: 輕量級測試 DOM 環境
+- **Vitest UI**: 可視化測試介面（`npm run test:ui`）
 
 ### 測試覆蓋範圍
 - ✅ 工具函式單元測試（`tests/lib/utils.test.ts`）
+  - `calculateHoldings()` - 持股計算（平均成本法）
+  - `getHoldingBySymbol()` - 特定股票查詢
+  - `formatDate()` - 日期格式化（zh-TW）
+  - `formatCurrency()` - 貨幣格式化（TWD）
+- ✅ Composables 測試（`tests/composables/`）
+  - `useNavigation.test.ts` - 導航邏輯測試
+  - `useToast.test.ts` - Toast 通知測試
 - ✅ API 路由整合測試結構（`tests/api/diaries.test.ts`）
 - ✅ 元件測試示例（`tests/components/`）
+
+### 執行測試
+
+```bash
+# 執行所有測試
+npm test
+
+# 監看模式（開發時使用）
+npm run test:watch
+
+# 測試覆蓋率報告
+npm run test:coverage
+
+# 可視化測試介面
+npm run test:ui
+```
 
 ### 健康檢查機制
 
