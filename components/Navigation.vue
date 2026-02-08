@@ -30,6 +30,13 @@
             >
               提醒管理
             </NuxtLink>
+            <NuxtLink
+              to="/stocks"
+              class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-300 dark:hover:text-white dark:hover:border-gray-300"
+              active-class="!border-indigo-500 text-gray-900 dark:text-white"
+            >
+              股票管理
+            </NuxtLink>
           </div>
         </div>
         <div class="flex items-center">
