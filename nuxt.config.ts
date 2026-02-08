@@ -6,8 +6,15 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxtjs/mdc',
-    '@nuxt/icon'
+    '@nuxt/icon',
+    '@nuxtjs/color-mode'
   ],
+
+  colorMode: {
+    classSuffix: '',
+    fallback: 'light',
+    preference: 'system'
+  },
 
   tailwindcss: {
     viewer: false

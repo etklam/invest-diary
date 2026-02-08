@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const colorMode = useColorMode()
+</script>
+
 <template>
   <nav class="bg-white shadow dark:bg-gray-800">
     <div class="container mx-auto px-4">
@@ -39,7 +43,17 @@
             </NuxtLink>
           </div>
         </div>
-        <div class="flex items-center">
+        <div class="flex items-center space-x-4">
+          <button
+            @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
+            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+            aria-label="切換深色模式"
+          >
+            <Icon
+              :name="colorMode.value === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
+              class="h-5 w-5"
+            />
+          </button>
           <NuxtLink
             to="/diaries/new"
             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

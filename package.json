@@ -26,6 +26,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@nuxtjs/color-mode": "^4.0.0",
     "tsx": "^4.21.0"
   }
 }
