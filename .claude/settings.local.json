@@ -17,7 +17,11 @@
       "Bash(mysql:*)",
       "Bash(brew services list:*)",
       "Bash(docker:*)",
-      "Bash(docker ps:*)"
+      "Bash(docker ps:*)",
+      "Bash(npm test:*)",
+      "Bash(npx husky init:*)",
+      "Bash(chmod:*)",
+      "Bash(npm run health:check:*)"
     ]
   }
 }

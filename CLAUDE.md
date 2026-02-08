@@ -26,7 +26,85 @@ npm run seed                   # Seed database with sample data
 npm run build                  # Build for production
 npm run preview                # Preview production build locally
 npm run generate               # Generate static site (SSG)
+
+# Testing
+npm test                       # Run all tests
+npm run test:watch             # Run tests in watch mode
+npm run test:coverage          # Generate coverage report
+
+# Health Checks
+npm run health:check           # Run comprehensive health check (Git pre-commit)
+npm run health:full            # Full health check + build verification (Git pre-push)
+npm run health:quick           # Quick health check (tests + Prisma validation)
 ```
+
+## Automated Health Check System
+
+This project includes an **automated health check system** that runs after every code change to ensure system stability.
+
+### What Gets Checked
+
+1. **Environment Variables** - Verifies `.env` file exists and `DATABASE_URL` is configured
+2. **Prisma Schema** - Validates Prisma schema syntax
+3. **TypeScript Compilation** - Checks for TypeScript errors
+4. **Unit Tests** - Runs all test suites
+5. **Database Connection** - Verifies MySQL is accessible
+6. **Dependencies** - Ensures `node_modules` and `.nuxt` are present
+
+### When Health Checks Run
+
+- **Pre-commit**: Automatically runs `npm run health:check` before each Git commit
+- **Pre-push**: Automatically runs `npm run health:full` before each Git push
+- **Manual**: Run `npm run health:check` anytime to verify system health
+
+### Health Check API Endpoint
+
+The system exposes `GET /api/health` for monitoring:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "checks": {
+    "database": {
+      "status": "ok",
+      "responseTime": 15
+    },
+    "server": {
+      "status": "ok",
+      "uptime": 3600,
+      "environment": "development"
+    }
+  }
+}
+```
+
+### Health Status Component
+
+The `<HealthStatus>` component displays system status in the UI:
+- Green indicator with "系統正常" when healthy
+- Red indicator with "系統異常" when unhealthy
+- Auto-refreshes every 30 seconds
+- Shows error details on click
+
+### Skipping Health Checks
+
+If you need to skip health checks during Git operations:
+
+```bash
+# Skip pre-commit check
+git commit --no-verify -m "WIP: experimental changes"
+
+# Skip pre-push check
+git push --no-verify
+```
+
+**Warning**: Only skip checks if you're certain the changes are safe!
 
 ## Architecture Overview
 
