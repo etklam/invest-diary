@@ -12,6 +12,7 @@ export const useNavigation = () => {
 
   const navItems = computed<NavItem[]>(() => [
     { label: '月曆', to: '/' },
+    { label: '時間軸', to: '/timeline', auth: true },
     { label: '日記列表', to: '/diaries', auth: true },
     { label: '提醒管理', to: '/alerts', auth: true },
     { label: '股票管理', to: '/stocks', auth: true }
