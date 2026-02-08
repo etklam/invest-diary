@@ -33,7 +33,22 @@
         v-model:content="form.content"
       />
 
-      <TransactionInput v-model="form.transactions" />
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">交易記錄</h3>
+          <button
+            type="button"
+            @click="copyFromLatest"
+            :disabled="loadingLatest"
+            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+          >
+            <Icon v-if="loadingLatest" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4" />
+            <Icon v-else name="heroicons:document-duplicate" class="mr-2 h-4 w-4" />
+            複製上筆交易
+          </button>
+        </div>
+        <TransactionInput v-model="form.transactions" />
+      </div>
 
       <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
         <div class="flex items-center justify-between mb-4">
@@ -109,13 +124,18 @@
 
 <script setup lang="ts">
 const router = useRouter()
+const route = useRoute()
 const saving = ref(false)
 const checkingDate = ref(false)
+const loadingLatest = ref(false)
 const isEditing = ref(false)
 const existingDiaryId = ref<string | null>(null)
 
+// Get date from URL query parameter or use today
+const initialDate = (route.query.date as string) || new Date().toISOString().slice(0, 10)
+
 const form = reactive({
-  date: new Date().toISOString().slice(0, 10),
+  date: initialDate,
   title: '',
   content: '',
   transactions: [] as any[],
@@ -187,6 +207,47 @@ const removeAlert = (index: number) => {
   form.alerts.splice(index, 1)
 }
 
+// Copy transactions from latest diary
+const copyFromLatest = async () => {
+  const toast = useToast()
+  loadingLatest.value = true
+  try {
+    const latest = await $fetch('/api/transactions/latest') as {
+      transactions: any[]
+      diary_date: string
+    } | null
+
+    if (latest && latest.transactions && latest.transactions.length > 0) {
+      // Add transactions to form
+      const newTransactions = latest.transactions.map((tx: any) => ({
+        symbol: tx.symbol.toUpperCase(),
+        type: tx.type,
+        quantity: parseFloat(tx.quantity),
+        price: parseFloat(tx.price),
+        trade_date: new Date().toISOString().slice(0, 10) // Use today's date
+      }))
+
+      // Append to existing transactions or replace if empty
+      if (form.transactions.length === 0) {
+        form.transactions = newTransactions
+      } else {
+        form.transactions = [...form.transactions, ...newTransactions]
+      }
+
+      // Show success feedback
+      const diaryDate = new Date(latest.diary_date).toLocaleDateString('zh-TW')
+      toast.success(`已複製 ${newTransactions.length} 筆交易記錄（來源：${diaryDate}）`)
+    } else {
+      toast.warning('沒有找到之前的交易記錄')
+    }
+  } catch (error) {
+    console.error('Error fetching latest transactions:', error)
+    toast.error('複製失敗，請稍後再試')
+  } finally {
+    loadingLatest.value = false
+  }
+}
+
 // Validate transactions before saving
 const validateTransactions = (): string | null => {
   const holdings = new Map<string, number>()
@@ -194,7 +255,7 @@ const validateTransactions = (): string | null => {
   for (const tx of form.transactions) {
     if (!tx.symbol?.trim()) continue
 
-    const symbol = tx.symbol.toUpperCase()
+    const symbol = tx.symbol.trim() // Already uppercase from input
     const current = holdings.get(symbol) || 0
 
     if (tx.type === 'BUY') {
@@ -215,15 +276,17 @@ const validateTransactions = (): string | null => {
 }
 
 const saveDiary = async () => {
+  const toast = useToast()
+
   if (!form.title) {
-    alert('請輸入標題')
+    toast.error('請輸入標題')
     return
   }
 
   // Validate transactions
   const validationError = validateTransactions()
   if (validationError) {
-    alert('交易記錄驗證失敗：\n' + validationError)
+    toast.error('交易記錄驗證失敗：' + validationError)
     return
   }
 
@@ -250,18 +313,20 @@ const saveDiary = async () => {
         method: 'PUT',
         body: payload
       })
+      toast.success('日記更新成功！')
     } else {
       // Create new diary
       await $fetch('/api/diaries', {
         method: 'POST',
         body: payload
       })
+      toast.success('日記儲存成功！')
     }
 
     router.push('/diaries')
   } catch (e: any) {
     console.error(e)
-    alert('儲存失敗: ' + (e.data?.statusMessage || e.message))
+    toast.error('儲存失敗: ' + (e.data?.statusMessage || e.message))
   } finally {
     saving.value = false
   }

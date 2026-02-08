@@ -170,7 +170,7 @@ const validateTransactions = (): string | null => {
   for (const tx of form.transactions) {
     if (!tx.symbol?.trim()) continue
 
-    const symbol = tx.symbol.toUpperCase()
+    const symbol = tx.symbol.trim() // Already uppercase from input
     const current = holdings.get(symbol) || 0
 
     if (tx.type === 'BUY') {
@@ -191,15 +191,17 @@ const validateTransactions = (): string | null => {
 }
 
 const saveDiary = async () => {
+  const toast = useToast()
+
   if (!form.title) {
-    alert('請輸入標題')
+    toast.error('請輸入標題')
     return
   }
 
   // Validate transactions
   const validationError = validateTransactions()
   if (validationError) {
-    alert('交易記錄驗證失敗：\n' + validationError)
+    toast.error('交易記錄驗證失敗：' + validationError)
     return
   }
 
@@ -223,11 +225,12 @@ const saveDiary = async () => {
       method: 'PUT',
       body: payload
     })
-    
+
+    toast.success('日記更新成功！')
     router.push(`/diaries/${id}`)
   } catch (e: any) {
     console.error(e)
-    alert('儲存失敗: ' + (e.data?.statusMessage || e.message))
+    toast.error('儲存失敗: ' + (e.data?.statusMessage || e.message))
   } finally {
     saving.value = false
   }

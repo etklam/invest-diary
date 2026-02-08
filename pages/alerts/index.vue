@@ -82,14 +82,17 @@
 const { data: alerts, pending, error, refresh } = await useFetch('/api/alerts')
 
 const dismissAlert = async (id: number) => {
+  const toast = useToast()
+
   try {
     await $fetch(`/api/alerts/${id}/dismiss`, {
       method: 'PUT'
     })
+    toast.success('提醒已標記為已讀')
     refresh()
   } catch (e) {
     console.error(e)
-    alert('操作失敗')
+    toast.error('操作失敗')
   }
 }
 </script>

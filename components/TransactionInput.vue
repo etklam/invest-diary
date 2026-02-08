@@ -38,8 +38,8 @@
               <input
                 type="text"
                 :id="`symbol-${index}`"
-                v-model="transaction.symbol"
-                @input="validateTransaction(index)"
+                :value="transaction.symbol"
+                @input="updateSymbol(index, $event)"
                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white uppercase"
                 placeholder="AAPL"
               />
@@ -168,12 +168,14 @@ const calculateHoldings = (excludeIndex: number = -1): Holding[] => {
     if (idx === excludeIndex) return // Skip the transaction being validated
     if (!tx.symbol) return
 
-    const current = holdingMap.get(tx.symbol) || 0
+    // Symbol should already be uppercase due to the updateSymbol function
+    const symbol = tx.symbol.trim()
+    const current = holdingMap.get(symbol) || 0
 
     if (tx.type === 'BUY') {
-      holdingMap.set(tx.symbol, current + (tx.quantity || 0))
+      holdingMap.set(symbol, current + (tx.quantity || 0))
     } else if (tx.type === 'SELL') {
-      holdingMap.set(tx.symbol, current - (tx.quantity || 0))
+      holdingMap.set(symbol, current - (tx.quantity || 0))
     }
   })
 
@@ -187,7 +189,7 @@ const holdings = computed(() => calculateHoldings(-1))
 
 // Get current holding for a symbol
 const getCurrentHolding = (symbol: string): number => {
-  const holding = holdings.value.find(h => h.symbol === symbol?.toUpperCase())
+  const holding = holdings.value.find(h => h.symbol === symbol?.trim())
   return holding ? holding.quantity : 0
 }
 
@@ -207,7 +209,7 @@ const validateTransaction = (index: number) => {
 
   // Validate SELL transactions
   if (tx.type === 'SELL') {
-    const symbol = tx.symbol?.toUpperCase().trim()
+    const symbol = tx.symbol?.trim()
 
     if (!symbol) {
       errors.push('賣出時必須輸入股票代碼')
@@ -276,4 +278,12 @@ watch(transactions, (newTxns) => {
     }
   })
 }, { deep: true })
+
+// Update symbol and convert to uppercase
+const updateSymbol = (index: number, event: Event) => {
+  const target = event.target as HTMLInputElement
+  const value = target.value.toUpperCase()
+  transactions.value[index].symbol = value
+  validateTransaction(index)
+}
 </script>

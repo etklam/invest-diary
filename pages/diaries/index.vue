@@ -11,6 +11,78 @@
       </NuxtLink>
     </div>
 
+    <!-- Filters and Sorting -->
+    <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <div class="sm:col-span-4">
+          <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            搜尋日記
+          </label>
+          <div class="mt-1 relative rounded-md shadow-sm">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Icon name="heroicons:magnifying-glass" class="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              id="search"
+              v-model="filters.search"
+              placeholder="搜尋標題或內容..."
+              class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+        </div>
+        <div>
+          <label for="date-from" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            開始日期
+          </label>
+          <input
+            type="date"
+            id="date-from"
+            v-model="filters.dateFrom"
+            class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          />
+        </div>
+        <div>
+          <label for="date-to" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            結束日期
+          </label>
+          <input
+            type="date"
+            id="date-to"
+            v-model="filters.dateTo"
+            class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          />
+        </div>
+        <div>
+          <label for="sort-by" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            排序方式
+          </label>
+          <select
+            id="sort-by"
+            v-model="filters.sortBy"
+            class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          >
+            <option value="date-desc">日期（新到舊）</option>
+            <option value="date-asc">日期（舊到新）</option>
+            <option value="title-asc">標題（A-Z）</option>
+            <option value="title-desc">標題（Z-A）</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-3 flex justify-between items-center">
+        <span v-if="filters.search" class="text-sm text-gray-500 dark:text-gray-400">
+          找到 {{ filteredAndSortedDiaries.length }} 筆結果
+        </span>
+        <button
+          @click="resetFilters"
+          class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+        >
+          <Icon name="heroicons:x-mark" class="mr-2 h-4 w-4" />
+          清除篩選
+        </button>
+      </div>
+    </div>
+
     <div v-if="pending" class="text-center py-12">
       <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-indigo-600" />
       <p class="mt-2 text-gray-500">載入中...</p>
@@ -47,7 +119,7 @@
 
     <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <NuxtLink
-        v-for="diary in diaries"
+        v-for="diary in filteredAndSortedDiaries"
         :key="diary.id"
         :to="`/diaries/${diary.id}`"
         class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 overflow-hidden"
@@ -87,6 +159,85 @@
 
 <script setup lang="ts">
 const { data: diaries, pending, error } = await useFetch('/api/diaries')
+
+const filters = reactive({
+  search: '',
+  dateFrom: '',
+  dateTo: '',
+  sortBy: 'date-desc'
+})
+
+// Reset filters
+const resetFilters = () => {
+  filters.search = ''
+  filters.dateFrom = ''
+  filters.dateTo = ''
+  filters.sortBy = 'date-desc'
+}
+
+// Filter diaries by search and date range
+const filteredDiaries = computed(() => {
+  if (!diaries.value) return []
+
+  let result = [...diaries.value]
+
+  // Search filter
+  if (filters.search) {
+    const searchLower = filters.search.toLowerCase()
+    result = result.filter(d =>
+      d.title.toLowerCase().includes(searchLower) ||
+      (d.content && d.content.toLowerCase().includes(searchLower))
+    )
+  }
+
+  // Date from filter
+  if (filters.dateFrom) {
+    const fromDate = new Date(filters.dateFrom)
+    fromDate.setHours(0, 0, 0, 0)
+    result = result.filter(d => {
+      const diaryDate = new Date(d.date || d.createdAt)
+      return diaryDate >= fromDate
+    })
+  }
+
+  // Date to filter
+  if (filters.dateTo) {
+    const toDate = new Date(filters.dateTo)
+    toDate.setHours(23, 59, 59, 999)
+    result = result.filter(d => {
+      const diaryDate = new Date(d.date || d.createdAt)
+      return diaryDate <= toDate
+    })
+  }
+
+  return result
+})
+
+// Sort diaries
+const filteredAndSortedDiaries = computed(() => {
+  const result = [...filteredDiaries.value]
+
+  switch (filters.sortBy) {
+    case 'date-desc':
+      return result.sort((a, b) => {
+        const dateA = new Date(a.date || a.createdAt).getTime()
+        const dateB = new Date(b.date || b.createdAt).getTime()
+        return dateB - dateA
+      })
+    case 'date-asc':
+      return result.sort((a, b) => {
+        const dateA = new Date(a.date || a.createdAt).getTime()
+        const dateB = new Date(b.date || b.createdAt).getTime()
+        return dateA - dateB
+      })
+    case 'title-asc':
+      return result.sort((a, b) => a.title.localeCompare(b.title, 'zh-TW'))
+    case 'title-desc':
+      return result.sort((a, b) => b.title.localeCompare(a.title, 'zh-TW'))
+    default:
+      return result
+  }
+})
 
 watch(error, (error) => {
   if (error) {

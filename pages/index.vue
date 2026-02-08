@@ -92,6 +92,7 @@ interface Diary {
   id: number
   title: string
   content: string
+  date?: string
   createdAt: string
 }
 
@@ -125,10 +126,9 @@ const fetchDiaries = async () => {
 
 // 檢查某天是否有日記
 const hasDiary = (day: number): boolean => {
-  const dateStr = formatDate(day)
   return diaries.value.some(diary => {
-    const diaryDate = new Date(diary.createdAt)
-    return formatDate(diaryDate.getDate()) === dateStr &&
+    const diaryDate = new Date(diary.date || diary.createdAt)
+    return diaryDate.getDate() === day &&
            diaryDate.getMonth() === currentMonth.value &&
            diaryDate.getFullYear() === currentYear.value
   })
@@ -136,19 +136,13 @@ const hasDiary = (day: number): boolean => {
 
 // 獲取某天的日記標題
 const getDiaryTitle = (day: number): string => {
-  const dateStr = formatDate(day)
   const diary = diaries.value.find(diary => {
-    const diaryDate = new Date(diary.createdAt)
-    return formatDate(diaryDate.getDate()) === dateStr &&
+    const diaryDate = new Date(diary.date || diary.createdAt)
+    return diaryDate.getDate() === day &&
            diaryDate.getMonth() === currentMonth.value &&
            diaryDate.getFullYear() === currentYear.value
   })
   return diary?.title || ''
-}
-
-// 格式化日期
-const formatDate = (day: number): string => {
-  return day.toString().padStart(2, '0')
 }
 
 // 檢查是否是今天
@@ -189,20 +183,20 @@ const goToToday = () => {
 // 處理日期點擊
 const handleDateClick = (day: number) => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  
+
   // 檢查該天是否有日記
   const diary = diaries.value.find(diary => {
-    const diaryDate = new Date(diary.createdAt)
+    const diaryDate = new Date(diary.date || diary.createdAt)
     return diaryDate.getDate() === day &&
            diaryDate.getMonth() === currentMonth.value &&
            diaryDate.getFullYear() === currentYear.value
   })
 
   if (diary) {
-    // 如果有日記，跳轉到編輯頁面
+    // 如果有日記，跳轉到詳情頁面
     navigateTo(`/diaries/${diary.id}`)
   } else {
-    // 如果沒有日記，跳轉到新建頁面
+    // 如果沒有日記，跳轉到新建頁面並帶入日期
     navigateTo(`/diaries/new?date=${dateStr}`)
   }
 }

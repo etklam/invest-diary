@@ -133,15 +133,18 @@ const id = route.params.id
 const { data: diary, pending, error } = await useFetch(`/api/diaries/${id}`)
 
 const deleteDiary = async () => {
+  const toast = useToast()
+
   if (!confirm('確定要刪除這篇日記嗎？此操作無法復原。')) return
 
   try {
     await $fetch(`/api/diaries/${id}`, {
       method: 'DELETE'
     })
+    toast.success('日記已刪除')
     router.push('/diaries')
   } catch (e) {
-    alert('刪除失敗')
+    toast.error('刪除失敗')
     console.error(e)
   }
 }

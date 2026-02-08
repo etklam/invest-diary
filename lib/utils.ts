@@ -18,9 +18,12 @@ export function calculateHoldings(transactions: Transaction[]): Holding[] {
   }>()
 
   // 先按日期排序交易記錄
-  const sortedTransactions = [...transactions].sort((a, b) =>
-    a.tradeDate.getTime() - b.tradeDate.getTime()
-  )
+  // Handle both Date objects and ISO strings
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    const dateA = a.tradeDate instanceof Date ? a.tradeDate : new Date(a.tradeDate)
+    const dateB = b.tradeDate instanceof Date ? b.tradeDate : new Date(b.tradeDate)
+    return dateA.getTime() - dateB.getTime()
+  })
 
   for (const tx of sortedTransactions) {
     const existing = symbolMap.get(tx.symbol) || { totalQuantity: 0, totalCost: 0 }

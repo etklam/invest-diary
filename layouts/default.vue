@@ -4,5 +4,80 @@
     <main class="container mx-auto px-4 py-8">
       <slot />
     </main>
+    <Toast :toasts="toasts" @remove="removeToast" />
+    <AlertNotification
+      v-if="dueAlert"
+      :message="dueAlert.message"
+      :show="showAlert"
+      @close="dismissCurrentAlert"
+    />
   </div>
 </template>
+
+<script setup lang="ts">
+const { toasts } = useToast()
+const dueAlert = ref<any>(null)
+const showAlert = ref(false)
+const processedAlerts = ref<Set<string>>(new Set())
+let pollInterval: ReturnType<typeof setInterval> | null = null
+
+const removeToast = (id: string) => {
+  const { removeToast: remove } = useToast()
+  remove(id)
+}
+
+// Check for due alerts
+const checkForDueAlerts = async () => {
+  try {
+    const alerts = await $fetch('/api/alerts') as any[]
+    if (!alerts || alerts.length === 0) return
+
+    const now = new Date()
+    const due = alerts.find((alert: any) => {
+      const triggerTime = new Date(alert.trigger_at)
+      return (
+        triggerTime <= now &&
+        !alert.is_dismissed &&
+        !processedAlerts.value.has(alert.id.toString())
+      )
+    })
+
+    if (due && due.id !== dueAlert.value?.id) {
+      dueAlert.value = due
+      showAlert.value = true
+      processedAlerts.value.add(due.id.toString())
+    }
+  } catch (error) {
+    console.error('Error checking for alerts:', error)
+  }
+}
+
+const dismissCurrentAlert = async () => {
+  showAlert.value = false
+  if (dueAlert.value) {
+    try {
+      await $fetch(`/api/alerts/${dueAlert.value.id}/dismiss`, {
+        method: 'PUT'
+      })
+    } catch (error) {
+      console.error('Error dismissing alert:', error)
+    }
+    dueAlert.value = null
+  }
+}
+
+// Start polling when component mounts
+onMounted(() => {
+  // Check immediately
+  checkForDueAlerts()
+  // Then poll every 30 seconds
+  pollInterval = setInterval(checkForDueAlerts, 30000)
+})
+
+// Stop polling when component unmounts
+onUnmounted(() => {
+  if (pollInterval) {
+    clearInterval(pollInterval)
+  }
+})
+</script>
