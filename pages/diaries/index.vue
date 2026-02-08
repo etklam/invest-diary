@@ -58,7 +58,7 @@
               {{ diary.title }}
             </h2>
             <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
-              {{ new Date(diary.created_at).toLocaleDateString() }}
+              {{ new Date(diary.date || diary.createdAt).toLocaleDateString() }}
             </span>
           </div>
           <p class="mt-2 text-gray-600 dark:text-gray-300 line-clamp-3 text-sm">

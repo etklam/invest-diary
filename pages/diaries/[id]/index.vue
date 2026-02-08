@@ -23,7 +23,7 @@
       <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ diary.title }}</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {{ new Date(diary.created_at).toLocaleString() }}
+          {{ new Date(diary.createdAt).toLocaleString() }}
         </p>
       </div>
       <div class="flex space-x-3">
@@ -80,7 +80,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ tx.quantity }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ tx.price }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ (tx.quantity * tx.price).toFixed(2) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ new Date(tx.trade_date).toLocaleString() }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ new Date(tx.tradeDate).toLocaleString() }}</td>
               </tr>
             </tbody>
           </table>
@@ -105,9 +105,9 @@
             <div class="ml-2 flex-shrink-0 flex">
               <span
                 class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                :class="alert.is_dismissed ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'"
+                :class="alert.isDismissed ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'"
               >
-                {{ alert.is_dismissed ? '已關閉' : '有效' }}
+                {{ alert.isDismissed ? '已關閉' : '有效' }}
               </span>
             </div>
           </div>
@@ -115,7 +115,7 @@
             <div class="sm:flex">
               <p class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <Icon name="heroicons:clock" class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-                觸發時間：{{ new Date(alert.trigger_at).toLocaleString() }}
+                觸發時間：{{ new Date(alert.triggerAt).toLocaleString() }}
               </p>
             </div>
           </div>

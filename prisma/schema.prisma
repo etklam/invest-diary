@@ -11,6 +11,7 @@ model Diary {
   id           BigInt        @id @default(autoincrement())
   title        String        @db.VarChar(255)
   content      String?       @db.Text
+  date         DateTime      @default(now()) @map("date")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
   alerts       Alert[]

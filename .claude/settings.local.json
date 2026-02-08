@@ -6,7 +6,13 @@
       "Bash(npm install:*)",
       "Bash(find:*)",
       "Bash(npx nuxt prepare:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(lsof:*)",
+      "Bash(pkill:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(node:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(python3:*)"
     ]
   }
 }

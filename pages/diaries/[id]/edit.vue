@@ -24,6 +24,20 @@
     </div>
 
     <form @submit.prevent="saveDiary" class="space-y-8">
+      <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label for="diary-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">日期</label>
+            <input
+              type="date"
+              id="diary-date"
+              v-model="form.date"
+              class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+            />
+          </div>
+        </div>
+      </div>
+
       <DiaryEditor
         v-model:title="form.title"
         v-model:content="form.content"
@@ -112,6 +126,7 @@ const saving = ref(false)
 const { data: diary, pending, error } = await useFetch(`/api/diaries/${id}`)
 
 const form = reactive({
+  date: new Date().toISOString().slice(0, 10),
   title: '',
   content: '',
   transactions: [] as any[],
@@ -120,15 +135,16 @@ const form = reactive({
 
 watch(diary, (newDiary) => {
   if (newDiary) {
+    form.date = newDiary.date ? new Date(newDiary.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
     form.title = newDiary.title
     form.content = newDiary.content
     form.transactions = newDiary.transactions.map((t: any) => ({
       ...t,
-      trade_date: new Date(t.trade_date).toISOString().slice(0, 16)
+      trade_date: new Date(t.tradeDate).toISOString().slice(0, 16)
     }))
     form.alerts = newDiary.alerts.map((a: any) => ({
       ...a,
-      trigger_at: new Date(a.trigger_at).toISOString().slice(0, 16)
+      trigger_at: new Date(a.triggerAt).toISOString().slice(0, 16)
     }))
   }
 }, { immediate: true })
@@ -156,7 +172,9 @@ const saveDiary = async () => {
   saving.value = true
   try {
     const payload = {
-      ...form,
+      title: form.title,
+      content: form.content,
+      date: new Date(form.date).toISOString(),
       transactions: form.transactions.map(t => ({
         ...t,
         trade_date: new Date(t.trade_date).toISOString()

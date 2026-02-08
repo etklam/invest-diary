@@ -10,13 +10,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { title, content, transactions } = body
+  const { title, content, date, transactions, alerts } = body
 
   try {
     const diary = await prisma.diary.create({
       data: {
         title,
         content,
+        date: date ? new Date(date) : new Date(),
         transactions: {
           create: transactions?.map((tx: any) => ({
             symbol: tx.symbol,
@@ -26,9 +27,16 @@ export default defineEventHandler(async (event) => {
             tradeDate: new Date(tx.trade_date || tx.tradeDate),
           })),
         },
+        alerts: {
+          create: alerts?.map((a: any) => ({
+            message: a.message,
+            triggerAt: new Date(a.trigger_at || a.triggerAt),
+          })),
+        },
       },
       include: {
         transactions: true,
+        alerts: true,
       },
     })
 
