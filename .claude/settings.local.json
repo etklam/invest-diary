@@ -12,7 +12,12 @@
       "Bash(npx prisma migrate dev:*)",
       "Bash(node:*)",
       "Bash(npx prisma generate:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(mysql:*)",
+      "Bash(brew services list:*)",
+      "Bash(docker:*)",
+      "Bash(docker ps:*)"
     ]
   }
 }

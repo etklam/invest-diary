@@ -44,11 +44,16 @@ npm run generate               # Generate static site (SSG)
 
 ### Database Models
 Three main tables with foreign key relationships:
-- **Diary** - Main diary entries (title, content, timestamps)
+- **Diary** - Main diary entries with `date` field (defaults to now), title required, content optional
 - **Alert** - Time-based alerts linked to diaries (trigger_at, is_dismissed)
 - **Transaction** - Stock trades linked to diaries (BUY/SELL, FIFO calculation)
 
-**Important:** Holdings are calculated dynamically using FIFO, not stored in the database.
+**Important:**
+- Holdings are calculated dynamically using average cost method (not true FIFO matching) via `lib/utils.ts`
+- Diary `date` field enforces uniqueness: only one diary per day (checked via date range query)
+- All relations use cascade deletes
+- The `date` field is separate from `createdAt`/`updatedAt` timestamps
+- Content field is optional in schema (can create diary without body)
 
 ### Key Architecture Decisions
 
@@ -63,10 +68,16 @@ Three main tables with foreign key relationships:
 ### API Routes Naming Convention
 RESTful pattern in `server/api/`:
 - `diaries.get.ts` - GET /api/diaries
-- `diaries.post.ts` - POST /api/diaries
+- `diaries.post.ts` - POST /api/diaries (returns 409 Conflict if diary exists for same date)
+- `diaries/[id].get.ts` - GET /api/diaries/:id
 - `diaries/[id].put.ts` - PUT /api/diaries/:id
 - `diaries/[id].delete.ts` - DELETE /api/diaries/:id
-- `transactions/latest.get.ts` - GET /api/transactions/latest
+- `diaries/by-date.get.ts` - GET /api/diaries/by-date?date=YYYY-MM-DD (fetch by date)
+- `transactions/latest.get.ts` - GET /api/transactions/latest (reuse holdings)
+- `stocks/holdings.get.ts` - GET /api/stocks/holdings (calculated positions)
+- `alerts.get.ts` - GET /api/alerts
+- `alerts.post.ts` - POST /api/alerts
+- `alerts/[id]/dismiss.put.ts` - PUT /api/alerts/:id/dismiss
 
 ### Component Organization
 - `pages/` - Route pages (auto-imported)
@@ -89,12 +100,14 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 
 ## Special Implementation Details
 
-### FIFO Cost Calculation
-Stock holdings use First-In-First-Out method:
-- BUY transactions add to position
-- SELL transactions reduce oldest positions first
-- Average cost recalculated dynamically from all transactions
-- Logic should be centralized in utilities (see `lib/utils.ts`)
+### Holdings Cost Calculation (lib/utils.ts)
+Holdings use average cost method (simplified FIFO):
+- BUY transactions add to position: quantity increases, total cost += quantity × price
+- SELL transactions reduce position: quantity decreases, cost reduces by average cost basis
+- Average cost = total cost / remaining quantity
+- Sell cost calculated as: quantity × current average cost (not true lot matching)
+- Holdings with zero quantity are removed from results
+- Functions: `calculateHoldings()`, `getHoldingBySymbol()`
 
 ### Alert System
 - Alerts stored with `trigger_at` timestamp
@@ -110,7 +123,8 @@ When creating new diaries, users can copy holdings from the latest transaction r
 - **Responsive:** Mobile-first with Tailwind breakpoints
 - **Icons:** Heroicons via `@nuxt/icon` (auto-imported as `<i-heroicons-name>`)
 - **Forms:** Use Zod for validation schema
-- **Dates:** `date-fns` for formatting (e.g., `format(date, 'yyyy-MM-dd')`)
+- **Dates:** `Intl.DateTimeFormat` for localization (zh-TW) in `lib/utils.ts`
+- **Currency:** `Intl.NumberFormat` for TWD currency formatting
 
 ## Current Implementation Status
 
@@ -124,7 +138,10 @@ Based on README.md checklist:
 ## Important Notes
 
 - All API responses include console logging for debugging
-- Error handling uses `createError()` from Nuxt
+- Error handling uses `createError()` from Nuxt with appropriate status codes
 - Date/time fields use `DateTime` type in Prisma, stored as `DATETIME` in MySQL
 - Chinese characters supported via `utf8mb4` (MySQL default)
 - Cascade deletes configured at Prisma relation level
+- MySQL is running in docker
+- Seed script uses `tsx` to run TypeScript directly
+- Alert cron jobs are planned but not yet implemented

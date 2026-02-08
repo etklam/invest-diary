@@ -1,19 +1,28 @@
 <template>
   <div class="space-y-6">
     <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">新增日記</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+        {{ isEditing ? '編輯日記' : '新增日記' }}
+      </h1>
+      <div v-if="isEditing" class="text-sm text-gray-500 dark:text-gray-400">
+        已載入該日期的既有日記
+      </div>
     </div>
 
     <form @submit.prevent="saveDiary" class="space-y-8">
       <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label for="diary-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">日期</label>
+            <label for="diary-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              日期
+              <Icon v-if="checkingDate" name="svg-spinners:180-ring-with-bg" class="inline-block ml-2 h-4 w-4" />
+            </label>
             <input
               type="date"
               id="diary-date"
               v-model="form.date"
-              class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+              :disabled="checkingDate"
+              class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white disabled:opacity-50"
             />
           </div>
         </div>
@@ -91,7 +100,7 @@
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
         >
           <Icon v-if="saving" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4" />
-          儲存日記
+          {{ isEditing ? '更新日記' : '儲存日記' }}
         </button>
       </div>
     </form>
@@ -101,6 +110,9 @@
 <script setup lang="ts">
 const router = useRouter()
 const saving = ref(false)
+const checkingDate = ref(false)
+const isEditing = ref(false)
+const existingDiaryId = ref<string | null>(null)
 
 const form = reactive({
   date: new Date().toISOString().slice(0, 10),
@@ -108,6 +120,54 @@ const form = reactive({
   content: '',
   transactions: [] as any[],
   alerts: [] as any[]
+})
+
+// Watch for date changes and check if diary exists
+watch(() => form.date, async (newDate) => {
+  if (!newDate) return
+
+  checkingDate.value = true
+  try {
+    const existingDiary = await $fetch(`/api/diaries/by-date?date=${newDate}`)
+    if (existingDiary) {
+      // Diary exists for this date, load it for editing
+      isEditing.value = true
+      existingDiaryId.value = existingDiary.id.toString()
+
+      // Load diary data into form
+      form.title = existingDiary.title
+      form.content = existingDiary.content || ''
+
+      // Load transactions
+      form.transactions = existingDiary.transactions?.map((tx: any) => ({
+        id: tx.id.toString(),
+        symbol: tx.symbol,
+        type: tx.type,
+        quantity: parseFloat(tx.quantity),
+        price: parseFloat(tx.price),
+        trade_date: new Date(tx.tradeDate).toISOString().slice(0, 10)
+      })) || []
+
+      // Load alerts
+      form.alerts = existingDiary.alerts?.map((a: any) => ({
+        id: a.id.toString(),
+        message: a.message,
+        trigger_at: new Date(a.triggerAt).toISOString().slice(0, 16)
+      })) || []
+    } else {
+      // No diary exists for this date, reset form for new entry
+      isEditing.value = false
+      existingDiaryId.value = null
+      form.title = ''
+      form.content = ''
+      form.transactions = []
+      form.alerts = []
+    }
+  } catch (error) {
+    console.error('Error checking existing diary:', error)
+  } finally {
+    checkingDate.value = false
+  }
 })
 
 // Try to fetch latest transactions to copy holdings if needed
@@ -184,11 +244,20 @@ const saveDiary = async () => {
       }))
     }
 
-    await $fetch('/api/diaries', {
-      method: 'POST',
-      body: payload
-    })
-    
+    if (isEditing.value && existingDiaryId.value) {
+      // Update existing diary
+      await $fetch(`/api/diaries/${existingDiaryId.value}`, {
+        method: 'PUT',
+        body: payload
+      })
+    } else {
+      // Create new diary
+      await $fetch('/api/diaries', {
+        method: 'POST',
+        body: payload
+      })
+    }
+
     router.push('/diaries')
   } catch (e: any) {
     console.error(e)
