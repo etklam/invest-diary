@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Personal Investment Diary System** (投資日記系統) - a single-user application for tracking investment diaries with Markdown writing, in-app alerts, and stock portfolio management using FIFO cost basis calculation.
+This is a **Personal Investment Diary System** (投資日記系統) - a multi-user application for tracking investment diaries with Markdown writing, in-app alerts, and stock portfolio management using FIFO cost basis calculation. Features JWT-based authentication with bcrypt password hashing.
 
-**Tech Stack:** Nuxt 3 + Vue 3 + TypeScript + MySQL + Prisma ORM + Tailwind CSS
+**Tech Stack:** Nuxt 3 + Vue 3 + TypeScript + MySQL + Prisma ORM + Tailwind CSS + JWT + bcrypt
 
 **Language:** Chinese (Traditional) is the primary language for UI and documentation.
 
@@ -121,8 +121,9 @@ git push --no-verify
 - **Runtime Config:** Database URL from `DATABASE_URL`, app name from `NUXT_PUBLIC_APP_NAME`
 
 ### Database Models
-Three main tables with foreign key relationships:
-- **Diary** - Main diary entries with `date` field (defaults to now), title required, content optional
+Four main tables with foreign key relationships:
+- **User** - User accounts with email, password (bcrypt hashed), name, and trading settings
+- **Diary** - Main diary entries with `date` field (defaults to now), title required, content optional, linked to User
 - **Alert** - Time-based alerts linked to diaries (trigger_at, is_dismissed)
 - **Transaction** - Stock trades linked to diaries (BUY/SELL, FIFO calculation)
 
@@ -135,17 +136,22 @@ Three main tables with foreign key relationships:
 
 ### Key Architecture Decisions
 
-1. **No Authentication:** Single-user personal system
-2. **Alert System:** Nitro cron jobs check triggers (to be implemented)
-3. **Markdown Rendering:** `@nuxtjs/mdc` for rich text with component support
-4. **Dark Mode:** Tailwind CSS class-based (`dark` class toggle)
-5. **Type Safety:** Full TypeScript with Zod validation
+1. **Authentication:** JWT-based with bcrypt password hashing, HttpOnly cookies
+2. **Multi-User:** Each user has their own diaries, alerts, and transactions
+3. **Alert System:** Nitro cron jobs check triggers (to be implemented)
+4. **Markdown Rendering:** `@nuxtjs/mdc` for rich text with component support
+5. **Dark Mode:** Tailwind CSS class-based (`dark` class toggle)
+6. **Type Safety:** Full TypeScript with Zod validation
 
 ## File Structure Patterns
 
 ### API Routes Naming Convention
 RESTful pattern in `server/api/`:
-- `diaries.get.ts` - GET /api/diaries
+- `auth/login.post.ts` - POST /api/auth/login (authenticate user, set JWT cookie)
+- `auth/register.post.ts` - POST /api/auth/register (create new user)
+- `auth/logout.post.ts` - POST /api/auth/logout (clear JWT cookie)
+- `auth/me.get.ts` - GET /api/auth/me (get current user profile)
+- `diaries.get.ts` - GET /api/diaries (authenticated user's diaries only)
 - `diaries.post.ts` - POST /api/diaries (returns 409 Conflict if diary exists for same date)
 - `diaries/[id].get.ts` - GET /api/diaries/:id
 - `diaries/[id].put.ts` - PUT /api/diaries/:id
@@ -159,7 +165,12 @@ RESTful pattern in `server/api/`:
 
 ### Component Organization
 - `pages/` - Route pages (auto-imported)
+- `pages/auth/` - Authentication pages (login, register)
+- `pages/settings/` - User settings page
+- `pages/stocks/` - Stock holdings dashboard
 - `components/` - Reusable Vue components (auto-imported)
+- `composables/` - Vue composables (useAuth.ts for auth state)
+- `middleware/` - Route middleware (auth.ts for route protection)
 - `layouts/` - Layout wrappers (currently using default from `app.vue`)
 
 ### Database Schema Changes
@@ -173,6 +184,7 @@ When modifying `prisma/schema.prisma`:
 Required in `.env` (see `.env.example`):
 ```bash
 DATABASE_URL="mysql://username:password@localhost:3306/invest_diary"
+JWT_SECRET="your-secret-key-for-jwt-token-signing"
 NUXT_PUBLIC_APP_NAME="投資日記"
 ```
 
@@ -193,6 +205,21 @@ Holdings use average cost method (simplified FIFO):
 - Nitro cron jobs (planned) will poll and trigger due alerts
 - Frontend displays active alerts via `components/AlertNotification.vue`
 
+### Authentication System
+- JWT-based authentication using `jose` for token verification
+- Password hashing with `bcrypt` (10 rounds)
+- HttpOnly cookies for secure token storage
+- Route protection via `middleware/auth.ts`
+- User composable `composables/useAuth.ts` for auth state management
+- Token version support for invalidation on password changes
+- All diary/alert/transaction queries are scoped to authenticated user
+
+### User Settings
+- Profile: name, email
+- Trading preferences: expectedMonthlyTrades, expectedProfit, expectedAvgHolding
+- Password change with old password verification
+- Settings page at `pages/settings/index.vue`
+
 ### Transaction Reuse
 When creating new diaries, users can copy holdings from the latest transaction record via `/api/transactions/latest`.
 
@@ -210,11 +237,16 @@ Based on README.md checklist:
 - ✅ Stage 1: Database setup (complete)
 - ✅ Stage 2: Backend API routes (complete)
 - ✅ Stage 3: Frontend UI components (complete)
-- ⏳ Stage 4: Core functionality integration (in progress)
-- ⏳ Stage 5: Configuration & documentation (in progress)
+- ✅ Stage 4: Core functionality integration (complete)
+- ✅ Stage 5: Configuration & documentation (complete)
+- ✅ Stage 6: Testing & quality assurance (complete)
+- ✅ Authentication system (complete)
+- ✅ Stock holdings dashboard (complete)
+- ✅ User settings management (complete)
 
 ## Important Notes
 
+- **Authentication Required:** All diary/alert/transaction operations require valid JWT token
 - All API responses include console logging for debugging
 - Error handling uses `createError()` from Nuxt with appropriate status codes
 - Date/time fields use `DateTime` type in Prisma, stored as `DATETIME` in MySQL

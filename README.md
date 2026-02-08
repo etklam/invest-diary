@@ -2,7 +2,7 @@
 
 ## 專案概述
 
-一個為投資者設計的個人日記系統，具備 Markdown 寫作功能和應用程式內的提醒功能，讓未來的自己能收到提醒。使用 Nuxt 3、Vue 3、MySQL 和 Prisma ORM 建構。
+一個為投資者設計的個人日記系統，具備 Markdown 寫作功能和應用程式內的提醒功能，讓未來的自己能收到提醒。支援多使用者帳號系統、JWT 身份驗證、持股管理儀表板。使用 Nuxt 3、Vue 3、MySQL 和 Prisma ORM 建構。
 
 ---
 
@@ -13,9 +13,9 @@
 | **撰寫日記** | 使用 Markdown 格式建立和編輯日記條目 |
 | **設定提醒** | 建立在應用程式內的提醒，在指定時間觸發 |
 | **追蹤持股** | 記錄買入/賣出交易，系統自動計算持股部位 |
-| **重複使用持股** | 建立新日記時可從最新交易記錄複製 |
+| **持股儀表板** | 檢視所有持股的詳細資訊與成本分配 |
+| **使用者帳號** | 支援註冊、登入、個人設定管理 |
 | **資料庫** | 使用 MySQL 進行資料持久化 |
-| **使用者類型** | 僅限個人使用（單一使用者，無需驗證） |
 
 ---
 
@@ -84,17 +84,30 @@ graph TB
 
 ```mermaid
 erDiagram
+    USERS ||--o{ DIARIES : owns
     DIARIES ||--o{ ALERTS : has
     DIARIES ||--o{ TRANSACTIONS : contains
-    
-    DIARIES {
+
+    USERS {
         bigint id PK
-        string title
-        text content
+        string email UK
+        string password
+        string name
+        int tokenVersion
         datetime created_at
         datetime updated_at
     }
-    
+
+    DIARIES {
+        bigint id PK
+        bigint user_id FK
+        string title
+        text content
+        date date
+        datetime created_at
+        datetime updated_at
+    }
+
     ALERTS {
         bigint id PK
         bigint diary_id FK
@@ -103,7 +116,7 @@ erDiagram
         boolean is_dismissed
         datetime created_at
     }
-    
+
     TRANSACTIONS {
         bigint id PK
         bigint diary_id FK
@@ -118,12 +131,25 @@ erDiagram
 
 ### 表格詳細資訊
 
+#### `users` 表格
+| 欄位 | 類型 | 說明 |
+|--------|------|-------------|
+| id | BIGINT | 主鍵，自動遞增 |
+| email | VARCHAR(255) | 使用者電子郵件（唯一） |
+| password | VARCHAR(255) | bcrypt 雜湊後的密碼 |
+| name | VARCHAR(255) | 使用者顯示名稱 |
+| tokenVersion | INT | Token 版本，用於使舊 token 失效 |
+| created_at | DATETIME | 建立時間戳記 |
+| updated_at | DATETIME | 最後更新時間戳記 |
+
 #### `diaries` 表格
 | 欄位 | 類型 | 說明 |
 |--------|------|-------------|
 | id | BIGINT | 主鍵，自動遞增 |
+| user_id | BIGINT | users 表的外鍵 |
 | title | VARCHAR(255) | 日記標題 |
 | content | TEXT | 日記的 Markdown 內容 |
+| date | DATE | 日記日期 |
 | created_at | DATETIME | 建立時間戳記 |
 | updated_at | DATETIME | 最後更新時間戳記 |
 
@@ -162,6 +188,7 @@ erDiagram
 | 樣式 | Tailwind CSS v3 | 實用優先的 CSS 框架 |
 | 資料庫 | MySQL 8.0+ | 關聯式資料庫 |
 | ORM | Prisma | 型別安全的資料庫客戶端 |
+| 驗證 | JWT + bcrypt | JSON Web Token + 密碼雜湊 |
 | Markdown | @nuxtjs/mdc | 支援元件的 Markdown 渲染 |
 | 日期處理 | date-fns | 日期操作工具 |
 | 圖示 | @nuxt/icon | 圖示元件（UnoCSS） |
@@ -223,6 +250,28 @@ erDiagram
 
 > 📄 **詳細說明**: 請參考 [Stage 4 實作報告](docs/STAGE4_IMPLEMENTATION.md)
 
+### 階段 7：身份驗證與使用者系統 ✅
+
+- [x] 實作 JWT 身份驗證系統
+- [x] 建立使用者註冊 API（`server/api/auth/register.post.ts`）
+- [x] 建立使用者登入 API（`server/api/auth/login.post.ts`）
+- [x] 建立使用者登出 API（`server/api/auth/logout.post.ts`）
+- [x] 建立取得目前使用者 API（`server/api/auth/me.get.ts`）
+- [x] 實作 bcrypt 密碼雜湊
+- [x] 實作 HttpOnly Cookie 存儲 JWT
+- [x] 建立路由中介層（`middleware/auth.ts`）
+- [x] 建立登入頁面（`pages/auth/login.vue`）
+- [x] 建立註冊頁面（`pages/auth/register.vue`）
+- [x] 建立身份驗證 Composable（`composables/useAuth.ts`）
+- [x] 更新所有 API 以支援使用者隔離
+
+### 階段 8：持股儀表板 ✅
+
+- [x] 建立持股儀表板頁面（`pages/stocks/index.vue`）
+- [x] 實作持股摘要卡片（總持股、成本、股票數）
+- [x] 實作詳細持股表格與成本分配
+- [x] 支援用戶端資料獲取以避免 SSR 身份驗證問題
+
 ### 階段 5：設定與文件
 
 - [x] 更新 README.md 的設定說明
@@ -243,6 +292,55 @@ erDiagram
 ---
 
 ## API 端點規格
+
+### 身份驗證端點
+
+| 方法 | 端點 | 說明 |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | 註冊新使用者 |
+| POST | `/api/auth/login` | 使用者登入（設定 JWT Cookie） |
+| POST | `/api/auth/logout` | 使用者登出（清除 JWT Cookie） |
+| GET | `/api/auth/me` | 取得目前使用者資料 |
+
+#### 請求/回應範例
+
+**POST /api/auth/register**
+```json
+// 請求
+{
+  "email": "user@example.com",
+  "password": "securePassword123",
+  "name": "張三"
+}
+
+// 回應
+{
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "name": "張三",
+    "createdAt": "2025-02-08T10:00:00Z"
+  }
+}
+```
+
+**POST /api/auth/login**
+```json
+// 請求
+{
+  "email": "user@example.com",
+  "password": "securePassword123"
+}
+
+// 回應（JWT 設定於 HttpOnly Cookie）
+{
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "name": "張三"
+  }
+}
+```
 
 ### 日記端點
 
@@ -453,6 +551,13 @@ diary-vue/
 ├── app.vue                    # 根元件
 ├── pages/
 │   ├── index.vue              # 首頁
+│   ├── auth/
+│   │   ├── login.vue          # 登入頁面
+│   │   └── register.vue       # 註冊頁面
+│   ├── settings/
+│   │   └── index.vue          # 使用者設定頁面
+│   ├── stocks/
+│   │   └── index.vue          # 持股儀表板
 │   ├── diaries/
 │   │   ├── index.vue          # 日記列表
 │   │   ├── new.vue            # 建立日記
@@ -471,8 +576,17 @@ diary-vue/
 │   ├── Navigation.vue
 │   ├── HealthStatus.vue       # 系統健康狀態指示器
 │   └── Toast.vue
+├── composables/
+│   └── useAuth.ts             # 身份驗證狀態管理
+├── middleware/
+│   └── auth.ts                # 路由保護中介層
 ├── server/
 │   └── api/
+│       ├── auth/
+│       │   ├── login.post.ts
+│       │   ├── register.post.ts
+│       │   ├── logout.post.ts
+│       │   └── me.get.ts
 │       ├── diaries/
 │       │   ├── get.ts
 │       │   ├── post.ts
@@ -532,6 +646,9 @@ diary-vue/
 ```env
 # 資料庫
 DATABASE_URL="mysql://username:password@localhost:3306/invest_diary"
+
+# 身份驗證
+JWT_SECRET="your-secret-key-for-jwt-token-signing"
 
 # 應用程式
 NUXT_PUBLIC_APP_NAME="投資日記"
@@ -654,6 +771,8 @@ git push --no-verify
 - [ ] 全文搜尋與索引
 - [ ] 資料備份與還原
 - [ ] 行動應用程式（Vue Native）
+- [x] 多使用者身份驗證系統
+- [x] 持股儀表板
 - [x] 自動化測試系統
 - [x] 系統健康檢查機制
 
@@ -661,7 +780,9 @@ git push --no-verify
 
 ## 備註
 
-- 這是一個個人使用系統，因此不需要驗證
+- 系統支援多使用者，每個使用者只能存取自己的日記、提醒和交易記錄
+- 身份驗證使用 JWT Token 儲存於 HttpOnly Cookie 中
+- 密碼使用 bcrypt 進行雜湊儲存
 - 提醒檢查將實作為定期執行的 Nitro cron 任務
 - 系統使用 Nuxt 3 和 Vue 3 以獲得最佳效能和開發體驗
 - 所有元件將支援響應式設計和透過 Tailwind CSS 支援深色模式
