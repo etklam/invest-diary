@@ -166,6 +166,10 @@ erDiagram
 | 日期處理 | date-fns | 日期操作工具 |
 | 圖示 | @nuxt/icon | 圖示元件（UnoCSS） |
 | TypeScript | v5 | 型別安全 |
+| 測試框架 | Vitest | 單元測試與整合測試 |
+| 測試工具 | @nuxt/test-utils | Nuxt 元件測試工具 |
+| Git Hooks | Husky | 自動化 Git hooks |
+| DOM 環境 | happy-dom | 輕量級測試環境 |
 
 ---
 
@@ -219,10 +223,20 @@ erDiagram
 
 ### 階段 5：設定與文件
 
-- [ ] 更新 README.md 的設定說明
-- [ ] 建立 `.env.example` 檔案，包含所需變數
-- [ ] 更新 `nuxt.config.ts` 的模組設定
-- [ ] 加入資料庫設定指南
+- [x] 更新 README.md 的設定說明
+- [x] 建立 `.env.example` 檔案，包含所需變數
+- [x] 更新 `nuxt.config.ts` 的模組設定
+- [x] 加入資料庫設定指南
+
+### 階段 6：測試與品質保證
+
+- [x] 建立 Vitest 測試框架配置
+- [x] 撰寫工具函式單元測試
+- [x] 建立 API 路由測試結構
+- [x] 設定 Git Hooks (Husky) 自動化檢查
+- [x] 實作系統健康檢查機制
+- [x] 建立健康檢查 API 端點
+- [x] 撰寫測試與健康檢查文件
 
 ---
 
@@ -329,6 +343,51 @@ erDiagram
 | GET | `/api/transactions/latest` | 取得最新日記的交易記錄 |
 | POST | `/api/transactions` | 建立新的交易記錄 |
 
+### 系統監控端點
+
+| 方法 | 端點 | 說明 |
+|--------|----------|-------------|
+| GET | `/api/health` | 系統健康檢查狀態 |
+
+#### 請求/回應範例
+
+**GET /api/health**
+```json
+// 回應（系統正常）
+{
+  "status": "healthy",
+  "timestamp": "2025-02-08T10:30:00.000Z",
+  "checks": {
+    "database": {
+      "status": "ok",
+      "responseTime": 15
+    },
+    "server": {
+      "status": "ok",
+      "uptime": 3600,
+      "environment": "development"
+    }
+  }
+}
+
+// 回應（系統異常）
+{
+  "status": "unhealthy",
+  "timestamp": "2025-02-08T10:30:00.000Z",
+  "checks": {
+    "database": {
+      "status": "error",
+      "message": "Database connection failed"
+    },
+    "server": {
+      "status": "ok",
+      "uptime": 3600,
+      "environment": "development"
+    }
+  }
+}
+```
+
 #### 請求/回應範例
 
 **GET /api/transactions/latest**
@@ -388,9 +447,8 @@ erDiagram
 ## 專案結構
 
 ```
-invest-diary/
-├── app/
-│   └── app.vue                # 根元件
+diary-vue/
+├── app.vue                    # 根元件
 ├── pages/
 │   ├── index.vue              # 首頁
 │   ├── diaries/
@@ -408,39 +466,60 @@ invest-diary/
 │   ├── AlertNotification.vue
 │   ├── TransactionInput.vue
 │   ├── HoldingsDisplay.vue
-│   └── Navigation.vue
+│   ├── Navigation.vue
+│   ├── HealthStatus.vue       # 系統健康狀態指示器
+│   └── Toast.vue
 ├── server/
+│   └── api/
+│       ├── diaries/
+│       │   ├── get.ts
+│       │   ├── post.ts
+│       │   └── [id]/
+│       │       ├── get.ts
+│       │       ├── put.ts
+│       │       └── delete.ts
+│       ├── alerts/
+│       │   ├── get.ts
+│       │   ├── post.ts
+│       │   └── [id]/
+│       │       └── dismiss/
+│       │           └── put.ts
+│       ├── transactions/
+│       │   └── latest/
+│       │       └── get.ts
+│       ├── stocks/
+│       │   └── holdings.get.ts
+│       └── health.get.ts      # 健康檢查 API 端點
+├── tests/                     # 測試目錄
+│   ├── setup.ts               # 測試設置工具
+│   ├── lib/
+│   │   └── utils.test.ts      # 工具函式測試
 │   ├── api/
-│   │   ├── diaries/
-│   │   │   ├── index.get.ts
-│   │   │   ├── index.post.ts
-│   │   │   └── [id]/
-│   │   │       ├── index.get.ts
-│   │   │       ├── index.put.ts
-│   │   │       └── index.delete.ts
-│   │   ├── alerts/
-│   │   │   ├── index.get.ts
-│   │   │   ├── index.post.ts
-│   │   │   └── [id]/
-│   │   │       └── dismiss/
-│   │   │           └── index.put.ts
-│   │   └── transactions/
-│   │       └── latest/
-│   │           └── index.get.ts
-│   └── routes/
-│       └── alerts-checker.ts  # Nitro cron 任務
+│   │   └── diaries.test.ts    # API 路由測試
+│   └── components/
+│       └── AlertNotification.test.ts  # 元件測試
+├── scripts/
+│   └── health-check.ts        # 健康檢查腳本
 ├── lib/
 │   ├── prisma.ts              # Prisma 客戶端
 │   └── utils.ts               # 工具函式
 ├── prisma/
 │   ├── schema.prisma
+│   ├── seed.ts
 │   └── migrations/
+├── docs/
+│   └── HEALTH_CHECK.md        # 健康檢查說明文件
+├── .husky/                    # Git hooks
+│   ├── pre-commit
+│   └── pre-push
 ├── public/
 ├── .env.example
 ├── .gitignore
+├── vitest.config.ts           # Vitest 測試配置
 ├── nuxt.config.ts             # Nuxt 設定
 ├── package.json
 ├── tsconfig.json
+├── CLAUDE.md                  # Claude Code 指導文件
 └── README.md
 ```
 
@@ -471,24 +550,97 @@ NUXT_PUBLIC_APP_NAME="投資日記"
    npm install
    ```
 
-3. **設定 Prisma**
+3. **設定環境變數**
+   ```bash
+   cp .env.example .env
+   # 編輯 .env 檔案設定 DATABASE_URL
+   ```
+
+4. **設定 Prisma**
    ```bash
    npx prisma generate
    npx prisma migrate dev --name init
    ```
 
-4. **執行開發伺服器**
+5. **執行開發伺服器**
    ```bash
    npm run dev
    ```
 
-5. **建置生產版本**
+6. **執行測試**
+   ```bash
+   # 執行所有測試
+   npm test
+
+   # 監看模式（開發時使用）
+   npm run test:watch
+
+   # 測試覆蓋率報告
+   npm run test:coverage
+   ```
+
+7. **系統健康檢查**
+   ```bash
+   # 完整健康檢查（Git pre-commit 自動執行）
+   npm run health:check
+
+   # 包含建置驗證的完整檢查（Git pre-push 自動執行）
+   npm run health:full
+
+   # 快速檢查（測試 + Prisma 驗證）
+   npm run health:quick
+   ```
+
+8. **建置生產版本**
    ```bash
    npm run build
    npm run preview
    ```
 
+### Git Hooks 自動化
+
+專案已設定 Husky Git hooks，在每次 commit 和 push 前自動執行健康檢查：
+
+- **Pre-commit**: 自動執行 `npm run health:check`
+- **Pre-push**: 自動執行 `npm run health:full`
+
+如需跳過檢查（僅在確定變更安全時使用）：
+
+```bash
+git commit --no-verify -m "WIP: experimental changes"
+git push --no-verify
+```
+
 ---
+
+## 測試與品質保證
+
+專案採用全面的測試與品質保證機制：
+
+### 測試框架
+- **Vitest**: 快速的單元測試框架
+- **@nuxt/test-utils**: Nuxt 元件與整合測試工具
+- **happy-dom**: 輕量級測試 DOM 環境
+
+### 測試覆蓋範圍
+- ✅ 工具函式單元測試（`tests/lib/utils.test.ts`）
+- ✅ API 路由整合測試結構（`tests/api/diaries.test.ts`）
+- ✅ 元件測試示例（`tests/components/`）
+
+### 健康檢查機制
+
+每次代碼變更後自動執行的健康檢查包含：
+
+| 檢查項目 | 說明 |
+|---------|------|
+| 🔑 環境變數 | 驗證 `.env` 文件存在且 `DATABASE_URL` 已配置 |
+| 🗄️ Prisma Schema | 驗證 Prisma schema 語法正確 |
+| 📘 TypeScript 編譯 | 檢查 TypeScript 類型錯誤 |
+| 🧪 單元測試 | 運行所有測試套件 |
+| 🗃️ 數據庫連接 | 驗證 MySQL 服務可訪問 |
+| 📦 依賴項 | 確保 `node_modules` 和 `.nuxt` 存在 |
+
+詳細說明請參考 [docs/HEALTH_CHECK.md](docs/HEALTH_CHECK.md)
 
 ## 未來增強功能（選用）
 
@@ -496,10 +648,12 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 - [ ] 投資追蹤，包含圖表和績效指標
 - [ ] 投資組合績效分析
 - [ ] 匯出日記為 PDF
-- [ ] 深色/淺色主題切換
+- [ ] 深色/淺色主題切換（已實作基礎版本）
 - [ ] 全文搜尋與索引
 - [ ] 資料備份與還原
 - [ ] 行動應用程式（Vue Native）
+- [x] 自動化測試系統
+- [x] 系統健康檢查機制
 
 ---
 
