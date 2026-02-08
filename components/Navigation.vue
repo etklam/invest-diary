@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const colorMode = useColorMode()
+const { isAuthenticated } = useAuth()
 </script>
 
 <template>
@@ -54,13 +55,25 @@ const colorMode = useColorMode()
               class="h-5 w-5"
             />
           </button>
-          <NuxtLink
-            to="/diaries/new"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <Icon name="heroicons:pencil-square" class="mr-2 h-5 w-5" />
-            寫日記
-          </NuxtLink>
+
+          <!-- Authenticated user menu -->
+          <UserMenu v-if="isAuthenticated" />
+
+          <!-- Guest auth buttons -->
+          <template v-else>
+            <NuxtLink
+              to="/auth/login"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            >
+              登入
+            </NuxtLink>
+            <NuxtLink
+              to="/auth/register"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              註冊
+            </NuxtLink>
+          </template>
         </div>
       </div>
     </div>

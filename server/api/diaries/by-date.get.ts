@@ -1,6 +1,15 @@
 import prisma from '~/lib/prisma'
 
 export default defineEventHandler(async (event) => {
+  const userId = event.context.user?.id
+
+  if (!userId) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized'
+    })
+  }
+
   const query = getQuery(event)
   const dateStr = query.date as string
 
@@ -11,7 +20,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  console.log('Checking diary for date:', dateStr)
+  console.log('Checking diary for date:', dateStr, 'user:', userId)
 
   try {
     // Parse the date and get start/end of day
@@ -22,9 +31,10 @@ export default defineEventHandler(async (event) => {
     const endOfDay = new Date(date)
     endOfDay.setHours(23, 59, 59, 999)
 
-    // Find diary within the date range
+    // Find diary within the date range for this user
     const diary = await prisma.diary.findFirst({
       where: {
+        userId: userId,
         date: {
           gte: startOfDay,
           lte: endOfDay,

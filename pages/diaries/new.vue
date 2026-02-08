@@ -123,6 +123,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'auth'
+})
+
 const router = useRouter()
 const route = useRoute()
 const saving = ref(false)
@@ -210,12 +214,10 @@ const removeAlert = (index: number) => {
 // Copy transactions from latest diary
 const copyFromLatest = async () => {
   const toast = useToast()
+  const { user } = useAuth()
   loadingLatest.value = true
   try {
-    const latest = await $fetch('/api/transactions/latest') as {
-      transactions: any[]
-      diary_date: string
-    } | null
+    const latest = await $fetch<any>('/api/transactions/latest')
 
     if (latest && latest.transactions && latest.transactions.length > 0) {
       // Add transactions to form
@@ -240,7 +242,12 @@ const copyFromLatest = async () => {
     } else {
       toast.warning('沒有找到之前的交易記錄')
     }
-  } catch (error) {
+  } catch (error: any) {
+    // Handle 401 Unauthorized errors
+    if (error?.statusCode === 401) {
+      user.value = null
+      await navigateTo('/')
+    }
     console.error('Error fetching latest transactions:', error)
     toast.error('複製失敗，請稍後再試')
   } finally {
@@ -277,6 +284,7 @@ const validateTransactions = (): string | null => {
 
 const saveDiary = async () => {
   const toast = useToast()
+  const { user } = useAuth()
 
   if (!form.title) {
     toast.error('請輸入標題')
@@ -325,6 +333,11 @@ const saveDiary = async () => {
 
     router.push('/diaries')
   } catch (e: any) {
+    // Handle 401 Unauthorized errors
+    if (e?.statusCode === 401) {
+      user.value = null
+      await navigateTo('/')
+    }
     console.error(e)
     toast.error('儲存失敗: ' + (e.data?.statusMessage || e.message))
   } finally {

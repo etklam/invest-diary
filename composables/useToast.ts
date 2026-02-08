@@ -7,10 +7,10 @@ export interface Toast {
   duration?: number
 }
 
-const toasts = ref<Toast[]>([])
 let toastIdCounter = 0
 
 export function useToast() {
+  const toasts = useState<Toast[]>('toasts', () => [])
   const addToast = (message: string, type: ToastType = 'info', duration: number = 3000) => {
     const id = `toast-${toastIdCounter++}`
     const toast: Toast = { id, message, type, duration }

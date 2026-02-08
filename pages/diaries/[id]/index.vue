@@ -126,15 +126,21 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'auth'
+})
+
 const route = useRoute()
 const router = useRouter()
 const id = route.params.id
 
-const { data: diary, pending, error } = await useFetch(`/api/diaries/${id}`)
+// Use lazy fetch to avoid calling API during SSR before auth check
+const { data: diary, pending, error } = await useLazyFetch(`/api/diaries/${id}`)
+
+const toast = useToast()
+const { user } = useAuth()
 
 const deleteDiary = async () => {
-  const toast = useToast()
-
   if (!confirm('確定要刪除這篇日記嗎？此操作無法復原。')) return
 
   try {
@@ -143,7 +149,12 @@ const deleteDiary = async () => {
     })
     toast.success('日記已刪除')
     router.push('/diaries')
-  } catch (e) {
+  } catch (e: any) {
+    // Handle 401 Unauthorized errors
+    if (e?.statusCode === 401) {
+      user.value = null
+      await navigateTo('/')
+    }
     toast.error('刪除失敗')
     console.error(e)
   }

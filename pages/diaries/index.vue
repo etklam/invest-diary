@@ -158,7 +158,12 @@
 </template>
 
 <script setup lang="ts">
-const { data: diaries, pending, error } = await useFetch('/api/diaries')
+definePageMeta({
+  middleware: 'auth'
+})
+
+// Use lazy fetch to avoid calling API during SSR before auth check
+const { data: diaries, pending, error, refresh } = await useLazyFetch('/api/diaries')
 
 const filters = reactive({
   search: '',

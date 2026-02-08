@@ -118,12 +118,19 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'auth'
+})
+
 const route = useRoute()
 const router = useRouter()
 const id = route.params.id
 const saving = ref(false)
+const toast = useToast()
+const { user } = useAuth()
 
-const { data: diary, pending, error } = await useFetch(`/api/diaries/${id}`)
+// Use lazy fetch to avoid calling API during SSR before auth check
+const { data: diary, pending, error } = await useLazyFetch(`/api/diaries/${id}`)
 
 const form = reactive({
   date: new Date().toISOString().slice(0, 10),
@@ -191,8 +198,6 @@ const validateTransactions = (): string | null => {
 }
 
 const saveDiary = async () => {
-  const toast = useToast()
-
   if (!form.title) {
     toast.error('請輸入標題')
     return
@@ -229,6 +234,11 @@ const saveDiary = async () => {
     toast.success('日記更新成功！')
     router.push(`/diaries/${id}`)
   } catch (e: any) {
+    // Handle 401 Unauthorized errors
+    if (e?.statusCode === 401) {
+      user.value = null
+      await navigateTo('/')
+    }
     console.error(e)
     toast.error('儲存失敗: ' + (e.data?.statusMessage || e.message))
   } finally {

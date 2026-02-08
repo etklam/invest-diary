@@ -1,8 +1,20 @@
 import prisma from '../../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
+  const userId = event.context.user?.id
+
+  if (!userId) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized'
+    })
+  }
+
   try {
     const latestDiary = await prisma.diary.findFirst({
+      where: {
+        userId: userId
+      },
       orderBy: {
         createdAt: 'desc',
       },

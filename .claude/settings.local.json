@@ -21,7 +21,11 @@
       "Bash(npm test:*)",
       "Bash(npx husky init:*)",
       "Bash(chmod:*)",
-      "Bash(npm run health:check:*)"
+      "Bash(npm run health:check:*)",
+      "Bash(SKIP_MIGRATION=true npx prisma migrate dev:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npm run health:quick:*)"
     ]
   }
 }

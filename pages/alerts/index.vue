@@ -79,18 +79,29 @@
 </template>
 
 <script setup lang="ts">
-const { data: alerts, pending, error, refresh } = await useFetch('/api/alerts')
+definePageMeta({
+  middleware: 'auth'
+})
+
+// Use lazy fetch to avoid calling API during SSR before auth check
+const { data: alerts, pending, error, refresh } = await useLazyFetch('/api/alerts')
+
+const toast = useToast()
+const { user } = useAuth()
 
 const dismissAlert = async (id: number) => {
-  const toast = useToast()
-
   try {
     await $fetch(`/api/alerts/${id}/dismiss`, {
       method: 'PUT'
     })
     toast.success('提醒已標記為已讀')
     refresh()
-  } catch (e) {
+  } catch (e: any) {
+    // Handle 401 Unauthorized errors
+    if (e?.statusCode === 401) {
+      user.value = null
+      await navigateTo('/')
+    }
     console.error(e)
     toast.error('操作失敗')
   }

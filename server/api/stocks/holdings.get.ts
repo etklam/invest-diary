@@ -2,10 +2,22 @@ import prisma from '~/lib/prisma'
 import { calculateHoldings } from '~/lib/utils'
 
 export default defineEventHandler(async (event) => {
-  console.log('Fetching all holdings...')
+  const userId = event.context.user?.id
+
+  if (!userId) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized'
+    })
+  }
+
+  console.log('Fetching all holdings for user:', userId)
   try {
-    // Fetch all diaries with their transactions
+    // Fetch all diaries with their transactions for this user
     const diaries = await prisma.diary.findMany({
+      where: {
+        userId: userId
+      },
       include: {
         transactions: true,
       },
@@ -17,7 +29,7 @@ export default defineEventHandler(async (event) => {
     // Calculate holdings using FIFO method
     const holdings = calculateHoldings(allTransactions)
 
-    console.log('Calculated holdings:', holdings)
+    console.log('Calculated holdings:', holdings.length, 'symbols')
     return holdings
   } catch (error) {
     console.error('Error fetching holdings:', error)

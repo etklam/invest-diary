@@ -28,6 +28,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Server-side only
     databaseUrl: process.env.DATABASE_URL,
+    jwtSecret: process.env.JWT_SECRET,
 
     // Public to both client and server
     public: {

@@ -165,6 +165,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'auth'
+})
+
 interface Holding {
   symbol: string
   quantity: number
@@ -172,8 +176,8 @@ interface Holding {
   totalCost: number
 }
 
-// Fetch holdings from API
-const { data: holdings, pending, error, refresh } = await useFetch<Holding[]>('/api/stocks/holdings')
+// Fetch holdings from API (lazy to avoid SSR auth issues)
+const { data: holdings, pending, error, refresh } = await useLazyFetch<Holding[]>('/api/stocks/holdings')
 
 // Sort holdings by symbol
 const sortedHoldings = computed(() => {

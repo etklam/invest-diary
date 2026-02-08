@@ -1,9 +1,15 @@
 import prisma from '../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
+  // Auth guaranteed by server middleware
+  const userId = BigInt(event.context.user!.id)
+
   try {
     const alerts = await prisma.alert.findMany({
       where: {
+        diary: {
+          userId: userId
+        },
         isDismissed: false,
         triggerAt: {
           lte: new Date(),
@@ -26,7 +32,7 @@ export default defineEventHandler(async (event) => {
     console.error('Error fetching alerts:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to fetch alerts',
+      statusMessage: 'Failed to fetch alerts'
     })
   }
 })

@@ -15,16 +15,12 @@
 </template>
 
 <script setup lang="ts">
-const { toasts } = useToast()
+const { toasts, removeToast } = useToast()
+const { user } = useAuth()
 const dueAlert = ref<any>(null)
 const showAlert = ref(false)
 const processedAlerts = ref<Set<string>>(new Set())
 let pollInterval: ReturnType<typeof setInterval> | null = null
-
-const removeToast = (id: string) => {
-  const { removeToast: remove } = useToast()
-  remove(id)
-}
 
 // Check for due alerts
 const checkForDueAlerts = async () => {
@@ -47,7 +43,12 @@ const checkForDueAlerts = async () => {
       showAlert.value = true
       processedAlerts.value.add(due.id.toString())
     }
-  } catch (error) {
+  } catch (error: any) {
+    // If 401 Unauthorized, redirect to home page
+    if (error?.statusCode === 401) {
+      user.value = null
+      await navigateTo('/')
+    }
     console.error('Error checking for alerts:', error)
   }
 }
@@ -59,7 +60,12 @@ const dismissCurrentAlert = async () => {
       await $fetch(`/api/alerts/${dueAlert.value.id}/dismiss`, {
         method: 'PUT'
       })
-    } catch (error) {
+    } catch (error: any) {
+      // If 401 Unauthorized, redirect to home page
+      if (error?.statusCode === 401) {
+        user.value = null
+        await navigateTo('/')
+      }
       console.error('Error dismissing alert:', error)
     }
     dueAlert.value = null

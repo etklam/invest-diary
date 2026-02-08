@@ -1,6 +1,15 @@
 import prisma from '~/lib/prisma'
 
 export default defineEventHandler(async (event) => {
+  const userId = event.context.user?.id
+
+  if (!userId) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized'
+    })
+  }
+
   const body = await readBody(event)
 
   if (!body.title) {
@@ -13,7 +22,7 @@ export default defineEventHandler(async (event) => {
   const { title, content, date, transactions, alerts } = body
 
   try {
-    // Check if diary already exists for this date
+    // Check if diary already exists for this date for this user
     const diaryDate = date ? new Date(date) : new Date()
     const startOfDay = new Date(diaryDate)
     startOfDay.setHours(0, 0, 0, 0)
@@ -23,6 +32,7 @@ export default defineEventHandler(async (event) => {
 
     const existingDiary = await prisma.diary.findFirst({
       where: {
+        userId: userId,
         date: {
           gte: startOfDay,
           lte: endOfDay,
@@ -44,6 +54,7 @@ export default defineEventHandler(async (event) => {
 
     const diary = await prisma.diary.create({
       data: {
+        userId: userId,
         title,
         content,
         date: diaryDate,
@@ -69,6 +80,7 @@ export default defineEventHandler(async (event) => {
       },
     })
 
+    console.log('[API] Diary created:', diary.id, 'for user:', userId)
     return diary
   } catch (error: any) {
     console.error('Error creating diary:', error)

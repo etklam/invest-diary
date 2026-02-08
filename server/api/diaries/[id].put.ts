@@ -1,6 +1,15 @@
 import prisma from '../../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
+  const userId = event.context.user?.id
+
+  if (!userId) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized'
+    })
+  }
+
   const id = getRouterParam(event, 'id')
   const body = await readBody(event)
 
@@ -21,6 +30,21 @@ export default defineEventHandler(async (event) => {
   const { title, content, date, transactions, alerts } = body
 
   try {
+    // First verify ownership
+    const existingDiary = await prisma.diary.findFirst({
+      where: {
+        id: BigInt(id),
+        userId: userId
+      }
+    })
+
+    if (!existingDiary) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Diary not found',
+      })
+    }
+
     // Update diary and handle transactions and alerts
     // For transactions/alerts, we'll delete existing ones and create new ones for simplicity
     const diary = await prisma.$transaction(async (tx) => {
@@ -68,6 +92,7 @@ export default defineEventHandler(async (event) => {
       })
     })
 
+    console.log('[API] Diary updated:', diary.id, 'for user:', userId)
     return diary
   } catch (error) {
     console.error('Error updating diary:', error)

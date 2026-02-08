@@ -87,6 +87,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
+// Apply auth middleware
+definePageMeta({
+  middleware: 'auth'
+})
+
+// Get auth state
+const { isAuthenticated } = useAuth()
+
 // 類型定義
 interface Diary {
   id: number
@@ -119,7 +127,13 @@ const fetchDiaries = async () => {
   try {
     const response = await $fetch<Diary[]>('/api/diaries')
     diaries.value = response
-  } catch (error) {
+  } catch (error: any) {
+    // Handle 401 Unauthorized errors
+    if (error?.statusCode === 401) {
+      const { user } = useAuth()
+      user.value = null
+      await navigateTo('/')
+    }
     console.error('獲取日記失敗:', error)
   }
 }
@@ -201,9 +215,18 @@ const handleDateClick = (day: number) => {
   }
 }
 
-// 組件掛載時獲取資料
+// 組件掛載時獲取資料（只在已認證時）
 onMounted(() => {
-  fetchDiaries()
+  if (isAuthenticated.value) {
+    fetchDiaries()
+  }
+})
+
+// 監聽認證狀態變化
+watch(isAuthenticated, (authenticated) => {
+  if (authenticated) {
+    fetchDiaries()
+  }
 })
 </script>
 

@@ -1,6 +1,15 @@
 import prisma from '../../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
+  const userId = event.context.user?.id
+
+  if (!userId) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized'
+    })
+  }
+
   const id = getRouterParam(event, 'id')
 
   if (!id) {
@@ -11,9 +20,10 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const diary = await prisma.diary.findUnique({
+    const diary = await prisma.diary.findFirst({
       where: {
         id: BigInt(id),
+        userId: userId
       },
       include: {
         transactions: true,
