@@ -4,7 +4,7 @@
 FROM node:20-alpine AS builder
 
 # Build arguments for flexibility
-# Force development mode during build so devDependencies (Nuxt modules) are installed
+# Build must include devDependencies (Nuxt modules), runtime stays production
 ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 
@@ -23,6 +23,7 @@ COPY package.json package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
 # Skip prepare script (husky) since git hooks aren't needed in Docker
+# Install all deps for build (devDependencies required by Nuxt modules)
 RUN npm install --ignore-scripts && \
     npm run postinstall && \
     npm cache clean --force
@@ -79,7 +80,9 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Copy application artifacts from builder
 COPY --from=builder --chown=nuxt:nodejs /app/.output ./.output
 COPY --from=builder --chown=nuxt:nodejs /app/package.json ./package.json
+# Copy node_modules then prune to production-only dependencies
 COPY --from=builder --chown=nuxt:nodejs /app/node_modules ./node_modules
+RUN npm prune --omit=dev
 COPY --from=builder --chown=nuxt:nodejs /app/prisma ./prisma
 
 # Create runtime directories
