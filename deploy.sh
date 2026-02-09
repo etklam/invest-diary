@@ -1,8 +1,8 @@
 #!/bin/bash
 # =============================================================================
-# Deployment Script for Investment Diary System (External MySQL)
+# CapRover Deployment Script for Investment Diary System
 # =============================================================================
-# This script helps deploy the application to a server with existing MySQL
+# This script is designed to be used by CapRover (captain-definition)
 # =============================================================================
 
 set -e
@@ -37,25 +37,9 @@ print_info() {
     echo -e "${BLUE}ℹ️  $1${NC}"
 }
 
-# Check prerequisites
+# CapRover handles Docker/Compose, no local prerequisite checks needed
 check_prerequisites() {
-    print_header "檢查前置需求 | Checking Prerequisites"
-
-    # Check Docker
-    if ! command -v docker &> /dev/null; then
-        print_error "Docker 未安裝 | Docker is not installed"
-        echo "請先安裝 Docker: https://docs.docker.com/engine/install/"
-        exit 1
-    fi
-    print_success "Docker 已安裝 | Docker is installed"
-
-    # Check Docker Compose
-    if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-        print_error "Docker Compose 未安裝 | Docker Compose is not installed"
-        echo "請先安裝 Docker Compose: https://docs.docker.com/compose/install/"
-        exit 1
-    fi
-    print_success "Docker Compose 已安裝 | Docker Compose is installed"
+    print_info "Running inside CapRover environment"
 }
 
 # Check .env file
@@ -126,52 +110,21 @@ test_database() {
     fi
 }
 
-# Build Docker image
+# Build is handled by CapRover based on Dockerfile
 build_image() {
-    print_header "建置 Docker 映像檔 | Building Docker Image"
-
-    print_info "開始建置映像檔... | Starting image build..."
-    if docker build -t diary-vue:latest .; then
-        print_success "映像檔建置成功 | Image built successfully"
-    else
-        print_error "映像檔建置失敗 | Image build failed"
-        exit 1
-    fi
+    print_info "Image build handled by CapRover"
 }
 
-# Stop and remove existing container
+# Container lifecycle is managed by CapRover
 remove_existing() {
-    print_header "清理舊容器 | Cleaning Up Old Container"
-
-    if docker ps -a | grep -q diary-vue-app; then
-        print_info "停止並移除舊容器... | Stopping and removing old container..."
-        docker stop diary-vue-app 2>/dev/null || true
-        docker rm diary-vue-app 2>/dev/null || true
-        print_success "舊容器已移除 | Old container removed"
-    else
-        print_info "沒有找到舊容器 | No old container found"
-    fi
+    print_info "Container lifecycle managed by CapRover"
 }
 
-# Deploy container
+# CapRover runs the container automatically
+# This hook is kept for logging purposes only
 deploy() {
-    print_header "部署應用程式 | Deploying Application"
-
-    print_info "啟動容器... | Starting container..."
-    docker run -d \
-        --name diary-vue-app \
-        --restart unless-stopped \
-        -p 3000:3000 \
-        --env-file .env \
-        -e RUN_MIGRATIONS=true \
-        diary-vue:latest
-
-    if [ $? -eq 0 ]; then
-        print_success "容器啟動成功 | Container started successfully"
-    else
-        print_error "容器啟動失敗 | Container failed to start"
-        exit 1
-    fi
+    print_header "CapRover Deployment"
+    print_success "Application container started by CapRover"
 }
 
 # Wait for app to be ready
@@ -220,29 +173,17 @@ show_info() {
     docker ps --filter name=diary-vue-app
 }
 
-# Main deployment flow
+# Main flow for CapRover (non-interactive)
 main() {
-    print_header "投資日記系統部署 | Investment Diary System Deployment"
+    print_header "CapRover Deployment"
 
-    # Ask for confirmation
-    read -p "開始部署？| Start deployment? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_info "部署已取消 | Deployment cancelled"
-        exit 0
-    fi
-
-    # Run deployment steps
     check_prerequisites
     check_env_file
     test_database
     build_image
-    remove_existing
     deploy
-    wait_for_app
-    show_info
 
-    print_success "部署完成！| Deployment complete!"
+    print_success "CapRover deployment script completed"
 }
 
 # Run main function

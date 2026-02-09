@@ -27,8 +27,6 @@
     "@nuxtjs/mdc": "^0.20.1",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@prisma/client": "^5.22.0",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
     "jose": "^6.1.3",
