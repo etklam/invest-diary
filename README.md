@@ -855,6 +855,25 @@ docker-compose exec app sh
 docker-compose exec mysql mysql -u diary_user -pdiary_password invest_diary
 ```
 
+### 生產環境部署
+
+**📖 完整部署指南：[DEPLOYMENT.md](DEPLOYMENT.md)**
+
+如果您要部署到已有 MySQL 的伺服器，請使用以下配置：
+
+```bash
+# 使用外部 MySQL 的 Docker Compose 配置
+docker compose -f docker-compose.external-mysql.yml up -d
+```
+
+**快速部署步驟：**
+
+1. 設定環境變數（`.env` 檔案）
+2. 建置 Docker 映像：`docker build -t diary-vue:latest .`
+3. 執行容器：`docker run -d --name diary-vue-app -p 3000:3000 --env-file .env diary-vue:latest`
+
+詳細步驟請參考 [完整部署指南](DEPLOYMENT.md)。
+
 ### Dockerfile 特性
 
 生產環境 Dockerfile 包含以下優化：

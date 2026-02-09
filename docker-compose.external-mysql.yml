@@ -1,0 +1,43 @@
+# =============================================================================
+# Docker Compose Configuration for External MySQL
+# =============================================================================
+# This configuration is for deploying the app to a server that already has
+# MySQL running, without using Docker for the database.
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # Nuxt 3 Application only (no MySQL container)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: diary-vue:latest
+    container_name: diary-vue-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # IMPORTANT: Update these values for your environment!
+      DATABASE_URL: "${DATABASE_URL}"
+      JWT_SECRET: "${JWT_SECRET}"
+      NUXT_PUBLIC_APP_NAME: "${NUXT_PUBLIC_APP_NAME:-投資日記}"
+      NODE_ENV: "production"
+      PORT: "3000"
+      HOST: "0.0.0.0"
+      RUN_MIGRATIONS: "true"  # Run migrations on startup
+      SEED_DATABASE: "false"  # Set to "true" to seed with sample data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    # Optional: Add network configuration if MySQL is in a specific network
+    # networks:
+    #   - your-network
+
+# Remove the volumes and networks sections since we're not running MySQL
+# volumes:
+# networks:
