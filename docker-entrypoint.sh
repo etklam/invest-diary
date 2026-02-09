@@ -12,7 +12,9 @@ wait_for_db() {
     echo "⏳ Waiting for database connection..."
 
     # Extract database host from DATABASE_URL
-    DB_HOST=$(echo "$DATABASE_URL" | grep -oP 'mysql://[^@]*@\K[^:]+' || echo "localhost")
+    # BusyBox grep does not support -P, use sed for compatibility
+    DB_HOST=$(echo "$DATABASE_URL" | sed -n 's#mysql://[^@]*@\([^:/]*\).*#\1#p')
+    [ -z "$DB_HOST" ] && DB_HOST="localhost"
 
     # Wait for MySQL to be ready
     max_attempts=30
