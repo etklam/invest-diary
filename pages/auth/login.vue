@@ -17,7 +17,7 @@
       </div>
 
       <!-- Login Form -->
-      <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
+      <form class="mt-8 space-y-6" @submit.prevent="handleLogin" novalidate>
         <div class="space-y-4">
           <!-- Email -->
           <div>
@@ -29,9 +29,14 @@
               v-model="form.email"
               type="email"
               required
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+              class="appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+              :class="emailError ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'"
               :placeholder="$t('auth.emailPlaceholder')"
+              @blur="validateEmail"
             />
+            <p v-if="emailError" class="mt-1 text-xs text-red-600 dark:text-red-400">
+              {{ emailError }}
+            </p>
           </div>
 
           <!-- Password -->
@@ -80,7 +85,26 @@ const form = ref({
   password: ''
 })
 
+const emailError = ref('')
+
+const validateEmail = () => {
+  if (!form.value.email) {
+    emailError.value = ''
+    return
+  }
+  // Simple check: must contain @ and at least one character before and after
+  const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+  if (!emailRegex.test(form.value.email)) {
+    emailError.value = '請輸入有效的電子郵件地址'
+  } else {
+    emailError.value = ''
+  }
+}
+
 const handleLogin = async () => {
+  validateEmail()
+  if (emailError.value) return
+
   await login(form.value.email, form.value.password)
 }
 

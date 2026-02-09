@@ -17,7 +17,7 @@
       </div>
 
       <!-- Register Form -->
-      <form class="mt-8 space-y-6" @submit.prevent="handleRegister">
+      <form class="mt-8 space-y-6" @submit.prevent="handleRegister" novalidate>
         <div class="space-y-4">
           <!-- Name (Optional) -->
           <div>
@@ -37,15 +37,20 @@
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {{ $t('auth.email') }}
-            </label>``
+            </label>
             <input
               id="email"
               v-model="form.email"
               type="email"
               required
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+              class="appearance-none relative block w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+              :class="emailError ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'"
               :placeholder="$t('auth.emailPlaceholder')"
+              @blur="validateEmail"
             />
+            <p v-if="emailError" class="mt-1 text-xs text-red-600 dark:text-red-400">
+              {{ emailError }}
+            </p>
           </div>
 
           <!-- Password -->
@@ -118,17 +123,35 @@ const form = ref({
   confirmPassword: ''
 })
 
+const emailError = ref('')
+
+const validateEmail = () => {
+  if (!form.value.email) {
+    emailError.value = ''
+    return
+  }
+  // Simple check: must contain @ and at least one character before and after
+  const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+  if (!emailRegex.test(form.value.email)) {
+    emailError.value = '請輸入有效的電子郵件地址'
+  } else {
+    emailError.value = ''
+  }
+}
+
 const isFormValid = computed(() => {
   return (
     form.value.email &&
     form.value.password &&
     form.value.confirmPassword &&
     form.value.password.length >= 8 &&
-    form.value.password === form.value.confirmPassword
+    form.value.password === form.value.confirmPassword &&
+    !emailError.value
   )
 })
 
 const handleRegister = async () => {
+  validateEmail()
   if (!isFormValid.value) return
 
   await register({

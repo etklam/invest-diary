@@ -20,11 +20,13 @@
   },
 
   "nav": {
+    "home": "Home",
     "calendar": "Calendar",
     "timeline": "Timeline",
     "diaries": "Diaries",
     "alerts": "Alerts",
-    "stocks": "Stocks"
+    "stocks": "Stocks",
+    "about": "About Us"
   },
 
   "auth": {
@@ -155,5 +157,101 @@
     "networkError": "Network connection error",
     "notFound": "Page not found",
     "serverError": "Server error"
+  },
+
+  "home": {
+    "hero": {
+      "title": "Track Your Investment Journey",
+      "subtitle": "A diary system designed for investors to record every trade, alert, and insight, making your investment decisions wiser.",
+      "getStarted": "Get Started",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "Powerful Features",
+      "subtitle": "A full-featured platform built for investors",
+      "diary": {
+        "title": "Investment Diary",
+        "description": "Write rich investment diaries in Markdown, documenting trade reasons and market insights."
+      },
+      "stocks": {
+        "title": "Stock Management",
+        "description": "Track holdings, calculate average costs, and use FIFO cost calculation to accurately measure investment performance."
+      },
+      "alerts": {
+        "title": "Smart Alerts",
+        "description": "Set time-triggered alerts to ensure you never miss important trading opportunities."
+      },
+      "timeline": {
+        "title": "Timeline View",
+        "description": "Browse all diaries in a timeline format to easily review your investment history."
+      },
+      "security": {
+        "title": "Secure & Reliable",
+        "description": "JWT authentication and bcrypt password hashing to protect your investment data."
+      },
+      "themes": {
+        "title": "Dark Mode",
+        "description": "Support for dark and light themes, switch anytime for a comfortable browsing experience."
+      }
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "description": "Sign up now and begin your investment diary journey. Completely free, no credit card required.",
+      "register": "Sign Up Free",
+      "login": "Login"
+    },
+    "footer": {
+      "rights": "All rights reserved"
+    }
+  },
+
+  "about": {
+    "hero": {
+      "title": "About Investment Diary",
+      "subtitle": "A professional investment diary management system"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "content": "Investment Diary is dedicated to providing investors with a simple yet powerful tool to record investment decisions, track trading performance, and learn from historical data. We believe that systematic investment record-keeping is key to long-term investment success."
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraph1": "Investment Diary was born from the need for a simple investment tool. The founder found that the market lacked a diary system truly designed for individual investors that could combine transaction records, reminders, and reflection features.",
+      "paragraph2": "After careful design and development, Investment Diary has now become a complete investment management platform, supporting various features including FIFO cost calculation, timeline view, smart alerts, and more.",
+      "paragraph3": "We continuously improve our product, dedicated to providing investors with the best experience. Thank you for choosing Investment Diary as your investment partner."
+    },
+    "features": {
+      "title": "Core Features",
+      "subtitle": "Features designed for investors",
+      "diary": {
+        "title": "Markdown Diary",
+        "description": "Support Markdown syntax for writing diaries, allowing you to format text, insert code, and create rich investment records."
+      },
+      "fifo": {
+        "title": "FIFO Cost Calculation",
+        "description": "Automatically calculate stock costs using the First-In-First-Out method, accurately tracking profit and loss for each transaction."
+      },
+      "realtime": {
+        "title": "Real-time Alert System",
+        "description": "Set time-triggered alerts, and the system will notify you at the specified time, ensuring you never miss important moments."
+      },
+      "privacy": {
+        "title": "Data Privacy Protection",
+        "description": "All data is securely stored with HTTPS encrypted transmission, passwords are bcrypt encrypted, ensuring your privacy and security."
+      }
+    },
+    "tech": {
+      "title": "Technology Stack",
+      "subtitle": "Built with modern technologies"
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "description": "Have questions or suggestions? Feel free to contact us via GitHub, or start using Investment Diary directly.",
+      "github": "View on GitHub",
+      "getStarted": "Get Started"
+    },
+    "footer": {
+      "rights": "All rights reserved"
+    }
   }
 }

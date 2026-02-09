@@ -1,240 +1,188 @@
 <template>
-  <div class="calendar-page">
-    <!-- 月曆標題與導航 -->
-    <div class="flex items-center justify-between mb-6">
-      <button
-        @click="previousMonth"
-        class="p-2 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-        aria-label="上一個月"
-      >
-        <Icon name="heroicons:chevron-left" class="w-6 h-6" />
-      </button>
-      <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
-        {{ currentYear }}年 {{ currentMonth + 1 }}月
-      </h1>
-      <button
-        @click="nextMonth"
-        class="p-2 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-        aria-label="下一個月"
-      >
-        <Icon name="heroicons:chevron-right" class="w-6 h-6" />
-      </button>
-    </div>
-
-    <!-- 星期標題 -->
-    <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
-      <div
-        v-for="day in weekDays"
-        :key="day"
-        class="text-center text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 py-2"
-      >
-        {{ day }}
-      </div>
-    </div>
-
-    <!-- 月曆網格 -->
-    <div class="grid grid-cols-7 gap-1 sm:gap-2">
-      <!-- 空白格子（月初前的空白） -->
-      <div
-        v-for="n in firstDayOfWeek"
-        :key="'blank-' + n"
-        class="h-16 sm:h-24"
-      ></div>
-
-      <!-- 日期格子 -->
-      <div
-        v-for="day in daysInMonth"
-        :key="day"
-        @click="handleDateClick(day)"
-        class="h-16 sm:h-24 p-1 sm:p-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
-        :class="{
-          'bg-indigo-50 dark:bg-indigo-900/20': isToday(day),
-          'border-indigo-500': isToday(day)
-        }"
-      >
-        <div class="text-sm sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ day }}
-        </div>
-
-        <!-- 日記標記 -->
-        <div
-          v-if="hasDiary(day)"
-          class="absolute bottom-1 sm:bottom-2 right-1 sm:right-2"
-        >
-          <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-indigo-500 rounded-full"></div>
-        </div>
-
-        <!-- 日記標題預覽 -->
-        <div
-          v-if="hasDiary(day)"
-          class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 truncate leading-tight"
-        >
-          {{ getDiaryTitle(day) }}
+  <div class="min-h-screen">
+    <!-- Hero Section -->
+    <section class="relative bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900 text-white py-20 sm:py-32">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+          <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
+            {{ $t('home.hero.title') }}
+          </h1>
+          <p class="text-lg sm:text-xl md:text-2xl mb-8 text-indigo-100 dark:text-indigo-200">
+            {{ $t('home.hero.subtitle') }}
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <NuxtLink
+              to="/auth/register"
+              class="inline-flex items-center justify-center px-8 py-4 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors min-h-[52px] shadow-lg"
+            >
+              {{ $t('home.hero.getStarted') }}
+              <Icon name="heroicons:arrow-right" class="ml-2 w-5 h-5" />
+            </NuxtLink>
+            <NuxtLink
+              to="/about"
+              class="inline-flex items-center justify-center px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-colors min-h-[52px]"
+            >
+              {{ $t('home.hero.learnMore') }}
+            </NuxtLink>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- 今日按鈕 -->
-    <div class="mt-6 flex justify-center">
-      <button
-        @click="goToToday"
-        class="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors min-h-[44px] font-medium"
-      >
-        回到今天
-      </button>
-    </div>
+    <!-- Features Section -->
+    <section class="py-16 sm:py-24 bg-white dark:bg-gray-900">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            {{ $t('home.features.title') }}
+          </h2>
+          <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            {{ $t('home.features.subtitle') }}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <!-- Feature 1 -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg flex items-center justify-center mb-6">
+              <Icon name="heroicons:calendar-days" class="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              {{ $t('home.features.diary.title') }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              {{ $t('home.features.diary.description') }}
+            </p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center mb-6">
+              <Icon name="heroicons:chart-bar" class="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              {{ $t('home.features.stocks.title') }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              {{ $t('home.features.stocks.description') }}
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-yellow-100 dark:bg-yellow-900/50 rounded-lg flex items-center justify-center mb-6">
+              <Icon name="heroicons:bell" class="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              {{ $t('home.features.alerts.title') }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              {{ $t('home.features.alerts.description') }}
+            </p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center mb-6">
+              <Icon name="heroicons:clock" class="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              {{ $t('home.features.timeline.title') }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              {{ $t('home.features.timeline.description') }}
+            </p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-red-100 dark:bg-red-900/50 rounded-lg flex items-center justify-center mb-6">
+              <Icon name="heroicons:shield-check" class="w-8 h-8 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              {{ $t('home.features.security.title') }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              {{ $t('home.features.security.description') }}
+            </p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 hover:shadow-xl transition-shadow">
+            <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center mb-6">
+              <Icon name="heroicons:moon" class="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              {{ $t('home.features.themes.title') }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              {{ $t('home.features.themes.description') }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 sm:py-24 bg-gray-50 dark:bg-gray-800">
+      <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center">
+          <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            {{ $t('home.cta.title') }}
+          </h2>
+          <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">
+            {{ $t('home.cta.description') }}
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <NuxtLink
+              to="/auth/register"
+              class="inline-flex items-center justify-center px-8 py-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors min-h-[52px] shadow-lg"
+            >
+              {{ $t('home.cta.register') }}
+              <Icon name="heroicons:arrow-right" class="ml-2 w-5 h-5" />
+            </NuxtLink>
+            <NuxtLink
+              to="/auth/login"
+              class="inline-flex items-center justify-center px-8 py-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors min-h-[52px] shadow-lg border border-gray-300 dark:border-gray-600"
+            >
+              {{ $t('home.cta.login') }}
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12">
+      <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="mb-4 md:mb-0">
+            <span class="text-xl font-bold text-white">{{ $t('common.appName') }}</span>
+          </div>
+          <div class="flex gap-6">
+            <NuxtLink to="/about" class="hover:text-white transition-colors">
+              {{ $t('nav.about') }}
+            </NuxtLink>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">
+              GitHub
+            </a>
+          </div>
+        </div>
+        <div class="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
+          &copy; {{ new Date().getFullYear() }} {{ $t('common.appName') }}. {{ $t('home.footer.rights') }}
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-
-// Apply auth middleware
-definePageMeta({
-  middleware: 'auth'
-})
-
-// Get auth state
+// Redirect authenticated users to calendar
 const { isAuthenticated } = useAuth()
 
-// 類型定義
-interface Diary {
-  id: number
-  title: string
-  content: string
-  date?: string
-  createdAt: string
-}
-
-// 狀態
-const currentYear = ref(new Date().getFullYear())
-const currentMonth = ref(new Date().getMonth())
-const diaries = ref<Diary[]>([])
-
-// 星期名稱
-const weekDays = ['日', '一', '二', '三', '四', '五', '六']
-
-// 當月天數
-const daysInMonth = computed(() => {
-  return new Date(currentYear.value, currentMonth.value + 1, 0).getDate()
-})
-
-// 當月第一天是星期幾
-const firstDayOfWeek = computed(() => {
-  return new Date(currentYear.value, currentMonth.value, 1).getDay()
-})
-
-// 獲取日記資料
-const fetchDiaries = async () => {
-  try {
-    const response = await $fetch<Diary[]>('/api/diaries')
-    diaries.value = response
-  } catch (error: any) {
-    // Handle 401 Unauthorized errors
-    if (error?.statusCode === 401) {
-      const { user } = useAuth()
-      user.value = null
-      await navigateTo('/')
-    }
-    console.error('獲取日記失敗:', error)
-  }
-}
-
-// 檢查某天是否有日記
-const hasDiary = (day: number): boolean => {
-  return diaries.value.some(diary => {
-    const diaryDate = new Date(diary.date || diary.createdAt)
-    return diaryDate.getDate() === day &&
-           diaryDate.getMonth() === currentMonth.value &&
-           diaryDate.getFullYear() === currentYear.value
-  })
-}
-
-// 獲取某天的日記標題
-const getDiaryTitle = (day: number): string => {
-  const diary = diaries.value.find(diary => {
-    const diaryDate = new Date(diary.date || diary.createdAt)
-    return diaryDate.getDate() === day &&
-           diaryDate.getMonth() === currentMonth.value &&
-           diaryDate.getFullYear() === currentYear.value
-  })
-  return diary?.title || ''
-}
-
-// 檢查是否是今天
-const isToday = (day: number): boolean => {
-  const today = new Date()
-  return today.getDate() === day &&
-         today.getMonth() === currentMonth.value &&
-         today.getFullYear() === currentYear.value
-}
-
-// 上一個月
-const previousMonth = () => {
-  if (currentMonth.value === 0) {
-    currentMonth.value = 11
-    currentYear.value--
-  } else {
-    currentMonth.value--
-  }
-}
-
-// 下一個月
-const nextMonth = () => {
-  if (currentMonth.value === 11) {
-    currentMonth.value = 0
-    currentYear.value++
-  } else {
-    currentMonth.value++
-  }
-}
-
-// 回到今天
-const goToToday = () => {
-  const today = new Date()
-  currentYear.value = today.getFullYear()
-  currentMonth.value = today.getMonth()
-}
-
-// 處理日期點擊
-const handleDateClick = (day: number) => {
-  const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-
-  // 檢查該天是否有日記
-  const diary = diaries.value.find(diary => {
-    const diaryDate = new Date(diary.date || diary.createdAt)
-    return diaryDate.getDate() === day &&
-           diaryDate.getMonth() === currentMonth.value &&
-           diaryDate.getFullYear() === currentYear.value
-  })
-
-  if (diary) {
-    // 如果有日記，跳轉到詳情頁面
-    navigateTo(`/diaries/${diary.id}`)
-  } else {
-    // 如果沒有日記，跳轉到新建頁面並帶入日期
-    navigateTo(`/diaries/new?date=${dateStr}`)
-  }
-}
-
-// 組件掛載時獲取資料（只在已認證時）
 onMounted(() => {
   if (isAuthenticated.value) {
-    fetchDiaries()
-  }
-})
-
-// 監聽認證狀態變化
-watch(isAuthenticated, (authenticated) => {
-  if (authenticated) {
-    fetchDiaries()
+    navigateTo('/calendar')
   }
 })
 </script>
-
-<style scoped>
-.calendar-page {
-  max-width: 800px;
-  margin: 0 auto;
-}
-</style>

@@ -1,0 +1,257 @@
+{
+  "common": {
+    "appName": "投资日记",
+    "loading": "加载中...",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "新增",
+    "search": "搜索",
+    "close": "关闭",
+    "confirm": "确认",
+    "back": "返回",
+    "submit": "提交",
+    "reset": "重置",
+    "clear": "清除",
+    "all": "全部",
+    "noData": "无数据",
+    "switchLanguage": "切换语言"
+  },
+
+  "nav": {
+    "home": "首页",
+    "calendar": "月历",
+    "timeline": "时间轴",
+    "diaries": "日记列表",
+    "alerts": "提醒管理",
+    "stocks": "股票管理",
+    "about": "关于我们"
+  },
+
+  "auth": {
+    "login": "登录",
+    "logout": "登出",
+    "register": "注册",
+    "loginTitle": "登录您的账户",
+    "registerTitle": "创建新账户",
+    "createAccount": "创建新账户",
+    "email": "电子邮件",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "name": "姓名",
+    "loggingIn": "登录中...",
+    "registering": "注册中...",
+    "orCreateAccount": "或创建新账户",
+    "alreadyHaveAccount": "已有账户？",
+    "loggedInAs": "已登录为",
+    "emailPlaceholder": "your{'@'}email.com",
+    "passwordPlaceholder": "••••••••",
+    "namePlaceholder": "您的姓名",
+    "nameOptional": "姓名（选填）",
+    "passwordMinLength": "至少8个字符",
+    "passwordLengthError": "密码长度至少需要8个字符",
+    "confirmPasswordPlaceholder": "再次输入密码",
+    "passwordMismatchError": "密码不一致",
+    "loginNow": "立即登录"
+  },
+
+  "diary": {
+    "title": "日记列表",
+    "newDiary": "新增日记",
+    "editDiary": "编辑日记",
+    "writeDiary": "写日记",
+    "viewDiary": "查看日记",
+    "diaryTitle": "标题",
+    "diaryContent": "内容",
+    "diaryDate": "日期",
+    "searchPlaceholder": "搜索标题或内容...",
+    "dateFrom": "开始日期",
+    "dateTo": "结束日期",
+    "sortBy": "排序方式",
+    "dateDesc": "日期（新到旧）",
+    "dateAsc": "日期（旧到新）",
+    "titleAsc": "标题（A-Z）",
+    "titleDesc": "标题（Z-A）",
+    "clearFilters": "清除筛选",
+    "resultsFound": "找到 {count} 条结果",
+    "loadFailed": "加载失败",
+    "noDiaries": "尚无日记",
+    "createFirst": "开始撰写您的第一篇投资日记",
+    "deleteConfirm": "确定要删除这篇日记吗？",
+    "deleteSuccess": "日记已删除",
+    "saveSuccess": "日记已保存",
+    "saveFailed": "保存失败",
+    "titleRequired": "请输入标题",
+    "contentRequired": "请输入内容",
+    "backToList": "返回日记列表",
+    "createdAt": "创建于",
+    "updatedAt": "更新于"
+  },
+
+  "alert": {
+    "title": "提醒管理",
+    "markAsRead": "标记为已读",
+    "markedAsRead": "提醒已标记为已读",
+    "noAlerts": "尚无有效提醒",
+    "noAlertsDesc": "所有提醒皆已处理或尚未建立。",
+    "viewRelatedDiary": "查看关联日记",
+    "triggerTime": "触发时间",
+    "createdAt": "创建于",
+    "loadFailed": "加载失败"
+  },
+
+  "stock": {
+    "title": "股票管理",
+    "holdings": "持仓",
+    "noHoldings": "尚无持仓",
+    "symbol": "股票代码",
+    "quantity": "数量",
+    "avgPrice": "平均成本",
+    "currentPrice": "现价",
+    "profit": "损益",
+    "loadFailed": "加载失败"
+  },
+
+  "settings": {
+    "title": "账户设置",
+    "profile": "个人资料",
+    "tradingSettings": "交易设置",
+    "emailCannotChange": "电子邮件无法修改",
+    "expectedMonthlyTrades": "预计每月交易次数",
+    "expectedMonthlyTradesDesc": "设定您预计每个月进行的交易次数",
+    "expectedProfit": "预期利润",
+    "expectedProfitDesc": "您每个月的预期获利目标",
+    "expectedAvgHolding": "预期平均持仓金额",
+    "expectedAvgHoldingDesc": "您预期持有的平均金额",
+    "changePassword": "变更密码",
+    "currentPassword": "目前密码",
+    "newPassword": "新密码",
+    "confirmNewPassword": "确认新密码",
+    "passwordChanged": "密码已更新",
+    "passwordChangeFailed": "密码变更失败",
+    "saveSuccess": "设置已保存",
+    "saveFailed": "保存失败",
+    "passwordMismatch": "两次输入的密码不一致",
+    "passwordTooShort": "密码至少需要 6 个字符"
+  },
+
+  "timeline": {
+    "title": "时间轴",
+    "noEntries": "尚无时间轴记录",
+    "loadFailed": "加载失败"
+  },
+
+  "theme": {
+    "toggleDarkMode": "切换深色模式",
+    "openMenu": "开启菜单",
+    "closeMenu": "关闭菜单"
+  },
+
+  "error": {
+    "unauthorized": "未授权，请先登录",
+    "invalidCredentials": "电子邮件或密码错误",
+    "emailExists": "此电子邮件已被注册",
+    "validationError": "资料验证失败",
+    "unknown": "发生未知错误",
+    "networkError": "网络连线错误",
+    "notFound": "找不到页面",
+    "serverError": "服务器错误"
+  },
+
+  "home": {
+    "hero": {
+      "title": "追踪您的投资旅程",
+      "subtitle": "专为投资人设计的日记系统，记录每一笔交易、提醒与洞察，让您的投资决策更明智。",
+      "getStarted": "开始使用",
+      "learnMore": "了解更多"
+    },
+    "features": {
+      "title": "强大功能",
+      "subtitle": "为投资人打造的全功能平台",
+      "diary": {
+        "title": "投资日记",
+        "description": "使用 Markdown 撰写丰富的投资日记，记录交易理由与市场洞察。"
+      },
+      "stocks": {
+        "title": "股票管理",
+        "description": "追踪持仓、计算平均成本，FIFO 成本计算帮助您精准掌握投资绩效。"
+      },
+      "alerts": {
+        "title": "智能提醒",
+        "description": "设定时间触发的提醒，确保您不会错过重要的交易时机。"
+      },
+      "timeline": {
+        "title": "时间轴视图",
+        "description": "以时间轴方式浏览所有日记，轻松回顾投资历程。"
+      },
+      "security": {
+        "title": "安全可靠",
+        "description": "JWT 身份验证与 bcrypt 密码加密，保护您的投资数据安全。"
+      },
+      "themes": {
+        "title": "深色模式",
+        "description": "支持深色与浅色主题，随时切换舒适的浏览体验。"
+      }
+    },
+    "cta": {
+      "title": "准备开始了吗？",
+      "description": "立即注册，开始您的投资日记之旅。完全免费，无需绑定信用卡。",
+      "register": "免费注册",
+      "login": "登录账户"
+    },
+    "footer": {
+      "rights": "保留所有权利"
+    }
+  },
+
+  "about": {
+    "hero": {
+      "title": "关于投资日记",
+      "subtitle": "一个专业的投资日记管理系统"
+    },
+    "mission": {
+      "title": "我们的使命",
+      "content": "投资日记致力于为投资人提供一个简洁、强大的工具，帮助记录投资决策、追踪交易绩效，并从历史数据中学习成长。我们相信，系统化的投资记录是长期投资成功的关键。"
+    },
+    "story": {
+      "title": "我们的故事",
+      "paragraph1": "投资日记诞生于对简洁投资工具的需求。创始人发现市面上缺乏一个真正专为个人投资人设计的日记系统，能够结合交易记录、提醒与反思功能。",
+      "paragraph2": "经过精心设计与开发，投资日记现已成为一个完整的投资管理平台，支持多种功能包括 FIFO 成本计算、时间轴视图、智能提醒等。",
+      "paragraph3": "我们持续改进产品，致力于为投资人提供最佳的体验。感谢您选择投资日记作为您的投资伙伴。"
+    },
+    "features": {
+      "title": "核心功能",
+      "subtitle": "为投资人设计的功能",
+      "diary": {
+        "title": "Markdown 日记",
+        "description": "支持 Markdown 语法撰写日记，让您可以格式化文字、插入代码，创建丰富的投资记录。"
+      },
+      "fifo": {
+        "title": "FIFO 成本计算",
+        "description": "自动使用先进先出法计算股票成本，精确追踪每笔交易的损益。"
+      },
+      "realtime": {
+        "title": "实时提醒系统",
+        "description": "设定时间触发的提醒，系统会在指定时间通知您，确保不会错过重要时刻。"
+      },
+      "privacy": {
+        "title": "数据隐私保护",
+        "description": "所有数据均安全存储，使用 HTTPS 加密传输，密码经过 bcrypt 加密，确保您的隐私安全。"
+      }
+    },
+    "tech": {
+      "title": "技术架构",
+      "subtitle": "使用现代化技术堆栈打造"
+    },
+    "contact": {
+      "title": "与我们联系",
+      "description": "有问题或建议？欢迎通过 GitHub 联系我们，或直接开始使用投资日记。",
+      "github": "查看 GitHub",
+      "getStarted": "开始使用"
+    },
+    "footer": {
+      "rights": "保留所有权利"
+    }
+  }
+}

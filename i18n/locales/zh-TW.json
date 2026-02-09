@@ -20,11 +20,13 @@
   },
 
   "nav": {
+    "home": "首頁",
     "calendar": "月曆",
     "timeline": "時間軸",
     "diaries": "日記列表",
     "alerts": "提醒管理",
-    "stocks": "股票管理"
+    "stocks": "股票管理",
+    "about": "關於我們"
   },
 
   "auth": {
@@ -155,5 +157,101 @@
     "networkError": "網路連線錯誤",
     "notFound": "找不到頁面",
     "serverError": "伺服器錯誤"
+  },
+
+  "home": {
+    "hero": {
+      "title": "追蹤您的投資旅程",
+      "subtitle": "專為投資人設計的日記系統，記錄每一筆交易、提醒與洞察，讓您的投資決策更明智。",
+      "getStarted": "開始使用",
+      "learnMore": "了解更多"
+    },
+    "features": {
+      "title": "強大功能",
+      "subtitle": "專為投資人打造的全功能平台",
+      "diary": {
+        "title": "投資日記",
+        "description": "使用 Markdown 撰寫豐富的投資日記，記錄交易理由與市場洞察。"
+      },
+      "stocks": {
+        "title": "股票管理",
+        "description": "追蹤持倉、計算平均成本，FIFO 成本計算幫助您精準掌握投資績效。"
+      },
+      "alerts": {
+        "title": "智能提醒",
+        "description": "設定時間觸發的提醒，確保您不會錯過重要的交易時機。"
+      },
+      "timeline": {
+        "title": "時間軸視圖",
+        "description": "以時間軸方式瀏覽所有日記，輕鬆回顧投資歷程。"
+      },
+      "security": {
+        "title": "安全可靠",
+        "description": "JWT 身份驗證與 bcrypt 密碼加密，保護您的投資數據安全。"
+      },
+      "themes": {
+        "title": "深色模式",
+        "description": "支援深色與淺色主題，隨時切換舒適的瀏覽體驗。"
+      }
+    },
+    "cta": {
+      "title": "準備開始了嗎？",
+      "description": "立即註冊，開始您的投資日記之旅。完全免費，無需綁定信用卡。",
+      "register": "免費註冊",
+      "login": "登入帳戶"
+    },
+    "footer": {
+      "rights": "保留所有權利"
+    }
+  },
+
+  "about": {
+    "hero": {
+      "title": "關於投資日記",
+      "subtitle": "一個專業的投資日記管理系統"
+    },
+    "mission": {
+      "title": "我們的使命",
+      "content": "投資日記致力於為投資人提供一個簡潔、強大的工具，幫助記錄投資決策、追蹤交易績效，並從歷史數據中學習成長。我們相信，系統化的投資記錄是長期投資成功的關鍵。"
+    },
+    "story": {
+      "title": "我們的故事",
+      "paragraph1": "投資日記誕生於對簡潔投資工具的需求。創始人發現市面上缺乏一個真正專為個人投資人設計的日記系統，能夠結合交易記錄、提醒與反思功能。",
+      "paragraph2": "經過精心設計與開發，投資日記現已成為一個完整的投資管理平台，支援多種功能包括 FIFO 成本計算、時間軸視圖、智能提醒等。",
+      "paragraph3": "我們持續改進產品，致力於為投資人提供最佳的體驗。感謝您選擇投資日記作為您的投資夥伴。"
+    },
+    "features": {
+      "title": "核心功能",
+      "subtitle": "專為投資人設計的功能",
+      "diary": {
+        "title": "Markdown 日記",
+        "description": "支援 Markdown 語法撰寫日記，讓您可以格式化文字、插入程式碼，創建豐富的投資記錄。"
+      },
+      "fifo": {
+        "title": "FIFO 成本計算",
+        "description": "自動使用先進先出法計算股票成本，精確追蹤每筆交易的損益。"
+      },
+      "realtime": {
+        "title": "即時提醒系統",
+        "description": "設定時間觸發的提醒，系統會在指定時間通知您，確保不會錯過重要時刻。"
+      },
+      "privacy": {
+        "title": "資料隱私保護",
+        "description": "所有數據均安全儲存，使用 HTTPS 加密傳輸，密碼經過 bcrypt 加密，確保您的隱私安全。"
+      }
+    },
+    "tech": {
+      "title": "技術架構",
+      "subtitle": "使用現代化技術堆疊打造"
+    },
+    "contact": {
+      "title": "與我們聯繫",
+      "description": "有問題或建議？歡迎透過 GitHub 聯繫我們，或直接開始使用投資日記。",
+      "github": "查看 GitHub",
+      "getStarted": "開始使用"
+    },
+    "footer": {
+      "rights": "保留所有權利"
+    }
   }
 }
