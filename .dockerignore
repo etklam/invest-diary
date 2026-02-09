@@ -2,7 +2,6 @@
 node_modules
 npm-debug.log
 yarn-error.log
-package-lock.json
 
 # Nuxt build output
 .nuxt
@@ -37,7 +36,6 @@ coverage
 Dockerfile*
 docker-compose*.yml
 .dockerignore
-docker-entrypoint.sh
 
 # Documentation
 README.md

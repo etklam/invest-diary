@@ -1,10 +1,11 @@
 # =============================================================================
 # Build stage
 # =============================================================================
-FROM node:20.18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Build arguments for flexibility
-ARG NODE_ENV=production
+# Force development mode during build so devDependencies (Nuxt modules) are installed
+ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 
 # Set working directory
@@ -21,7 +22,10 @@ RUN apk add --no-cache openssl
 COPY package.json package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm ci --include=dev --silent && npm cache clean --force
+# Skip prepare script (husky) since git hooks aren't needed in Docker
+RUN npm install --ignore-scripts && \
+    npm run postinstall && \
+    npm cache clean --force
 
 # Copy Prisma schema early for better layer caching
 COPY prisma ./prisma
@@ -36,15 +40,12 @@ COPY . .
 ENV NUXT_TELEMETRY_DISABLED=1
 
 # Prepare Nuxt and build application
-RUN npm run postinstall && \
-    npm run build && \
-    # Prune dev dependencies from production build
-    npm prune --production
+RUN npm run build
 
 # =============================================================================
 # Production stage
 # =============================================================================
-FROM node:20.18-alpine AS runner
+FROM node:20-alpine AS runner
 
 # Set environment
 ENV NODE_ENV=production \

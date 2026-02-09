@@ -4,7 +4,7 @@
 # Usage: docker-compose -f docker-compose.dev.yml up
 # =============================================================================
 
-FROM node:20.18-alpine
+FROM node:20-alpine
 
 # Set development environment
 ENV NODE_ENV=development \

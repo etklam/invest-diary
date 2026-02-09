@@ -28,7 +28,9 @@
       "Bash(npm run health:quick:*)",
       "Bash(xargs kill:*)",
       "Bash(npx nuxi typecheck:*)",
-      "mcp__zread__get_repo_structure"
+      "mcp__zread__get_repo_structure",
+      "Bash(docker-compose:*)",
+      "Bash(npm ci:*)"
     ]
   }
 }
