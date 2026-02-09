@@ -1,0 +1,159 @@
+{
+  "common": {
+    "appName": "Investment Diary",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "submit": "Submit",
+    "reset": "Reset",
+    "clear": "Clear",
+    "all": "All",
+    "noData": "No data",
+    "switchLanguage": "Switch language"
+  },
+
+  "nav": {
+    "calendar": "Calendar",
+    "timeline": "Timeline",
+    "diaries": "Diaries",
+    "alerts": "Alerts",
+    "stocks": "Stocks"
+  },
+
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "loginTitle": "Login to your account",
+    "registerTitle": "Create a new account",
+    "createAccount": "Create a new account",
+    "orCreateAccount": "Or",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginNow": "Login now",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "name": "Name",
+    "nameOptional": "Name (optional)",
+    "loggingIn": "Logging in...",
+    "registering": "Registering...",
+    "loggedInAs": "Logged in as",
+    "emailPlaceholder": "you{'@'}example.com",
+    "passwordPlaceholder": "••••••••",
+    "namePlaceholder": "Your name",
+    "passwordMinLength": "At least 8 characters",
+    "passwordLengthError": "Password must be at least 8 characters",
+    "confirmPasswordPlaceholder": "Enter password again",
+    "passwordMismatchError": "Passwords do not match"
+  },
+
+  "diary": {
+    "title": "Diaries",
+    "newDiary": "New Diary",
+    "editDiary": "Edit Diary",
+    "writeDiary": "Write Diary",
+    "viewDiary": "View Diary",
+    "diaryTitle": "Title",
+    "diaryContent": "Content",
+    "diaryDate": "Date",
+    "searchPlaceholder": "Search title or content...",
+    "dateFrom": "Start date",
+    "dateTo": "End date",
+    "sortBy": "Sort by",
+    "dateDesc": "Date (newest first)",
+    "dateAsc": "Date (oldest first)",
+    "titleAsc": "Title (A–Z)",
+    "titleDesc": "Title (Z–A)",
+    "clearFilters": "Clear filters",
+    "resultsFound": "Found {count} results",
+    "loadFailed": "Failed to load",
+    "noDiaries": "No diaries yet",
+    "createFirst": "Start writing your first investment diary",
+    "deleteConfirm": "Are you sure you want to delete this diary?",
+    "deleteSuccess": "Diary deleted",
+    "saveSuccess": "Diary saved",
+    "saveFailed": "Failed to save",
+    "titleRequired": "Title is required",
+    "contentRequired": "Content is required",
+    "backToList": "Back to diaries",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at"
+  },
+
+  "alert": {
+    "title": "Alerts",
+    "markAsRead": "Mark as read",
+    "markedAsRead": "Alert marked as read",
+    "noAlerts": "No active alerts",
+    "noAlertsDesc": "All alerts have been processed or none have been created.",
+    "viewRelatedDiary": "View related diary",
+    "triggerTime": "Trigger time",
+    "createdAt": "Created at",
+    "loadFailed": "Failed to load"
+  },
+
+  "stock": {
+    "title": "Stock Management",
+    "holdings": "Holdings",
+    "noHoldings": "No holdings",
+    "symbol": "Symbol",
+    "quantity": "Quantity",
+    "avgPrice": "Avg. cost",
+    "currentPrice": "Current price",
+    "profit": "P/L",
+    "loadFailed": "Failed to load"
+  },
+
+  "settings": {
+    "title": "Account Settings",
+    "profile": "Profile",
+    "tradingSettings": "Trading Settings",
+    "emailCannotChange": "Email cannot be changed",
+    "expectedMonthlyTrades": "Expected monthly trades",
+    "expectedMonthlyTradesDesc": "Set your expected number of trades per month",
+    "expectedProfit": "Expected profit",
+    "expectedProfitDesc": "Your monthly profit target",
+    "expectedAvgHolding": "Expected average holding",
+    "expectedAvgHoldingDesc": "Your expected average holding amount",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordChanged": "Password updated",
+    "passwordChangeFailed": "Failed to change password",
+    "saveSuccess": "Settings saved",
+    "saveFailed": "Failed to save",
+    "passwordMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters"
+  },
+
+  "timeline": {
+    "title": "Timeline",
+    "noEntries": "No timeline entries yet",
+    "loadFailed": "Failed to load"
+  },
+
+  "theme": {
+    "toggleDarkMode": "Toggle dark mode",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+
+  "error": {
+    "unauthorized": "Unauthorized, please login first",
+    "invalidCredentials": "Invalid email or password",
+    "emailExists": "This email is already registered",
+    "validationError": "Validation failed",
+    "unknown": "An unknown error occurred",
+    "networkError": "Network connection error",
+    "notFound": "Page not found",
+    "serverError": "Server error"
+  }
+}

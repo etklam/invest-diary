@@ -9,13 +9,14 @@ interface NavItem {
 export const useNavigation = () => {
   const { isAuthenticated } = useAuth()
   const route = useRoute()
+  const { t } = useI18n()
 
   const navItems = computed<NavItem[]>(() => [
-    { label: '月曆', to: '/' },
-    { label: '時間軸', to: '/timeline', auth: true },
-    { label: '日記列表', to: '/diaries', auth: true },
-    { label: '提醒管理', to: '/alerts', auth: true },
-    { label: '股票管理', to: '/stocks', auth: true }
+    { label: t('nav.calendar'), to: '/' },
+    { label: t('nav.timeline'), to: '/timeline', auth: true },
+    { label: t('nav.diaries'), to: '/diaries', auth: true },
+    { label: t('nav.alerts'), to: '/alerts', auth: true },
+    { label: t('nav.stocks'), to: '/stocks', auth: true }
   ])
 
   const visibleNavItems = computed(() =>

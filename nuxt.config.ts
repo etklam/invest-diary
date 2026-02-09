@@ -7,7 +7,8 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxtjs/mdc',
     '@nuxt/icon',
-    '@nuxtjs/color-mode'
+    '@nuxtjs/color-mode',
+    '@nuxtjs/i18n'
   ],
 
   colorMode: {
@@ -23,6 +24,22 @@ export default defineNuxtConfig({
   mdc: {
     remarkPlugins: {},
     rehypePlugins: {}
+  },
+
+  i18n: {
+    locales: [
+      { code: 'zh-TW', name: '繁體中文', file: 'zh-TW.json' },
+      { code: 'en', name: 'English', file: 'en.json' }
+    ],
+    defaultLocale: 'zh-TW',
+    lazy: true,
+    langDir: 'locales',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_locale',
+      fallbackLocale: 'zh-TW'
+    }
   },
 
   runtimeConfig: {

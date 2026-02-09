@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const colorMode = useColorMode()
+const { t } = useI18n()
 const { isAuthenticated, visibleNavItems, isActive } = useNavigation()
 
 // Mobile menu state
@@ -19,7 +20,7 @@ watch(() => route.path, () => {
         <div class="flex">
           <div class="flex-shrink-0 flex items-center">
             <NuxtLink to="/" class="text-xl font-bold text-gray-800 dark:text-white">
-              投資日記
+              {{ $t('common.appName') }}
             </NuxtLink>
           </div>
           <!-- Desktop navigation -->
@@ -38,10 +39,11 @@ watch(() => route.path, () => {
 
         <!-- Desktop right side -->
         <div class="hidden sm:flex sm:items-center sm:space-x-4">
+          <LanguageSwitcher />
           <button
             @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
             class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="切換深色模式"
+            :aria-label="$t('theme.toggleDarkMode')"
           >
             <Icon
               :name="colorMode.value === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
@@ -58,13 +60,13 @@ watch(() => route.path, () => {
               to="/auth/login"
               class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors min-h-[44px]"
             >
-              登入
+              {{ $t('auth.login') }}
             </NuxtLink>
             <NuxtLink
               to="/auth/register"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 min-h-[44px]"
             >
-              註冊
+              {{ $t('auth.register') }}
             </NuxtLink>
           </template>
         </div>
@@ -74,7 +76,7 @@ watch(() => route.path, () => {
           <button
             @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
             class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="切換深色模式"
+            :aria-label="$t('theme.toggleDarkMode')"
           >
             <Icon
               :name="colorMode.value === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
@@ -84,7 +86,7 @@ watch(() => route.path, () => {
           <button
             @click="isMobileMenuOpen = !isMobileMenuOpen"
             class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="開啟選單"
+            :aria-label="isMobileMenuOpen ? $t('theme.closeMenu') : $t('theme.openMenu')"
             :aria-expanded="isMobileMenuOpen"
           >
             <Icon
@@ -120,20 +122,20 @@ watch(() => route.path, () => {
       <div class="pt-4 pb-4 border-t border-gray-200 dark:border-gray-700 px-2">
         <template v-if="isAuthenticated">
           <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-            已登入
+            {{ $t('auth.loggedInAs') }}
           </div>
           <NuxtLink
             to="/settings"
             class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
             @click="isMobileMenuOpen = false"
           >
-            設定
+            {{ $t('settings.title') }}
           </NuxtLink>
           <button
             @click="async () => { const { logout } = useAuth(); isMobileMenuOpen = false; await logout(); }"
             class="block w-full text-left px-3 py-3 rounded-md text-base font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] flex items-center"
           >
-            登出
+            {{ $t('auth.logout') }}
           </button>
         </template>
         <template v-else>
@@ -142,14 +144,14 @@ watch(() => route.path, () => {
             class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
             @click="isMobileMenuOpen = false"
           >
-            登入
+            {{ $t('auth.login') }}
           </NuxtLink>
           <NuxtLink
             to="/auth/register"
             class="block px-3 py-3 rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20 min-h-[44px] flex items-center"
             @click="isMobileMenuOpen = false"
           >
-            註冊
+            {{ $t('auth.register') }}
           </NuxtLink>
         </template>
       </div>

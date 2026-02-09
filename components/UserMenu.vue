@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { user, logout } = useAuth()
-const colorMode = useColorMode()
+const { t } = useI18n()
 
 const isOpen = ref(false)
 
@@ -26,7 +26,7 @@ const displayName = computed(() => {
     <button
       @click="isOpen = !isOpen"
       class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
-      aria-label="用戶選單"
+      :aria-label="$t('auth.loggedInAs')"
     >
       <!-- User avatar icon -->
       <div class="h-10 w-10 sm:h-8 sm:w-8 rounded-full bg-indigo-600 flex items-center justify-center">
@@ -60,7 +60,7 @@ const displayName = computed(() => {
       >
         <!-- User info header -->
         <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <p class="text-sm text-gray-500 dark:text-gray-400">已登入為</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('auth.loggedInAs') }}</p>
           <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
             {{ user.email }}
           </p>
@@ -74,7 +74,7 @@ const displayName = computed(() => {
             class="group flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
           >
             <Icon name="heroicons:pencil-square" class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-            寫日記
+            {{ $t('diary.writeDiary') }}
           </NuxtLink>
 
           <NuxtLink
@@ -83,7 +83,7 @@ const displayName = computed(() => {
             class="group flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
           >
             <Icon name="heroicons:cog-6-tooth" class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-            設定
+            {{ $t('settings.title') }}
           </NuxtLink>
 
           <hr class="my-1 border-gray-200 dark:border-gray-700" />
@@ -93,7 +93,7 @@ const displayName = computed(() => {
             class="group flex w-full items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
           >
             <Icon name="heroicons:arrow-left-on-rectangle" class="mr-3 h-5 w-5" />
-            登出
+            {{ $t('auth.logout') }}
           </button>
         </div>
       </div>

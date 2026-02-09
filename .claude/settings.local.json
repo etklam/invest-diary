@@ -27,7 +27,8 @@
       "Bash(npx tsx:*)",
       "Bash(npm run health:quick:*)",
       "Bash(xargs kill:*)",
-      "Bash(npx nuxi typecheck:*)"
+      "Bash(npx nuxi typecheck:*)",
+      "mcp__zread__get_repo_structure"
     ]
   }
 }

@@ -1,0 +1,159 @@
+{
+  "common": {
+    "appName": "投資日記",
+    "loading": "載入中...",
+    "save": "儲存",
+    "cancel": "取消",
+    "delete": "刪除",
+    "edit": "編輯",
+    "create": "新增",
+    "search": "搜尋",
+    "close": "關閉",
+    "confirm": "確認",
+    "back": "返回",
+    "submit": "送出",
+    "reset": "重設",
+    "clear": "清除",
+    "all": "全部",
+    "noData": "無資料",
+    "switchLanguage": "切換語言"
+  },
+
+  "nav": {
+    "calendar": "月曆",
+    "timeline": "時間軸",
+    "diaries": "日記列表",
+    "alerts": "提醒管理",
+    "stocks": "股票管理"
+  },
+
+  "auth": {
+    "login": "登入",
+    "logout": "登出",
+    "register": "註冊",
+    "loginTitle": "登入您的帳戶",
+    "registerTitle": "建立新帳戶",
+    "createAccount": "建立新帳戶",
+    "email": "電子郵件",
+    "password": "密碼",
+    "confirmPassword": "確認密碼",
+    "name": "姓名",
+    "loggingIn": "登入中...",
+    "registering": "註冊中...",
+    "orCreateAccount": "或建立新帳戶",
+    "alreadyHaveAccount": "已有帳戶？",
+    "loggedInAs": "已登入為",
+    "emailPlaceholder": "your{'@'}email.com",
+    "passwordPlaceholder": "••••••••",
+    "namePlaceholder": "您的姓名",
+    "nameOptional": "姓名（選填）",
+    "passwordMinLength": "至少8個字元",
+    "passwordLengthError": "密碼長度至少需要8個字元",
+    "confirmPasswordPlaceholder": "再次輸入密碼",
+    "passwordMismatchError": "密碼不一致",
+    "loginNow": "立即登入"
+  },
+
+  "diary": {
+    "title": "日記列表",
+    "newDiary": "新增日記",
+    "editDiary": "編輯日記",
+    "writeDiary": "寫日記",
+    "viewDiary": "查看日記",
+    "diaryTitle": "標題",
+    "diaryContent": "內容",
+    "diaryDate": "日期",
+    "searchPlaceholder": "搜尋標題或內容...",
+    "dateFrom": "開始日期",
+    "dateTo": "結束日期",
+    "sortBy": "排序方式",
+    "dateDesc": "日期（新到舊）",
+    "dateAsc": "日期（舊到新）",
+    "titleAsc": "標題（A-Z）",
+    "titleDesc": "標題（Z-A）",
+    "clearFilters": "清除篩選",
+    "resultsFound": "找到 {count} 筆結果",
+    "loadFailed": "載入失敗",
+    "noDiaries": "尚無日記",
+    "createFirst": "開始撰寫您的第一篇投資日記",
+    "deleteConfirm": "確定要刪除這篇日記嗎？",
+    "deleteSuccess": "日記已刪除",
+    "saveSuccess": "日記已儲存",
+    "saveFailed": "儲存失敗",
+    "titleRequired": "請輸入標題",
+    "contentRequired": "請輸入內容",
+    "backToList": "返回日記列表",
+    "createdAt": "建立於",
+    "updatedAt": "更新於"
+  },
+
+  "alert": {
+    "title": "提醒管理",
+    "markAsRead": "標記為已讀",
+    "markedAsRead": "提醒已標記為已讀",
+    "noAlerts": "尚無有效提醒",
+    "noAlertsDesc": "所有提醒皆已處理或尚未建立。",
+    "viewRelatedDiary": "查看關聯日記",
+    "triggerTime": "觸發時間",
+    "createdAt": "建立於",
+    "loadFailed": "載入失敗"
+  },
+
+  "stock": {
+    "title": "股票管理",
+    "holdings": "持倉",
+    "noHoldings": "尚無持倉",
+    "symbol": "股票代碼",
+    "quantity": "數量",
+    "avgPrice": "平均成本",
+    "currentPrice": "現價",
+    "profit": "損益",
+    "loadFailed": "載入失敗"
+  },
+
+  "settings": {
+    "title": "帳戶設定",
+    "profile": "個人資料",
+    "tradingSettings": "交易設定",
+    "emailCannotChange": "電子郵件無法修改",
+    "expectedMonthlyTrades": "預計每月交易次數",
+    "expectedMonthlyTradesDesc": "設定您預計每個月進行的交易次數",
+    "expectedProfit": "預期利潤",
+    "expectedProfitDesc": "您每個月的預期獲利目標",
+    "expectedAvgHolding": "預期平均持倉金額",
+    "expectedAvgHoldingDesc": "您預期持有的平均金額",
+    "changePassword": "變更密碼",
+    "currentPassword": "目前密碼",
+    "newPassword": "新密碼",
+    "confirmNewPassword": "確認新密碼",
+    "passwordChanged": "密碼已更新",
+    "passwordChangeFailed": "密碼變更失敗",
+    "saveSuccess": "設定已儲存",
+    "saveFailed": "儲存失敗",
+    "passwordMismatch": "兩次輸入的密碼不一致",
+    "passwordTooShort": "密碼至少需要 6 個字元"
+  },
+
+  "timeline": {
+    "title": "時間軸",
+    "noEntries": "尚無時間軸紀錄",
+    "loadFailed": "載入失敗"
+  },
+
+  "theme": {
+    "toggleDarkMode": "切換深色模式",
+    "openMenu": "開啟選單",
+    "closeMenu": "關閉選單"
+  },
+
+  "error": {
+    "unauthorized": "未授權，請先登入",
+    "invalidCredentials": "電子郵件或密碼錯誤",
+    "emailExists": "此電子郵件已被註冊",
+    "validationError": "資料驗證失敗",
+    "unknown": "發生未知錯誤",
+    "networkError": "網路連線錯誤",
+    "notFound": "找不到頁面",
+    "serverError": "伺服器錯誤"
+  }
+}

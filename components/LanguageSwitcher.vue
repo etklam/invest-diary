@@ -1,0 +1,61 @@
+<script setup lang="ts">
+const { locale, locales, setLocale } = useI18n()
+
+const isOpen = ref(false)
+
+const availableLocales = computed(() => 
+  (locales.value as { code: string; name: string }[]).filter(l => l.code !== locale.value)
+)
+
+const currentLocale = computed(() =>
+  (locales.value as { code: string; name: string }[]).find(l => l.code === locale.value)
+)
+
+const selectLocale = async (code: string) => {
+  await setLocale(code)
+  isOpen.value = false
+}
+
+// Close dropdown when clicking outside
+const closeDropdown = () => {
+  isOpen.value = false
+}
+</script>
+
+<template>
+  <div class="relative" v-if="availableLocales.length > 0">
+    <button
+      @click="isOpen = !isOpen"
+      class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+      :aria-label="$t('common.switchLanguage')"
+    >
+      <Icon name="heroicons:language" class="h-5 w-5" />
+    </button>
+
+    <Transition
+      enter-active-class="transition ease-out duration-100"
+      enter-from-class="transform opacity-0 scale-95"
+      enter-to-class="transform opacity-100 scale-100"
+      leave-active-class="transition ease-in duration-75"
+      leave-from-class="transform opacity-100 scale-100"
+      leave-to-class="transform opacity-0 scale-95"
+    >
+      <div
+        v-if="isOpen"
+        class="absolute right-0 mt-2 w-40 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+        @click.outside="closeDropdown"
+      >
+        <div class="py-1">
+          <button
+            v-for="loc in availableLocales"
+            :key="loc.code"
+            @click="selectLocale(loc.code)"
+            class="block w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+          >
+            {{ loc.name }}
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </div>
+</template>
