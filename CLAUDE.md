@@ -122,11 +122,12 @@ git push --no-verify
 - **Runtime Config:** Database URL from `DATABASE_URL`, app name from `NUXT_PUBLIC_APP_NAME`
 
 ### Database Models
-Four main tables with foreign key relationships:
+Five main tables with foreign key relationships:
 - **User** - User accounts with email, password (bcrypt hashed), name, and trading settings
 - **Diary** - Main diary entries with `date` field (defaults to now), title required, content optional, linked to User
 - **Alert** - Time-based alerts linked to diaries (trigger_at, is_dismissed)
 - **Transaction** - Stock trades linked to diaries (BUY/SELL, FIFO calculation)
+- **Discipline** - User's custom trading discipline quotes (content: VarChar(255), linked to User)
 
 **Important:**
 - Holdings are calculated dynamically using average cost method (not true FIFO matching) via `lib/utils.ts`
@@ -163,6 +164,9 @@ RESTful pattern in `server/api/`:
 - `alerts.get.ts` - GET /api/alerts
 - `alerts.post.ts` - POST /api/alerts
 - `alerts/[id]/dismiss.put.ts` - PUT /api/alerts/:id/dismiss
+- `discipline.get.ts` - GET /api/discipline (get all user's disciplines)
+- `discipline.post.ts` - POST /api/discipline (create new discipline)
+- `discipline/random.get.ts` - GET /api/discipline/random (get random discipline quote)
 
 ### Component Organization
 - `pages/` - Route pages (auto-imported)
@@ -170,11 +174,12 @@ RESTful pattern in `server/api/`:
 - `pages/settings/` - User settings page
 - `pages/stocks/` - Stock holdings dashboard
 - `pages/timeline/` - Timeline view of diaries with date range filtering
+- `pages/discipline/` - Trading discipline quotes management
 - `components/` - Reusable Vue components (auto-imported)
   - `UserMenu.vue` - Dropdown menu for authenticated users with logout
   - `Navigation.vue` - Responsive navigation with mobile menu
   - `DiaryEditor.vue`, `HoldingsDisplay.vue`, `TransactionInput.vue`, etc.
-- `composables/` - Vue composables (useAuth.ts, useNavigation.ts)
+- `composables/` - Vue composables (useAuth.ts, useNavigation.ts, useDiscipline.ts)
 - `middleware/` - Route middleware (auth.ts for route protection)
 - `layouts/` - Layout wrappers (currently using default from `app.vue`)
 
@@ -258,6 +263,16 @@ Holdings use average cost method (simplified FIFO):
 - `showToast(message, type)` - Display toast messages
 - Auto-dismiss after timeout
 
+### Trading Discipline System
+- Users can create custom trading discipline quotes via `pages/discipline/index.vue`
+- `showDisciplineToast()` composable displays random discipline after diary save/edit
+- API endpoint `/api/discipline/random` returns a random discipline:
+  - If user has custom disciplines, returns random one from their list
+  - If user has no disciplines, returns random default quote (encouragement to write diary)
+- Default quotes include: "寫日記是提升交易心態的最好方法", "明天又是新的一天，持續寫日記吧", etc.
+- Toast displays for 8 seconds with 💭 for custom quotes, 💡 for default quotes
+- Automatically called after successful diary creation/edit in `pages/diaries/new.vue` and `pages/diaries/[id]/edit.vue`
+
 ### Transaction Reuse
 When creating new diaries, users can copy holdings from the latest transaction record via `/api/transactions/latest`.
 
@@ -328,3 +343,5 @@ Based on README.md checklist:
 - Alert cron jobs are planned but not yet implemented
 - Timeline view uses client-side fetching (`useLazyFetch`) to avoid SSR auth issues
 - Color mode preference persists in localStorage and syncs with system preference
+- Trading discipline quotes use `VarChar(255)` in schema for concise quotes
+- `showDisciplineToast()` is an async composable that fetches and displays random discipline

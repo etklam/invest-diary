@@ -331,6 +331,9 @@ const saveDiary = async () => {
       toast.success('日記儲存成功！')
     }
 
+    // Show random discipline quote
+    await showDisciplineToast()
+
     router.push('/diaries')
   } catch (e: any) {
     // Handle 401 Unauthorized errors
