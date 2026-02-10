@@ -187,7 +187,9 @@ erDiagram
 | UI 函式庫 | Vue 3.5+ | 元件函式庫 |
 | 樣式 | Tailwind CSS v3 | 實用優先的 CSS 框架 |
 | 深色模式 | @nuxtjs/color-mode | 主題切換功能 |
+| 國際化 | @nuxtjs/i18n | 多語言支援（繁中、簡中、英文）|
 | PWA | @vite-pwa/nuxt | 漸進式 Web 應用程式支援 |
+| 圖示生成 | @vite-pwa/assets-generator | PWA 圖示自動生成 |
 | 資料庫 | MySQL 8.0+ | 關聯式資料庫 |
 | ORM | Prisma | 型別安全的資料庫客戶端 |
 | 驗證 | JWT + bcrypt | JSON Web Token + 密碼雜湊 |

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **Personal Investment Diary System** (投資日記系統) - a multi-user application for tracking investment diaries with Markdown writing, in-app alerts, and stock portfolio management using FIFO cost basis calculation. Features JWT-based authentication with bcrypt password hashing.
 
-**Tech Stack:** Nuxt 3 + Vue 3 + TypeScript + MySQL + Prisma ORM + Tailwind CSS + JWT + bcrypt + @nuxtjs/color-mode
+**Tech Stack:** Nuxt 3 + Vue 3 + TypeScript + MySQL + Prisma ORM + Tailwind CSS + JWT + bcrypt + @nuxtjs/color-mode + @vite-pwa/nuxt
 
 **Language:** Chinese (Traditional) is the primary language for UI and documentation.
 
@@ -253,6 +253,35 @@ Holdings use average cost method (simplified FIFO):
 ### Transaction Reuse
 When creating new diaries, users can copy holdings from the latest transaction record via `/api/transactions/latest`.
 
+### PWA (Progressive Web App)
+- Uses `@vite-pwa/nuxt` module for offline support and installability
+- **PWA Components:**
+  - `PWAInstallPrompt.vue` - Displays install banner when app can be installed
+  - `PWAReloadPrompt.vue` - Shows update prompts and offline-ready notifications
+- **PWA Configuration** (`nuxt.config.ts`):
+  - Auto-update mode for service worker
+  - Manifest with app name, icons, theme color
+  - Workbox caching strategies for static assets and API endpoints
+  - Dev mode enabled for testing
+- **Important:** When accessing `$pwa` in components, always check if it exists first:
+  ```typescript
+  const pwa = computed(() => {
+    try {
+      return useNuxtApp().$pwa
+    } catch {
+      return null
+    }
+  })
+  ```
+  The `$pwa` object may be undefined during SSR or before PWA initialization
+- **Icon Generation:** Scripts in `scripts/` generate PNG icons from SVG source:
+  - `scripts/generate-icons.js` - Generate SVG base icon
+  - `scripts/generate-png-icons.js` - Generate PNG icons (192x192, 512x512, maskable)
+- **Caching Strategy:**
+  - Static assets: CacheFirst (1 year expiration)
+  - API endpoints: NetworkFirst with 5-minute cache
+  - Google Fonts: CacheFirst (1 year expiration)
+
 ## UI/UX Patterns
 
 - **Responsive:** Mobile-first with Tailwind breakpoints
@@ -276,6 +305,7 @@ Based on README.md checklist:
 - ✅ Timeline view with filtering (complete)
 - ✅ Dark/Light mode toggle (complete)
 - ✅ Mobile-responsive navigation (complete)
+- ✅ PWA support with offline capabilities (complete)
 
 ## Important Notes
 
