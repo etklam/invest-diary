@@ -38,17 +38,17 @@ onMounted(fetchList)
 
 <template>
   <div class="max-w-2xl mx-auto p-4 space-y-6">
-    <h1 class="text-2xl font-bold">交易紀律</h1>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">交易紀律</h1>
 
     <div class="space-y-2">
       <textarea
         v-model="content"
         rows="3"
-        class="w-full border rounded p-2"
+        class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
         placeholder="輸入一句提醒自己的交易原則"
       />
       <button
-        class="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
+        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded disabled:opacity-50 transition-colors"
         :disabled="loading"
         @click="submit"
       >
@@ -56,7 +56,7 @@ onMounted(fetchList)
       </button>
     </div>
 
-    <div v-if="list.length === 0" class="text-gray-400">
+    <div v-if="list.length === 0" class="text-gray-400 dark:text-gray-500">
       還沒有任何交易紀律
     </div>
 
@@ -64,10 +64,10 @@ onMounted(fetchList)
       <div
         v-for="item in list"
         :key="item.id"
-        class="border rounded p-4"
+        class="border border-gray-200 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-800"
       >
-        <div class="text-lg">{{ item.content }}</div>
-        <div class="text-xs text-gray-400 mt-1">
+        <div class="text-lg text-gray-900 dark:text-white">{{ item.content }}</div>
+        <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
           {{ new Date(item.createdAt).toLocaleString() }}
         </div>
       </div>
