@@ -140,25 +140,27 @@ const fetchDiaries = async () => {
   }
 }
 
-// 檢查某天是否有日記
-const hasDiary = (day: number): boolean => {
-  return diaries.value.some(diary => {
+// 使用 computed 預先建立 Map，加速日期查詢
+const diaryMap = computed(() => {
+  const map = new Map<string, Diary>()
+  diaries.value.forEach(diary => {
     const diaryDate = new Date(diary.date || diary.createdAt)
-    return diaryDate.getDate() === day &&
-           diaryDate.getMonth() === currentMonth.value &&
-           diaryDate.getFullYear() === currentYear.value
+    const key = `${diaryDate.getFullYear()}-${diaryDate.getMonth()}-${diaryDate.getDate()}`
+    map.set(key, diary)
   })
+  return map
+})
+
+// 檢查某天是否有日記（O(1)）
+const hasDiary = (day: number): boolean => {
+  const key = `${currentYear.value}-${currentMonth.value}-${day}`
+  return diaryMap.value.has(key)
 }
 
-// 獲取某天的日記標題
+// 獲取某天的日記標題（O(1)）
 const getDiaryTitle = (day: number): string => {
-  const diary = diaries.value.find(diary => {
-    const diaryDate = new Date(diary.date || diary.createdAt)
-    return diaryDate.getDate() === day &&
-           diaryDate.getMonth() === currentMonth.value &&
-           diaryDate.getFullYear() === currentYear.value
-  })
-  return diary?.title || ''
+  const key = `${currentYear.value}-${currentMonth.value}-${day}`
+  return diaryMap.value.get(key)?.title || ''
 }
 
 // 檢查是否是今天
@@ -196,17 +198,11 @@ const goToToday = () => {
   currentMonth.value = today.getMonth()
 }
 
-// 處理日期點擊
+// 處理日期點擊（使用 Map 加速查詢）
 const handleDateClick = (day: number) => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-
-  // 檢查該天是否有日記
-  const diary = diaries.value.find(diary => {
-    const diaryDate = new Date(diary.date || diary.createdAt)
-    return diaryDate.getDate() === day &&
-           diaryDate.getMonth() === currentMonth.value &&
-           diaryDate.getFullYear() === currentYear.value
-  })
+  const key = `${currentYear.value}-${currentMonth.value}-${day}`
+  const diary = diaryMap.value.get(key)
 
   if (diary) {
     // 如果有日記，跳轉到詳情頁面

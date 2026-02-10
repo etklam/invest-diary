@@ -1,25 +1,36 @@
 import prisma from '../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
-  console.log('Fetching diaries...')
+  console.log('Fetching diaries with pagination...')
   try {
     // Auth guaranteed by server middleware
     const userId = BigInt(event.context.user!.id)
 
-    const diaries = await prisma.diary.findMany({
-      where: {
-        userId
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: {
-        transactions: true,
-      },
-    })
+    const query = getQuery(event)
+    const page = Number(query.page) || 1
+    const limit = Number(query.limit) || 20
+    const skip = (page - 1) * limit
 
-    console.log('Fetched diaries:', diaries.length, 'for user:', userId)
-    return diaries
+    const [diaries, total] = await Promise.all([
+      prisma.diary.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        include: { transactions: true },
+        skip,
+        take: limit,
+      }),
+      prisma.diary.count({ where: { userId } })
+    ])
+
+    return {
+      data: diaries,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   } catch (error) {
     console.error('Error fetching diaries:', error)
     throw createError({

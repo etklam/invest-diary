@@ -174,8 +174,21 @@ interface DiaryGroup {
   diaries: Diary[]
 }
 
-// Use lazy fetch to avoid calling API during SSR before auth check
-const { data: diaries, pending, error } = await useLazyFetch<Diary[]>('/api/diaries')
+// Use lazy fetch with pagination to avoid loading all diaries at once
+const page = ref(1)
+const limit = 20
+const diaries = ref<Diary[]>([])
+
+const { pending, error, refresh } = await useLazyFetch<{ data: Diary[]; pagination: any }>(
+  () => `/api/diaries?page=${page.value}&limit=${limit}`,
+  {
+    onResponse({ response }) {
+      if (response._data?.data) {
+        diaries.value.push(...response._data.data)
+      }
+    }
+  }
+)
 
 const filters = reactive({
   dateFrom: '',
@@ -224,7 +237,7 @@ const filteredDiaries = computed(() => {
 
 // Group diaries by year and month
 const groupedDiaries = computed((): DiaryGroup[] => {
-  const groups = new Map<string, Diary>()
+  const groups = new Map<string, DiaryGroup>()
 
   filteredDiaries.value.forEach(diary => {
     const date = new Date(diary.date || diary.createdAt)
