@@ -8,7 +8,8 @@ export default defineNuxtConfig({
     '@nuxtjs/mdc',
     '@nuxt/icon',
     '@nuxtjs/color-mode',
-    '@nuxtjs/i18n'
+    '@nuxtjs/i18n',
+    '@vite-pwa/nuxt'
   ],
 
   colorMode: {
@@ -51,6 +52,78 @@ export default defineNuxtConfig({
     // Public to both client and server
     public: {
       appName: process.env.NUXT_PUBLIC_APP_NAME || '投資日記'
+    }
+  },
+
+  pwa: {
+    registerType: 'autoUpdate',
+    includeAssets: ['favicon.ico', 'robots.txt'],
+    manifest: {
+      name: '投資日記',
+      short_name: '投資日記',
+      description: '個人投資日記系統 - 追蹤投資筆記與股票組合',
+      lang: 'zh-TW',
+      display: 'standalone',
+      start_url: '/',
+      background_color: '#ffffff',
+      theme_color: '#3b82f6',
+      icons: [
+        {
+          src: '/icon-192x192.png',
+          sizes: '192x192',
+          type: 'image/png'
+        },
+        {
+          src: '/icon-512x512.png',
+          sizes: '512x512',
+          type: 'image/png'
+        },
+        {
+          src: '/icon-maskable-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable'
+        }
+      ]
+    },
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,png,svg,ico,txt}'],
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'google-fonts-cache',
+            expiration: {
+              maxEntries: 10,
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        },
+        {
+          urlPattern: /\/api\/.*$/,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: {
+              maxEntries: 50,
+              maxAgeSeconds: 60 * 5 // 5 minutes
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            },
+            networkTimeoutSeconds: 10
+          }
+        }
+      ]
+    },
+    devOptions: {
+      enabled: true,
+      type: 'module',
+      suppressWarnings: true
     }
   }
 })

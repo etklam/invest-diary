@@ -30,7 +30,9 @@
       "Bash(npx nuxi typecheck:*)",
       "mcp__zread__get_repo_structure",
       "Bash(docker-compose:*)",
-      "Bash(npm ci:*)"
+      "Bash(npm ci:*)",
+      "Bash(npx pwa-assets-generator:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

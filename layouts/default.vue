@@ -1,10 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <PWAInstallPrompt />
     <Navigation />
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-8" :class="{ 'pt-24': showInstallPrompt }">
       <slot />
     </main>
     <Toast :toasts="toasts" @remove="removeToast" />
+    <PWAReloadPrompt />
     <AlertNotification
       v-if="dueAlert"
       :message="dueAlert.message"
@@ -17,6 +19,7 @@
 <script setup lang="ts">
 const { toasts, removeToast } = useToast()
 const { user } = useAuth()
+const showInstallPrompt = ref(false)
 const dueAlert = ref<any>(null)
 const showAlert = ref(false)
 const processedAlerts = ref<Set<string>>(new Set())

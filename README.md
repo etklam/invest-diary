@@ -187,6 +187,7 @@ erDiagram
 | UI 函式庫 | Vue 3.5+ | 元件函式庫 |
 | 樣式 | Tailwind CSS v3 | 實用優先的 CSS 框架 |
 | 深色模式 | @nuxtjs/color-mode | 主題切換功能 |
+| PWA | @vite-pwa/nuxt | 漸進式 Web 應用程式支援 |
 | 資料庫 | MySQL 8.0+ | 關聯式資料庫 |
 | ORM | Prisma | 型別安全的資料庫客戶端 |
 | 驗證 | JWT + bcrypt | JSON Web Token + 密碼雜湊 |
@@ -304,6 +305,16 @@ erDiagram
 - [x] 實作系統健康檢查機制
 - [x] 建立健康檢查 API 端點
 - [x] 撰寫測試與健康檢查文件
+
+### 階段 11：PWA 功能 ✅
+
+- [x] 安裝 @vite-pwa/nuxt 模組
+- [x] 配置 PWA manifest 與 Service Worker
+- [x] 建立 PWA 安裝提示元件
+- [x] 建立 PWA 更新提示元件
+- [x] 生成應用程式圖示（SVG + PNG）
+- [x] 配置快取策略（靜態資源 + API）
+- [x] 更新文件說明
 
 ---
 
@@ -602,6 +613,8 @@ diary-vue/
 │   ├── Navigation.vue         # 響應式導航元件
 │   ├── UserMenu.vue           # 使用者下拉選單
 │   ├── HealthStatus.vue       # 系統健康狀態指示器
+│   ├── PWAInstallPrompt.vue   # PWA 安裝提示
+│   ├── PWAReloadPrompt.vue    # PWA 更新提示
 │   └── Toast.vue
 ├── composables/
 │   ├── useAuth.ts             # 身份驗證狀態管理
@@ -649,7 +662,9 @@ diary-vue/
 │   └── components/
 │       └── AlertNotification.test.ts  # 元件測試
 ├── scripts/
-│   └── health-check.ts        # 健康檢查腳本
+│   ├── health-check.ts        # 健康檢查腳本
+│   ├── generate-icons.js      # 生成 PWA SVG 圖示
+│   └── generate-png-icons.js  # 生成 PWA PNG 圖示
 ├── lib/
 │   ├── prisma.ts              # Prisma 客戶端
 │   └── utils.ts               # 工具函式
@@ -1024,6 +1039,72 @@ npm run test:ui
 - [x] 時間軸檢視
 - [x] 自動化測試系統
 - [x] 系統健康檢查機制
+- [x] PWA（漸進式 Web 應用程式）支援
+
+---
+
+## PWA 功能
+
+應用程式現在支援安裝為漸進式 Web 應用程式（PWA），提供類似原生應用程式的體驗。
+
+### PWA 特性
+
+| 特性 | 說明 |
+|------|------|
+| **離線支援** | 可在無網路連線時使用已快取的內容 |
+| **安裝提示** | 支援安裝到桌面或主畫面 |
+| **自動更新** | 背景自動檢查並提示更新 |
+| **快取策略** | 智慧快取靜態資源和 API 回應 |
+| **響應式圖示** | 支援多種尺寸的應用程式圖示 |
+
+### 安裝 PWA
+
+1. 在支援的瀏覽器中（Chrome、Edge、Safari）訪問應用程式
+2. 看到安裝提示橫幅時，點擊「安裝」按鈕
+3. 或在瀏覽器選單中選擇「安裝應用程式」
+
+### PWA 元件
+
+- **`PWAInstallPrompt.vue`** - 安裝提示橫幅元件
+- **`PWAReloadPrompt.vue`** - 更新提示與離線狀態通知
+
+### PWA 設定
+
+PWA 設定在 `nuxt.config.ts` 中：
+
+```typescript
+pwa: {
+  registerType: 'autoUpdate',
+  manifest: {
+    name: '投資日記',
+    short_name: '投資日記',
+    description: '個人投資日記系統 - 追蹤投資筆記與股票組合',
+    display: 'standalone',
+    theme_color: '#3b82f6'
+  },
+  workbox: {
+    // 自動快取靜態資源和 API 端點
+  }
+}
+```
+
+### 測試 PWA
+
+1. 建置應用程式：`npm run build`
+2. 預覽建置結果：`npm run preview`
+3. 在瀏覽器開發者工具中檢查：
+   - Application > Manifest - 檢視 PWA manifest
+   - Application > Service Workers - 檢視 Service Worker 狀態
+   - Lighthouse > PWA audit - 執行 PWA 檢測
+
+### 自動生成的圖示
+
+應用程式圖示由 `scripts/generate-icons.js` 和 `scripts/generate-png-icons.js` 自動生成：
+
+- `public/icon.svg` - 原始 SVG 圖示
+- `public/icon-192x192.png` - 192x192 PNG
+- `public/icon-512x512.png` - 512x512 PNG
+- `public/icon-maskable-512x512.png` - 遮罩式圖示（用於 Android 自適應圖示）
 
 ---
 
