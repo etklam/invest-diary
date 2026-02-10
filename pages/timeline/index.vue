@@ -88,7 +88,7 @@
       <div class="absolute left-4 sm:left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-indigo-500 via-indigo-400 to-indigo-300"></div>
 
       <!-- Timeline items grouped by year/month -->
-      <div v-for="(group, groupIndex) in groupedDiaries" :key="group.period" class="mb-8">
+      <div v-for="group in groupedDiaries" :key="group.period" class="mb-8">
         <!-- Period header -->
         <div class="relative flex items-center mb-4 pl-10 sm:pl-20">
           <div class="absolute left-4 sm:left-8 w-4 h-4 bg-indigo-500 rounded-full border-4 border-white dark:border-gray-900 transform -translate-x-1/2"></div>
@@ -109,10 +109,28 @@
             class="relative block group"
           >
             <!-- Timeline dot -->
-            <div class="absolute left-0 sm:left-8 top-6 w-3 h-3 bg-indigo-400 rounded-full border-2 border-white dark:border-gray-900 transform -translate-x-1/2 group-hover:bg-indigo-600 group-hover:scale-125 transition-all"></div>
+            <div class="absolute left-0 sm:left-8 top-6 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 transform -translate-x-1/2 group-hover:scale-125 transition-all"
+              :class="diary.alerts?.length ? 'bg-amber-400 group-hover:bg-amber-500' : 'bg-indigo-400 group-hover:bg-indigo-600'"></div>
 
             <!-- Card -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 overflow-hidden ml-6 sm:ml-12">
+            <div class="rounded-lg shadow hover:shadow-lg transition-shadow duration-200 overflow-hidden ml-6 sm:ml-12"
+              :class="diary.alerts?.length ? 'bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200 dark:ring-amber-700' : 'bg-white dark:bg-gray-800'">
+              <!-- 提醒標籤 -->
+              <div v-if="diary.alerts?.length" class="bg-amber-100 dark:bg-amber-800/50 px-4 py-2 border-b border-amber-200 dark:border-amber-700">
+                <div class="flex items-center gap-2">
+                  <Icon name="heroicons:bell-alert" class="h-4 w-4 text-amber-600 dark:text-amber-300" />
+                  <span class="text-xs font-medium text-amber-800 dark:text-amber-200">提醒事項</span>
+                </div>
+                <div class="mt-1 space-y-1">
+                  <p v-for="(alert, idx) in diary.alerts.slice(0, 2)" :key="idx" class="text-xs text-amber-700 dark:text-amber-300 truncate">
+                    • {{ alert.message }}
+                  </p>
+                  <p v-if="diary.alerts.length > 2" class="text-xs text-amber-600 dark:text-amber-400">
+                    還有 {{ diary.alerts.length - 2 }} 個提醒...
+                  </p>
+                </div>
+              </div>
+
               <div class="p-4 sm:p-6">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
@@ -133,8 +151,8 @@
                     <Icon name="heroicons:currency-dollar" class="mr-1 h-4 w-4 text-green-500" />
                     {{ diary.transactions.length }} 筆交易
                   </span>
-                  <span v-if="diary.alerts?.length" class="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                    <Icon name="heroicons:bell" class="mr-1 h-4 w-4 text-yellow-500" />
+                  <span v-if="diary.alerts?.length" class="flex items-center text-xs text-amber-600 dark:text-amber-400">
+                    <Icon name="heroicons:bell" class="mr-1 h-4 w-4" />
                     {{ diary.alerts.length }} 個提醒
                   </span>
                   <span class="text-indigo-600 dark:text-indigo-400 text-xs font-medium group-hover:text-indigo-500">
@@ -179,7 +197,7 @@ const page = ref(1)
 const limit = 20
 const diaries = ref<Diary[]>([])
 
-const { pending, error, refresh } = await useLazyFetch<{ data: Diary[]; pagination: any }>(
+const { pending, error } = await useLazyFetch<{ data: Diary[]; pagination: any }>(
   () => `/api/diaries?page=${page.value}&limit=${limit}`,
   {
     onResponse({ response }) {

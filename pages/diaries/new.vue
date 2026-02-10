@@ -89,9 +89,9 @@
                 />
               </div>
               <div>
-                <label :for="`alert-time-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">觸發時間</label>
+                <label :for="`alert-time-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">提醒日期</label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   :id="`alert-time-${index}`"
                   v-model="alert.trigger_at"
                   class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
@@ -176,7 +176,7 @@ watch(() => form.date, async (newDate) => {
       form.alerts = existingDiary.alerts?.map((a: any) => ({
         id: a.id.toString(),
         message: a.message,
-        trigger_at: new Date(a.triggerAt).toISOString().slice(0, 16)
+        trigger_at: new Date(a.triggerAt).toISOString().slice(0, 10)
       })) || []
     } else {
       // No diary exists for this date, reset form for new entry
@@ -198,12 +198,11 @@ watch(() => form.date, async (newDate) => {
 // For now, we start fresh
 
 const addAlert = () => {
-  const now = new Date()
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset() + 60) // Default 1 hour later
-  
+  const today = new Date().toISOString().slice(0, 10)
+
   form.alerts.push({
     message: '',
-    trigger_at: now.toISOString().slice(0, 16)
+    trigger_at: today
   })
 }
 

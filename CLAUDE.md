@@ -210,10 +210,12 @@ Holdings use average cost method (simplified FIFO):
 - Functions: `calculateHoldings()`, `getHoldingBySymbol()`
 
 ### Alert System
-- Alerts stored with `trigger_at` timestamp
+- Alerts stored with `trigger_at` date (date-only, no time component)
 - `is_dismissed` flag for user dismissal
-- Nitro cron jobs (planned) will poll and trigger due alerts
-- Frontend displays active alerts via `components/AlertNotification.vue`
+- Alerts are displayed as pinned banners at the top of diary detail pages
+- Timeline page shows alerts with amber highlighting on diary cards
+- Users can set reminder dates when creating/editing diaries
+- Multiple alerts per diary are supported
 
 ### Authentication System
 - JWT-based authentication using `jose` for token verification

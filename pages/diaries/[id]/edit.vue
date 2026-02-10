@@ -84,9 +84,9 @@
                 />
               </div>
               <div>
-                <label :for="`alert-time-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">觸發時間</label>
+                <label :for="`alert-time-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">提醒日期</label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   :id="`alert-time-${index}`"
                   v-model="alert.trigger_at"
                   class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
@@ -151,18 +151,17 @@ watch(diary, (newDiary) => {
     }))
     form.alerts = newDiary.alerts.map((a: any) => ({
       ...a,
-      trigger_at: new Date(a.triggerAt).toISOString().slice(0, 16)
+      trigger_at: new Date(a.triggerAt).toISOString().slice(0, 10)
     }))
   }
 }, { immediate: true })
 
 const addAlert = () => {
-  const now = new Date()
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset() + 60)
-  
+  const today = new Date().toISOString().slice(0, 10)
+
   form.alerts.push({
     message: '',
-    trigger_at: now.toISOString().slice(0, 16)
+    trigger_at: today
   })
 }
 

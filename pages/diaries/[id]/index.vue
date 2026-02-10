@@ -19,6 +19,24 @@
   </div>
 
   <div v-else-if="diary" class="space-y-6">
+    <!-- 提醒置頂顯示 -->
+    <div v-if="diary.alerts && diary.alerts.length > 0" class="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-400 p-4 rounded-r-md">
+      <div class="flex items-start">
+        <Icon name="heroicons:bell-alert" class="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
+        <div class="ml-3 flex-1">
+          <h3 class="text-sm font-medium text-amber-800 dark:text-amber-200">提醒事項</h3>
+          <div class="mt-2 space-y-2">
+            <div v-for="alert in diary.alerts" :key="alert.id" class="flex items-start justify-between">
+              <p class="text-sm text-amber-700 dark:text-amber-300">{{ alert.message }}</p>
+              <span class="ml-2 text-xs text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                {{ formatDate(alert.triggerAt) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="flex justify-between items-start">
       <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ diary.title }}</h1>
@@ -90,38 +108,6 @@
       <HoldingsDisplay :transactions="diary.transactions" />
     </div>
 
-    <div v-if="diary.alerts && diary.alerts.length > 0" class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-          提醒
-        </h3>
-      </div>
-      <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-        <li v-for="alert in diary.alerts" :key="alert.id" class="px-4 py-4 sm:px-6">
-          <div class="flex items-center justify-between">
-            <div class="text-sm font-medium text-indigo-600 dark:text-indigo-400 truncate">
-              {{ alert.message }}
-            </div>
-            <div class="ml-2 flex-shrink-0 flex">
-              <span
-                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                :class="alert.isDismissed ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'"
-              >
-                {{ alert.isDismissed ? '已關閉' : '有效' }}
-              </span>
-            </div>
-          </div>
-          <div class="mt-2 sm:flex sm:justify-between">
-            <div class="sm:flex">
-              <p class="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                <Icon name="heroicons:clock" class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-                觸發時間：{{ new Date(alert.triggerAt).toLocaleString() }}
-              </p>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
   </div>
 </template>
 
@@ -139,6 +125,15 @@ const { data: diary, pending, error } = await useLazyFetch(`/api/diaries/${id}`)
 
 const toast = useToast()
 const { user } = useAuth()
+
+// Format date for alerts
+const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  return `${year}/${month}/${day}`
+}
 
 const deleteDiary = async () => {
   if (!confirm('確定要刪除這篇日記嗎？此操作無法復原。')) return
