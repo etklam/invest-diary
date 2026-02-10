@@ -13,10 +13,13 @@ export const useNavigation = () => {
   const { t } = useI18n()
 
   const navItems = computed<NavItem[]>(() => [
-    { label: t('nav.home'), to: '/' },
+    // Home only visible for guests
+    { label: t('nav.home'), to: '/', auth: false },
     { label: t('nav.calendar'), to: '/calendar', auth: true },
     { label: t('nav.timeline'), to: '/timeline', auth: true },
     { label: t('nav.diaries'), to: '/diaries', auth: true },
+    // Trading discipline (quotes)
+    { label: t('nav.discipline'), to: '/discipline', auth: true },
     { label: t('nav.alerts'), to: '/alerts', auth: true },
     { label: t('nav.stocks'), to: '/stocks', auth: true },
     { label: t('nav.admin'), to: '/admin', auth: true, admin: true },

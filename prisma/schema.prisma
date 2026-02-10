@@ -28,6 +28,7 @@ model User {
   updatedAt             DateTime  @updatedAt @map("updated_at")
 
   diaries               Diary[]
+  disciplines           Discipline[]
 
   @@map("users")
 }
@@ -59,6 +60,18 @@ model Alert {
 
   @@index([diaryId], map: "alerts_diary_id_fkey")
   @@map("alerts")
+}
+
+model Discipline {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  content   String  @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "discipline_user_id_fkey")
+  @@map("disciplines")
 }
 
 model Transaction {
