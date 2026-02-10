@@ -8,20 +8,13 @@ import { verifyToken } from '~/lib/jwt'
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
 
-  // Only guard API routes
+  // Only parse auth for API routes
   if (!url.pathname.startsWith('/api/')) return
-
-  // Public API routes
-  if (
-    url.pathname.startsWith('/api/auth') ||
-    url.pathname.startsWith('/api/health')
-  ) {
-    return
-  }
 
   const token = getCookie(event, 'auth-token')
   if (!token) {
-    throw createError({ statusCode: 401 })
+    event.context.user = undefined
+    return
   }
 
   try {
@@ -30,10 +23,10 @@ export default defineEventHandler(async (event) => {
     event.context.user = {
       id: payload.userId,
       email: payload.email,
-      tokenVersion: payload.tokenVersion
+      role: payload.role
     }
   } catch {
-    throw createError({ statusCode: 401 })
+    event.context.user = undefined
   }
 })
 
@@ -43,6 +36,7 @@ declare module 'h3' {
     user?: {
       id: string
       email: string
+      role: string
     }
   }
 }

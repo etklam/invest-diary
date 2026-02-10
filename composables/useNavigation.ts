@@ -4,10 +4,11 @@ interface NavItem {
   label: string
   to: string
   auth?: boolean // true = only auth, false = only guest, undefined = both
+  admin?: boolean // true = only admin
 }
 
 export const useNavigation = () => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const route = useRoute()
   const { t } = useI18n()
 
@@ -18,11 +19,17 @@ export const useNavigation = () => {
     { label: t('nav.diaries'), to: '/diaries', auth: true },
     { label: t('nav.alerts'), to: '/alerts', auth: true },
     { label: t('nav.stocks'), to: '/stocks', auth: true },
+    { label: t('nav.admin'), to: '/admin', auth: true, admin: true },
     { label: t('nav.about'), to: '/about' }
   ])
 
   const visibleNavItems = computed(() =>
     navItems.value.filter(item => {
+      // Check admin restriction
+      if (item.admin) {
+        return isAuthenticated.value && user.value?.role === 'ADMIN'
+      }
+      // Check auth restriction
       if (item.auth === undefined) return true
       return item.auth === isAuthenticated.value
     })

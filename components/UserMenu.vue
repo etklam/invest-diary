@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { user, logout } = useAuth()
+const { user, logout, isAdmin } = useAuth()
 const { t } = useI18n()
 
 const isOpen = ref(false)
@@ -29,8 +29,16 @@ const displayName = computed(() => {
       :aria-label="$t('auth.loggedInAs')"
     >
       <!-- User avatar icon -->
-      <div class="h-10 w-10 sm:h-8 sm:w-8 rounded-full bg-indigo-600 flex items-center justify-center">
+      <div class="h-10 w-10 sm:h-8 sm:w-8 rounded-full bg-indigo-600 flex items-center justify-center relative">
         <Icon name="heroicons:user" class="h-5 w-5 text-white" />
+        <!-- Admin badge -->
+        <div
+          v-if="isAdmin"
+          class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center"
+          :title="$t('nav.admin')"
+        >
+          <Icon name="heroicons:shield-check" class="h-3 w-3 text-white" />
+        </div>
       </div>
       <!-- User name (hidden on mobile) -->
       <span class="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -84,6 +92,16 @@ const displayName = computed(() => {
           >
             <Icon name="heroicons:cog-6-tooth" class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
             {{ $t('settings.title') }}
+          </NuxtLink>
+
+          <NuxtLink
+            v-if="isAdmin"
+            to="/admin"
+            @click="closeDropdown"
+            class="group flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+          >
+            <Icon name="heroicons:shield-check" class="mr-3 h-5 w-5" />
+            {{ $t('nav.admin') }}
           </NuxtLink>
 
           <hr class="my-1 border-gray-200 dark:border-gray-700" />

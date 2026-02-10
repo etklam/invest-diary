@@ -1,11 +1,9 @@
-export default defineEventHandler(async (event) => {
-  // Clear auth cookie
-  deleteCookie(event, 'auth-token')
+import { clearAuthCookie } from '~/server/utils/auth'
 
-  console.log('[API] User logged out')
+export default defineEventHandler(async (event) => {
+  clearAuthCookie(event)
 
   return {
-    success: true,
-    message: 'Logged out successfully'
+    ok: true
   }
 })

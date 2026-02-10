@@ -26,6 +26,7 @@
     "diaries": "日记列表",
     "alerts": "提醒管理",
     "stocks": "股票管理",
+    "admin": "管理面板",
     "about": "关于我们"
   },
 
@@ -252,6 +253,55 @@
     },
     "footer": {
       "rights": "保留所有权利"
+    }
+  },
+
+  "admin": {
+    "title": "系统管理",
+    "subtitle": "管理用户、查看统计数据",
+    "diaries": "日记",
+    "alerts": "提醒",
+    "transactions": "交易",
+    "stats": {
+      "totalUsers": "总用户数",
+      "admins": "管理员",
+      "totalDiaries": "总日记数",
+      "totalAlerts": "总提醒数",
+      "active": "活跃",
+      "totalTransactions": "总交易数"
+    },
+    "users": {
+      "title": "用户管理",
+      "searchPlaceholder": "搜索用户名称或电子邮件...",
+      "email": "电子邮件",
+      "name": "姓名",
+      "role": "角色",
+      "stats": "统计",
+      "createdAt": "创建时间",
+      "actions": "操作",
+      "delete": "删除",
+      "current": "当前用户",
+      "noUsers": "没有找到用户",
+      "cannotModifyOwnRole": "无法修改自己的角色"
+    },
+    "pagination": {
+      "previous": "上一页",
+      "next": "下一页",
+      "showing": "显示",
+      "to": "至",
+      "of": "共",
+      "results": "条结果"
+    },
+    "confirmDelete": "确定要删除用户 {email} 吗？此操作无法复原。",
+    "success": {
+      "roleUpdated": "用户角色已更新",
+      "userDeleted": "用户已删除"
+    },
+    "error": {
+      "fetchStatsFailed": "获取统计数据失败",
+      "fetchUsersFailed": "获取用户列表失败",
+      "updateRoleFailed": "更新用户角色失败",
+      "deleteUserFailed": "删除用户失败"
     }
   }
 }

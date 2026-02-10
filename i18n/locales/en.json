@@ -26,6 +26,7 @@
     "diaries": "Diaries",
     "alerts": "Alerts",
     "stocks": "Stocks",
+    "admin": "Admin Panel",
     "about": "About Us"
   },
 
@@ -252,6 +253,55 @@
     },
     "footer": {
       "rights": "All rights reserved"
+    }
+  },
+
+  "admin": {
+    "title": "System Administration",
+    "subtitle": "Manage users and view statistics",
+    "diaries": "Diaries",
+    "alerts": "Alerts",
+    "transactions": "Transactions",
+    "stats": {
+      "totalUsers": "Total Users",
+      "admins": "Admins",
+      "totalDiaries": "Total Diaries",
+      "totalAlerts": "Total Alerts",
+      "active": "Active",
+      "totalTransactions": "Total Transactions"
+    },
+    "users": {
+      "title": "User Management",
+      "searchPlaceholder": "Search by name or email...",
+      "email": "Email",
+      "name": "Name",
+      "role": "Role",
+      "stats": "Stats",
+      "createdAt": "Created At",
+      "actions": "Actions",
+      "delete": "Delete",
+      "current": "Current User",
+      "noUsers": "No users found",
+      "cannotModifyOwnRole": "Cannot modify your own role"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "showing": "Showing",
+      "to": "to",
+      "of": "of",
+      "results": "results"
+    },
+    "confirmDelete": "Are you sure you want to delete user {email}? This action cannot be undone.",
+    "success": {
+      "roleUpdated": "User role updated",
+      "userDeleted": "User deleted"
+    },
+    "error": {
+      "fetchStatsFailed": "Failed to fetch statistics",
+      "fetchUsersFailed": "Failed to fetch user list",
+      "updateRoleFailed": "Failed to update user role",
+      "deleteUserFailed": "Failed to delete user"
     }
   }
 }

@@ -32,7 +32,10 @@
       "Bash(docker-compose:*)",
       "Bash(npm ci:*)",
       "Bash(npx pwa-assets-generator:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(PRISMA_SKIP_POSTGENERATE_INVOCATION=true npx prisma migrate:*)",
+      "Bash(npm run seed:*)",
+      "Bash(kill:*)"
     ]
   }
 }

@@ -1068,7 +1068,14 @@ npm run test:ui
 ### PWA 元件
 
 - **`PWAInstallPrompt.vue`** - 安裝提示橫幅元件
+  - 使用原生 `beforeinstallprompt` 事件
+  - 檢測是否已安裝（standalone 模式）
+  - 7天內不重複顯示（localStorage 記錄）
 - **`PWAReloadPrompt.vue`** - 更新提示與離線狀態通知
+  - 顯示離線就緒通知（5秒後自動關閉）
+  - 顯示新版本可用提示
+  - 使用 `updateServiceWorker()` 方法更新應用程式
+  - 安全處理 `$pwa` 物件（檢查是否存在）
 
 ### PWA 設定
 
@@ -1098,6 +1105,14 @@ pwa: {
    - Application > Manifest - 檢視 PWA manifest
    - Application > Service Workers - 檢視 Service Worker 狀態
    - Lighthouse > PWA audit - 執行 PWA 檢測
+
+### PWA 開發注意事項
+
+- **SSR 相容性:** `$pwa` 物件僅在客戶端可用，使用時需先檢查是否存在
+- **開發模式:** PWA 在開發模式下啟用 (`devOptions.enabled: true`)
+- **Service Worker 更新:** 使用 `autoUpdate` 模式自動檢查更新
+- **圖示格式:** 需要提供 PNG 格式圖示（192x192、512x512）和 maskable 圖示
+- **快取警告:** 開發模式可能出現 glob pattern 警告，這是正常現象
 
 ### 自動生成的圖示
 

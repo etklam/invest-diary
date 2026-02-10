@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { signToken } from '~/lib/jwt'
 import prisma from '~/lib/prisma'
+import { setAuthCookie } from '~/server/utils/auth'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -39,24 +40,18 @@ export default defineEventHandler(async (event) => {
     }
 
     // Generate JWT token
-    const token = await signToken(user.id.toString(), user.email, user.name ?? undefined)
+    const role = (user as any).role
+    const token = await signToken(user.id.toString(), user.email, role, 0)
 
-    // Set httpOnly cookie
-    setCookie(event, 'auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7 // 7 days
-    })
-
-    console.log('[API] User logged in:', user.id)
+    setAuthCookie(event, token)
 
     return {
-      success: true,
-      user: {
+      ok: true,
+      data: {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: (user as any).role,
         expectedMonthlyTrades: user.expectedMonthlyTrades,
         expectedProfit: user.expectedProfit,
         expectedAvgHolding: user.expectedAvgHolding

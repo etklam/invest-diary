@@ -37,12 +37,14 @@ export default defineEventHandler(async (event) => {
       data: {
         email: validatedData.email,
         password: hashedPassword,
-        name: validatedData.name
+        name: validatedData.name,
+        role: 'USER'
       },
       select: {
         id: true,
         email: true,
         name: true,
+        role: true,
         expectedMonthlyTrades: true,
         expectedProfit: true,
         expectedAvgHolding: true,

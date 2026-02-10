@@ -1,37 +1,19 @@
+import prisma from '~/lib/prisma'
+import { requireUser } from '~/server/utils/auth'
+
 export default defineEventHandler(async (event) => {
-  // User is attached by middleware
-  const userId = event.context.user?.id
+  const auth = requireUser(event)
 
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
-  }
-
-  // Fetch full user data
   const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      expectedMonthlyTrades: true,
-      expectedProfit: true,
-      expectedAvgHolding: true,
-      createdAt: true
-    }
+    where: { id: BigInt(auth.id) }
   })
 
   if (!user) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'User not found'
-    })
+    throw createError({ statusCode: 404, statusMessage: 'USER_NOT_FOUND' })
   }
 
   return {
-    success: true,
-    user
+    ok: true,
+    data: user
   }
 })

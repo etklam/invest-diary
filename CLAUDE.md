@@ -245,6 +245,14 @@ Holdings use average cost method (simplified FIFO):
 - `isActive(path)` - Check if route is active
 - Handles authenticated vs guest navigation
 
+### Internationalization (i18n)
+- Uses `@nuxtjs/i18n` module for multi-language support
+- Supported locales: zh-TW (繁體中文, default), zh-CN (简体中文), en (English)
+- Lazy-loaded locale files in `locales/` directory
+- No prefix strategy (URL doesn't contain language code)
+- Browser language detection with cookie storage
+- Detects browser language and falls back to zh-TW
+
 ### Toast Composable
 - `useToast()` provides toast notification functionality
 - `showToast(message, type)` - Display toast messages

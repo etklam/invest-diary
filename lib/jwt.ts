@@ -5,6 +5,7 @@ const TOKEN_EXPIRY = '7d'
 export interface TokenPayload {
   userId: string
   email: string
+  role: string
   tokenVersion: number
 }
 
@@ -22,9 +23,10 @@ function getSecret() {
 export async function signToken(
   userId: string,
   email: string,
+  role: string,
   tokenVersion: number
 ): Promise<string> {
-  return await new SignJWT({ userId, email, tokenVersion })
+  return await new SignJWT({ userId, email, role, tokenVersion })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(TOKEN_EXPIRY)
@@ -40,6 +42,7 @@ export async function verifyToken(token: string): Promise<TokenPayload> {
   return {
     userId: payload.userId as string,
     email: payload.email as string,
+    role: payload.role as string,
     tokenVersion: payload.tokenVersion as number
   }
 }

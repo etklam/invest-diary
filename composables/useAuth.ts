@@ -1,6 +1,7 @@
 export const useAuth = () => {
   const user = useState<any>('auth:user', () => null)
   const isAuthenticated = computed(() => Boolean(user.value))
+  const isAdmin = computed(() => user.value?.role === 'ADMIN')
   const isLoading = useState<boolean>('auth:loading', () => false)
   const toast = useToast()
 
@@ -16,8 +17,8 @@ export const useAuth = () => {
         body: { email, password }
       }) as any
 
-      if (response.success) {
-        user.value = response.user
+      if (response.ok) {
+        user.value = response.data
         toast.success('登入成功')
         await navigateTo('/')
       }
@@ -40,7 +41,7 @@ export const useAuth = () => {
         body: data
       }) as any
 
-      if (response.success) {
+      if (response.ok) {
         toast.success('註冊成功，請登入')
         await navigateTo('/auth/login')
       }
@@ -68,8 +69,8 @@ export const useAuth = () => {
   const fetchMe = async () => {
     try {
       const response = await $fetch('/api/auth/me') as any
-      if (response.success) {
-        user.value = response.user
+      if (response.ok) {
+        user.value = response.data
       }
     } catch {
       user.value = null
@@ -142,6 +143,7 @@ export const useAuth = () => {
   return {
     user,
     isAuthenticated,
+    isAdmin,
     isLoading,
     login,
     register,

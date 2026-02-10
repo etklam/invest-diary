@@ -1,4 +1,4 @@
-import { PrismaClient, TransactionType } from '@prisma/client'
+import { PrismaClient, TransactionType, UserRole } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
@@ -13,6 +13,21 @@ async function main() {
   // 創建測試用戶
   const hashedPassword = await bcrypt.hash('password123', 10)
 
+  // 管理員用戶 - 系統管理員
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      email: 'admin@example.com',
+      password: hashedPassword,
+      name: '系統管理員',
+      role: UserRole.ADMIN,
+      expectedMonthlyTrades: 50,
+      expectedProfit: 10000.00,
+      expectedAvgHolding: 500000.00
+    }
+  })
+
   // 用戶 1 - 主要測試用戶
   const user1 = await prisma.user.upsert({
     where: { email: 'test@example.com' },
@@ -21,6 +36,7 @@ async function main() {
       email: 'test@example.com',
       password: hashedPassword,
       name: '測試用戶',
+      role: UserRole.USER,
       expectedMonthlyTrades: 20,
       expectedProfit: 5000.00,
       expectedAvgHolding: 100000.00
@@ -35,6 +51,7 @@ async function main() {
       email: 'user2@example.com',
       password: hashedPassword,
       name: '投資者二號',
+      role: UserRole.USER,
       expectedMonthlyTrades: 10,
       expectedProfit: 3000.00,
       expectedAvgHolding: 50000.00
@@ -42,8 +59,9 @@ async function main() {
   })
 
   console.log('創建測試用戶:')
-  console.log('- test@example.com / password123')
-  console.log('- user2@example.com / password123')
+  console.log('- admin@example.com / password123 (ADMIN)')
+  console.log('- test@example.com / password123 (USER)')
+  console.log('- user2@example.com / password123 (USER)')
 
   // 建立範例日記（屬於用戶 1）
   const diary1 = await prisma.diary.create({
