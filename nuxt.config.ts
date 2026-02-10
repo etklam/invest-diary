@@ -29,18 +29,18 @@ export default defineNuxtConfig({
 
   i18n: {
     locales: [
+      { code: 'en', name: 'English', file: 'en.json' },
       { code: 'zh-TW', name: '繁體中文', file: 'zh-TW.json' },
-      { code: 'zh-CN', name: '简体中文', file: 'zh-CN.json' },
-      { code: 'en', name: 'English', file: 'en.json' }
+      { code: 'zh-CN', name: '简体中文', file: 'zh-CN.json' }
     ],
-    defaultLocale: 'zh-TW',
+    defaultLocale: 'en',
     lazy: true,
     langDir: 'locales',
     strategy: 'no_prefix',
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'i18n_locale',
-      fallbackLocale: 'zh-TW'
+      fallbackLocale: 'en'
     }
   },
 
