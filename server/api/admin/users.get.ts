@@ -38,9 +38,7 @@ export default defineEventHandler(async (event) => {
         createdAt: true,
         _count: {
           select: {
-            diaries: true,
-            alerts: true,
-            transactions: true
+            diaries: true
           }
         }
       },
