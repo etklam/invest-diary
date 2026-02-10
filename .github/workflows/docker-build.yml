@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:  # 允許手動觸發（CapRover webhook 可用）
 
 env:
   REGISTRY: ghcr.io
