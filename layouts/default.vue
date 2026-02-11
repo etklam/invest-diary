@@ -1,33 +1,42 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <PWAInstallPrompt />
-    <Navigation />
-    <main class="container mx-auto px-4 py-8" :class="{ 'pt-24': showInstallPrompt }">
-      <slot />
-    </main>
-    <Toast :toasts="toasts" @remove="removeToast" />
-    <PWAReloadPrompt />
-    <AlertNotification
-      v-if="dueAlert"
-      :message="dueAlert.message"
-      :show="showAlert"
-      @close="dismissCurrentAlert"
-    />
+    <!-- Show loader while auth is initializing -->
+    <AuthLoader v-if="!isInitialized" />
+    
+    <!-- Show main content once auth is ready -->
+    <template v-else>
+      <PWAInstallPrompt />
+      <Navigation />
+      <main class="container mx-auto px-4 py-8" :class="{ 'pt-24': showInstallPrompt }">
+        <slot />
+      </main>
+      <Toast :toasts="toasts" @remove="removeToast" />
+      <PWAReloadPrompt />
+      <AlertNotification
+        v-if="dueAlert"
+        :message="dueAlert.message"
+        :show="showAlert"
+        @close="dismissCurrentAlert"
+      />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 const { toasts, removeToast } = useToast()
-const { user, fetchMe } = useAuth()
+const { user, fetchMe, isInitialized } = useAuth()
 const showInstallPrompt = ref(false)
 const dueAlert = ref<any>(null)
 const showAlert = ref(false)
 const processedAlerts = ref<Set<string>>(new Set())
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
-// Fetch current user on mount
+// Fetch current user on mount only if not already initialized
 onMounted(async () => {
-  await fetchMe()
+  const { isInitialized } = useAuth()
+  if (!isInitialized.value) {
+    await fetchMe()
+  }
 })
 
 // Check for due alerts

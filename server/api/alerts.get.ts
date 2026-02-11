@@ -1,8 +1,15 @@
 import prisma from '../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
-  // Auth guaranteed by server middleware
-  const userId = BigInt(event.context.user!.id)
+  // Check if user is authenticated
+  if (!event.context.user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized'
+    })
+  }
+
+  const userId = BigInt(event.context.user.id)
 
   try {
     const alerts = await prisma.alert.findMany({

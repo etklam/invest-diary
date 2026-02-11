@@ -178,11 +178,12 @@
 
 <script setup lang="ts">
 // Redirect authenticated users to calendar
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, isInitialized } = useAuth()
 
-onMounted(() => {
-  if (isAuthenticated.value) {
+// Watch for authentication state changes and redirect when ready
+watch([isAuthenticated, isInitialized], ([auth, initialized]) => {
+  if (initialized && auth) {
     navigateTo('/calendar')
   }
-})
+}, { immediate: true })
 </script>

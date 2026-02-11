@@ -3,6 +3,7 @@ export const useAuth = () => {
   const isAuthenticated = computed(() => Boolean(user.value))
   const isAdmin = computed(() => user.value?.role === 'ADMIN')
   const isLoading = useState<boolean>('auth:loading', () => false)
+  const isInitialized = useState<boolean>('auth:initialized', () => false)
   const toast = useToast()
 
   /**
@@ -68,12 +69,16 @@ export const useAuth = () => {
    */
   const fetchMe = async () => {
     try {
+      isLoading.value = true
       const response = await $fetch('/api/auth/me') as any
       if (response.ok) {
         user.value = response.data
       }
     } catch {
       user.value = null
+    } finally {
+      isLoading.value = false
+      isInitialized.value = true
     }
   }
 
@@ -145,6 +150,7 @@ export const useAuth = () => {
     isAuthenticated,
     isAdmin,
     isLoading,
+    isInitialized,
     login,
     register,
     logout,
