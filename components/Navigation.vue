@@ -23,8 +23,11 @@ watch(() => route.path, () => {
               {{ $t('common.appName') }}
             </NuxtLink>
           </div>
-          <!-- Desktop navigation -->
-          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+        </div>
+        
+        <!-- Desktop navigation centered -->
+        <div class="hidden sm:flex sm:items-center sm:justify-center sm:flex-1">
+          <div class="sm:flex sm:space-x-8">
             <NuxtLink
               v-for="item in visibleNavItems"
               :key="item.to"
@@ -103,12 +106,12 @@ watch(() => route.path, () => {
       v-show="isMobileMenuOpen"
       class="sm:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700"
     >
-      <div class="px-2 pt-2 pb-3 space-y-1">
+      <div class="px-2 pt-2 pb-3 space-y-1 text-center">
         <NuxtLink
           v-for="item in visibleNavItems"
           :key="item.to"
           :to="item.to"
-          class="block px-3 py-3 rounded-md text-base font-medium min-h-[44px] flex items-center transition-colors"
+          class="block px-3 py-3 rounded-md text-base font-medium min-h-[44px] flex items-center justify-center transition-colors"
           :class="isActive(item.to)
             ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'
             : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700'"
@@ -119,21 +122,21 @@ watch(() => route.path, () => {
       </div>
 
       <!-- Mobile auth section -->
-      <div class="pt-4 pb-4 border-t border-gray-200 dark:border-gray-700 px-2">
+      <div class="pt-4 pb-4 border-t border-gray-200 dark:border-gray-700 px-2 text-center">
         <template v-if="isAuthenticated">
           <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
             {{ $t('auth.loggedInAs') }}
           </div>
           <NuxtLink
             to="/settings"
-            class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
+            class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center justify-center"
             @click="isMobileMenuOpen = false"
           >
             {{ $t('settings.title') }}
           </NuxtLink>
           <button
             @click="async () => { const { logout } = useAuth(); isMobileMenuOpen = false; await logout(); }"
-            class="block w-full text-left px-3 py-3 rounded-md text-base font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] flex items-center"
+            class="block w-full text-center px-3 py-3 rounded-md text-base font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 min-h-[44px] flex items-center justify-center"
           >
             {{ $t('auth.logout') }}
           </button>
@@ -141,14 +144,14 @@ watch(() => route.path, () => {
         <template v-else>
           <NuxtLink
             to="/auth/login"
-            class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
+            class="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center justify-center"
             @click="isMobileMenuOpen = false"
           >
             {{ $t('auth.login') }}
           </NuxtLink>
           <NuxtLink
             to="/auth/register"
-            class="block px-3 py-3 rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20 min-h-[44px] flex items-center"
+            class="block px-3 py-3 rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20 min-h-[44px] flex items-center justify-center"
             @click="isMobileMenuOpen = false"
           >
             {{ $t('auth.register') }}

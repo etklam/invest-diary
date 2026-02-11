@@ -248,8 +248,7 @@
     },
     "contact": {
       "title": "Get in Touch",
-      "description": "Have questions or suggestions? Feel free to contact us via GitHub, or start using Investment Diary directly.",
-      "github": "View on GitHub",
+      "description": "Have questions or suggestions? Feel free to contact us, or start using Investment Diary directly.",
       "getStarted": "Get Started"
     },
     "footer": {

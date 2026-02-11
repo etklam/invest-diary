@@ -163,9 +163,6 @@
             <NuxtLink to="/about" class="hover:text-white transition-colors">
               {{ $t('nav.about') }}
             </NuxtLink>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">
-              GitHub
-            </a>
           </div>
         </div>
         <div class="mt-8 pt-8 border-t border-gray-800 text-center text-sm">

@@ -196,15 +196,6 @@
             {{ $t('about.contact.description') }}
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors min-h-[52px] shadow-lg"
-            >
-              <Icon name="mdi:github" class="mr-2 w-5 h-5" />
-              {{ $t('about.contact.github') }}
-            </a>
             <NuxtLink
               to="/auth/register"
               class="inline-flex items-center justify-center px-8 py-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors min-h-[52px] shadow-lg"
@@ -231,9 +222,6 @@
             <NuxtLink to="/about" class="hover:text-white transition-colors">
               {{ $t('nav.about') }}
             </NuxtLink>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">
-              GitHub
-            </a>
           </div>
         </div>
         <div class="mt-8 pt-8 border-t border-gray-800 text-center text-sm">

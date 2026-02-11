@@ -248,8 +248,7 @@
     },
     "contact": {
       "title": "與我們聯繫",
-      "description": "有問題或建議？歡迎透過 GitHub 聯繫我們，或直接開始使用投資日記。",
-      "github": "查看 GitHub",
+      "description": "有問題或建議？歡迎聯繫我們，或直接開始使用投資日記。",
       "getStarted": "開始使用"
     },
     "footer": {
