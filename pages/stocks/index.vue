@@ -60,6 +60,31 @@
         </div>
       </div>
 
+      <!-- Holdings Pie Chart -->
+      <div v-if="holdings.length > 0" class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8 p-6">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">成本占比圓形圖</h3>
+        <svg viewBox="0 0 32 32" class="w-64 h-64 mx-auto">
+          <circle
+            v-for="(slice, index) in pieSlices"
+            :key="index"
+            r="16"
+            cx="16"
+            cy="16"
+            fill="transparent"
+            stroke-width="32"
+            :stroke="slice.color"
+            :stroke-dasharray="slice.dashArray"
+            :stroke-dashoffset="slice.dashOffset"
+          />
+        </svg>
+        <ul class="mt-4 grid grid-cols-2 gap-2 text-sm">
+          <li v-for="(slice, index) in pieSlices" :key="index" class="flex items-center">
+            <span class="w-3 h-3 rounded-full mr-2" :style="{ backgroundColor: slice.color }"></span>
+            {{ slice.label }} ({{ slice.percentage }})
+          </li>
+        </ul>
+      </div>
+
       <!-- Holdings Table -->
       <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
@@ -80,7 +105,7 @@
           <Icon name="heroicons:exclamation-circle" class="mx-auto h-12 w-12 text-red-500" />
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">載入失敗</p>
           <button
-            @click="refresh"
+            @click="() => refresh()"
             class="mt-3 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
           >
             重新載入
@@ -293,6 +318,29 @@ const getPercentageClass = (cost: number): string => {
     return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
   }
 }
+
+// Pie chart slices based on cost percentage
+const pieSlices = computed(() => {
+  if (!holdings.value || totalCost.value === 0) return []
+
+  const colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7']
+  let cumulative = 0
+
+  return holdings.value.map((h, index) => {
+    const percentage = h.totalCost / totalCost.value
+    const dashArray = `${percentage * 100} ${100 - percentage * 100}`
+    const dashOffset = -cumulative * 100
+    cumulative += percentage
+
+    return {
+      label: h.symbol,
+      percentage: `${(percentage * 100).toFixed(1)}%`,
+      dashArray,
+      dashOffset,
+      color: colors[index % colors.length]
+    }
+  })
+})
 
 // Set page meta
 useHead({
