@@ -118,20 +118,60 @@
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    代碼
+                  <th
+                    scope="col"
+                    @click="sortBy('symbol')"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                  >
+                    <div class="flex items-center gap-1">
+                      代碼
+                      <Icon v-if="sortColumn === 'symbol'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
+                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
+                    </div>
                   </th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    數量
+                  <th
+                    scope="col"
+                    @click="sortBy('quantity')"
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                  >
+                    <div class="flex items-center justify-end gap-1">
+                      數量
+                      <Icon v-if="sortColumn === 'quantity'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
+                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
+                    </div>
                   </th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    平均成本
+                  <th
+                    scope="col"
+                    @click="sortBy('avgCost')"
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                  >
+                    <div class="flex items-center justify-end gap-1">
+                      平均成本
+                      <Icon v-if="sortColumn === 'avgCost'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
+                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
+                    </div>
                   </th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    總成本
+                  <th
+                    scope="col"
+                    @click="sortBy('totalCost')"
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                  >
+                    <div class="flex items-center justify-end gap-1">
+                      總成本
+                      <Icon v-if="sortColumn === 'totalCost'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
+                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
+                    </div>
                   </th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    成本占比
+                  <th
+                    scope="col"
+                    @click="sortBy('percentage')"
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                  >
+                    <div class="flex items-center justify-end gap-1">
+                      成本占比
+                      <Icon v-if="sortColumn === 'percentage'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
+                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
+                    </div>
                   </th>
                 </tr>
               </thead>
@@ -265,10 +305,55 @@ const { data: holdings, pending, error, refresh } = await useLazyFetch<Holding[]
   }
 )
 
-// Sort holdings by symbol
+// Sorting state
+const sortColumn = ref<'symbol' | 'quantity' | 'avgCost' | 'totalCost' | 'percentage'>('totalCost')
+const sortDirection = ref<'asc' | 'desc'>('desc')
+
+// Sort holdings by selected column
+const sortBy = (column: typeof sortColumn.value) => {
+  if (sortColumn.value === column) {
+    // Toggle direction if clicking same column
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    // New column, default to desc for numbers, asc for symbol
+    sortColumn.value = column
+    sortDirection.value = column === 'symbol' ? 'asc' : 'desc'
+  }
+}
+
+// Sorted holdings with current sort
 const sortedHoldings = computed(() => {
   if (!holdings.value) return []
-  return [...holdings.value].sort((a, b) => a.symbol.localeCompare(b.symbol))
+
+  const sorted = [...holdings.value]
+
+  sorted.sort((a, b) => {
+    let comparison = 0
+
+    switch (sortColumn.value) {
+      case 'symbol':
+        comparison = a.symbol.localeCompare(b.symbol)
+        break
+      case 'quantity':
+        comparison = a.quantity - b.quantity
+        break
+      case 'avgCost':
+        comparison = a.avgCost - b.avgCost
+        break
+      case 'totalCost':
+        comparison = a.totalCost - b.totalCost
+        break
+      case 'percentage':
+        const aPercentage = totalCost.value > 0 ? (a.totalCost / totalCost.value) : 0
+        const bPercentage = totalCost.value > 0 ? (b.totalCost / totalCost.value) : 0
+        comparison = aPercentage - bPercentage
+        break
+    }
+
+    return sortDirection.value === 'asc' ? comparison : -comparison
+  })
+
+  return sorted
 })
 
 // Calculate total holdings count
@@ -324,12 +409,15 @@ const pieSlices = computed(() => {
   if (!holdings.value || totalCost.value === 0) return []
 
   const colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7']
+  // Circle circumference: 2 * π * r = 2 * π * 16 ≈ 100.53
+  const circumference = 2 * Math.PI * 16
   let cumulative = 0
 
   return holdings.value.map((h, index) => {
     const percentage = h.totalCost / totalCost.value
-    const dashArray = `${percentage * 100} ${100 - percentage * 100}`
-    const dashOffset = -cumulative * 100
+    const strokeLength = percentage * circumference
+    const dashArray = `${strokeLength} ${circumference - strokeLength}`
+    const dashOffset = -cumulative * circumference
     cumulative += percentage
 
     return {
