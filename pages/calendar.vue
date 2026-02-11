@@ -124,11 +124,13 @@ const firstDayOfWeek = computed(() => {
   return new Date(currentYear.value, currentMonth.value, 1).getDay()
 })
 
-// 獲取日記資料
+// 獲取日記資料（獲取所有日記用於月曆顯示）
 const fetchDiaries = async () => {
   try {
-    const response = await $fetch<Diary[]>('/api/diaries')
-    diaries.value = response
+    // API returns paginated response: { data: [...], pagination: {...} }
+    // Set a large limit to fetch all diaries for calendar display
+    const response = await $fetch<{ data: Diary[], pagination: any }>('/api/diaries?limit=1000')
+    diaries.value = response.data
   } catch (error: any) {
     // Handle 401 Unauthorized errors
     if (error?.statusCode === 401) {
