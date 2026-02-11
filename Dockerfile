@@ -18,23 +18,33 @@ LABEL description="Personal Investment Diary System - Nuxt 3 Application"
 # Install OpenSSL for bcryptjs compatibility
 RUN apk add --no-cache openssl
 
+# =============================================================================
+# Layer 1: Dependencies (least frequently changed)
+# =============================================================================
 # Copy package files with lock file for deterministic builds
 COPY package.json package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
-# Skip prepare script (husky) since git hooks aren't needed in Docker
+# Skip prepare script (husky/git hooks) since they aren't needed in Docker build
+# Use ci for deterministic builds, then run postinstall separately
 # Install all deps for build (devDependencies required by Nuxt modules)
+# package-lock.json is currently out of sync; use npm install for resilience in Docker
 RUN npm install --ignore-scripts && \
     npm run postinstall && \
     npm cache clean --force
 
-# Copy Prisma schema early for better layer caching
+# =============================================================================
+# Layer 2: Prisma Schema (changes less frequently than source code)
+# =============================================================================
 COPY prisma ./prisma
 
 # Generate Prisma client
 RUN npx prisma generate
 
-# Copy remaining application files
+# =============================================================================
+# Layer 3: Application Source (most frequently changed)
+# =============================================================================
+# Copy remaining application files LAST to maximize cache hits for previous layers
 COPY . .
 
 # Disable Nuxt telemetry during build
