@@ -28,6 +28,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "yahoo-finance2": "^2.13.3",
     "@nuxt/icon": "^2.2.1",
     "@nuxtjs/i18n": "^10.2.3",
     "@nuxtjs/mdc": "^0.20.1",
