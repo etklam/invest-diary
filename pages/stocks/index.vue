@@ -63,7 +63,12 @@
       <!-- Holdings Pie Chart -->
       <div v-if="holdings.length > 0" class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8 p-6">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">成本占比圓形圖</h3>
-        <svg viewBox="0 0 32 32" class="w-64 h-64 mx-auto">
+        <!-- force perfect circle -->
+        <svg
+          viewBox="0 0 32 32"
+          preserveAspectRatio="xMidYMid meet"
+          class="w-64 h-64 mx-auto rounded-full overflow-hidden"
+        >
           <circle
             v-for="(slice, index) in pieSlices"
             :key="index"
