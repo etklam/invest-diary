@@ -151,6 +151,15 @@
                       <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
                     </div>
                   </th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    現價
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    市值
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    未實現損益
+                  </th>
                   <th
                     scope="col"
                     @click="sortBy('totalCost')"
@@ -185,6 +194,17 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">
                     {{ formatCurrency(holding.avgCost) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
+                    {{ holding.price ? formatCurrency(holding.price) : '—' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
+                    {{ holding.price ? formatCurrency(holding.price * holding.quantity) : '—' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <span :class="holding.price && holding.price * holding.quantity - holding.totalCost >= 0 ? 'text-green-600' : 'text-red-600'">
+                      {{ holding.price ? formatCurrency(holding.price * holding.quantity - holding.totalCost) : '—' }}
+                    </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
                     {{ formatCurrency(holding.totalCost) }}
@@ -270,8 +290,19 @@
         </div>
       </div>
 
+      <!-- Fetch Stock Price -->
+      <div class="mt-6 text-center">
+        <button
+          @click="fetchStockPrices"
+          class="inline-flex items-center px-4 py-2 mr-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+        >
+          <Icon name="heroicons:arrow-path" class="mr-2 h-4 w-4" />
+          取得即時股價 (Yahoo)
+        </button>
+      </div>
+
       <!-- Transaction History Link -->
-      <div v-if="holdings.length > 0" class="mt-6 text-center">
+      <div v-if="holdings.length > 0" class="mt-4 text-center">
         <NuxtLink
           to="/diaries"
           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -294,6 +325,7 @@ interface Holding {
   quantity: number
   avgCost: number
   totalCost: number
+  price?: number
 }
 
 // Fetch holdings from API (client-only to avoid auth mismatch on SSR)
@@ -431,6 +463,28 @@ const pieSlices = computed(() => {
 })
 
 // Set page meta
+// Fetch stock prices from server (Yahoo Finance)
+const fetchStockPrices = async () => {
+  try {
+    if (!holdings.value || holdings.value.length === 0) return
+
+    const symbols = holdings.value.map(h => h.symbol)
+
+    const prices = await $fetch<Record<string, number>>('/api/stocks/prices', {
+      method: 'POST',
+      body: { symbols }
+    })
+
+    // attach price to holdings
+    holdings.value = holdings.value.map(h => ({
+      ...h,
+      price: prices[h.symbol]
+    }))
+  } catch (err) {
+    console.error('Failed to fetch stock prices', err)
+  }
+}
+
 useHead({
   title: '股票管理 - 投資日記'
 })
