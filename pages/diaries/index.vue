@@ -163,7 +163,10 @@ definePageMeta({
 })
 
 // Use lazy fetch to avoid calling API during SSR before auth check
-const { data: diaries, pending, error, refresh } = await useLazyFetch('/api/diaries')
+// API returns { data, pagination }, so transform to diary array
+const { data: diaries, pending, error, refresh } = await useLazyFetch('/api/diaries', {
+  transform: (res: any) => res?.data ?? []
+})
 
 const filters = reactive({
   search: '',
