@@ -1,0 +1,44 @@
+/* 行動優先設計令牌系統 */
+:root {
+  /* 顏色 tokens */
+  --color-background: #ffffff;
+  --color-surface: #f9fafb;
+  --color-primary: #2563eb;
+  --color-primary-active: #1d4ed8;
+  --color-secondary: #64748b;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #f59e0b;
+
+  /* 文字 tokens */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+
+  /* 間距 tokens（行動優先） */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* 觸控目標 */
+  --touch-target-min: 44px;
+
+  /* 圓角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* 陰影 */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+
+  /* 動畫 */
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+  --motion-slow: 400ms;
+}

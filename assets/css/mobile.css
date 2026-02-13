@@ -1,0 +1,33 @@
+/* 行動專用基礎樣式，依賴 design-tokens.css */
+
+@import './design-tokens.css';
+
+/* 全域行動最佳化 */
+body {
+  font-size: var(--font-size-base);
+  background-color: var(--color-background);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 觸控目標最小尺寸 */
+button, a, input, textarea {
+  min-height: var(--touch-target-min);
+}
+
+/* 行動卡片樣式 */
+.mobile-card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+}
+
+/* 底部安全區域工具類 */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 動畫基準 */
+.motion-base {
+  transition: all var(--motion-base) ease;
+}
