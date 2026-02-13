@@ -209,50 +209,60 @@
 
   "about": {
     "hero": {
-      "title": "About Investment Diary",
-      "subtitle": "A professional investment diary management system"
+      "title": "Personal Investment Diary",
+      "subtitle": "A personal project built for individual investment management"
     },
-    "mission": {
-      "title": "Our Mission",
-      "content": "Investment Diary is dedicated to providing investors with a simple yet powerful tool to record investment decisions, track trading performance, and learn from historical data. We believe that systematic investment record-keeping is key to long-term investment success."
+    "intro": {
+      "title": "Project Introduction",
+      "content": "This is a personally developed investment diary system, specifically designed for recording personal investment decisions, transaction records, and market insights. As a personal project, it combines practical investment needs with modern development technologies to provide a simple yet powerful tool."
     },
-    "story": {
-      "title": "Our Story",
-      "paragraph1": "Investment Diary was born from the need for a simple investment tool. The founder found that the market lacked a diary system truly designed for individual investors that could combine transaction records, reminders, and reflection features.",
-      "paragraph2": "After careful design and development, Investment Diary has now become a complete investment management platform, supporting various features including FIFO cost calculation, timeline view, smart alerts, and more.",
-      "paragraph3": "We continuously improve our product, dedicated to providing investors with the best experience. Thank you for choosing Investment Diary as your investment partner."
+    "motivation": {
+      "title": "Development Motivation",
+      "paragraph1": "Throughout my investment journey, I discovered that systematically recording trading decisions and reflections is crucial for investment growth. While there are many investment management tools on the market, most are overly complex or lack personalized features.",
+      "paragraph2": "Therefore, I decided to develop an investment diary system that meets my personal needs—one that can record trading decisions, track investment performance, and provide timely reminders to help myself continuously learn and improve on the investment path."
     },
     "features": {
-      "title": "Core Features",
-      "subtitle": "Features designed for investors",
+      "title": "Main Features",
+      "subtitle": "Features tailored for personal investment management",
       "diary": {
-        "title": "Markdown Diary",
-        "description": "Support Markdown syntax for writing diaries, allowing you to format text, insert code, and create rich investment records."
+        "title": "Investment Diary",
+        "description": "Write detailed investment diaries using Markdown syntax, documenting trading reasons, market analysis, and personal reflections to build a complete record of investment decisions."
       },
-      "fifo": {
-        "title": "FIFO Cost Calculation",
-        "description": "Automatically calculate stock costs using the First-In-First-Out method, accurately tracking profit and loss for each transaction."
+      "calendar": {
+        "title": "Calendar View",
+        "description": "Display all investment activities in a calendar format, intuitively view daily trades, diaries, and reminders, and quickly locate investment records for specific dates."
       },
-      "realtime": {
-        "title": "Real-time Alert System",
-        "description": "Set time-triggered alerts, and the system will notify you at the specified time, ensuring you never miss important moments."
+      "timeline": {
+        "title": "Timeline",
+        "description": "Browse all investment records in chronological order, discover investment patterns and decision changes from the timeline, and review your investment journey."
       },
-      "privacy": {
-        "title": "Data Privacy Protection",
-        "description": "All data is securely stored with HTTPS encrypted transmission, passwords are bcrypt encrypted, ensuring your privacy and security."
+      "stocks": {
+        "title": "Stock Management",
+        "description": "Track stock holdings, calculate average costs, and use the FIFO (First-In-First-Out) method to accurately calculate profit and loss, keeping track of investment performance."
+      },
+      "alerts": {
+        "title": "Alert System",
+        "description": "Set time-triggered personal reminders to ensure you never miss important trading opportunities or market events."
+      },
+      "discipline": {
+        "title": "Trading Discipline",
+        "description": "Track trading frequency and discipline, set personal trading goals, and help maintain a stable investment strategy."
+      },
+      "security": {
+        "title": "Data Security",
+        "description": "Use JWT authentication and bcrypt password encryption to ensure the privacy and security of your personal investment data."
       }
     },
     "tech": {
-      "title": "Technology Stack",
-      "subtitle": "Built with modern technologies"
+      "title": "Technical Implementation",
+      "subtitle": "Developed with modern technology stack"
     },
-    "contact": {
-      "title": "Get in Touch",
-      "description": "Have questions or suggestions? Feel free to contact us, or start using Investment Diary directly.",
-      "getStarted": "Get Started"
+    "personal": {
+      "title": "Personal Project Features",
+      "content": "As a personal project, the system focuses on practicality rather than commercialization. No ads, no data collection, no unnecessary features—only pure investment management tools. All features are developed based on actual investment needs, with continuous optimization and improvement."
     },
     "footer": {
-      "rights": "All rights reserved"
+      "rights": "Personal project, all rights reserved"
     }
   },
 
