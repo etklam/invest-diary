@@ -10,6 +10,20 @@
 -- USE investment_diary;
 
 -- =============================================================================
+-- Create Enums
+-- =============================================================================
+
+-- UserRole enum
+CREATE TABLE `UserRole` (
+    `UserRole` ENUM('USER', 'ADMIN') NOT NULL
+) ENGINE = InnoDB;
+
+-- TransactionType enum
+CREATE TABLE `TransactionType` (
+    `TransactionType` ENUM('BUY', 'SELL') NOT NULL
+) ENGINE = InnoDB;
+
+-- =============================================================================
 -- Create Tables
 -- =============================================================================
 
@@ -19,6 +33,7 @@ CREATE TABLE `users` (
     `email` VARCHAR(255) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
     `name` VARCHAR(100) NULL,
+    `role` ENUM('USER', 'ADMIN') NOT NULL DEFAULT 'USER',
     `expected_monthly_trades` INTEGER NOT NULL DEFAULT 20,
     `expected_profit` DECIMAL(15, 2) NOT NULL DEFAULT 0,
     `expected_avg_holding` DECIMAL(15, 2) NOT NULL DEFAULT 0,
@@ -71,6 +86,17 @@ CREATE TABLE `transactions` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- Disciplines table
+CREATE TABLE `disciplines` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT NOT NULL,
+    `content` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `discipline_user_id_fkey`(`user_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- =============================================================================
 -- Add Foreign Keys
 -- =============================================================================
@@ -90,6 +116,11 @@ ALTER TABLE `transactions` ADD CONSTRAINT `transactions_diary_id_fkey`
     FOREIGN KEY (`diary_id`) REFERENCES `diaries`(`id`) 
     ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- Disciplines -> Users
+ALTER TABLE `disciplines` ADD CONSTRAINT `discipline_user_id_fkey` 
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) 
+    ON DELETE CASCADE ON UPDATE CASCADE;
+
 -- =============================================================================
 -- Indexes for Performance (Optional)
 -- =============================================================================
@@ -100,15 +131,17 @@ CREATE INDEX `idx_alerts_trigger_at` ON `alerts` (`trigger_at`);
 CREATE INDEX `idx_transactions_symbol` ON `transactions` (`symbol`);
 CREATE INDEX `idx_transactions_trade_date` ON `transactions` (`trade_date`);
 CREATE INDEX `idx_transactions_type` ON `transactions` (`type`);
+CREATE INDEX `idx_users_role` ON `users` (`role`);
 
 -- =============================================================================
 -- Sample Data (Optional - uncomment for development)
 -- =============================================================================
 
 -- -- Sample User
--- INSERT INTO `users` (`email`, `password`, `name`, `expected_monthly_trades`, `expected_profit`, `expected_avg_holding`) 
+-- INSERT INTO `users` (`email`, `password`, `name`, `role`, `expected_monthly_trades`, `expected_profit`, `expected_avg_holding`) 
 -- VALUES 
--- ('demo@example.com', '$2b$10$example_hash', 'Demo User', 20, 1000.00, 30.00);
+-- ('demo@example.com', '$2b$10$example_hash', 'Demo User', 'USER', 20, 1000.00, 30.00),
+-- ('admin@example.com', '$2b$10$example_hash', 'Admin User', 'ADMIN', 30, 2000.00, 45.00);
 
 -- -- Sample Diary
 -- INSERT INTO `diaries` (`user_id`, `title`, `content`, `date`) 
@@ -120,6 +153,11 @@ CREATE INDEX `idx_transactions_type` ON `transactions` (`type`);
 -- VALUES 
 -- (1, 'AAPL', 'BUY', 10.0000, 150.0000, NOW());
 
+-- -- Sample Discipline
+-- INSERT INTO `disciplines` (`user_id`, `content`) 
+-- VALUES 
+-- (1, 'Always do your research before investing');
+
 -- =============================================================================
 -- Notes
 -- =============================================================================
@@ -129,3 +167,6 @@ CREATE INDEX `idx_transactions_type` ON `transactions` (`type`);
 -- 4. Foreign keys use CASCADE delete for data consistency
 -- 5. DATETIME(3) provides millisecond precision
 -- 6. DECIMAL(15, 4) supports high-precision financial calculations
+-- 7. Added role field to users table for user role management
+-- 8. Added disciplines table for user discipline tracking
+-- 9. Added enums for UserRole and TransactionType
