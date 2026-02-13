@@ -67,21 +67,41 @@ fi
 
 # 建置映像檔
 echo "🏗️  建置 Docker 映像檔..."
-docker build \
-    --platform linux/amd64,linux/arm64 \
-    --tag "${FULL_IMAGE_NAME}:${TAG}" \
-    --label "org.opencontainers.image.title=${IMAGE_NAME}" \
-    --label "org.opencontainers.image.description=Personal Investment Diary System" \
-    --label "org.opencontainers.image.source=https://github.com/etklam/invest-diary" \
-    --label "org.opencontainers.image.revision=${COMMIT_SHA}" \
-    --label "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-    --label "org.opencontainers.image.version=${TAG}" \
-    .
+
+# 檢查是否支援多平台建置
+if docker buildx inspect default | grep -q "Platforms:"; then
+    echo "使用 buildx 進行多平台建置..."
+    docker buildx build \
+        --platform linux/amd64,linux/arm64 \
+        --tag "${FULL_IMAGE_NAME}:${TAG}" \
+        --label "org.opencontainers.image.title=${IMAGE_NAME}" \
+        --label "org.opencontainers.image.description=Personal Investment Diary System" \
+        --label "org.opencontainers.image.source=https://github.com/etklam/invest-diary" \
+        --label "org.opencontainers.image.revision=${COMMIT_SHA}" \
+        --label "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --label "org.opencontainers.image.version=${TAG}" \
+        --load \
+        .
+else
+    echo "使用標準 Docker 建置（單一平台）..."
+    docker build \
+        --tag "${FULL_IMAGE_NAME}:${TAG}" \
+        --label "org.opencontainers.image.title=${IMAGE_NAME}" \
+        --label "org.opencontainers.image.description=Personal Investment Diary System" \
+        --label "org.opencontainers.image.source=https://github.com/etklam/invest-diary" \
+        --label "org.opencontainers.image.revision=${COMMIT_SHA}" \
+        --label "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --label "org.opencontainers.image.version=${TAG}" \
+        .
+fi
 
 # 如果是 main 分支，也建置 latest 標籤
 if [ -n "$LATEST_TAG" ]; then
-    echo "🏷️  建置 latest 標籤..."
-    docker tag "${FULL_IMAGE_NAME}:${TAG}" "${FULL_IMAGE_NAME}:${LATEST_TAG}"
+    # 只有在非多平台建置時才需要標記
+    if ! docker buildx inspect default | grep -q "Platforms:"; then
+        echo "🏷️  建置 latest 標籤..."
+        docker tag "${FULL_IMAGE_NAME}:${TAG}" "${FULL_IMAGE_NAME}:${LATEST_TAG}"
+    fi
 fi
 
 echo "✅ 建置完成！"
@@ -90,14 +110,34 @@ echo "✅ 建置完成！"
 if [ "$PUSH_AFTER_BUILD" = true ]; then
     echo "📤 推送映像檔到 registry..."
     
-    # 推送主要標籤
-    echo "推送 ${FULL_IMAGE_NAME}:${TAG}..."
-    docker push "${FULL_IMAGE_NAME}:${TAG}"
-    
-    # 推送 latest 標籤（如果存在）
-    if [ -n "$LATEST_TAG" ]; then
-        echo "推送 ${FULL_IMAGE_NAME}:${LATEST_TAG}..."
-        docker push "${FULL_IMAGE_NAME}:${LATEST_TAG}"
+    # 檢查是否需要使用 buildx 推送多平台映像檔
+    if docker buildx inspect default | grep -q "Platforms:"; then
+        echo "使用 buildx 推送多平台映像檔..."
+        docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --tag "${FULL_IMAGE_NAME}:${TAG}" \
+            --push \
+            .
+        
+        # 推送 latest 標籤（如果存在）
+        if [ -n "$LATEST_TAG" ]; then
+            echo "推送 ${FULL_IMAGE_NAME}:${LATEST_TAG}..."
+            docker buildx build \
+                --platform linux/amd64,linux/arm64 \
+                --tag "${FULL_IMAGE_NAME}:${LATEST_TAG}" \
+                --push \
+                .
+        fi
+    else
+        # 推送主要標籤
+        echo "推送 ${FULL_IMAGE_NAME}:${TAG}..."
+        docker push "${FULL_IMAGE_NAME}:${TAG}"
+        
+        # 推送 latest 標籤（如果存在）
+        if [ -n "$LATEST_TAG" ]; then
+            echo "推送 ${FULL_IMAGE_NAME}:${LATEST_TAG}..."
+            docker push "${FULL_IMAGE_NAME}:${LATEST_TAG}"
+        fi
     fi
     
     echo "✅ 推送完成！"
