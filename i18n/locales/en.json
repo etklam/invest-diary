@@ -28,7 +28,9 @@
     "alerts": "Alerts",
     "stocks": "Stocks",
     "admin": "Admin Panel",
-    "about": "About Us"
+    "about": "About Us",
+    "blog": "Blog",
+    "manageBlog": "Manage Blog"
   },
 
   "auth": {
@@ -313,5 +315,62 @@
       "updateRoleFailed": "Failed to update user role",
       "deleteUserFailed": "Failed to delete user"
     }
+  },
+
+  "blog": {
+    "title": "Investment Blog",
+    "description": "Professional investment knowledge sharing",
+    "readMore": "Read More",
+    "publishedAt": "Published at",
+    "createdAt": "Created at",
+    "author": "Author",
+    "category": "Category",
+    "categories": "Categories",
+    "tags": "Tags",
+    "tag": "Tag",
+    "readingTime": "{min} min read",
+    "relatedPosts": "Related Posts",
+    "share": "Share Post",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied",
+    "backToList": "Back to Posts",
+    "noPosts": "No posts yet",
+    "postNotFound": "Post not found",
+    "loadFailed": "Failed to load",
+    "manageBlog": "Manage Blog",
+    "createPost": "Create Post",
+    "editPost": "Edit Post",
+    "title": "Title",
+    "titlePlaceholder": "Enter post title",
+    "slug": "Slug",
+    "content": "Content",
+    "contentPlaceholder": "# Start writing your post...\n\nSupports Markdown syntax",
+    "excerpt": "Excerpt",
+    "excerptOptional": "Optional, will be auto-generated from content if left blank",
+    "excerptPlaceholder": "Enter post excerpt (optional)",
+    "coverImage": "Cover Image",
+    "coverImagePlaceholder": "Enter image URL",
+    "selectCategory": "Select a category",
+    "tags": "Tags",
+    "tagsHint": "Separate multiple tags with commas",
+    "tagsPlaceholder": "e.g., stocks, technical analysis, value investing",
+    "markdownSupported": "Supports Markdown syntax",
+    "preview": "Preview",
+    "previewPlaceholder": "Preview will appear here...",
+    "status": "Status",
+    "saveAsDraft": "Save as Draft",
+    "publish": "Publish",
+    "categories": {
+      "fundamental": "Fundamental Analysis",
+      "technical": "Technical Analysis",
+      "market": "Market Watch",
+      "strategy": "Investment Strategy"
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "searchPlaceholder": "Search post title or content..."
   }
 }

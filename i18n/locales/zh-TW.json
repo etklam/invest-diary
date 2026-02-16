@@ -28,7 +28,9 @@
     "alerts": "提醒管理",
     "stocks": "股票管理",
     "admin": "管理面板",
-    "about": "關於我們"
+    "about": "關於我們",
+    "blog": "投資教學",
+    "manageBlog": "博客管理"
   },
 
   "auth": {
@@ -313,5 +315,61 @@
       "updateRoleFailed": "更新用戶角色失敗",
       "deleteUserFailed": "刪除用戶失敗"
     }
+  },
+
+  "blog": {
+    "title": "投資教學",
+    "description": "專業投資知識分享",
+    "readMore": "閱讀更多",
+    "publishedAt": "發布於",
+    "createdAt": "建立於",
+    "author": "作者",
+    "category": "分類",
+    "categories": "分類",
+    "tags": "標籤",
+    "tag": "標籤",
+    "readingTime": "閱讀時間 {min} 分鐘",
+    "relatedPosts": "相關文章",
+    "share": "分享文章",
+    "copyLink": "複製連結",
+    "linkCopied": "連結已複製",
+    "backToList": "返回文章列表",
+    "noPosts": "暫無文章",
+    "postNotFound": "文章不存在",
+    "loadFailed": "載入失敗",
+    "manageBlog": "博客管理",
+    "createPost": "建立文章",
+    "editPost": "編輯文章",
+    "title": "標題",
+    "titlePlaceholder": "輸入文章標題",
+    "slug": "網址",
+    "content": "內容",
+    "contentPlaceholder": "# 開始撰寫您的文章...\n\n支援 Markdown 語法",
+    "excerpt": "摘要",
+    "excerptOptional": "選填，若留空將自動從內容生成",
+    "excerptPlaceholder": "輸入文章摘要（選填）",
+    "coverImage": "封面圖片",
+    "coverImagePlaceholder": "輸入圖片網址",
+    "selectCategory": "請選擇分類",
+    "tagsHint": "使用逗號分隔多個標籤",
+    "tagsPlaceholder": "例如：股票, 技術分析, 价值投資",
+    "markdownSupported": "支援 Markdown 語法",
+    "preview": "預覽",
+    "previewPlaceholder": "預覽將顯示於此...",
+    "postStatus": "狀態",
+    "saveAsDraft": "儲存為草稿",
+    "publish": "發布",
+    "categories": {
+      "fundamental": "基本面分析",
+      "technical": "技術面分析",
+      "market": "市場觀察",
+      "strategy": "投資策略"
+    },
+    "postStatuses": {
+      "draft": "草稿",
+      "published": "已發布",
+      "archived": "已歸檔"
+    },
+    "searchPlaceholder": "搜尋文章標題或內容..."
   }
 }

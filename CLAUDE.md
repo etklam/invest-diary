@@ -6,6 +6,8 @@
 
 這是一個**個人投資日記系統**（投資日記系統）- 一個多用戶應用程式，用於追蹤投資日記，支援 Markdown 寫作、應用程式內提醒，以及使用 FIFO 成本計算的股票投資組合管理。具備基於 JWT 的身份驗證和 bcrypt 密碼雜湊。
 
+**額外功能**：包含一個公開訪問的投資教學博客，管理員可以發布投資知識文章，支援分類、標籤和 Markdown 編輯。
+
 **技術堆疊：** Nuxt 3 + Vue 3 + TypeScript + MySQL + Prisma ORM + Tailwind CSS + JWT + bcrypt + @nuxtjs/color-mode + @vite-pwa/nuxt
 
 **主要語言：** 繁體中文是 UI 和文件的主要語言。
@@ -123,12 +125,13 @@ git push --no-verify
 
 ### 資料庫模型
 
-五個主要表格，具有外鍵關係：
+六個主要表格，具有外鍵關係：
 - **User** - 使用者帳戶，包含電子郵件、密碼（bcrypt 雜湊）、姓名和交易設定
 - **Diary** - 主要日記條目，具有 `date` 欄位（預設為現在）、標題（必填）、內容（可選）、連結到 User
 - **Alert** - 連結到日記的基於時間的提醒（trigger_at、is_dismissed）
 - **Transaction** - 連結到日記的股票交易（BUY/SELL、FIFO 計算）
 - **Discipline** - 使用者的自定義交易紀律引語（content: VarChar(255)，連結到 User）
+- **Post** - 博客文章，具有標題、slug、內容（Markdown）、摘要、封面圖片、分類、標籤、狀態（DRAFT/PUBLISHED/ARCHIVED）、發布時間，連結到 User（作者）
 
 **重要事項：**
 - 持股使用平均成本法動態計算（不是真正的 FIFO 匹配），透過 `lib/utils.ts`
@@ -174,6 +177,16 @@ git push --no-verify
 - `admin/users/[id].delete.ts` - DELETE /api/admin/users/:id（刪除使用者）
 - `admin/users/[id]/role.put.ts` - PUT /api/admin/users/:id/role（更新使用者角色）
 
+**博客 API 路由：**
+- `blog/index.get.ts` - GET /api/blog（公開，僅已發布文章，支援分頁、分類、標籤篩選）
+- `blog/[slug].get.ts` - GET /api/blog/:slug（公開，取得單篇文章詳情）
+- `blog/index.post.ts` - POST /api/blog（管理員，建立新文章）
+- `blog/[id].put.ts` - PUT /api/blog/:id（管理員，更新文章）
+- `blog/[id].delete.ts` - DELETE /api/blog/:id（管理員，刪除文章）
+- `blog/admin/index.get.ts` - GET /api/blog/admin（管理員，取得所有文章含草稿）
+- `blog/admin/[id]/publish.post.ts` - POST /api/blog/admin/:id/publish（管理員，發布文章）
+- `blog/admin/[id]/archive.post.ts` - POST /api/blog/admin/:id/archive（管理員，歸檔文章）
+
 ### 元件組織
 - `pages/` - 路由頁面（自動導入）
 - `pages/auth/` - 身份驗證頁面（登入、註冊）
@@ -181,10 +194,16 @@ git push --no-verify
 - `pages/stocks/` - 股票持股儀表板
 - `pages/timeline/` - 日記的時間軸檢視，支援日期範圍篩選
 - `pages/discipline/` - 交易紀律引語管理
+- `pages/blog/` - 公開博客頁面（首頁、文章詳情頁）
 - `pages/admin/` - 管理員面板
+- `pages/admin/blog/` - 博客管理（列表、新增、編輯）
 - `components/` - 可重複使用的 Vue 元件（自動導入）
   - `UserMenu.vue` - 已驗證使用者的下拉選單，包含登出
   - `Navigation.vue` - 響應式導航，包含行動選單
+  - `BlogCard.vue` - 博客文章卡片
+  - `BlogEditor.vue` - Markdown 博客編輯器
+  - `CategoryFilter.vue` - 文章分類篩選器
+  - `PostMeta.vue` - 文章後設資訊（作者、日期、閱讀時間）
   - `DiaryEditor.vue`、`HoldingsDisplay.vue`、`TransactionInput.vue` 等
 - `composables/` - Vue 組合式函數（useAuth.ts、useNavigation.ts、useDiscipline.ts）
 - `middleware/` - 路由中介層（auth.ts 用於路由保護）
@@ -324,6 +343,34 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 - 管理員 API 端點受 `server/middleware/admin.ts` 保護
 - 管理員角色在 `User` 模型中定義為 `UserRole` 枚舉
 
+### 博客系統
+- **公開訪問**：博客首頁（`/blog`）和文章詳情頁（`/blog/[slug]`）對所有訪客開放，無需登入
+- **管理員專屬**：只有管理員可以建立、編輯、發布和刪除博客文章
+- **文章狀態**：支援三種狀態 - DRAFT（草稿）、PUBLISHED（已發布）、ARCHIVED（已歸檔）
+- **Markdown 支援**：文章內容使用 `@nuxtjs/mdc` 渲染，支援豐富的 Markdown 語法
+- **分類系統**：四個預設分類 - 基本面分析、技術面分析、市場觀察、投資策略
+- **標籤系統**：支援自定義標籤，以逗號分隔儲存
+- **SEO 友好**：自動從標題生成 URL slug，支援封面圖片、摘要
+- **閱讀時間**：自動計算文章預估閱讀時間（基於 200 字/分鐘）
+- **篩選與搜尋**：公開 API 支援按分類、標籤篩選和關鍵字搜尋
+- **分頁**：公開 API 支援分頁，預設每頁 9 篇文章
+- **工具函數**（`lib/blog.ts`）：
+  - `generateSlug()` - 從標題生成 URL 友善的 slug
+  - `generateExcerpt()` - 從 Markdown 內容生成純文本摘要
+  - `calculateReadingTime()` - 計算閱讀時間
+  - `parseTags()` / `stringifyTags()` - 標籤與字串的轉換
+- **博客元件**：
+  - `BlogCard.vue` - 文章卡片，顯示封面、分類、標題、摘要、標籤、後設資訊
+  - `BlogEditor.vue` - 管理員用 Markdown 編輯器，支援即時預覽
+  - `CategoryFilter.vue` - 分類篩選下拉選單
+  - `PostMeta.vue` - 顯示作者、發布時間、閱讀時間
+- **博客頁面**：
+  - `/blog` - 公開博客首頁，顯示已發布文章列表，支援分頁和篩選
+  - `/blog/[slug]` - 文章詳情頁，顯示完整內容和相關文章
+  - `/admin/blog` - 管理員博客管理面板
+  - `/admin/blog/new` - 建立新文章
+  - `/admin/blog/[id]/edit` - 編輯現有文章
+
 ## UI/UX 模式
 
 - **響應式**：使用 Tailwind 斷點的行動優先設計
@@ -350,10 +397,13 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 - ✅ 含離線功能的 PWA 支援（完成）
 - ✅ 管理員面板（完成）
 - ✅ 交易紀律系統（完成）
+- ✅ 投資教學博客（完成）
 
 ## 重要注意事項
 
 - **需要身份驗證**：所有日記/提醒/交易操作都需要有效的 JWT 權杖
+- **博客公開訪問**：博客文章（/blog）對所有訪客開放，無需登入即可閱讀
+- **博客管理權限**：只有 ADMIN 角色的使用者可以建立、編輯、發布和刪除博客文章
 - 所有 API 回應包含用於除錯的主控台日誌記錄
 - 錯誤處理使用 Nuxt 的 `createError()` 與適當的狀態碼
 - 日期/時間欄位在 Prisma 中使用 `DateTime` 類型，在 MySQL 中儲存為 `DATETIME`

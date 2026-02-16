@@ -28,7 +28,9 @@
     "alerts": "提醒管理",
     "stocks": "股票管理",
     "admin": "管理面板",
-    "about": "关于我们"
+    "about": "关于我们",
+    "blog": "投资教学",
+    "manageBlog": "博客管理"
   },
 
   "auth": {
@@ -303,5 +305,62 @@
       "updateRoleFailed": "更新用户角色失败",
       "deleteUserFailed": "删除用户失败"
     }
+  },
+
+  "blog": {
+    "title": "投资教学",
+    "description": "专业投资知识分享",
+    "readMore": "阅读更多",
+    "publishedAt": "发布于",
+    "createdAt": "创建于",
+    "author": "作者",
+    "category": "分类",
+    "categories": "分类",
+    "tags": "标签",
+    "tag": "标签",
+    "readingTime": "阅读时间 {min} 分钟",
+    "relatedPosts": "相关文章",
+    "share": "分享文章",
+    "copyLink": "复制链接",
+    "linkCopied": "链接已复制",
+    "backToList": "返回文章列表",
+    "noPosts": "暂无文章",
+    "postNotFound": "文章不存在",
+    "loadFailed": "加载失败",
+    "manageBlog": "博客管理",
+    "createPost": "创建文章",
+    "editPost": "编辑文章",
+    "title": "标题",
+    "titlePlaceholder": "输入文章标题",
+    "slug": "网址",
+    "content": "内容",
+    "contentPlaceholder": "# 开始撰写您的文章...\n\n支持 Markdown 语法",
+    "excerpt": "摘要",
+    "excerptOptional": "选填，若留空将自动从内容生成",
+    "excerptPlaceholder": "输入文章摘要（选填）",
+    "coverImage": "封面图片",
+    "coverImagePlaceholder": "输入图片网址",
+    "selectCategory": "请选择分类",
+    "tags": "标签",
+    "tagsHint": "使用逗号分隔多个标签",
+    "tagsPlaceholder": "例如：股票, 技术分析, 价值投资",
+    "markdownSupported": "支持 Markdown 语法",
+    "preview": "预览",
+    "previewPlaceholder": "预览将显示于此...",
+    "status": "状态",
+    "saveAsDraft": "保存为草稿",
+    "publish": "发布",
+    "categories": {
+      "fundamental": "基本面分析",
+      "technical": "技术面分析",
+      "market": "市场观察",
+      "strategy": "投资策略"
+    },
+    "status": {
+      "draft": "草稿",
+      "published": "已发布",
+      "archived": "已归档"
+    },
+    "searchPlaceholder": "搜索文章标题或内容..."
   }
 }

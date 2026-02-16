@@ -1,10 +1,11 @@
 # 投資日記系統
 
-一個為投資者設計的個人日記系統，具備 Markdown 寫作功能、應用程式內提醒功能，以及持股管理儀表板。支援多使用者帳號系統、JWT 身份驗證，使用 Nuxt 3、Vue 3、MySQL 和 Prisma ORM 建構。
+一個為投資者設計的個人日記系統，具備 Markdown 寫作功能、應用程式內提醒功能、持股管理儀表板，以及公開訪問的投資教學博客。支援多使用者帳號系統、JWT 身份驗證，使用 Nuxt 3、Vue 3、MySQL 和 Prisma ORM 建構。
 
 ## ✨ 主要功能
 
 - 📝 **投資日記** - 使用 Markdown 格式建立和編輯日記條目
+- 📚 **投資教學博客** - 管理員可發布投資知識文章，支援分類、標籤和 Markdown 編輯
 - 🔔 **智能提醒** - 建立在應用程式內的提醒，在指定時間觸發
 - 📊 **持股管理** - 記錄買入/賣出交易，系統自動計算持股部位
 - 📈 **持股儀表板** - 檢視所有持股的詳細資訊與成本分配
@@ -86,19 +87,30 @@ docker-compose -f docker-compose.dev.yml up
 | **框架** | Nuxt 3 | Vue 3 全端框架 |
 | **UI** | Vue 3.5+ | 元件函式庫 |
 | **樣式** | Tailwind CSS v3 | 實用優先的 CSS 框架 |
+| **Markdown** | @nuxtjs/mdc | Markdown 內容渲染 |
 | **資料庫** | MySQL 8.0+ | 關聯式資料庫 |
 | **ORM** | Prisma | 型別安全的資料庫客戶端 |
 | **驗證** | JWT + bcrypt | 身份驗證與密碼雜湊 |
 | **測試** | Vitest | 單元測試與整合測試 |
 | **PWA** | @vite-pwa/nuxt | 漸進式 Web 應用程式 |
+| **i18n** | @nuxtjs/i18n | 多語言支援 |
 
 ## 📁 專案結構
 
 ```
 diary-vue/
 ├── pages/                 # 頁面路由
+│   ├── blog/             # 公開博客頁面
+│   └── admin/blog/       # 管理員博客管理
 ├── components/            # Vue 元件
+│   ├── BlogCard.vue      # 博客卡片元件
+│   ├── BlogEditor.vue    # 博客編輯器
+│   └── CategoryFilter.vue # 分類篩選器
 ├── server/api/           # API 路由
+│   └── blog/             # 博客 API 端點
+├── lib/                  # 工具函數
+│   ├── blog.ts           # 博客相關工具
+│   └── utils.ts          # 通用工具函數
 ├── composables/          # Vue 組合式函數
 ├── middleware/           # 路由中介層
 ├── prisma/              # 資料庫 Schema 與遷移

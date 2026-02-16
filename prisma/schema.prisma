@@ -12,6 +12,12 @@ enum UserRole {
   ADMIN
 }
 
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 model User {
   id                    BigInt    @id @default(autoincrement())
   email                 String    @unique @db.VarChar(255)
@@ -29,6 +35,7 @@ model User {
 
   diaries               Diary[]
   disciplines           Discipline[]
+  posts                 Post[]
 
   @@map("users")
 }
@@ -92,4 +99,27 @@ model Transaction {
 enum TransactionType {
   BUY
   SELL
+}
+
+model Post {
+  id          BigInt       @id @default(autoincrement())
+  authorId    BigInt       @map("author_id")
+  title       String       @db.VarChar(255)
+  slug        String       @unique @db.VarChar(255)
+  content     String       @db.Text
+  excerpt     String?      @db.Text
+  coverImage  String?      @db.VarChar(500) @map("cover_image")
+  category    String       @db.VarChar(100)
+  tags        String?      @db.VarChar(500)
+  status      PostStatus   @default(DRAFT)
+  publishedAt DateTime?    @map("published_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId], map: "posts_author_id_idx")
+  @@index([status], map: "posts_status_idx")
+  @@index([publishedAt], map: "posts_published_at_idx")
+  @@map("posts")
 }
