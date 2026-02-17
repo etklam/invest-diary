@@ -1,171 +1,336 @@
-# 投資日記系統
+# Diary Vue
 
-一個為投資者設計的個人日記系統，具備 Markdown 寫作功能、應用程式內提醒功能、持股管理儀表板，以及公開訪問的投資教學博客。支援多使用者帳號系統、JWT 身份驗證，使用 Nuxt 3、Vue 3、MySQL 和 Prisma ORM 建構。
+A personal investment diary application built with Nuxt 3, featuring investment journaling, stock portfolio tracking, and an educational blog.
 
-## ✨ 主要功能
+[![Nuxt](https://img.shields.io/badge/Nuxt-3.4.3+-00DC82?logo=nuxt.js)](https://nuxt.com)
+[![Vue](https://img.shields.io/badge/Vue-3.5+-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-- 📝 **投資日記** - 使用 Markdown 格式建立和編輯日記條目
-- 📚 **投資教學博客** - 管理員可發布投資知識文章，支援分類、標籤和 Markdown 編輯
-- 🔔 **智能提醒** - 建立在應用程式內的提醒，在指定時間觸發
-- 📊 **持股管理** - 記錄買入/賣出交易，系統自動計算持股部位
-- 📈 **持股儀表板** - 檢視所有持股的詳細資訊與成本分配
-- 👥 **多使用者系統** - 支援註冊、登入、個人設定管理
-- 🌙 **深色模式** - 支援深色/淺色主題切換
-- 📱 **PWA 支援** - 可安裝為漸進式 Web 應用程式
-- 🌍 **多語言** - 支援繁體中文、簡體中文、英文
+## Features
 
-## 🚀 快速開始
+- **Investment Journaling**: Daily diary entries with markdown support
+- **Portfolio Tracking**: Stock transaction management (BUY/SELL) with holdings calculation
+- **Alert System**: Time-based reminders for diary entries
+- **Investment Discipline**: Custom motivational quotes for trading psychology
+- **Educational Blog**: Public investment education articles (admin-managed)
+- **Multi-language**: English, Traditional Chinese (繁體中文), Simplified Chinese (简体中文)
+- **Dark/Light Mode**: System preference detection with manual toggle
+- **PWA Support**: Offline-capable progressive web application
+- **Authentication**: JWT-based with secure httpOnly cookies
 
-### 環境需求
+## Screenshots
 
-- Node.js 18+ 
-- MySQL 8.0+
-- Git
+> TODO: Add application screenshots
 
-### 安裝步驟
+## Tech Stack
 
-1. **複製專案**
-   ```bash
-   git clone <repository-url>
-   cd diary-vue
-   ```
+| Category | Technology |
+|----------|-----------|
+| **Framework** | Nuxt 3 (Vue 3 Composition API) |
+| **Language** | TypeScript |
+| **Database** | MySQL 8.0+ with Prisma ORM |
+| **Styling** | TailwindCSS |
+| **Authentication** | JWT + bcrypt |
+| **i18n** | @nuxtjs/i18n |
+| **Markdown** | @nuxtjs/mdc |
+| **PWA** | @vite-pwa/nuxt |
+| **Icons** | @nuxt/icon (Heroicons) |
+| **Testing** | Vitest (unit/integration), Playwright (E2E) |
+| **Validation** | Zod |
 
-2. **安裝相依套件**
-   ```bash
-   npm install
-   ```
+## Quick Start
 
-3. **設定環境變數**
-   ```bash
-   cp .env.example .env
-   # 編輯 .env 檔案設定 DATABASE_URL 和 JWT_SECRET
-   ```
+### Prerequisites
 
-4. **設定資料庫**
-   ```bash
-   npx prisma generate
-   npx prisma migrate dev --name init
-   ```
+- **Node.js** 18+
+- **MySQL** 8.0+
+- **npm** or **yarn**
 
-5. **啟動開發伺服器**
-   ```bash
-   npm run dev
-   ```
-
-6. **訪問應用程式**
-   
-   開啟瀏覽器訪問 [http://localhost:3000](http://localhost:3000)
-
-## 🐳 Docker 部署
-
-### 生產環境
+### Installation
 
 ```bash
-# 設定環境變數
-cp .env.example .env
+# Clone the repository
+git clone <repository-url>
+cd diary-vue
 
-# 啟動服務
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database credentials
+
+# Generate Prisma client
+npx prisma generate
+
+# Run database migrations
+npx prisma migrate dev
+
+# (Optional) Seed database with test data
+npm run seed
+
+# Start development server
+npm run dev
+```
+
+The application will be available at `http://localhost:3000`.
+
+### Default Admin User
+
+After seeding, you can login with:
+- **Email**: `admin@example.com`
+- **Password**: `admin123`
+
+> **Important**: Change the default password after first login in production!
+
+## Development Commands
+
+```bash
+# Development
+npm run dev              # Start dev server (http://localhost:3000)
+npm run build           # Build for production
+npm run preview         # Preview production build
+npm run generate        # Static site generation
+
+# Database
+npm run seed            # Seed database with test data
+npx prisma studio       # Open Prisma Studio (DB GUI)
+npx prisma migrate dev  # Create and apply migrations
+
+# Testing
+npm test                # Run all tests
+npm run test:watch      # Watch mode
+npm run test:ui         # Vitest UI
+npm run test:coverage   # Coverage report
+npm run test:e2e        # Playwright E2E tests
+
+# Code Quality
+npm run lint            # ESLint
+npm run typecheck       # TypeScript checking
+
+# Health Checks
+npm run health:check    # System health validation
+npm run health:full     # Health check + build
+npm run health:quick    # Quick tests + Prisma validate
+```
+
+## Project Structure
+
+```
+├── app.vue              # Root application wrapper
+├── components/          # Reusable Vue components
+├── composables/         # Vue composition functions
+├── layouts/             # Nuxt layouts (default, authenticated)
+├── pages/               # File-based routing
+│   ├── auth/           # Authentication pages
+│   ├── admin/          # Admin panel
+│   ├── blog/           # Public blog pages
+│   ├── settings/       # User settings
+│   ├── stocks/         # Portfolio management
+│   └── timeline/       # Diary timeline view
+├── server/              # Nitro API routes & middleware
+│   ├── api/            # RESTful endpoints
+│   └── middleware/     # Server middleware (JWT auth)
+├── lib/                 # Shared utilities (Prisma client singleton)
+├── prisma/              # Database schema, migrations, seed
+├── i18n/locales/        # Translation files (en, zh-TW, zh-CN)
+├── assets/              # Static assets (CSS, images)
+├── public/              # Public static files
+└── tests/               # Unit, integration, and E2E tests
+```
+
+## Database Schema
+
+- **User** - Authentication + investment settings
+- **Diary** - Investment journal entries
+- **Transaction** - Stock trades (BUY/SELL)
+- **Alert** - Reminders for diary entries
+- **Discipline** - Investment principles/quotes
+- **Post** - Blog articles (DRAFT/PUBLISHED/ARCHIVED)
+
+See `prisma/schema.prisma` for detailed relationships and constraints.
+
+## Environment Variables
+
+Create a `.env` file in the project root:
+
+```bash
+# Database (Required)
+DATABASE_URL="mysql://username:password@localhost:3306/invest_diary"
+
+# JWT (Required - Generate with: openssl rand -base64 32)
+JWT_SECRET="your-secret-key-for-jwt"
+
+# App Configuration
+NUXT_PUBLIC_APP_NAME="投資日記"
+```
+
+### Generating a Secure JWT Secret
+
+```bash
+openssl rand -base64 32
+```
+
+## Deployment
+
+### Docker Deployment (Recommended)
+
+```bash
+# Build and start all services
 docker-compose up -d
 
-# 查看日誌
+# View logs
 docker-compose logs -f app
+
+# Stop services
+docker-compose down
 ```
 
-### 開發環境
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for detailed deployment instructions, including:
+- External MySQL configuration
+- Nginx reverse proxy setup
+- SSL/TLS with Let's Encrypt
+- Production checklist
+- Backup and restore procedures
+
+### Manual Deployment
 
 ```bash
-# 使用開發配置啟動（支援熱重載）
-docker-compose -f docker-compose.dev.yml up
+# Build for production
+npm run build
+
+# Start production server
+node .output/server/index.mjs
 ```
 
-詳細部署說明請參考 [DEPLOYMENT.md](DEPLOYMENT.md)
+## Health Check
 
-## 🛠️ 技術堆疊
-
-| 層級 | 技術 | 用途 |
-|------|------|---------|
-| **框架** | Nuxt 3 | Vue 3 全端框架 |
-| **UI** | Vue 3.5+ | 元件函式庫 |
-| **樣式** | Tailwind CSS v3 | 實用優先的 CSS 框架 |
-| **Markdown** | @nuxtjs/mdc | Markdown 內容渲染 |
-| **資料庫** | MySQL 8.0+ | 關聯式資料庫 |
-| **ORM** | Prisma | 型別安全的資料庫客戶端 |
-| **驗證** | JWT + bcrypt | 身份驗證與密碼雜湊 |
-| **測試** | Vitest | 單元測試與整合測試 |
-| **PWA** | @vite-pwa/nuxt | 漸進式 Web 應用程式 |
-| **i18n** | @nuxtjs/i18n | 多語言支援 |
-
-## 📁 專案結構
-
-```
-diary-vue/
-├── pages/                 # 頁面路由
-│   ├── blog/             # 公開博客頁面
-│   └── admin/blog/       # 管理員博客管理
-├── components/            # Vue 元件
-│   ├── BlogCard.vue      # 博客卡片元件
-│   ├── BlogEditor.vue    # 博客編輯器
-│   └── CategoryFilter.vue # 分類篩選器
-├── server/api/           # API 路由
-│   └── blog/             # 博客 API 端點
-├── lib/                  # 工具函數
-│   ├── blog.ts           # 博客相關工具
-│   └── utils.ts          # 通用工具函數
-├── composables/          # Vue 組合式函數
-├── middleware/           # 路由中介層
-├── prisma/              # 資料庫 Schema 與遷移
-├── tests/               # 測試檔案
-├── docs/                # 文件
-└── scripts/             # 工具腳本
-```
-
-## 🧪 測試
+The application provides a health check endpoint for monitoring:
 
 ```bash
-# 執行所有測試
-npm test
-
-# 監看模式
-npm run test:watch
-
-# 測試覆蓋率報告
-npm run test:coverage
+curl http://localhost:3000/api/health
 ```
 
-## 🔧 開發指令
-
-```bash
-# 開發
-npm run dev              # 啟動開發伺服器
-
-# 建置
-npm run build            # 建置生產版本
-npm run preview          # 預覽建置結果
-
-# 資料庫
-npx prisma studio        # 開啟 Prisma Studio
-npm run seed             # 執行資料庫種子
-
-# 健康檢查
-npm run health:check     # 系統健康檢查
-npm run health:full      # 完整健康檢查 + 建置驗證
+Response:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "checks": {
+    "database": {
+      "status": "ok",
+      "responseTime": 15
+    },
+    "server": {
+      "status": "ok",
+      "uptime": 3600,
+      "environment": "development"
+    }
+  }
+}
 ```
 
-## 📖 文件
+See [`docs/HEALTH_CHECK.md`](docs/HEALTH_CHECK.md) for details.
 
-- [CLAUDE.md](CLAUDE.md) - 開發者詳細指南
-- [DEPLOYMENT.md](DEPLOYMENT.md) - 部署指南
-- [docs/HEALTH_CHECK.md](docs/HEALTH_CHECK.md) - 健康檢查說明
-- [docs/TESTING.md](docs/TESTING.md) - 測試指南
+## Documentation
 
-## 🤝 貢獻
+- **[`CLAUDE.md`](CLAUDE.md)** - Technical documentation for developers (architecture patterns, critical gotchas)
+- **[`DEPLOYMENT.md`](DEPLOYMENT.md)** - Deployment guide (Docker, manual, production checklist)
+- **[`IMPROVEMENTS.md`](IMPROVEMENTS.md)** - Planned features and enhancement roadmap
+- **[`docs/TESTING.md`](docs/TESTING.md)** - Testing guide and best practices
+- **[`docs/HEALTH_CHECK.md`](docs/HEALTH_CHECK.md)** - Health check system documentation
 
-歡迎提交 Issue 和 Pull Request 來改進這個專案。
+## Roadmap
 
-## 📄 授權
+See [`IMPROVEMENTS.md`](IMPROVEMENTS.md) for planned features including:
+- Security enhancements (XSS protection, CSP headers)
+- Developer experience improvements (ESLint, Prettier)
+- Complete test coverage
+- UI/UX and accessibility improvements
+- Performance optimizations
 
-本專案為個人開發專案，保留所有權利。
+## Contributing
+
+Contributions are welcome! Please see [`docs/TESTING.md`](docs/TESTING.md) for testing guidelines.
+
+### Development Setup
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make your changes
+4. Run tests: `npm test`
+5. Run health check: `npm run health:check`
+6. Commit your changes: `git commit -m 'Add some feature'`
+7. Push to the branch: `git push origin feature/my-feature`
+8. Open a Pull Request
+
+### Code Style
+
+- Use TypeScript for all new code
+- Follow Vue 3 Composition API patterns
+- Run `npm run lint` before committing
+- Add tests for new features
+- Update documentation as needed
+
+## Troubleshooting
+
+### Common Issues
+
+**Problem**: Blog posts show "文章不存在" (article not found)
+- **Solution**: Check the PWA + Nitro params section in [`CLAUDE.md`](CLAUDE.md)
+
+**Problem**: Database connection failed
+- **Solution**: Verify `DATABASE_URL` in `.env`, ensure MySQL is running
+
+**Problem**: Port 3000 already in use
+- **Solution**: Change port in `.env` or stop the conflicting process
+
+**Problem**: PWA not installing
+- **Solution**: Ensure HTTPS is enabled (required for PWA), or use `localhost` in development
+
+For more troubleshooting tips, see [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ---
 
-**注意：** 這是一個個人自用的投資日記系統，專注於實用性而非商業化。沒有廣告、沒有數據收集、沒有不必要的功能，只有純粹的投資管理工具。
+## ⚠️ Critical: Blog Slug & PWA Gotcha (Nuxt 3)
+
+If you add or modify **dynamic API routes** (e.g. `/api/blog/:slug`):
+
+### ✅ Mandatory Rules
+
+1. **Do NOT rely on a single slug source**
+   - Always fallback through:
+     - `event.context.params`
+     - `getRouterParam`
+     - URL path parsing
+
+2. **Never let PWA cache `/api/**`**
+   - APIs must always be `no-store`
+   - Otherwise Service Worker may return fake 400/404 errors
+
+### ✅ Reference Implementation
+
+- Slug parsing: `server/api/blog/[slug].get.ts`
+- PWA exclusion: `nuxt.config.ts`
+- Incident record: [`CLAUDE.md`](CLAUDE.md)
+
+### ✅ Symptoms
+
+- Blog list works
+- Clicking post shows "文章不存在"
+- Network shows `400 Slug is required (from service worker)`
+
+**If this happens, check PWA + Nitro params first, not Prisma or Vue.**
+
+## License
+
+MIT
+
+## Support
+
+For issues, questions, or contributions, please visit the [GitHub repository](<repository-url>).
+
+---
+
+**Built with ❤️ for investment tracking and journaling**
