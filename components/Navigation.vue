@@ -32,7 +32,7 @@ watch(() => route.path, () => {
               v-for="item in visibleNavItems"
               :key="item.to"
               :to="item.to"
-              class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-300 dark:hover:text-white dark:hover:border-gray-300"
+              class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-300 dark:hover:text-white dark:hover:border-gray-500"
               :class="isActive(item.to) ? '!border-indigo-500 text-gray-900 dark:text-white' : ''"
             >
               {{ item.label }}
@@ -113,7 +113,7 @@ watch(() => route.path, () => {
           :to="item.to"
           class="block px-3 py-3 rounded-md text-base font-medium min-h-[44px] flex items-center justify-center transition-colors"
           :class="isActive(item.to)
-            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'
+            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-100'
             : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700'"
           @click="isMobileMenuOpen = false"
         >

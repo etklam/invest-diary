@@ -46,9 +46,9 @@
         v-for="day in daysInMonth"
         :key="day"
         @click="handleDateClick(day)"
-        class="h-16 sm:h-24 p-1 sm:p-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+        class="h-16 sm:h-24 p-1 sm:p-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative"
         :class="{
-          'bg-indigo-50 dark:bg-indigo-900/20': isToday(day),
+          'bg-indigo-50 dark:bg-indigo-900/40': isToday(day),
           'border-indigo-500': isToday(day)
         }"
       >

@@ -207,7 +207,7 @@
                     {{ holding.price ? formatCurrency(holding.price * holding.quantity) : '—' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <span :class="holding.price && holding.price * holding.quantity - holding.totalCost >= 0 ? 'text-green-600' : 'text-red-600'">
+                    <span :class="holding.price && holding.price * holding.quantity - holding.totalCost >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
                       {{ holding.price ? formatCurrency(holding.price * holding.quantity - holding.totalCost) : '—' }}
                     </span>
                   </td>
@@ -433,11 +433,11 @@ const getPercentageClass = (cost: number): string => {
   const percentage = (cost / totalCost.value) * 100
 
   if (percentage >= 20) {
-    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
   } else if (percentage >= 10) {
-    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
   } else {
-    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
   }
 }
 

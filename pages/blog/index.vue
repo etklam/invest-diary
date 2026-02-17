@@ -57,13 +57,13 @@
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 p-4 rounded-md">
+        <div v-else-if="error" class="bg-red-50 dark:bg-red-900/50 p-4 rounded-md">
           <div class="flex">
             <div class="flex-shrink-0">
               <i-heroicons-x-circle class="h-5 w-5 text-red-400" />
             </div>
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+              <h3 class="text-sm font-medium text-red-800 dark:text-red-100">
                 {{ $t('blog.loadFailed') }}
               </h3>
             </div>

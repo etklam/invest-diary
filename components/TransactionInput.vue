@@ -119,8 +119,8 @@
     </div>
 
     <!-- Holdings Summary -->
-    <div v-if="holdings.length > 0" class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-200 dark:border-blue-800">
-      <h4 class="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">目前持股（本表）</h4>
+    <div v-if="holdings.length > 0" class="bg-blue-50 dark:bg-blue-900/40 p-3 rounded-md border border-blue-200 dark:border-blue-700">
+      <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">目前持股（本表）</h4>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
         <div v-for="holding in holdings" :key="holding.symbol" class="bg-white dark:bg-gray-800 p-2 rounded">
           <span class="font-medium text-gray-900 dark:text-white">{{ holding.symbol }}</span>

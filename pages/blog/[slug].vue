@@ -14,13 +14,13 @@
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 p-4 rounded-md">
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/50 p-4 rounded-md">
       <div class="flex">
         <div class="flex-shrink-0">
           <i-heroicons-x-circle class="h-5 w-5 text-red-400" />
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+          <h3 class="text-sm font-medium text-red-800 dark:text-red-100">
             {{ $t('blog.postNotFound') }}
           </h3>
         </div>
@@ -86,7 +86,7 @@
         <!-- Category Badge -->
         <div class="mb-4">
           <span
-            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100"
           >
             {{ $t(`blog.categories.${categoryKey}`) || post.category }}
           </span>
@@ -124,7 +124,7 @@
       </div>
 
       <!-- Share Section -->
-      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8">
+      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
           {{ $t('blog.share') }}
         </h3>

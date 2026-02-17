@@ -27,7 +27,7 @@
             <div class="ml-4 flex-shrink-0 flex">
               <button
                 @click="removeToast(toast.id)"
-                class="bg-white dark:bg-gray-800 rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                class="bg-white dark:bg-gray-700 rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:hover:bg-gray-600 transition-colors"
               >
                 <span class="sr-only">{{ $t('common.close') }}</span>
                 <Icon name="heroicons:x-mark" class="h-5 w-5" />

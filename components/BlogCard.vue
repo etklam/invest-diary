@@ -37,7 +37,7 @@
       <!-- Category Badge -->
       <div class="mb-3">
         <span
-          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100"
         >
           {{ $t(`blog.categories.${categoryKey}`) || post.category }}
         </span>

@@ -10,7 +10,7 @@
         :to="cat.key ? `/blog?category=${encodeURIComponent(cat.value)}` : '/blog'"
         class="flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors"
         :class="isActive(cat.key)
-          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-100'
           : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'"
       >
         <span>{{ cat.label }}</span>
