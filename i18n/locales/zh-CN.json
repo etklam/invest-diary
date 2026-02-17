@@ -251,7 +251,7 @@
         "description": "追踪交易频率与纪律，设定个人交易目标，帮助维持稳定的投资策略。"
       },
       "security": {
-        "title": "资料安全",
+        "title": "数据安全",
         "description": "使用 JWT 身份验证与 bcrypt 密码加密，确保个人投资数据的隐私与安全。"
       }
     },
@@ -265,6 +265,31 @@
     },
     "footer": {
       "rights": "个人项目，保留所有权利"
+    }
+  },
+
+  "discipline": {
+    "title": "交易纪律",
+    "subtitle": "铭记于心的交易原则，是成功投资者的基石",
+    "createSection": {
+      "title": "建立纪律",
+      "description": "记录您的交易原则",
+      "placeholder": "输入一句提醒自己的交易原则...",
+      "button": "建立纪律",
+      "creating": "建立中..."
+    },
+    "emptyState": {
+      "title": "还没有任何交易纪律",
+      "description": "开始建立您的第一条交易纪律，为投资之路奠定坚实基础"
+    },
+    "listSection": {
+      "title": "我的纪律",
+      "count": "共 {count} 条纪律"
+    },
+    "toast": {
+      "enterDiscipline": "请输入交易纪律",
+      "createSuccess": "已新增交易纪律",
+      "createFailed": "新增失败"
     }
   },
 

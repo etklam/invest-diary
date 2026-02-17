@@ -46,7 +46,7 @@
           <!-- Status Selection -->
           <div class="mt-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {{ $t('blog.status') }}
+              {{ $t('blog.postStatus') }}
             </label>
             <div class="flex gap-4">
               <label class="flex items-center">
@@ -57,7 +57,7 @@
                   class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
                 />
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  {{ $t('blog.status.draft') }}
+                  {{ $t('blog.postStatuses.draft') }}
                 </span>
               </label>
               <label class="flex items-center">
@@ -68,7 +68,7 @@
                   class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
                 />
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  {{ $t('blog.status.published') }}
+                  {{ $t('blog.postStatuses.published') }}
                 </span>
               </label>
               <label class="flex items-center">
@@ -79,7 +79,7 @@
                   class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
                 />
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  {{ $t('blog.status.archived') }}
+                  {{ $t('blog.postStatuses.archived') }}
                 </span>
               </label>
             </div>

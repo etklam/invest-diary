@@ -41,7 +41,9 @@
       "Bash(npm run lint:*)",
       "Bash(npm outdated)",
       "WebSearch",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

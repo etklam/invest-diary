@@ -25,7 +25,7 @@
         <!-- Status Selection -->
         <div class="mt-6">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ $t('blog.status') }}
+            {{ $t('blog.postStatus') }}
           </label>
           <div class="flex gap-4">
             <label class="flex items-center">

@@ -268,6 +268,31 @@
     }
   },
 
+  "discipline": {
+    "title": "交易紀律",
+    "subtitle": "銘記於心的交易原則，是成功投資者的基石",
+    "createSection": {
+      "title": "建立紀律",
+      "description": "記錄您的交易原則",
+      "placeholder": "輸入一句提醒自己的交易原則...",
+      "button": "建立紀律",
+      "creating": "建立中..."
+    },
+    "emptyState": {
+      "title": "還沒有任何交易紀律",
+      "description": "開始建立您的第一條交易紀律，為投資之路奠定堅實基礎"
+    },
+    "listSection": {
+      "title": "我的紀律",
+      "count": "共 {count} 條紀律"
+    },
+    "toast": {
+      "enterDiscipline": "請輸入交易紀律",
+      "createSuccess": "已新增交易紀律",
+      "createFailed": "新增失敗"
+    }
+  },
+
   "admin": {
     "title": "系統管理",
     "subtitle": "管理用戶、查看統計數據",
