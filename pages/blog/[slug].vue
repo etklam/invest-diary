@@ -22,6 +22,24 @@
 
     <!-- Post Content -->
     <article v-else-if="post" class="max-w-4xl mx-auto">
+      <!-- Admin Actions Bar -->
+      <div v-if="isAdmin" class="mb-4 flex justify-end gap-2">
+        <NuxtLink
+          :to="`/admin/blog/${post.id}/edit`"
+          class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
+        >
+          <i-heroicons-pencil class="mr-2 h-4 w-4" />
+          編輯文章
+        </NuxtLink>
+        <button
+          @click="handleDelete"
+          class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800"
+        >
+          <i-heroicons-trash class="mr-2 h-4 w-4" />
+          刪除文章
+        </button>
+      </div>
+
       <!-- Breadcrumb -->
       <nav class="mb-6 text-sm">
         <ol class="flex items-center space-x-2">
@@ -149,7 +167,10 @@ interface Post {
 
 const route = useRoute()
 const { t } = useI18n()
+const { isAdmin } = useAuth()
 const copied = ref(false)
+const toast = useToast()
+const router = useRouter()
 
 // Fetch post
 console.log('[Blog Page] route.params.slug =', route.params.slug)
@@ -209,6 +230,21 @@ const copyLink = async () => {
     }, 2000)
   } catch (err) {
     console.error('Failed to copy link:', err)
+  }
+}
+
+// Delete post function
+const handleDelete = async () => {
+  if (!post.value) return
+  if (!confirm(`確定要刪除文章「${post.value.title}」嗎？此操作無法復原。`)) return
+
+  try {
+    await $fetch(`/api/blog/${post.value.id}`, { method: 'DELETE' })
+    toast.success('文章已刪除')
+    router.push('/blog')
+  } catch (error: any) {
+    console.error('Failed to delete post:', error)
+    toast.error(error.data?.statusMessage || '刪除失敗')
   }
 }
 </script>

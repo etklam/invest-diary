@@ -1,7 +1,25 @@
 <template>
   <article
-    class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col h-full"
+    class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col h-full relative"
   >
+    <!-- Admin Actions -->
+    <div v-if="isAdmin" class="absolute top-2 right-2 z-10 flex gap-2">
+      <NuxtLink
+        :to="`/admin/blog/${post.id}/edit`"
+        class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        title="編輯"
+      >
+        <i-heroicons-pencil class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+      </NuxtLink>
+      <button
+        @click="handleDelete"
+        class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        title="刪除"
+      >
+        <i-heroicons-trash class="h-4 w-4 text-red-600 dark:text-red-400" />
+      </button>
+    </div>
+
     <!-- Cover Image -->
     <div v-if="post.coverImage" class="aspect-video overflow-hidden">
       <img
@@ -91,8 +109,26 @@ const props = defineProps<{
   post: Post
 }>()
 
+const { isAdmin } = useAuth()
+const toast = useToast()
+
 const parsedTags = computed(() => parseTags(props.post.tags))
 const readingTime = computed(() => calculateReadingTime(props.post.content))
+
+// Delete post
+const handleDelete = async () => {
+  if (!confirm(`確定要刪除文章「${props.post.title}」嗎？此操作無法復原。`)) return
+
+  try {
+    await $fetch(`/api/blog/${props.post.id}`, { method: 'DELETE' })
+    toast.success('文章已刪除')
+    // Refresh the page to update the list
+    refreshNuxtData()
+  } catch (error: any) {
+    console.error('Failed to delete post:', error)
+    toast.error(error.data?.statusMessage || '刪除失敗')
+  }
+}
 
 // Map category to translation key
 const categoryKey = computed(() => {
