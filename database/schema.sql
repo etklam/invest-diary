@@ -23,6 +23,11 @@ CREATE TABLE `TransactionType` (
     `TransactionType` ENUM('BUY', 'SELL') NOT NULL
 ) ENGINE = InnoDB;
 
+-- PostStatus enum
+CREATE TABLE `PostStatus` (
+    `PostStatus` ENUM('DRAFT', 'PUBLISHED', 'ARCHIVED') NOT NULL
+) ENGINE = InnoDB;
+
 -- =============================================================================
 -- Create Tables
 -- =============================================================================
@@ -97,6 +102,29 @@ CREATE TABLE `disciplines` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- Posts table
+CREATE TABLE `posts` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `author_id` BIGINT NOT NULL,
+    `title` VARCHAR(255) NOT NULL,
+    `slug` VARCHAR(255) NOT NULL,
+    `content` TEXT NOT NULL,
+    `excerpt` TEXT NULL,
+    `cover_image` VARCHAR(500) NULL,
+    `category` VARCHAR(100) NOT NULL,
+    `tags` VARCHAR(500) NULL,
+    `status` ENUM('DRAFT', 'PUBLISHED', 'ARCHIVED') NOT NULL DEFAULT 'DRAFT',
+    `published_at` DATETIME(3) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `posts_slug_key`(`slug`),
+    INDEX `posts_author_id_idx`(`author_id`),
+    INDEX `posts_status_idx`(`status`),
+    INDEX `posts_published_at_idx`(`published_at`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- =============================================================================
 -- Add Foreign Keys
 -- =============================================================================
@@ -119,6 +147,11 @@ ALTER TABLE `transactions` ADD CONSTRAINT `transactions_diary_id_fkey`
 -- Disciplines -> Users
 ALTER TABLE `disciplines` ADD CONSTRAINT `discipline_user_id_fkey` 
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) 
+    ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Posts -> Users
+ALTER TABLE `posts` ADD CONSTRAINT `posts_author_id_fkey` 
+    FOREIGN KEY (`author_id`) REFERENCES `users`(`id`) 
     ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- =============================================================================
@@ -158,6 +191,14 @@ CREATE INDEX `idx_users_role` ON `users` (`role`);
 -- VALUES 
 -- (1, 'Always do your research before investing');
 
+-- -- Sample Post
+-- INSERT INTO `posts` (`author_id`, `title`, `slug`, `content`, `excerpt`, `category`, `status`, `published_at`) 
+-- VALUES 
+-- (1, 'Welcome to Investment Diary', 'welcome-to-investment-diary', 
+--  'This is your first blog post. Share your investment insights here!', 
+--  'This is your first blog post. Share your investment insights here!', 
+--  '投资策略', 'PUBLISHED', NOW());
+
 -- =============================================================================
 -- Notes
 -- =============================================================================
@@ -169,4 +210,5 @@ CREATE INDEX `idx_users_role` ON `users` (`role`);
 -- 6. DECIMAL(15, 4) supports high-precision financial calculations
 -- 7. Added role field to users table for user role management
 -- 8. Added disciplines table for user discipline tracking
--- 9. Added enums for UserRole and TransactionType
+-- 9. Added enums for UserRole, TransactionType, and PostStatus
+-- 10. Added posts table for blog functionality

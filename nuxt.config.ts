@@ -1,5 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  // ✅ 避免 Service Worker 攔截 API（特別是動態 slug）
+  nitro: {
+    routeRules: {
+      '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } }
+    }
+  },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 

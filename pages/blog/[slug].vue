@@ -152,6 +152,8 @@ const { t } = useI18n()
 const copied = ref(false)
 
 // Fetch post
+console.log('[Blog Page] route.params.slug =', route.params.slug)
+
 const { data: post, pending, error } = await useAsyncData(`blog-${route.params.slug}`, () =>
   $fetch<Post>(`/api/blog/${route.params.slug}`)
 )

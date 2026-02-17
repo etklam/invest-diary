@@ -2,6 +2,9 @@ export default defineNuxtRouteMiddleware((to) => {
   const { isAuthenticated, isInitialized } = useAuth()
 
   const publicRoutes = ['/auth/login', '/auth/register']
+  
+  // Check if the route is blog-related (public)
+  const isBlogRoute = to.path.startsWith('/blog')
 
   // Wait for auth to be initialized before making decisions
   if (!isInitialized.value) {
@@ -9,7 +12,7 @@ export default defineNuxtRouteMiddleware((to) => {
     return
   }
 
-  if (!isAuthenticated.value && !publicRoutes.includes(to.path)) {
+  if (!isAuthenticated.value && !publicRoutes.includes(to.path) && !isBlogRoute) {
     return navigateTo('/auth/login')
   }
 
