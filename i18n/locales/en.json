@@ -351,13 +351,12 @@
     "coverImage": "Cover Image",
     "coverImagePlaceholder": "Enter image URL",
     "selectCategory": "Select a category",
-    "tags": "Tags",
     "tagsHint": "Separate multiple tags with commas",
     "tagsPlaceholder": "e.g., stocks, technical analysis, value investing",
     "markdownSupported": "Supports Markdown syntax",
     "preview": "Preview",
     "previewPlaceholder": "Preview will appear here...",
-    "status": "Status",
+    "postStatus": "Status",
     "saveAsDraft": "Save as Draft",
     "publish": "Publish",
     "categories": {
@@ -366,7 +365,7 @@
       "market": "Market Watch",
       "strategy": "Investment Strategy"
     },
-    "status": {
+    "postStatuses": {
       "draft": "Draft",
       "published": "Published",
       "archived": "Archived"
