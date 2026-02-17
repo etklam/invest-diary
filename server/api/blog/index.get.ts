@@ -43,7 +43,19 @@ export default defineEventHandler(async (event) => {
       prisma.post.findMany({
         where,
         orderBy: { publishedAt: 'desc' },
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          coverImage: true,
+          category: true,
+          tags: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          // ❌ Excluding 'content' field - not needed for list view
+          // This reduces payload size by ~5KB per post
           author: {
             select: {
               id: true,

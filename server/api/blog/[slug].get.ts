@@ -24,24 +24,39 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const post = await prisma.post.findFirst({
-      where: {
-        slug,
-        status: 'PUBLISHED',
-        publishedAt: {
-          not: null
-        }
-      },
-      include: {
-        author: {
+    const query = getQuery(event)
+    const view = (query.view as string) ?? 'full'
+
+    const baseWhere = {
+      slug,
+      status: 'PUBLISHED',
+      publishedAt: { not: null },
+    }
+
+    const post = view === 'meta'
+      ? await prisma.post.findFirst({
+          where: baseWhere,
           select: {
             id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
-    })
+            title: true,
+            slug: true,
+            excerpt: true,
+            coverImage: true,
+            publishedAt: true,
+          },
+        })
+      : await prisma.post.findFirst({
+          where: baseWhere,
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        })
 
     if (!post) {
       throw createError({

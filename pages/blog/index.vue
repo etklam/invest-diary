@@ -41,10 +41,19 @@
 
       <!-- Main Content -->
       <main class="lg:col-span-3">
-        <!-- Loading State -->
-        <div v-if="pending" class="text-center py-12">
-          <i-svg-spinners-180-ring-with-bg class="h-8 w-8 text-indigo-600" />
-          <p class="mt-2 text-gray-500 dark:text-gray-400">{{ $t('common.loading') }}</p>
+        <!-- Loading State / Skeleton -->
+        <div v-if="pending" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div
+            v-for="i in 6"
+            :key="i"
+            class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse"
+          >
+            <div class="aspect-video bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2" />
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
+            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
+          </div>
         </div>
 
         <!-- Error State -->
@@ -182,7 +191,7 @@ const goToPage = (page: number) => {
   if (page < 1 || page > (pagination.value?.totalPages || 1)) return
 
   // Update URL and refresh
-  const query = { ...route.query, page: page.toString() }
+  const query: Record<string, string> = { ...route.query, page: page.toString() }
   if (searchQuery.value) query.search = searchQuery.value
 
   navigateTo({ query })

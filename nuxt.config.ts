@@ -12,6 +12,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxtjs/mdc',
+    '@nuxt/image',
     '@nuxt/icon',
     '@nuxtjs/color-mode',
     '@nuxtjs/i18n',
@@ -108,22 +109,10 @@ export default defineNuxtConfig({
               statuses: [0, 200]
             }
           }
-        },
-        {
-          urlPattern: /\/api\/.*$/,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'api-cache',
-            expiration: {
-              maxEntries: 50,
-              maxAgeSeconds: 60 * 5 // 5 minutes
-            },
-            cacheableResponse: {
-              statuses: [0, 200]
-            },
-            networkTimeoutSeconds: 10
-          }
         }
+        // ❌ API routes intentionally NOT cached - see Nitro routeRules above
+        // API routes have Cache-Control: no-store to prevent stale data
+        // Caching API routes caused 400 errors for dynamic blog slugs
       ]
     },
     devOptions: {

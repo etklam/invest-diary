@@ -1,9 +1,16 @@
 <template>
   <div class="container mx-auto px-4 py-8">
-    <!-- Loading State -->
-    <div v-if="pending" class="text-center py-12">
-      <i-svg-spinners-180-ring-with-bg class="h-8 w-8 text-indigo-600" />
-      <p class="mt-2 text-gray-500 dark:text-gray-400">{{ $t('common.loading') }}</p>
+    <!-- Loading State / Skeleton -->
+    <div v-if="pending" class="max-w-4xl mx-auto animate-pulse">
+      <div class="h-64 bg-gray-200 dark:bg-gray-700 rounded-lg mb-8" />
+      <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
+      <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-6" />
+      <div class="space-y-3">
+        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-11/12" />
+        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-10/12" />
+        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-9/12" />
+      </div>
     </div>
 
     <!-- Error State -->
@@ -63,9 +70,13 @@
 
       <!-- Cover Image -->
       <div v-if="post.coverImage" class="mb-8 rounded-lg overflow-hidden">
-        <img
+        <NuxtImg
           :src="post.coverImage"
           :alt="post.title"
+          width="1200"
+          height="675"
+          format="webp"
+          loading="eager"
           class="w-full object-cover max-h-[500px]"
         />
       </div>
@@ -147,6 +158,7 @@
 
 <script setup lang="ts">
 import { calculateReadingTime, parseTags } from '~/lib/blog'
+import { usePerformance } from '~/composables/usePerformance'
 
 interface Post {
   id: string | number
@@ -178,6 +190,9 @@ console.log('[Blog Page] route.params.slug =', route.params.slug)
 const { data: post, pending, error } = await useAsyncData(`blog-${route.params.slug}`, () =>
   $fetch<Post>(`/api/blog/${route.params.slug}`)
 )
+
+// ✅ Web Vitals (Phase 1)
+usePerformance()
 
 // Calculate reading time
 const readingTime = computed(() => {

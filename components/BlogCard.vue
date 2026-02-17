@@ -22,9 +22,13 @@
 
     <!-- Cover Image -->
     <div v-if="post.coverImage" class="aspect-video overflow-hidden">
-      <img
+      <NuxtImg
         :src="post.coverImage"
         :alt="post.title"
+        width="800"
+        height="450"
+        format="webp"
+        loading="lazy"
         class="w-full h-full object-cover"
       />
     </div>
@@ -64,9 +68,10 @@
 
       <!-- Meta Info -->
       <PostMeta
+        v-if="post.author"
         :author="post.author.name || post.author.email"
         :date="post.publishedAt!"
-        :reading-time="readingTime"
+        :reading-time="readingTime ?? 0"
       />
 
       <!-- Read More Link -->
@@ -101,8 +106,9 @@ interface Post {
   category: string
   tags?: string | null
   publishedAt: Date | string
-  author: Author
-  content: string
+  // ✅ list / meta view 不再強制依賴 author / content
+  author?: Author
+  content?: string
 }
 
 const props = defineProps<{
@@ -113,7 +119,11 @@ const { isAdmin } = useAuth()
 const toast = useToast()
 
 const parsedTags = computed(() => parseTags(props.post.tags))
-const readingTime = computed(() => calculateReadingTime(props.post.content))
+
+// ✅ meta view 無 content 時避免不必要計算
+const readingTime = computed(() =>
+  props.post.content ? calculateReadingTime(props.post.content) : undefined
+)
 
 // Delete post
 const handleDelete = async () => {
