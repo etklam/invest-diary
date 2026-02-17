@@ -25,7 +25,7 @@ export const useNavigation = () => {
     { label: t('nav.stocks'), to: '/stocks', auth: true },
     { label: t('nav.admin'), to: '/admin', auth: true, admin: true },
     { label: t('nav.manageBlog'), to: '/admin/blog', auth: true, admin: true },
-    { label: t('nav.about'), to: '/about' }
+    { label: t('nav.about'), to: '/about', auth: false }
   ])
 
   const visibleNavItems = computed(() =>
