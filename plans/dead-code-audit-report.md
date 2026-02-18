@@ -45,65 +45,27 @@ export function useNavigationAnimation(config) { ... }
 
 ---
 
-#### [`composables/useMobileDetection.ts`](../composables/useMobileDetection.ts) - 便捷函數未使用
-
-以下便捷函數已定義但未被使用：
-
-| 函數 | 狀態 |
-|------|------|
-| `useIsMobile()` | 未使用 |
-| `useIsTablet()` | 未使用 |
-| `useIsDesktop()` | 未使用 |
-| `useScreenSize()` | 未使用 |
-
-**建議**: 這些是便捷函數，可以保留供未來使用，或刪除以減少程式碼量。
-
----
-
-#### [`composables/useGestures.ts`](../composables/useGestures.ts) - 便捷函數未使用
-
-以下便捷函數已定義但未被使用：
-
-| 函數 | 狀態 |
-|------|------|
-| `useLongPress()` | 未使用 |
-| `useDoubleTap()` | 未使用 |
-
-**注意**: `useSwipeGestures()` 被 [`HoldingCard.vue`](../components/HoldingCard.vue) 使用，但該組件本身未被使用。
-
-**建議**: 如果刪除 HoldingCard，這些函數也可以一併刪除。
-
----
-
-#### [`composables/usePerformance.ts`](../composables/usePerformance.ts) - 部分函數未使用
-
-以下函數已定義但未被外部使用：
-
-| 函數 | 狀態 |
-|------|------|
-| `useTrackedAsyncData()` | 未使用（僅在文檔示例中） |
-| `getMetricRating()` | 未被外部調用 |
-| `areCoreVitalsGood` | 未被外部調用 |
-
-**建議**: 
-- `useTrackedAsyncData` 可以刪除
-- `getMetricRating` 和 `areCoreVitalsGood` 是內部使用的計算屬性，可以保留
-
----
-
-### Lib/Utils - 未使用的函數
+### Lib/Utils - 重複函數 (已修正)
 
 #### [`lib/utils.ts`](../lib/utils.ts)
 
 | 函數 | 狀態 | 說明 |
 |------|------|------|
-| `getHoldingBySymbol()` | 未使用 | 只在測試中使用 |
-| `formatDate()` | 重複定義 | 各頁面有自己的實現 |
-| `formatCurrency()` | 重複定義 | 各頁面有自己的實現 |
+| `formatDate()` | ✅ 已修正 | 增強後支援 `Date\|string`，已移除所有頁面中的重複實現 |
+| `formatCurrency()` | ✅ 已修正 | 已移除 `pages/stocks/index.vue` 中的重複實現 |
+| `formatShortDate()` | ✅ 新增 | 簡短日期格式 (年/月/日) |
+| `formatDateWithWeekday()` | ✅ 新增 | 日期格式帶星期 (年/月/日 (週X)) |
 
-**建議**: 
-- `getHoldingBySymbol` 可以刪除（或保留作為工具函數）
-- `formatDate` 和 `formatCurrency` 應該統一使用 lib/utils.ts 中的版本，刪除各頁面中的重複定義
+**修正項目**:
+- 新增 `formatShortDate` 和 `formatDateWithWeekday` 支援不同的日期格式需求
+- 統一所有頁面使用 `lib/utils.ts` 中的格式化函數
+- 移除以下檔案中的重複定義：
+  - `pages/admin/blog/[id]/edit.vue`
+  - `pages/admin/blog/index.vue`
+  - `pages/admin/index.vue`
+  - `pages/timeline/index.vue` (使用 `formatDateWithWeekday`)
+  - `pages/diaries/[id]/index.vue` (使用 `formatShortDate`)
+  - `pages/stocks/index.vue` (formatCurrency)
 
 ---
 
@@ -168,38 +130,59 @@ Nuxt plugins 會自動載入，不需要顯式引用：
 
 ---
 
-## 📊 統計摘要
+## 📊 統計摘要 (更新於 2026-02-18)
 
-| 類別 | 可刪除數量 | 可優化數量 |
-|------|-----------|-----------|
-| Components | 2 | - |
-| Composables | 2 | 8 |
-| Lib函數 | 1 | 2 |
-| Store函數 | - | 11 |
-| **總計** | **5** | **21** |
+| 類別 | 已刪除 | 已修正 | 待處理 |
+|------|--------|--------|--------|
+| Components | 2 | - | - |
+| Composables | 2 | - | - |
+| Lib函數 | - | 2 | - |
+| Store函數 | - | - | 11 |
+| **總計** | **4** | **2** | **11** |
+
+### 已完成項目 ✅
+1. ✅ 刪除 `components/HealthStatus.vue`
+2. ✅ 刪除 `components/HoldingCard.vue`
+3. ✅ 刪除 `composables/useBreakpoints.ts`
+4. ✅ 刪除 `composables/useNavigationAnimation.ts`
+5. ✅ 統一 `formatDate` 函數 (新增 `formatShortDate` 和 `formatDateWithWeekday`)
+6. ✅ 統一 `formatCurrency` 函數
+
+### 待處理項目 📋
+1. `stores/navigation.ts` 中的 11 個未使用函數
 
 ---
 
-## 🔧 建議的清理步驟
+## ⚠️ 報告更正說明
 
-### 第一階段：刪除明確未使用的程式碼
+原報告中以下項目經驗證**不存在**，已從本報告中移除：
+- `useIsMobile()`, `useIsTablet()`, `useIsDesktop()`, `useScreenSize()` - 未在 `useMobileDetection.ts` 中定義
+- `useLongPress()`, `useDoubleTap()` - 未在 `useGestures.ts` 中定義
+- `useTrackedAsyncData()` - 未在 `usePerformance.ts` 中定義
+- `getHoldingBySymbol()` - 未在 `lib/utils.ts` 中定義
 
-1. 刪除 [`components/HealthStatus.vue`](../components/HealthStatus.vue)
-2. 刪除 [`components/HoldingCard.vue`](../components/HoldingCard.vue)
-3. 刪除 [`composables/useBreakpoints.ts`](../composables/useBreakpoints.ts)
-4. 刪除 [`composables/useNavigationAnimation.ts`](../composables/useNavigationAnimation.ts)
+---
 
-### 第二階段：清理未使用的函數
+## 🔧 建議的清理步驟 (更新)
 
-1. 從 [`composables/useMobileDetection.ts`](../composables/useMobileDetection.ts) 刪除便捷函數
-2. 從 [`composables/useGestures.ts`](../composables/useGestures.ts) 刪除 `useLongPress` 和 `useDoubleTap`
-3. 從 [`composables/usePerformance.ts`](../composables/usePerformance.ts) 刪除 `useTrackedAsyncData`
-4. 從 [`lib/utils.ts`](../lib/utils.ts) 刪除 `getHoldingBySymbol`
+### ✅ 第一階段：刪除明確未使用的程式碼 (已完成)
 
-### 第三階段：重構重複程式碼
+1. ✅ 刪除 [`components/HealthStatus.vue`](../components/HealthStatus.vue)
+2. ✅ 刪除 [`components/HoldingCard.vue`](../components/HoldingCard.vue)
+3. ✅ 刪除 [`composables/useBreakpoints.ts`](../composables/useBreakpoints.ts)
+4. ✅ 刪除 [`composables/useNavigationAnimation.ts`](../composables/useNavigationAnimation.ts)
 
-1. 統一 `formatDate` 函數使用
-2. 統一 `formatCurrency` 函數使用
+### ✅ 第二階段：重構重複程式碼 (已完成)
+
+1. ✅ 統一 `formatDate` 函數使用
+   - 新增 `formatShortDate` 和 `formatDateWithWeekday` 支援不同格式
+   - 移除 5 個頁面中的重複實現
+2. ✅ 統一 `formatCurrency` 函數使用
+   - 移除 `pages/stocks/index.vue` 中的重複實現
+
+### 📋 第三階段：清理未使用的 Store 函數 (待處理)
+
+1. 清理 [`stores/navigation.ts`](../stores/navigation.ts) 中的 11 個未使用函數
 
 ---
 
@@ -216,9 +199,9 @@ Nuxt plugins 會自動載入，不需要顯式引用：
 以下項目需要進一步確認是否需要保留：
 
 - [ ] `stores/navigation.ts` 中的導航歷史功能是否計劃使用？
-- [ ] `useNavigationAnimation` 是否為未來的頁面轉場動畫功能？
-- [ ] `HealthStatus` 組件是否計劃在管理後台使用？
+- [ ] 未使用的導航函數是否應該刪除以減少 bundle 大小？
 
 ---
 
 *報告生成時間: 2026-02-18*
+*最後更新: 2026-02-18*

@@ -170,6 +170,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { formatDateWithWeekday } from '~/lib/utils'
 
 definePageMeta({
   middleware: 'auth'
@@ -279,17 +280,8 @@ const groupedDiaries = computed((): DiaryGroup[] => {
   return Array.from(groups.values()).sort((a, b) => b.period.localeCompare(a.period))
 })
 
-// Format date for display
-const formatDate = (dateStr: string): string => {
-  const date = new Date(dateStr)
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-  const weekday = weekdays[date.getDay()]
-
-  return `${year}/${month}/${day} (${weekday})`
-}
+// Rename for template compatibility
+const formatDate = formatDateWithWeekday
 
 watch(error, (error) => {
   if (error) {

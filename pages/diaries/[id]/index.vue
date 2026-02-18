@@ -112,6 +112,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatShortDate } from '~/lib/utils'
+
 definePageMeta({
   middleware: 'auth'
 })
@@ -126,14 +128,8 @@ const { data: diary, pending, error } = await useLazyFetch(`/api/diaries/${id}`)
 const toast = useToast()
 const { user } = useAuth()
 
-// Format date for alerts
-const formatDate = (dateStr: string): string => {
-  const date = new Date(dateStr)
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  return `${year}/${month}/${day}`
-}
+// Rename for template compatibility
+const formatDate = formatShortDate
 
 const deleteDiary = async () => {
   if (!confirm('確定要刪除這篇日記嗎？此操作無法復原。')) return
