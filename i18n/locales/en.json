@@ -397,6 +397,16 @@
       "published": "Published",
       "archived": "Archived"
     },
-    "searchPlaceholder": "Search post title or content..."
+    "searchPlaceholder": "Search post title or content...",
+    "loadFailed": "Failed to load",
+    "publishSuccess": "Post published",
+    "publishFailed": "Failed to publish",
+    "confirmArchive": "Are you sure you want to archive this post?",
+    "archiveSuccess": "Post archived",
+    "archiveFailed": "Failed to archive",
+    "confirmDelete": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+    "deleteSuccess": "Post deleted",
+    "deleteFailed": "Failed to delete",
+    "translate": "Translate"
   }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { isAuthenticated, isAdmin } = useAuth()
 const toast = useToast()
 const router = useRouter()
@@ -31,7 +31,6 @@ const filters = ref({
 })
 
 // Categories - using i18n
-const { t, locale } = useI18n()
 const categoryValues: Record<string, Record<string, string>> = {
   fundamental: {
     en: 'Fundamental Analysis',
@@ -89,7 +88,7 @@ const fetchPosts = async (page = 1) => {
     pagination.value = response.pagination
   } catch (error: any) {
     console.error('Failed to fetch posts:', error)
-    toast.error(error.data?.statusMessage || '載入失敗')
+    toast.error(error.data?.statusMessage || t('blog.loadFailed'))
   } finally {
     loading.value = false
   }
@@ -99,35 +98,35 @@ const fetchPosts = async (page = 1) => {
 const publishPost = async (postId: string) => {
   try {
     await $fetch(`/api/blog/admin/${postId}/publish`, { method: 'POST' })
-    toast.success('文章已發布')
+    toast.success(t('blog.publishSuccess'))
     await fetchPosts(pagination.value.page)
   } catch (error: any) {
     console.error('Failed to publish post:', error)
-    toast.error(error.data?.statusMessage || '發布失敗')
+    toast.error(error.data?.statusMessage || t('blog.publishFailed'))
   }
 }
 
 // Archive post
 const archivePost = async (postId: string) => {
-  if (!confirm('確定要歸檔這篇文章嗎？')) return
+  if (!confirm(t('blog.confirmArchive'))) return
 
   try {
     await $fetch(`/api/blog/admin/${postId}/archive`, { method: 'POST' })
-    toast.success('文章已歸檔')
+    toast.success(t('blog.archiveSuccess'))
     await fetchPosts(pagination.value.page)
   } catch (error: any) {
     console.error('Failed to archive post:', error)
-    toast.error(error.data?.statusMessage || '歸檔失敗')
+    toast.error(error.data?.statusMessage || t('blog.archiveFailed'))
   }
 }
 
 // Delete post
 const deletePost = async (postId: string, postTitle: string) => {
-  if (!confirm(`確定要刪除文章「${postTitle}」嗎？此操作無法復原。`)) return
+  if (!confirm(t('blog.confirmDelete', { title: postTitle }))) return
 
   try {
     await $fetch(`/api/blog/${postId}`, { method: 'DELETE' })
-    toast.success('文章已刪除')
+    toast.success(t('blog.deleteSuccess'))
     // Refresh current page or go to previous if empty
     const currentPage = pagination.value.page
     const isLastPage = currentPage === pagination.value.totalPages
@@ -140,7 +139,7 @@ const deletePost = async (postId: string, postTitle: string) => {
     }
   } catch (error: any) {
     console.error('Failed to delete post:', error)
-    toast.error(error.data?.statusMessage || '刪除失敗')
+    toast.error(error.data?.statusMessage || t('blog.deleteFailed'))
   }
 }
 

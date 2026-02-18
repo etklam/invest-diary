@@ -397,6 +397,16 @@
       "published": "已發布",
       "archived": "已歸檔"
     },
-    "searchPlaceholder": "搜尋文章標題或內容..."
+    "searchPlaceholder": "搜尋文章標題或內容...",
+    "loadFailed": "載入失敗",
+    "publishSuccess": "文章已發布",
+    "publishFailed": "發布失敗",
+    "confirmArchive": "確定要歸檔這篇文章嗎？",
+    "archiveSuccess": "文章已歸檔",
+    "archiveFailed": "歸檔失敗",
+    "confirmDelete": "確定要刪除文章「{title}」嗎？此操作無法復原。",
+    "deleteSuccess": "文章已刪除",
+    "deleteFailed": "刪除失敗",
+    "translate": "翻譯"
   }
 }

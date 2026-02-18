@@ -397,6 +397,16 @@
       "published": "已发布",
       "archived": "已归档"
     },
-    "searchPlaceholder": "搜索文章标题或内容..."
+    "searchPlaceholder": "搜索文章标题或内容...",
+    "loadFailed": "加载失败",
+    "publishSuccess": "文章已发布",
+    "publishFailed": "发布失败",
+    "confirmArchive": "确定要归档这篇文章吗？",
+    "archiveSuccess": "文章已归档",
+    "archiveFailed": "归档失败",
+    "confirmDelete": "确定要删除文章「{title}」吗？此操作无法复原。",
+    "deleteSuccess": "文章已删除",
+    "deleteFailed": "删除失败",
+    "translate": "翻译"
   }
 }
