@@ -53,6 +53,9 @@ ENV NUXT_TELEMETRY_DISABLED=1
 # Prepare Nuxt and build application
 RUN npm run build
 
+# Prune devDependencies after build to reduce final image size
+RUN npm prune --omit=dev
+
 # =============================================================================
 # Production stage
 # =============================================================================
@@ -87,12 +90,10 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --chown=nuxt:nodejs docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Copy application artifacts from builder
+# Copy application artifacts from builder (node_modules already pruned)
 COPY --from=builder --chown=nuxt:nodejs /app/.output ./.output
 COPY --from=builder --chown=nuxt:nodejs /app/package.json ./package.json
-# Copy node_modules then prune to production-only dependencies
 COPY --from=builder --chown=nuxt:nodejs /app/node_modules ./node_modules
-RUN npm prune --omit=dev
 COPY --from=builder --chown=nuxt:nodejs /app/prisma ./prisma
 
 # Create runtime directories

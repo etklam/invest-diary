@@ -245,9 +245,10 @@ export function clearAllMocks() {
 export function createMockData() {
   return {
     user: {
-      id: 1,
+      id: 1n,
       email: 'test@example.com',
       name: 'Test User',
+      password: 'hashed-password',
       role: 'USER',
       expectedMonthlyTrades: 20,
       expectedProfit: 5000,
@@ -256,17 +257,18 @@ export function createMockData() {
       updatedAt: new Date('2024-01-01'),
     },
     diary: {
-      id: 1,
-      userId: 1,
+      id: 1n,
+      userId: 1n,
       title: 'Test Diary',
       content: 'Test content',
+      mood: 'NEUTRAL',
       date: new Date('2024-01-01'),
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     },
     transaction: {
-      id: 1,
-      diaryId: 1,
+      id: 1n,
+      diaryId: 1n,
       symbol: '2330.TW',
       type: 'BUY',
       quantity: 10,
@@ -275,12 +277,175 @@ export function createMockData() {
       createdAt: new Date('2024-01-01'),
     },
     alert: {
-      id: 1,
-      diaryId: 1,
+      id: 1n,
+      diaryId: 1n,
       message: 'Test alert',
       triggerAt: new Date('2024-01-01'),
       isDismissed: false,
       createdAt: new Date('2024-01-01'),
     },
+    post: {
+      id: 1n,
+      title: 'Test Blog Post',
+      slug: 'test-blog-post',
+      content: 'Test content for blog post',
+      excerpt: 'Test excerpt',
+      category: 'TECH',
+      tags: 'vue,nuxt,typescript',
+      status: 'PUBLISHED',
+      coverImage: '/cover.jpg',
+      publishedAt: new Date('2024-01-01'),
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      authorId: 1n,
+    },
+    discipline: {
+      id: 1n,
+      content: 'Test discipline quote',
+      isCustom: false,
+      createdAt: new Date('2024-01-01'),
+    },
   }
+}
+
+/**
+ * 建立完整的 mock event物件
+ */
+export function createMockEvent(overrides: {
+  user?: any
+  params?: Record<string, string>
+  body?: any
+  query?: Record<string, string>
+  cookies?: Record<string, string>
+} = {}) {
+  return {
+    context: {
+      user: overrides.user || null,
+      params: overrides.params || {},
+    },
+    body: overrides.body,
+    query: overrides.query || {},
+    cookies: overrides.cookies || {},
+  } as any
+}
+
+/**
+ * 建立測試用的 transaction資料
+ */
+export function createMockTransaction(overrides: Partial<{
+  id: bigint
+  diaryId: bigint
+  symbol: string
+  type: 'BUY' | 'SELL'
+  quantity: number
+  price: number
+  tradeDate: Date
+}> = {}) {
+  return {
+    id: overrides.id ?? 1n,
+    diaryId: overrides.diaryId ?? 1n,
+    symbol: overrides.symbol ?? '2330.TW',
+    type: overrides.type ?? 'BUY',
+    quantity: overrides.quantity ?? 10,
+    price: overrides.price ?? 500,
+    tradeDate: overrides.tradeDate ?? new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+}
+
+/**
+ * 建立測試用的 blog post資料
+ */
+export function createMockPost(overrides: Partial<{
+  id: bigint
+  title: string
+  slug: string
+  content: string
+  excerpt: string
+  category: string
+  tags: string
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+  coverImage: string | null
+  publishedAt: Date | null
+  authorId: bigint
+}> = {}) {
+  return {
+    id: overrides.id ?? 1n,
+    title: overrides.title ?? 'Test Post',
+    slug: overrides.slug ?? 'test-post',
+    content: overrides.content ?? 'Test content',
+    excerpt: overrides.excerpt ?? 'Test excerpt',
+    category: overrides.category ?? 'TECH',
+    tags: overrides.tags ?? '',
+    status: overrides.status ?? 'DRAFT',
+    coverImage: overrides.coverImage ?? null,
+    publishedAt: overrides.publishedAt ?? null,
+    authorId: overrides.authorId ?? 1n,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+}
+
+/**
+ * 建立 mock H3 event
+ */
+export function mockH3Event(options: {
+  body?: any
+  query?: Record<string, string>
+  params?: Record<string, string>
+  user?: any
+  cookies?: Record<string, string>
+  headers?: Record<string, string>
+} = {}) {
+  return {
+    node: {
+      req: {
+        headers: options.headers || {},
+      },
+    },
+    context: {
+      user: options.user || null,
+      params: options.params || {},
+    },
+    body: options.body,
+    query: options.query || {},
+    cookies: options.cookies || {},
+  } as any
+}
+
+/**
+ * 等待條件成立
+ */
+export async function waitFor(
+  condition: () => boolean,
+  options: { timeout?: number; interval?: number } = {}
+): Promise<void> {
+  const timeout = options.timeout || 5000
+  const interval = options.interval || 50
+  const start = Date.now()
+
+  while (!condition()) {
+    if (Date.now() - start > timeout) {
+      throw new Error('waitFor timeout exceeded')
+    }
+    await new Promise(resolve => setTimeout(resolve, interval))
+  }
+}
+
+/**
+ * 建立假日期範圍
+ */
+export function createDateRange(start: string, end: string): Date[] {
+  const startDate = new Date(start)
+  const endDate = new Date(end)
+  const dates: Date[] = []
+  
+  const current = new Date(startDate)
+  while (current <= endDate) {
+    dates.push(new Date(current))
+    current.setDate(current.getDate() + 1)
+  }
+  
+  return dates
 }
