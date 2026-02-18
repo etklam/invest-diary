@@ -1,19 +1,25 @@
 <template>
-  <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+  <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500 dark:text-gray-500">
     <!-- Author -->
-    <div class="flex items-center gap-1">
+    <div class="flex items-center gap-1.5 dark:text-gray-400">
       <i-heroicons-user class="w-4 h-4" />
-      <span>{{ author }}</span>
+      <span class="truncate">{{ author }}</span>
     </div>
 
+    <!-- Separator -->
+    <span class="text-gray-300 dark:text-gray-700">·</span>
+
     <!-- Date -->
-    <div class="flex items-center gap-1">
+    <div class="flex items-center gap-1.5 dark:text-gray-400">
       <i-heroicons-calendar class="w-4 h-4" />
       <span>{{ formattedDate }}</span>
     </div>
 
+    <!-- Separator -->
+    <span class="text-gray-300 dark:text-gray-700">·</span>
+
     <!-- Reading Time -->
-    <div class="flex items-center gap-1">
+    <div class="flex items-center gap-1.5 dark:text-gray-400">
       <i-heroicons-clock class="w-4 h-4" />
       <span>{{ $t('blog.readingTime', { min: readingTime }) }}</span>
     </div>

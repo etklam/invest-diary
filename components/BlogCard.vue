@@ -1,19 +1,19 @@
 <template>
   <article
-    class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col h-full relative"
+    class="bg-white dark:bg-gray-900/50 dark:border dark:border-gray-700/50 dark:backdrop-blur-sm rounded-lg shadow-md overflow-hidden hover:shadow-xl dark:hover:shadow-indigo-500/10 dark:hover:border-indigo-500/30 transition-all duration-300 flex flex-col h-full relative"
   >
     <!-- Admin Actions -->
     <div v-if="isAdmin" class="absolute top-2 right-2 z-10 flex gap-2">
       <NuxtLink
         :to="`/admin/blog/${post.id}/edit`"
-        class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        class="p-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-md shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
         title="編輯"
       >
         <i-heroicons-pencil class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
       </NuxtLink>
       <button
         @click="handleDelete"
-        class="p-2 bg-white dark:bg-gray-800 rounded-md shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        class="p-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-md shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
         title="刪除"
       >
         <i-heroicons-trash class="h-4 w-4 text-red-600 dark:text-red-400" />
@@ -21,7 +21,7 @@
     </div>
 
     <!-- Cover Image -->
-    <div v-if="post.coverImage" class="aspect-video overflow-hidden">
+    <div v-if="post.coverImage" class="aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
       <NuxtImg
         :src="post.coverImage"
         :alt="post.title"
@@ -37,21 +37,21 @@
       <!-- Category Badge -->
       <div class="mb-3">
         <span
-          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100"
+          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-500/30"
         >
           {{ $t(`blog.categories.${categoryKey}`) || post.category }}
         </span>
       </div>
 
       <!-- Title -->
-      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-        <NuxtLink :to="`/blog/${post.slug}`" class="hover:text-indigo-600 dark:hover:text-indigo-400">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
+        <NuxtLink :to="`/blog/${post.slug}`" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
           {{ post.title }}
         </NuxtLink>
       </h3>
 
       <!-- Excerpt -->
-      <p v-if="post.excerpt" class="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 flex-1">
+      <p v-if="post.excerpt" class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 flex-1 leading-relaxed">
         {{ post.excerpt }}
       </p>
 
@@ -60,7 +60,7 @@
         <span
           v-for="tag in parsedTags.slice(0, 3)"
           :key="tag"
-          class="inline-flex items-center px-2 py-1 rounded text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+          class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:border dark:border-gray-700/50"
         >
           #{{ tag }}
         </span>
@@ -75,13 +75,13 @@
       />
 
       <!-- Read More Link -->
-      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700/50">
         <NuxtLink
           :to="`/blog/${post.slug}`"
-          class="inline-flex items-center text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+          class="inline-flex items-center text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors"
         >
           {{ $t('blog.readMore') }}
-          <i-heroicons-arrow-right class="ml-2 w-4 h-4" />
+          <i-heroicons-arrow-right class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
         </NuxtLink>
       </div>
     </div>

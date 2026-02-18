@@ -30,22 +30,45 @@ const filters = ref({
   search: ''
 })
 
-// Categories
-const categories = [
-  { value: '', label: '全部分類' },
-  { value: '基本面分析', label: '基本面分析' },
-  { value: '技术面分析', label: '技術面分析' },
-  { value: '市场观察', label: '市場觀察' },
-  { value: '投资策略', label: '投資策略' },
-]
+// Categories - using i18n
+const { t, locale } = useI18n()
+const categoryValues: Record<string, Record<string, string>> = {
+  fundamental: {
+    en: 'Fundamental Analysis',
+    'zh-TW': '基本面分析',
+    'zh-CN': '基本面分析'
+  },
+  technical: {
+    en: 'Technical Analysis',
+    'zh-TW': '技术面分析',
+    'zh-CN': '技术面分析'
+  },
+  market: {
+    en: 'Market Watch',
+    'zh-TW': '市场观察',
+    'zh-CN': '市场观察'
+  },
+  strategy: {
+    en: 'Investment Strategy',
+    'zh-TW': '投資策略',
+    'zh-CN': '投资策略'
+  }
+}
+const categories = computed(() => [
+  { value: '', label: t('blog.allCategories') },
+  { value: categoryValues.fundamental[locale.value] || categoryValues.fundamental['zh-TW'], label: t('blog.categories.fundamental') },
+  { value: categoryValues.technical[locale.value] || categoryValues.technical['zh-TW'], label: t('blog.categories.technical') },
+  { value: categoryValues.market[locale.value] || categoryValues.market['zh-TW'], label: t('blog.categories.market') },
+  { value: categoryValues.strategy[locale.value] || categoryValues.strategy['zh-TW'], label: t('blog.categories.strategy') },
+])
 
 // Status options
-const statusOptions = [
-  { value: '', label: '全部狀態' },
-  { value: 'DRAFT', label: '草稿' },
-  { value: 'PUBLISHED', label: '已發布' },
-  { value: 'ARCHIVED', label: '已歸檔' },
-]
+const statusOptions = computed(() => [
+  { value: '', label: t('blog.allStatus') },
+  { value: 'DRAFT', label: t('blog.postStatuses.draft') },
+  { value: 'PUBLISHED', label: t('blog.postStatuses.published') },
+  { value: 'ARCHIVED', label: t('blog.postStatuses.archived') },
+])
 
 // Fetch posts
 const fetchPosts = async (page = 1) => {
@@ -165,9 +188,9 @@ const statusBadgeClass = (status: string) => {
 
 const statusLabel = (status: string) => {
   switch (status) {
-    case 'PUBLISHED': return '已發布'
-    case 'DRAFT': return '草稿'
-    case 'ARCHIVED': return '已歸檔'
+    case 'PUBLISHED': return t('blog.postStatuses.published')
+    case 'DRAFT': return t('blog.postStatuses.draft')
+    case 'ARCHIVED': return t('blog.postStatuses.archived')
     default: return status
   }
 }
@@ -318,7 +341,7 @@ const statusLabel = (status: string) => {
                     <!-- Edit -->
                     <NuxtLink
                       :to="`/admin/blog/${post.id}/edit`"
-                      class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      class="inline-flex items-center justify-center p-2 rounded-lg text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30 transition-colors"
                       title="編輯"
                     >
                       <i-heroicons-pencil class="h-5 w-5" />
@@ -328,7 +351,7 @@ const statusLabel = (status: string) => {
                     <button
                       v-if="post.status === 'DRAFT'"
                       @click="publishPost(post.id)"
-                      class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                      class="inline-flex items-center justify-center p-2 rounded-lg text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30 transition-colors"
                       title="發布"
                     >
                       <i-heroicons-check-circle class="h-5 w-5" />
@@ -338,7 +361,7 @@ const statusLabel = (status: string) => {
                     <button
                       v-if="post.status === 'PUBLISHED'"
                       @click="archivePost(post.id)"
-                      class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
+                      class="inline-flex items-center justify-center p-2 rounded-lg text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:bg-yellow-900/30 transition-colors"
                       title="歸檔"
                     >
                       <i-heroicons-archive-box class="h-5 w-5" />
@@ -347,7 +370,7 @@ const statusLabel = (status: string) => {
                     <!-- Delete -->
                     <button
                       @click="deletePost(post.id, post.title)"
-                      class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      class="inline-flex items-center justify-center p-2 rounded-lg text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
                       title="刪除"
                     >
                       <i-heroicons-trash class="h-5 w-5" />

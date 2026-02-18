@@ -5,7 +5,7 @@
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
         {{ $t('blog.title') }}
       </h1>
-      <p class="text-gray-600 dark:text-gray-300">
+      <p class="text-gray-600 dark:text-gray-400">
         {{ $t('blog.description') }}
       </p>
     </div>
@@ -13,7 +13,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
       <!-- Sidebar -->
       <aside class="lg:col-span-1">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 sticky top-4">
+        <div class="bg-white dark:bg-gray-900/50 dark:border dark:border-gray-700/50 rounded-lg shadow-sm dark:shadow-none p-6 sticky top-4">
           <!-- Search -->
           <div class="mb-6">
             <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -25,11 +25,11 @@
                 id="search"
                 v-model="searchQuery"
                 @keyup.enter="performSearch"
-                class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800/80 dark:text-gray-100 dark:placeholder-gray-500 transition-all"
                 :placeholder="$t('blog.searchPlaceholder')"
               />
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i-heroicons-magnifying-glass class="h-5 w-5 text-gray-400" />
+                <i-heroicons-magnifying-glass class="h-5 w-5 text-gray-400 dark:text-gray-500" />
               </div>
             </div>
           </div>
@@ -46,24 +46,24 @@
           <div
             v-for="i in 6"
             :key="i"
-            class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse"
+            class="bg-white dark:bg-gray-900/50 dark:border dark:border-gray-700/50 rounded-lg shadow-sm dark:shadow-none p-6 animate-pulse"
           >
-            <div class="aspect-video bg-gray-200 dark:bg-gray-700 rounded mb-4" />
-            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2" />
-            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
-            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
-            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
+            <div class="aspect-video bg-gray-200 dark:bg-gray-800 rounded-lg mb-4" />
+            <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-3/4 mb-2" />
+            <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/2 mb-4" />
+            <div class="h-3 bg-gray-200 dark:bg-gray-800 rounded w-full mb-2" />
+            <div class="h-3 bg-gray-200 dark:bg-gray-800 rounded w-5/6" />
           </div>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="bg-red-50 dark:bg-red-900/50 p-4 rounded-md">
+        <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 dark:border dark:border-red-800/50 p-4 rounded-lg">
           <div class="flex">
             <div class="flex-shrink-0">
               <i-heroicons-x-circle class="h-5 w-5 text-red-400" />
             </div>
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800 dark:text-red-100">
+              <h3 class="text-sm font-medium text-red-800 dark:text-red-300">
                 {{ $t('blog.loadFailed') }}
               </h3>
             </div>
@@ -71,11 +71,16 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="posts.length === 0" class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
-          <i-heroicons-document-text class="mx-auto h-12 w-12 text-gray-400" />
-          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+        <div v-else-if="posts.length === 0" class="text-center py-16 bg-white dark:bg-gray-900/50 dark:border dark:border-gray-700/50 rounded-lg shadow-sm dark:shadow-none">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
+            <i-heroicons-document-text class="h-8 w-8 text-gray-400 dark:text-gray-500" />
+          </div>
+          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
             {{ $t('blog.noPosts') }}
           </h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {{ $t('blog.noPostsDescription') }}
+          </p>
         </div>
 
         <!-- Blog Posts Grid -->
@@ -93,19 +98,19 @@
             <button
               @click="goToPage(pagination.page - 1)"
               :disabled="pagination.page <= 1"
-              class="px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {{ $t('admin.pagination.previous') }}
             </button>
 
-            <span class="text-sm text-gray-700 dark:text-gray-300">
+            <span class="text-sm text-gray-700 dark:text-gray-400 px-2">
               {{ $t('admin.pagination.showing') }} {{ pagination.page }} {{ $t('admin.pagination.to') }} {{ pagination.totalPages }}
             </span>
 
             <button
               @click="goToPage(pagination.page + 1)"
               :disabled="pagination.page >= pagination.totalPages"
-              class="px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {{ $t('admin.pagination.next') }}
             </button>
@@ -172,14 +177,41 @@ const { data, pending, error, refresh } = await useLazyFetch('/api/blog', {
 const posts = computed(() => data.value?.data || [])
 const pagination = computed(() => data.value?.pagination)
 
-// Categories for filter
-const categories = computed(() => [
-  { key: '', value: '', label: '全部分類' },
-  { key: 'fundamental', value: '基本面分析', label: '基本面分析' },
-  { key: 'technical', value: '技术面分析', label: '技術面分析' },
-  { key: 'market', value: '市场观察', label: '市場觀察' },
-  { key: 'strategy', value: '投资策略', label: '投資策略' },
-])
+// Categories for filter - using i18n for labels, but keep actual values for API
+const { t, locale } = useI18n()
+const categories = computed(() => {
+  // Map category keys to their actual values in different languages
+  const categoryValues: Record<string, Record<string, string>> = {
+    fundamental: {
+      en: 'Fundamental Analysis',
+      'zh-TW': '基本面分析',
+      'zh-CN': '基本面分析'
+    },
+    technical: {
+      en: 'Technical Analysis',
+      'zh-TW': '技术面分析',
+      'zh-CN': '技术面分析'
+    },
+    market: {
+      en: 'Market Watch',
+      'zh-TW': '市场观察',
+      'zh-CN': '市场观察'
+    },
+    strategy: {
+      en: 'Investment Strategy',
+      'zh-TW': '投資策略',
+      'zh-CN': '投资策略'
+    }
+  }
+
+  return [
+    { key: '', value: '', label: t('blog.allCategories') },
+    { key: 'fundamental', value: categoryValues.fundamental[locale.value] || categoryValues.fundamental['zh-TW'], label: t('blog.categories.fundamental') },
+    { key: 'technical', value: categoryValues.technical[locale.value] || categoryValues.technical['zh-TW'], label: t('blog.categories.technical') },
+    { key: 'market', value: categoryValues.market[locale.value] || categoryValues.market['zh-TW'], label: t('blog.categories.market') },
+    { key: 'strategy', value: categoryValues.strategy[locale.value] || categoryValues.strategy['zh-TW'], label: t('blog.categories.strategy') },
+  ]
+})
 
 // Search handler
 const performSearch = () => {

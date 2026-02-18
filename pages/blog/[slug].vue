@@ -2,25 +2,25 @@
   <div class="container mx-auto px-4 py-8">
     <!-- Loading State / Skeleton -->
     <div v-if="pending" class="max-w-4xl mx-auto animate-pulse">
-      <div class="h-64 bg-gray-200 dark:bg-gray-700 rounded-lg mb-8" />
-      <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
-      <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-6" />
+      <div class="h-64 bg-gray-200 dark:bg-gray-800 rounded-lg mb-8" />
+      <div class="h-6 bg-gray-200 dark:bg-gray-800 rounded w-1/3 mb-4" />
+      <div class="h-10 bg-gray-200 dark:bg-gray-800 rounded w-3/4 mb-6" />
       <div class="space-y-3">
-        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-11/12" />
-        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-10/12" />
-        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-9/12" />
+        <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full" />
+        <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-11/12" />
+        <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-10/12" />
+        <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-9/12" />
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/50 p-4 rounded-md">
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 dark:border dark:border-red-800/50 p-4 rounded-lg max-w-4xl mx-auto">
       <div class="flex">
         <div class="flex-shrink-0">
           <i-heroicons-x-circle class="h-5 w-5 text-red-400" />
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800 dark:text-red-100">
+          <h3 class="text-sm font-medium text-red-800 dark:text-red-300">
             {{ $t('blog.postNotFound') }}
           </h3>
         </div>
@@ -33,14 +33,14 @@
       <div v-if="isAdmin" class="mb-4 flex justify-end gap-2">
         <NuxtLink
           :to="`/admin/blog/${post.id}/edit`"
-          class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 transition-colors"
         >
           <i-heroicons-pencil class="mr-2 h-4 w-4" />
           編輯文章
         </NuxtLink>
         <button
           @click="handleDelete"
-          class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30 transition-colors"
         >
           <i-heroicons-trash class="mr-2 h-4 w-4" />
           刪除文章
@@ -49,27 +49,27 @@
 
       <!-- Breadcrumb -->
       <nav class="mb-6 text-sm">
-        <ol class="flex items-center space-x-2">
+        <ol class="flex items-center space-x-2 text-gray-500 dark:text-gray-500">
           <li>
-            <NuxtLink to="/" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+            <NuxtLink to="/" class="hover:text-gray-700 dark:hover:text-gray-400 transition-colors">
               {{ $t('common.appName') }}
             </NuxtLink>
           </li>
-          <li class="text-gray-500">/</li>
+          <li class="text-gray-400 dark:text-gray-700">/</li>
           <li>
-            <NuxtLink to="/blog" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+            <NuxtLink to="/blog" class="hover:text-gray-700 dark:hover:text-gray-400 transition-colors">
               {{ $t('blog.title') }}
             </NuxtLink>
           </li>
-          <li class="text-gray-500">/</li>
-          <li class="text-gray-900 dark:text-gray-100 font-medium truncate">
+          <li class="text-gray-400 dark:text-gray-700">/</li>
+          <li class="text-gray-900 dark:text-gray-200 font-medium truncate max-w-[200px]">
             {{ post.title }}
           </li>
         </ol>
       </nav>
 
       <!-- Cover Image -->
-      <div v-if="post.coverImage" class="mb-8 rounded-lg overflow-hidden">
+      <div v-if="post.coverImage" class="mb-8 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700/50 bg-gray-100 dark:bg-gray-800">
         <NuxtImg
           :src="post.coverImage"
           :alt="post.title"
@@ -86,14 +86,14 @@
         <!-- Category Badge -->
         <div class="mb-4">
           <span
-            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100"
+            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-500/30"
           >
             {{ $t(`blog.categories.${categoryKey}`) || post.category }}
           </span>
         </div>
 
         <!-- Title -->
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
           {{ post.title }}
         </h1>
 
@@ -109,7 +109,7 @@
           <span
             v-for="tag in parsedTags"
             :key="tag"
-            class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+            class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:border dark:border-gray-700/50"
           >
             #{{ tag }}
           </span>
@@ -117,26 +117,39 @@
       </header>
 
       <!-- Content -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 mb-8">
-        <div class="prose prose-lg dark:prose-invert max-w-none">
+      <div class="bg-white dark:bg-gray-900/50 dark:border dark:border-gray-700/50 rounded-lg shadow-sm dark:shadow-none p-6 sm:p-8 mb-8">
+        <div class="prose prose-lg prose-gray dark:prose-invert max-w-none
+          prose-headings:text-gray-900 dark:prose-headings:text-gray-100
+          prose-p:text-gray-700 dark:prose-p:text-gray-300
+          prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
+          prose-strong:text-gray-900 dark:prose-strong:text-gray-100
+          prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-[''] prose-code:after:content-['']
+          prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950
+          prose-li:text-gray-700 dark:prose-li:text-gray-300
+          prose-blockquote:border-indigo-500 dark:prose-blockquote:border-indigo-400
+          prose-hr:border-gray-200 dark:prose-hr:border-gray-700
+          prose-img:rounded-lg prose-img:shadow-md
+          prose-table:text-gray-700 dark:prose-table:text-gray-300
+        ">
           <MDC :value="post.content" />
         </div>
       </div>
 
       <!-- Share Section -->
-      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700/50">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           {{ $t('blog.share') }}
         </h3>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 flex-wrap">
           <button
             @click="copyLink"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <i-heroicons-link class="mr-2 h-5 w-5" />
             {{ $t('blog.copyLink') }}
           </button>
-          <span v-if="copied" class="text-sm text-green-600 dark:text-green-400">
+          <span v-if="copied" class="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+            <i-heroicons-check-circle class="h-4 w-4" />
             {{ $t('blog.linkCopied') }}
           </span>
         </div>
@@ -146,7 +159,7 @@
       <div class="flex justify-center">
         <NuxtLink
           to="/blog"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
+          class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 transition-colors"
         >
           <i-heroicons-arrow-left class="mr-2 h-5 w-5" />
           {{ $t('blog.backToList') }}

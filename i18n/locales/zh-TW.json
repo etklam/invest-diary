@@ -345,6 +345,8 @@
   "blog": {
     "title": "投資教學",
     "description": "專業投資知識分享",
+    "allCategories": "全部分類",
+    "allStatus": "全部狀態",
     "readMore": "閱讀更多",
     "publishedAt": "發布於",
     "createdAt": "建立於",

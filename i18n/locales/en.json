@@ -345,6 +345,8 @@
   "blog": {
     "title": "Investment Blog",
     "description": "Professional investment knowledge sharing",
+    "allCategories": "All Categories",
+    "allStatus": "All Status",
     "readMore": "Read More",
     "publishedAt": "Published at",
     "createdAt": "Created at",

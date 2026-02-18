@@ -345,6 +345,8 @@
   "blog": {
     "title": "投资教学",
     "description": "专业投资知识分享",
+    "allCategories": "全部分类",
+    "allStatus": "全部状态",
     "readMore": "阅读更多",
     "publishedAt": "发布于",
     "createdAt": "创建于",
