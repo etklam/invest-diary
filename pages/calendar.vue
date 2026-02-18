@@ -75,7 +75,14 @@
     </div>
 
     <!-- 今日按鈕 -->
-    <div class="mt-6 flex justify-center">
+    <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+      <button
+        @click="showQuickModal = true"
+        class="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors min-h-[44px] font-medium"
+      >
+        <Icon name="heroicons:bolt" class="mr-2 h-5 w-5" />
+        快速日記
+      </button>
       <button
         @click="goToToday"
         class="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors min-h-[44px] font-medium"
@@ -83,6 +90,13 @@
         回到今天
       </button>
     </div>
+
+    <!-- Quick Diary Modal -->
+    <QuickDiaryModal
+      :show="showQuickModal"
+      @close="showQuickModal = false"
+      @created="handleDiaryCreated"
+    />
   </div>
 </template>
 
@@ -96,6 +110,13 @@ definePageMeta({
 
 // Get auth state
 const { isAuthenticated } = useAuth()
+
+// Quick diary modal state
+const showQuickModal = ref(false)
+
+const handleDiaryCreated = () => {
+  fetchDiaries()
+}
 
 // 類型定義
 interface Diary {

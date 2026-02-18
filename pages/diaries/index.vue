@@ -2,14 +2,30 @@
   <div class="space-y-6">
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">日記列表</h1>
-      <NuxtLink
-        to="/diaries/new"
-        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        <Icon name="heroicons:plus" class="mr-2 h-5 w-5" />
-        新增日記
-      </NuxtLink>
+      <div class="flex gap-2">
+        <button
+          @click="showQuickModal = true"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          <Icon name="heroicons:bolt" class="mr-2 h-5 w-5" />
+          快速日記
+        </button>
+        <NuxtLink
+          to="/diaries/new"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          <Icon name="heroicons:plus" class="mr-2 h-5 w-5" />
+          新增日記
+        </NuxtLink>
+      </div>
     </div>
+
+    <!-- Quick Diary Modal -->
+    <QuickDiaryModal
+      :show="showQuickModal"
+      @close="showQuickModal = false"
+      @created="handleDiaryCreated"
+    />
 
     <!-- Filters and Sorting -->
     <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
@@ -161,6 +177,13 @@
 definePageMeta({
   middleware: 'auth'
 })
+
+// Quick diary modal state
+const showQuickModal = ref(false)
+
+const handleDiaryCreated = (diaryId: string) => {
+  refresh()
+}
 
 // Use lazy fetch to avoid calling API during SSR before auth check
 // API returns { data, pagination }, so transform to diary array
