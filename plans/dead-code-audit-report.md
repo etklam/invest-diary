@@ -148,8 +148,21 @@ Nuxt plugins 會自動載入，不需要顯式引用：
 5. ✅ 統一 `formatDate` 函數 (新增 `formatShortDate` 和 `formatDateWithWeekday`)
 6. ✅ 統一 `formatCurrency` 函數
 
-### 待處理項目 📋
-1. `stores/navigation.ts` 中的 11 個未使用函數
+### 📝 待處理項目 (保留供未來使用)
+1. `stores/navigation.ts` 中的 11 個未使用函數 - **建議保留**
+
+**決策理由**:
+- 這些函數構成了完整的導航管理 API
+- 支援返回按鈕、動態選單管理、歷史記錄等功能
+- 目前雖未使用，但為未來功能預留了完整接口
+- 移除的成本大於保留的成本（Bundle 大小影響極小)
+
+**保留的函數**:
+- `subscribe()`, `getState()` - 狀態監控
+- `goBack()`, `clearHistory()` - 歷史管理
+- `addNavigationItem()`, `removeNavigationItem()`, `updateBadge()` - 動態選單
+- `filterNavigationItems()` - 權限控制
+- 內部函數 (localStorage 管理) - 必要實現
 
 ---
 

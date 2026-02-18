@@ -1,76 +1,71 @@
 <template>
-  <!-- Mobile-first, dark-first container -->
   <div class="mx-auto w-full max-w-4xl px-4 py-4 sm:py-8 bg-gray-950 text-gray-100">
-    <!-- Loading State / Skeleton -->
-    <div v-if="pending" class="max-w-4xl mx-auto animate-pulse">
-      <div class="h-64 bg-gray-200 dark:bg-gray-800 rounded-lg mb-8" />
-      <div class="h-6 bg-gray-200 dark:bg-gray-800 rounded w-1/3 mb-4" />
-      <div class="h-10 bg-gray-200 dark:bg-gray-800 rounded w-3/4 mb-6" />
+    <div v-if="pending" class="mx-auto w-full max-w-3xl animate-pulse">
+      <div class="mb-8 h-64 rounded-lg bg-gray-800" />
+      <div class="mb-4 h-6 w-1/3 rounded bg-gray-800" />
+      <div class="mb-6 h-10 w-3/4 rounded bg-gray-800" />
       <div class="space-y-3">
-        <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full" />
-        <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-11/12" />
-        <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-10/12" />
-        <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-9/12" />
+        <div class="h-4 w-full rounded bg-gray-800" />
+        <div class="h-4 w-11/12 rounded bg-gray-800" />
+        <div class="h-4 w-10/12 rounded bg-gray-800" />
+        <div class="h-4 w-9/12 rounded bg-gray-800" />
       </div>
     </div>
 
-    <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 dark:border dark:border-red-800/50 p-4 rounded-lg max-w-4xl mx-auto">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <i-heroicons-x-circle class="h-5 w-5 text-red-400" />
-        </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800 dark:text-red-300">
-            {{ $t('blog.postNotFound') }}
-          </h3>
-        </div>
+    <div
+      v-else-if="error"
+      class="mx-auto w-full max-w-3xl rounded-lg border border-red-800/50 bg-red-900/20 p-4"
+    >
+      <div class="flex items-start gap-3">
+        <i-heroicons-x-circle class="h-5 w-5 text-red-400" />
+        <h3 class="text-sm font-medium text-red-300">
+          {{ $t('blog.postNotFound') }}
+        </h3>
       </div>
     </div>
 
-    <!-- Post Content -->
     <article v-else-if="post" class="mx-auto w-full max-w-3xl">
-      <!-- Admin Actions Bar -->
-      <div v-if="isAdmin" class="mb-4 flex justify-center sm:justify-end gap-2">
+      <div v-if="isAdmin" class="mb-6 flex w-full flex-wrap justify-center gap-2 sm:justify-end">
         <NuxtLink
           :to="`/admin/blog/${post.id}/edit`"
-          class="inline-flex items-center px-4 py-2 border border-indigo-500/30 text-sm font-medium rounded-lg text-indigo-200 bg-indigo-500/20 hover:bg-indigo-500/30 transition-colors"
+          class="btn btn-indigo"
         >
-          <i-heroicons-pencil class="mr-2 h-4 w-4" />
-          編輯文章
+          <i-heroicons-pencil class="btn-icon" />
+          <span class="btn-label">編輯文章</span>
         </NuxtLink>
         <button
+          class="btn btn-red"
           @click="handleDelete"
-          class="inline-flex items-center px-4 py-2 border border-red-500/30 text-sm font-medium rounded-lg text-red-200 bg-red-500/20 hover:bg-red-500/30 transition-colors"
         >
-          <i-heroicons-trash class="mr-2 h-4 w-4" />
-          刪除文章
+          <i-heroicons-trash class="btn-icon" />
+          <span class="btn-label">刪除文章</span>
         </button>
       </div>
 
-      <!-- Breadcrumb -->
       <nav class="mb-6 text-sm">
-        <ol class="flex items-center space-x-2 text-gray-500 dark:text-gray-500">
+        <ol class="flex items-center space-x-2 text-gray-500">
           <li>
-            <NuxtLink to="/" class="hover:text-gray-700 dark:hover:text-gray-400 transition-colors">
+            <NuxtLink to="/" class="transition-colors hover:text-gray-300">
               {{ $t('common.appName') }}
             </NuxtLink>
           </li>
-          <li class="text-gray-400 dark:text-gray-700">/</li>
+          <li class="text-gray-700">/</li>
           <li>
-            <NuxtLink to="/blog" class="hover:text-gray-700 dark:hover:text-gray-400 transition-colors">
+            <NuxtLink to="/blog" class="transition-colors hover:text-gray-300">
               {{ $t('blog.title') }}
             </NuxtLink>
           </li>
-          <li class="text-gray-400 dark:text-gray-700">/</li>
-          <li class="text-gray-900 dark:text-gray-200 font-medium truncate max-w-[200px]">
+          <li class="text-gray-700">/</li>
+          <li class="max-w-[200px] truncate font-medium text-gray-200">
             {{ post.title }}
           </li>
         </ol>
       </nav>
 
-      <!-- Cover Image -->
-      <div v-if="post.coverImage" class="mb-8 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700/50 bg-gray-100 dark:bg-gray-800">
+      <div
+        v-if="post.coverImage"
+        class="mb-8 overflow-hidden rounded-lg border border-gray-700/50 bg-gray-900"
+      >
         <NuxtImg
           :src="post.coverImage"
           :alt="post.title"
@@ -78,98 +73,81 @@
           height="675"
           format="webp"
           loading="eager"
-          class="w-full object-cover max-h-[500px]"
+          class="max-h-[500px] w-full object-cover"
         />
       </div>
 
-      <!-- Header -->
-      <!-- Mobile-first header -->
       <header class="mb-6">
-        <!-- Category Badge -->
         <div class="mb-4">
           <span
-            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-500/30"
+            class="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/20 px-3 py-1 text-sm font-medium text-indigo-300"
           >
             {{ $t(`blog.categories.${categoryKey}`) || post.category }}
           </span>
         </div>
 
-        <!-- Title -->
-        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 leading-snug">
+        <h1 class="mb-3 text-2xl font-bold leading-snug text-white sm:text-3xl lg:text-4xl">
           {{ post.title }}
         </h1>
 
-        <!-- Meta Info -->
         <PostMeta
           :author="post.author.name || post.author.email"
           :date="post.publishedAt!"
           :reading-time="readingTime"
         />
 
-        <!-- Tags -->
         <div v-if="parsedTags.length > 0" class="mt-4 flex flex-wrap gap-2">
           <span
             v-for="tag in parsedTags"
             :key="tag"
-            class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:border dark:border-gray-700/50"
+            class="inline-flex items-center rounded-full border border-gray-700/50 bg-gray-800/80 px-3 py-1 text-sm text-gray-300"
           >
             #{{ tag }}
           </span>
         </div>
       </header>
 
-      <!-- Content -->
-      <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-4 sm:p-6 mb-6">
-        <div class="prose prose-lg prose-gray dark:prose-invert max-w-none
-          prose-headings:text-gray-900 dark:prose-headings:text-gray-100
-          prose-p:text-gray-700 dark:prose-p:text-gray-300
-          prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
-          prose-strong:text-gray-900 dark:prose-strong:text-gray-100
-          prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-[''] prose-code:after:content-['']
-          prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950
-          prose-li:text-gray-700 dark:prose-li:text-gray-300
-          prose-blockquote:border-indigo-500 dark:prose-blockquote:border-indigo-400
-          prose-hr:border-gray-200 dark:prose-hr:border-gray-700
+      <div class="mb-6 rounded-xl border border-gray-800 bg-gray-900/60 p-4 sm:p-6">
+        <div
+          class="prose prose-lg prose-gray dark:prose-invert max-w-none
+          prose-headings:text-gray-100
+          prose-p:text-gray-300
+          prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
+          prose-strong:text-gray-100
+          prose-code:text-pink-400 prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-[''] prose-code:after:content-['']
+          prose-pre:bg-gray-950
+          prose-li:text-gray-300
+          prose-blockquote:border-indigo-400
+          prose-hr:border-gray-700
           prose-img:rounded-lg prose-img:shadow-md
-          prose-table:text-gray-700 dark:prose-table:text-gray-300
-        ">
+          prose-table:text-gray-300"
+        >
           <MDC :value="post.content" />
         </div>
       </div>
 
-      <!-- Share Section -->
-      <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-4 sm:p-6 mb-6">
-        <h3 class="text-lg font-semibold text-gray-100 mb-4">
+      <div class="mb-6 rounded-xl border border-gray-800 bg-gray-900/60 p-4 sm:p-6">
+        <h3 class="mb-4 text-lg font-semibold text-gray-100">
           {{ $t('blog.share') }}
         </h3>
-        <div class="flex items-center gap-4 flex-wrap">
-          <button
-            @click="copyLink"
-            class="inline-flex items-center px-4 py-2 border border-gray-700 text-sm font-medium rounded-lg text-gray-200 bg-gray-800 hover:bg-gray-700 transition-colors"
-          >
-            <i-heroicons-link class="mr-2 h-5 w-5" />
-            {{ $t('blog.copyLink') }}
+
+        <div class="flex w-full flex-wrap items-center justify-center gap-4">
+          <button class="btn btn-gray" @click="copyLink">
+            <i-heroicons-link class="btn-icon" />
+            <span class="btn-label">{{ $t('blog.copyLink') }}</span>
           </button>
-          <span v-if="copied" class="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+
+          <span v-if="copied" class="flex items-center gap-1 text-sm text-green-400">
             <i-heroicons-check-circle class="h-4 w-4" />
             {{ $t('blog.linkCopied') }}
           </span>
         </div>
-
-        <!-- Google Translate -->
-        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <GoogleTranslate />
-        </div>
       </div>
 
-      <!-- Back Button -->
-      <div class="flex justify-center items-center pb-6">
-        <NuxtLink
-          to="/blog"
-          class="inline-flex items-center px-6 py-3 border border-indigo-500/30 text-sm font-medium rounded-lg text-indigo-200 bg-indigo-500/20 hover:bg-indigo-500/30 transition-colors"
-        >
-          <i-heroicons-arrow-left class="mr-2 h-5 w-5" />
-          {{ $t('blog.backToList') }}
+      <div class="flex w-full items-center justify-center pb-8">
+        <NuxtLink to="/blog" class="btn btn-indigo">
+          <i-heroicons-arrow-left class="btn-icon" />
+          <span class="btn-label">{{ $t('blog.backToList') }}</span>
         </NuxtLink>
       </div>
     </article>
@@ -204,32 +182,21 @@ const copied = ref(false)
 const toast = useToast()
 const router = useRouter()
 
-// Fetch post
-console.log('[Blog Page] route.params.slug =', route.params.slug)
-
 const { data: post, pending, error } = await useAsyncData(`blog-${route.params.slug}`, () =>
   $fetch<Post>(`/api/blog/${route.params.slug}`)
 )
 
-// ✅ Web Vitals (Phase 1)
 usePerformance()
 
-// Calculate reading time
-const readingTime = computed(() => {
-  return post.value ? calculateReadingTime(post.value.content) : 0
-})
+const readingTime = computed(() => (post.value ? calculateReadingTime(post.value.content) : 0))
+const parsedTags = computed(() => (post.value ? parseTags(post.value.tags) : []))
 
-// Parse tags
-const parsedTags = computed(() => {
-  return post.value ? parseTags(post.value.tags) : []
-})
-
-// Map category to translation key
 const categoryKey = computed(() => {
   if (!post.value) return ''
   const categoryMap: Record<string, string> = {
     '基本面分析': 'fundamental',
     '技术面分析': 'technical',
+    '市場觀察': 'market',
     '市场观察': 'market',
     '投資策略': 'strategy',
     '投资策略': 'strategy',
@@ -241,20 +208,20 @@ const categoryKey = computed(() => {
   return categoryMap[post.value.category] || post.value.category
 })
 
-// SEO
 useHead(() => ({
   title: post.value ? `${post.value.title} - 投資教學` : '文章載入中',
-  meta: post.value ? [
-    { name: 'description', content: post.value.excerpt || t('blog.description') },
-    { property: 'og:title', content: post.value.title },
-    { property: 'og:description', content: post.value.excerpt || t('blog.description') },
-    { property: 'og:type', content: 'article' },
-    { property: 'og:image', content: post.value.coverImage || '' },
-    { name: 'twitter:card', content: 'summary_large_image' },
-  ] : []
+  meta: post.value
+    ? [
+        { name: 'description', content: post.value.excerpt || t('blog.description') },
+        { property: 'og:title', content: post.value.title },
+        { property: 'og:description', content: post.value.excerpt || t('blog.description') },
+        { property: 'og:type', content: 'article' },
+        { property: 'og:image', content: post.value.coverImage || '' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+      ]
+    : [],
 }))
 
-// Copy link function
 const copyLink = async () => {
   const url = window.location.href
   try {
@@ -268,7 +235,6 @@ const copyLink = async () => {
   }
 }
 
-// Delete post function
 const handleDelete = async () => {
   if (!post.value) return
   if (!confirm(`確定要刪除文章「${post.value.title}」嗎？此操作無法復原。`)) return
@@ -276,10 +242,77 @@ const handleDelete = async () => {
   try {
     await $fetch(`/api/blog/${post.value.id}`, { method: 'DELETE' })
     toast.success('文章已刪除')
-    router.push('/blog')
-  } catch (error: any) {
-    console.error('Failed to delete post:', error)
-    toast.error(error.data?.statusMessage || '刪除失敗')
+    await router.push('/blog')
+  } catch (apiError: any) {
+    console.error('Failed to delete post:', apiError)
+    toast.error(apiError.data?.statusMessage || '刪除失敗')
   }
 }
 </script>
+
+<style scoped>
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  border-radius: 0.5rem;
+  border-width: 1px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  height: 1.25rem;
+  width: 1.25rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.btn-label {
+  display: block;
+  text-align: center;
+}
+
+.btn-indigo {
+  min-width: 9.5rem;
+  padding: 0.625rem 1rem;
+  border-color: rgb(99 102 241 / 0.3);
+  background-color: rgb(99 102 241 / 0.2);
+  color: rgb(199 210 254);
+}
+
+.btn-indigo:hover {
+  background-color: rgb(99 102 241 / 0.3);
+}
+
+.btn-red {
+  min-width: 9.5rem;
+  padding: 0.625rem 1rem;
+  border-color: rgb(239 68 68 / 0.3);
+  background-color: rgb(239 68 68 / 0.2);
+  color: rgb(254 202 202);
+}
+
+.btn-red:hover {
+  background-color: rgb(239 68 68 / 0.3);
+}
+
+.btn-gray {
+  min-width: 9.5rem;
+  padding: 0.625rem 1rem;
+  border-color: rgb(55 65 81 / 1);
+  background-color: rgb(31 41 55 / 1);
+  color: rgb(229 231 235);
+}
+
+.btn-gray:hover {
+  background-color: rgb(55 65 81 / 1);
+}
+</style>

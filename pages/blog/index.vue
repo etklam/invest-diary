@@ -36,11 +36,6 @@
 
           <!-- Category Filter -->
           <CategoryFilter :categories="categories" />
-
-          <!-- Google Translate -->
-          <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <GoogleTranslate />
-          </div>
         </div>
       </aside>
 
