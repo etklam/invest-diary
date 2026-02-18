@@ -58,24 +58,41 @@ export function calculateHoldings(transactions: Transaction[]): Holding[] {
 }
 
 /**
- * 取得特定股票的持股資訊
- */
-export function getHoldingBySymbol(transactions: Transaction[], symbol: string): Holding | null {
-  const holdings = calculateHoldings(transactions.filter(tx => tx.symbol === symbol))
-  return holdings.length > 0 ? holdings[0] : null
-}
-
-/**
  * 格式化日期為本地字串
  */
-export function formatDate(date: Date): string {
+export function formatDate(date: Date | string): string {
   return new Intl.DateTimeFormat('zh-TW', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit'
-  }).format(date)
+  }).format(new Date(date))
+}
+
+/**
+ * 格式化簡短日期 (年/月/日)
+ */
+export function formatShortDate(date: Date | string): string {
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = d.getMonth() + 1
+  const day = d.getDate()
+  return `${year}/${month}/${day}`
+}
+
+/**
+ * 格式化日期帶星期 (年/月/日 (週X))
+ */
+export function formatDateWithWeekday(date: Date | string): string {
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = d.getMonth() + 1
+  const day = d.getDate()
+  const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+  const weekday = weekdays[d.getDay()]
+
+  return `${year}/${month}/${day} (${weekday})`
 }
 
 /**

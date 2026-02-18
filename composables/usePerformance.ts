@@ -168,36 +168,3 @@ export const usePerformance = () => {
   }
 }
 
-/**
- * Vue composable for useAsyncData with performance tracking
- *
- * Usage in pages:
- * ```ts
- * const { data, pending } = await useTrackedAsyncData('blog-post', () => $fetch('/api/blog/post'))
- * ```
- */
-export const useTrackedAsyncData = async <T>(
-  key: string,
-  handler: () => Promise<T>,
-  options?: any
-) => {
-  const startTime = performance.now()
-  const { metrics } = usePerformance()
-
-  const result = await useAsyncData(key, handler, options)
-
-  // Track custom timing metric
-  onMounted(() => {
-    const endTime = performance.now()
-    const duration = endTime - startTime
-
-    console.log(`[Performance] Data load time for "${key}":`, {
-      duration: `${duration.toFixed(2)}ms`,
-      cached: result.data.value !== null
-    })
-
-    // You could send this to analytics as well
-  })
-
-  return result
-}

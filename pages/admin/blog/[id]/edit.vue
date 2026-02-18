@@ -127,6 +127,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate } from '~/lib/utils'
+
 const { t } = useI18n()
 const toast = useToast()
 const router = useRouter()
@@ -158,17 +160,6 @@ const isFormValid = computed(() => {
          form.value.content.trim() !== '' &&
          form.value.category !== ''
 })
-
-// Format date
-const formatDate = (date: string | Date) => {
-  return new Intl.DateTimeFormat('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(date))
-}
 
 // Fetch post
 const fetchPost = async () => {

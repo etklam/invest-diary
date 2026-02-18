@@ -385,27 +385,3 @@ export function useSwipeGestures(
     }
   })
 }
-
-export function useLongPress(
-  element: Ref<HTMLElement | null>,
-  onLongPress: (event: TouchEvent | MouseEvent) => void,
-  delay = 500
-) {
-  return useGestures(element, {
-    onLongPress
-  }, {
-    longPressDelay: delay
-  })
-}
-
-export function useDoubleTap(
-  element: Ref<HTMLElement | null>,
-  onDoubleTap: (event: TouchEvent | MouseEvent) => void,
-  delay = 300
-) {
-  return useGestures(element, {
-    onDoubleTap
-  }, {
-    doubleTapDelay: delay
-  })
-}

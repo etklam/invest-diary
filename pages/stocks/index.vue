@@ -321,6 +321,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatCurrency } from '~/lib/utils'
+
 definePageMeta({
   middleware: 'auth'
 })
@@ -408,15 +410,6 @@ const totalCost = computed(() => {
 // Format quantity for display
 const formatQuantity = (qty: number): string => {
   return qty.toFixed(4).replace(/\.?0+$/, '')
-}
-
-// Format currency
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('zh-TW', {
-    style: 'currency',
-    currency: 'TWD',
-    minimumFractionDigits: 2
-  }).format(amount)
 }
 
 // Format percentage

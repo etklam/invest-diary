@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateHoldings, getHoldingBySymbol, formatDate, formatCurrency } from '~/lib/utils'
+import { calculateHoldings, formatDate, formatCurrency } from '~/lib/utils'
 import type { Transaction, TransactionType } from '@prisma/client'
 
 // Helper function to create a mock transaction
@@ -233,100 +233,6 @@ describe('calculateHoldings', () => {
 
     const result = calculateHoldings(transactions)
     expect(result[0].quantity).toBe(7)
-  })
-})
-
-describe('getHoldingBySymbol', () => {
-  it('should return null when symbol not found', () => {
-    const transactions: Transaction[] = [
-      createTransaction({
-        id: '1',
-        diaryId: 'd1',
-        symbol: '2330.TW',
-        type: 'BUY',
-        quantity: 10,
-        price: 500,
-        tradeDate: new Date('2024-01-01')
-      })
-    ]
-
-    const result = getHoldingBySymbol(transactions, '2317.TW')
-    expect(result).toBeNull()
-  })
-
-  it('should return holding for existing symbol', () => {
-    const transactions: Transaction[] = [
-      createTransaction({
-        id: '1',
-        diaryId: 'd1',
-        symbol: '2330.TW',
-        type: 'BUY',
-        quantity: 10,
-        price: 500,
-        tradeDate: new Date('2024-01-01')
-      })
-    ]
-
-    const result = getHoldingBySymbol(transactions, '2330.TW')
-    expect(result).toEqual({
-      symbol: '2330.TW',
-      quantity: 10,
-      avgCost: 500,
-      totalCost: 5000
-    })
-  })
-
-  it('should filter transactions by symbol before calculating', () => {
-    const transactions: Transaction[] = [
-      createTransaction({
-        id: '1',
-        diaryId: 'd1',
-        symbol: '2330.TW',
-        type: 'BUY',
-        quantity: 10,
-        price: 500,
-        tradeDate: new Date('2024-01-01')
-      }),
-      createTransaction({
-        id: '2',
-        diaryId: 'd2',
-        symbol: '2317.TW',
-        type: 'BUY',
-        quantity: 5,
-        price: 150,
-        tradeDate: new Date('2024-01-02')
-      })
-    ]
-
-    const result = getHoldingBySymbol(transactions, '2330.TW')
-    expect(result?.symbol).toBe('2330.TW')
-    expect(result?.quantity).toBe(10)
-  })
-
-  it('should return null when all shares of symbol are sold', () => {
-    const transactions: Transaction[] = [
-      createTransaction({
-        id: '1',
-        diaryId: 'd1',
-        symbol: '2330.TW',
-        type: 'BUY',
-        quantity: 10,
-        price: 500,
-        tradeDate: new Date('2024-01-01')
-      }),
-      createTransaction({
-        id: '2',
-        diaryId: 'd2',
-        symbol: '2330.TW',
-        type: 'SELL',
-        quantity: 10,
-        price: 600,
-        tradeDate: new Date('2024-01-02')
-      })
-    ]
-
-    const result = getHoldingBySymbol(transactions, '2330.TW')
-    expect(result).toBeNull()
   })
 })
 

@@ -209,24 +209,3 @@ export function getMobileDetection() {
   }
   return globalMobileDetection
 }
-
-// 便捷的組合式函數
-export function useIsMobile() {
-  const { isMobile } = useMobileDetection()
-  return isMobile
-}
-
-export function useIsTablet() {
-  const { isTablet } = useMobileDetection()
-  return isTablet
-}
-
-export function useIsDesktop() {
-  const { isDesktop } = useMobileDetection()
-  return isDesktop
-}
-
-export function useScreenSize() {
-  const { screenWidth, screenHeight, orientation } = useMobileDetection()
-  return { screenWidth, screenHeight, orientation }
-}

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatDate } from '~/lib/utils'
+
 const { t } = useI18n()
 const { user: currentUser, isAuthenticated, isAdmin } = useAuth()
 const toast = useToast()
@@ -134,17 +136,6 @@ onMounted(() => {
   fetchStats()
   fetchUsers(1)
 })
-
-// Format date
-const formatDate = (date: string | Date) => {
-  return new Intl.DateTimeFormat('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(date))
-}
 
 // Role badge color
 const roleBadgeClass = (role: string) => {
