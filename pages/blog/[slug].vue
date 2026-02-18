@@ -1,5 +1,6 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <!-- Mobile-first, dark-first container -->
+  <div class="mx-auto w-full max-w-4xl px-4 py-4 sm:py-8 bg-gray-950 text-gray-100">
     <!-- Loading State / Skeleton -->
     <div v-if="pending" class="max-w-4xl mx-auto animate-pulse">
       <div class="h-64 bg-gray-200 dark:bg-gray-800 rounded-lg mb-8" />
@@ -28,19 +29,19 @@
     </div>
 
     <!-- Post Content -->
-    <article v-else-if="post" class="max-w-4xl mx-auto">
+    <article v-else-if="post" class="mx-auto w-full max-w-3xl">
       <!-- Admin Actions Bar -->
-      <div v-if="isAdmin" class="mb-4 flex justify-end gap-2">
+      <div v-if="isAdmin" class="mb-4 flex justify-center sm:justify-end gap-2">
         <NuxtLink
           :to="`/admin/blog/${post.id}/edit`"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 transition-colors"
+          class="inline-flex items-center px-4 py-2 border border-indigo-500/30 text-sm font-medium rounded-lg text-indigo-200 bg-indigo-500/20 hover:bg-indigo-500/30 transition-colors"
         >
           <i-heroicons-pencil class="mr-2 h-4 w-4" />
           編輯文章
         </NuxtLink>
         <button
           @click="handleDelete"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30 transition-colors"
+          class="inline-flex items-center px-4 py-2 border border-red-500/30 text-sm font-medium rounded-lg text-red-200 bg-red-500/20 hover:bg-red-500/30 transition-colors"
         >
           <i-heroicons-trash class="mr-2 h-4 w-4" />
           刪除文章
@@ -82,7 +83,8 @@
       </div>
 
       <!-- Header -->
-      <header class="mb-8">
+      <!-- Mobile-first header -->
+      <header class="mb-6">
         <!-- Category Badge -->
         <div class="mb-4">
           <span
@@ -93,7 +95,7 @@
         </div>
 
         <!-- Title -->
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 leading-snug">
           {{ post.title }}
         </h1>
 
@@ -117,7 +119,7 @@
       </header>
 
       <!-- Content -->
-      <div class="bg-white dark:bg-gray-900/50 dark:border dark:border-gray-700/50 rounded-lg shadow-sm dark:shadow-none p-6 sm:p-8 mb-8">
+      <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-4 sm:p-6 mb-6">
         <div class="prose prose-lg prose-gray dark:prose-invert max-w-none
           prose-headings:text-gray-900 dark:prose-headings:text-gray-100
           prose-p:text-gray-700 dark:prose-p:text-gray-300
@@ -136,14 +138,14 @@
       </div>
 
       <!-- Share Section -->
-      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700/50">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-4 sm:p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-100 mb-4">
           {{ $t('blog.share') }}
         </h3>
         <div class="flex items-center gap-4 flex-wrap">
           <button
             @click="copyLink"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            class="inline-flex items-center px-4 py-2 border border-gray-700 text-sm font-medium rounded-lg text-gray-200 bg-gray-800 hover:bg-gray-700 transition-colors"
           >
             <i-heroicons-link class="mr-2 h-5 w-5" />
             {{ $t('blog.copyLink') }}
@@ -161,10 +163,10 @@
       </div>
 
       <!-- Back Button -->
-      <div class="flex justify-center">
+      <div class="flex justify-center items-center pb-6">
         <NuxtLink
           to="/blog"
-          class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 transition-colors"
+          class="inline-flex items-center px-6 py-3 border border-indigo-500/30 text-sm font-medium rounded-lg text-indigo-200 bg-indigo-500/20 hover:bg-indigo-500/30 transition-colors"
         >
           <i-heroicons-arrow-left class="mr-2 h-5 w-5" />
           {{ $t('blog.backToList') }}
