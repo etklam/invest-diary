@@ -60,6 +60,58 @@
     "loginNow": "立即登录"
   },
 
+  "quickDiary": {
+    "title": "快速日记",
+    "selectTemplate": "选择一个模板开始快速创建日记",
+    "date": "日期",
+    "selectDate": "选择日期",
+    "createDiary": "建立日记",
+    "creating": "建立中...",
+    "templates": {
+      "trading": "交易日记",
+      "tradingDesc": "记录买入/卖出操作",
+      "reflection": "盘后反思",
+      "reflectionDesc": "收盘后的总结反思",
+      "observation": "市场观察",
+      "observationDesc": "记录市场热点观察"
+    },
+    "trading": {
+      "operation": "今日操作",
+      "buy": "买入",
+      "sell": "卖出",
+      "both": "买卖都做",
+      "symbols": "股票代码（可选，多个用逗号分隔）",
+      "symbolsPlaceholder": "例如: 2330, 2317",
+      "marketFeeling": "今日市场感觉",
+      "bullish": "多头",
+      "bearish": "空头",
+      "neutral": "盘整",
+      "note": "快速备注（可选）",
+      "notePlaceholder": "简单记录今日操作心得..."
+    },
+    "reflection": {
+      "marketCondition": "今日市场状况",
+      "selectCondition": "请选择...",
+      "rating": "今日操作评价",
+      "goodPoints": "做得好的地方",
+      "noRashTrading": "没有胡乱操作",
+      "improvePoints": "需要改进的地方",
+      "goodPointsPlaceholder": "今日操作中哪些做得好？",
+      "improvePointsPlaceholder": "哪些地方可以做得更好？"
+    },
+    "observation": {
+      "topic": "观察主题",
+      "topicPlaceholder": "例如: 半导体板块、台积电、美国股市...",
+      "type": "观察类型",
+      "content": "观察内容",
+      "contentPlaceholder": "记录你的观察和看法...",
+      "action": "后续行动（可选）",
+      "actionPlaceholder": "例如: 持续观察、准备进场..."
+    },
+    "preview": "预览",
+    "success": "快速日记建立成功！",
+    "fillRequired": "请填写必要信息"
+  },
   "diary": {
     "title": "日记列表",
     "newDiary": "新增日记",

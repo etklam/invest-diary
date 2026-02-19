@@ -60,6 +60,58 @@
     "passwordMismatchError": "Passwords do not match"
   },
 
+  "quickDiary": {
+    "title": "Quick Diary",
+    "selectTemplate": "Choose a template to start",
+    "date": "Date",
+    "selectDate": "Select date",
+    "createDiary": "Create Diary",
+    "creating": "Creating...",
+    "templates": {
+      "trading": "Trading Diary",
+      "tradingDesc": "Record buy/sell operations",
+      "reflection": "Post-market Reflection",
+      "reflectionDesc": "Summary after market close",
+      "observation": "Market Observation",
+      "observationDesc": "Record market observations"
+    },
+    "trading": {
+      "operation": "Today's Operation",
+      "buy": "Buy",
+      "sell": "Sell",
+      "both": "Both",
+      "symbols": "Stock symbols (optional, separate with commas)",
+      "symbolsPlaceholder": "e.g., 2330, 2317",
+      "marketFeeling": "Market feeling",
+      "bullish": "Bullish",
+      "bearish": "Bearish",
+      "neutral": "Neutral",
+      "note": "Quick notes (optional)",
+      "notePlaceholder": "Quick notes on today's operations..."
+    },
+    "reflection": {
+      "marketCondition": "Market condition",
+      "selectCondition": "Select...",
+      "rating": "Today's rating",
+      "goodPoints": "What went well",
+      "noRashTrading": "No rash trading",
+      "improvePoints": "Areas for improvement",
+      "goodPointsPlaceholder": "What did you do well today?",
+      "improvePointsPlaceholder": "What can be improved?"
+    },
+    "observation": {
+      "topic": "Observation topic",
+      "topicPlaceholder": "e.g., Semiconductor sector, TSMC, US market...",
+      "type": "Observation type",
+      "content": "Observation content",
+      "contentPlaceholder": "Record your observations and views...",
+      "action": "Follow-up action (optional)",
+      "actionPlaceholder": "e.g., Keep watching, prepare to enter..."
+    },
+    "preview": "Preview",
+    "success": "Quick diary created successfully!",
+    "fillRequired": "Please fill required information"
+  },
   "diary": {
     "title": "Diaries",
     "newDiary": "New Diary",

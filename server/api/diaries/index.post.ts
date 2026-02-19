@@ -21,13 +21,15 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // If appendToToday is true, check if a diary already exists for today
+    // If appendToToday is true, check if a diary already exists for the provided date
     if (appendToToday) {
-      const today = new Date()
-      const startOfDay = new Date(today)
+      // Use provided date or fall back to current date
+      const targetDate = date ? new Date(date) : new Date()
+
+      const startOfDay = new Date(targetDate)
       startOfDay.setHours(0, 0, 0, 0)
 
-      const endOfDay = new Date(today)
+      const endOfDay = new Date(targetDate)
       endOfDay.setHours(23, 59, 59, 999)
 
       const existingDiary = await prisma.diary.findFirst({

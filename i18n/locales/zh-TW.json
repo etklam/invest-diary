@@ -60,6 +60,58 @@
     "loginNow": "立即登入"
   },
 
+  "quickDiary": {
+    "title": "快速日記",
+    "selectTemplate": "選擇一個模板開始快速創建日記",
+    "date": "日期",
+    "selectDate": "選擇日期",
+    "createDiary": "建立日記",
+    "creating": "建立中...",
+    "templates": {
+      "trading": "交易日記",
+      "tradingDesc": "記錄買入/賣出操作",
+      "reflection": "盤後反思",
+      "reflectionDesc": "收盤後的總結反思",
+      "observation": "市場觀察",
+      "observationDesc": "記錄市場熱點觀察"
+    },
+    "trading": {
+      "operation": "今日操作",
+      "buy": "買入",
+      "sell": "賣出",
+      "both": "買賣都做",
+      "symbols": "股票代碼（可選，多個用逗號分隔）",
+      "symbolsPlaceholder": "例如: 2330, 2317",
+      "marketFeeling": "今日市場感覺",
+      "bullish": "多頭",
+      "bearish": "空頭",
+      "neutral": "盤整",
+      "note": "快速備註（可選）",
+      "notePlaceholder": "簡單記錄今日操作心得..."
+    },
+    "reflection": {
+      "marketCondition": "今日市場狀況",
+      "selectCondition": "請選擇...",
+      "rating": "今日操作評價",
+      "goodPoints": "做得好的地方",
+      "noRashTrading": "沒有胡亂操作",
+      "improvePoints": "需要改進的地方",
+      "goodPointsPlaceholder": "今日操作中哪些做得好？",
+      "improvePointsPlaceholder": "哪些地方可以做得更好？"
+    },
+    "observation": {
+      "topic": "觀察主題",
+      "topicPlaceholder": "例如: 半導體板塊、台積電、美國股市...",
+      "type": "觀察類型",
+      "content": "觀察內容",
+      "contentPlaceholder": "記錄你的觀察和看法...",
+      "action": "後續行動（可選）",
+      "actionPlaceholder": "例如: 持續觀察、準備進場..."
+    },
+    "preview": "預覽",
+    "success": "快速日記建立成功！",
+    "fillRequired": "請填寫必要資訊"
+  },
   "diary": {
     "title": "日記列表",
     "newDiary": "新增日記",
