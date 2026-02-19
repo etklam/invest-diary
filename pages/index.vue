@@ -174,13 +174,6 @@
 </template>
 
 <script setup lang="ts">
-// Redirect authenticated users to calendar
-const { isAuthenticated, isInitialized } = useAuth()
-
-// Watch for authentication state changes and redirect when ready
-watch([isAuthenticated, isInitialized], ([auth, initialized]) => {
-  if (initialized && auth) {
-    navigateTo('/calendar')
-  }
-}, { immediate: true })
+// Home page is a pure landing page.
+// Auth-based redirects are handled after login, not here.
 </script>
