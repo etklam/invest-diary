@@ -402,6 +402,18 @@ const formData = reactive({
   action: ''
 })
 
+// Auto-format stock symbols: trim and uppercase
+watch(() => formData.symbols, (newValue) => {
+  if (newValue) {
+    // Split by comma, trim each symbol, convert to uppercase, and join back
+    formData.symbols = newValue
+      .split(',')
+      .map(s => s.trim().toUpperCase())
+      .filter(s => s.length > 0)
+      .join(', ')
+  }
+})
+
 const today = new Date().toLocaleDateString('zh-TW', {
   year: 'numeric',
   month: '2-digit',

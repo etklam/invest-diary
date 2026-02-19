@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
           date: date ? new Date(date) : undefined,
           transactions: {
             create: transactions?.map((tx: any) => ({
-              symbol: tx.symbol,
+              symbol: tx.symbol?.trim().toUpperCase(),
               type: tx.type,
               quantity: tx.quantity,
               price: tx.price,

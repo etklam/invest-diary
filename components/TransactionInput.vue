@@ -280,10 +280,10 @@ watch(transactions, (newTxns) => {
   })
 }, { deep: true })
 
-// Update symbol and convert to uppercase
+// Update symbol and convert to uppercase and trim
 const updateSymbol = (index: number, event: Event) => {
   const target = event.target as HTMLInputElement
-  const value = target.value.toUpperCase()
+  const value = target.value.trim().toUpperCase()
   transactions.value[index].symbol = value
   validateTransaction(index)
 }
