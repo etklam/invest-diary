@@ -45,7 +45,7 @@
           >
             <div
               v-if="show"
-              class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full"
+              class="inline-block align-bottom bg-white dark:bg-gray-800 text-left overflow-hidden shadow-xl transform transition-all w-full h-full sm:h-auto sm:rounded-lg sm:my-8 sm:align-middle sm:max-w-2xl"
             >
               <!-- Header -->
               <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 flex justify-between items-center">
@@ -58,7 +58,7 @@
               </div>
 
               <!-- Step 1: Choose Template -->
-              <div v-if="step === 1" class="px-4 py-5 sm:p-6">
+              <div v-if="step === 1" class="px-4 py-5 sm:p-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">選擇一個模板開始快速創建日記</p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -101,7 +101,7 @@
               </div>
 
               <!-- Step 2: Fill Form -->
-              <div v-else-if="step === 2" class="px-4 py-5 sm:p-6">
+              <div v-else-if="step === 2" class="px-4 py-5 sm:p-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
                 <!-- Trading Template Form -->
                 <div v-if="selectedTemplate === 'trading'" class="space-y-4">
                   <div>

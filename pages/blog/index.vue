@@ -148,7 +148,8 @@ interface Post {
 }
 
 const route = useRoute()
-const searchQuery = ref('')
+const router = useRouter()
+const searchQuery = ref((route.query.search as string) || '')
 
 // Build query params
 const buildQueryParams = (page = 1) => {
@@ -170,7 +171,8 @@ const buildQueryParams = (page = 1) => {
 
 // Fetch posts
 const { data, pending, error, refresh } = await useLazyFetch('/api/blog', {
-  params: buildQueryParams(),
+  params: () => buildQueryParams(Number(route.query.page || 1)),
+  watch: [() => route.query.category, () => route.query.page, () => route.query.search],
   transform: (res: any) => res
 })
 
@@ -181,7 +183,7 @@ const pagination = computed(() => data.value?.pagination)
 const { t, locale } = useI18n()
 const categories = computed(() => {
   // Map category keys to their actual values in different languages
-  const categoryValues: Record<string, Record<string, string>> = {
+  const categoryValues: Record<'fundamental' | 'technical' | 'market' | 'strategy', Record<string, string>> = {
     fundamental: {
       en: 'Fundamental Analysis',
       'zh-TW': '基本面分析',
@@ -215,15 +217,25 @@ const categories = computed(() => {
 
 // Search handler
 const performSearch = () => {
-  refresh()
+  const query: Record<string, string> = {}
+  Object.entries(route.query).forEach(([k, v]) => {
+    if (typeof v === 'string') query[k] = v
+  })
+  if (searchQuery.value) query.search = searchQuery.value
+  else delete query.search
+  query.page = '1'
+  router.push({ query })
 }
 
 // Pagination
 const goToPage = (page: number) => {
   if (page < 1 || page > (pagination.value?.totalPages || 1)) return
 
-  // Update URL and refresh
-  const query: Record<string, string> = { ...route.query, page: page.toString() }
+  const query: Record<string, string> = {}
+  Object.entries(route.query).forEach(([k, v]) => {
+    if (typeof v === 'string') query[k] = v
+  })
+  query.page = page.toString()
   if (searchQuery.value) query.search = searchQuery.value
 
   navigateTo({ query })
