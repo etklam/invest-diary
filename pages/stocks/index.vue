@@ -299,10 +299,11 @@
       <div class="mt-6 text-center">
         <button
           @click="fetchStockPrices"
-          class="inline-flex items-center px-4 py-2 mr-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+          :disabled="isFetchingPrices || cooldownRemaining > 0"
+          class="inline-flex items-center px-4 py-2 mr-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Icon name="heroicons:arrow-path" class="mr-2 h-4 w-4" />
-          取得即時股價 (Yahoo)
+          <Icon :name="isFetchingPrices ? 'svg-spinners:180-ring-with-bg' : 'heroicons:arrow-path'" class="mr-2 h-4 w-4" />
+          {{ buttonText }}
         </button>
       </div>
 
@@ -322,6 +323,8 @@
 
 <script setup lang="ts">
 import { formatCurrency } from '~/lib/utils'
+
+const { t } = useI18n()
 
 definePageMeta({
   middleware: 'auth'
@@ -461,10 +464,36 @@ const pieSlices = computed(() => {
 })
 
 // Set page meta
-// Fetch stock prices from server (Yahoo Finance)
+
+// Stock price fetching cooldown state
+const isFetchingPrices = ref(false)
+const cooldownRemaining = ref(0)
+const COOLDOWN_SECONDS = 60
+
+// Computed button text with i18n
+const buttonText = computed(() => {
+  if (isFetchingPrices.value) {
+    return t('stock.fetching')
+  }
+  if (cooldownRemaining.value > 0) {
+    return t('stock.waitForCooldown', { seconds: cooldownRemaining.value })
+  }
+  return t('stock.fetchPrice')
+})
+
+// Fetch stock prices from server with cooldown
 const fetchStockPrices = async () => {
+  if (isFetchingPrices.value || cooldownRemaining.value > 0) return
+
+  const toast = useToast()
+
   try {
-    if (!holdings.value || holdings.value.length === 0) return
+    if (!holdings.value || holdings.value.length === 0) {
+      toast.warning(t('stock.noHoldingsData'))
+      return
+    }
+
+    isFetchingPrices.value = true
 
     const symbols = holdings.value.map(h => h.symbol)
 
@@ -478,8 +507,22 @@ const fetchStockPrices = async () => {
       ...h,
       price: prices[h.symbol]
     }))
+
+    toast.success(t('stock.fetchSuccess'))
+
+    // Start cooldown
+    cooldownRemaining.value = COOLDOWN_SECONDS
+    const cooldownInterval = setInterval(() => {
+      cooldownRemaining.value--
+      if (cooldownRemaining.value <= 0) {
+        clearInterval(cooldownInterval)
+      }
+    }, 1000)
   } catch (err) {
     console.error('Failed to fetch stock prices', err)
+    toast.error(t('stock.fetchFailed'))
+  } finally {
+    isFetchingPrices.value = false
   }
 }
 

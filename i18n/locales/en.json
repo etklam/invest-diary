@@ -114,7 +114,13 @@
     "avgPrice": "Avg. cost",
     "currentPrice": "Current price",
     "profit": "P/L",
-    "loadFailed": "Failed to load"
+    "loadFailed": "Failed to load",
+    "fetchPrice": "Get Real-time Price",
+    "fetching": "Fetching...",
+    "waitForCooldown": "Please wait {seconds} seconds",
+    "noHoldingsData": "No holdings data",
+    "fetchSuccess": "Stock prices updated",
+    "fetchFailed": "Failed to fetch prices, please try again later"
   },
 
   "settings": {

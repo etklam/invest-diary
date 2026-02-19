@@ -114,7 +114,13 @@
     "avgPrice": "平均成本",
     "currentPrice": "现价",
     "profit": "损益",
-    "loadFailed": "加载失败"
+    "loadFailed": "加载失败",
+    "fetchPrice": "获取即时股价",
+    "fetching": "获取中...",
+    "waitForCooldown": "请等待 {seconds} 秒",
+    "noHoldingsData": "没有持股资料",
+    "fetchSuccess": "股价更新成功",
+    "fetchFailed": "获取股价失败，请稍后再试"
   },
 
   "settings": {

@@ -90,7 +90,7 @@ npm run health:quick    # Quick tests + Prisma validate
 - **i18n**: @nuxtjs/i18n (3 locales, no_prefix strategy)
 - **PWA**: @vite-pwa/nuxt with service worker
 - **Content**: @nuxtjs/mdc for markdown
-- **External Data**: yahoo-finance2 for stock data
+- **External Data**: Taiwan Stock Exchange API (TWSE) + Yahoo Finance Chart API for stock prices
 - **Validation**: Zod schemas
 - **Testing**: Vitest (unit/integration), Playwright (E2E)
 
@@ -144,6 +144,63 @@ npm run health:quick    # Quick tests + Prisma validate
 - Lazy-loaded locale files from `i18n/locales/`
 - Fallback to English
 
+### i18n Requirements (MANDATORY)
+
+**When Adding New Features**:
+1. **Always provide i18n translations** for ALL user-facing text
+2. **Never hardcode UI text** in components - use `t()` function
+3. **Update all 3 locale files**: `en.json`, `zh-TW.json`, `zh-CN.json`
+4. **Follow the translation key structure**: `feature.action.message`
+
+**Usage in Vue Components**:
+```ts
+// In <script setup>
+const { t } = useI18n()
+
+// For static text
+const title = t('stock.title')
+
+// For text with parameters
+const message = t('stock.waitForCooldown', { seconds: 30 })
+
+// In template
+<template>
+  <button>{{ t('common.save') }}</button>
+  <p>{{ t('stock.fetchSuccess') }}</p>
+</template>
+```
+
+**Translation Key Structure**:
+- Use nested objects for logical grouping
+- Match the feature/page structure
+- Examples:
+  - `common.*` - Shared UI elements (buttons, labels)
+  - `nav.*` - Navigation items
+  - `stock.*` - Stock management features
+  - `diary.*` - Diary-related features
+  - `error.*` - Error messages
+
+**Parameterized Translations**:
+```json
+// In locale files
+{
+  "stock": {
+    "waitForCooldown": "Please wait {seconds} seconds"
+  }
+}
+
+// In component
+t('stock.waitForCooldown', { seconds: 60 })
+```
+
+**Best Practices**:
+1. Keep translations short and concise
+2. Use consistent terminology across locales
+3. Test all 3 languages when adding new features
+4. Use meaningful key names (not `text1`, `msg2`, etc.)
+5. Group related translations together
+6. Place placeholders at the end of sentences when possible
+
 **PWA Configuration**:
 - Auto-update registration type
 - Standalone display mode
@@ -192,7 +249,12 @@ npm run health:quick    # Quick tests + Prisma validate
 3. **Auth initialization**: Check `useAuth().initialized` before redirecting
 4. **Database**: All user data cascades on delete—be careful with User deletion
 5. **TypeScript**: Strict mode enabled—proper typing required
-6. **i18n**: Locale is cookie-persisted, clear cookies to test language switching
+6. **i18n**:
+   - Locale is cookie-persisted, clear cookies to test language switching
+   - ALWAYS provide translations for ALL user-facing text in components
+   - Never hardcode UI text - use `t()` function from `@nuxtjs/i18n`
+   - Update ALL 3 locale files (en, zh-TW, zh-CN) when adding new translations
+   - Use parameterized translations for dynamic content: `t('key', { param })`
 7. **Decimal precision**: Always use Prisma Decimal for financial calculations
 8. **Nitro route rules**: Applied to both dev and production—test accordingly
 
