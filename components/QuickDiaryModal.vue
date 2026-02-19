@@ -182,11 +182,27 @@
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                     >
                       <option value="">請選擇...</option>
-                      <option value="大漲">大漲</option>
-                      <option value="小漲">小漲</option>
-                      <option value="盤整">盤整</option>
-                      <option value="小跌">小跌</option>
-                      <option value="大跌">大跌</option>
+                      <optgroup label="漲跌">
+                        <option value="大漲">大漲</option>
+                        <option value="小漲">小漲</option>
+                        <option value="盤整">盤整</option>
+                        <option value="小跌">小跌</option>
+                        <option value="大跌">大跌</option>
+                      </optgroup>
+                      <optgroup label="走勢型態">
+                        <option value="高開高走">高開高走</option>
+                        <option value="高開低走">高開低走</option>
+                        <option value="低開高走">低開高走</option>
+                        <option value="低開低走">低開低走</option>
+                        <option value="震盪">震盪</option>
+                      </optgroup>
+                      <optgroup label="市場結構">
+                        <option value="個股分化">個股分化</option>
+                        <option value="齊漲">齊漲</option>
+                        <option value="齊跌">齊跌</option>
+                        <option value="指數穩個股弱">指數穩、個股弱</option>
+                        <option value="指數弱個股強">指數弱、個股強</option>
+                      </optgroup>
                     </select>
                   </div>
 
@@ -490,7 +506,8 @@ const createDiary = async () => {
       body: {
         title: previewTitle.value,
         content: previewContent.value,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        appendToToday: true
       }
     })
 

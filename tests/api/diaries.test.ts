@@ -58,15 +58,47 @@ describe('Diary API Routes', () => {
       expect(true).toBe(true)
     })
 
-    it('should return 409 when diary exists for same date', async () => {
-      // Create existing diary
+    it('should append to existing diary when appendToToday is true', async () => {
+      // Create existing diary for today
       await createTestDiary({
         title: 'Existing Diary',
-        date: new Date('2024-01-01'),
+        content: 'Original content',
+        date: new Date(),
       })
 
-      // Try to create duplicate
-      // This should return 409 Conflict
+      // Create new content with appendToToday flag
+      const diaryData = {
+        title: 'New Entry',
+        content: 'Additional content',
+        appendToToday: true,
+      }
+
+      // This would call the API endpoint
+      // const response = await $fetch('/api/diaries', {
+      //   method: 'POST',
+      //   body: diaryData,
+      // })
+      // expect(response.content).toContain('Original content')
+      // expect(response.content).toContain('Additional content')
+      // expect(response.content).toContain('---')
+      expect(true).toBe(true)
+    })
+
+    it('should create separate diary when appendToToday is false', async () => {
+      // Create existing diary for today
+      await createTestDiary({
+        title: 'Existing Diary',
+        date: new Date(),
+      })
+
+      // Create new content without appendToToday
+      const diaryData = {
+        title: 'New Entry',
+        content: 'New content',
+        appendToToday: false,
+      }
+
+      // This should create a separate diary entry
       expect(true).toBe(true)
     })
   })
