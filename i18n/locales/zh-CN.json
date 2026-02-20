@@ -30,7 +30,18 @@
     "admin": "管理面板",
     "about": "关于我们",
     "blog": "投资教学",
-    "manageBlog": "博客管理"
+    "manageBlog": "博客管理",
+    "dashboard": "仪表板",
+    "discover": "探索",
+    "users": "用户",
+    "documents": "文档",
+    "applications": "应用",
+    "supportCenter": "支持中心",
+    "inbox": "收件箱",
+    "fileManager": "文件管理",
+    "dataList": "数据列表",
+    "settings": "设置",
+    "logout": "登出"
   },
 
   "auth": {

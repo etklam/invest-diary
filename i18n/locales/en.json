@@ -30,7 +30,18 @@
     "admin": "Admin Panel",
     "about": "About Us",
     "blog": "Blog",
-    "manageBlog": "Manage Blog"
+    "manageBlog": "Manage Blog",
+    "dashboard": "Dashboard",
+    "discover": "Discover",
+    "users": "Users",
+    "documents": "Documents",
+    "applications": "Applications",
+    "supportCenter": "Support Center",
+    "inbox": "Inbox",
+    "fileManager": "File Manager",
+    "dataList": "Data List",
+    "settings": "Settings",
+    "logout": "Logout"
   },
 
   "auth": {
