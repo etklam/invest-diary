@@ -3,7 +3,22 @@ export default defineNuxtConfig({
   // ✅ 避免 Service Worker 攔截 API（特別是動態 slug）
   nitro: {
     routeRules: {
-      '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } }
+      '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } },
+      // Blog SWR: 明確告訴 Cloudflare CDN 可以緩存 HTML
+      '/blog': {
+        swr: true,
+        maxAge: 300,
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=300'
+        }
+      },
+      '/blog/**': {
+        swr: true,
+        maxAge: 3600,
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=3600'
+        }
+      }
     }
   },
   compatibilityDate: '2025-07-15',
