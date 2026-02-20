@@ -88,7 +88,7 @@ export const useAuth = () => {
         body: data
       }) as any
 
-      if (response.ok) {
+      if (response.success) {
         toast.success('註冊成功，請登入')
         await navigateTo('/auth/login')
       }

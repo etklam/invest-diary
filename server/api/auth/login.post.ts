@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
     return {
       ok: true,
       data: {
-        id: user.id,
+        id: user.id.toString(),
         email: user.email,
         name: user.name,
         role: (user as any).role,
