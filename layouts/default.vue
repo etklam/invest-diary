@@ -56,6 +56,11 @@ onMounted(async () => {
 
 // Check for due alerts
 const checkForDueAlerts = async () => {
+  // Skip alert check if user is not authenticated
+  if (!isAuthenticated.value) {
+    return
+  }
+
   try {
     const alerts = await $fetch('/api/alerts') as any[]
     if (!alerts || alerts.length === 0) return
