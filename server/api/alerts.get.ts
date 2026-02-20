@@ -9,7 +9,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const userId = BigInt(event.context.user.id)
+  const rawUserId = event.context.user.id
+  const userId = typeof rawUserId === 'string' ? BigInt(rawUserId) : rawUserId
 
   try {
     const alerts = await prisma.alert.findMany({
@@ -28,6 +29,7 @@ export default defineEventHandler(async (event) => {
       include: {
         diary: {
           select: {
+            id: true,
             title: true,
           },
         },

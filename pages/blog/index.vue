@@ -122,6 +122,11 @@
 </template>
 
 <script setup lang="ts">
+// Blog is a public page
+definePageMeta({
+  requiresAuth: false
+})
+
 // SEO
 useHead({
   title: '投資教學 - 投資日記',

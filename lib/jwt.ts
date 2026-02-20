@@ -1,12 +1,14 @@
 import { SignJWT, jwtVerify } from 'jose'
 
-const TOKEN_EXPIRY = '7d'
+const ACCESS_TOKEN_EXPIRY = '15m' // 15 minutes
+const REFRESH_TOKEN_EXPIRY = '7d' // 7 days
 
 export interface TokenPayload {
   userId: string
   email: string
   role: string
   tokenVersion: number
+  type: 'access' | 'refresh'
 }
 
 function getSecret() {
@@ -17,8 +19,40 @@ function getSecret() {
 }
 
 /**
- * Generate a JWT token for a user
- * tokenVersion allows global invalidation (logout / password change)
+ * Generate an access token (short-lived)
+ */
+export async function signAccessToken(
+  userId: string,
+  email: string,
+  role: string,
+  tokenVersion: number
+): Promise<string> {
+  return await new SignJWT({ userId, email, role, tokenVersion, type: 'access' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(ACCESS_TOKEN_EXPIRY)
+    .sign(getSecret())
+}
+
+/**
+ * Generate a refresh token (long-lived)
+ */
+export async function signRefreshToken(
+  userId: string,
+  email: string,
+  role: string,
+  tokenVersion: number
+): Promise<string> {
+  return await new SignJWT({ userId, email, role, tokenVersion, type: 'refresh' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(REFRESH_TOKEN_EXPIRY)
+    .sign(getSecret())
+}
+
+/**
+ * Legacy: Generate a JWT token for a user (defaults to access token)
+ * @deprecated Use signAccessToken or signRefreshToken instead
  */
 export async function signToken(
   userId: string,
@@ -26,11 +60,7 @@ export async function signToken(
   role: string,
   tokenVersion: number
 ): Promise<string> {
-  return await new SignJWT({ userId, email, role, tokenVersion })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime(TOKEN_EXPIRY)
-    .sign(getSecret())
+  return await signAccessToken(userId, email, role, tokenVersion)
 }
 
 /**
@@ -43,6 +73,7 @@ export async function verifyToken(token: string): Promise<TokenPayload> {
     userId: payload.userId as string,
     email: payload.email as string,
     role: payload.role as string,
-    tokenVersion: payload.tokenVersion as number
+    tokenVersion: payload.tokenVersion as number,
+    type: payload.type as 'access' | 'refresh'
   }
 }

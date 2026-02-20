@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Show loader while auth is initializing -->
     <AuthLoader v-if="!isInitialized" />
-    
+
     <!-- Show main content once auth is ready -->
     <template v-else>
       <PWAInstallPrompt />
@@ -23,7 +23,7 @@
         v-if="isAuthenticated"
         @click="showQuickDiaryModal = true"
         class="fixed bottom-6 right-6 z-40 w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
-        title="快速日記"
+        :title="$t('diary.quickDiary')"
       >
         <Icon name="heroicons:bolt" class="h-6 w-6 group-hover:scale-110 transition-transform" />
       </button>
@@ -44,20 +44,33 @@ const showQuickDiaryModal = ref(false)
 const dueAlert = ref<any>(null)
 const showAlert = ref(false)
 const processedAlerts = ref<Set<string>>(new Set())
+const route = useRoute()
+
+// Polling management
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
-// Fetch current user on mount only if not already initialized
-onMounted(async () => {
-  const { isInitialized } = useAuth()
-  if (!isInitialized.value) {
-    await fetchMe()
+// Check if route requires authentication using route meta
+// Falls back to path-based detection for pages without meta
+const isPublicRoute = computed(() => {
+  // First check route meta
+  const meta = route.meta
+  if (meta?.requiresAuth === false) {
+    return true
   }
+  if (meta?.requiresAuth === true) {
+    return false
+  }
+
+  // Fallback: path-based detection for backward compatibility
+  const publicPaths = ['/', '/blog', '/about', '/auth/login', '/auth/register']
+  const path = route.path
+  return publicPaths.some(r => path === r || path.startsWith(r + '/'))
 })
 
 // Check for due alerts
 const checkForDueAlerts = async () => {
-  // Skip alert check if user is not authenticated
-  if (!isAuthenticated.value) {
+  // Skip alert check if user is not authenticated OR on public routes
+  if (!isAuthenticated.value || isPublicRoute.value) {
     return
   }
 
@@ -81,10 +94,10 @@ const checkForDueAlerts = async () => {
       processedAlerts.value.add(due.id.toString())
     }
   } catch (error: any) {
-    // If 401 Unauthorized, redirect to home page
+    // If 401 Unauthorized, clear user state (global handler will handle redirect)
     if (error?.statusCode === 401) {
       user.value = null
-      await navigateTo('/')
+      // Don't redirect here - let the global error handler handle it
     }
     console.error('Error checking for alerts:', error)
   }
@@ -98,10 +111,10 @@ const dismissCurrentAlert = async () => {
         method: 'PUT'
       })
     } catch (error: any) {
-      // If 401 Unauthorized, redirect to home page
+      // If 401 Unauthorized, clear user state (global handler will handle redirect)
       if (error?.statusCode === 401) {
         user.value = null
-        await navigateTo('/')
+        // Don't redirect here - let the global error handler handle it
       }
       console.error('Error dismissing alert:', error)
     }
@@ -109,18 +122,49 @@ const dismissCurrentAlert = async () => {
   }
 }
 
-// Start polling when component mounts
-onMounted(() => {
+// Start polling
+const startPolling = () => {
+  if (pollInterval) return // Already polling
+
   // Check immediately
   checkForDueAlerts()
   // Then poll every 30 seconds
   pollInterval = setInterval(checkForDueAlerts, 30000)
+}
+
+// Stop polling
+const stopPolling = () => {
+  if (pollInterval) {
+    clearInterval(pollInterval)
+    pollInterval = null
+  }
+}
+
+// Smart polling: start/stop based on auth state and route changes
+watch(
+  [isAuthenticated, isPublicRoute],
+  ([authenticated, publicRoute]) => {
+    if (authenticated && !publicRoute) {
+      // Authenticated user on protected route - start polling
+      startPolling()
+    } else {
+      // Public route or not authenticated - stop polling
+      stopPolling()
+    }
+  },
+  { immediate: true }
+)
+
+// Fetch current user on mount only if not already initialized
+onMounted(async () => {
+  const { isInitialized } = useAuth()
+  if (!isInitialized.value) {
+    await fetchMe()
+  }
 })
 
 // Stop polling when component unmounts
 onUnmounted(() => {
-  if (pollInterval) {
-    clearInterval(pollInterval)
-  }
+  stopPolling()
 })
 </script>

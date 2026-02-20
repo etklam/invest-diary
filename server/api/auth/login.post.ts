@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
-import { signToken } from '~/lib/jwt'
+import { signAccessToken, signRefreshToken } from '~/lib/jwt'
 import prisma from '~/lib/prisma'
-import { setAuthCookie } from '~/server/utils/auth'
+import { setAuthCookies } from '~/server/utils/auth'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -39,11 +39,25 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Generate JWT token
+    // Generate access and refresh tokens
     const role = (user as any).role
-    const token = await signToken(user.id.toString(), user.email, role, 0)
+    const tokenVersion = (user as any).tokenVersion || 0
 
-    setAuthCookie(event, token)
+    const accessToken = await signAccessToken(user.id.toString(), user.email, role, tokenVersion)
+    const refreshToken = await signRefreshToken(user.id.toString(), user.email, role, tokenVersion)
+
+    // Store refresh token in database
+    // @ts-ignore Prisma model access
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+      }
+    })
+
+    // Set both cookies
+    setAuthCookies(event, accessToken, refreshToken)
 
     return {
       ok: true,

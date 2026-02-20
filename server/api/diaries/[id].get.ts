@@ -1,21 +1,35 @@
 import prisma from '../../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
-  const userId = event.context.user?.id
+  const rawUserId = event.context.user?.id
 
-  if (!userId) {
+  if (!rawUserId) {
     throw createError({
       statusCode: 401,
       statusMessage: 'Unauthorized'
     })
   }
 
-  const id = getRouterParam(event, 'id')
+  // Defensive ID resolution (params may be undefined in some dev/PWA cases)
+  const rawFromParams = event.context?.params?.id
+  const rawFromRouter = getRouterParam(event, 'id')
+  const rawFromPath = event.path?.split('/').filter(Boolean).pop()
 
-  if (!id) {
+  const rawId = rawFromParams ?? rawFromRouter ?? rawFromPath
+
+  if (!rawId) {
     throw createError({
       statusCode: 400,
       statusMessage: 'ID is required',
+    })
+  }
+
+  const id = String(rawId)
+
+  if (!/^[0-9]+$/.test(id)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid ID format',
     })
   }
 
@@ -23,7 +37,7 @@ export default defineEventHandler(async (event) => {
     const diary = await prisma.diary.findFirst({
       where: {
         id: BigInt(id),
-        userId: userId
+        userId: typeof rawUserId === 'string' ? BigInt(rawUserId) : rawUserId
       },
       include: {
         transactions: true,

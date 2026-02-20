@@ -155,6 +155,11 @@
 </template>
 
 <script setup lang="ts">
+// Blog posts are public
+definePageMeta({
+  requiresAuth: false
+})
+
 import { calculateReadingTime, parseTags } from '~/lib/blog'
 import { usePerformance } from '~/composables/usePerformance'
 

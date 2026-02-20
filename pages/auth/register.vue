@@ -114,6 +114,12 @@
 </template>
 
 <script setup lang="ts">
+// Auth pages are public
+definePageMeta({
+  requiresAuth: false,
+  layout: 'default'
+})
+
 const { register, isLoading } = useAuth()
 
 const form = ref({
@@ -161,8 +167,5 @@ const handleRegister = async () => {
   })
 }
 
-// Set page meta
-definePageMeta({
-  layout: 'default'
-})
+// (merged into single definePageMeta above)
 </script>

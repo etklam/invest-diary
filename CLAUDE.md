@@ -325,6 +325,33 @@ Sitemap: https://your-domain.com/sitemap.xml
 
 ## Common Gotchas
 
+### Nuxt Page Meta (CRITICAL)
+
+- Each page file may call `definePageMeta()` **exactly once**.
+- Multiple calls in the same file will cause a hard build/runtime error:
+  - `Multiple definePageMeta calls are not supported`
+- Always merge all page-level meta into a single call.
+
+Correct example:
+
+```ts
+// ✅ Correct
+ definePageMeta({
+  requiresAuth: false,
+  layout: 'default'
+ })
+```
+
+Incorrect example:
+
+```ts
+// ❌ Incorrect
+ definePageMeta({ requiresAuth: false })
+ definePageMeta({ layout: 'default' })
+```
+
+This commonly occurs on auth/public pages when adding `requiresAuth` later—always refactor to a single call.
+
 1. **Dynamic routes**: Always use 3-tier fallback for params (see above)
 2. **PWA caching**: Never cache `/api/**` routes
 3. **Auth initialization**: Check `useAuth().initialized` before redirecting
@@ -340,6 +367,11 @@ Sitemap: https://your-domain.com/sitemap.xml
 8. **Nitro route rules**: Applied to both dev and production—test accordingly
 9. **Mobile navigation**: When using `:class` for conditional display, never include static `hidden` class in the same element (it will override dynamic bindings)
 10. **Layout API calls**: Always check `isAuthenticated` before calling authenticated APIs in layouts (e.g., `/api/alerts` in `layouts/default.vue`), otherwise unauthenticated users will trigger 401 redirects
+
+11. **Seed Data Consistency**:
+    - `npm run seed` 會建立 `Diary` 與 `Alert` 的關聯資料（`alert.diaryId` → `diary.id`）。
+    - 前端在產生導向日記的連結時，必須使用 `alert.diary.id`（巢狀關聯），而不是假設存在 `alert.diary_id`。
+    - 若調整 `/api/alerts` 的 `include` 欄位（例如新增/移除 `diary.id`），需同步檢查 seed data 與前端使用的欄位是否一致，避免產生 `/diaries/undefined` 的請求。
 
 ## Environment Variables
 

@@ -19,25 +19,41 @@ enum PostStatus {
 }
 
 model User {
-  id                    BigInt    @id @default(autoincrement())
-  email                 String    @unique @db.VarChar(255)
-  password              String    @db.VarChar(255)
-  name                  String?   @db.VarChar(100)
-  role                  UserRole  @default(USER)
+  id                    BigInt        @id @default(autoincrement())
+  email                 String        @unique @db.VarChar(255)
+  password              String        @db.VarChar(255)
+  name                  String?       @db.VarChar(100)
+  role                  UserRole      @default(USER)
+  tokenVersion          Int           @default(0) @map("token_version")
 
   // User settings
-  expectedMonthlyTrades Int       @default(20) @map("expected_monthly_trades")
-  expectedProfit        Decimal   @default(0) @db.Decimal(15, 2) @map("expected_profit")
-  expectedAvgHolding    Decimal   @default(0) @db.Decimal(15, 2) @map("expected_avg_holding")
+  expectedMonthlyTrades Int           @default(20) @map("expected_monthly_trades")
+  expectedProfit        Decimal       @default(0) @db.Decimal(15, 2) @map("expected_profit")
+  expectedAvgHolding    Decimal       @default(0) @db.Decimal(15, 2) @map("expected_avg_holding")
 
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
 
   diaries               Diary[]
   disciplines           Discipline[]
   posts                 Post[]
+  refreshTokens         RefreshToken[]
 
   @@map("users")
+}
+
+model RefreshToken {
+  id        BigInt   @id @default(autoincrement())
+  token     String   @unique @db.VarChar(500)
+  userId    BigInt   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "refresh_tokens_user_id_idx")
+  @@index([token], map: "refresh_tokens_token_idx")
+  @@map("refresh_tokens")
 }
 
 model Diary {

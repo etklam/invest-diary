@@ -270,6 +270,11 @@
 </template>
 
 <script setup lang="ts">
+// About page is public
+definePageMeta({
+  requiresAuth: false
+})
+
 useHead({
   title: 'About - 投資日記'
 })

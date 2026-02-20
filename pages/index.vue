@@ -174,6 +174,8 @@
 </template>
 
 <script setup lang="ts">
-// Home page is a pure landing page.
-// Auth-based redirects are handled after login, not here.
+// Home page is a public landing page
+definePageMeta({
+  requiresAuth: false
+})
 </script>

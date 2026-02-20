@@ -6,6 +6,52 @@ export const useAuth = () => {
   const isInitialized = useState<boolean>('auth:initialized', () => false)
   const toast = useToast()
 
+  // Track if a refresh is in progress to prevent multiple simultaneous refresh attempts
+  const isRefreshing = ref(false)
+  // Queue of pending refresh waiters; boolean indicates refresh success
+  const refreshQueue: Array<(ok: boolean) => void> = []
+
+  /**
+   * Refresh access token using refresh token cookie
+   */
+  const refreshAccessToken = async (): Promise<boolean> => {
+    // Prevent multiple simultaneous refresh attempts
+    if (isRefreshing.value) {
+      // If already refreshing, wait for it to complete
+      return new Promise((resolve) => {
+        refreshQueue.push(resolve)
+      })
+    }
+
+    isRefreshing.value = true
+
+    try {
+      const response = await $fetch('/api/auth/refresh', {
+        method: 'POST'
+      }) as any
+
+      if (response.ok) {
+        // Refresh successful - resolve queued requests
+        isRefreshing.value = false
+        refreshQueue.forEach(fn => fn(true))
+        refreshQueue.length = 0
+        return true
+      }
+
+      // Refresh endpoint responded but not OK
+      isRefreshing.value = false
+      refreshQueue.forEach(fn => fn(false))
+      refreshQueue.length = 0
+      return false
+    } catch (error) {
+      // Refresh failed - user needs to re-login
+      isRefreshing.value = false
+      refreshQueue.forEach(fn => fn(false))
+      refreshQueue.length = 0
+      return false
+    }
+  }
+
   /**
    * Login with email and password
    * Server sets httpOnly cookie, client only syncs user state
@@ -156,6 +202,7 @@ export const useAuth = () => {
     logout,
     fetchMe,
     updateSettings,
-    changePassword
+    changePassword,
+    refreshAccessToken
   }
 }

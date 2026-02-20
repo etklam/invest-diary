@@ -1,5 +1,60 @@
 import { H3Event } from 'h3'
 
+const ACCESS_TOKEN_COOKIE = 'access-token'
+const REFRESH_TOKEN_COOKIE = 'refresh-token'
+
+/**
+ * Set both access and refresh token cookies
+ */
+export function setAuthCookies(
+  event: H3Event,
+  accessToken: string,
+  refreshToken: string
+) {
+  // Access token - short-lived (15 minutes)
+  setCookie(event, ACCESS_TOKEN_COOKIE, accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 60 * 15, // 15 minutes
+    path: '/'
+  })
+
+  // Refresh token - long-lived (7 days)
+  setCookie(event, REFRESH_TOKEN_COOKIE, refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    path: '/'
+  })
+}
+
+/**
+ * Set access token cookie only (for token refresh)
+ */
+export function setAccessTokenCookie(event: H3Event, accessToken: string) {
+  setCookie(event, ACCESS_TOKEN_COOKIE, accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 60 * 15, // 15 minutes
+    path: '/'
+  })
+}
+
+/**
+ * Clear both auth cookies
+ */
+export function clearAuthCookies(event: H3Event) {
+  deleteCookie(event, ACCESS_TOKEN_COOKIE, { path: '/' })
+  deleteCookie(event, REFRESH_TOKEN_COOKIE, { path: '/' })
+}
+
+/**
+ * Legacy: Set auth token cookie (for backward compatibility)
+ * @deprecated Use setAuthCookies instead
+ */
 export function setAuthCookie(event: H3Event, token: string) {
   setCookie(event, 'auth-token', token, {
     httpOnly: true,
@@ -9,6 +64,10 @@ export function setAuthCookie(event: H3Event, token: string) {
   })
 }
 
+/**
+ * Legacy: Clear auth token cookie (for backward compatibility)
+ * @deprecated Use clearAuthCookies instead
+ */
 export function clearAuthCookie(event: H3Event) {
   deleteCookie(event, 'auth-token')
 }
