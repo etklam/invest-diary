@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { signAccessToken, signRefreshToken } from '~/lib/jwt'
 import prisma from '~/lib/prisma'
 import { setAuthCookies } from '~/server/utils/auth'
+import { createError } from 'h3'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
