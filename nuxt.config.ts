@@ -31,7 +31,8 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxtjs/color-mode',
     '@nuxtjs/i18n',
-    '@vite-pwa/nuxt'
+    '@vite-pwa/nuxt',
+    '@nuxtjs/sitemap'
   ],
 
   colorMode: {
@@ -73,7 +74,56 @@ export default defineNuxtConfig({
 
     // Public to both client and server
     public: {
-      appName: process.env.NUXT_PUBLIC_APP_NAME || '投資日記'
+      appName: process.env.NUXT_PUBLIC_APP_NAME || '投資日記',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }
+  },
+
+  // Sitemap configuration
+  sitemap: {
+    // 你的網站 URL（生產環境需要設置 NUXT_PUBLIC_SITE_URL）
+    siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    // 動態獲取所有 blog 文章
+    async urls() {
+      const prisma = (await import('~/lib/prisma')).default
+      const posts = await prisma.post.findMany({
+        where: {
+          status: 'PUBLISHED',
+          publishedAt: { not: null }
+        },
+        select: {
+          slug: true,
+          updatedAt: true
+        }
+      })
+
+      const baseUrl = process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+      return [
+        {
+          loc: '/',
+          changefreq: 'daily',
+          priority: 1.0
+        },
+        {
+          loc: '/blog',
+          changefreq: 'daily',
+          priority: 0.9,
+          lastmod: new Date().toISOString()
+        },
+        {
+          loc: '/about',
+          changefreq: 'monthly',
+          priority: 0.5
+        },
+        // 動態添加所有已發布的 blog 文章
+        ...posts.map(post => ({
+          loc: `/blog/${post.slug}`,
+          changefreq: 'weekly',
+          priority: 0.8,
+          lastmod: post.updatedAt.toISOString()
+        }))
+      ]
     }
   },
 

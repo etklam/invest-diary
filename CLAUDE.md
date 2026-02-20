@@ -80,6 +80,17 @@ npm run health:quick    # Quick tests + Prisma validate
 - Ensure API routes remain excluded from PWA caching
 - Check Network tab to verify responses are NOT from service worker
 
+### Mobile Navigation & Auth Redirect Issues
+
+**Fixed Issues**:
+1. **Mobile nav bar hidden**: Removed static `hidden` class that was overriding dynamic `:class` binding in `components/Navigation.vue:216`
+2. **Unauthorized blog redirect**: Added `isAuthenticated` check in `layouts/default.vue:60` before calling `/api/alerts` API to prevent 401 redirects for public blog visitors
+
+**Lessons Learned**:
+- Never mix static `class="hidden"` with dynamic `:class` on the same element
+- Always check authentication status before making authenticated API calls in shared layouts
+- Public routes (like `/blog`) should not trigger auth-dependent logic
+
 ## Architecture Overview
 
 ### Tech Stack
@@ -90,6 +101,8 @@ npm run health:quick    # Quick tests + Prisma validate
 - **i18n**: @nuxtjs/i18n (3 locales, no_prefix strategy)
 - **PWA**: @vite-pwa/nuxt with service worker
 - **Content**: @nuxtjs/mdc for markdown
+- **SEO**: @nuxtjs/sitemap for dynamic sitemap generation
+- **Caching**: Nitro SWR (Stale-While-Revalidate) + Cloudflare CDN
 - **External Data**: Taiwan Stock Exchange API (TWSE) + Yahoo Finance Chart API for stock prices
 - **Validation**: Zod schemas
 - **Testing**: Vitest (unit/integration), Playwright (E2E)
@@ -207,6 +220,74 @@ t('stock.waitForCooldown', { seconds: 60 })
 - Runtime caching for external resources (Google Fonts)
 - CRITICAL: API routes must always be `NetworkFirst` with no-store header
 
+## Performance & Caching Strategy
+
+### SWR Configuration (nuxt.config.ts)
+
+The application uses **Stale-While-Revalidate (SWR)** caching for optimal performance:
+
+```ts
+nitro: {
+  routeRules: {
+    '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } },
+    '/blog': {
+      swr: true,
+      maxAge: 300,  // 5 minutes
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=300'
+      }
+    },
+    '/blog/**': {
+      swr: true,
+      maxAge: 3600,  // 1 hour
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=3600'
+      }
+    }
+  }
+}
+```
+
+**Cache Layers**:
+1. **Cloudflare CDN** - Honors `s-maxage` and `stale-while-revalidate` headers
+2. **Nitro SWR** - Server-side caching with automatic revalidation
+3. **Browser** - Respects `max-age` directive
+
+**When modifying cache settings**:
+- API routes MUST always be `no-store` (never cache)
+- Blog list pages update frequently (5 min cache)
+- Individual blog posts change rarely (1 hour cache)
+- Use `public` directive to allow Cloudflare CDN caching
+
+## SEO & Sitemap
+
+### Dynamic Sitemap Generation
+
+The application automatically generates `sitemap.xml` using `@nuxtjs/sitemap`:
+
+**Configuration** (nuxt.config.ts):
+- Automatically includes all published blog posts
+- Includes static pages (/, /blog, /about)
+- Sets appropriate `changefreq` and `priority` values
+- Includes `lastmod` timestamps for each post
+
+**Environment Variable Required**:
+```bash
+NUXT_PUBLIC_SITE_URL="https://your-domain.com"
+```
+
+**Sitemap URL**: `https://your-domain.com/sitemap.xml`
+
+**robots.txt** references the sitemap:
+```
+Sitemap: https://your-domain.com/sitemap.xml
+```
+
+**When adding new public routes**:
+- Update the `sitemap.urls()` function in `nuxt.config.ts`
+- Add appropriate `changefreq` (always, hourly, daily, weekly, monthly, yearly)
+- Set `priority` (0.0 to 1.0, where 1.0 is highest)
+
 ## Database Schema
 
 **Core Models**:
@@ -257,6 +338,8 @@ t('stock.waitForCooldown', { seconds: 60 })
    - Use parameterized translations for dynamic content: `t('key', { param })`
 7. **Decimal precision**: Always use Prisma Decimal for financial calculations
 8. **Nitro route rules**: Applied to both dev and production—test accordingly
+9. **Mobile navigation**: When using `:class` for conditional display, never include static `hidden` class in the same element (it will override dynamic bindings)
+10. **Layout API calls**: Always check `isAuthenticated` before calling authenticated APIs in layouts (e.g., `/api/alerts` in `layouts/default.vue`), otherwise unauthenticated users will trigger 401 redirects
 
 ## Environment Variables
 
@@ -265,4 +348,5 @@ Required in `.env`:
 DATABASE_URL=mysql://user:password@host:port/database
 JWT_SECRET=your-secret-key
 NUXT_PUBLIC_APP_NAME=投資日記
+NUXT_PUBLIC_SITE_URL=http://localhost:3000  # Production: https://your-domain.com
 ```

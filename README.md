@@ -18,6 +18,8 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 - **Dark/Light Mode**: System preference detection with manual toggle
 - **PWA Support**: Offline-capable progressive web application
 - **Authentication**: JWT-based with secure httpOnly cookies
+- **Performance**: SWR caching with Cloudflare CDN support
+- **SEO**: Dynamic sitemap generation for search engine optimization
 
 ## Screenshots
 
@@ -36,6 +38,8 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 | **Markdown** | @nuxtjs/mdc |
 | **PWA** | @vite-pwa/nuxt |
 | **Icons** | @nuxt/icon (Heroicons) |
+| **SEO** | @nuxtjs/sitemap (Dynamic XML sitemap) |
+| **Caching** | Nitro SWR (Stale-While-Revalidate) |
 | **Testing** | Vitest (unit/integration), Playwright (E2E) |
 | **Validation** | Zod |
 
@@ -164,6 +168,9 @@ JWT_SECRET="your-secret-key-for-jwt"
 
 # App Configuration
 NUXT_PUBLIC_APP_NAME="投資日記"
+
+# Site URL (Required for production - used for SEO/Sitemap)
+NUXT_PUBLIC_SITE_URL="https://your-domain.com"
 ```
 
 ### Generating a Secure JWT Secret
