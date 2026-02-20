@@ -183,7 +183,9 @@
     "waitForCooldown": "請等待 {seconds} 秒",
     "noHoldingsData": "沒有持股資料",
     "fetchSuccess": "股價更新成功",
-    "fetchFailed": "取得股價失敗，請稍後再試"
+    "fetchFailed": "取得股價失敗，請稍後再試",
+    "analytics": "分析",
+    "costDistribution": "成本占比"
   },
 
   "settings": {

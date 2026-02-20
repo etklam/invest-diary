@@ -85,7 +85,7 @@ export default defineNuxtConfig({
     siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     // 動態獲取所有 blog 文章
     async urls() {
-      const prisma = (await import('~/lib/prisma')).default
+      const prisma = (await import('./lib/prisma.ts')).default
       const posts = await prisma.post.findMany({
         where: {
           status: 'PUBLISHED',

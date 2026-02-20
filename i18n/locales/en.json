@@ -183,7 +183,9 @@
     "waitForCooldown": "Please wait {seconds} seconds",
     "noHoldingsData": "No holdings data",
     "fetchSuccess": "Stock prices updated",
-    "fetchFailed": "Failed to fetch prices, please try again later"
+    "fetchFailed": "Failed to fetch prices, please try again later",
+    "analytics": "Analytics",
+    "costDistribution": "Cost Distribution"
   },
 
   "settings": {

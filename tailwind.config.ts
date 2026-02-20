@@ -11,7 +11,11 @@ export default <Config>{
   ],
   darkMode: 'class',
   theme: {
-    extend: {}
+    extend: {
+      backgroundImage: {
+        'gradient-purple-top': 'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)'
+      }
+    }
   },
   plugins: []
 }

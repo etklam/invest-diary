@@ -60,35 +60,60 @@
         </div>
       </div>
 
-      <!-- Holdings Pie Chart -->
-      <div v-if="holdings.length > 0" class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8 p-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">成本占比圓形圖</h3>
-        <!-- force perfect circle -->
-        <svg
-          viewBox="0 0 32 32"
-          preserveAspectRatio="xMidYMid meet"
-          class="w-64 h-64 mx-auto rounded-full overflow-hidden"
-        >
-          <circle
-            v-for="(slice, index) in pieSlices"
-            :key="index"
-            r="16"
-            cx="16"
-            cy="16"
-            fill="transparent"
-            stroke-width="32"
-            :stroke="slice.color"
-            :stroke-dasharray="slice.dashArray"
-            :stroke-dashoffset="slice.dashOffset"
-          />
-        </svg>
-        <ul class="mt-4 grid grid-cols-2 gap-2 text-sm">
-          <li v-for="(slice, index) in pieSlices" :key="index" class="flex items-center">
-            <span class="w-3 h-3 rounded-full mr-2" :style="{ backgroundColor: slice.color }"></span>
-            {{ slice.label }} ({{ slice.percentage }})
-          </li>
-        </ul>
-      </div>
+      <!-- Holdings Donut Chart -->
+      <section v-if="holdings.length > 0" class="py-4 overflow-hidden mb-8">
+        <div class="container px-4 mx-auto">
+          <div class="pt-4 px-6 pb-6 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl">
+            <div class="flex flex-wrap items-center justify-between mb-11 -m-2">
+              <div class="w-auto p-2">
+                <h3 class="font-heading text-lg font-semibold text-gray-900 dark:text-white">
+                  {{ t('stock.analytics') }}
+                </h3>
+              </div>
+              <div class="w-auto p-2">
+                <svg class="text-neutral-300 dark:text-gray-500" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3.75 8C3.19772 8 2.75 8.44772 2.75 9C2.75 9.55228 3.19772 10 3.75 10V8ZM3.7575 10C4.30978 10 4.7575 9.55228 4.7575 9C4.7575 8.44772 4.30978 8 3.7575 8V10ZM9 8C8.44772 8 8 8.44772 8 9C8 9.55228 8.44772 10 9 10V8ZM9.0075 10C9.55978 10 10.0075 9.55228 10.0075 9C10.0075 8.44772 9.55978 8 9.0075 8V10ZM14.25 8C13.6977 8 13.25 8.44772 13.25 9C13.25 9.55228 13.6977 10 14.25 10V8ZM14.2575 10C14.8098 10 15.2575 9.55228 15.2575 9C15.2575 8.44772 14.8098 8 14.2575 8V10ZM3.5 9C3.5 8.86193 3.61193 8.75 3.75 8.75V10.75C4.7165 10.75 5.5 9.9665 5.5 9H3.5ZM3.75 8.75C3.88807 8.75 4 8.86193 4 9H2C2 9.9665 2.7835 10.75 3.75 10.75V8.75ZM4 9C4 9.13807 3.88807 9.25 3.75 9.25V7.25C2.7835 7.25 2 8.0335 2 9H4ZM3.75 9.25C3.61193 9.25 3.5 9.13807 3.5 9H5.5C5.5 8.0335 4.7165 7.25 3.75 7.25V9.25ZM8.75 9C8.75 8.86193 8.86193 8.75 9 8.75V10.75C9.9665 10.75 10.75 9.9665 10.75 9H8.75ZM9 8.75C9.13807 8.75 9.25 8.86193 9.25 9H7.25C7.25 9.9665 8.0335 10.75 9 10.75V8.75ZM9.25 9C9.25 9.13807 9.13807 9.25 9 9.25V7.25C8.0335 7.25 7.25 8.0335 7.25 9H9.25ZM9 9.25C8.86193 9.25 8.75 9.13807 8.75 9H10.75C10.75 8.0335 9.9665 7.25 9 7.25V9.25ZM14 9C14 8.86193 14.1119 8.75 14.25 8.75V10.75C15.2165 10.75 16 9.9665 16 9H14ZM14.25 8.75C14.3881 8.75 14.5 8.86193 14.5 9H12.5C12.5 9.9665 13.2835 10.75 14.25 10.75V8.75ZM14.5 9C14.5 9.13807 14.3881 9.25 14.25 9.25V7.25C13.2835 7.25 12.5 8.0335 12.5 9H14.5ZM14.25 9.25C14.1119 9.25 14 9.13807 14 9H16C16 8.0335 15.2165 7.25 14.25 7.25V9.25ZM3.75 10H3.7575V8H3.75V10ZM9 10H9.0075V8H9V10ZM14.25 10H14.2575V8H14.25V10Z" fill="currentColor"></path>
+                </svg>
+              </div>
+            </div>
+            <!-- Donut Chart -->
+            <div class="chart mb-10 flex justify-center">
+              <svg
+                viewBox="0 0 100 100"
+                class="w-64 h-64"
+              >
+                <g transform="rotate(-90 50 50)">
+                  <circle
+                    v-for="(slice, index) in donutSlices"
+                    :key="index"
+                    cx="50"
+                    cy="50"
+                    :r="slice.radius"
+                    fill="transparent"
+                    :stroke="slice.color"
+                    :stroke-width="slice.strokeWidth"
+                    :stroke-dasharray="slice.dashArray"
+                    :stroke-dashoffset="slice.dashOffset"
+                  />
+                </g>
+                <!-- Center text showing total -->
+                <text x="50" y="50" text-anchor="middle" dominant-baseline="middle" class="text-sm fill-gray-600 dark:fill-gray-300">
+                  {{ t('stock.costDistribution') }}
+                </text>
+              </svg>
+            </div>
+            <!-- Legend -->
+            <div class="flex flex-wrap justify-center -m-5">
+              <div v-for="(slice, index) in pieSlices" :key="index" class="w-auto p-5">
+                <div class="inline-flex items-center">
+                  <span class="mr-3 w-3 h-3 rounded-full" :style="{ backgroundColor: slice.color }"></span>
+                  <span class="font-medium text-gray-900 dark:text-white">{{ slice.label }} ({{ slice.percentage }})</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- Holdings Table -->
       <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
@@ -456,6 +481,34 @@ const pieSlices = computed(() => {
     return {
       label: h.symbol,
       percentage: `${(percentage * 100).toFixed(1)}%`,
+      dashArray,
+      dashOffset,
+      color: colors[index % colors.length]
+    }
+  })
+})
+
+// Donut chart slices for proper donut visualization
+const donutSlices = computed(() => {
+  if (!holdings.value || totalCost.value === 0) return []
+
+  const colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7']
+  // For donut: radius 32.5, stroke-width 15 creates outer edge at 40, inner at 25
+  const radius = 32.5
+  const strokeWidth = 15
+  const circumference = 2 * Math.PI * radius
+  let cumulative = 0
+
+  return holdings.value.map((h, index) => {
+    const percentage = h.totalCost / totalCost.value
+    const strokeLength = percentage * circumference
+    const dashArray = `${strokeLength} ${circumference - strokeLength}`
+    const dashOffset = -cumulative * circumference
+    cumulative += percentage
+
+    return {
+      radius,
+      strokeWidth,
       dashArray,
       dashOffset,
       color: colors[index % colors.length]
