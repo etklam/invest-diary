@@ -11,18 +11,30 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Content is required' })
     }
 
+    // Get the current max order value for the user
+    const maxOrderDiscipline = await prisma.discipline.findFirst({
+      where: { userId: user.id },
+      orderBy: { order: 'desc' },
+      select: { order: true }
+    })
+
+    const nextOrder = (maxOrderDiscipline?.order ?? -1) + 1
+
     const discipline = await prisma.discipline.create({
       data: {
         content: body.content.trim(),
         userId: user.id,
+        order: nextOrder,
       },
       select: {
         id: true,
         content: true,
+        order: true,
         createdAt: true,
       },
     })
 
+    console.log('[discipline.post] created:', discipline.id, 'order:', discipline.order, 'for user:', user.id)
     return discipline
   } catch (err: any) {
     console.error('[discipline.post] error', {

@@ -360,7 +360,21 @@
     "toast": {
       "enterDiscipline": "请输入交易纪律",
       "createSuccess": "已新增交易纪律",
-      "createFailed": "新增失败"
+      "createFailed": "新增失败",
+      "confirmDelete": "确定要删除这条纪律吗？此操作无法复原。",
+      "deleteSuccess": "纪律已删除",
+      "deleteFailed": "删除失败",
+      "editSuccess": "纪律已更新",
+      "editFailed": "更新失败",
+      "contentRequired": "请输入内容"
+    },
+    "actions": {
+      "edit": "编辑",
+      "delete": "删除",
+      "save": "保存",
+      "cancel": "取消",
+      "moveUp": "上移",
+      "moveDown": "下移"
     }
   },
 

@@ -8,10 +8,11 @@ export default defineEventHandler(async (event) => {
   // @ts-ignore prisma client type may be stale
   const disciplines = await prisma.discipline.findMany({
     where: { userId: user.id },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { order: 'asc' },
     select: {
       id: true,
       content: true,
+      order: true,
       createdAt: true,
     },
   })

@@ -44,7 +44,12 @@ const secondaryNavItems = computed(() => {
   return [
     { label: t('nav.discipline'), to: '/discipline', icon: 'light-bulb' },
     { label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
-    ...(user.value?.role === 'ADMIN' ? [{ label: t('nav.admin'), to: '/admin', icon: 'cog' }] : [])
+    ...(user.value?.role === 'ADMIN'
+      ? [
+          { label: t('nav.admin'), to: '/admin', icon: 'cog' },
+          { label: t('nav.blog'), to: '/admin/blog', icon: 'document-text' }
+        ]
+      : [])
   ]
 })
 
