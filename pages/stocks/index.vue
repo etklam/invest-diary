@@ -78,29 +78,38 @@
             </div>
             <!-- Donut Chart -->
             <div class="chart mb-10 flex justify-center">
-              <svg
-                viewBox="0 0 100 100"
-                class="w-64 h-64"
-              >
-                <g transform="rotate(-90 50 50)">
-                  <circle
-                    v-for="(slice, index) in donutSlices"
-                    :key="index"
-                    cx="50"
-                    cy="50"
-                    :r="slice.radius"
-                    fill="transparent"
-                    :stroke="slice.color"
-                    :stroke-width="slice.strokeWidth"
-                    :stroke-dasharray="slice.dashArray"
-                    :stroke-dashoffset="slice.dashOffset"
-                  />
-                </g>
-                <!-- Center text showing total -->
-                <text x="50" y="50" text-anchor="middle" dominant-baseline="middle" class="text-sm fill-gray-600 dark:fill-gray-300">
-                  {{ t('stock.costDistribution') }}
-                </text>
-              </svg>
+              <div class="relative w-64 h-64">
+                <svg
+                  viewBox="0 0 100 100"
+                  class="w-full h-full"
+                >
+                  <g transform="rotate(-90 50 50)">
+                    <circle
+                      v-for="(slice, index) in donutSlices"
+                      :key="index"
+                      cx="50"
+                      cy="50"
+                      :r="slice.radius"
+                      fill="transparent"
+                      :stroke="slice.color"
+                      :stroke-width="slice.strokeWidth"
+                      :stroke-dasharray="slice.dashArray"
+                      :stroke-dashoffset="slice.dashOffset"
+                    />
+                  </g>
+                </svg>
+                <!-- Center text overlay -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div class="text-center">
+                    <div class="text-lg font-bold text-gray-800 dark:text-gray-100">
+                      {{ holdings?.length ?? 0 }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ t('stock.holdings') }}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <!-- Legend -->
             <div class="flex flex-wrap justify-center -m-5">
