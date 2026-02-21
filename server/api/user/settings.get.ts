@@ -1,3 +1,5 @@
+import prisma from '../../../lib/prisma'
+
 export default defineEventHandler(async (event) => {
   const userId = event.context.user?.id
 
@@ -9,7 +11,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: BigInt(userId) },
     select: {
       id: true,
       email: true,
@@ -17,6 +19,7 @@ export default defineEventHandler(async (event) => {
       expectedMonthlyTrades: true,
       expectedProfit: true,
       expectedAvgHolding: true,
+      timezone: true,
       createdAt: true
     }
   })
@@ -34,7 +37,8 @@ export default defineEventHandler(async (event) => {
       name: user.name,
       expectedMonthlyTrades: user.expectedMonthlyTrades,
       expectedProfit: user.expectedProfit,
-      expectedAvgHolding: user.expectedAvgHolding
+      expectedAvgHolding: user.expectedAvgHolding,
+      timezone: user.timezone
     }
   }
 })

@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import prisma from '../../../lib/prisma'
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
@@ -24,7 +25,7 @@ export default defineEventHandler(async (event) => {
 
     // Get user with password
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: BigInt(userId) },
       select: {
         id: true,
         password: true
@@ -53,7 +54,7 @@ export default defineEventHandler(async (event) => {
 
     // Update password
     await prisma.user.update({
-      where: { id: userId },
+      where: { id: BigInt(userId) },
       data: { password: hashedPassword }
     })
 

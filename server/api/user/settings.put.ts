@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import prisma from '../../../lib/prisma'
 
 const settingsSchema = z.object({
   name: z.string().optional(),
@@ -26,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
     // Update user settings
     const updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: BigInt(userId) },
       data: validatedData,
       select: {
         id: true,

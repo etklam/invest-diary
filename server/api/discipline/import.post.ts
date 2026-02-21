@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import prisma from '~/lib/prisma'
 
 const schema = z.object({
   json: z.string(),
@@ -40,13 +41,13 @@ export default defineEventHandler(async (event) => {
     // If replace existing, delete all user's disciplines first
     if (replaceExisting) {
       await prisma.discipline.deleteMany({
-        where: { userId }
+        where: { userId: BigInt(userId) }
       })
     }
 
     // Get current max order
     const maxOrder = await prisma.discipline.findFirst({
-      where: { userId },
+      where: { userId: BigInt(userId) },
       orderBy: { order: 'desc' },
       select: { order: true }
     })
@@ -56,7 +57,7 @@ export default defineEventHandler(async (event) => {
     // Import disciplines
     const imported = await prisma.discipline.createMany({
       data: preview.disciplines.map((d, index) => ({
-        userId,
+        userId: BigInt(userId),
         content: d.content,
         order: startOrder + index
       }))
