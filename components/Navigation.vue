@@ -41,16 +41,20 @@ const secondaryNavItems = computed(() => {
     ]
   }
 
-  return [
+  const items = [
     { label: t('nav.discipline'), to: '/discipline', icon: 'light-bulb' },
     { label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
-    ...(user.value?.role === 'ADMIN'
-      ? [
-          { label: t('nav.admin'), to: '/admin', icon: 'cog' },
-          { label: t('nav.blog'), to: '/admin/blog', icon: 'document-text' }
-        ]
-      : [])
+    { label: t('nav.blog'), to: '/blog', icon: 'document-text' }
   ]
+
+  if (user.value?.role === 'ADMIN') {
+    items.push(
+      { label: t('nav.admin'), to: '/admin', icon: 'cog' },
+      { label: t('nav.manageBlog'), to: '/admin/blog', icon: 'pencil' }
+    )
+  }
+
+  return items
 })
 
 // Get heroicon name from simple key
