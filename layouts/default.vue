@@ -6,7 +6,8 @@
     <!-- Show main content once auth is ready -->
     <template v-else>
       <PWAInstallPrompt />
-      <Navigation />
+      <!-- Render Navigation only after user info is fully synced -->
+      <Navigation v-if="isInitialized" />
       <main class="container mx-auto px-4 py-8" :class="{ 'pt-24': showInstallPrompt }">
         <slot />
       </main>
