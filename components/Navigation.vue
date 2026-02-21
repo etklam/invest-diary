@@ -43,14 +43,16 @@ const mainNavItems = computed(() => {
 const secondaryNavItems = computed(() => {
   if (!isAuthenticated.value) {
     return [
-      { label: t('nav.about'), to: '/about', icon: 'information-circle' }
+      { label: t('nav.about'), to: '/about', icon: 'information-circle' },
+      { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' }
     ]
   }
 
   const items = [
     { label: t('nav.discipline'), to: '/discipline', icon: 'light-bulb' },
     { label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
-    { label: t('nav.blog'), to: '/blog', icon: 'document-text' }
+    { label: t('nav.blog'), to: '/blog', icon: 'document-text' },
+    { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' }
   ]
 
   if (user.value?.role === 'ADMIN') {

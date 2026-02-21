@@ -43,7 +43,9 @@
     "fileManager": "文件管理",
     "dataList": "數據列表",
     "settings": "設置",
-    "logout": "登出"
+    "logout": "登出",
+    "tools": "投資工具",
+    "positionSizing": "建倉計算器"
   },
 
   "auth": {
@@ -546,5 +548,123 @@
     "deleteSuccess": "文章已刪除",
     "deleteFailed": "刪除失敗",
     "translate": "翻譯"
+  },
+
+  "tools": {
+    "positionSizing": {
+      "title": "建倉比例計算器",
+      "subtitle": "輸入資金與股價，自動計算各建倉策略的分配比例",
+      "inputParams": "輸入參數",
+      "totalCapital": "總資金",
+      "totalCapitalPlaceholder": "例如：1000000",
+      "stockName": "股票名稱",
+      "stockNamePlaceholder": "例如：AAPL、台積電",
+      "stockPrice": "股票價格",
+      "stockPricePlaceholder": "例如：500",
+      "capitalInputMode": "資金輸入方式",
+      "switchToDirect": "切換為直接輸入",
+      "switchToPercentage": "切換為比例計算",
+      "baseCapital": "總資本",
+      "baseCapitalPlaceholder": "例如：1000000",
+      "capitalPercent": "投入比例",
+      "capitalPercentPlaceholder": "例如：10",
+      "investCapital": "總預計投入資本",
+      "calculatedCapital": "計算後投入資本",
+      "strategy": "選擇建倉策略",
+      "advancedOptions": "進階選項",
+      "reserveCash": "保留現金比例",
+      "reserveCashHint": "保留部分現金應對突發情況",
+      "roundingMode": "股數取整方式",
+      "roundDown": "無條件捨去（保守）",
+      "roundNearest": "四捨五入",
+      "roundUp": "無條件進位（積極）",
+      "totalShares": "總股數",
+      "totalInvested": "總投入金額",
+      "avgPrice": "平均成本",
+      "utilizationRate": "資金利用率",
+      "detailTable": "詳細分配表",
+      "table": {
+        "batch": "批次",
+        "batchN": "第 {n} 批",
+        "ratio": "比例",
+        "plannedAmount": "預計金額",
+        "shares": "股數",
+        "actualAmount": "實際金額",
+        "cumulativeShares": "累計股數"
+      },
+      "remainingCash": "因股數取整，剩餘未投入資金：{amount}",
+      "emptyState": "請輸入總資金與股票價格以計算建倉比例",
+      "pros": "優點",
+      "cons": "缺點",
+      "allStrategies": "所有建倉策略",
+      "disclaimer": "本工具僅供參考，不構成投資建議。投資有風險，請謹慎評估。",
+      "privacyNote": "🔒 所有計算都在您的瀏覽器中進行，伺服器不會儲存任何資料。",
+      "copyToClipboard": "複製為 Markdown",
+      "copied": "已複製",
+      "copySuccess": "已複製到剪貼簿",
+      "copyFailed": "複製失敗",
+      "shares": "股",
+      "markdown": {
+        "title": "建倉計劃",
+        "target": "標的",
+        "strategy": "策略",
+        "totalCapital": "總資金",
+        "stockPrice": "股價",
+        "reserveCash": "保留現金",
+        "summary": "總結",
+        "item": "項目",
+        "value": "數值",
+        "totalShares": "總股數",
+        "sharesUnit": "股",
+        "totalInvested": "總投入",
+        "avgPrice": "平均成本",
+        "perShare": "股",
+        "samePriceAssumption": "假設同價成交",
+        "utilizationRate": "資金利用率",
+        "strategicReserve": "策略性保留",
+        "technicalRemainder": "技術性剩餘",
+        "totalRemainingCash": "總剩餘現金",
+        "overBudget": "超額投入",
+        "adjusted": "已調整",
+        "batchDetails": "分批明細",
+        "batch": "批次",
+        "ratio": "比例",
+        "plannedAmount": "預計金額",
+        "shares": "股數",
+        "actualAmount": "實際金額",
+        "cumulativeShares": "累計股數",
+        "batchN": "第 {n} 批",
+        "strategyDescription": "策略說明",
+        "pros": "優點",
+        "cons": "缺點",
+        "generatedBy": "由建倉計算器產生"
+      },
+      "strategies": {
+        "pyramid": {
+          "name": "正金字塔 (4-3-2-1)",
+          "description": "最穩健的策略，強調底部基礎紮實。底倉 40% 在估值合理或趨勢確認點買入，隨後分批加碼。",
+          "pros": ["平均成本較低", "抗風險能力強", "適合長期投資"],
+          "cons": ["若底倉位置不佳，下跌過程中加倉過快可能導致被套"]
+        },
+        "pyramidVariant": {
+          "name": "變體金字塔 (2-2-3-2-1)",
+          "description": "將底倉拆分，降低初次入場風險，適合波動較大的市場。",
+          "pros": ["降低初次入場風險", "分散時點風險", "更靈活的資金配置"],
+          "cons": ["操作次數較多", "需要更多時間觀察市場"]
+        },
+        "rectangular": {
+          "name": "矩形建倉 (3-3-3-1)",
+          "description": "分三次各買入 30%，保留 10% 現金作為「救命錢」應對黑天鵝事件。",
+          "pros": ["進可攻退可守", "心態較為平和", "保留應急資金"],
+          "cons": ["可能錯過最佳入場時機", "資金利用率較低"]
+        },
+        "invertedPyramid": {
+          "name": "倒金字塔 (1-2-3-4)",
+          "description": "初次投入極少，隨後大幅加碼。適合對標的有高度信心且預期大幅上漲的情況。",
+          "pros": ["初期風險極小", "確認趨勢後加碼", "適合強勢股追蹤"],
+          "cons": ["平均成本較高", "若判斷錯誤損失較大", "需要精準判斷"]
+        }
+      }
+    }
   }
 }

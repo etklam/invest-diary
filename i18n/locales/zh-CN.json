@@ -43,7 +43,9 @@
     "fileManager": "文件管理",
     "dataList": "数据列表",
     "settings": "设置",
-    "logout": "登出"
+    "logout": "登出",
+    "tools": "投资工具",
+    "positionSizing": "建仓计算器"
   },
 
   "auth": {
@@ -546,5 +548,123 @@
     "deleteSuccess": "文章已删除",
     "deleteFailed": "删除失败",
     "translate": "翻译"
+  },
+
+  "tools": {
+    "positionSizing": {
+      "title": "建仓比例计算器",
+      "subtitle": "输入资金与股价，自动计算各建仓策略的分配比例",
+      "inputParams": "输入参数",
+      "totalCapital": "总资金",
+      "totalCapitalPlaceholder": "例如：1000000",
+      "stockName": "股票名称",
+      "stockNamePlaceholder": "例如：AAPL、台积电",
+      "stockPrice": "股票价格",
+      "stockPricePlaceholder": "例如：500",
+      "capitalInputMode": "资金输入方式",
+      "switchToDirect": "切换为直接输入",
+      "switchToPercentage": "切换为比例计算",
+      "baseCapital": "总资本",
+      "baseCapitalPlaceholder": "例如：1000000",
+      "capitalPercent": "投入比例",
+      "capitalPercentPlaceholder": "例如：10",
+      "investCapital": "总预计投入资本",
+      "calculatedCapital": "计算后投入资本",
+      "strategy": "选择建仓策略",
+      "advancedOptions": "高级选项",
+      "reserveCash": "保留现金比例",
+      "reserveCashHint": "保留部分现金应对突发情况",
+      "roundingMode": "股数取整方式",
+      "roundDown": "无条件舍去（保守）",
+      "roundNearest": "四舍五入",
+      "roundUp": "无条件进位（积极）",
+      "totalShares": "总股数",
+      "totalInvested": "总投入金额",
+      "avgPrice": "平均成本",
+      "utilizationRate": "资金利用率",
+      "detailTable": "详细分配表",
+      "table": {
+        "batch": "批次",
+        "batchN": "第 {n} 批",
+        "ratio": "比例",
+        "plannedAmount": "预计金额",
+        "shares": "股数",
+        "actualAmount": "实际金额",
+        "cumulativeShares": "累计股数"
+      },
+      "remainingCash": "因股数取整，剩余未投入资金：{amount}",
+      "emptyState": "请输入总资金与股票价格以计算建仓比例",
+      "pros": "优点",
+      "cons": "缺点",
+      "allStrategies": "所有建仓策略",
+      "disclaimer": "本工具仅供参考，不构成投资建议。投资有风险，请谨慎评估。",
+      "privacyNote": "🔒 所有计算都在您的浏览器中进行，服务器不会储存任何数据。",
+      "copyToClipboard": "复制为 Markdown",
+      "copied": "已复制",
+      "copySuccess": "已复制到剪贴板",
+      "copyFailed": "复制失败",
+      "shares": "股",
+      "markdown": {
+        "title": "建仓计划",
+        "target": "标的",
+        "strategy": "策略",
+        "totalCapital": "总资金",
+        "stockPrice": "股价",
+        "reserveCash": "保留现金",
+        "summary": "总结",
+        "item": "项目",
+        "value": "数值",
+        "totalShares": "总股数",
+        "sharesUnit": "股",
+        "totalInvested": "总投入",
+        "avgPrice": "平均成本",
+        "perShare": "股",
+        "samePriceAssumption": "假设同价成交",
+        "utilizationRate": "资金利用率",
+        "strategicReserve": "策略性保留",
+        "technicalRemainder": "技术性剩余",
+        "totalRemainingCash": "总剩余现金",
+        "overBudget": "超额投入",
+        "adjusted": "已调整",
+        "batchDetails": "分批明细",
+        "batch": "批次",
+        "ratio": "比例",
+        "plannedAmount": "预计金额",
+        "shares": "股数",
+        "actualAmount": "实际金额",
+        "cumulativeShares": "累计股数",
+        "batchN": "第 {n} 批",
+        "strategyDescription": "策略说明",
+        "pros": "优点",
+        "cons": "缺点",
+        "generatedBy": "由建仓计算器产生"
+      },
+      "strategies": {
+        "pyramid": {
+          "name": "正金字塔 (4-3-2-1)",
+          "description": "最稳健的策略，强调底部基础扎实。底仓 40% 在估值合理或趋势确认点买入，随后分批加码。",
+          "pros": ["平均成本较低", "抗风险能力强", "适合长期投资"],
+          "cons": ["若底仓位置不佳，下跌过程中加仓过快可能导致被套"]
+        },
+        "pyramidVariant": {
+          "name": "变体金字塔 (2-2-3-2-1)",
+          "description": "将底仓拆分，降低初次入场风险，适合波动较大的市场。",
+          "pros": ["降低初次入场风险", "分散时点风险", "更灵活的资金配置"],
+          "cons": ["操作次数较多", "需要更多时间观察市场"]
+        },
+        "rectangular": {
+          "name": "矩形建仓 (3-3-3-1)",
+          "description": "分三次各买入 30%，保留 10% 现金作为「救命钱」应对黑天鹅事件。",
+          "pros": ["进可攻退可守", "心态较为平和", "保留应急资金"],
+          "cons": ["可能错过最佳入场时机", "资金利用率较低"]
+        },
+        "invertedPyramid": {
+          "name": "倒金字塔 (1-2-3-4)",
+          "description": "初次投入极少，随后大幅加码。适合对标的具有高度信心且预期大幅上涨的情况。",
+          "pros": ["初期风险极小", "确认趋势后加码", "适合强势股追踪"],
+          "cons": ["平均成本较高", "若判断错误损失较大", "需要精准判断"]
+        }
+      }
+    }
   }
 }
