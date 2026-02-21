@@ -493,7 +493,7 @@
     "createdAt": "Created at",
     "author": "Author",
     "category": "Category",
-    "categories": "Categories",
+    "categoriesLabel": "Categories",
     "tags": "Tags",
     "tag": "Tag",
     "readingTime": "{min} min read",

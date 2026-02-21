@@ -493,7 +493,7 @@
     "createdAt": "建立於",
     "author": "作者",
     "category": "分類",
-    "categories": "分類",
+    "categoriesLabel": "分類",
     "tags": "標籤",
     "tag": "標籤",
     "readingTime": "閱讀時間 {min} 分鐘",

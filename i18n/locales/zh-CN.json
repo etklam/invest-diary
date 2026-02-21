@@ -493,7 +493,7 @@
     "createdAt": "创建于",
     "author": "作者",
     "category": "分类",
-    "categories": "分类",
+    "categoriesLabel": "分类",
     "tags": "标签",
     "tag": "标签",
     "readingTime": "阅读时间 {min} 分钟",

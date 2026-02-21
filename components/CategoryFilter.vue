@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-      {{ $t('blog.categories') }}
+      {{ $t('blog.categoriesLabel') }}
     </h3>
     <nav class="space-y-2">
       <NuxtLink
