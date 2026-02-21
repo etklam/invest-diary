@@ -52,7 +52,14 @@ const strategies = computed<Strategy[]>(() =>
 )
 
 // Form state
-const stockName = ref<string>('') // Optional stock name
+const stockName = ref<string>('') // Optional stock name - will be auto-uppercased
+
+// Watch stockName and convert to uppercase
+watch(stockName, (newValue) => {
+  if (newValue && newValue !== newValue.toUpperCase()) {
+    stockName.value = newValue.toUpperCase()
+  }
+})
 const baseCapital = ref<number | null>(null) // Base capital for percentage calculation
 const capitalPercent = ref<number | null>(null) // Percentage of base capital to use
 const totalCapital = ref<number | null>(null) // Direct capital input
@@ -244,7 +251,7 @@ definePageMeta({
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {{ t('tools.positionSizing.stockName') }}
-            <span class="text-gray-400 text-xs">({{ t('common.optional') || '選填' }})</span>
+            <span class="text-gray-400 text-xs">({{ t('common.optional') }})</span>
           </label>
           <input
             v-model="stockName"
