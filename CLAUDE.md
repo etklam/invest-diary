@@ -114,10 +114,15 @@ npm run health:quick    # Quick tests + Prisma validate
 ├── composables/         # Reusable composition functions (auth, etc.)
 ├── layouts/             # Nuxt layouts (default, authenticated)
 ├── pages/               # File-based routing
+│   ├── tools/          # Investment tools (position sizing calculator)
+│   └── ...             # Other page routes
 ├── server/              # Nitro API routes & server plugins
 │   ├── api/            # RESTful endpoints
 │   └── middleware/     # Server middleware (JWT validation)
-├── lib/                 # Shared utilities (Prisma client singleton)
+├── lib/                 # Shared utilities
+│   ├── prisma.ts       # Database client singleton
+│   ├── positionSizing.ts # Position sizing calculation logic
+│   └── ...             # Other utilities
 ├── prisma/              # Database schema, migrations, seed
 ├── i18n/locales/        # Translation files (en, zh-TW, zh-CN)
 ├── assets/              # Static assets (CSS, images)
@@ -311,7 +316,9 @@ Sitemap: https://your-domain.com/sitemap.xml
 
 - `nuxt.config.ts` - Main config (PWA, i18n, Nitro route rules)
 - `lib/prisma.ts` - Database client singleton
+- `lib/positionSizing.ts` - Position sizing calculation logic (pure functions, framework-agnostic)
 - `composables/useAuth.ts` - Authentication state & logic
+- `pages/tools/position-sizing.vue` - Position sizing calculator UI
 - `server/api/blog/[slug].get.ts` - Reference for defensive slug parsing
 - `server/middleware/auth.ts` - JWT validation middleware
 - `prisma/schema.prisma` - Database relationships & constraints

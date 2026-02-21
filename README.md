@@ -11,6 +11,7 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 
 - **Investment Journaling**: Daily diary entries with markdown support
 - **Portfolio Tracking**: Stock transaction management (BUY/SELL) with holdings calculation
+- **Position Sizing Calculator**: Advanced tool for calculating staged position entries with multiple strategies (pyramid, inverted pyramid, rectangular)
 - **Alert System**: Time-based reminders for diary entries
 - **Investment Discipline**: Custom motivational quotes for trading psychology
 - **Educational Blog**: Public investment education articles (admin-managed)
@@ -132,11 +133,12 @@ npm run health:quick    # Quick tests + Prisma validate
 │   ├── blog/           # Public blog pages
 │   ├── settings/       # User settings
 │   ├── stocks/         # Portfolio management
+│   ├── tools/          # Investment tools (position sizing calculator)
 │   └── timeline/       # Diary timeline view
 ├── server/              # Nitro API routes & middleware
 │   ├── api/            # RESTful endpoints
 │   └── middleware/     # Server middleware (JWT auth)
-├── lib/                 # Shared utilities (Prisma client singleton)
+├── lib/                 # Shared utilities (Prisma client, position sizing logic)
 ├── prisma/              # Database schema, migrations, seed
 ├── i18n/locales/        # Translation files (en, zh-TW, zh-CN)
 ├── assets/              # Static assets (CSS, images)
