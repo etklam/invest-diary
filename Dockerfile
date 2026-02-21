@@ -20,8 +20,18 @@ WORKDIR /app
 LABEL maintainer="your-email@example.com"
 LABEL description="Personal Investment Diary System - Nuxt 3 Application"
 
-# Install OpenSSL for bcryptjs compatibility
-RUN apk add --no-cache openssl
+# Install build dependencies for native modules (canvas, sharp, etc.)
+# These are needed for compiling native Node.js addons
+RUN apk add --no-cache \
+    openssl \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev
 
 # =============================================================================
 # Layer 1: Dependencies (least frequently changed)
@@ -31,9 +41,7 @@ COPY package.json package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
 # Skip prepare script (husky/git hooks) since they aren't needed in Docker build
-# Use ci for deterministic builds, then run postinstall separately
-# Install all deps for build (devDependencies required by Nuxt modules)
-# package-lock.json is currently out of sync; use npm install for resilience in Docker
+# Use npm install instead of npm ci because package-lock.json may be out of sync
 RUN npm install --ignore-scripts && \
     npm run postinstall && \
     npm cache clean --force
@@ -81,11 +89,16 @@ LABEL maintainer="your-email@example.com"
 LABEL description="Personal Investment Diary System - Production Runtime"
 
 # Install runtime dependencies
+# Include cairo libraries for canvas module (used by OG image generation)
 RUN apk add --no-cache \
     openssl \
     curl \
-    # Install tini for proper signal handling and zombie process reaping
-    tini
+    tini \
+    cairo \
+    pango \
+    libjpeg-turbo \
+    giflib \
+    librsvg
 
 # Create non-root user and group with specific IDs for consistency
 RUN addgroup --system --gid 1001 nodejs && \
