@@ -275,7 +275,7 @@ const getIconName = (icon: string) => {
           <div class="pt-8 border-t border-gray-700">
             <!-- Language & Theme -->
             <div class="flex items-center justify-between mb-4">
-              <LanguageSwitcher />
+              <LanguageSwitcher dropdown-position="left" />
               <button
                 @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
                 class="p-2 rounded-lg text-gray-500 hover:bg-gray-700 dark:text-gray-400 transition-colors"

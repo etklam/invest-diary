@@ -3,6 +3,14 @@ const { locale, locales, setLocale } = useI18n()
 
 const isOpen = ref(false)
 
+// Props to control dropdown position
+interface Props {
+  dropdownPosition?: 'left' | 'right'
+}
+const props = withDefaults(defineProps<Props>(), {
+  dropdownPosition: 'right'
+})
+
 const availableLocales = computed(() => 
   (locales.value as { code: string; name: string }[]).filter(l => l.code !== locale.value)
 )
@@ -42,7 +50,8 @@ const closeDropdown = () => {
     >
       <div
         v-if="isOpen"
-        class="absolute right-0 mt-2 w-40 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+        class="absolute mt-2 w-40 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+        :class="props.dropdownPosition === 'left' ? 'left-0' : 'right-0'"
         @click.outside="closeDropdown"
       >
         <div class="py-1">
