@@ -207,7 +207,7 @@ async function main() {
 
 記住，投資是一場長跑，不是短跑。保持耐心，持續學習，隨著時間推移，你的投資將會成長。`,
       excerpt: '投資是實現財務自由的重要途徑之一。本文將介紹投資的基本概念和步驟，幫助初學者開始投資之旅。',
-      category: '投資策略',
+      category: 'strategy',
       tags: '投資入門,理財,初學者',
       status: 'PUBLISHED' as any,
       publishedAt: new Date('2025-02-01T10:00:00Z')
@@ -247,7 +247,7 @@ K線圖又稱蠟燭圖，起源於日本18世紀的米市交易。每根K線代�
 
 技術分析需要與基本面分析結合使用，才能做出更準確的投資決策。`,
       excerpt: 'K線圖是技術分析中最基本的工具之一。本文將介紹K線圖的基本概念和如何解讀K線圖。',
-      category: '技术面分析',
+      category: 'technical',
       tags: '技術分析,K線圖,交易',
       status: 'PUBLISHED' as any,
       publishedAt: new Date('2025-02-05T14:00:00Z')
@@ -282,7 +282,7 @@ K線圖又稱蠟燭圖，起源於日本18世紀的米市交易。每根K線代�
 
 投資者應保持謹慎樂觀的態度，既要抓住市場機遇，也要做好風險防控。`,
       excerpt: '2025年投資市場呈現新的趨勢和機遇。本文將分析科技股、綠色能源、新興市場等主要投資領域的發展前景。',
-      category: '市场观察',
+      category: 'market',
       tags: '市場趨勢,2025年,投資機遇',
       status: 'PUBLISHED' as any,
       publishedAt: new Date('2025-02-10T09:30:00Z')
@@ -330,7 +330,7 @@ K線圖又稱蠟燭圖，起源於日本18世紀的米市交易。每根K線代�
 
 基本面分析需要結合定量和定性分析，並與市場情緒和技術分析相結合，才能做出全面的投資決策。`,
       excerpt: '基本面分析是評估公司內在價值的重要方法。本文將介紹財務報表分析、評價指標和行業分析等基本面分析的核心要素。',
-      category: '基本面分析',
+      category: 'fundamental',
       tags: '基本面分析,財務報表,評價指標',
       status: 'PUBLISHED' as any,
       publishedAt: new Date('2025-02-12T16:00:00Z')
@@ -391,7 +391,7 @@ K線圖又稱蠟燭圖，起源於日本18世紀的米市交易。每根K線代�
 
 投資成功不僅需要專業知識，更需要良好的心理素質。認識並克服心理偏誤，才能在投資路上走得更遠。`,
       excerpt: '投資是心理的較量，許多投資者因心理偏誤而做出非理性決策。本文將介紹常見的投資偏誤及如何克服它們。',
-      category: '投資策略',
+      category: 'strategy',
       tags: '投資心理學,行為金融,決策偏誤',
       status: 'PUBLISHED' as any,
       publishedAt: new Date('2025-02-15T11:00:00Z')
@@ -412,7 +412,7 @@ K線圖又稱蠟燭圖，起源於日本18世紀的米市交易。每根K線代�
 
 （此文章仍在編寫中...）`,
       excerpt: '區塊鏈技術作為顛覆性創新，正在重塑金融和商業模式。',
-      category: '投資策略',
+      category: 'strategy',
       tags: '區塊鏈,加密貨幣,未來趨勢',
       status: 'DRAFT' as any,
       publishedAt: null

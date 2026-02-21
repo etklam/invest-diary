@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { formatDate } from '~/lib/utils'
+import { CATEGORY_OPTIONS } from '~/types/blog'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const { isAuthenticated, isAdmin } = useAuth()
 const toast = useToast()
 const router = useRouter()
@@ -32,35 +33,13 @@ const filters = ref({
   search: ''
 })
 
-// Categories - using i18n
-const categoryValues: Record<string, Record<string, string>> = {
-  fundamental: {
-    en: 'Fundamental Analysis',
-    'zh-TW': '基本面分析',
-    'zh-CN': '基本面分析'
-  },
-  technical: {
-    en: 'Technical Analysis',
-    'zh-TW': '技术面分析',
-    'zh-CN': '技术面分析'
-  },
-  market: {
-    en: 'Market Watch',
-    'zh-TW': '市场观察',
-    'zh-CN': '市场观察'
-  },
-  strategy: {
-    en: 'Investment Strategy',
-    'zh-TW': '投資策略',
-    'zh-CN': '投资策略'
-  }
-}
+// Categories - using unified English keys
 const categories = computed(() => [
   { value: '', label: t('blog.allCategories') },
-  { value: categoryValues.fundamental[locale.value] || categoryValues.fundamental['zh-TW'], label: t('blog.categories.fundamental') },
-  { value: categoryValues.technical[locale.value] || categoryValues.technical['zh-TW'], label: t('blog.categories.technical') },
-  { value: categoryValues.market[locale.value] || categoryValues.market['zh-TW'], label: t('blog.categories.market') },
-  { value: categoryValues.strategy[locale.value] || categoryValues.strategy['zh-TW'], label: t('blog.categories.strategy') },
+  ...CATEGORY_OPTIONS.map(cat => ({
+    value: cat,
+    label: t(`blog.categories.${cat}`)
+  }))
 ])
 
 // Status options

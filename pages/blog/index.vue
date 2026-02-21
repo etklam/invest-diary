@@ -122,6 +122,8 @@
 </template>
 
 <script setup lang="ts">
+import { CATEGORY_OPTIONS } from '~/types/blog'
+
 // Blog is a public page
 definePageMeta({
   requiresAuth: false
@@ -184,39 +186,16 @@ const { data, pending, error, refresh } = await useLazyFetch('/api/blog', {
 const posts = computed(() => data.value?.data || [])
 const pagination = computed(() => data.value?.pagination)
 
-// Categories for filter - using i18n for labels, but keep actual values for API
-const { t, locale } = useI18n()
+// Categories for filter - using unified English keys
+const { t } = useI18n()
 const categories = computed(() => {
-  // Map category keys to their actual values in different languages
-  const categoryValues: Record<'fundamental' | 'technical' | 'market' | 'strategy', Record<string, string>> = {
-    fundamental: {
-      en: 'Fundamental Analysis',
-      'zh-TW': '基本面分析',
-      'zh-CN': '基本面分析'
-    },
-    technical: {
-      en: 'Technical Analysis',
-      'zh-TW': '技术面分析',
-      'zh-CN': '技术面分析'
-    },
-    market: {
-      en: 'Market Watch',
-      'zh-TW': '市场观察',
-      'zh-CN': '市场观察'
-    },
-    strategy: {
-      en: 'Investment Strategy',
-      'zh-TW': '投資策略',
-      'zh-CN': '投资策略'
-    }
-  }
-
   return [
     { key: '', value: '', label: t('blog.allCategories') },
-    { key: 'fundamental', value: categoryValues.fundamental[locale.value] || categoryValues.fundamental['zh-TW'], label: t('blog.categories.fundamental') },
-    { key: 'technical', value: categoryValues.technical[locale.value] || categoryValues.technical['zh-TW'], label: t('blog.categories.technical') },
-    { key: 'market', value: categoryValues.market[locale.value] || categoryValues.market['zh-TW'], label: t('blog.categories.market') },
-    { key: 'strategy', value: categoryValues.strategy[locale.value] || categoryValues.strategy['zh-TW'], label: t('blog.categories.strategy') },
+    ...CATEGORY_OPTIONS.map(cat => ({
+      key: cat,
+      value: cat, // 使用英文 key作為 API查詢值
+      label: t(`blog.categories.${cat}`)
+    }))
   ]
 })
 

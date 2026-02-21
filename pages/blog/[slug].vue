@@ -173,6 +173,7 @@ definePageMeta({
 
 import { calculateReadingTime, parseTags } from '~/lib/blog'
 import { usePerformance } from '~/composables/usePerformance'
+import { normalizeCategory } from '~/types/blog'
 
 interface Post {
   id: string | number
@@ -207,21 +208,10 @@ usePerformance()
 const readingTime = computed(() => (post.value ? calculateReadingTime(post.value.content) : 0))
 const parsedTags = computed(() => (post.value ? parseTags(post.value.tags) : []))
 
+// Normalize category to translation key (handles legacy Chinese values)
 const categoryKey = computed(() => {
   if (!post.value) return ''
-  const categoryMap: Record<string, string> = {
-    '基本面分析': 'fundamental',
-    '技术面分析': 'technical',
-    '市場觀察': 'market',
-    '市场观察': 'market',
-    '投資策略': 'strategy',
-    '投资策略': 'strategy',
-    'Fundamental Analysis': 'fundamental',
-    'Technical Analysis': 'technical',
-    'Market Watch': 'market',
-    'Investment Strategy': 'strategy',
-  }
-  return categoryMap[post.value.category] || post.value.category
+  return normalizeCategory(post.value.category)
 })
 
 useHead(() => ({

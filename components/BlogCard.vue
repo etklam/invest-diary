@@ -90,6 +90,7 @@
 
 <script setup lang="ts">
 import { calculateReadingTime, parseTags } from '~/lib/blog'
+import { normalizeCategory } from '~/types/blog'
 
 interface Author {
   id: number | string
@@ -140,19 +141,6 @@ const handleDelete = async () => {
   }
 }
 
-// Map category to translation key
-const categoryKey = computed(() => {
-  const categoryMap: Record<string, string> = {
-    '基本面分析': 'fundamental',
-    '技术面分析': 'technical',
-    '市场观察': 'market',
-    '投資策略': 'strategy',
-    '投资策略': 'strategy',
-    'Fundamental Analysis': 'fundamental',
-    'Technical Analysis': 'technical',
-    'Market Watch': 'market',
-    'Investment Strategy': 'strategy',
-  }
-  return categoryMap[props.post.category] || props.post.category
-})
+// Normalize category to translation key (handles legacy Chinese values)
+const categoryKey = computed(() => normalizeCategory(props.post.category))
 </script>

@@ -90,10 +90,9 @@
           class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         >
           <option value="">{{ $t('blog.selectCategory') }}</option>
-          <option value="基本面分析">{{ $t('blog.categories.fundamental') }}</option>
-          <option value="技术面分析">{{ $t('blog.categories.technical') }}</option>
-          <option value="市场观察">{{ $t('blog.categories.market') }}</option>
-          <option value="投资策略">{{ $t('blog.categories.strategy') }}</option>
+          <option v-for="cat in CATEGORY_OPTIONS" :key="cat" :value="cat">
+            {{ $t(`blog.categories.${cat}`) }}
+          </option>
         </select>
       </div>
     </div>
@@ -133,6 +132,7 @@
 
 <script setup lang="ts">
 import { generateSlug } from '~/lib/blog'
+import { CATEGORY_OPTIONS } from '~/types/blog'
 
 const props = defineProps<{
   title: string
