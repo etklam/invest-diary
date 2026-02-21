@@ -69,7 +69,8 @@ export default defineEventHandler(async (event) => {
         role: (user as any).role,
         expectedMonthlyTrades: user.expectedMonthlyTrades,
         expectedProfit: user.expectedProfit,
-        expectedAvgHolding: user.expectedAvgHolding
+        expectedAvgHolding: user.expectedAvgHolding,
+        timezone: (user as any).timezone
       }
     }
   } catch (error) {

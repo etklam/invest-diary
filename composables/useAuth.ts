@@ -66,6 +66,10 @@ export const useAuth = () => {
 
       if (response.ok) {
         user.value = response.data
+        // Sync timezone to localStorage
+        if (response.data.timezone && process.client) {
+          localStorage.setItem('user_timezone', response.data.timezone)
+        }
         toast.success('登入成功')
         await navigateTo('/')
       }
@@ -119,6 +123,10 @@ export const useAuth = () => {
       const response = await $fetch('/api/auth/me') as any
       if (response.ok) {
         user.value = response.data
+        // Sync timezone to localStorage
+        if (response.data.timezone && process.client) {
+          localStorage.setItem('user_timezone', response.data.timezone)
+        }
       }
     } catch {
       user.value = null
@@ -150,6 +158,10 @@ export const useAuth = () => {
         user.value = {
           ...user.value,
           ...response.settings
+        }
+        // Sync timezone to localStorage
+        if (settings.timezone && process.client) {
+          localStorage.setItem('user_timezone', settings.timezone)
         }
         toast.success('設定已更新')
         return true
