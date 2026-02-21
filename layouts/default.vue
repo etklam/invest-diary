@@ -13,8 +13,8 @@
       <Toast :toasts="toasts" @remove="removeToast" />
       <PWAReloadPrompt />
       <AlertNotification
-        v-if="dueAlert"
-        :message="dueAlert.message"
+        v-if="currentAlert"
+        :message="currentAlert.message"
         :show="showAlert"
         @close="dismissCurrentAlert"
       />
@@ -41,13 +41,22 @@ const { toasts, removeToast } = useToast()
 const { user, fetchMe, isInitialized, isAuthenticated } = useAuth()
 const showInstallPrompt = ref(false)
 const showQuickDiaryModal = ref(false)
-const dueAlert = ref<any>(null)
-const showAlert = ref(false)
-const processedAlerts = ref<Set<string>>(new Set())
 const route = useRoute()
 
-// Polling management
-let pollInterval: ReturnType<typeof setInterval> | null = null
+import { useAlerts } from '~/composables/useAlerts'
+
+const {
+  currentAlert,
+  showAlert,
+  enqueueAlerts,
+  dismissCurrentAlert,
+  applyBackoff,
+  scheduleNextPoll,
+  checkDailyReset,
+  setBaseInterval
+} = useAlerts()
+
+// Polling is handled by useAlerts composable
 
 // Check if route requires authentication using route meta
 // Falls back to path-based detection for pages without meta
@@ -67,77 +76,47 @@ const isPublicRoute = computed(() => {
   return publicPaths.some(r => path === r || path.startsWith(r + '/'))
 })
 
-// Check for due alerts
+// daily reset handled by composable
+
+
+
+
+// Check for due alerts (queue-based)
 const checkForDueAlerts = async () => {
-  // Skip alert check if user is not authenticated OR on public routes
-  if (!isAuthenticated.value || isPublicRoute.value) {
-    return
-  }
+  if (!isAuthenticated.value || isPublicRoute.value) return
+
+  checkDailyReset()
 
   try {
-    const alerts = await $fetch('/api/alerts') as any[]
-    if (!alerts || alerts.length === 0) return
+    const alerts = await $fetch<any[]>('/api/alerts')
 
-    const now = new Date()
-    const due = alerts.find((alert: any) => {
-      const triggerTime = new Date(alert.trigger_at)
-      return (
-        triggerTime <= now &&
-        !alert.is_dismissed &&
-        !processedAlerts.value.has(alert.id.toString())
-      )
-    })
-
-    if (due && due.id !== dueAlert.value?.id) {
-      dueAlert.value = due
-      showAlert.value = true
-      processedAlerts.value.add(due.id.toString())
+    if (!alerts || alerts.length === 0) {
+      applyBackoff(checkForDueAlerts)
+      return
     }
+
+    enqueueAlerts(alerts)
+    setBaseInterval()
+    scheduleNextPoll(checkForDueAlerts)
   } catch (error: any) {
-    // If 401 Unauthorized, clear user state (global handler will handle redirect)
     if (error?.statusCode === 401) {
       user.value = null
-      // Don't redirect here - let the global error handler handle it
     }
     console.error('Error checking for alerts:', error)
+    applyBackoff(checkForDueAlerts)
   }
 }
 
-const dismissCurrentAlert = async () => {
-  showAlert.value = false
-  if (dueAlert.value) {
-    try {
-      await $fetch(`/api/alerts/${dueAlert.value.id}/dismiss`, {
-        method: 'PUT'
-      })
-    } catch (error: any) {
-      // If 401 Unauthorized, clear user state (global handler will handle redirect)
-      if (error?.statusCode === 401) {
-        user.value = null
-        // Don't redirect here - let the global error handler handle it
-      }
-      console.error('Error dismissing alert:', error)
-    }
-    dueAlert.value = null
-  }
-}
+// dismiss handled by composable
 
 // Start polling
 const startPolling = () => {
-  if (pollInterval) return // Already polling
-
-  // Check immediately
   checkForDueAlerts()
-  // Then poll every 30 seconds
-  pollInterval = setInterval(checkForDueAlerts, 30000)
 }
 
 // Stop polling
 const stopPolling = () => {
-  if (pollInterval) {
-    clearInterval(pollInterval)
-    pollInterval = null
-  }
+  // handled by composable
 }
 
 // Smart polling: start/stop based on auth state and route changes
@@ -163,8 +142,5 @@ onMounted(async () => {
   }
 })
 
-// Stop polling when component unmounts
-onUnmounted(() => {
-  stopPolling()
-})
+// cleanup handled by composable
 </script>
