@@ -8,6 +8,11 @@ FROM node:20-alpine AS builder
 ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 
+# Database URL for Prisma generate (only used at build time, not runtime)
+# This is a dummy URL - the real DATABASE_URL is injected at runtime
+ARG DATABASE_URL="mysql://build:build@localhost:3306/build"
+ENV DATABASE_URL=${DATABASE_URL}
+
 # Set working directory
 WORKDIR /app
 
@@ -90,11 +95,15 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --chown=nuxt:nodejs docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Copy application artifacts from builder (node_modules already pruned)
+# Copy application artifacts from builder
 COPY --from=builder --chown=nuxt:nodejs /app/.output ./.output
-COPY --from=builder --chown=nuxt:nodejs /app/package.json ./package.json
-COPY --from=builder --chown=nuxt:nodejs /app/node_modules ./node_modules
+
+# Copy only Prisma-related files for migrations (minimal dependencies)
+# Nuxt 3 .output is self-contained, but we need Prisma CLI for migrations
 COPY --from=builder --chown=nuxt:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nuxt:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nuxt:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nuxt:nodejs /app/node_modules/prisma ./node_modules/prisma
 
 # Create runtime directories
 RUN mkdir -p /app/.output/server && \

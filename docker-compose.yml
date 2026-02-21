@@ -28,6 +28,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        DATABASE_URL: "mysql://diary_user:diary_password@mysql:3306/invest_diary"
     image: diary-vue:latest
     container_name: diary-vue-app
     restart: unless-stopped
