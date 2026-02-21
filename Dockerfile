@@ -111,12 +111,18 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Copy application artifacts from builder
 COPY --from=builder --chown=nuxt:nodejs /app/.output ./.output
 
+# Copy package.json for prisma dependencies resolution
+COPY --from=builder --chown=nuxt:nodejs /app/package.json ./package.json
+
 # Copy only Prisma-related files for migrations (minimal dependencies)
 # Nuxt 3 .output is self-contained, but we need Prisma CLI for migrations
 COPY --from=builder --chown=nuxt:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nuxt:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nuxt:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder --chown=nuxt:nodejs /app/node_modules/prisma ./node_modules/prisma
+
+# Copy additional dependencies that prisma CLI needs
+COPY --from=builder --chown=nuxt:nodejs /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
 
 # Create runtime directories
 RUN mkdir -p /app/.output/server && \

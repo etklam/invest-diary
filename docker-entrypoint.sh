@@ -38,7 +38,8 @@ wait_for_db() {
 run_migrations() {
     if [ "$RUN_MIGRATIONS" = "true" ]; then
         echo "🔄 Running database migrations..."
-        npx prisma migrate deploy
+        # Use node directly to avoid npx overhead and "prisma not found" issues
+        node ./node_modules/prisma/build/index.js migrate deploy
         echo "✅ Migrations completed!"
     else
         echo "⏭️  Skipping migrations (RUN_MIGRATIONS=false)"
