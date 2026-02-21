@@ -35,6 +35,13 @@ export default defineNuxtConfig({
     '@nuxtjs/sitemap'
   ],
 
+  css: [
+    '~/assets/css/design-tokens.css',
+    '~/assets/css/mobile.css',
+    '~/assets/css/markdown.css',
+    '~/assets/css/main.css'
+  ],
+
   colorMode: {
     classSuffix: '',
     fallback: 'light',
@@ -46,8 +53,38 @@ export default defineNuxtConfig({
   },
 
   mdc: {
-    remarkPlugins: {},
-    rehypePlugins: {}
+    remarkPlugins: {
+      'remark-gfm': true
+    },
+    rehypePlugins: {
+      'rehype-slug': true,
+      'rehype-pretty-code': {
+        theme: 'github-dark',
+        keepBackground: false,
+        onVisitLine(node: any) {
+          // Prevent empty lines from collapsing in preview
+          if (node.children.length === 0) {
+            node.children = [{ type: 'text', value: ' ' }]
+          }
+        },
+        onVisitHighlightedLine(node: any) {
+          // Add class to highlighted lines
+          node.properties.className ??= []
+          node.properties.className.push('highlighted')
+        },
+        onVisitHighlightedChars(node: any) {
+          // Add class to highlighted chars
+          node.properties.className = ['highlighted']
+        }
+      }
+    },
+    highlight: {
+      theme: {
+        default: 'github-dark',
+        light: 'github-light',
+        dark: 'github-dark'
+      }
+    }
   },
 
   i18n: {

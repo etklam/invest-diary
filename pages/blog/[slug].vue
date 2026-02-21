@@ -110,17 +110,28 @@
       <div class="mb-6 rounded-xl border border-gray-800 bg-gray-900/60 p-4 sm:p-6">
         <div
           class="prose prose-lg prose-gray dark:prose-invert max-w-none
-          prose-headings:text-gray-100
-          prose-p:text-gray-300
-          prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
-          prose-strong:text-gray-100
-          prose-code:text-pink-400 prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-[''] prose-code:after:content-['']
-          prose-pre:bg-gray-950
-          prose-li:text-gray-300
-          prose-blockquote:border-indigo-400
-          prose-hr:border-gray-700
-          prose-img:rounded-lg prose-img:shadow-md
-          prose-table:text-gray-300"
+          prose-headings:font-semibold prose-headings:text-gray-100 prose-headings:scroll-mt-20
+          prose-h1:text-3xl prose-h1:mb-4 prose-h1:mt-6
+          prose-h2:text-2xl prose-h2:mb-3 prose-h2:mt-5
+          prose-h3:text-xl prose-h3:mb-2 prose-h3:mt-4
+          prose-p:text-gray-300 prose-p:leading-relaxed prose-p:mb-4
+          prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline prose-a:font-medium
+          prose-strong:text-gray-100 prose-strong:font-semibold
+          prose-em:text-gray-200
+          prose-code:text-pink-400 prose-code:bg-gray-800/80 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-[''] prose-code:after:content-[''] prose-code:font-mono
+          prose-pre:bg-gray-950 prose-pre:border prose-pre:border-gray-800 prose-pre:rounded-lg prose-pre:shadow-lg
+          prose-pre:px-4 prose-pre:py-4 prose-pre:my-6
+          prose-ul:text-gray-300 prose-ul:ml-4
+          prose-ol:text-gray-300 prose-ol:ml-4
+          prose-li:text-gray-300 prose-li:marker:text-gray-500
+          prose-blockquote:border-l-4 prose-blockquote:border-indigo-500 prose-blockquote:bg-gray-800/30 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:italic prose-blockquote:text-gray-300 prose-blockquote:rounded-r-lg
+          prose-hr:border-gray-700 prose-hr:my-8
+          prose-img:rounded-lg prose-img:shadow-xl prose-img:my-6
+          prose-table:border-collapse prose-table:my-6 prose-table:w-full
+          prose-thead:border-b prose-thead:border-gray-700 prose-thead:bg-gray-800/50
+          prose-th:text-gray-100 prose-th:font-semibold prose-th:px-4 prose-th:py-3
+          prose-td:text-gray-300 prose-td:border-b prose-td:border-gray-800 prose-td:px-4 prose-td:py-3
+          prose-tr:hover:prose-td:bg-gray-800/30"
         >
           <MDC :value="post.content" />
         </div>

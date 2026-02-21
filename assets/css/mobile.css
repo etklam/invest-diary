@@ -1,7 +1,5 @@
 /* 行動專用基礎樣式，依賴 design-tokens.css */
 
-@import './design-tokens.css';
-
 /* 全域行動最佳化 */
 body {
   font-size: var(--font-size-base);

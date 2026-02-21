@@ -1,0 +1,80 @@
+/* Markdown 代码高亮样式 */
+.prose pre {
+  position: relative;
+  overflow-x: auto;
+  tab-size: 2;
+}
+
+.prose pre code {
+  display: block;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 0.875rem;
+  line-height: 1.714;
+}
+
+/* 代码块高亮行样式 */
+.prose pre .highlighted {
+  background-color: rgba(99, 102, 241, 0.15);
+  display: block;
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
+
+/* 代码块高亮字符样式 */
+.prose pre .highlighted-chars {
+  color: #f472b6;
+  font-weight: 500;
+}
+
+/* 行内代码优化 */
+.prose :not(pre) > code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+/* 表格响应式 */
+.prose table {
+  display: table;
+  overflow-x: auto;
+}
+
+/* 链接平滑过渡 */
+.prose a {
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+/* 图片最大宽度 */
+.prose img {
+  height: auto;
+  max-width: 100%;
+}
+
+/* 任务列表样式 */
+.prose input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: rgb(99 102 241);
+}
+
+.prose li input[type="checkbox"] {
+  margin-top: 0.25rem;
+}
+
+/* 脚注样式 */
+.prose :not(a) > strong {
+  font-weight: 600;
+}
+
+/* 代码块语言标签样式 */
+.prose pre::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: rgb(156 163 175);
+  background: rgb(17 24 39 / 0.8);
+  border-radius: 0 0.5rem 0 0.5rem;
+  text-transform: uppercase;
+}
