@@ -16,7 +16,9 @@
     "clear": "Clear",
     "all": "All",
     "noData": "No data",
-    "switchLanguage": "Switch language"
+    "switchLanguage": "Switch language",
+    "or": "or",
+    "and": "and"
   },
 
   "nav": {
@@ -360,7 +362,51 @@
     },
     "listSection": {
       "title": "My Disciplines",
-      "count": "Total {count} disciplines"
+      "count": "Total {count} disciplines",
+      "shareButton": "Share",
+      "importButton": "Import"
+    },
+    "share": {
+      "title": "Share Trading Disciplines",
+      "description": "Share your trading disciplines with others",
+      "exportTitle": "Export Options",
+      "includeAuthor": "Include author name",
+      "customTitle": "Custom title",
+      "customDescription": "Custom description",
+      "generateJSON": "Generate JSON",
+      "copyJSON": "Copy JSON",
+      "downloadFile": "Download File",
+      "socialShare": "Social Share",
+      "shareToTwitter": "Share to Twitter",
+      "shareToFacebook": "Share to Facebook",
+      "shareToLine": "Share to LINE",
+      "shareToWhatsApp": "Share to WhatsApp",
+      "shareLink": "Share Link",
+      "copiedSuccess": "Copied to clipboard",
+      "copiedFailed": "Failed to copy",
+      "downloadSuccess": "Downloading file",
+      "exportFailed": "Export failed"
+    },
+    "import": {
+      "title": "Import Trading Disciplines",
+      "description": "Import trading disciplines from shared JSON",
+      "pasteJSON": "Paste JSON",
+      "jsonPlaceholder": "Paste trading discipline JSON...",
+      "uploadFile": "Upload File",
+      "previewTitle": "Preview",
+      "previewDescription": "Preview disciplines to be imported",
+      "disciplineCount": "{count} disciplines",
+      "replaceExisting": "Replace existing disciplines",
+      "replaceExistingWarning": "If checked, all existing disciplines will be deleted and new ones imported",
+      "importButton": "Import",
+      "importing": "Importing...",
+      "importSuccess": "Successfully imported {count} disciplines",
+      "importFailed": "Import failed",
+      "invalidJSON": "Invalid JSON format",
+      "noValidDisciplines": "No valid disciplines to import",
+      "confirmImport": "Are you sure you want to import these disciplines?",
+      "fromURL": "Import from link",
+      "detectedURL": "Detected share link, would you like to import?"
     },
     "toast": {
       "enterDiscipline": "Please enter trading discipline",
@@ -379,7 +425,9 @@
       "save": "Save",
       "cancel": "Cancel",
       "moveUp": "Move up",
-      "moveDown": "Move down"
+      "moveDown": "Move down",
+      "share": "Share",
+      "import": "Import"
     }
   },
 

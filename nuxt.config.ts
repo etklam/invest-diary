@@ -83,23 +83,9 @@ export default defineNuxtConfig({
   sitemap: {
     // 你的網站 URL（生產環境需要設置 NUXT_PUBLIC_SITE_URL）
     siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-    // 動態獲取所有 blog 文章
+    // 動態獲取所有 blog 文章（DB 不可用時要能安全失敗）
     async urls() {
-      const prisma = (await import('./lib/prisma.ts')).default
-      const posts = await prisma.post.findMany({
-        where: {
-          status: 'PUBLISHED',
-          publishedAt: { not: null }
-        },
-        select: {
-          slug: true,
-          updatedAt: true
-        }
-      })
-
-      const baseUrl = process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-
-      return [
+      const baseUrls = [
         {
           loc: '/',
           changefreq: 'daily',
@@ -115,15 +101,36 @@ export default defineNuxtConfig({
           loc: '/about',
           changefreq: 'monthly',
           priority: 0.5
-        },
-        // 動態添加所有已發布的 blog 文章
-        ...posts.map(post => ({
-          loc: `/blog/${post.slug}`,
-          changefreq: 'weekly',
-          priority: 0.8,
-          lastmod: post.updatedAt.toISOString()
-        }))
+        }
       ]
+
+      try {
+        const prisma = (await import('./lib/prisma.ts')).default
+        const posts = await prisma.post.findMany({
+          where: {
+            status: 'PUBLISHED',
+            publishedAt: { not: null }
+          },
+          select: {
+            slug: true,
+            updatedAt: true
+          }
+        })
+
+        return [
+          ...baseUrls,
+          ...posts.map(post => ({
+            loc: `/blog/${post.slug}`,
+            changefreq: 'weekly',
+            priority: 0.8,
+            lastmod: post.updatedAt.toISOString()
+          }))
+        ]
+      } catch (err) {
+        // ⚠️ 無法連線資料庫時（例如本機 dev、CI、sitemap build）不要讓整個 sitemap 掛掉
+        console.warn('[sitemap] Prisma unavailable, fallback to static urls:', err?.message)
+        return baseUrls
+      }
     }
   },
 

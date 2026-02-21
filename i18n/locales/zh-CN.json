@@ -16,7 +16,9 @@
     "clear": "清除",
     "all": "全部",
     "noData": "无数据",
-    "switchLanguage": "切换语言"
+    "switchLanguage": "切换语言",
+    "or": "或",
+    "and": "与"
   },
 
   "nav": {
@@ -360,7 +362,51 @@
     },
     "listSection": {
       "title": "我的纪律",
-      "count": "共 {count} 条纪律"
+      "count": "共 {count} 条纪律",
+      "shareButton": "分享",
+      "importButton": "导入"
+    },
+    "share": {
+      "title": "分享交易纪律",
+      "description": "将您的交易纪律分享给他人",
+      "exportTitle": "导出选项",
+      "includeAuthor": "包含作者名称",
+      "customTitle": "自定义标题",
+      "customDescription": "自定义描述",
+      "generateJSON": "生成 JSON",
+      "copyJSON": "复制 JSON",
+      "downloadFile": "下载文件",
+      "socialShare": "社交分享",
+      "shareToTwitter": "分享到 Twitter",
+      "shareToFacebook": "分享到 Facebook",
+      "shareToLine": "分享到 LINE",
+      "shareToWhatsApp": "分享到 WhatsApp",
+      "shareLink": "分享链接",
+      "copiedSuccess": "已复制到剪贴板",
+      "copiedFailed": "复制失败",
+      "downloadSuccess": "文件下载中",
+      "exportFailed": "导出失败"
+    },
+    "import": {
+      "title": "导入交易纪律",
+      "description": "从他人分享的 JSON 导入交易纪律",
+      "pasteJSON": "粘贴 JSON",
+      "jsonPlaceholder": "粘贴交易纪律 JSON...",
+      "uploadFile": "上传文件",
+      "previewTitle": "预览",
+      "previewDescription": "预览将要导入的纪律",
+      "disciplineCount": "{count} 条纪律",
+      "replaceExisting": "替换现有纪律",
+      "replaceExistingWarning": "勾选后会删除所有现有纪律并导入新的",
+      "importButton": "导入",
+      "importing": "导入中...",
+      "importSuccess": "成功导入 {count} 条纪律",
+      "importFailed": "导入失败",
+      "invalidJSON": "无效的 JSON 格式",
+      "noValidDisciplines": "没有有效的纪律可导入",
+      "confirmImport": "确定要导入这些纪律吗？",
+      "fromURL": "从链接导入",
+      "detectedURL": "检测到分享链接，是否导入？"
     },
     "toast": {
       "enterDiscipline": "请输入交易纪律",
@@ -379,7 +425,9 @@
       "save": "保存",
       "cancel": "取消",
       "moveUp": "上移",
-      "moveDown": "下移"
+      "moveDown": "下移",
+      "share": "分享",
+      "import": "导入"
     }
   },
 

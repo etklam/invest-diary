@@ -16,7 +16,9 @@
     "clear": "清除",
     "all": "全部",
     "noData": "無資料",
-    "switchLanguage": "切換語言"
+    "switchLanguage": "切換語言",
+    "or": "或",
+    "and": "與"
   },
 
   "nav": {
@@ -360,7 +362,51 @@
     },
     "listSection": {
       "title": "我的紀律",
-      "count": "共 {count} 條紀律"
+      "count": "共 {count} 條紀律",
+      "shareButton": "分享",
+      "importButton": "導入"
+    },
+    "share": {
+      "title": "分享交易紀律",
+      "description": "將您的交易紀律分享給他人",
+      "exportTitle": "匯出選項",
+      "includeAuthor": "包含作者名稱",
+      "customTitle": "自訂標題",
+      "customDescription": "自訂描述",
+      "generateJSON": "生成 JSON",
+      "copyJSON": "複製 JSON",
+      "downloadFile": "下載檔案",
+      "socialShare": "社交分享",
+      "shareToTwitter": "分享到 Twitter",
+      "shareToFacebook": "分享到 Facebook",
+      "shareToLine": "分享到 LINE",
+      "shareToWhatsApp": "分享到 WhatsApp",
+      "shareLink": "分享連結",
+      "copiedSuccess": "已複製到剪貼簿",
+      "copiedFailed": "複製失敗",
+      "downloadSuccess": "檔案下載中",
+      "exportFailed": "匯出失敗"
+    },
+    "import": {
+      "title": "導入交易紀律",
+      "description": "從他人分享的 JSON 導入交易紀律",
+      "pasteJSON": "貼上 JSON",
+      "jsonPlaceholder": "貼上交易紀律 JSON...",
+      "uploadFile": "上傳檔案",
+      "previewTitle": "預覽",
+      "previewDescription": "預覽將導入的紀律",
+      "disciplineCount": "{count} 條紀律",
+      "replaceExisting": "替換現有紀律",
+      "replaceExistingWarning": "勾選後會刪除所有現有紀律並導入新的",
+      "importButton": "導入",
+      "importing": "導入中...",
+      "importSuccess": "成功導入 {count} 條紀律",
+      "importFailed": "導入失敗",
+      "invalidJSON": "無效的 JSON 格式",
+      "noValidDisciplines": "沒有有效的紀律可導入",
+      "confirmImport": "確定要導入這些紀律嗎？",
+      "fromURL": "從連結導入",
+      "detectedURL": "檢測到分享連結，是否導入？"
     },
     "toast": {
       "enterDiscipline": "請輸入交易紀律",
@@ -379,7 +425,9 @@
       "save": "儲存",
       "cancel": "取消",
       "moveUp": "上移",
-      "moveDown": "下移"
+      "moveDown": "下移",
+      "share": "分享",
+      "import": "導入"
     }
   },
 
