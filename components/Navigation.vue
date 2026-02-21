@@ -3,12 +3,18 @@ const { t } = useI18n()
 const colorMode = useColorMode()
 const { isAuthenticated, user } = useAuth()
 const { visibleNavItems, isActive } = useNavigation()
+const { getTimezoneInfo } = useTimezone()
 
 // Mobile menu state
 const mobileNavOpen = ref(false)
 
 // User dropdown state
 const userMenuOpen = ref(false)
+
+// Get current timezone info
+const currentTimezone = computed(() => {
+  return getTimezoneInfo(user.value?.timezone)
+})
 
 // Close mobile menu when route changes
 const route = useRoute()
@@ -117,6 +123,7 @@ const getIconName = (icon: string) => {
               <div class="mr-3 text-right">
                 <p class="text-sm text-white">{{ user?.name || user?.email }}</p>
                 <p class="text-sm text-gray-400">{{ user?.role === 'ADMIN' ? $t('nav.admin') : $t('nav.users') }}</p>
+                <p class="text-xs text-gray-500">{{ currentTimezone.label }}</p>
               </div>
               <div class="mr-2">
                 <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">

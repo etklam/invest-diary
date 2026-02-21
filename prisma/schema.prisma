@@ -30,6 +30,7 @@ model User {
   expectedMonthlyTrades Int           @default(20) @map("expected_monthly_trades")
   expectedProfit        Decimal       @default(0) @db.Decimal(15, 2) @map("expected_profit")
   expectedAvgHolding    Decimal       @default(0) @db.Decimal(15, 2) @map("expected_avg_holding")
+  timezone              String        @default("Asia/Taipei") @db.VarChar(50)
 
   createdAt             DateTime      @default(now()) @map("created_at")
   updatedAt             DateTime      @updatedAt @map("updated_at")

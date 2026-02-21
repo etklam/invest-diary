@@ -136,6 +136,7 @@ export const useAuth = () => {
     expectedMonthlyTrades?: number
     expectedProfit?: number
     expectedAvgHolding?: number
+    timezone?: string
   }) => {
     try {
       isLoading.value = true

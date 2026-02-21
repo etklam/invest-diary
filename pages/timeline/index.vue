@@ -1,13 +1,13 @@
 <template>
   <div class="timeline-page">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">時間軸</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('timeline.title') }}</h1>
       <NuxtLink
         to="/diaries/new"
         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
         <Icon name="heroicons:plus" class="mr-2 h-5 w-5" />
-        新增日記
+        {{ t('diary.newDiary') }}
       </NuxtLink>
     </div>
 
@@ -16,7 +16,7 @@
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <label for="date-from" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            開始日期
+            {{ t('diary.dateFrom') }}
           </label>
           <input
             type="date"
@@ -27,7 +27,7 @@
         </div>
         <div>
           <label for="date-to" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            結束日期
+            {{ t('diary.dateTo') }}
           </label>
           <input
             type="date"
@@ -42,7 +42,7 @@
             class="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
           >
             <Icon name="heroicons:x-mark" class="mr-2 h-4 w-4" />
-            清除篩選
+            {{ t('diary.clearFilters') }}
           </button>
         </div>
       </div>
@@ -50,7 +50,7 @@
 
     <div v-if="pending" class="text-center py-12">
       <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-indigo-600" />
-      <p class="mt-2 text-gray-500">載入中...</p>
+      <p class="mt-2 text-gray-500">{{ t('common.loading') }}</p>
     </div>
 
     <div v-else-if="error" class="bg-red-50 p-4 rounded-md">
@@ -59,7 +59,7 @@
           <Icon name="heroicons:x-circle" class="h-5 w-5 text-red-400" />
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">載入失敗</h3>
+          <h3 class="text-sm font-medium text-red-800">{{ t('diary.loadFailed') }}</h3>
           <div class="mt-2 text-sm text-red-700">
             {{ error.message }}
           </div>
@@ -69,15 +69,15 @@
 
     <div v-else-if="groupedDiaries.length === 0" class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
       <Icon name="heroicons:clock" class="mx-auto h-12 w-12 text-gray-400" />
-      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">尚無日記</h3>
-      <p class="mt-1 text-sm text-gray-500">開始記錄您的第一篇投資日記吧！</p>
+      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ t('timeline.noEntries') }}</h3>
+      <p class="mt-1 text-sm text-gray-500">{{ t('diary.noDiaries') }}</p>
       <div class="mt-6">
         <NuxtLink
           to="/diaries/new"
           class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           <Icon name="heroicons:plus" class="mr-2 h-5 w-5" />
-          新增日記
+          {{ t('diary.newDiary') }}
         </NuxtLink>
       </div>
     </div>
@@ -172,6 +172,9 @@
 import { computed } from 'vue'
 import { formatDateWithWeekday } from '~/lib/utils'
 
+const { t } = useI18n()
+const { user } = useAuth()
+
 definePageMeta({
   middleware: 'auth'
 })
@@ -192,6 +195,9 @@ interface DiaryGroup {
   periodLabel: string
   diaries: Diary[]
 }
+
+// Get user's timezone
+const userTimezone = computed(() => user.value?.timezone || 'Asia/Taipei')
 
 // Use lazy fetch with pagination to avoid loading all diaries at once
 const page = ref(1)
@@ -280,8 +286,8 @@ const groupedDiaries = computed((): DiaryGroup[] => {
   return Array.from(groups.values()).sort((a, b) => b.period.localeCompare(a.period))
 })
 
-// Rename for template compatibility
-const formatDate = formatDateWithWeekday
+// Timezone-aware date formatter for template
+const formatDate = (date: string | Date) => formatDateWithWeekday(date, userTimezone.value)
 
 watch(error, (error) => {
   if (error) {

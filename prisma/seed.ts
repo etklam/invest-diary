@@ -24,7 +24,8 @@ async function main() {
       role: UserRole.ADMIN,
       expectedMonthlyTrades: 50,
       expectedProfit: 10000.00,
-      expectedAvgHolding: 500000.00
+      expectedAvgHolding: 500000.00,
+      timezone: 'Asia/Taipei'
     }
   })
 
@@ -39,7 +40,8 @@ async function main() {
       role: UserRole.USER,
       expectedMonthlyTrades: 20,
       expectedProfit: 5000.00,
-      expectedAvgHolding: 100000.00
+      expectedAvgHolding: 100000.00,
+      timezone: 'Asia/Taipei'
     }
   })
 
@@ -54,7 +56,8 @@ async function main() {
       role: UserRole.USER,
       expectedMonthlyTrades: 10,
       expectedProfit: 3000.00,
-      expectedAvgHolding: 50000.00
+      expectedAvgHolding: 50000.00,
+      timezone: 'Asia/Taipei'
     }
   })
 

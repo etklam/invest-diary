@@ -4,7 +4,8 @@ const settingsSchema = z.object({
   name: z.string().optional(),
   expectedMonthlyTrades: z.number().int().min(0).optional(),
   expectedProfit: z.number().optional(),
-  expectedAvgHolding: z.number().optional()
+  expectedAvgHolding: z.number().optional(),
+  timezone: z.string().optional()
 })
 
 export default defineEventHandler(async (event) => {
@@ -33,7 +34,8 @@ export default defineEventHandler(async (event) => {
         name: true,
         expectedMonthlyTrades: true,
         expectedProfit: true,
-        expectedAvgHolding: true
+        expectedAvgHolding: true,
+        timezone: true
       }
     })
 
@@ -45,7 +47,8 @@ export default defineEventHandler(async (event) => {
         name: updatedUser.name,
         expectedMonthlyTrades: updatedUser.expectedMonthlyTrades,
         expectedProfit: updatedUser.expectedProfit,
-        expectedAvgHolding: updatedUser.expectedAvgHolding
+        expectedAvgHolding: updatedUser.expectedAvgHolding,
+        timezone: updatedUser.timezone
       }
     }
   } catch (error) {

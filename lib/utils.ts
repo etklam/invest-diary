@@ -58,41 +58,60 @@ export function calculateHoldings(transactions: Transaction[]): Holding[] {
 }
 
 /**
- * 格式化日期為本地字串
+ * 格式化日期為本地字串（支援時區）
+ * @param date 日期
+ * @param timezone 時區（可選），預設為 Asia/Taipei
  */
-export function formatDate(date: Date | string): string {
+export function formatDate(date: Date | string, timezone?: string): string {
+  const tz = timezone || 'Asia/Taipei'
   return new Intl.DateTimeFormat('zh-TW', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: tz
   }).format(new Date(date))
 }
 
 /**
- * 格式化簡短日期 (年/月/日)
+ * 格式化簡短日期 (年/月/日)（支援時區）
+ * @param date 日期
+ * @param timezone 時區（可選），預設為 Asia/Taipei
  */
-export function formatShortDate(date: Date | string): string {
-  const d = new Date(date)
-  const year = d.getFullYear()
-  const month = d.getMonth() + 1
-  const day = d.getDate()
-  return `${year}/${month}/${day}`
+export function formatShortDate(date: Date | string, timezone?: string): string {
+  const tz = timezone || 'Asia/Taipei'
+  const dateObj = new Date(date)
+
+  // Use Intl.DateTimeFormat for timezone support
+  const formatter = new Intl.DateTimeFormat('zh-TW', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: tz
+  })
+
+  // Format and replace slashes to get consistent format
+  return formatter.format(dateObj).replace(/\//g, '/')
 }
 
 /**
- * 格式化日期帶星期 (年/月/日 (週X))
+ * 格式化日期帶星期 (年/月/日 (週X))（支援時區）
+ * @param date 日期
+ * @param timezone 時區（可選），預設為 Asia/Taipei
  */
-export function formatDateWithWeekday(date: Date | string): string {
-  const d = new Date(date)
-  const year = d.getFullYear()
-  const month = d.getMonth() + 1
-  const day = d.getDate()
-  const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-  const weekday = weekdays[d.getDay()]
+export function formatDateWithWeekday(date: Date | string, timezone?: string): string {
+  const tz = timezone || 'Asia/Taipei'
+  const dateObj = new Date(date)
 
-  return `${year}/${month}/${day} (${weekday})`
+  // Get formatted date
+  const formattedDate = formatShortDate(date, tz)
+
+  // Get weekday from the date (weekday is not timezone-dependent)
+  const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+  const weekday = weekdays[dateObj.getDay()]
+
+  return `${formattedDate} (${weekday})`
 }
 
 /**
