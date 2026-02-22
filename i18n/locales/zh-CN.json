@@ -170,7 +170,8 @@
     "viewRelatedDiary": "查看关联日记",
     "triggerTime": "触发时间",
     "createdAt": "创建于",
-    "loadFailed": "加载失败"
+    "loadFailed": "加载失败",
+    "dismissFailed": "关闭提醒失败"
   },
 
   "stock": {

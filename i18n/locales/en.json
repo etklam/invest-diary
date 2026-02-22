@@ -170,7 +170,8 @@
     "viewRelatedDiary": "View related diary",
     "triggerTime": "Trigger time",
     "createdAt": "Created at",
-    "loadFailed": "Failed to load"
+    "loadFailed": "Failed to load",
+    "dismissFailed": "Failed to dismiss alert"
   },
 
   "stock": {
