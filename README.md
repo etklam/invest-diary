@@ -2,9 +2,8 @@
 
 A personal investment diary application built with Nuxt 3, featuring investment journaling, stock portfolio tracking, and an educational blog.
 
-[![Nuxt](https://img.shields.io/badge/Nuxt-3.4.3+-00DC82?logo=nuxt.js)](https://nuxt.com)
-[![Vue](https://img.shields.io/badge/Vue-3.5+-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Nuxt](https://img.shields.io/badge/Nuxt-4.3.1+-00DC82?logo=nuxt.js)](https://nuxt.com)
+[![Vue](https://img.shields.io/badge/Vue-3.5.27-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Features
@@ -12,15 +11,17 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 - **Investment Journaling**: Daily diary entries with markdown support
 - **Portfolio Tracking**: Stock transaction management (BUY/SELL) with holdings calculation
 - **Position Sizing Calculator**: Advanced tool for calculating staged position entries with multiple strategies (pyramid, inverted pyramid, rectangular)
-- **Alert System**: Time-based reminders for diary entries
-- **Investment Discipline**: Custom motivational quotes for trading psychology
-- **Educational Blog**: Public investment education articles (admin-managed)
+- **Alert System**: Time-based reminders for diary entries with centralized alerts page
+- **Calendar View**: Visual calendar interface for viewing and managing diary entries by date
+- **Investment Discipline**: Custom motivational quotes for trading psychology with shareable content
+- **Educational Blog**: Public investment education articles (admin-managed) with category filtering
 - **Multi-language**: English, Traditional Chinese (繁體中文), Simplified Chinese (简体中文)
 - **Dark/Light Mode**: System preference detection with manual toggle
-- **PWA Support**: Offline-capable progressive web application
+- **PWA Support**: Offline-capable progressive web application with install prompts
 - **Authentication**: JWT-based with secure httpOnly cookies
 - **Performance**: SWR caching with Cloudflare CDN support
 - **SEO**: Dynamic sitemap generation for search engine optimization
+- **Image Optimization**: Automated image optimization with @nuxt/image
 
 ## Screenshots
 
@@ -30,15 +31,17 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 
 | Category | Technology |
 |----------|-----------|
-| **Framework** | Nuxt 3 (Vue 3 Composition API) |
-| **Language** | TypeScript |
+| **Framework** | Nuxt 4 (Vue 3 Composition API) |
+| **Language** | TypeScript (bundled with Nuxt) |
 | **Database** | MySQL 8.0+ with Prisma ORM |
-| **Styling** | TailwindCSS |
-| **Authentication** | JWT + bcrypt |
+| **Styling** | TailwindCSS + @tailwindcss/typography |
+| **Authentication** | JWT + bcrypt + jose |
 | **i18n** | @nuxtjs/i18n |
-| **Markdown** | @nuxtjs/mdc |
+| **Markdown** | @nuxtjs/mdc (with rehype-pretty-code, shiki) |
 | **PWA** | @vite-pwa/nuxt |
 | **Icons** | @nuxt/icon (Heroicons) |
+| **Images** | @nuxt/image |
+| **Dark Mode** | @nuxtjs/color-mode |
 | **SEO** | @nuxtjs/sitemap (Dynamic XML sitemap) |
 | **Caching** | Nitro SWR (Stale-While-Revalidate) |
 | **Testing** | Vitest (unit/integration), Playwright (E2E) |
@@ -124,36 +127,48 @@ npm run health:quick    # Quick tests + Prisma validate
 
 ```
 ├── app.vue              # Root application wrapper
-├── components/          # Reusable Vue components
+├── components/          # Reusable Vue components (20 components)
 ├── composables/         # Vue composition functions
 ├── layouts/             # Nuxt layouts (default, authenticated)
 ├── pages/               # File-based routing
-│   ├── auth/           # Authentication pages
-│   ├── admin/          # Admin panel
-│   ├── blog/           # Public blog pages
+│   ├── auth/           # Authentication pages (login, register)
+│   ├── admin/          # Admin panel (blog management)
+│   ├── blog/           # Public blog pages (list, post detail)
 │   ├── settings/       # User settings
 │   ├── stocks/         # Portfolio management
 │   ├── tools/          # Investment tools (position sizing calculator)
-│   └── timeline/       # Diary timeline view
+│   ├── timeline/       # Diary timeline view
+│   ├── calendar/       # Calendar view for diary entries
+│   ├── alerts/         # Centralized alerts page
+│   ├── discipline/     # Investment discipline/quotes management
+│   └── diaries/        # Diary CRUD (create, edit, view)
 ├── server/              # Nitro API routes & middleware
 │   ├── api/            # RESTful endpoints
 │   └── middleware/     # Server middleware (JWT auth)
-├── lib/                 # Shared utilities (Prisma client, position sizing logic)
+├── lib/                 # Shared utilities
+│   ├── prisma.ts       # Prisma client singleton
+│   ├── positionSizing.ts # Position sizing calculation logic
+│   ├── blog.ts         # Blog utilities
+│   ├── jwt.ts          # JWT utilities
+│   ├── disciplineShare.ts # Discipline sharing utilities
+│   └── utils.ts        # General utilities
 ├── prisma/              # Database schema, migrations, seed
 ├── i18n/locales/        # Translation files (en, zh-TW, zh-CN)
 ├── assets/              # Static assets (CSS, images)
+│   └── css/            # Custom CSS (design tokens, markdown, mobile)
 ├── public/              # Public static files
+├── scripts/             # Utility scripts (health check)
 └── tests/               # Unit, integration, and E2E tests
 ```
 
 ## Database Schema
 
 - **User** - Authentication + investment settings
-- **Diary** - Investment journal entries
-- **Transaction** - Stock trades (BUY/SELL)
-- **Alert** - Reminders for diary entries
-- **Discipline** - Investment principles/quotes
-- **Post** - Blog articles (DRAFT/PUBLISHED/ARCHIVED)
+- **Diary** - Investment journal entries with markdown content
+- **Transaction** - Stock trades (BUY/SELL) linked to diaries
+- **Alert** - Time-based reminders for diary entries
+- **Discipline** - Investment principles/quotes with shareable tokens
+- **Post** - Blog articles with category filtering (DRAFT/PUBLISHED/ARCHIVED)
 
 See `prisma/schema.prisma` for detailed relationships and constraints.
 
@@ -213,35 +228,6 @@ npm run build
 node .output/server/index.mjs
 ```
 
-## Health Check
-
-The application provides a health check endpoint for monitoring:
-
-```bash
-curl http://localhost:3000/api/health
-```
-
-Response:
-```json
-{
-  "status": "healthy",
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "checks": {
-    "database": {
-      "status": "ok",
-      "responseTime": 15
-    },
-    "server": {
-      "status": "ok",
-      "uptime": 3600,
-      "environment": "development"
-    }
-  }
-}
-```
-
-See [`docs/HEALTH_CHECK.md`](docs/HEALTH_CHECK.md) for details.
-
 ## Documentation
 
 - **[`CLAUDE.md`](CLAUDE.md)** - Technical documentation for developers (architecture patterns, critical gotchas)
@@ -282,6 +268,54 @@ Contributions are welcome! Please see [`docs/TESTING.md`](docs/TESTING.md) for t
 - Add tests for new features
 - Update documentation as needed
 
+## Scripts
+
+The project includes utility scripts in the `scripts/` directory:
+
+### Health Check Script
+
+**Location**: `scripts/health-check.ts`
+
+**Features**:
+- Database connection validation
+- Server status monitoring
+- Environment variable verification
+- Prisma schema validation
+
+**Usage**:
+```bash
+npm run health:check    # Basic health check
+npm run health:full     # Health check + production build
+npm run health:quick    # Quick tests + Prisma validate
+```
+
+**Health Check Endpoint**:
+
+The application provides a runtime health check endpoint:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "checks": {
+    "database": {
+      "status": "ok",
+      "responseTime": 15
+    },
+    "server": {
+      "status": "ok",
+      "uptime": 3600,
+      "environment": "development"
+    }
+  }
+}
+```
+
 ## Troubleshooting
 
 ### Common Issues
@@ -297,6 +331,12 @@ Contributions are welcome! Please see [`docs/TESTING.md`](docs/TESTING.md) for t
 
 **Problem**: PWA not installing
 - **Solution**: Ensure HTTPS is enabled (required for PWA), or use `localhost` in development
+
+**Problem**: Images not loading correctly
+- **Solution**: Check that image files exist in `public/` directory, verify paths in `<NuxtImg>` components
+
+**Problem**: Dark mode not persisting
+- **Solution**: Clear localStorage, check browser console for color-mode errors, verify `@nuxtjs/color-mode` configuration
 
 For more troubleshooting tips, see [`DEPLOYMENT.md`](DEPLOYMENT.md).
 

@@ -94,13 +94,15 @@ npm run health:quick    # Quick tests + Prisma validate
 ## Architecture Overview
 
 ### Tech Stack
-- **Framework**: Nuxt 3 (4.3.1+) with Vue 3 Composition API
+- **Framework**: Nuxt 4 (4.3.1+) with Vue 3 Composition API
 - **Database**: Prisma ORM with MySQL
-- **Auth**: JWT tokens (httpOnly cookies) + bcryptjs
-- **UI**: TailwindCSS, Heroicons (@nuxt/icon)
+- **Auth**: JWT tokens (httpOnly cookies) + jose (JWT library) + bcryptjs
+- **UI**: TailwindCSS, Heroicons (@nuxt/icon), @tailwindcss/typography
+- **Dark Mode**: @nuxtjs/color-mode with system preference detection
 - **i18n**: @nuxtjs/i18n (3 locales, no_prefix strategy)
-- **PWA**: @vite-pwa/nuxt with service worker
-- **Content**: @nuxtjs/mdc for markdown
+- **PWA**: @vite-pwa/nuxt with service worker, auto-update registration
+- **Content**: @nuxtjs/mdc for markdown with rehype-pretty-code and shiki syntax highlighting
+- **Images**: @nuxt/image for automatic image optimization
 - **SEO**: @nuxtjs/sitemap for dynamic sitemap generation
 - **Caching**: Nitro SWR (Stale-While-Revalidate) + Cloudflare CDN
 - **External Data**: Taiwan Stock Exchange API (TWSE) + Yahoo Finance Chart API for stock prices
@@ -110,23 +112,38 @@ npm run health:quick    # Quick tests + Prisma validate
 ### Directory Structure
 ```
 ├── app.vue              # Root wrapper with auth initialization
-├── components/          # Vue components (19 components)
+├── components/          # Vue components (20 components)
 ├── composables/         # Reusable composition functions (auth, etc.)
 ├── layouts/             # Nuxt layouts (default, authenticated)
 ├── pages/               # File-based routing
+│   ├── auth/           # Authentication pages (login, register)
+│   ├── admin/          # Admin panel (blog management)
+│   ├── blog/           # Public blog pages (list, post detail)
+│   ├── settings/       # User settings
+│   ├── stocks/         # Portfolio management
 │   ├── tools/          # Investment tools (position sizing calculator)
-│   └── ...             # Other page routes
+│   ├── timeline/       # Diary timeline view
+│   ├── calendar/       # Calendar view for diary entries
+│   ├── alerts/         # Centralized alerts page
+│   ├── discipline/     # Investment discipline/quotes management
+│   └── diaries/        # Diary CRUD (create, edit, view)
 ├── server/              # Nitro API routes & server plugins
 │   ├── api/            # RESTful endpoints
 │   └── middleware/     # Server middleware (JWT validation)
 ├── lib/                 # Shared utilities
 │   ├── prisma.ts       # Database client singleton
 │   ├── positionSizing.ts # Position sizing calculation logic
-│   └── ...             # Other utilities
+│   ├── blog.ts         # Blog utilities (slugs, validation)
+│   ├── jwt.ts          # JWT signing/verification utilities
+│   ├── disciplineShare.ts # Discipline sharing token generation
+│   └── utils.ts        # General utilities (date formatting, etc.)
 ├── prisma/              # Database schema, migrations, seed
 ├── i18n/locales/        # Translation files (en, zh-TW, zh-CN)
 ├── assets/              # Static assets (CSS, images)
-└── public/              # Public static files
+│   └── css/            # Custom CSS (design tokens, markdown, mobile)
+├── public/              # Public static files
+├── scripts/             # Utility scripts (health check)
+└── tests/               # Unit, integration, and E2E tests
 ```
 
 ### Key Patterns
@@ -155,6 +172,27 @@ npm run health:quick    # Quick tests + Prisma validate
 - Consistent error handling with proper HTTP status codes
 - Zod validation for request/response schemas
 - Defensive programming for dynamic parameters
+
+**Blog System**:
+- Category-based filtering using `CategoryFilter.vue` component
+- Draft/Published/Archived workflow for posts
+- SEO-friendly slugs with defensive parsing (see "Blog Slug Incident")
+- Markdown content with syntax highlighting (rehype-pretty-code, shiki)
+
+**Alert System**:
+- Centralized alerts page at `/alerts`
+- Time-based reminders linked to diary entries
+- Uses seed data with proper Diary relationships (alert.diary.id)
+
+**Calendar View**:
+- Visual calendar interface at `/calendar`
+- Date-based navigation for diary entries
+- Integration with diary CRUD operations
+
+**Discipline Sharing**:
+- Shareable discipline quotes via token-based system
+- Utilities in `lib/disciplineShare.ts` for token generation
+- Public sharing links for motivational content
 
 **i18n Implementation**:
 - Cookie-based locale persistence (`i18n_locale`)
@@ -224,6 +262,71 @@ t('stock.waitForCooldown', { seconds: 60 })
 - Standalone display mode
 - Runtime caching for external resources (Google Fonts)
 - CRITICAL: API routes must always be `NetworkFirst` with no-store header
+
+### Image Optimization with @nuxt/image
+
+The application uses `@nuxt/image` for automatic image optimization:
+
+**Features**:
+- Automatic format conversion (WebP, AVIF)
+- Responsive image generation with srcset
+- Lazy loading support
+- Image resizing and quality optimization
+
+**Usage in Components**:
+```vue
+<template>
+  <!-- Basic usage -->
+  <NuxtImg src="/images/photo.jpg" alt="Description" />
+
+  <!-- With dimensions -->
+  <NuxtImg src="/images/photo.jpg" width="300" height="200" />
+
+  <!-- With format and quality -->
+  <NuxtImg src="/images/photo.jpg" format="webp" quality="80" />
+
+  <!-- Lazy loading -->
+  <NuxtImg src="/images/photo.jpg" loading="lazy" />
+</template>
+```
+
+**Best Practices**:
+- Always provide alt text for accessibility
+- Use `loading="lazy"` for below-fold images
+- Specify width/height for proper aspect ratio preservation
+- Use format="webp" for modern browsers
+
+### Dark/Light Mode Implementation
+
+The application uses `@nuxtjs/color-mode` for theme switching:
+
+**Configuration** (nuxt.config.ts):
+```ts
+colorMode: {
+  classSuffix: '',
+  fallback: 'light',
+  preference: 'system'  // Respects user's system preference
+}
+```
+
+**Usage in Components**:
+```vue
+<template>
+  <div class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <!-- Content that adapts to theme -->
+  </div>
+</template>
+```
+
+**Theme Toggle**:
+- Use the `useColorMode()` composable to programmatically switch themes
+- Theme preference is persisted in localStorage
+- System preference detection with fallback to light mode
+
+**CSS Design Tokens**:
+- Color values are defined in `assets/css/design-tokens.css`
+- Use CSS custom properties for theme-aware colors
+- Tailwind's `dark:` prefix works automatically based on current theme
 
 ## Performance & Caching Strategy
 
@@ -297,11 +400,11 @@ Sitemap: https://your-domain.com/sitemap.xml
 
 **Core Models**:
 - **User**: Auth + investment settings (expected trades, profit, holding time)
-- **Diary**: Investment journal entries (user's daily notes)
-- **Transaction**: Stock trades (BUY/SELL) linked to diaries
-- **Alert**: Notifications tied to diary entries
-- **Discipline**: User's investment principles
-- **Post**: Blog articles with draft/published/archived workflow
+- **Diary**: Investment journal entries with markdown content and date
+- **Transaction**: Stock trades (BUY/SELL) linked to diaries with price and quantity
+- **Alert**: Time-based notifications tied to diary entries
+- **Discipline**: User's investment principles with shareable token support
+- **Post**: Blog articles with category, draft/published/archived workflow
 
 **Relationships**:
 - User → Diary (1:N, cascade delete)
@@ -314,9 +417,12 @@ Sitemap: https://your-domain.com/sitemap.xml
 
 ## Important Files
 
-- `nuxt.config.ts` - Main config (PWA, i18n, Nitro route rules)
+- `nuxt.config.ts` - Main config (PWA, i18n, Nitro route rules, MDC, color mode)
 - `lib/prisma.ts` - Database client singleton
 - `lib/positionSizing.ts` - Position sizing calculation logic (pure functions, framework-agnostic)
+- `lib/blog.ts` - Blog utilities (slug generation, validation)
+- `lib/jwt.ts` - JWT signing and verification utilities
+- `lib/disciplineShare.ts` - Discipline sharing token generation/validation
 - `composables/useAuth.ts` - Authentication state & logic
 - `pages/tools/position-sizing.vue` - Position sizing calculator UI
 - `server/api/blog/[slug].get.ts` - Reference for defensive slug parsing
