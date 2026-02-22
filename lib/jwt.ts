@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose'
 
-const ACCESS_TOKEN_EXPIRY = '15m' // 15 minutes
-const REFRESH_TOKEN_EXPIRY = '7d' // 7 days
+const ACCESS_TOKEN_EXPIRY = '1h' // 1 hour
+const REFRESH_TOKEN_EXPIRY = '30d' // 30 days
 
 export interface TokenPayload {
   userId: string
