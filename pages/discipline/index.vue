@@ -124,10 +124,15 @@ const commitReorder = async () => {
       order: item.order,
     }))
 
-    await $fetch('/api/discipline/reorder', {
+    const updatedList = await $fetch<{ id: number; content: string; order: number; createdAt: string }[]>('/api/discipline/reorder', {
       method: 'PATCH',
       body: { orders },
     })
+    
+    // Update UI with the returned list from server
+    if (updatedList && Array.isArray(updatedList)) {
+      list.value = updatedList
+    }
   } catch (e) {
     toast.error(t('discipline.toast.editFailed'))
     await fetchList()
