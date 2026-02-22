@@ -70,6 +70,8 @@ model Diary {
   transactions Transaction[]
 
   @@index([userId], map: "diaries_user_id_fkey")
+  // 複合索引：優化使用者日記列表查詢（按建立時間排序）
+  @@index([userId, createdAt(sort: Desc)], map: "diaries_user_created_idx")
   @@map("diaries")
 }
 
@@ -112,6 +114,8 @@ model Transaction {
   diary     Diary           @relation(fields: [diaryId], references: [id], onDelete: Cascade)
 
   @@index([diaryId], map: "transactions_diary_id_fkey")
+  // 複合索引：優化 holdings 查詢（按交易日期排序）
+  @@index([symbol, tradeDate(sort: Asc)], map: "transactions_symbol_date_idx")
   @@map("transactions")
 }
 
@@ -140,5 +144,9 @@ model Post {
   @@index([authorId], map: "posts_author_id_idx")
   @@index([status], map: "posts_status_idx")
   @@index([publishedAt], map: "posts_published_at_idx")
+  // 複合索引：優化已發布文章列表查詢（狀態 + 發布時間排序）
+  @@index([status, publishedAt(sort: Desc)], map: "posts_status_published_idx")
+  // 複合索引：優化分類查詢
+  @@index([category, status], map: "posts_category_status_idx")
   @@map("posts")
 }

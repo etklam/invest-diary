@@ -227,6 +227,19 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
     ssl_prefer_server_ciphers on;
 
+    # WebSocket 代理設定（重要！）
+    location /socket.io/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400;  # 24 hours for WebSocket connections
+    }
+
     # 代理設定
     location / {
         proxy_pass http://127.0.0.1:3000;
@@ -241,6 +254,11 @@ server {
     }
 }
 ```
+
+**重要**: WebSocket 連線需要特定的 Nginx 設定：
+- 必須設定 `proxy_read_timeout` 為較大值（建議 86400 秒 = 24 小時）
+- 必須正確設定 `Upgrade` 和 `Connection` 標頭
+- 必須為 `/socket.io/` 路徑設定專用的 location block
 
 啟用設定：
 

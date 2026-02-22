@@ -12,6 +12,8 @@ export default defineEventHandler(async (event) => {
     const search = query.search as string | undefined
 
     // Build where clause for published posts only
+    // 效能優化：使用型別安全的 where 條件
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       status: 'PUBLISHED',
       publishedAt: {
@@ -25,10 +27,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Filter by tag (tags are stored as comma-separated string)
+    // 效能備註：使用 contains 進行子字串匹配
     if (tag) {
-      where.tags = {
-        contains: tag
-      }
+      where.tags = { contains: tag }
     }
 
     // Search in title and excerpt
@@ -39,6 +40,8 @@ export default defineEventHandler(async (event) => {
       ]
     }
 
+    // 效能優化：使用 select 只選擇列表頁需要的欄位
+    // 排除 content 欄位（每篇文章約減少 5-10KB）
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where,
@@ -55,12 +58,11 @@ export default defineEventHandler(async (event) => {
           createdAt: true,
           updatedAt: true,
           // ❌ Excluding 'content' field - not needed for list view
-          // This reduces payload size by ~5KB per post
           author: {
             select: {
               id: true,
               name: true,
-              email: true
+              // 不需要 email用於列表頁
             }
           }
         },

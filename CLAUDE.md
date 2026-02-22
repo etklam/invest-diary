@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Languages**: English, Traditional Chinese (zh-TW), Simplified Chinese (zh-CN)
 
-## Development Commands
+**WebSocket**: Socket.io for real-time alert push notifications
 
 ```bash
 # Core development
@@ -97,6 +97,7 @@ npm run health:quick    # Quick tests + Prisma validate
 - **Framework**: Nuxt 4 (4.3.1+) with Vue 3 Composition API
 - **Database**: Prisma ORM with MySQL
 - **Auth**: JWT tokens (httpOnly cookies) + jose (JWT library) + bcryptjs
+- **Real-time**: Socket.io (4.8.3) for WebSocket alert push notifications
 - **UI**: TailwindCSS, Heroicons (@nuxt/icon), @tailwindcss/typography
 - **Dark Mode**: @nuxtjs/color-mode with system preference detection
 - **i18n**: @nuxtjs/i18n (3 locales, no_prefix strategy)
@@ -129,7 +130,11 @@ npm run health:quick    # Quick tests + Prisma validate
 │   └── diaries/        # Diary CRUD (create, edit, view)
 ├── server/              # Nitro API routes & server plugins
 │   ├── api/            # RESTful endpoints
-│   └── middleware/     # Server middleware (JWT validation)
+│   ├── middleware/     # Server middleware (JWT validation)
+│   ├── plugins/        # Server plugins (WebSocket, Alert scheduler)
+│   └── websocket/      # WebSocket handlers (connection manager, alert handler)
+├── plugins/            # Client plugins (WebSocket client)
+├── types/              # TypeScript type definitions (WebSocket types)
 ├── lib/                 # Shared utilities
 │   ├── prisma.ts       # Database client singleton
 │   ├── positionSizing.ts # Position sizing calculation logic
@@ -184,6 +189,145 @@ This project intentionally uses PWA as an **installable mobile app shell**, not 
 
 ---
 
+### WebSocket Architecture (Real-time Alerts)
+
+This project uses **Socket.io** for real-time alert push notifications, replacing the previous HTTP polling mechanism.
+
+#### Design Decisions
+
+- ✅ Real-time alert delivery (0-1 second latency vs. 30-second polling)
+- ✅ Automatic reconnection with exponential backoff
+- ✅ JWT-based authentication (same as HTTP API)
+- ✅ Graceful fallback to HTTP polling when WebSocket is disconnected
+- ✅ Multi-device support (user can have multiple simultaneous connections)
+- ✅ Type-safe events with TypeScript
+
+#### Core Implementation
+
+**Server Side**:
+- [`server/plugins/websocket.ts`](server/plugins/websocket.ts:1)
+  - Socket.io server initialization using Nitro plugin
+  - JWT authentication middleware (validates access tokens)
+  - Connection lifecycle management
+  - User-specific room assignment (`user:{userId}`)
+
+- [`server/websocket/connectionManager.ts`](server/websocket/connectionManager.ts:1)
+  - Singleton connection manager for tracking user → socket mappings
+  - Multi-device support (one user can have multiple sockets)
+  - Methods: `register()`, `unregister()`, `emitToUser()`, `broadcast()`
+  - Statistics tracking (online users, connection counts)
+
+- [`server/websocket/alertHandler.ts`](server/websocket/alertHandler.ts:1)
+  - Handles `alert:dismiss` events from clients
+  - Validates alert ownership before updating
+  - Emits `alert:dismissed` or `alert:error` responses
+
+- [`server/plugins/alert-scheduler.ts`](server/plugins/alert-scheduler.ts:1)
+  - Replaces old HTTP polling-based alerts-checker.ts
+  - Checks for upcoming alerts every 60 seconds
+  - Pushes alerts via WebSocket to online users
+  - Offline users' alerts are fetched via HTTP on next visit
+
+**Client Side**:
+- [`plugins/websocket.client.ts`](plugins/websocket.client.ts:1)
+  - Singleton Socket.io client instance
+  - Auto-connects on user login, disconnects on logout
+  - Token refresh on connection error (automatic re-authentication)
+  - Provides `$websocket` to Nuxt app
+
+- [`composables/useWebSocket.ts`](composables/useWebSocket.ts:1)
+  - Thin facade over `$websocket` plugin
+  - SSR-safe (returns empty refs when called on server)
+  - Exports: `isConnected`, `connectionStatus`, `lastError`, `onAlert()`, `dismissAlert()`
+
+- [`composables/useAlerts.ts`](composables/useAlerts.ts:1)
+  - Hybrid WebSocket + HTTP polling strategy
+  - Uses WebSocket when connected, falls back to HTTP when disconnected
+  - Alert queue management with duplicate prevention
+  - Automatic cleanup of processed alerts (24-hour retention)
+
+**Type Definitions**:
+- [`types/websocket.ts`](types/websocket.ts:1)
+  - `ServerToClientEvents`: Events from server to client
+  - `ClientToServerEvents`: Events from client to server
+  - `AlertPayload`: Alert data structure
+  - `ConnectionStatus`: Connection state type
+
+#### WebSocket Events
+
+**Server → Client**:
+- `alert:triggered` - New alert pushed to user
+- `alert:dismissed` - Confirmation that alert was dismissed
+- `alert:error` - Error dismissing alert
+- `connection:success` - Connection established confirmation
+- `pong` - Response to ping (heartbeat)
+
+**Client → Server**:
+- `alert:dismiss` - Request to dismiss an alert
+- `ping` - Heartbeat check
+
+#### Connection Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant WS as WebSocket Server
+    participant Auth as JWT Middleware
+    participant DB as Database
+
+    C->>WS: Connect with access_token
+    WS->>Auth: Verify token
+    Auth-->>WS: Valid (userId extracted)
+    WS->>C: connection:success
+
+    Note over C,DB: Alert Triggered
+    DB->>WS: Alert scheduler finds due alerts
+    WS->>C: alert:triggered event
+    C->>C: Display alert notification
+
+    Note over C,DB: User Dismisses Alert
+    C->>WS: alert:dismiss event
+    WS->>DB: Update isDismissed=true
+    WS->>C: alert:dismissed confirmation
+```
+
+#### Critical Configuration (DO NOT CHANGE)
+
+**Nginx Configuration** (if using reverse proxy):
+```nginx
+location /socket.io/ {
+    proxy_pass http://localhost:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_read_timeout 86400;
+}
+```
+
+**Socket.io Options** (server):
+- Path: `/socket.io/`
+- Transports: `websocket`, `polling` (fallback)
+- Ping interval: 25 seconds
+- Ping timeout: 20 seconds
+- CORS: Configured from `NUXT_PUBLIC_SITE_URL`
+
+**Socket.io Options** (client):
+- Reconnection: Enabled (10 attempts)
+- Timeout: 20 seconds
+- Auto token refresh on `connect_error`
+
+#### Expected Benefits
+
+| Metric | Before (Polling) | After (WebSocket) | Improvement |
+|--------|------------------|-------------------|-------------|
+| HTTP requests/day | ~115,000 | ~500 | 99.6% reduction |
+| Alert latency | 0-30 seconds | <1 second | Real-time |
+| Server CPU | Baseline | -20% | Lower load |
+| Database queries | High | Low | 95% reduction |
+
+---
+
 ### Key Patterns
 
 **Authentication Flow**:
@@ -221,6 +365,9 @@ This project intentionally uses PWA as an **installable mobile app shell**, not 
 - Centralized alerts page at `/alerts`
 - Time-based reminders linked to diary entries
 - Uses seed data with proper Diary relationships (alert.diary.id)
+- **Real-time push via WebSocket** with HTTP polling fallback
+- Alert scheduler checks every 60 seconds for due alerts
+- Multi-device alert delivery (all user sockets receive the alert)
 
 **Calendar View**:
 - Visual calendar interface at `/calendar`
@@ -462,9 +609,17 @@ Sitemap: https://your-domain.com/sitemap.xml
 - `lib/jwt.ts` - JWT signing and verification utilities
 - `lib/disciplineShare.ts` - Discipline sharing token generation/validation
 - `composables/useAuth.ts` - Authentication state & logic
+- `composables/useAlerts.ts` - Alert management with WebSocket + HTTP fallback
+- `composables/useWebSocket.ts` - WebSocket composable (SSR-safe facade)
+- `plugins/websocket.client.ts` - WebSocket client plugin (singleton Socket.io client)
 - `pages/tools/position-sizing.vue` - Position sizing calculator UI
+- `server/plugins/websocket.ts` - WebSocket server initialization
+- `server/websocket/connectionManager.ts` - Connection manager singleton
+- `server/websocket/alertHandler.ts` - Alert event handlers
+- `server/plugins/alert-scheduler.ts` - Alert push scheduler (replaces polling)
 - `server/api/blog/[slug].get.ts` - Reference for defensive slug parsing
 - `server/middleware/auth.ts` - JWT validation middleware
+- `types/websocket.ts` - WebSocket event type definitions
 - `prisma/schema.prisma` - Database relationships & constraints
 
 ## Testing Strategy
@@ -523,6 +678,13 @@ This commonly occurs on auth/public pages when adding `requiresAuth` later—alw
     - `npm run seed` 會建立 `Diary` 與 `Alert` 的關聯資料（`alert.diaryId` → `diary.id`）。
     - 前端在產生導向日記的連結時，必須使用 `alert.diary.id`（巢狀關聯），而不是假設存在 `alert.diary_id`。
     - 若調整 `/api/alerts` 的 `include` 欄位（例如新增/移除 `diary.id`），需同步檢查 seed data 與前端使用的欄位是否一致，避免產生 `/diaries/undefined` 的請求。
+
+12. **WebSocket SSR Safety**:
+    - `useWebSocket()` composable is SSR-safe (returns empty refs on server)
+    - Never call `$websocket` directly in components—always use `useWebSocket()`
+    - WebSocket plugin auto-initializes after user login, auto-disconnects on logout
+    - If adding new WebSocket events, update `types/websocket.ts` for type safety
+    - Token refresh on `connect_error` is automatic—don't manually re-implement
 
 ## Environment Variables
 

@@ -1,4 +1,4 @@
-import type { Transaction } from '@prisma/client'
+import { Decimal } from '@prisma/client/runtime/library'
 
 export interface Holding {
   symbol: string
@@ -7,11 +7,22 @@ export interface Holding {
   totalCost: number
 }
 
+// 最小化的交易記錄類型，只用於計算持股
+export interface TransactionForHolding {
+  symbol: string
+  type: 'BUY' | 'SELL'
+  quantity: Decimal | number
+  price: Decimal | number
+  tradeDate: Date | string
+}
+
 /**
  * 從交易記錄計算持股資訊
  * 平均成本 = (買入總成本 - 賣出總成本) / (買入總數量 - 賣出總數量)
+ *
+ * 效能優化：只接受計算所需的欄位，避免載入完整的 Transaction 類型
  */
-export function calculateHoldings(transactions: Transaction[]): Holding[] {
+export function calculateHoldings(transactions: TransactionForHolding[]): Holding[] {
   const symbolMap = new Map<string, {
     totalQuantity: number
     totalCost: number

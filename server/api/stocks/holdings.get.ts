@@ -11,29 +11,38 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  console.log('Fetching all holdings for user:', userId)
+  console.log('[Stocks] Fetching holdings for user:', userId)
   try {
-    // Fetch all diaries with their transactions for this user
-    const diaries = await prisma.diary.findMany({
+    //效能優化：直接查詢 transactions 表，避免載入完整的 diary 資料
+    //透過 diary 關聯篩選 userId，只選擇計算所需的欄位
+    const transactions = await prisma.transaction.findMany({
       where: {
-        userId: userId
+        diary: {
+          userId: BigInt(userId)
+        }
       },
-      include: {
-        transactions: true,
+      select: {
+        id: true,
+        symbol: true,
+        type: true,
+        quantity: true,
+        price: true,
+        tradeDate: true,
+        // 不需要載入 diaryId 和 createdAt
       },
+      orderBy: {
+        tradeDate: 'asc'// 按日期排序，方便 FIFO 計算
+      }
     })
 
-    // Collect all transactions from all diaries
-    const allTransactions = diaries.flatMap(diary => diary.transactions)
+    // 計算持股（已經排序好，不需要在 calculateHoldings 中再排序）
+    const holdings = calculateHoldings(transactions)
 
-    // Calculate holdings using FIFO method
-    const holdings = calculateHoldings(allTransactions)
-
-    console.log('Calculated holdings:', holdings.length, 'symbols')
+    console.log('[Stocks] Calculated holdings:', holdings.length, 'symbols')
     return holdings
   } catch (error) {
-    console.error('Error fetching holdings:', error)
-    console.error('Error details:', JSON.stringify(error))
+    console.error('[Stocks] Error fetching holdings:', error)
+    console.error('[Stocks] Error details:', JSON.stringify(error))
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to fetch holdings',

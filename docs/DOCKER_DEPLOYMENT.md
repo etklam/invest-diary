@@ -95,6 +95,52 @@ docker pull forgejo.hker.me/etklam/diary-vue:main-abc123def
 
 ## 部署到生產環境
 
+### Nginx 反向代理設定（重要 - WebSocket 支援）
+
+由於本應用使用 Socket.io 實現即時 Alert 推播，**必須**在 Nginx 設定中正確配置 WebSocket 支援：
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com;
+
+    # SSL 設定...
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+
+    # WebSocket 代理設定（重要！）
+    location /socket.io/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400;  # 24 hours for WebSocket connections
+    }
+
+    # 一般 HTTP 代理
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+**關鍵設定說明**：
+- `proxy_read_timeout 86400` - 必須設定為較大值（24小時），否則 WebSocket 連線會被中斷
+- `/socket.io/` 路徑需要專用的 location block
+- 必須正確設定 `Upgrade` 和 `Connection` 標頭
+
 ### 使用 Docker Compose
 
 更新您的 `docker-compose.yml`：
