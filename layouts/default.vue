@@ -12,7 +12,7 @@
         <slot />
       </main>
       <Toast :toasts="toasts" @remove="removeToast" />
-      <PWAReloadPrompt />
+      <PWAUpdatePrompt />
       <AlertNotification
         v-if="currentAlert"
         :message="currentAlert.message"

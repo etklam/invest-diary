@@ -17,7 +17,7 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 - **Educational Blog**: Public investment education articles (admin-managed) with category filtering
 - **Multi-language**: English, Traditional Chinese (繁體中文), Simplified Chinese (简体中文)
 - **Dark/Light Mode**: System preference detection with manual toggle
-- **PWA Support**: Offline-capable progressive web application with install prompts
+- **PWA Support**: Installable progressive web application (mobile-first, no offline cache)
 - **Authentication**: JWT-based with secure httpOnly cookies
 - **Performance**: SWR caching with Cloudflare CDN support
 - **SEO**: Dynamic sitemap generation for search engine optimization
@@ -38,7 +38,7 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 | **Authentication** | JWT + bcrypt + jose |
 | **i18n** | @nuxtjs/i18n |
 | **Markdown** | @nuxtjs/mdc (with rehype-pretty-code, shiki) |
-| **PWA** | @vite-pwa/nuxt |
+| **PWA** | @vite-pwa/nuxt (installable shell, auto-update) |
 | **Icons** | @nuxt/icon (Heroicons) |
 | **Images** | @nuxt/image |
 | **Dark Mode** | @nuxtjs/color-mode |
@@ -122,6 +122,43 @@ npm run health:check    # System health validation
 npm run health:full     # Health check + build
 npm run health:quick    # Quick tests + Prisma validate
 ```
+
+## PWA Architecture
+
+This project uses PWA **as a mobile app shell**, not as an offline-first application.
+
+### Design Principles
+
+- ✅ Installable to home screen (Android / desktop Chrome)
+- ✅ Auto-update via Service Worker
+- ❌ No offline-first caching (to avoid stale investment data)
+- ✅ API routes are never cached
+
+### Core Files
+
+- [`composables/useAppPWA.ts`](composables/useAppPWA.ts:1)
+  - Centralized PWA state management
+  - Handles `beforeinstallprompt`
+  - Tracks install status and SW updates
+
+- [`components/PWAInstallPrompt.vue`](components/PWAInstallPrompt.vue:1)
+  - Install banner with 7-day dismiss logic
+  - i18n-enabled
+
+- [`components/PWAUpdatePrompt.vue`](components/PWAUpdatePrompt.vue:1)
+  - Notifies users when a new version is available
+
+- [`nuxt.config.ts`](nuxt.config.ts:174)
+  - PWA manifest configuration
+  - Minimal Workbox setup (no runtime caching)
+
+### Known Platform Differences
+
+- **iOS Safari** does not support `beforeinstallprompt`
+  - Users must install via *Share → Add to Home Screen*
+  - This is expected behavior
+
+---
 
 ## Project Structure
 

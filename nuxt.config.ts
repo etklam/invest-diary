@@ -203,26 +203,9 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      globPatterns: ['**/*.{js,css,html,png,svg,ico,txt}'],
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'google-fonts-cache',
-            expiration: {
-              maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-            },
-            cacheableResponse: {
-              statuses: [0, 200]
-            }
-          }
-        }
-        // ❌ API routes intentionally NOT cached - see Nitro routeRules above
-        // API routes have Cache-Control: no-store to prevent stale data
-        // Caching API routes caused 400 errors for dynamic blog slugs
-      ]
+      globPatterns: ['**/*.{js,css,html,png,svg,ico,txt,woff,woff2}']
+      // 不需要 runtimeCaching，因為 PWA 主要作為手機偽 app 使用
+      // API 路由不快取，避免資料過期問題
     },
     devOptions: {
       enabled: true,

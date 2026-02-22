@@ -667,5 +667,20 @@
         }
       }
     }
+  },
+
+  "pwa": {
+    "install": {
+      "title": "安裝投資日記",
+      "description": "將應用程式安裝到主畫面，獲得更好的體驗",
+      "install": "安裝",
+      "later": "稍後"
+    },
+    "update": {
+      "title": "有新版本可用",
+      "description": "點擊重新整理以獲取最新內容",
+      "refresh": "重新整理",
+      "later": "稍後"
+    }
   }
 }

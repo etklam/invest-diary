@@ -100,7 +100,7 @@ npm run health:quick    # Quick tests + Prisma validate
 - **UI**: TailwindCSS, Heroicons (@nuxt/icon), @tailwindcss/typography
 - **Dark Mode**: @nuxtjs/color-mode with system preference detection
 - **i18n**: @nuxtjs/i18n (3 locales, no_prefix strategy)
-- **PWA**: @vite-pwa/nuxt with service worker, auto-update registration
+- **PWA**: @vite-pwa/nuxt (installable app shell, auto-update, no offline-first cache)
 - **Content**: @nuxtjs/mdc for markdown with rehype-pretty-code and shiki syntax highlighting
 - **Images**: @nuxt/image for automatic image optimization
 - **SEO**: @nuxtjs/sitemap for dynamic sitemap generation
@@ -145,6 +145,44 @@ npm run health:quick    # Quick tests + Prisma validate
 ├── scripts/             # Utility scripts (health check)
 └── tests/               # Unit, integration, and E2E tests
 ```
+
+### PWA Architecture (IMPORTANT)
+
+This project intentionally uses PWA as an **installable mobile app shell**, not an offline-first application.
+
+#### Design Decisions
+
+- ✅ Installable to home screen (Android / Chrome / Edge)
+- ✅ Auto-update via Service Worker
+- ❌ No runtime API caching (prevents stale financial data)
+- ❌ No offline-first UX
+
+#### Core Implementation
+
+- [`composables/useAppPWA.ts`](composables/useAppPWA.ts:1)
+  - Centralized PWA state (install + update)
+  - Handles `beforeinstallprompt`
+  - Tracks `isInstalled`, `canInstall`, `needRefresh`
+
+- [`components/PWAInstallPrompt.vue`](components/PWAInstallPrompt.vue:1)
+  - Install banner with 7-day dismiss window
+  - Hidden automatically when installed or unsupported
+
+- [`components/PWAUpdatePrompt.vue`](components/PWAUpdatePrompt.vue:1)
+  - Displays when `needRefresh === true`
+  - Calls `updateServiceWorker()`
+
+- [`nuxt.config.ts`](nuxt.config.ts:174)
+  - Minimal Workbox config
+  - API routes are never cached
+
+#### Critical Rules (DO NOT VIOLATE)
+
+- ❌ Do NOT enable runtimeCaching for `/api/**`
+- ❌ Do NOT treat PWA as offline-first
+- ✅ Restart dev server if PWA auto-import types behave oddly
+
+---
 
 ### Key Patterns
 

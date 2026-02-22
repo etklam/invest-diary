@@ -667,5 +667,20 @@
         }
       }
     }
+  },
+
+  "pwa": {
+    "install": {
+      "title": "Install Investment Diary",
+      "description": "Add to home screen for a better experience",
+      "install": "Install",
+      "later": "Later"
+    },
+    "update": {
+      "title": "New version available",
+      "description": "Click refresh to get the latest content",
+      "refresh": "Refresh",
+      "later": "Later"
+    }
   }
 }
