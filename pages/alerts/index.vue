@@ -64,6 +64,9 @@
                 <p class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                   <Icon name="heroicons:clock" class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
                   {{ t('alert.triggerTime') }}：{{ formatDate(alert.triggerAt, userTimezone) }}
+                  <span v-if="alert.recurringMode" class="ml-2 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-0.5 rounded-full">
+                    {{ getRecurringLabel(alert.recurringMode) }} • 第 {{ alert.instanceNumber }} 次
+                  </span>
                 </p>
               </div>
               <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 dark:text-gray-400">
@@ -113,5 +116,11 @@ const dismissAlert = async (id: number) => {
     console.error(e)
     toast.error(t('error.unknown'))
   }
+}
+
+const getRecurringLabel = (mode: string) => {
+  if (mode === 'WEEK') return '本周'
+  if (mode === 'MONTH') return '本月'
+  return ''
 }
 </script>

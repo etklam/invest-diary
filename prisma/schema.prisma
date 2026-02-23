@@ -80,15 +80,20 @@ model Diary {
 }
 
 model Alert {
-  id          BigInt   @id @default(autoincrement())
-  diaryId     BigInt   @map("diary_id")
-  message     String   @db.VarChar(500)
-  triggerAt   DateTime @map("trigger_at")
-  isDismissed Boolean  @default(false) @map("is_dismissed")
-  createdAt   DateTime @default(now()) @map("created_at")
-  diary       Diary    @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  id             BigInt   @id @default(autoincrement())
+  diaryId        BigInt   @map("diary_id")
+  message        String   @db.VarChar(500)
+  triggerAt      DateTime @map("trigger_at")
+  isDismissed    Boolean  @default(false) @map("is_dismissed")
+  recurringMode  String?  @db.VarChar(20) @map("recurring_mode")
+  parentId       BigInt?  @map("parent_id")
+  instanceNumber Int?     @default(1) @map("instance_number")
+  isPaused       Boolean  @default(false) @map("is_paused")
+  createdAt      DateTime @default(now()) @map("created_at")
+  diary          Diary    @relation(fields: [diaryId], references: [id], onDelete: Cascade)
 
   @@index([diaryId], map: "alerts_diary_id_fkey")
+  @@index([parentId], map: "alerts_parent_id_idx")
   @@map("alerts")
 }
 

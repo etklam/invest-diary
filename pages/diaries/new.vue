@@ -77,7 +77,7 @@
               <Icon name="heroicons:x-mark" class="h-5 w-5" />
             </button>
             
-            <div class="flex-grow grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="flex-grow grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label :for="`alert-msg-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">訊息</label>
                 <input
@@ -96,6 +96,21 @@
                   v-model="alert.trigger_at"
                   class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                 />
+              </div>
+              <div>
+                <label :for="`alert-recurring-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">持續提醒</label>
+                <select
+                  :id="`alert-recurring-${index}`"
+                  v-model="alert.recurring_mode"
+                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                >
+                  <option value="">不重複</option>
+                  <option value="WEEK">本周（到週五）</option>
+                  <option value="MONTH">本月（到月底）</option>
+                </select>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {{ getRecurringDescription(alert.recurring_mode) }}
+                </p>
               </div>
             </div>
           </div>
@@ -202,8 +217,15 @@ const addAlert = () => {
 
   form.alerts.push({
     message: '',
-    trigger_at: today
+    trigger_at: today,
+    recurring_mode: ''
   })
+}
+
+const getRecurringDescription = (mode: string) => {
+  if (mode === 'WEEK') return '每個工作日提醒，直到本週五'
+  if (mode === 'MONTH') return '每個工作日提醒，直到本月底'
+  return '僅提醒一次'
 }
 
 const removeAlert = (index: number) => {
@@ -310,7 +332,8 @@ const saveDiary = async () => {
       })),
       alerts: form.alerts.map(a => ({
         ...a,
-        trigger_at: new Date(a.trigger_at).toISOString()
+        trigger_at: new Date(a.trigger_at).toISOString(),
+        recurring_mode: a.recurring_mode || undefined
       }))
     }
 
