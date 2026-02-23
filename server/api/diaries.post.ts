@@ -65,13 +65,13 @@ export default defineEventHandler(async (event): Promise<Diary> => {
             type: tx.type,
             quantity: tx.quantity,
             price: tx.price,
-            tradeDate: new Date(tx.trade_date || tx.tradeDate),
+            tradeDate: new Date((tx.trade_date ?? tx.tradeDate) as any),
           })),
         },
         alerts: {
           create: alerts?.map((a) => ({
             message: a.message,
-            triggerAt: new Date(a.trigger_at || a.triggerAt),
+            triggerAt: new Date((a.trigger_at ?? a.triggerAt) as any),
           })),
         },
       },

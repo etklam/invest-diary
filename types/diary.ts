@@ -1,108 +1,64 @@
-/**
- * Diary-related type definitions
- *
- * Centralized types for diary, alerts, transactions, and API responses.
- * Used across components, composables, and server API routes.
- */
+// Diary-related shared types
 
-/**
- * Diary alert/reminder
- */
-export interface DiaryAlert {
-  id: string
-  message: string
-  triggerAt: Date | string
-  isDismissed: boolean
-}
+import type { Prisma } from '@prisma/client'
 
-/**
- * Transaction type enum
- */
-export type TransactionType = 'BUY' | 'SELL'
+export const DEFAULT_TAGS = [
+  { key: 'profit', labelKey: 'tags.profit', color: 'green' },
+  { key: 'loss', labelKey: 'tags.loss', color: 'red' },
+  { key: 'watch', labelKey: 'tags.watch', color: 'blue' },
+  { key: 'hold', labelKey: 'tags.hold', color: 'gray' },
+  { key: 'learning', labelKey: 'tags.learning', color: 'purple' },
+  { key: 'mistake', labelKey: 'tags.mistake', color: 'orange' },
+] as const
 
-/**
- * Diary transaction record
- */
-export interface DiaryTransaction {
-  id: string
+export type TagKey = typeof DEFAULT_TAGS[number]['key']
+
+// ---- API / Domain Types (backward compatible) ----
+
+export interface TransactionInput {
   symbol: string
-  type: TransactionType
-  quantity: number
-  price: number
-  tradeDate: Date | string
-  diaryId?: string
+  type: 'BUY' | 'SELL'
+  quantity: Prisma.Decimal | number
+  price: Prisma.Decimal | number
+  tradeDate?: Date | string
+  trade_date?: Date | string
 }
 
-/**
- * Full diary with all fields
- */
-export interface Diary {
-  id: string
-  title: string
-  content?: string
-  date?: Date | string
-  createdAt: Date | string
-  updatedAt: Date | string
-  userId?: string
-  transactions?: DiaryTransaction[]
-  alerts?: DiaryAlert[]
+export interface AlertInput {
+  message: string
+  triggerAt?: Date | string
+  trigger_at?: Date | string
 }
 
-/**
- * Pagination metadata
- */
-export interface PaginationResponse {
-  page: number
-  limit: number
-  total: number
-  totalPages: number
-}
-
-/**
- * API response wrapper for diaries list
- */
-export interface DiariesApiResponse {
-  data: Diary[]
-  pagination: PaginationResponse
-}
-
-/**
- * Grouped diaries by period (year-month)
- */
-export interface DiaryGroup {
-  period: string // Format: "YYYY-MM"
-  periodLabel: string // Localized label
-  diaries: Diary[]
-}
-
-/**
- * Diary form input (for create/update)
- */
 export interface DiaryInput {
   title: string
   content?: string
-  date?: Date | string
-  transactions?: DiaryTransactionInput[]
-  alerts?: DiaryAlertInput[]
+  tags?: string[]
+  date?: string | Date
+  transactions?: TransactionInput[]
+  alerts?: AlertInput[]
 }
 
-/**
- * Transaction input for create/update
- */
-export interface DiaryTransactionInput {
-  symbol: string
-  type: TransactionType
-  quantity: number
-  price: number
-  tradeDate: Date | string | string
-  trade_date?: Date | string | string // Alternative field name
+// Prisma-like return shape used by APIs
+export interface Diary {
+  id: bigint | string
+  userId: bigint | string
+  title: string
+  content: string | null
+  tagsString?: string | null
+  date: Date
+  createdAt: Date
+  updatedAt: Date
+  transactions?: TransactionInput[]
+  alerts?: AlertInput[]
 }
 
-/**
- * Alert input for create/update
- */
-export interface DiaryAlertInput {
-  message: string
-  triggerAt: Date | string | string
-  trigger_at?: Date | string | string // Alternative field name
+export interface DiariesApiResponse {
+  data: Diary[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
 }

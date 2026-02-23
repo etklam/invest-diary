@@ -32,6 +32,9 @@ model User {
   expectedAvgHolding    Decimal       @default(0) @db.Decimal(15, 2) @map("expected_avg_holding")
   timezone              String        @default("Asia/Taipei") @db.VarChar(50)
 
+  // Favorite tags (comma-separated)
+  favoriteTagsString    String?       @map("favorite_tags") @db.VarChar(500)
+
   createdAt             DateTime      @default(now()) @map("created_at")
   updatedAt             DateTime      @updatedAt @map("updated_at")
 
@@ -62,6 +65,7 @@ model Diary {
   userId       BigInt        @map("user_id")
   title        String        @db.VarChar(255)
   content      String?       @db.Text
+  tagsString   String?       @map("tags") @db.VarChar(500)
   date         DateTime      @default(now()) @map("date")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")

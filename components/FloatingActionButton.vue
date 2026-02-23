@@ -114,8 +114,18 @@ const isExpanded = ref(false)
 // 操作項目配置
 const actionItems = ref<ActionItem[]>([
   {
+    name: 'quick-diary',
+    label: '快速日記',
+    icon: DiaryIcon,
+    color: '#6366f1',
+    action: () => {
+      router.push('/diaries/quick')
+      closeExpanded()
+    }
+  },
+  {
     name: 'diary',
-    label: '新增日記',
+    label: '完整日記',
     icon: DiaryIcon,
     color: '#6366f1',
     action: () => {
