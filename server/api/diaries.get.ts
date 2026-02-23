@@ -4,9 +4,16 @@ import type { DiariesApiResponse } from '~/types/diary'
 export default defineEventHandler(async (event): DiariesApiResponse => {
   console.log('[Diaries] Fetching diaries with pagination...')
   try {
-    // Auth guaranteed by server middleware
+    // Check authentication
+    if (!event.context.user?.id) {
+      throw createError({
+        statusCode: 401,
+        statusMessage: 'Unauthorized - Please login'
+      })
+    }
+
     // 確保 userId 為 BigInt（避免 string/number 混用）
-    const userId = BigInt(event.context.user!.id)
+    const userId = BigInt(event.context.user.id)
 
     const query = getQuery(event)
     const page = Number(query.page) || 1
@@ -73,7 +80,11 @@ export default defineEventHandler(async (event): DiariesApiResponse => {
         totalPages: Math.ceil(total / limit),
       },
     }
-  } catch (error) {
+  } catch (error: any) {
+    // If error already has a statusCode, re-throw it (e.g., 401 auth errors)
+    if (error?.statusCode) {
+      throw error
+    }
     console.error('[Diaries] Error fetching diaries:', error)
     throw createError({
       statusCode: 500,
