@@ -1,15 +1,15 @@
 import { verifyToken, signAccessToken, signRefreshToken } from '~/lib/jwt'
 import prisma from '~/lib/prisma'
 import { setAccessTokenCookie } from '~/server/utils/auth'
+import { logger } from '~/lib/logger'
+import { Errors, AppError } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.auth.withRequestId(event.context.requestId)
   const refreshToken = getCookie(event, 'refresh-token')
 
   if (!refreshToken) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'No refresh token provided'
-    })
+    throw Errors.noRefreshToken().toH3Error()
   }
 
   try {
@@ -18,10 +18,7 @@ export default defineEventHandler(async (event) => {
 
     // Make sure it's actually a refresh token
     if (payload.type !== 'refresh') {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Invalid token type'
-      })
+      throw Errors.tokenInvalid().toH3Error()
     }
 
     // Check if refresh token exists in database and is not expired
@@ -32,10 +29,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!storedToken) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Refresh token not found'
-      })
+      throw Errors.tokenNotFound().toH3Error()
     }
 
     // Check if token is expired
@@ -46,10 +40,7 @@ export default defineEventHandler(async (event) => {
         where: { token: refreshToken }
       })
 
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Refresh token expired'
-      })
+      throw Errors.tokenExpired().toH3Error()
     }
 
     // Check if user's token version has changed (logout/password change)
@@ -61,10 +52,7 @@ export default defineEventHandler(async (event) => {
         where: { token: refreshToken }
       })
 
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Token has been revoked'
-      })
+      throw Errors.tokenRevoked().toH3Error()
     }
 
     // Generate new access token
@@ -110,20 +98,16 @@ export default defineEventHandler(async (event) => {
       path: '/'
     })
 
-    return {
-      ok: true
-    }
+    log.info('Token refreshed', { userId: user.id.toString() })
+    return { ok: true }
   } catch (error: any) {
-    // If it's a H3 error, re-throw it
+    if (error instanceof AppError) {
+      throw error.toH3Error()
+    }
     if (error.statusCode) {
       throw error
     }
-
-    // Log other errors but return generic message
-    console.error('Token refresh error:', error)
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Invalid refresh token'
-    })
+    log.error('Token refresh error', { error: String(error) })
+    throw Errors.tokenInvalid().toH3Error()
   }
 })

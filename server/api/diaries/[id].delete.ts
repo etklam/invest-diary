@@ -1,22 +1,19 @@
 import prisma from '../../../lib/prisma'
+import { logger } from '~/lib/logger'
+import { Errors, AppError } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.diary.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
   if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   const id = getRouterParam(event, 'id')
 
   if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID is required',
-    })
+    throw Errors.validationError([{ field: 'id', message: 'ID is required' }]).toH3Error()
   }
 
   try {
@@ -29,10 +26,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!diary) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Diary not found',
-      })
+      throw Errors.diaryNotFound(id)
     }
 
     await prisma.diary.delete({
@@ -41,13 +35,14 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    console.log('[API] Diary deleted:', id, 'for user:', userId)
+    log.info('Diary deleted', { diaryId: id, userId })
     return { success: true }
   } catch (error) {
-    console.error('Error deleting diary:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to delete diary',
-    })
+    if (error instanceof AppError) {
+      log.warn(error.message, { code: error.code })
+      throw error.toH3Error()
+    }
+    log.error('Failed to delete diary', { error: String(error) })
+    throw Errors.internalError(error).toH3Error()
   }
 })

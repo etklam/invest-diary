@@ -1,7 +1,9 @@
 import prisma from '../../lib/prisma'
 import type { DiariesApiResponse } from '~/types/diary'
+import { logger } from '~/lib/logger'
+import { Errors, AppError } from '~/lib/errors/factory'
 
-export default defineEventHandler(async (event): DiariesApiResponse => {
+export default defineEventHandler(async (event): Promise<DiariesApiResponse> => {
   console.log('[Diaries] Fetching diaries with pagination...')
   try {
     // Check authentication
@@ -30,7 +32,7 @@ export default defineEventHandler(async (event): DiariesApiResponse => {
         select: {
           id: true,
           title: true,
-          // content 通常很大，列表頁不載入
+          content: true,
           date: true,
           createdAt: true,
           updatedAt: true,
@@ -61,11 +63,11 @@ export default defineEventHandler(async (event): DiariesApiResponse => {
     ])
 
     // 將 BigInt 轉為 string，避免本機 Nitro JSON 序列化 500 error
-    const safeDiaries = diaries.map((d) => ({
+    const safeDiaries = diaries.map((d: any) => ({
       ...d,
       id: d.id.toString(),
-      alerts: d.alerts?.map((a) => ({ ...a, id: a.id.toString() })),
-      transactions: d.transactions?.map((t) => ({
+      alerts: d.alerts?.map((a: any) => ({ ...a, id: a.id.toString() })),
+      transactions: d.transactions?.map((t: any) => ({
         ...t,
         id: t.id.toString(),
       })),

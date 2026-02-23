@@ -1,23 +1,23 @@
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
+import { Errors, AppError } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.diary.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
   if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   const body = await readBody(event)
   const { title, content, date, appendToToday } = body
 
   if (!title || !content) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Title and content are required',
-    })
+    throw Errors.validationError([
+      { field: 'title', message: 'Title is required' },
+      { field: 'content', message: 'Content is required' },
+    ]).toH3Error()
   }
 
   try {
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
           },
         })
 
-        console.log('[API] Diary content appended:', existingDiary.id, 'for user:', userId)
+        log.info('Diary content appended', { diaryId: existingDiary.id.toString(), userId })
         return updatedDiary
       }
     }
@@ -71,13 +71,14 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    console.log('[API] New diary created:', diary.id, 'for user:', userId)
+    log.info('New diary created', { diaryId: diary.id.toString(), userId })
     return diary
   } catch (error) {
-    console.error('Error creating/updating diary:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to create diary',
-    })
+    if (error instanceof AppError) {
+      log.warn(error.message, { code: error.code })
+      throw error.toH3Error()
+    }
+    log.error('Failed to create or append diary', { error: String(error) })
+    throw Errors.internalError(error).toH3Error()
   }
 })

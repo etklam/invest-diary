@@ -1,31 +1,25 @@
 import prisma from '../../../lib/prisma'
 import type { DiaryInput, Diary } from '~/types/diary'
+import { logger } from '~/lib/logger'
+import { Errors, AppError } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event): Promise<Diary> => {
+  const log = logger.diary.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
   if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   const id = getRouterParam(event, 'id')
   const body = await readBody<DiaryInput>(event)
 
   if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID is required',
-    })
+    throw Errors.validationError([{ field: 'id', message: 'ID is required' }]).toH3Error()
   }
 
   if (!body.title) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Title is required',
-    })
+    throw Errors.validationError([{ field: 'title', message: 'Title is required' }]).toH3Error()
   }
 
   const { title, content, date, transactions, alerts } = body
@@ -40,15 +34,12 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     })
 
     if (!existingDiary) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Diary not found',
-      })
+      throw Errors.diaryNotFound(id)
     }
 
     // Update diary and handle transactions and alerts
     // For transactions/alerts, we'll delete existing ones and create new ones for simplicity
-    const diary = await prisma.$transaction(async (tx) => {
+    const diary = await prisma.$transaction(async (tx: any) => {
       // Delete existing transactions and alerts
       await tx.transaction.deleteMany({
         where: {
@@ -93,13 +84,14 @@ export default defineEventHandler(async (event): Promise<Diary> => {
       })
     })
 
-    console.log('[API] Diary updated:', diary.id, 'for user:', userId)
+    log.info('Diary updated', { diaryId: diary.id.toString(), userId })
     return diary as Diary
   } catch (error) {
-    console.error('Error updating diary:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to update diary',
-    })
+    if (error instanceof AppError) {
+      log.warn(error.message, { code: error.code })
+      throw error.toH3Error()
+    }
+    log.error('Failed to update diary', { error: String(error) })
+    throw Errors.internalError(error).toH3Error()
   }
 })

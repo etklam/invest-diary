@@ -1,69 +1,90 @@
+// lib/logger.ts
+
 /**
- * Simple logging utility with log levels
- * In production, debug logs are suppressed
+ * Unified application logger
+ * - Supports log levels
+ * - Supports requestId tracing
+ * - Suppresses debug logs in production
  */
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+
+export interface LogContext {
+  userId?: string
+  requestId?: string
+  [key: string]: unknown
+}
 
 const isDev = process.env.NODE_ENV === 'development'
 
 class Logger {
   private prefix: string
+  private requestId?: string
 
-  constructor(prefix: string) {
+  constructor(prefix: string, requestId?: string) {
     this.prefix = prefix
+    this.requestId = requestId
   }
 
-  private log(level: LogLevel, message: string, ...args: any[]) {
-    const timestamp = new Date().toISOString()
-    const prefix = `[${timestamp}] [${this.prefix}]`
+  withRequestId(requestId?: string): Logger {
+    if (!requestId) return this
+    return new Logger(this.prefix, requestId)
+  }
+
+  private format(level: LogLevel, message: string): string {
+    const ts = new Date().toISOString()
+    const parts = [ts, `[${this.prefix}]`, `[${level.toUpperCase()}]`]
+    if (this.requestId) {
+      parts.push(`[req:${this.requestId.slice(0, 8)}]`)
+    }
+    return parts.join(' ') + ` ${message}`
+  }
+
+  private log(level: LogLevel, message: string, context?: LogContext) {
+    if (level === 'debug' && !isDev) return
+
+    const formatted = this.format(level, message)
+    const args = context ? [formatted, context] : [formatted]
 
     switch (level) {
-      case 'debug':
-        if (isDev) {
-          console.debug(prefix, message, ...args)
-        }
-        break
-      case 'info':
-        console.info(prefix, message, ...args)
-        break
-      case 'warn':
-        console.warn(prefix, message, ...args)
-        break
-      case 'error':
-        console.error(prefix, message, ...args)
-        break
+      case 'debug': console.debug(...args); break
+      case 'info': console.info(...args); break
+      case 'warn': console.warn(...args); break
+      case 'error': console.error(...args); break
     }
   }
 
-  debug(message: string, ...args: any[]) {
-    this.log('debug', message, ...args)
+  debug(message: string, context?: LogContext) {
+    this.log('debug', message, context)
   }
 
-  info(message: string, ...args: any[]) {
-    this.log('info', message, ...args)
+  info(message: string, context?: LogContext) {
+    this.log('info', message, context)
   }
 
-  warn(message: string, ...args: any[]) {
-    this.log('warn', message, ...args)
+  warn(message: string, context?: LogContext) {
+    this.log('warn', message, context)
   }
 
-  error(message: string, ...args: any[]) {
-    this.log('error', message, ...args)
+  error(message: string, context?: LogContext) {
+    this.log('error', message, context)
   }
 }
 
-/**
- * Create a logger instance with a specific prefix
- */
-export function createLogger(prefix: string): Logger {
+export function createLogger(prefix: string) {
   return new Logger(prefix)
 }
 
-// Default logger instances
+// Default loggers by domain
 export const logger = {
-  ws: createLogger('WS'),
-  alert: createLogger('Alert'),
+  api: createLogger('API'),
   auth: createLogger('Auth'),
   db: createLogger('DB'),
+  ws: createLogger('WS'),
+  alert: createLogger('Alert'),
+  blog: createLogger('Blog'),
+  admin: createLogger('ADMIN'),
+  diary: createLogger('Diary'),
+  discipline: createLogger('Discipline'),
+  stocks: createLogger('Stocks'),
 }

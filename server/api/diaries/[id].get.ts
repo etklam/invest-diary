@@ -1,13 +1,13 @@
 import prisma from '../../../lib/prisma'
+import { logger } from '~/lib/logger'
+import { Errors, AppError } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.diary.withRequestId(event.context.requestId)
   const rawUserId = event.context.user?.id
 
   if (!rawUserId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   // Defensive ID resolution (params may be undefined in some dev/PWA cases)
@@ -18,19 +18,13 @@ export default defineEventHandler(async (event) => {
   const rawId = rawFromParams ?? rawFromRouter ?? rawFromPath
 
   if (!rawId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID is required',
-    })
+    throw Errors.validationError([{ field: 'id', message: 'ID is required' }]).toH3Error()
   }
 
   const id = String(rawId)
 
   if (!/^[0-9]+$/.test(id)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid ID format',
-    })
+    throw Errors.validationError([{ field: 'id', message: 'Invalid ID format', value: id }]).toH3Error()
   }
 
   try {
@@ -46,18 +40,17 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!diary) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Diary not found',
-      })
+      throw Errors.diaryNotFound(id)
     }
 
+    log.info('Diary fetched', { diaryId: id })
     return diary
   } catch (error) {
-    console.error('Error fetching diary:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch diary',
-    })
+    if (error instanceof AppError) {
+      log.warn(error.message, { code: error.code })
+      throw error.toH3Error()
+    }
+    log.error('Failed to fetch diary', { error: String(error) })
+    throw Errors.internalError(error).toH3Error()
   }
 })
