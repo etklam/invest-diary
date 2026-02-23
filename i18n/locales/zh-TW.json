@@ -47,7 +47,8 @@
     "settings": "設置",
     "logout": "登出",
     "tools": "投資工具",
-    "positionSizing": "建倉計算器"
+    "positionSizing": "建倉計算器",
+    "seasonality": "季節性分析"
   },
 
   "auth": {
@@ -675,6 +676,139 @@
           "pros": ["初期風險極小", "確認趨勢後加碼", "適合強勢股追蹤"],
           "cons": ["平均成本較高", "若判斷錯誤損失較大", "需要精準判斷"]
         }
+      }
+    },
+    "seasonality": {
+      "title": "美股月份季節性分析",
+      "subtitle": "基於1950年至今的歷史數據，分析S&P 500月份季節性模式",
+      "currentMonth": "當前月份",
+      "nextMonth": "下個月份",
+      "month": "月份",
+      "avgReturn": "平均回報",
+      "characteristics": "主要特性",
+      "volatility": "波動性",
+      "bestSixMonths": "最佳六個月",
+      "weakSixMonths": "相對弱勢期",
+      "strongPeriodDesc": "11月～4月（歷史平均回報遠高於5～10月）",
+      "weakPeriodDesc": "5月～10月（「Sell in May and go away」現象）",
+      "bestMonths": "最佳月份",
+      "worstMonths": "最差月份",
+      "allMonthsTable": "所有月份數據",
+      "recommendations": "投資建議",
+      "recommendationsList": {
+        "0": "季節性僅供參考，適合輔助長期策略（如定期定額）",
+        "1": "短期交易需結合當前宏觀（如利率、經濟數據、選舉）、風險管理與多元化",
+        "2": "歷史數據顯示「時間在市場中」遠優於「擇時進出」"
+      },
+      "now": "本月",
+      "disclaimerTitle": "重要聲明",
+      "disclaimer": "季節性僅供參考，適合輔助長期策略（如定期定額）。短期交易需結合當前宏觀（如利率、經濟數據、選舉）、風險管理與多元化。歷史數據顯示「時間在市場中」遠優於「擇時進出」。",
+      "dataSource": "數據來源：1950年至今S&P 500歷史數據（Visual Capitalist / YCharts）",
+      "copySuccess": "已複製到剪貼簿",
+      "copyFailed": "複製失敗",
+      "months": {
+        "jan": {
+          "characteristics": "年初強勢，常見「January Effect」（小型股更明顯）",
+          "reasons": {
+            "0": "12月稅損賣出後回補買盤",
+            "1": "新年投資樂觀情緒",
+            "2": "基金經理「window dressing」（粉飾報表）"
+          }
+        },
+        "feb": {
+          "characteristics": "混合偏弱、較平淡",
+          "reasons": {
+            "0": "獲利了結",
+            "1": "財報季開始",
+            "2": "節後調整"
+          }
+        },
+        "mar": {
+          "characteristics": "正面、第一季末反彈",
+          "reasons": {
+            "0": "季度再平衡",
+            "1": "機構資金回流"
+          }
+        },
+        "apr": {
+          "characteristics": "強勁之一、稅季後上漲",
+          "reasons": {
+            "0": "個人/企業稅季結束",
+            "1": "良好Q1財報預期"
+          }
+        },
+        "may": {
+          "characteristics": "弱勢期開始",
+          "reasons": {
+            "0": "「Sell in May」效應啟動",
+            "1": "投資人開始夏季度假準備"
+          }
+        },
+        "jun": {
+          "characteristics": "弱勢、夏季低迷",
+          "reasons": {
+            "0": "夏季度假季",
+            "1": "低交易量",
+            "2": "機構減持"
+          }
+        },
+        "jul": {
+          "characteristics": "強勁反彈",
+          "reasons": {
+            "0": "獨立日後交易恢復",
+            "1": "夏季中相對樂觀"
+          }
+        },
+        "aug": {
+          "characteristics": "弱勢、低量交易",
+          "reasons": {
+            "0": "傳統度假高峰",
+            "1": "低流動性易受消息影響"
+          }
+        },
+        "sep": {
+          "characteristics": "最差月份、常見下跌",
+          "reasons": {
+            "0": "財政年結束（許多基金9/30結算）再平衡",
+            "1": "夏季結束資金調整",
+            "2": "開學/企業預算壓力"
+          }
+        },
+        "oct": {
+          "characteristics": "正面但震盪大、歷史「崩盤月」",
+          "reasons": {
+            "0": "Q3財報季集中公布",
+            "1": "歷史大事件（1929、1987、2008）但平均常反彈",
+            "2": "VIX季節高峰"
+          }
+        },
+        "nov": {
+          "characteristics": "年末強勢啟動",
+          "reasons": {
+            "0": "選舉後不確定性減低",
+            "1": "假期消費預期",
+            "2": "Santa Claus Rally 開始"
+          }
+        },
+        "dec": {
+          "characteristics": "年末rally、強勢收官",
+          "reasons": {
+            "0": "年終獎金/資金投入",
+            "1": "稅務規劃（延後賣出）",
+            "2": "機構粉飾報表",
+            "3": "假期樂觀情緒"
+          }
+        }
+      },
+      "strongPeriod": {
+        "name": "最佳六個月",
+        "description": "11月～4月（歷史平均回報遠高於5～10月）",
+        "strategy": "支持「Sell in May and go away」策略，但長期持有仍優於擇時"
+      },
+      "weakPeriod": {
+        "name": "相對弱勢期",
+        "description": "5月～10月（「Sell in May and go away」現象）",
+        "strategy": "波動性在秋季（尤其是9-10月）較高，夏季相對平穩"
       }
     }
   },

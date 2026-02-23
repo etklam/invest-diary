@@ -47,7 +47,8 @@
     "settings": "Settings",
     "logout": "Logout",
     "tools": "Tools",
-    "positionSizing": "Position Sizing Calculator"
+    "positionSizing": "Position Sizing Calculator",
+    "seasonality": "Seasonality"
   },
 
   "auth": {
@@ -675,6 +676,139 @@
           "pros": ["Minimal initial risk", "Add after trend confirmation", "Suitable for momentum tracking"],
           "cons": ["Higher average cost", "Larger loss if judgment is wrong", "Requires precise timing"]
         }
+      }
+    },
+    "seasonality": {
+      "title": "US Stock Market Seasonality",
+      "subtitle": "Based on historical data from 1950 to present, analyzing S&P 500 monthly seasonality patterns",
+      "currentMonth": "Current Month",
+      "nextMonth": "Next Month",
+      "month": "Month",
+      "avgReturn": "Avg Return",
+      "characteristics": "Characteristics",
+      "volatility": "Volatility",
+      "bestSixMonths": "Best Six Months",
+      "weakSixMonths": "Weak Period",
+      "strongPeriodDesc": "November to April (historically higher returns than May to October)",
+      "weakPeriodDesc": "May to October (\"Sell in May and go away\" phenomenon)",
+      "bestMonths": "Best Months",
+      "worstMonths": "Worst Months",
+      "allMonthsTable": "All Monthly Data",
+      "recommendations": "Investment Recommendations",
+      "recommendationsList": {
+        "0": "Seasonality is for reference only, suitable for supplementing long-term strategies (e.g., dollar-cost averaging)",
+        "1": "Short-term trading should consider current macroeconomic factors (interest rates, economic data, elections), risk management, and diversification",
+        "2": "Historical data shows \"time in the market\" is far superior to \"timing the market\""
+      },
+      "now": "Now",
+      "disclaimerTitle": "Important Disclaimer",
+      "disclaimer": "Seasonality is for reference only and should supplement long-term strategies (e.g., dollar-cost averaging). Short-term trading should consider current macroeconomic factors (interest rates, economic data, elections), risk management, and diversification. Historical data shows \"time in the market\" is far superior to \"timing the market\".",
+      "dataSource": "Data source: S&P 500 historical data from 1950 to present (Visual Capitalist / YCharts)",
+      "copySuccess": "Copied to clipboard",
+      "copyFailed": "Copy failed",
+      "months": {
+        "jan": {
+          "characteristics": "Strong start to the year, common \"January Effect\" (more pronounced in small caps)",
+          "reasons": {
+            "0": "Buyback after December tax-loss selling",
+            "1": "New Year investment optimism",
+            "2": "Fund manager \"window dressing\""
+          }
+        },
+        "feb": {
+          "characteristics": "Mixed and weak, relatively flat",
+          "reasons": {
+            "0": "Profit taking",
+            "1": "Earnings season begins",
+            "2": "Post-holiday adjustment"
+          }
+        },
+        "mar": {
+          "characteristics": "Positive, end of Q1 rebound",
+          "reasons": {
+            "0": "Quarterly rebalancing",
+            "1": "Institutional capital return"
+          }
+        },
+        "apr": {
+          "characteristics": "One of the strongest months, post-tax season rally",
+          "reasons": {
+            "0": "End of personal/corporate tax season",
+            "1": "Good Q1 earnings expectations"
+          }
+        },
+        "may": {
+          "characteristics": "Weak period begins",
+          "reasons": {
+            "0": "\"Sell in May\" effect kicks in",
+            "1": "Investors prepare for summer vacation"
+          }
+        },
+        "jun": {
+          "characteristics": "Weak, summer sluggishness",
+          "reasons": {
+            "0": "Summer vacation season",
+            "1": "Low trading volume",
+            "2": "Institutional selling"
+          }
+        },
+        "jul": {
+          "characteristics": "Strong rebound",
+          "reasons": {
+            "0": "Trading resumes after Independence Day",
+            "1": "Relative optimism in mid-summer"
+          }
+        },
+        "aug": {
+          "characteristics": "Weak, low volume trading",
+          "reasons": {
+            "0": "Traditional peak vacation season",
+            "1": "Low liquidity susceptible to news impact"
+          }
+        },
+        "sep": {
+          "characteristics": "Worst month, common declines",
+          "reasons": {
+            "0": "Fiscal year end (many funds settle 9/30) rebalancing",
+            "1": "End of summer capital adjustment",
+            "2": "Back to school / corporate budget pressure"
+          }
+        },
+        "oct": {
+          "characteristics": "Positive but volatile, historical \"crash month\"",
+          "reasons": {
+            "0": "Q3 earnings season concentrated",
+            "1": "Historical events (1929, 1987, 2008) but average often rebounds",
+            "2": "VIX seasonal peak"
+          }
+        },
+        "nov": {
+          "characteristics": "Year-end rally begins",
+          "reasons": {
+            "0": "Reduced uncertainty after elections",
+            "1": "Holiday spending expectations",
+            "2": "Santa Claus Rally begins"
+          }
+        },
+        "dec": {
+          "characteristics": "Year-end rally, strong finish",
+          "reasons": {
+            "0": "Year-end bonus / capital inflow",
+            "1": "Tax planning (delayed selling)",
+            "2": "Institutional window dressing",
+            "3": "Holiday optimism"
+          }
+        }
+      },
+      "strongPeriod": {
+        "name": "Best Six Months",
+        "description": "November to April (historically higher returns than May to October)",
+        "strategy": "Supports \"Sell in May and go away\" strategy, but long-term holding still outperforms timing"
+      },
+      "weakPeriod": {
+        "name": "Weak Period",
+        "description": "May to October (\"Sell in May and go away\" phenomenon)",
+        "strategy": "Volatility is higher in autumn (especially September-October), relatively stable in summer"
       }
     }
   },

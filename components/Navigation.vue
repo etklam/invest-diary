@@ -44,7 +44,8 @@ const secondaryNavItems = computed(() => {
   if (!isAuthenticated.value) {
     return [
       { label: t('nav.about'), to: '/about', icon: 'information-circle' },
-      { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' }
+      { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
+      { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' }
     ]
   }
 
@@ -52,7 +53,8 @@ const secondaryNavItems = computed(() => {
     { label: t('nav.discipline'), to: '/discipline', icon: 'light-bulb' },
     { label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
     { label: t('nav.blog'), to: '/blog', icon: 'document-text' },
-    { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' }
+    { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
+    { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' }
   ]
 
   if (user.value?.role === 'ADMIN') {
