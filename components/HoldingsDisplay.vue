@@ -77,10 +77,10 @@
 </template>
 
 <script setup lang="ts">
-import { calculateHoldings, type Holding } from '~/lib/utils'
+import { calculateHoldings, type Holding, type TransactionForHolding } from '~/lib/utils'
 
 const props = defineProps<{
-  transactions: any[]
+  transactions: TransactionForHolding[]
 }>()
 
 const holdings = computed(() => {

@@ -2,6 +2,7 @@
   "common": {
     "appName": "投资日记",
     "loading": "加载中...",
+    "loadMore": "加载更多",
     "save": "保存",
     "cancel": "取消",
     "delete": "删除",
@@ -225,7 +226,15 @@
   "timeline": {
     "title": "时间轴",
     "noEntries": "尚无时间轴记录",
-    "loadFailed": "加载失败"
+    "loadFailed": "加载失败",
+    "entriesCount": "{count} 篇日记",
+    "reminders": "提醒事项",
+    "moreReminders": "还有 {count} 个提醒...",
+    "noContent": "无内容",
+    "transactionsCount": "{count} 笔交易",
+    "alertsCount": "{count} 个提醒",
+    "viewDetails": "查看详情 →",
+    "periodLabel": "{year}年 {month}月"
   },
 
   "theme": {

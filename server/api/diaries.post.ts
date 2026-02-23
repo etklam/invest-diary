@@ -1,6 +1,7 @@
 import prisma from '~/lib/prisma'
+import type { DiaryInput, Diary } from '~/types/diary'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<Diary> => {
   const userId = event.context.user?.id
 
   if (!userId) {
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const body = await readBody(event)
+  const body = await readBody<DiaryInput>(event)
 
   if (!body.title) {
     throw createError({
@@ -59,7 +60,7 @@ export default defineEventHandler(async (event) => {
         content,
         date: diaryDate,
         transactions: {
-          create: transactions?.map((tx: any) => ({
+          create: transactions?.map((tx) => ({
             symbol: tx.symbol,
             type: tx.type,
             quantity: tx.quantity,
@@ -68,7 +69,7 @@ export default defineEventHandler(async (event) => {
           })),
         },
         alerts: {
-          create: alerts?.map((a: any) => ({
+          create: alerts?.map((a) => ({
             message: a.message,
             triggerAt: new Date(a.trigger_at || a.triggerAt),
           })),
@@ -81,11 +82,11 @@ export default defineEventHandler(async (event) => {
     })
 
     console.log('[API] Diary created:', diary.id, 'for user:', userId)
-    return diary
-  } catch (error: any) {
+    return diary as Diary
+  } catch (error) {
     console.error('Error creating diary:', error)
     // Re-throw if it's a 409 conflict
-    if (error.statusCode === 409) {
+    if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 409) {
       throw error
     }
     throw createError({

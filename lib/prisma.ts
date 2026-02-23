@@ -1,4 +1,8 @@
-import { PrismaClient } from '@prisma/client'
+// ESM-safe 動態載入 Prisma（避免 Vite client bundle）
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { PrismaClient } = require('@prisma/client')
 
 const prismaClientSingleton = () => {
   return new PrismaClient()

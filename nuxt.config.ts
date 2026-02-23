@@ -1,5 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  vite: {
+    optimizeDeps: {
+      exclude: ['@prisma/client', '@prisma/client/runtime']
+    }
+  },
   // ✅ 避免 Service Worker 攔截 API（特別是動態 slug）
   nitro: {
     routeRules: {

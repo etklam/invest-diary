@@ -102,6 +102,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import type { Diary, DiariesApiResponse } from '~/types/diary'
 
 // Apply auth middleware
 definePageMeta({
@@ -116,15 +117,6 @@ const showQuickModal = ref(false)
 
 const handleDiaryCreated = () => {
   fetchDiaries()
-}
-
-// 類型定義
-interface Diary {
-  id: number
-  title: string
-  content: string
-  date?: string
-  createdAt: string
 }
 
 // 狀態
@@ -150,11 +142,11 @@ const fetchDiaries = async () => {
   try {
     // API returns paginated response: { data: [...], pagination: {...} }
     // Set a large limit to fetch all diaries for calendar display
-    const response = await $fetch<{ data: Diary[], pagination: any }>('/api/diaries?limit=1000')
+    const response = await $fetch<DiariesApiResponse>('/api/diaries?limit=1000')
     diaries.value = response.data
-  } catch (error: any) {
+  } catch (error) {
     // Handle 401 Unauthorized errors
-    if (error?.statusCode === 401) {
+    if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 401) {
       const { user } = useAuth()
       user.value = null
       await navigateTo('/')

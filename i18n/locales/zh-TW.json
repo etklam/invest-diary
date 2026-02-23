@@ -2,6 +2,7 @@
   "common": {
     "appName": "投資日記",
     "loading": "載入中...",
+    "loadMore": "載入更多",
     "save": "儲存",
     "cancel": "取消",
     "delete": "刪除",
@@ -225,7 +226,15 @@
   "timeline": {
     "title": "時間軸",
     "noEntries": "尚無時間軸紀錄",
-    "loadFailed": "載入失敗"
+    "loadFailed": "載入失敗",
+    "entriesCount": "{count} 篇日記",
+    "reminders": "提醒事項",
+    "moreReminders": "還有 {count} 個提醒...",
+    "noContent": "無內容",
+    "transactionsCount": "{count} 筆交易",
+    "alertsCount": "{count} 個提醒",
+    "viewDetails": "查看詳情 →",
+    "periodLabel": "{year}年 {month}月"
   },
 
   "theme": {

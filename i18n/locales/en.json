@@ -2,6 +2,7 @@
   "common": {
     "appName": "Investment Diary",
     "loading": "Loading...",
+    "loadMore": "Load More",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -225,7 +226,15 @@
   "timeline": {
     "title": "Timeline",
     "noEntries": "No timeline entries yet",
-    "loadFailed": "Failed to load"
+    "loadFailed": "Failed to load",
+    "entriesCount": "{count} entries",
+    "reminders": "Reminders",
+    "moreReminders": "{count} more...",
+    "noContent": "No content",
+    "transactionsCount": "{count} transactions",
+    "alertsCount": "{count} alerts",
+    "viewDetails": "View details →",
+    "periodLabel": "{year}-{month}"
   },
 
   "theme": {

@@ -1,4 +1,6 @@
-import { Decimal } from '@prisma/client/runtime/library'
+// ❌ 不要從 prisma runtime 匯入（會被 Vite client bundle）
+// ✅ 僅用於型別，改用 Prisma namespace
+import type { Prisma } from '@prisma/client'
 
 export interface Holding {
   symbol: string
@@ -11,8 +13,8 @@ export interface Holding {
 export interface TransactionForHolding {
   symbol: string
   type: 'BUY' | 'SELL'
-  quantity: Decimal | number
-  price: Decimal | number
+  quantity: Prisma.Decimal | number
+  price: Prisma.Decimal | number
   tradeDate: Date | string
 }
 

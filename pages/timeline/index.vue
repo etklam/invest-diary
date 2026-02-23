@@ -96,7 +96,7 @@
             {{ group.periodLabel }}
           </h2>
           <span class="ml-3 text-sm text-gray-500 dark:text-gray-400">
-            {{ group.diaries.length }} 篇日記
+            {{ t('timeline.entriesCount', { count: group.diaries.length }) }}
           </span>
         </div>
 
@@ -119,14 +119,14 @@
               <div v-if="diary.alerts?.length" class="bg-amber-100 dark:bg-amber-800/50 px-4 py-2 border-b border-amber-200 dark:border-amber-700">
                 <div class="flex items-center gap-2">
                   <Icon name="heroicons:bell-alert" class="h-4 w-4 text-amber-600 dark:text-amber-300" />
-                  <span class="text-xs font-medium text-amber-800 dark:text-amber-200">提醒事項</span>
+                  <span class="text-xs font-medium text-amber-800 dark:text-amber-200">{{ t('timeline.reminders') }}</span>
                 </div>
                 <div class="mt-1 space-y-1">
                   <p v-for="(alert, idx) in diary.alerts.slice(0, 2)" :key="idx" class="text-xs text-amber-700 dark:text-amber-300 truncate">
                     • {{ alert.message }}
                   </p>
                   <p v-if="diary.alerts.length > 2" class="text-xs text-amber-600 dark:text-amber-400">
-                    還有 {{ diary.alerts.length - 2 }} 個提醒...
+                    {{ t('timeline.moreReminders', { count: diary.alerts.length - 2 }) }}
                   </p>
                 </div>
               </div>
@@ -143,20 +143,20 @@
                 </div>
 
                 <p class="mt-2 text-gray-600 dark:text-gray-300 text-sm line-clamp-2">
-                  {{ diary.content ? diary.content.replace(/[#*`]/g, '') : '無內容' }}
+                  {{ diary.content ? diary.content.replace(/[#*`]/g, '') : t('timeline.noContent') }}
                 </p>
 
                 <div class="mt-4 flex flex-wrap items-center gap-3">
                   <span v-if="diary.transactions?.length" class="flex items-center text-xs text-gray-500 dark:text-gray-400">
                     <Icon name="heroicons:currency-dollar" class="mr-1 h-4 w-4 text-green-500" />
-                    {{ diary.transactions.length }} 筆交易
+                    {{ t('timeline.transactionsCount', { count: diary.transactions.length }) }}
                   </span>
                   <span v-if="diary.alerts?.length" class="flex items-center text-xs text-amber-600 dark:text-amber-400">
                     <Icon name="heroicons:bell" class="mr-1 h-4 w-4" />
-                    {{ diary.alerts.length }} 個提醒
+                    {{ t('timeline.alertsCount', { count: diary.alerts.length }) }}
                   </span>
                   <span class="text-indigo-600 dark:text-indigo-400 text-xs font-medium group-hover:text-indigo-500">
-                    查看詳情 &rarr;
+                    {{ t('timeline.viewDetails') }}
                   </span>
                 </div>
               </div>
@@ -164,136 +164,44 @@
           </NuxtLink>
         </div>
       </div>
+
+      <!-- Load More Button -->
+      <div v-if="isHydrated && hasMore" class="mt-8 text-center">
+        <button
+          @click="loadMore"
+          :disabled="loadingMore"
+          class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900"
+        >
+          <Icon v-if="loadingMore" name="svg-spinners:180-ring-with-bg" class="mr-2 h-5 w-5" />
+          {{ loadingMore ? t('common.loading') : t('common.loadMore') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { formatDateWithWeekday } from '~/lib/utils'
+import type { DiaryGroup } from '~/composables/useTimelineDiaries'
 
 const { t } = useI18n()
-const { user } = useAuth()
 
 definePageMeta({
   middleware: 'auth'
 })
 
-// Type definitions
-interface Diary {
-  id: number
-  title: string
-  content: string
-  date?: string
-  createdAt: string
-  transactions?: any[]
-  alerts?: any[]
-}
-
-interface DiaryGroup {
-  period: string
-  periodLabel: string
-  diaries: Diary[]
-}
-
-// Get user's timezone
-const userTimezone = computed(() => user.value?.timezone || 'Asia/Taipei')
-
-// Use lazy fetch with pagination to avoid loading all diaries at once
-const page = ref(1)
-const limit = 20
-const diaries = ref<Diary[]>([])
-
-const { pending, error } = await useLazyFetch<{ data: Diary[]; pagination: any }>(
-  () => `/api/diaries?page=${page.value}&limit=${limit}`,
-  {
-    onResponse({ response }) {
-      if (response._data?.data) {
-        diaries.value.push(...response._data.data)
-      }
-    }
-  }
-)
-
-const filters = reactive({
-  dateFrom: '',
-  dateTo: ''
-})
-
-// Reset filters
-const resetFilters = () => {
-  filters.dateFrom = ''
-  filters.dateTo = ''
-}
-
-// Filter diaries by date range
-const filteredDiaries = computed(() => {
-  if (!diaries.value) return []
-
-  let result = [...diaries.value]
-
-  // Date from filter
-  if (filters.dateFrom) {
-    const fromDate = new Date(filters.dateFrom)
-    fromDate.setHours(0, 0, 0, 0)
-    result = result.filter(d => {
-      const diaryDate = new Date(d.date || d.createdAt)
-      return diaryDate >= fromDate
-    })
-  }
-
-  // Date to filter
-  if (filters.dateTo) {
-    const toDate = new Date(filters.dateTo)
-    toDate.setHours(23, 59, 59, 999)
-    result = result.filter(d => {
-      const diaryDate = new Date(d.date || d.createdAt)
-      return diaryDate <= toDate
-    })
-  }
-
-  // Sort by date descending
-  return result.sort((a, b) => {
-    const dateA = new Date(a.date || a.createdAt).getTime()
-    const dateB = new Date(b.date || b.createdAt).getTime()
-    return dateB - dateA
-  })
-})
-
-// Group diaries by year and month
-const groupedDiaries = computed((): DiaryGroup[] => {
-  const groups = new Map<string, DiaryGroup>()
-
-  filteredDiaries.value.forEach(diary => {
-    const date = new Date(diary.date || diary.createdAt)
-    const year = date.getFullYear()
-    const month = date.getMonth() + 1
-    const period = `${year}-${String(month).padStart(2, '0')}`
-    const periodLabel = `${year}年 ${month}月`
-
-    if (!groups.has(period)) {
-      groups.set(period, {
-        period,
-        periodLabel,
-        diaries: []
-      })
-    }
-
-    groups.get(period)!.diaries.push(diary)
-  })
-
-  // Convert to array and sort by period descending
-  return Array.from(groups.values()).sort((a, b) => b.period.localeCompare(a.period))
-})
-
-// Timezone-aware date formatter for template
-const formatDate = (date: string | Date) => formatDateWithWeekday(date, userTimezone.value)
-
-watch(error, (error) => {
-  if (error) {
-    console.error('Error fetching diaries:', error)
-  }
-})
+// Use the timeline diaries composable for pagination, filtering, and grouping
+const {
+  isHydrated,
+  pending,
+  error,
+  loadingMore,
+  filters,
+  hasMore,
+  groupedDiaries,
+  loadMore,
+  resetFilters,
+  formatDate
+} = useTimelineDiaries()
 </script>
 
 <style scoped>
