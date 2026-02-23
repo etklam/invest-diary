@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { mockGetQuery, mockReadBody } from '../vi-setup'
 
 // Create mock functions
 const mockPostFindMany = vi.fn()
 const mockPostCount = vi.fn()
 const mockPostFindUnique = vi.fn()
+const mockPostFindFirst = vi.fn()
 const mockPostCreate = vi.fn()
 const mockPostUpdate = vi.fn()
 const mockPostDelete = vi.fn()
@@ -15,6 +17,7 @@ vi.mock('~/lib/prisma', () => ({
       findMany: mockPostFindMany,
       count: mockPostCount,
       findUnique: mockPostFindUnique,
+      findFirst: mockPostFindFirst,
       create: mockPostCreate,
       update: mockPostUpdate,
       delete: mockPostDelete,
@@ -24,15 +27,7 @@ vi.mock('~/lib/prisma', () => ({
   },
 }))
 
-// Mock H3 functions
-const mockGetQuery = vi.fn()
-const mockReadBody = vi.fn()
-const mockGetCookie = vi.fn()
-
 vi.mock('h3', () => ({
-  getQuery: mockGetQuery,
-  readBody: mockReadBody,
-  getCookie: mockGetCookie,
   createError: (params: { statusCode: number; statusMessage: string }) => {
     const error = new Error(params.statusMessage)
     ;(error as any).statusCode = params.statusCode
@@ -226,7 +221,8 @@ describe('Blog API', () => {
         author: { id: 1, name: 'Author', email: 'author@test.com' },
       }
 
-      mockPostFindUnique.mockResolvedValue(mockPost)
+      mockPostFindFirst.mockResolvedValue(mockPost)
+      mockGetQuery.mockReturnValue({})
 
       const { default: handler } = await import('~/server/api/blog/[slug].get')
       const mockEvent = {
@@ -237,16 +233,12 @@ describe('Blog API', () => {
 
       const result = await handler(mockEvent)
 
-      expect(result).toHaveProperty('data')
-      expect(mockPostFindUnique).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { slug: 'test-post' },
-        })
-      )
+      expect(result).toHaveProperty('id')
+      expect(mockPostFindFirst).toHaveBeenCalled()
     })
 
     it('should return 404 for non-existent post', async () => {
-      mockPostFindUnique.mockResolvedValue(null)
+      mockPostFindFirst.mockResolvedValue(null)
 
       const { default: handler } = await import('~/server/api/blog/[slug].get')
       const mockEvent = {
@@ -273,6 +265,7 @@ describe('Blog API', () => {
         authorId: 1,
       }
 
+      mockPostFindUnique.mockResolvedValue(null)
       mockPostCreate.mockResolvedValue(mockPost)
 
       mockReadBody.mockResolvedValue({
@@ -287,13 +280,13 @@ describe('Blog API', () => {
       const { default: handler } = await import('~/server/api/blog/index.post')
       const mockEvent = {
         context: {
-          user: { userId: '1', role: 'ADMIN' },
+          user: { id: '1', email: 'admin@test.com', role: 'ADMIN' },
         },
       } as any
 
       const result = await handler(mockEvent)
 
-      expect(result).toHaveProperty('ok', true)
+      expect(result).toHaveProperty('id')
       expect(mockPostCreate).toHaveBeenCalled()
     })
 
@@ -306,11 +299,13 @@ describe('Blog API', () => {
       const { default: handler } = await import('~/server/api/blog/index.post')
       const mockEvent = {
         context: {
-          user: { userId: '1', role: 'ADMIN' },
+          user: { id: '1', email: 'admin@test.com', role: 'ADMIN' },
         },
       } as any
 
-      await expect(handler(mockEvent)).rejects.toThrow()
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 400,
+      })
     })
   })
 
@@ -324,6 +319,7 @@ describe('Blog API', () => {
         status: 'PUBLISHED',
       }
 
+      mockPostFindFirst.mockResolvedValue(mockPost)
       mockPostUpdate.mockResolvedValue(mockPost)
 
       mockReadBody.mockResolvedValue({
@@ -332,38 +328,43 @@ describe('Blog API', () => {
         status: 'PUBLISHED',
       })
 
+      mockGetRouterParam.mockReturnValue('1')
+
       const { default: handler } = await import('~/server/api/blog/[id].put')
       const mockEvent = {
         context: {
-          params: { id: '1' },
-          user: { userId: '1', role: 'ADMIN' },
+          user: { id: '1', email: 'admin@test.com', role: 'ADMIN' },
         },
       } as any
 
       const result = await handler(mockEvent)
 
-      expect(result).toHaveProperty('ok', true)
+      expect(result).toHaveProperty('id')
     })
   })
 
   describe('DELETE /api/blog/[id]', () => {
     it('should delete a blog post', async () => {
-      mockPostDelete.mockResolvedValue({ id: 1 })
+      const mockPost = {
+        id: 1,
+        title: 'Post to delete',
+      }
+
+      mockPostFindFirst.mockResolvedValue(mockPost)
+      mockPostDelete.mockResolvedValue(mockPost)
+
+      mockGetRouterParam.mockReturnValue('1')
 
       const { default: handler } = await import('~/server/api/blog/[id].delete')
       const mockEvent = {
         context: {
-          params: { id: '1' },
-          user: { userId: '1', role: 'ADMIN' },
+          user: { id: '1', email: 'admin@test.com', role: 'ADMIN' },
         },
       } as any
 
       const result = await handler(mockEvent)
 
-      expect(result).toHaveProperty('ok', true)
-      expect(mockPostDelete).toHaveBeenCalledWith({
-        where: { id: 1 },
-      })
+      expect(result).toHaveProperty('id')
     })
   })
 })

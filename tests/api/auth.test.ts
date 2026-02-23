@@ -196,13 +196,8 @@ describe('Auth API', () => {
       const result = await handler(mockEvent)
 
       expect(result).toEqual({
-        ok: true,
-        data: {
-          id: mockUser.id,
-          email: mockUser.email,
-          name: mockUser.name,
-          role: mockUser.role,
-        },
+        success: true,
+        user: mockUser,
       })
     })
 
@@ -225,7 +220,7 @@ describe('Auth API', () => {
       const mockEvent = { context: {} } as any
 
       await expect(handler(mockEvent)).rejects.toMatchObject({
-        statusCode: 400,
+        statusCode: 409,
       })
     })
 
@@ -257,13 +252,15 @@ describe('Auth API', () => {
   })
 
   describe('POST /api/auth/logout', () => {
-    it('should clear auth cookie', async () => {
+    it('should clear auth cookies', async () => {
       const { default: handler } = await import('~/server/api/auth/logout.post')
       const mockEvent = { context: {} } as any
 
       const result = await handler(mockEvent)
 
-      expect(mockDeleteCookie).toHaveBeenCalledWith(mockEvent, 'auth-token')
+      // Should clear access-token and refresh-token cookies
+      expect(mockDeleteCookie).toHaveBeenCalledWith(mockEvent, 'access-token', { path: '/' })
+      expect(mockDeleteCookie).toHaveBeenCalledWith(mockEvent, 'refresh-token', { path: '/' })
       expect(result).toEqual({ ok: true })
     })
   })

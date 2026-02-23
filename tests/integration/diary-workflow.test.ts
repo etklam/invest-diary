@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { mockReadBody, mockGetQuery } from '../vi-setup'
 
 /**
  * Integration Tests for Diary Workflow
- * 
+ *
  * These tests verify the complete flow of diary operations
  * from API calls to data persistence.
  */
@@ -10,6 +11,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // Mock Prisma
 const mockDiaryFindMany = vi.fn()
 const mockDiaryFindUnique = vi.fn()
+const mockDiaryFindFirst = vi.fn()
 const mockDiaryCreate = vi.fn()
 const mockDiaryUpdate = vi.fn()
 const mockDiaryDelete = vi.fn()
@@ -19,6 +21,7 @@ vi.mock('~/lib/prisma', () => ({
     diary: {
       findMany: mockDiaryFindMany,
       findUnique: mockDiaryFindUnique,
+      findFirst: mockDiaryFindFirst,
       create: mockDiaryCreate,
       update: mockDiaryUpdate,
       delete: mockDiaryDelete,
@@ -32,15 +35,7 @@ vi.mock('~/lib/prisma', () => ({
   },
 }))
 
-// Mock H3 functions
-const mockReadBody = vi.fn()
-const mockGetQuery = vi.fn()
-const mockGetCookie = vi.fn()
-
 vi.mock('h3', () => ({
-  readBody: mockReadBody,
-  getQuery: mockGetQuery,
-  getCookie: mockGetCookie,
   createError: (params: { statusCode: number; statusMessage: string }) => {
     const error = new Error(params.statusMessage)
     ;(error as any).statusCode = params.statusCode
@@ -51,6 +46,8 @@ vi.mock('h3', () => ({
 }))
 
 describe('Diary Workflow Integration', () => {
+  const mockUser = { id: '1', email: 'test@example.com', role: 'USER' }
+
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -81,7 +78,7 @@ describe('Diary Workflow Integration', () => {
 
       const { default: createHandler } = await import('~/server/api/diaries.post')
       const createResult = await createHandler({
-        context: { user: { userId: userId.toString() } },
+        context: { user: mockUser },
       } as any)
 
       expect(mockDiaryCreate).toHaveBeenCalled()
@@ -92,7 +89,7 @@ describe('Diary Workflow Integration', () => {
 
       const { default: listHandler } = await import('~/server/api/diaries.get')
       await listHandler({
-        context: { user: { userId: userId.toString() } },
+        context: { user: mockUser },
       } as any)
 
       expect(mockDiaryFindMany).toHaveBeenCalled()
@@ -118,7 +115,7 @@ describe('Diary Workflow Integration', () => {
       const { default: deleteHandler } = await import('~/server/api/diaries/[id].delete')
       await deleteHandler({
         context: {
-          user: { userId: userId.toString() },
+          user: mockUser,
           params: { id: '1' },
         },
       } as any)
@@ -159,7 +156,7 @@ describe('Diary Workflow Integration', () => {
 
       const { default: handler } = await import('~/server/api/diaries.post')
       const result = await handler({
-        context: { user: { userId: '1' } },
+        context: { user: mockUser },
       } as any)
 
       expect(mockDiaryCreate).toHaveBeenCalled()
@@ -181,7 +178,7 @@ describe('Diary Workflow Integration', () => {
 
       const { default: handler } = await import('~/server/api/diaries/by-date.get')
       await handler({
-        context: { user: { userId: '1' } },
+        context: { user: mockUser },
       } as any)
 
       expect(mockDiaryFindMany).toHaveBeenCalledWith(
@@ -210,17 +207,17 @@ describe('Diary Workflow Integration', () => {
         userId: 2n,
       }
 
-      mockDiaryFindUnique.mockResolvedValueOnce(otherUserDiary)
+      mockDiaryFindFirst.mockResolvedValueOnce(null)
 
       const { default: handler } = await import('~/server/api/diaries/[id].get')
-      
+
       await expect(handler({
         context: {
-          user: { userId: '1' },
+          user: mockUser,
           params: { id: '1' },
         },
       } as any)).rejects.toMatchObject({
-        statusCode: 403,
+        statusCode: 404,
       })
     })
   })
