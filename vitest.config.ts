@@ -9,6 +9,7 @@ export default defineConfig({
     include: ['**/*.test.{ts,tsx}'],
     exclude: ['node_modules', 'dist', '.nuxt', '.output'],
     root: '.',
+    setupFiles: ['./tests/vi-setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

@@ -61,11 +61,14 @@ describe('usePerformance', () => {
   describe('logMetric', () => {
     it('should log metric to console in development', async () => {
       vi.resetModules()
-      
+
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
       const { usePerformance } = await import('~/composables/usePerformance')
-      usePerformance()
+      const { initPerformanceMonitoring } = usePerformance()
+
+      // Initialize performance monitoring to trigger web-vitals callbacks
+      await initPerformanceMonitoring()
 
       // Wait for any async operations
       await nextTick()
@@ -114,15 +117,18 @@ describe('usePerformance', () => {
     it('should track all core web vitals', async () => {
       vi.resetModules()
       const { usePerformance } = await import('~/composables/usePerformance')
-      
-      const { metrics } = usePerformance()
+
+      const { metrics, initPerformanceMonitoring } = usePerformance()
+
+      // Initialize to trigger web-vitals callbacks
+      await initPerformanceMonitoring()
 
       // Wait for metrics to be populated
       await nextTick()
 
       // Check that metrics object has the expected structure
       expect(metrics.value).toBeDefined()
-      
+
       // After web-vitals callbacks run, these should be populated
       const keys = Object.keys(metrics.value)
       expect(keys.length).toBeGreaterThanOrEqual(0)
@@ -132,10 +138,11 @@ describe('usePerformance', () => {
   describe('metric thresholds', () => {
     it('should correctly rate LCP values', async () => {
       vi.resetModules()
-      
+
       // LCP thresholds: good <= 2500, needs-improvement <= 4000, poor > 4000
       const { usePerformance } = await import('~/composables/usePerformance')
-      usePerformance()
+      const { initPerformanceMonitoring } = usePerformance()
+      await initPerformanceMonitoring()
 
       await nextTick()
     })

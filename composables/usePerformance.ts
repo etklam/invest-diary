@@ -10,7 +10,7 @@
  * ```
  */
 
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, readonly, ref } from 'vue'
 import type { Metric, ReportCallback } from 'web-vitals'
 
 // Types for Web Vitals metrics

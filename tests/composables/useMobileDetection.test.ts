@@ -1,6 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { nextTick } from 'vue'
 
+// Mock matchMedia function
+const mockMatchMedia = vi.fn(() => ({
+  matches: false,
+  media: '(orientation: portrait)',
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  addListener: vi.fn(),
+  removeListener: vi.fn(),
+}))
+
 // Mock window and navigator
 const mockWindow = {
   innerWidth: 1024,
@@ -8,6 +18,7 @@ const mockWindow = {
   devicePixelRatio: 1,
   addEventListener: vi.fn(),
   removeEventListener: vi.fn(),
+  matchMedia: mockMatchMedia,
 }
 
 const mockNavigator = {

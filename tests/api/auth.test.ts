@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { mockReadBody, mockGetCookie, mockSetCookie, mockDeleteCookie } from '../vi-setup'
 
 // Create mock functions
 const mockUserFindUnique = vi.fn()
@@ -33,26 +34,18 @@ vi.mock('bcryptjs', () => ({
 }))
 
 const mockSignToken = vi.fn()
+const mockSignAccessToken = vi.fn()
+const mockSignRefreshToken = vi.fn()
 const mockVerifyToken = vi.fn()
 
 vi.mock('~/lib/jwt', () => ({
   signToken: mockSignToken,
+  signAccessToken: mockSignAccessToken,
+  signRefreshToken: mockSignRefreshToken,
   verifyToken: mockVerifyToken,
 }))
 
-// Mock H3 functions
-const mockSetCookie = vi.fn()
-const mockDeleteCookie = vi.fn()
-const mockGetCookie = vi.fn()
-const mockReadBody = vi.fn()
-const mockGetQuery = vi.fn()
-
 vi.mock('h3', () => ({
-  setCookie: mockSetCookie,
-  deleteCookie: mockDeleteCookie,
-  getCookie: mockGetCookie,
-  readBody: mockReadBody,
-  getQuery: mockGetQuery,
   createError: (params: { statusCode: number; statusMessage: string }) => {
     const error = new Error(params.statusMessage)
     ;(error as any).statusCode = params.statusCode
@@ -60,8 +53,6 @@ vi.mock('h3', () => ({
     return error
   },
   defineEventHandler: (handler: Function) => handler,
-  getHeader: vi.fn(),
-  sendRedirect: vi.fn(),
 }))
 
 describe('Auth API', () => {
@@ -293,6 +284,7 @@ describe('Auth API', () => {
       mockVerifyToken.mockResolvedValue({
         userId: '1',
         email: 'test@example.com',
+        role: 'USER',
       })
 
       mockGetCookie.mockReturnValue('valid-token')
@@ -300,7 +292,7 @@ describe('Auth API', () => {
       const { default: handler } = await import('~/server/api/auth/me.get')
       const mockEvent = {
         context: {
-          user: { userId: '1', email: 'test@example.com' },
+          user: { id: '1', email: 'test@example.com', role: 'USER' },
         },
       } as any
 

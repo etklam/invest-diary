@@ -48,7 +48,10 @@
       "Bash(npx prisma db execute:*)",
       "Bash(npx prisma migrate:*)",
       "Bash(npx prisma db seed:*)",
-      "Bash(npx prisma db pull:*)"
+      "Bash(npx prisma db pull:*)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(npm run test:*)",
+      "Bash(cut:*)"
     ]
   }
 }

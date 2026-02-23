@@ -4,9 +4,36 @@
 
 ---
 
+## 📊 Current Status (2026-02-24)
+
+**Progress**: ⚠️ **In Progress** - Tests exist but need fixes and more coverage
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| Statements | ≥ 75% | TBD |
+| Branches | ≥ 65% | TBD |
+| Functions | ≥ 75% | TBD |
+| Lines | ≥ 75% | TBD |
+
+**Test Files**: 18 files, 260 tests (174 passing, 86 failing)
+
+**Existing Tests**:
+- ✅ API tests: auth.test.ts, blog.test.ts, diaries.test.ts
+- ✅ Composables: useAuth.test.ts, useDiscipline.test.ts, useGestures.test.ts, useMobileDetection.test.ts, useNavigation.test.ts, usePerformance.test.ts, useToast.test.ts
+- ✅ Components: AlertNotification.test.ts, BlogCard.test.ts, Toast.test.ts
+- ✅ Integration: auth-flow.test.ts, diary-workflow.test.ts
+- ✅ Unit: lib/jwt.test.ts, lib/utils.test.ts, lib/blog.test.ts
+
+**Known Issues** (86 failures):
+- ❌ lib/blog.test.ts: generateExcerpt not removing markdown properly
+- ❌ composables/usePerformance.test.ts: computed not imported
+- ❌ unit/lib/jwt.test.ts: token structure mismatch (type field)
+
+---
+
 ## 🎯 覆蓋率目標（可量化）
 
-使用 **Vitest + c8**：
+使用 **Vitest + v8**：
 
 - **Statements** ≥ 75%
 - **Branches** ≥ 65%
@@ -129,9 +156,51 @@ coverage: {
 
 在開始重構前，以下必須成立：
 
-- ✅ coverage 達標
-- ✅ auth / diary / websocket 失敗情境全綠
-- ✅ 任一測試失敗即可阻止重構
+- [ ] coverage 達標 (75/65/75/75%)
+- [ ] auth / diary / websocket 失敗情境全綠
+- [ ] 所有測試通過 (0 failures)
+
+---
+
+## 📋 Remaining Tasks (2026-02-24)
+
+### ✅ Completed (30 tests fixed)
+- [x] Fix lib/blog.test.ts: generateExcerpt markdown link handling
+- [x] Fix lib/blog.test.ts: calculateReadingTime returning 0 for empty
+- [x] Fix composables/usePerformance.test.ts: import computed and readonly
+- [x] Fix tests/unit/lib/jwt.test.ts: update expected token structure
+- [x] Add vitest global setup (vi-setup.ts) for Nuxt auto-import mocks
+- [x] Mock useToast, defineEventHandler, getRouterParam, etc.
+
+### Remaining (56 failures in 7 test files)
+
+#### Integration Tests (auth-flow, diary-workflow)
+- Need proper auth context/middleware mocking
+- Tests fail with "Unauthorized" or "Cannot convert undefined to a BigInt"
+- Requires comprehensive auth utility mocking
+
+#### API Tests (auth)
+- Cookie mock setup issues (setCookie, deleteCookie, getCookie)
+- Need proper event context mocking
+
+#### useGestures Tests
+- DOM event mocking issues (touchstart, touchend, etc.)
+- Happy-dom event listener setup required
+
+#### usePerformance Tests
+- Metric rating assertions not matching mock behavior
+
+### Coverage Gaps (still need)
+- [ ] Add diary API error tests (401/403/404/500)
+- [ ] Add websocket connectionManager tests
+- [ ] Add alert-scheduler tests
+- [ ] Add auth middleware tests
+- [ ] Run coverage report and identify gaps
+
+### Final Steps
+- [ ] Achieve coverage targets
+- [ ] Set up CI coverage gate
+- [ ] Document test approach
 
 ---
 

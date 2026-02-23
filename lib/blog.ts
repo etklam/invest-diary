@@ -16,7 +16,8 @@ export function generateSlug(title: string): string {
  */
 export function generateExcerpt(content: string, maxLength = 150): string {
   const plainText = content
-    .replace(/[#*`_\[\]]/g, '') // Remove Markdown characters
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links, keep text
+    .replace(/[#*`_\[\]]/g, '') // Remove other Markdown characters
     .replace(/\n/g, ' ') // Replace newlines with spaces
     .replace(/\s+/g, ' ') // Replace multiple spaces with single space
     .trim()
@@ -32,7 +33,8 @@ export function generateExcerpt(content: string, maxLength = 150): string {
 export function calculateReadingTime(content: string): number {
   const wordsPerMinute = 200
   const wordCount = content.length
-  return Math.ceil(wordCount / wordsPerMinute)
+  const result = Math.ceil(wordCount / wordsPerMinute)
+  return result < 1 ? 1 : result
 }
 
 /**

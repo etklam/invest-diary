@@ -1,20 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { nextTick } from 'vue'
+import { mockToast } from '../vi-setup'
 
 // Mock $fetch
 const mockFetch = vi.fn()
 vi.stubGlobal('$fetch', mockFetch)
-
-// Mock useToast
-const mockToast = {
-  info: vi.fn(),
-  success: vi.fn(),
-  error: vi.fn(),
-  warning: vi.fn(),
-}
-vi.mock('~/composables/useToast', () => ({
-  useToast: () => mockToast,
-}))
 
 describe('useDiscipline', () => {
   beforeEach(() => {

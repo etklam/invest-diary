@@ -192,17 +192,21 @@ describe('JWT Utils', () => {
         role: testRole,
         tokenVersion: testTokenVersion
       }
-      
+
       const token = await signToken(
         originalData.userId,
         originalData.email,
         originalData.role,
         originalData.tokenVersion
       )
-      
+
       const verified = await verifyToken(token)
-      
-      expect(verified).toEqual(originalData)
+
+      // Token payload includes 'type' field ('access' for signToken/signAccessToken)
+      expect(verified).toEqual({
+        ...originalData,
+        type: 'access'
+      })
     })
   })
 })
