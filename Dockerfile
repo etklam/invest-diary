@@ -35,7 +35,8 @@ RUN npx prisma generate
 
 # Copy source and build
 COPY . .
-RUN npm run build && npm prune --omit=dev
+# IMPORTANT: do NOT prune dev deps here because Prisma Client is required at runtime
+RUN npm run build
 
 # =============================================================================
 # Stage 2: Runner (Production)
