@@ -1,29 +1,29 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  vite: {
-    optimizeDeps: {
-      exclude: ['@prisma/client', '@prisma/client/runtime']
-    }
-  },
-  // ✅ 避免 Service Worker 攔截 API（特別是動態 slug）
   nitro: {
+    externals: {
+      external: ['@prisma/client']
+    },
+    nodeModulesDirs: ['../node_modules'],
     routeRules: {
       '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } },
-      // Blog SWR: 明確告訴 Cloudflare CDN 可以緩存 HTML
       '/blog': {
         swr: true,
-        maxAge: 300,
         headers: {
           'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=300'
         }
       },
       '/blog/**': {
         swr: true,
-        maxAge: 3600,
         headers: {
           'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=3600'
         }
       }
+    }
+  },
+  vite: {
+    optimizeDeps: {
+      exclude: ['@prisma/client', '@prisma/client/runtime']
     }
   },
   compatibilityDate: '2025-07-15',
@@ -147,7 +147,7 @@ export default defineNuxtConfig({
       ]
 
       try {
-        const prisma = (await import('./lib/prisma.ts')).default
+        const prisma = (await import('./lib/prisma')).default
         const posts = await prisma.post.findMany({
           where: {
             status: 'PUBLISHED',
@@ -168,8 +168,7 @@ export default defineNuxtConfig({
             lastmod: post.updatedAt.toISOString()
           }))
         ]
-      } catch (err) {
-        // ⚠️ 無法連線資料庫時（例如本機 dev、CI、sitemap build）不要讓整個 sitemap 掛掉
+      } catch (err: any) {
         console.warn('[sitemap] Prisma unavailable, fallback to static urls:', err?.message)
         return baseUrls
       }

@@ -70,9 +70,17 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Copy built application and runtime deps
+# Copy built application
 COPY --from=builder --chown=nuxt:nodejs /app/.output ./.output
-COPY --from=builder --chown=nuxt:nodejs /app/node_modules ./node_modules
+
+# Copy Prisma client into Nitro runtime node_modules (CRITICAL)
+RUN mkdir -p ./.output/server/node_modules
+COPY --from=builder --chown=nuxt:nodejs /app/node_modules/@prisma ./.output/server/node_modules/@prisma
+
+# (Optional) keep full node_modules if other runtime deps are needed
+# COPY --from=builder --chown=nuxt:nodejs /app/node_modules ./node_modules
+
+# Prisma schema (for migrations / introspection if needed)
 COPY --from=builder --chown=nuxt:nodejs /app/prisma ./prisma
 
 # Ensure proper permissions
