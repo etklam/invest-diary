@@ -3,30 +3,31 @@
 # =============================================================================
 FROM node:20 AS builder
 
-# Build cache bust (for CapRover git deploy)
-ARG CACHE_BUST
-RUN echo "cache bust = ${CACHE_BUST}"
-
 ENV NODE_ENV=production \
     NUXT_TELEMETRY_DISABLED=1
 
 WORKDIR /app
 
 # Install build dependencies (once)
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     openssl \
     python3 \
     make \
     g++ \
-    cairo-dev \
-    pango-dev \
-    jpeg-dev \
-    giflib-dev \
-    librsvg-dev
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy package files and install deps
+# Copy package files and install deps (including dev for build)
 COPY package.json package-lock.json ./
-RUN npm ci
+# Skip prepare script (husky) - not needed in Docker
+RUN npm install --legacy-peer-deps --include=dev --ignore-scripts
+
+# Prepare Nuxt (needed for build)
+RUN npx nuxt prepare
 
 # Prisma client
 COPY prisma ./prisma
