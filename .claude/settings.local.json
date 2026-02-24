@@ -52,7 +52,8 @@
       "Bash(npm run test:coverage:*)",
       "Bash(npm run test:*)",
       "Bash(cut:*)",
-      "Bash(ls -la .output/public/_nuxt/ | head -20 && echo \"---\" && grep -r \"stockSeasonality\\\\|monthlyData\" .output/public/_nuxt/*.js 2>/dev/null | head -5 || echo \"Not found in client bundle yet, checking build output...\")"
+      "Bash(ls -la .output/public/_nuxt/ | head -20 && echo \"---\" && grep -r \"stockSeasonality\\\\|monthlyData\" .output/public/_nuxt/*.js 2>/dev/null | head -5 || echo \"Not found in client bundle yet, checking build output...\")",
+      "Bash(cat .output/public/workbox-*.js 2>/dev/null | jq -r '.[\"precache-manifest\"] // .[]' 2>/dev/null | grep -i \"seasonality\\\\|tools\" | head -10 || echo \"Checking manifest differently...\")"
     ]
   }
 }

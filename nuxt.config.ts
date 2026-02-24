@@ -214,8 +214,7 @@ export default defineNuxtConfig({
       skipWaiting: true,
       // 客戶端聲明：新版本時自動重新載入
       clientsClaim: true,
-      // 導航失敗時的回退策略
-      navigateFallback: '/index.html',
+      // 導航失敗時的回退策略 (SSR mode - no index.html)
       navigateFallbackDenylist: [/^\/api\//],
       // 執行時快取策略
       runtimeCaching: [
