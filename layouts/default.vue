@@ -72,7 +72,7 @@ const isPublicRoute = computed(() => {
   }
 
   // Fallback: path-based detection for backward compatibility
-  const publicPaths = ['/', '/blog', '/about', '/auth/login', '/auth/register']
+  const publicPaths = ['/', '/blog', '/about', '/auth/login', '/auth/register', '/tools']
   const path = route.path
   return publicPaths.some(r => path === r || path.startsWith(r + '/'))
 })

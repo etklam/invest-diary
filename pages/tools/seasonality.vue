@@ -13,8 +13,8 @@ import {
   getWorstMonths,
   calculatePeriodAvgReturn,
   analyzeSeasonality
-} from '~/lib/stockSeasonality'
-import type { VolatilityLevel } from '~/lib/stockSeasonality'
+} from '~/utils/stockSeasonality'
+import type { VolatilityLevel } from '~/utils/stockSeasonality'
 
 const { t, locale } = useI18n()
 const toast = useToast()

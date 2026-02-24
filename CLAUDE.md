@@ -130,7 +130,7 @@ The seasonality analyzer is a **client-side only tool** with no server dependenc
 
 ### Key Files
 
-#### `lib/stockSeasonality.ts`
+#### `utils/stockSeasonality.ts`
 - **Core Data**: `monthlyData` array with 12 months of historical averages
 - **Analysis Functions**:
   - `getBestMonths(count)` / `getWorstMonths(count)` - Sort by avgReturn
