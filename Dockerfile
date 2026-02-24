@@ -1,51 +1,14 @@
 # =============================================================================
-# Stage 1: Dependencies
-# =============================================================================
-FROM node:20-alpine AS deps
-
-# Build arguments
-ARG DATABASE_URL="mysql://build:build@localhost:3306/build"
-ENV DATABASE_URL=${DATABASE_URL}
-
-WORKDIR /app
-
-# Install build dependencies
-RUN apk add --no-cache \
-    openssl \
-    python3 \
-    make \
-    g++ \
-    cairo-dev \
-    pango-dev \
-    jpeg-dev \
-    giflib-dev \
-    librsvg-dev
-
-# Copy package files
-COPY package.json package-lock.json* ./
-
-# Install dependencies
-RUN npm install --ignore-scripts && \
-    npm run postinstall && \
-    npm cache clean --force
-
-# Copy Prisma schema and generate client
-COPY prisma ./prisma
-RUN npx prisma generate
-
-# =============================================================================
-# Stage 2: Builder
+# Stage 1: Builder (fast build, fewer stages)
 # =============================================================================
 FROM node:20-alpine AS builder
 
-ARG DATABASE_URL="mysql://build:build@localhost:3306/build"
-ENV DATABASE_URL=${DATABASE_URL}
-ENV NODE_ENV=development
-ENV NUXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production \
+    NUXT_TELEMETRY_DISABLED=1
 
 WORKDIR /app
 
-# Install build dependencies
+# Install build dependencies (once)
 RUN apk add --no-cache \
     openssl \
     python3 \
@@ -57,21 +20,20 @@ RUN apk add --no-cache \
     giflib-dev \
     librsvg-dev
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/prisma ./prisma
+# Copy package files and install deps
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy source code
+# Prisma client
+COPY prisma ./prisma
+RUN npx prisma generate
+
+# Copy source and build
 COPY . .
-
-# Build the application
-RUN npm run build
-
-# Prune devDependencies
-RUN npm prune --omit=dev
+RUN npm run build && npm prune --omit=dev
 
 # =============================================================================
-# Stage 3: Runner (Production)
+# Stage 2: Runner (Production)
 # =============================================================================
 FROM node:20-alpine AS runner
 
@@ -102,17 +64,10 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Copy built application
+# Copy built application and runtime deps
 COPY --from=builder --chown=nuxt:nodejs /app/.output ./.output
-
-# Copy Prisma files for migrations
+COPY --from=builder --chown=nuxt:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nuxt:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nuxt:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nuxt:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nuxt:nodejs /app/node_modules/prisma ./node_modules/prisma
-
-# Copy package.json
-COPY --from=builder --chown=nuxt:nodejs /app/package.json ./package.json
 
 # Ensure proper permissions
 RUN chown -R nuxt:nodejs /app
