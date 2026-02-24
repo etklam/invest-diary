@@ -1,6 +1,8 @@
-# Prisma + Nuxt + Vite 本地 500 Error 最終解法備忘
+# Diary Vue - Technical Documentation
 
-## 問題背景
+## Prisma + Nuxt + Vite 本地 500 Error 最終解法備忘
+
+### 問題背景
 在 Nuxt 3 專案中使用 Prisma（MySQL）時，本地開發（`npm run dev`）出現以下錯誤，但 **Docker / production 正常**：
 
 - `(0, Fo.promisify) is not a function`
@@ -113,3 +115,148 @@ rg "PrismaClient"
 ## 結論
 這不是 Prisma 或資料庫問題，而是 **Nuxt + Vite + Prisma 的經典踩雷點**。
 只要遵守上述結構，問題不會再復發。
+
+---
+
+## Stock Seasonality Implementation Notes
+
+### Architecture
+The seasonality analyzer is a **client-side only tool** with no server dependencies:
+
+- **Data Source**: `lib/stockSeasonality.ts` contains static historical data (1950-present S&P 500)
+- **No Prisma/DB Queries**: All analysis is computed in-browser from the static `monthlyData` array
+- **i18n Integration**: Uses Vue I18n for all labels, descriptions, and recommendations
+- **Public Access**: Page sets `requiresAuth: false` in `definePageMeta`
+
+### Key Files
+
+#### `lib/stockSeasonality.ts`
+- **Core Data**: `monthlyData` array with 12 months of historical averages
+- **Analysis Functions**:
+  - `getBestMonths(count)` / `getWorstMonths(count)` - Sort by avgReturn
+  - `calculatePeriodAvgReturn(months[])` - Period analysis (Nov-Apr vs May-Oct)
+  - `analyzeSeasonality()` - Complete analysis object
+- **Utilities**: Month name localization, return formatting, color classes
+- **Volatility Levels**: 5-tier system (low, low-medium, medium, medium-high, high)
+- **Strength Levels**: 5-tier system (weakest, weak, neutral, strong, strongest)
+
+#### `pages/tools/seasonality.vue`
+- **Reactive Analysis**: Uses `computed()` for all derived data
+- **Current Month Highlight**: Automatically detects current month and next month
+- **Copy to Clipboard**: Exports analysis as markdown in EN/ZH-TW/ZH-CN
+- **SEO**: Includes meta description for search engines
+- **Responsive**: Mobile-first grid layouts
+
+### Data Format
+
+```typescript
+export interface MonthData {
+  month: number              // 1-12
+  avgReturn: number          // Average return percentage
+  characteristicsKey: string // i18n key for characteristics
+  volatility: VolatilityLevel
+  possibleReasonsKeys: string[] // i18n keys for reasons
+}
+```
+
+### Localization Strategy
+
+All user-facing text uses i18n keys:
+- Characteristics: `tools.seasonality.months.{jan,feb,...}.characteristics`
+- Reasons: `tools.seasonality.months.{jan,feb,...}.reasons.{0,1,2}`
+- Volatility: Handled in `getVolatilityLabel()` function
+- Strength: Handled in `getStrengthLabel()` function
+
+### Public Tool Considerations
+
+Since this is a **public-access tool** (no authentication required):
+- ✅ No sensitive data exposure
+- ✅ No server-side computation (static data only)
+- ✅ SEO-optimized with meta tags
+- ✅ Shareable via clipboard export
+- ✅ Mobile-responsive design
+
+### Adding Historical Data Updates
+
+When updating with new historical data:
+
+1. Recalculate averages in `monthlyData` array
+2. Update i18n files for any new characteristics/reasons
+3. Verify `getBestMonths()` / `getWorstMonths()` still return correct results
+4. Test period calculations (strong vs weak)
+
+---
+
+## Recurring Alerts Implementation
+
+### Architecture
+Recurring alerts allow users to set up **multi-instance reminders** for diary entries:
+
+- **WEEK Mode**: Daily alerts from start date through Friday of the same week (skips weekends)
+- **MONTH Mode**: Daily alerts from start date through the last day of the month (skips weekends)
+- **Smart Scheduling**: Automatically skips Saturday/Sunday
+- **Parent-Child Relationship**: First alert is parent, subsequent alerts link via `parentId`
+
+### Key Files
+
+#### `lib/recurring-alerts.ts`
+- **Core Functions**:
+  - `calculateRecurringAlertDates(config)` - Returns array of trigger dates
+  - `calculateEndDate(startDate, mode)` - Determines end date based on WEEK/MONTH mode
+  - `generateRecurringAlertsData(config)` - Creates Prisma batch insert data
+  - `isWeekday(date)` / `getNextWeekday(date)` - Date utilities
+- **Weekend Handling**: Automatically skips Saturday (6) and Sunday (0)
+- **Time Preservation**: Maintains the original trigger time from diary creation
+
+#### Database Schema (`prisma/schema.prisma`)
+```prisma
+model Alert {
+  id             BigInt    @id @default(autoincrement())
+  diaryId        BigInt
+  message        String
+  triggerAt      DateTime  @db.Date
+  recurringMode  String?   // 'WEEK' | 'MONTH' | null for one-time
+  instanceNumber Int?      // 1 for parent, 2+ for children
+  parentId       BigInt?   // null for parent alert
+  isTriggered    Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+
+  diary          Diary     @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+
+  @@index([triggerAt, isTriggered])
+  @@index([diaryId])
+}
+```
+
+### Implementation Flow
+
+1. **User Creates Diary**: In `pages/diaries/new.vue`
+   - User selects recurring mode (none/week/month)
+   - Trigger time is set based on diary creation time
+
+2. **Server Processing**: `server/api/alerts.post.ts`
+   - Calls `generateRecurringAlertsData()`
+   - Batch creates all alert instances via Prisma
+   - Updates first alert's `parentId` to its own `id`
+
+3. **Alert Display**: `pages/alerts/index.vue`
+   - Shows all pending alerts sorted by trigger date
+   - Groups recurring alerts visually
+   - Displays instance number for recurring alerts
+
+### Important Notes
+
+- **Time Zone Handling**: All dates stored in UTC, trigger time preserved from user's input
+- **Cascade Delete**: When diary is deleted, all related alerts are automatically removed (`onDelete: Cascade`)
+- **Performance**: Batch creation uses `createMany()` for efficiency
+- **Edge Cases**:
+  - If start date is Saturday, alerts begin Monday
+  - If start date is Sunday, alerts begin Monday
+  - WEEK mode always ends on Friday of the same week
+  - MONTH mode always ends on last day of the same month
+
+---
+
+## PWA + Nitro Dynamic Route Gotcha (Blog Slug Issue)
+
+### Problem Description

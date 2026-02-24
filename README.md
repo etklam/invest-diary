@@ -11,7 +11,8 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 - **Investment Journaling**: Daily diary entries with markdown support
 - **Portfolio Tracking**: Stock transaction management (BUY/SELL) with holdings calculation
 - **Position Sizing Calculator**: Advanced tool for calculating staged position entries with multiple strategies (pyramid, inverted pyramid, rectangular)
-- **Alert System**: Time-based reminders for diary entries with centralized alerts page
+- **Stock Seasonality Analyzer**: US stock market seasonal patterns based on historical data from 1950-present, with monthly performance analysis
+- **Alert System**: Time-based reminders for diary entries with recurring options (weekly/monthly), centralized alerts page
 - **Calendar View**: Visual calendar interface for viewing and managing diary entries by date
 - **Investment Discipline**: Custom motivational quotes for trading psychology with shareable content
 - **Educational Blog**: Public investment education articles (admin-managed) with category filtering
@@ -173,7 +174,7 @@ This project uses PWA **as a mobile app shell**, not as an offline-first applica
 │   ├── blog/           # Public blog pages (list, post detail)
 │   ├── settings/       # User settings
 │   ├── stocks/         # Portfolio management
-│   ├── tools/          # Investment tools (position sizing calculator)
+│   ├── tools/          # Investment tools (position sizing calculator, seasonality analyzer)
 │   ├── timeline/       # Diary timeline view
 │   ├── calendar/       # Calendar view for diary entries
 │   ├── alerts/         # Centralized alerts page
@@ -185,6 +186,8 @@ This project uses PWA **as a mobile app shell**, not as an offline-first applica
 ├── lib/                 # Shared utilities
 │   ├── prisma.ts       # Prisma client singleton
 │   ├── positionSizing.ts # Position sizing calculation logic
+│   ├── stockSeasonality.ts # Stock seasonality analysis (monthly patterns)
+│   ├── recurring-alerts.ts # Recurring alert date calculation and generation
 │   ├── blog.ts         # Blog utilities
 │   ├── jwt.ts          # JWT utilities
 │   ├── disciplineShare.ts # Discipline sharing utilities
@@ -203,11 +206,31 @@ This project uses PWA **as a mobile app shell**, not as an offline-first applica
 - **User** - Authentication + investment settings
 - **Diary** - Investment journal entries with markdown content
 - **Transaction** - Stock trades (BUY/SELL) linked to diaries
-- **Alert** - Time-based reminders for diary entries
+- **Alert** - Time-based reminders for diary entries with recurring support (WEEK/MONTH modes)
 - **Discipline** - Investment principles/quotes with shareable tokens
 - **Post** - Blog articles with category filtering (DRAFT/PUBLISHED/ARCHIVED)
 
 See `prisma/schema.prisma` for detailed relationships and constraints.
+
+## Investment Tools
+
+### Stock Seasonality Analyzer
+Located at `/tools/seasonality`, this tool provides:
+- **Monthly Performance Data**: Average returns for each month based on S&P 500 historical data (1950-present)
+- **Current Month Insights**: Real-time analysis of the current and upcoming month
+- **Best/Worst Months**: Identifies historically strong (Nov, Dec, Apr, Jul) and weak (Sep, Feb, Aug) months
+- **Period Analysis**: Strong period (Nov-Apr) vs weak period (May-Oct) comparison
+- **Volatility Assessment**: Monthly volatility levels from low to high
+- **Investment Recommendations**: Context-aware suggestions based on seasonal patterns
+- **Export to Markdown**: Copy analysis as formatted markdown for sharing
+
+**Data Source**: Historical S&P 500 index data from 1950 to present, providing statistical patterns rather than absolute predictions.
+
+### Position Sizing Calculator
+Located at `/tools/position-sizing`, this tool helps traders:
+- Calculate optimal position sizes using multiple strategies
+- Implement pyramid, inverted pyramid, and rectangular entry methods
+- Manage risk through staged position entries
 
 ## Environment Variables
 
