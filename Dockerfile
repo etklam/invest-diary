@@ -3,6 +3,10 @@
 # =============================================================================
 FROM node:20-alpine AS builder
 
+# Build cache bust (for CapRover git deploy)
+ARG CACHE_BUST
+RUN echo "cache bust = ${CACHE_BUST}"
+
 ENV NODE_ENV=production \
     NUXT_TELEMETRY_DISABLED=1
 
