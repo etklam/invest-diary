@@ -208,14 +208,46 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      globPatterns: ['**/*.{js,css,html,png,svg,ico,txt,woff,woff2}']
-      // 不需要 runtimeCaching，因為 PWA 主要作為手機偽 app 使用
-      // API 路由不快取，避免資料過期問題
+      globPatterns: ['**/*.{js,css,html,png,svg,ico,txt,woff,woff2}'],
+      //清理舊快取，避免 non-precached-url 錯誤
+      cleanupOutdatedCaches: true,
+      // 跳過等待，立即啟用新的 Service Worker
+      skipWaiting: true,
+      // 客戶端聲明：新版本時自動重新載入
+      clientsClaim: true,
+      // 導航失敗時的回退策略
+      navigateFallback: '/index.html',
+      navigateFallbackDenylist: [/^\/api\//],
+      // 執行時快取策略
+      runtimeCaching: [
+        {
+          // 靜態資源使用 StaleWhileRevalidate
+          urlPattern: /^https?:\/\/.*\.(?:js|css|html|png|svg|ico|txt|woff|woff2)$/,
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'static-resources',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 7 天
+            }
+          }
+        },
+        {
+          // API 請求使用 NetworkOnly（不快取）
+          urlPattern: /^https?:\/\/.*\/api\//,
+          handler: 'NetworkOnly'
+        }
+      ]
     },
     devOptions: {
       enabled: true,
       type: 'module',
       suppressWarnings: true
+    },
+    // 客戶端外掛配置
+    client: {
+      // 定期檢查更新（每小時）
+      periodicSyncForUpdates: 3600
     }
   }
 })
