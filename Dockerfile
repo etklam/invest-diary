@@ -1,7 +1,7 @@
 # =============================================================================
 # Stage 1: Builder (fast build, fewer stages)
 # =============================================================================
-FROM node:20-alpine AS builder
+FROM node:20 AS builder
 
 # Build cache bust (for CapRover git deploy)
 ARG CACHE_BUST
