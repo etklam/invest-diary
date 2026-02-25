@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 2,
+  "dockerfilePath": "./Dockerfile",
+  "containerPort": 3000,
+  "exposedPort": 80,
+  "httpAuth": {
+    "user": "",
+    "password": ""
+  },
+  "envVars": [
+    {
+      "key": "DATABASE_URL",
+      "value": "mysql://username:password@captain-mysql:3306/dbname"
+    },
+    {
+      "key": "JWT_SECRET",
+      "value": "CHANGE_THIS_RANDOM_SECRET"
+    },
+    {
+      "key": "NUXT_PUBLIC_APP_NAME",
+      "value": "投資日記"
+    }
+  ],
+  "volumes": [
+    {
+      "volumeName": "diary-vue-data",
+      "containerPath": "/app/.cache"
+    }
+  ],
+  "preDeployFunction": {
+    "containerName": "diary-vue-migrate",
+    "dockerfilePath": "./Dockerfile",
+    "envVars": [
+      {
+        "key": "DATABASE_URL",
+        "value": "$DATABASE_URL"
+      }
+    ],
+    "command": "npx prisma migrate deploy"
+  }
+}
