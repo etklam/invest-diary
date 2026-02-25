@@ -1,19 +1,19 @@
 <template>
   <article
-    class="bg-white dark:bg-gray-900/50 dark:border dark:border-gray-700/50 dark:backdrop-blur-sm rounded-lg shadow-md overflow-hidden hover:shadow-xl dark:hover:shadow-indigo-500/10 dark:hover:border-indigo-500/30 transition-all duration-300 flex flex-col h-full relative"
+    class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm transition-colors duration-300 hover:border-zinc-300 dark:border-zinc-700/70 dark:bg-zinc-900/70 dark:hover:border-zinc-600"
   >
     <!-- Admin Actions -->
-    <div v-if="isAdmin" class="absolute top-2 right-2 z-10 flex gap-2">
+    <div v-if="isAdmin" class="absolute right-2 top-2 z-10 flex gap-2">
       <NuxtLink
         :to="`/admin/blog/${post.id}/edit`"
-        class="p-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-md shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+        class="cursor-pointer rounded-md border border-zinc-200 bg-white/90 p-2 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/90 dark:hover:bg-zinc-700"
         title="編輯"
       >
-        <i-heroicons-pencil class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+        <i-heroicons-pencil class="h-4 w-4 text-blue-600 dark:text-blue-400" />
       </NuxtLink>
       <button
         @click="handleDelete"
-        class="p-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-md shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+        class="cursor-pointer rounded-md border border-zinc-200 bg-white/90 p-2 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/90 dark:hover:bg-zinc-700"
         title="刪除"
       >
         <i-heroicons-trash class="h-4 w-4 text-red-600 dark:text-red-400" />
@@ -21,7 +21,7 @@
     </div>
 
     <!-- Cover Image -->
-    <div v-if="post.coverImage" class="aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
+    <div v-if="post.coverImage" class="aspect-video overflow-hidden bg-zinc-100 dark:bg-zinc-800">
       <NuxtImg
         :src="post.coverImage"
         :alt="post.title"
@@ -29,29 +29,29 @@
         height="450"
         format="webp"
         loading="lazy"
-        class="w-full h-full object-cover"
+        class="h-full w-full object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
       />
     </div>
 
-    <div class="p-6 flex-1 flex flex-col">
+    <div class="flex flex-1 flex-col p-6">
       <!-- Category Badge -->
       <div class="mb-3">
         <span
-          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-500/30"
+          class="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/20 dark:text-blue-300"
         >
           {{ $t(`blog.categories.${categoryKey}`) || post.category }}
         </span>
       </div>
 
       <!-- Title -->
-      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
-        <NuxtLink :to="`/blog/${post.slug}`" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+      <h3 class="mb-2 line-clamp-2 font-serif text-xl font-semibold text-zinc-950 dark:text-zinc-100">
+        <NuxtLink :to="`/blog/${post.slug}`" class="cursor-pointer transition-colors duration-200 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 dark:hover:text-blue-400">
           {{ post.title }}
         </NuxtLink>
       </h3>
 
       <!-- Excerpt -->
-      <p v-if="post.excerpt" class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 flex-1 leading-relaxed">
+      <p v-if="post.excerpt" class="mb-4 line-clamp-3 flex-1 leading-relaxed text-zinc-700 dark:text-zinc-300">
         {{ post.excerpt }}
       </p>
 
@@ -60,7 +60,7 @@
         <span
           v-for="tag in parsedTags.slice(0, 3)"
           :key="tag"
-          class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-700 dark:bg-gray-800/80 dark:text-gray-300 dark:border dark:border-gray-700/50"
+          class="inline-flex items-center rounded-md border border-zinc-200 bg-zinc-100 px-2 py-1 text-xs text-zinc-700 dark:border-zinc-700/70 dark:bg-zinc-800/80 dark:text-zinc-300"
         >
           #{{ tag }}
         </span>
@@ -75,13 +75,13 @@
       />
 
       <!-- Read More Link -->
-      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700/50">
+      <div class="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700/50">
         <NuxtLink
           :to="`/blog/${post.slug}`"
-          class="group inline-flex items-center text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors"
+          class="inline-flex cursor-pointer items-center font-medium text-blue-700 transition-colors duration-200 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
         >
           {{ $t('blog.readMore') }}
-          <i-heroicons-arrow-right class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+          <i-heroicons-arrow-right class="ml-2 h-4 w-4 transition-transform duration-200 motion-safe:group-hover:translate-x-1" />
         </NuxtLink>
       </div>
     </div>

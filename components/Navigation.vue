@@ -74,30 +74,31 @@ const getIconName = (icon: string) => {
 </script>
 
 <template>
-  <nav class="relative">
-    <!-- Primary Navigation Bar -->
-    <div class="p-6 flex items-center bg-gray-800 dark:bg-gray-900">
-      <!-- Logo -->
-      <NuxtLink to="/" class="flex-shrink-0 mr-12 text-2xl text-white font-semibold">
-        {{ $t('common.appName') }}
-      </NuxtLink>
+  <nav class="sticky top-4 z-40 px-3 sm:px-4 lg:px-6">
+    <div class="mx-auto w-full max-w-7xl">
+      <!-- Primary Navigation Bar -->
+      <div class="flex items-center rounded-2xl border border-cyan-100/80 bg-white/80 px-4 py-2.5 shadow-lg shadow-cyan-100/40 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/85 dark:shadow-slate-950/40 sm:px-5 sm:py-3">
+        <!-- Logo -->
+        <NuxtLink to="/" class="mr-6 flex-shrink-0 text-lg font-semibold tracking-tight text-cyan-900 transition-colors hover:text-cyan-700 dark:text-cyan-50 dark:hover:text-cyan-200 sm:mr-8 sm:text-xl">
+          {{ $t('common.appName') }}
+        </NuxtLink>
 
       <!-- Desktop Navigation -->
-      <ul class="hidden xl:flex">
-        <li v-for="item in mainNavItems" :key="item.to">
-          <NuxtLink
-            :to="item.to"
-            class="flex mr-10 items-center text-gray-50 hover:text-gray-100 text-sm transition-colors"
-            :class="isActive(item.to) ? 'text-white font-medium' : ''"
-          >
-            <Icon :name="getIconName(item.icon)" class="text-gray-500 w-5 h-5 mr-2" width="18" height="18" />
-            <span>{{ item.label }}</span>
-          </NuxtLink>
-        </li>
-      </ul>
+        <ul class="hidden xl:flex xl:items-center xl:gap-1.5">
+          <li v-for="item in mainNavItems" :key="item.to">
+            <NuxtLink
+              :to="item.to"
+              class="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[0.925rem] font-medium text-slate-600 transition-all duration-200 hover:bg-cyan-50 hover:text-cyan-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-cyan-200"
+              :class="isActive(item.to) ? 'bg-cyan-600 text-white shadow-sm shadow-cyan-700/30 hover:bg-cyan-600 hover:text-white dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-500' : ''"
+            >
+              <Icon :name="getIconName(item.icon)" class="h-[18px] w-[18px]" width="18" height="18" />
+              <span>{{ item.label }}</span>
+            </NuxtLink>
+          </li>
+        </ul>
 
       <!-- Desktop Right Side -->
-      <ul class="hidden xl:flex lg:justify-end lg:items-center lg:space-x-6 mr-6 ml-auto">
+        <ul class="mr-2 ml-auto hidden items-center gap-3 xl:flex">
         <!-- Language Switcher -->
         <li>
           <LanguageSwitcher />
@@ -107,7 +108,7 @@ const getIconName = (icon: string) => {
         <li>
           <button
             @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
-            class="text-gray-300 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
+            class="cursor-pointer rounded-xl p-2 text-slate-500 transition-colors duration-200 hover:bg-cyan-50 hover:text-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-slate-900"
             :aria-label="$t('theme.toggleDarkMode')"
           >
             <Icon
@@ -122,15 +123,15 @@ const getIconName = (icon: string) => {
           <div class="relative">
             <button
               @click="userMenuOpen = !userMenuOpen"
-              class="flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
+              class="flex cursor-pointer items-center rounded-xl border border-cyan-100/80 bg-white/70 py-1.5 pl-3 pr-2 transition-colors duration-200 hover:border-cyan-200 hover:bg-cyan-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
             >
               <div class="mr-3 text-right">
-                <p class="text-sm text-white">{{ user?.name || user?.email }}</p>
-                <p class="text-sm text-gray-400">{{ user?.role === 'ADMIN' ? $t('nav.admin') : $t('nav.users') }}</p>
-                <p class="text-xs text-gray-500">{{ currentTimezone.label }}</p>
+                <p class="max-w-[180px] truncate text-sm text-slate-900 dark:text-slate-100">{{ user?.name || user?.email }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-300">{{ user?.role === 'ADMIN' ? $t('nav.admin') : $t('nav.users') }}</p>
+                <p class="text-xs text-slate-400 dark:text-slate-400">{{ currentTimezone.label }}</p>
               </div>
               <div class="mr-2">
-                <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
+                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-600 dark:bg-cyan-500">
                   <span class="text-white font-medium">
                     {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
                   </span>
@@ -138,25 +139,25 @@ const getIconName = (icon: string) => {
               </div>
               <Icon
                 name="heroicons:chevron-down"
-                class="text-gray-400 w-3 h-3"
+                class="h-3 w-3 text-slate-500 dark:text-slate-300"
               />
             </button>
 
             <!-- User Dropdown Menu -->
             <div
               v-if="userMenuOpen"
-              class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50"
+              class="absolute right-0 z-50 mt-2 w-48 rounded-xl border border-cyan-100 bg-white/95 py-1 shadow-lg shadow-cyan-100/50 backdrop-blur dark:border-slate-700 dark:bg-slate-800/95"
             >
               <NuxtLink
                 to="/settings"
-                class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                class="block cursor-pointer px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
                 @click="userMenuOpen = false"
               >
                 {{ $t('nav.settings') }}
               </NuxtLink>
               <button
                 @click="async () => { const { logout } = useAuth(); await logout(); userMenuOpen = false; }"
-                class="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-700"
               >
                 {{ $t('nav.logout') }}
               </button>
@@ -169,7 +170,7 @@ const getIconName = (icon: string) => {
           <li>
             <NuxtLink
               to="/auth/login"
-              class="text-gray-300 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800 rounded"
+              class="rounded px-2 py-1 text-sm text-slate-600 transition-colors duration-200 hover:text-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-slate-900"
             >
               {{ $t('auth.login') }}
             </NuxtLink>
@@ -177,7 +178,7 @@ const getIconName = (icon: string) => {
           <li>
             <NuxtLink
               to="/auth/register"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              class="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-emerald-700/30 transition-colors duration-200 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400 dark:focus:ring-offset-slate-900"
             >
               {{ $t('auth.register') }}
             </NuxtLink>
@@ -189,96 +190,97 @@ const getIconName = (icon: string) => {
       <div class="ml-auto flex xl:hidden">
         <button
           @click="mobileNavOpen = !mobileNavOpen"
-          class="flex items-center rounded p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
+          class="flex cursor-pointer items-center rounded-xl border border-cyan-100 bg-white/80 p-2 text-cyan-700 transition-colors duration-200 hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/80 dark:text-cyan-200 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
           :aria-label="mobileNavOpen ? $t('theme.closeMenu') : $t('theme.openMenu')"
         >
           <Icon
             :name="mobileNavOpen ? 'heroicons:x-mark' : 'heroicons:bars-3'"
-            class="text-white bg-indigo-500 hover:bg-indigo-600 block h-8 w-8 p-2 rounded"
+            class="block h-6 w-6"
           />
         </button>
       </div>
-    </div>
+      </div>
 
-    <!-- Secondary Navigation Bar (Desktop) -->
-    <div class="hidden xl:block py-5 px-6 bg-white dark:bg-gray-900 border-b dark:border-gray-700">
-      <div class="flex items-center">
-        <ul class="flex items-center">
-          <li v-for="item in secondaryNavItems" :key="item.to">
-            <NuxtLink
-              :to="item.to"
-              class="flex mr-10 items-center text-sm text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
-              :class="isActive(item.to) ? '!text-indigo-600 dark:!text-indigo-400' : ''"
-            >
-              <Icon :name="getIconName(item.icon)" class="text-gray-500 dark:text-gray-400 w-5 h-5 mr-2" width="18" height="18" />
-              <span>{{ item.label }}</span>
-            </NuxtLink>
-          </li>
-        </ul>
+      <!-- Secondary Navigation Bar (Desktop) -->
+      <div class="mt-2 hidden rounded-2xl border border-cyan-100/70 bg-white/80 px-4 py-2.5 shadow-md shadow-cyan-100/30 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-slate-950/40 xl:block xl:px-5 xl:py-3">
+        <div class="flex items-center">
+          <ul class="flex items-center gap-1">
+            <li v-for="item in secondaryNavItems" :key="item.to">
+              <NuxtLink
+                :to="item.to"
+                class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-cyan-50 hover:text-cyan-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-cyan-200"
+                :class="isActive(item.to) ? 'bg-cyan-50 text-cyan-700 dark:bg-slate-800 dark:text-cyan-200' : ''"
+              >
+                <Icon :name="getIconName(item.icon)" class="h-[18px] w-[18px]" width="18" height="18" />
+                <span>{{ item.label }}</span>
+              </NuxtLink>
+            </li>
+          </ul>
 
-        <!-- Quick Actions (right side) -->
-        <ul class="ml-auto flex items-center space-x-4">
-          <li v-if="isAuthenticated">
-            <NuxtLink
-              to="/settings"
-              class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
-            >
-              <Icon name="heroicons:cog-6-tooth" class="w-5 h-5" width="18" height="18" />
-            </NuxtLink>
-          </li>
-        </ul>
+          <!-- Quick Actions (right side) -->
+          <ul class="ml-auto flex items-center space-x-3">
+            <li v-if="isAuthenticated">
+              <NuxtLink
+                to="/settings"
+                class="rounded-lg p-2 text-slate-600 transition-colors duration-200 hover:bg-cyan-50 hover:text-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-slate-900"
+              >
+                <Icon name="heroicons:cog-6-tooth" class="h-[18px] w-[18px]" width="18" height="18" />
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
     <!-- Mobile Navigation Drawer -->
     <div
       :class="{ 'block': mobileNavOpen, 'hidden': !mobileNavOpen }"
-      class="fixed top-0 left-0 bottom-0 w-3/4 lg:w-80 sm:max-w-xs z-50"
+      class="fixed bottom-0 left-0 top-0 z-50 w-[82%] sm:max-w-xs lg:w-80"
     >
       <!-- Backdrop -->
       <div
         @click="mobileNavOpen = false"
-        class="fixed inset-0 bg-gray-800 opacity-10"
+        class="fixed inset-0 bg-slate-900/25 backdrop-blur-[1px]"
       />
 
       <!-- Mobile Nav Content -->
-      <nav class="relative flex flex-col pt-6 pb-8 h-full w-full bg-gray-800 dark:bg-gray-900 overflow-y-auto">
-        <div class="flex w-full items-center px-6 pb-6 mb-6 lg:border-b border-gray-700">
-          <NuxtLink to="/" class="text-xl text-white font-semibold" @click="mobileNavOpen = false">
+      <nav class="relative flex h-full w-full flex-col overflow-y-auto border-r border-cyan-100 bg-white/95 pb-8 pt-5 shadow-2xl shadow-cyan-200/30 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95 sm:pt-6">
+        <div class="mb-5 flex w-full items-center border-b border-cyan-100 px-5 pb-5 dark:border-slate-700 sm:px-6 sm:pb-6">
+          <NuxtLink to="/" class="text-xl font-semibold text-cyan-900 dark:text-cyan-50" @click="mobileNavOpen = false">
             {{ $t('common.appName') }}
           </NuxtLink>
         </div>
 
-        <div class="px-4 pb-6">
-          <h3 class="mb-2 text-xs uppercase text-gray-500 font-medium">
+        <div class="px-3 pb-6 sm:px-4">
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             {{ $t('nav.home') }}
           </h3>
           <ul class="mb-8 text-sm font-medium">
             <li v-for="item in mainNavItems" :key="item.to">
               <NuxtLink
                 :to="item.to"
-                class="flex items-center pl-3 py-3 pr-4 text-gray-50 hover:bg-gray-900 dark:hover:bg-gray-800 rounded transition-colors"
-                :class="isActive(item.to) ? 'bg-indigo-500' : ''"
+                class="flex items-center rounded-xl px-3 py-2.5 pr-4 text-sm text-slate-700 transition-colors duration-200 hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                :class="isActive(item.to) ? 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950' : ''"
                 @click="mobileNavOpen = false"
               >
-                <Icon :name="getIconName(item.icon)" class="text-gray-500 w-5 h-5 mr-3" />
+                <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
                 <span>{{ item.label }}</span>
               </NuxtLink>
             </li>
           </ul>
 
-          <h3 class="mb-2 text-xs uppercase text-gray-500 font-medium">
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             {{ $t('common.search') }}
           </h3>
           <ul class="text-sm font-medium">
             <li v-for="item in secondaryNavItems" :key="item.to">
               <NuxtLink
                 :to="item.to"
-                class="flex items-center pl-3 py-3 pr-2 text-gray-50 hover:bg-gray-900 dark:hover:bg-gray-800 rounded transition-colors"
-                :class="isActive(item.to) ? 'bg-indigo-500' : ''"
+                class="flex items-center rounded-xl px-3 py-2.5 pr-2 text-sm text-slate-700 transition-colors duration-200 hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                :class="isActive(item.to) ? 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950' : ''"
                 @click="mobileNavOpen = false"
               >
-                <Icon :name="getIconName(item.icon)" class="text-gray-500 w-5 h-5 mr-3" />
+                <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
                 <span>{{ item.label }}</span>
               </NuxtLink>
             </li>
@@ -286,14 +288,14 @@ const getIconName = (icon: string) => {
         </div>
 
         <!-- Mobile Auth Section -->
-        <div class="px-4">
-          <div class="pt-8 border-t border-gray-700">
+        <div class="px-3 sm:px-4">
+          <div class="border-t border-cyan-100 pt-8 dark:border-slate-700">
             <!-- Language & Theme -->
             <div class="flex items-center justify-between mb-4">
               <LanguageSwitcher dropdown-position="left" />
               <button
                 @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
-                class="p-2 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
+                class="cursor-pointer rounded-lg p-2 text-slate-600 transition-colors hover:bg-cyan-50 hover:text-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-slate-900"
                 :aria-label="$t('theme.toggleDarkMode')"
               >
                 <Icon
@@ -304,43 +306,43 @@ const getIconName = (icon: string) => {
             </div>
 
             <template v-if="isAuthenticated">
-              <div class="px-3 py-2 text-sm text-gray-400">
+              <div class="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">
                 {{ $t('auth.loggedInAs') }}
               </div>
-              <div class="px-3 py-2 text-sm text-white">
+              <div class="px-3 py-2 text-sm text-slate-900 dark:text-slate-100">
                 {{ user?.name || user?.email }}
               </div>
               <NuxtLink
                 to="/settings"
-                class="flex items-center pl-3 py-3 pr-2 text-gray-50 hover:bg-gray-900 dark:hover:bg-gray-800 rounded transition-colors mt-2"
+                class="mt-2 flex items-center rounded-xl px-3 py-3 pr-2 text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-800"
                 @click="mobileNavOpen = false"
               >
-                <Icon name="heroicons:cog-6-tooth" class="text-gray-500 w-5 h-5 mr-3" />
+                <Icon name="heroicons:cog-6-tooth" class="mr-3 h-5 w-5" />
                 <span>{{ $t('nav.settings') }}</span>
               </NuxtLink>
               <button
                 @click="async () => { const { logout } = useAuth(); mobileNavOpen = false; await logout(); }"
-                class="flex items-center pl-3 py-3 pr-2 text-gray-50 hover:bg-gray-900 dark:hover:bg-gray-800 rounded transition-colors w-full"
+                class="flex w-full cursor-pointer items-center rounded-xl px-3 py-3 pr-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-800"
               >
-                <Icon name="heroicons:arrow-right-on-rectangle" class="text-gray-500 w-5 h-5 mr-3" />
+                <Icon name="heroicons:arrow-right-on-rectangle" class="mr-3 h-5 w-5" />
                 <span>{{ $t('nav.logout') }}</span>
               </button>
             </template>
             <template v-else>
               <NuxtLink
                 to="/auth/login"
-                class="flex items-center pl-3 py-3 pr-2 text-gray-50 hover:bg-gray-900 dark:hover:bg-gray-800 rounded transition-colors"
+                class="flex items-center rounded-xl px-3 py-3 pr-2 text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-800"
                 @click="mobileNavOpen = false"
               >
-                <Icon name="heroicons:arrow-left-on-rectangle" class="text-gray-500 w-5 h-5 mr-3" />
+                <Icon name="heroicons:arrow-left-on-rectangle" class="mr-3 h-5 w-5" />
                 <span>{{ $t('auth.login') }}</span>
               </NuxtLink>
               <NuxtLink
                 to="/auth/register"
-                class="flex items-center pl-3 py-3 pr-2 text-indigo-400 hover:bg-gray-900 dark:hover:bg-gray-800 rounded transition-colors"
+                class="flex items-center rounded-xl bg-emerald-600 px-3 py-3 pr-2 text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
                 @click="mobileNavOpen = false"
               >
-                <Icon name="heroicons:user-plus" class="text-gray-500 w-5 h-5 mr-3" />
+                <Icon name="heroicons:user-plus" class="mr-3 h-5 w-5" />
                 <span>{{ $t('auth.register') }}</span>
               </NuxtLink>
             </template>

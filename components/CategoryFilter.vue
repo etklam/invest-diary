@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-4">
-    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+    <h3 class="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
       {{ $t('blog.categoriesLabel') }}
     </h3>
     <nav class="space-y-2">
@@ -8,13 +8,13 @@
         v-for="cat in categories"
         :key="cat.key"
         :to="cat.key ? `/blog?category=${encodeURIComponent(cat.value)}` : '/blog'"
-        class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border"
+        class="flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors duration-200"
         :class="isActive(cat.key, cat.value)
-          ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/40 shadow-sm'
-          : 'text-gray-700 hover:bg-gray-50 border-transparent hover:border-gray-200 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:border-gray-700 dark:hover:text-gray-300'"
+          ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-300'
+          : 'border-transparent text-zinc-700 hover:border-zinc-200 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-300'"
       >
         <span>{{ cat.label }}</span>
-        <span v-if="cat.count !== undefined" class="text-xs opacity-60 dark:opacity-70 bg-gray-100 dark:bg-gray-700/50 px-2 py-0.5 rounded-full">
+        <span v-if="cat.count !== undefined" class="rounded-full bg-zinc-100 px-2 py-0.5 text-xs opacity-70 dark:bg-zinc-700/50 dark:opacity-80">
           {{ cat.count }}
         </span>
       </NuxtLink>
