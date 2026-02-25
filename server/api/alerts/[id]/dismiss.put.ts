@@ -49,6 +49,9 @@ export default defineEventHandler(async (event) => {
     console.log('[API] Alert dismissed:', id, 'for user:', userId)
     return updatedAlert
   } catch (error) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error
+    }
     console.error('Error dismissing alert:', error)
     throw createError({
       statusCode: 500,

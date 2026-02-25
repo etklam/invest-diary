@@ -94,6 +94,9 @@ export default defineEventHandler(async (event) => {
     console.log('[Blog] Post updated:', post.id)
     return post
   } catch (error) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error
+    }
     console.error('[Blog] Error updating post:', error)
     throw createError({
       statusCode: 500,

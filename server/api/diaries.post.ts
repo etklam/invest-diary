@@ -11,7 +11,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     })
   }
 
-  const body = await readBody<DiaryInput>(event)
+  const body = await readBody<DiaryInput & { appendToToday?: boolean }>(event)
 
   if (!body.title) {
     throw createError({
@@ -20,10 +20,16 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     })
   }
 
-  const { title, content, date, transactions, alerts } = body
+  if (!body.content) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Content is required',
+    })
+  }
+
+  const { title, content, date, transactions, alerts, appendToToday } = body
 
   try {
-    // Check if diary already exists for this date for this user
     const diaryDate = date ? new Date(date) : new Date()
     const startOfDay = new Date(diaryDate)
     startOfDay.setHours(0, 0, 0, 0)
@@ -41,11 +47,26 @@ export default defineEventHandler(async (event): Promise<Diary> => {
       },
     })
 
+    if (existingDiary && appendToToday) {
+      const separator = '\n\n---\n\n'
+      const updatedDiary = await prisma.diary.update({
+        where: { id: existingDiary.id },
+        data: {
+          content: existingDiary.content + separator + content,
+        },
+        include: {
+          transactions: true,
+          alerts: true,
+        },
+      })
+
+      return updatedDiary as Diary
+    }
+
     if (existingDiary) {
-      // Diary exists for this date, return 409 Conflict
       throw createError({
         statusCode: 409,
-        statusMessage: `Diary already exists for this date`,
+        statusMessage: 'Diary already exists for this date',
         data: {
           existingDiaryId: existingDiary.id.toString(),
           date: date,
@@ -84,11 +105,10 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     console.log('[API] Diary created:', diary.id, 'for user:', userId)
     return diary as Diary
   } catch (error) {
-    console.error('Error creating diary:', error)
-    // Re-throw if it's a 409 conflict
-    if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 409) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
+    console.error('Error creating diary:', error)
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to create diary',
