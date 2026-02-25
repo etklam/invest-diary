@@ -65,9 +65,10 @@ main() {
         }
     fi
 
-    # Run migrations (default: true in production)
-    if [ "$NODE_ENV" = "production" ] && [ -z "$RUN_MIGRATIONS" ]; then
-        RUN_MIGRATIONS=true
+    # In CapRover, migrations are handled by preDeployFunction by default.
+    # Keep runtime migrations opt-in to avoid duplicate migration runs.
+    if [ -z "$RUN_MIGRATIONS" ]; then
+        RUN_MIGRATIONS=false
     fi
     run_migrations
 

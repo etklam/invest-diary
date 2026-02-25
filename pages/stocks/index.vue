@@ -2,8 +2,8 @@
   <div class="stocks-page min-h-screen">
     <!-- Header -->
     <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <div class="panel">
-        <div class="flex items-center justify-between">
+      <div class="panel px-4 py-5 sm:px-6">
+        <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p class="kicker mb-1">Portfolio Console</p>
             <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">股票管理</h1>
@@ -11,7 +11,7 @@
           </div>
           <NuxtLink
             to="/"
-            class="action-btn-muted cursor-pointer"
+            class="action-btn-muted mt-1 cursor-pointer sm:mt-0"
           >
             <Icon name="heroicons:home" class="mr-2 h-4 w-4" />
             回首頁

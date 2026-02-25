@@ -19,6 +19,10 @@
     {
       "key": "NUXT_PUBLIC_APP_NAME",
       "value": "投資日記"
+    },
+    {
+      "key": "RUN_MIGRATIONS",
+      "value": "false"
     }
   ],
   "volumes": [
@@ -36,6 +40,6 @@
         "value": "$DATABASE_URL"
       }
     ],
-    "command": "npx prisma migrate deploy"
+    "command": "node ./node_modules/prisma/build/index.js migrate deploy"
   }
 }
