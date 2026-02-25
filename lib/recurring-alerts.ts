@@ -14,7 +14,7 @@ export interface RecurringAlertConfig {
 export function calculateRecurringAlertDates(config: RecurringAlertConfig): Date[] {
   const { startDate, triggerTime } = config
   const dates: Date[] = []
-  const [hours, minutes] = triggerTime.split(':').map(Number)
+  const [hours = 0, minutes = 0] = triggerTime.split(':').map(Number)
 
   let currentDate = new Date(startDate)
   currentDate.setHours(hours, minutes, 0, 0)

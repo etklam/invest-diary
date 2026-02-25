@@ -23,8 +23,9 @@ export default defineEventHandler(async (event) => {
   // If user has disciplines, return random one
   if (disciplines.length > 0) {
     const randomIndex = Math.floor(Math.random() * disciplines.length)
+    const selected = disciplines[randomIndex]
     return {
-      content: disciplines[randomIndex].content,
+      content: selected?.content ?? defaultDisciplines[0],
       isCustom: true,
     }
   }
@@ -32,7 +33,7 @@ export default defineEventHandler(async (event) => {
   // Otherwise return random default quote
   const randomIndex = Math.floor(Math.random() * defaultDisciplines.length)
   return {
-    content: defaultDisciplines[randomIndex],
+    content: defaultDisciplines[randomIndex] ?? defaultDisciplines[0],
     isCustom: false,
   }
 })

@@ -2,7 +2,7 @@
 const { t } = useI18n()
 const colorMode = useColorMode()
 const { isAuthenticated, user } = useAuth()
-const { visibleNavItems, isActive } = useNavigation()
+const { isActive } = useNavigation()
 const { getTimezoneInfo } = useTimezone()
 
 // Mobile menu state
@@ -21,6 +21,7 @@ const route = useRoute()
 watch(() => route.path, () => {
   mobileNavOpen.value = false
 })
+const isHomeRoute = computed(() => route.path === '/')
 
 // Navigation items for main nav
 const mainNavItems = computed(() => {
@@ -74,12 +75,23 @@ const getIconName = (icon: string) => {
 </script>
 
 <template>
-  <nav class="sticky top-4 z-40 px-3 sm:px-4 lg:px-6">
+  <nav class="sticky z-40 px-3 sm:px-4 lg:px-6" :class="isHomeRoute ? 'top-3' : 'top-4'">
     <div class="mx-auto w-full max-w-7xl">
       <!-- Primary Navigation Bar -->
-      <div class="flex items-center rounded-2xl border border-cyan-100/80 bg-white/80 px-4 py-2.5 shadow-lg shadow-cyan-100/40 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/85 dark:shadow-slate-950/40 sm:px-5 sm:py-3">
+      <div
+        class="flex items-center rounded-2xl px-4 py-2.5 backdrop-blur-xl sm:px-5 sm:py-3"
+        :class="isHomeRoute
+          ? 'border border-sky-200/70 bg-white/72 shadow-lg shadow-sky-200/35 dark:border-slate-700 dark:bg-slate-900/82 dark:shadow-slate-950/40'
+          : 'border border-cyan-100/80 bg-white/80 shadow-lg shadow-cyan-100/40 dark:border-slate-700 dark:bg-slate-900/85 dark:shadow-slate-950/40'"
+      >
         <!-- Logo -->
-        <NuxtLink to="/" class="mr-6 flex-shrink-0 text-lg font-semibold tracking-tight text-cyan-900 transition-colors hover:text-cyan-700 dark:text-cyan-50 dark:hover:text-cyan-200 sm:mr-8 sm:text-xl">
+        <NuxtLink
+          to="/"
+          class="mr-6 flex-shrink-0 text-lg font-semibold tracking-tight transition-colors sm:mr-8 sm:text-xl"
+          :class="isHomeRoute
+            ? 'text-sky-900 hover:text-sky-700 dark:text-sky-100 dark:hover:text-sky-200'
+            : 'text-cyan-900 hover:text-cyan-700 dark:text-cyan-50 dark:hover:text-cyan-200'"
+        >
           {{ $t('common.appName') }}
         </NuxtLink>
 
@@ -88,8 +100,17 @@ const getIconName = (icon: string) => {
           <li v-for="item in mainNavItems" :key="item.to">
             <NuxtLink
               :to="item.to"
-              class="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[0.925rem] font-medium text-slate-600 transition-all duration-200 hover:bg-cyan-50 hover:text-cyan-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-cyan-200"
-              :class="isActive(item.to) ? 'bg-cyan-600 text-white shadow-sm shadow-cyan-700/30 hover:bg-cyan-600 hover:text-white dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-500' : ''"
+              class="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[0.925rem] font-medium text-slate-600 transition-all duration-200 dark:text-slate-300"
+              :class="[
+                isHomeRoute
+                  ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:bg-slate-800 dark:hover:text-sky-200'
+                  : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:bg-slate-800 dark:hover:text-cyan-200',
+                isActive(item.to)
+                  ? (isHomeRoute
+                      ? 'bg-sky-600 text-white shadow-sm shadow-sky-700/30 hover:bg-sky-600 hover:text-white dark:bg-sky-500 dark:text-slate-950 dark:hover:bg-sky-500'
+                      : 'bg-cyan-600 text-white shadow-sm shadow-cyan-700/30 hover:bg-cyan-600 hover:text-white dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-500')
+                  : ''
+              ]"
             >
               <Icon :name="getIconName(item.icon)" class="h-[18px] w-[18px]" width="18" height="18" />
               <span>{{ item.label }}</span>
@@ -108,7 +129,8 @@ const getIconName = (icon: string) => {
         <li>
           <button
             @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
-            class="cursor-pointer rounded-xl p-2 text-slate-500 transition-colors duration-200 hover:bg-cyan-50 hover:text-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-slate-900"
+            class="cursor-pointer rounded-xl p-2 text-slate-500 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
+            :class="isHomeRoute ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200' : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:text-cyan-200'"
             :aria-label="$t('theme.toggleDarkMode')"
           >
             <Icon
@@ -178,7 +200,10 @@ const getIconName = (icon: string) => {
           <li>
             <NuxtLink
               to="/auth/register"
-              class="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-emerald-700/30 transition-colors duration-200 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400 dark:focus:ring-offset-slate-900"
+              class="inline-flex items-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:text-slate-950 dark:focus:ring-offset-slate-900"
+              :class="isHomeRoute
+                ? 'bg-orange-500 shadow-orange-700/25 hover:bg-orange-400 focus:ring-orange-400 dark:bg-orange-400 dark:hover:bg-orange-300'
+                : 'bg-emerald-600 shadow-emerald-700/30 hover:bg-emerald-700 focus:ring-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400'"
             >
               {{ $t('auth.register') }}
             </NuxtLink>
@@ -190,7 +215,10 @@ const getIconName = (icon: string) => {
       <div class="ml-auto flex xl:hidden">
         <button
           @click="mobileNavOpen = !mobileNavOpen"
-          class="flex cursor-pointer items-center rounded-xl border border-cyan-100 bg-white/80 p-2 text-cyan-700 transition-colors duration-200 hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/80 dark:text-cyan-200 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
+          class="flex cursor-pointer items-center rounded-xl border bg-white/80 p-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
+          :class="isHomeRoute
+            ? 'border-sky-100 text-sky-700 hover:bg-sky-50 dark:text-sky-200'
+            : 'border-cyan-100 text-cyan-700 hover:bg-cyan-50 dark:text-cyan-200'"
           :aria-label="mobileNavOpen ? $t('theme.closeMenu') : $t('theme.openMenu')"
         >
           <Icon
@@ -202,14 +230,26 @@ const getIconName = (icon: string) => {
       </div>
 
       <!-- Secondary Navigation Bar (Desktop) -->
-      <div class="mt-2 hidden rounded-2xl border border-cyan-100/70 bg-white/80 px-4 py-2.5 shadow-md shadow-cyan-100/30 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-slate-950/40 xl:block xl:px-5 xl:py-3">
+      <div
+        class="mt-2 hidden rounded-2xl px-4 py-2.5 backdrop-blur-xl xl:block xl:px-5 xl:py-3"
+        :class="isHomeRoute
+          ? 'border border-sky-200/65 bg-white/70 shadow-md shadow-sky-200/30 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-slate-950/40'
+          : 'border border-cyan-100/70 bg-white/80 shadow-md shadow-cyan-100/30 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-slate-950/40'"
+      >
         <div class="flex items-center">
           <ul class="flex items-center gap-1">
             <li v-for="item in secondaryNavItems" :key="item.to">
               <NuxtLink
                 :to="item.to"
-                class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-cyan-50 hover:text-cyan-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-cyan-200"
-                :class="isActive(item.to) ? 'bg-cyan-50 text-cyan-700 dark:bg-slate-800 dark:text-cyan-200' : ''"
+                class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                :class="[
+                  isHomeRoute
+                    ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200'
+                    : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:text-cyan-200',
+                  isActive(item.to)
+                    ? (isHomeRoute ? 'bg-sky-50 text-sky-700 dark:bg-slate-800 dark:text-sky-200' : 'bg-cyan-50 text-cyan-700 dark:bg-slate-800 dark:text-cyan-200')
+                    : ''
+                ]"
               >
                 <Icon :name="getIconName(item.icon)" class="h-[18px] w-[18px]" width="18" height="18" />
                 <span>{{ item.label }}</span>
@@ -222,7 +262,8 @@ const getIconName = (icon: string) => {
             <li v-if="isAuthenticated">
               <NuxtLink
                 to="/settings"
-                class="rounded-lg p-2 text-slate-600 transition-colors duration-200 hover:bg-cyan-50 hover:text-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-slate-900"
+                class="rounded-lg p-2 text-slate-600 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
+                :class="isHomeRoute ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200' : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:text-cyan-200'"
               >
                 <Icon name="heroicons:cog-6-tooth" class="h-[18px] w-[18px]" width="18" height="18" />
               </NuxtLink>
@@ -244,9 +285,22 @@ const getIconName = (icon: string) => {
       />
 
       <!-- Mobile Nav Content -->
-      <nav class="relative flex h-full w-full flex-col overflow-y-auto border-r border-cyan-100 bg-white/95 pb-8 pt-5 shadow-2xl shadow-cyan-200/30 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95 sm:pt-6">
-        <div class="mb-5 flex w-full items-center border-b border-cyan-100 px-5 pb-5 dark:border-slate-700 sm:px-6 sm:pb-6">
-          <NuxtLink to="/" class="text-xl font-semibold text-cyan-900 dark:text-cyan-50" @click="mobileNavOpen = false">
+      <nav
+        class="relative flex h-full w-full flex-col overflow-y-auto border-r pb-8 pt-5 shadow-2xl backdrop-blur-xl sm:pt-6"
+        :class="isHomeRoute
+          ? 'border-sky-100 bg-sky-50/95 shadow-sky-200/30 dark:border-slate-700 dark:bg-slate-900/95'
+          : 'border-cyan-100 bg-white/95 shadow-cyan-200/30 dark:border-slate-700 dark:bg-slate-900/95'"
+      >
+        <div
+          class="mb-5 flex w-full items-center border-b px-5 pb-5 sm:px-6 sm:pb-6"
+          :class="isHomeRoute ? 'border-sky-100 dark:border-slate-700' : 'border-cyan-100 dark:border-slate-700'"
+        >
+          <NuxtLink
+            to="/"
+            class="text-xl font-semibold dark:text-cyan-50"
+            :class="isHomeRoute ? 'text-sky-900 dark:text-sky-100' : 'text-cyan-900'"
+            @click="mobileNavOpen = false"
+          >
             {{ $t('common.appName') }}
           </NuxtLink>
         </div>
@@ -259,8 +313,13 @@ const getIconName = (icon: string) => {
             <li v-for="item in mainNavItems" :key="item.to">
               <NuxtLink
                 :to="item.to"
-                class="flex items-center rounded-xl px-3 py-2.5 pr-4 text-sm text-slate-700 transition-colors duration-200 hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-800"
-                :class="isActive(item.to) ? 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950' : ''"
+                class="flex items-center rounded-xl px-3 py-2.5 pr-4 text-sm text-slate-700 transition-colors duration-200 dark:text-slate-200 dark:hover:bg-slate-800"
+                :class="[
+                  isHomeRoute ? 'hover:bg-sky-100/80' : 'hover:bg-cyan-50',
+                  isActive(item.to)
+                    ? (isHomeRoute ? 'bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950' : 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950')
+                    : ''
+                ]"
                 @click="mobileNavOpen = false"
               >
                 <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
@@ -276,8 +335,13 @@ const getIconName = (icon: string) => {
             <li v-for="item in secondaryNavItems" :key="item.to">
               <NuxtLink
                 :to="item.to"
-                class="flex items-center rounded-xl px-3 py-2.5 pr-2 text-sm text-slate-700 transition-colors duration-200 hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-800"
-                :class="isActive(item.to) ? 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950' : ''"
+                class="flex items-center rounded-xl px-3 py-2.5 pr-2 text-sm text-slate-700 transition-colors duration-200 dark:text-slate-200 dark:hover:bg-slate-800"
+                :class="[
+                  isHomeRoute ? 'hover:bg-sky-100/80' : 'hover:bg-cyan-50',
+                  isActive(item.to)
+                    ? (isHomeRoute ? 'bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950' : 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950')
+                    : ''
+                ]"
                 @click="mobileNavOpen = false"
               >
                 <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
@@ -289,13 +353,14 @@ const getIconName = (icon: string) => {
 
         <!-- Mobile Auth Section -->
         <div class="px-3 sm:px-4">
-          <div class="border-t border-cyan-100 pt-8 dark:border-slate-700">
+          <div class="border-t pt-8 dark:border-slate-700" :class="isHomeRoute ? 'border-sky-100' : 'border-cyan-100'">
             <!-- Language & Theme -->
             <div class="flex items-center justify-between mb-4">
               <LanguageSwitcher dropdown-position="left" />
               <button
                 @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
-                class="cursor-pointer rounded-lg p-2 text-slate-600 transition-colors hover:bg-cyan-50 hover:text-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-slate-900"
+                class="cursor-pointer rounded-lg p-2 text-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
+                :class="isHomeRoute ? 'hover:bg-sky-100/80 hover:text-sky-700 dark:hover:text-sky-200' : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:text-cyan-200'"
                 :aria-label="$t('theme.toggleDarkMode')"
               >
                 <Icon
@@ -314,7 +379,8 @@ const getIconName = (icon: string) => {
               </div>
               <NuxtLink
                 to="/settings"
-                class="mt-2 flex items-center rounded-xl px-3 py-3 pr-2 text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                class="mt-2 flex items-center rounded-xl px-3 py-3 pr-2 text-slate-700 transition-colors dark:text-slate-200 dark:hover:bg-slate-800"
+                :class="isHomeRoute ? 'hover:bg-sky-100/80' : 'hover:bg-cyan-50'"
                 @click="mobileNavOpen = false"
               >
                 <Icon name="heroicons:cog-6-tooth" class="mr-3 h-5 w-5" />
@@ -331,7 +397,8 @@ const getIconName = (icon: string) => {
             <template v-else>
               <NuxtLink
                 to="/auth/login"
-                class="flex items-center rounded-xl px-3 py-3 pr-2 text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                class="flex items-center rounded-xl px-3 py-3 pr-2 text-slate-700 transition-colors dark:text-slate-200 dark:hover:bg-slate-800"
+                :class="isHomeRoute ? 'hover:bg-sky-100/80' : 'hover:bg-cyan-50'"
                 @click="mobileNavOpen = false"
               >
                 <Icon name="heroicons:arrow-left-on-rectangle" class="mr-3 h-5 w-5" />
@@ -339,7 +406,10 @@ const getIconName = (icon: string) => {
               </NuxtLink>
               <NuxtLink
                 to="/auth/register"
-                class="flex items-center rounded-xl bg-emerald-600 px-3 py-3 pr-2 text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
+                class="flex items-center rounded-xl px-3 py-3 pr-2 text-white transition-colors dark:text-slate-950"
+                :class="isHomeRoute
+                  ? 'bg-orange-500 hover:bg-orange-400 dark:bg-orange-400 dark:hover:bg-orange-300'
+                  : 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400'"
                 @click="mobileNavOpen = false"
               >
                 <Icon name="heroicons:user-plus" class="mr-3 h-5 w-5" />

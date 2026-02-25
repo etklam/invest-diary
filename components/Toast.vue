@@ -44,7 +44,7 @@
 import type { Toast } from '~/composables/useToast'
 
 const props = defineProps<{
-  toasts: Toast[]
+  toasts: readonly Toast[]
 }>()
 
 const emit = defineEmits<{

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { locale, locales, setLocale } = useI18n()
+type LocaleCode = 'en' | 'zh-TW' | 'zh-CN'
 
 const isOpen = ref(false)
 
@@ -11,15 +12,15 @@ const props = withDefaults(defineProps<Props>(), {
   dropdownPosition: 'right'
 })
 
-const availableLocales = computed(() => 
-  (locales.value as { code: string; name: string }[]).filter(l => l.code !== locale.value)
+const availableLocales = computed(() =>
+  (locales.value as { code: LocaleCode; name: string }[]).filter(l => l.code !== locale.value)
 )
 
 const currentLocale = computed(() =>
   (locales.value as { code: string; name: string }[]).find(l => l.code === locale.value)
 )
 
-const selectLocale = async (code: string) => {
+const selectLocale = async (code: LocaleCode) => {
   await setLocale(code)
   isOpen.value = false
 }

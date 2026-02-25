@@ -2,7 +2,6 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { formatDateWithWeekday } from '~/lib/utils'
 import type {
   Diary,
-  DiaryAlert,
   DiaryGroup,
   PaginationResponse,
   DiariesApiResponse

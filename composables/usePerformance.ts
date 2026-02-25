@@ -38,7 +38,8 @@ export const usePerformance = () => {
    * Log metric to console in development
    */
   const logMetric = (metric: Metric) => {
-    const rating = getRating(metric.value, metric.ratingThresholds)
+    const threshold = thresholdsByMetric[metric.name]
+    const rating = threshold ? getRating(metric.value, threshold) : 'good'
 
     console.log(`[Web Vitals] ${metric.name}:`, {
       value: metric.value,
@@ -56,7 +57,8 @@ export const usePerformance = () => {
    * Implement your analytics tracking here (Google Analytics, Plausible, etc.)
    */
   const sendToAnalytics = (metric: Metric) => {
-    const rating = getRating(metric.value, metric.ratingThresholds)
+    const threshold = thresholdsByMetric[metric.name]
+    const rating = threshold ? getRating(metric.value, threshold) : 'good'
 
     // Example: Send to your analytics endpoint
     // $fetch('/api/analytics/web-vitals', {
@@ -135,16 +137,7 @@ export const usePerformance = () => {
     const value = metrics.value[metricName]
     if (!value) return null
 
-    const thresholds: Record<string, { good: number; needsImprovement: number }> = {
-      LCP: { good: 2500, needsImprovement: 4000 },
-      FCP: { good: 1800, needsImprovement: 3000 },
-      CLS: { good: 0.1, needsImprovement: 0.25 },
-      FID: { good: 100, needsImprovement: 300 },
-      INP: { good: 200, needsImprovement: 500 },
-      TTFB: { good: 800, needsImprovement: 1800 }
-    }
-
-    const threshold = thresholds[metricName]
+    const threshold = thresholdsByMetric[metricName]
     return threshold ? getRating(value, threshold) : null
   }
 
@@ -167,4 +160,12 @@ export const usePerformance = () => {
     initPerformanceMonitoring
   }
 }
+  const thresholdsByMetric: Record<string, { good: number; needsImprovement: number }> = {
+    LCP: { good: 2500, needsImprovement: 4000 },
+    FCP: { good: 1800, needsImprovement: 3000 },
+    CLS: { good: 0.1, needsImprovement: 0.25 },
+    FID: { good: 100, needsImprovement: 300 },
+    INP: { good: 200, needsImprovement: 500 },
+    TTFB: { good: 800, needsImprovement: 1800 }
+  }
 

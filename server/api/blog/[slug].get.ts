@@ -1,4 +1,5 @@
 import prisma from '~/lib/prisma'
+import { PostStatus } from '@prisma/client'
 
 export default defineEventHandler(async (event) => {
   // ✅ 極度保險的 slug 解析：依序嘗試 params / routerParam / URL path
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
     const baseWhere = {
       slug,
-      status: 'PUBLISHED',
+      status: PostStatus.PUBLISHED,
       publishedAt: { not: null },
     }
 

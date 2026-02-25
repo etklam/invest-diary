@@ -44,7 +44,7 @@ const showFab = computed(() => isMobile.value || isTablet.value)
 
 // 初始化安全區域
 const initSafeArea = () => {
-  if (typeof window !== 'undefined' && window.getComputedStyle) {
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     const rootStyle = getComputedStyle(document.documentElement)
     safeAreaTop.value = parseInt(rootStyle.getPropertyValue('--safe-area-inset-top') || '0')
     safeAreaBottom.value = parseInt(rootStyle.getPropertyValue('--safe-area-inset-bottom') || '0')
@@ -71,6 +71,7 @@ const setupKeyboardListeners = () => {
   // 視覺變化 API (iOS 鍵盤偵測)
   if ('visualViewport' in window) {
     const visualViewport = window.visualViewport
+    if (!visualViewport) return
     const handleViewportChange = () => {
       const keyboardHeight = window.innerHeight - visualViewport.height
       handleKeyboardChange(keyboardHeight > 150, keyboardHeight)

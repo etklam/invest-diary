@@ -1,99 +1,108 @@
 <template>
   <div class="calendar-page">
-    <!-- 月曆標題與導航 -->
-    <div class="flex items-center justify-between mb-6">
-      <button
-        @click="previousMonth"
-        class="p-2 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-        aria-label="上一個月"
-      >
-        <Icon name="heroicons:chevron-left" class="w-6 h-6" />
-      </button>
-      <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
-        {{ currentYear }}年 {{ currentMonth + 1 }}月
-      </h1>
-      <button
-        @click="nextMonth"
-        class="p-2 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-        aria-label="下一個月"
-      >
-        <Icon name="heroicons:chevron-right" class="w-6 h-6" />
-      </button>
-    </div>
-
-    <!-- 星期標題 -->
-    <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
-      <div
-        v-for="day in weekDays"
-        :key="day"
-        class="text-center text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 py-2"
-      >
-        {{ day }}
+    <header class="fin-card mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p class="kicker">Calendar Intelligence</p>
+          <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            {{ currentYear }}年 {{ currentMonth + 1 }}月
+          </h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            @click="previousMonth"
+            class="nav-btn cursor-pointer"
+            aria-label="上一個月"
+          >
+            <Icon name="heroicons:chevron-left" class="h-5 w-5" />
+          </button>
+          <button
+            @click="nextMonth"
+            class="nav-btn cursor-pointer"
+            aria-label="下一個月"
+          >
+            <Icon name="heroicons:chevron-right" class="h-5 w-5" />
+          </button>
+        </div>
       </div>
-    </div>
+      <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div class="metric">
+          <p class="metric-label">本月天數</p>
+          <p class="metric-value">{{ daysInMonth }}</p>
+        </div>
+        <div class="metric">
+          <p class="metric-label">有日記日期</p>
+          <p class="metric-value">{{ monthDiaryCount }}</p>
+        </div>
+        <div class="metric">
+          <p class="metric-label">記錄率</p>
+          <p class="metric-value">{{ monthCoverage }}</p>
+        </div>
+      </div>
+    </header>
 
-    <!-- 月曆網格 -->
-    <div class="grid grid-cols-7 gap-1 sm:gap-2">
-      <!-- 空白格子（月初前的空白） -->
-      <div
-        v-for="n in firstDayOfWeek"
-        :key="'blank-' + n"
-        class="h-16 sm:h-24"
-      ></div>
-
-      <!-- 日期格子 -->
-      <button
-        v-for="day in daysInMonth"
-        :key="day"
-        type="button"
-        @click="handleDateClick(day)"
-        class="h-16 sm:h-24 p-1 sm:p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1"
-        :aria-label="`${currentYear}年${currentMonth + 1}月${day}日`"
-        :class="{
-          'bg-indigo-50 dark:bg-indigo-900/40': isToday(day),
-          'border-indigo-500': isToday(day)
-        }"
-      >
-        <div class="text-sm sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+    <section class="fin-card">
+      <div class="grid grid-cols-7 gap-1.5 sm:gap-2.5 mb-2">
+        <div
+          v-for="day in weekDays"
+          :key="day"
+          class="text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 py-2"
+        >
           {{ day }}
         </div>
+      </div>
 
-        <!-- 日記標記 -->
+      <div class="grid grid-cols-7 gap-1.5 sm:gap-2.5">
         <div
-          v-if="hasDiary(day)"
-          class="absolute bottom-1 sm:bottom-2 right-1 sm:right-2"
-        >
-          <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-indigo-500 rounded-full"></div>
-        </div>
+          v-for="n in firstDayOfWeek"
+          :key="'blank-' + n"
+          class="h-16 sm:h-24"
+        />
 
-        <!-- 日記標題預覽 -->
-        <div
-          v-if="hasDiary(day)"
-          class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 truncate leading-tight"
+        <button
+          v-for="day in daysInMonth"
+          :key="day"
+          type="button"
+          @click="handleDateClick(day)"
+          class="day-card cursor-pointer"
+          :aria-label="`${currentYear}年${currentMonth + 1}月${day}日`"
+          :class="{
+            'day-card-today': isToday(day),
+            'day-card-active': hasDiary(day)
+          }"
         >
-          {{ getDiaryTitle(day) }}
-        </div>
-      </button>
-    </div>
+          <div class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+            {{ day }}
+          </div>
+          <div
+            v-if="hasDiary(day)"
+            class="absolute bottom-2 right-2 h-2.5 w-2.5 rounded-full bg-amber-500"
+          />
+          <div
+            v-if="hasDiary(day)"
+            class="mt-2 text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 truncate leading-tight"
+          >
+            {{ getDiaryTitle(day) }}
+          </div>
+        </button>
+      </div>
+    </section>
 
-    <!-- 今日按鈕 -->
     <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
       <button
         @click="showQuickModal = true"
-        class="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors min-h-[44px] font-medium"
+        class="action action-primary cursor-pointer"
       >
         <Icon name="heroicons:bolt" class="mr-2 h-5 w-5" />
         快速日記
       </button>
       <button
         @click="goToToday"
-        class="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors min-h-[44px] font-medium"
+        class="action action-secondary cursor-pointer"
       >
         回到今天
       </button>
     </div>
-
-    <!-- Quick Diary Modal -->
     <QuickDiaryModal
       :show="showQuickModal"
       @close="showQuickModal = false"
@@ -137,6 +146,17 @@ const daysInMonth = computed(() => {
 // 當月第一天是星期幾
 const firstDayOfWeek = computed(() => {
   return new Date(currentYear.value, currentMonth.value, 1).getDay()
+})
+const monthDiaryCount = computed(() => {
+  let count = 0
+  for (let day = 1; day <= daysInMonth.value; day++) {
+    if (hasDiary(day)) count++
+  }
+  return count
+})
+const monthCoverage = computed(() => {
+  if (!daysInMonth.value) return '0%'
+  return `${Math.round((monthDiaryCount.value / daysInMonth.value) * 100)}%`
 })
 
 // 獲取日記資料（獲取所有日記用於月曆顯示）
@@ -247,7 +267,173 @@ watch(isAuthenticated, (authenticated) => {
 
 <style scoped>
 .calendar-page {
-  max-width: 800px;
+  max-width: 960px;
   margin: 0 auto;
+}
+
+.fin-card {
+  border: 1px solid rgb(191 219 254);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 82%);
+  backdrop-filter: blur(8px);
+  padding: 1rem;
+  box-shadow: 0 14px 28px rgb(30 64 175 / 8%);
+}
+
+.kicker {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgb(59 130 246);
+  font-weight: 600;
+}
+
+.nav-btn {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(191 219 254);
+  background: rgb(239 246 255);
+  color: rgb(30 64 175);
+  transition: background-color 200ms ease;
+}
+
+.nav-btn:hover {
+  background: rgb(219 234 254);
+}
+
+.metric {
+  border: 1px solid rgb(219 234 254);
+  border-radius: 0.8rem;
+  background: rgb(248 250 252 / 86%);
+  padding: 0.7rem 0.85rem;
+}
+
+.metric-label {
+  color: rgb(71 85 105);
+  font-size: 0.76rem;
+}
+
+.metric-value {
+  color: rgb(30 58 138);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 0.2rem;
+}
+
+.day-card {
+  height: 4.1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0.5rem;
+  text-align: left;
+  position: relative;
+  transition: all 180ms ease;
+}
+
+.day-card:hover {
+  background: rgb(248 250 252);
+  border-color: rgb(147 197 253);
+}
+
+.day-card-today {
+  border-color: rgb(59 130 246);
+  background: rgb(239 246 255);
+}
+
+.day-card-active {
+  box-shadow: inset 0 0 0 1px rgb(59 130 246 / 45%);
+}
+
+.action {
+  min-height: 44px;
+  border-radius: 0.8rem;
+  padding: 0.7rem 1rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  transition: all 180ms ease;
+}
+
+.action-primary {
+  background: #1e40af;
+  color: white;
+}
+
+.action-primary:hover {
+  background: #1d4ed8;
+}
+
+.action-secondary {
+  border: 1px solid rgb(191 219 254);
+  color: rgb(30 64 175);
+  background: rgb(239 246 255);
+}
+
+.action-secondary:hover {
+  background: rgb(219 234 254);
+}
+
+@media (min-width: 640px) {
+  .day-card {
+    height: 6rem;
+    padding: 0.65rem;
+  }
+}
+
+:global(.dark) .fin-card {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42 / 84%);
+  box-shadow: 0 14px 28px rgb(2 6 23 / 35%);
+}
+
+:global(.dark) .nav-btn {
+  border-color: rgb(51 65 85);
+  background: rgb(30 41 59);
+  color: rgb(125 211 252);
+}
+
+:global(.dark) .nav-btn:hover {
+  background: rgb(51 65 85);
+}
+
+:global(.dark) .metric {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42 / 72%);
+}
+
+:global(.dark) .metric-label {
+  color: rgb(148 163 184);
+}
+
+:global(.dark) .metric-value {
+  color: rgb(186 230 253);
+}
+
+:global(.dark) .day-card {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42 / 86%);
+}
+
+:global(.dark) .day-card:hover {
+  background: rgb(30 41 59);
+  border-color: rgb(56 189 248);
+}
+
+:global(.dark) .day-card-today {
+  border-color: rgb(59 130 246);
+  background: rgb(30 58 138 / 32%);
+}
+
+:global(.dark) .action-secondary {
+  border-color: rgb(51 65 85);
+  color: rgb(147 197 253);
+  background: rgb(30 41 59);
+}
+
+:global(.dark) .action-secondary:hover {
+  background: rgb(51 65 85);
 }
 </style>

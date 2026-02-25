@@ -79,8 +79,12 @@ export default defineEventHandler(async (event) => {
         orderBy: { triggerAt: 'asc' }
       })
 
+      if (allAlerts.length === 0) {
+        return []
+      }
+
       // Update parentId: first alert is the parent, others point to it
-      const parentId = allAlerts[0].id
+      const parentId = allAlerts[0]!.id
       await tx.alert.updateMany({
         where: {
           id: { in: allAlerts.map(a => a.id) }
@@ -92,7 +96,7 @@ export default defineEventHandler(async (event) => {
     })
 
     console.log('[API] Recurring alerts created:', result.length, 'for user:', userId)
-    return result[0] // Return the parent alert
+    return result[0] ?? null // Return the parent alert
 
   } catch (error) {
     console.error('Error creating alert:', error)

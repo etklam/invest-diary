@@ -93,7 +93,7 @@ definePageMeta({
 })
 
 // Use lazy fetch to avoid calling API during SSR before auth check
-const { data: alerts, pending, error, refresh } = await useLazyFetch('/api/alerts')
+const { data: alerts, pending, error, refresh } = await useLazyFetch<any[]>('/api/alerts')
 
 const toast = useToast()
 

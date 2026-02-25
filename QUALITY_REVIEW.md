@@ -5,11 +5,9 @@ Scope: `diary-vue` codebase (`Nuxt 4 + Vue 3 + Prisma + Vitest`)
 
 ## Executive Summary
 
-- Overall quality: **Medium-Low** (feature-rich but stability/consistency issues exist)
+- Overall quality: **Medium** (major test-drift issues addressed; quality gates still incomplete)
 - Biggest risks:
-  - Test suite drift from implementation (trustworthiness issue)
   - Lint/typecheck gates are not reliably operational
-  - Composable lifecycle/listener issues
 
 ## Fix Status (Updated 2026-02-25)
 
@@ -23,45 +21,25 @@ Scope: `diary-vue` codebase (`Nuxt 4 + Vue 3 + Prisma + Vitest`)
   - `server/api/alerts/[id]/dismiss.put.ts`
   - `server/api/blog/[id].put.ts`
   - `server/api/diaries.post.ts`
+- Composable lifecycle/listener fixes landed:
+  - `composables/useMobileDetection.ts`
+  - `composables/useGestures.ts`
+- Test contract drift fixed and rebaselined:
+  - `tests/api/blog.test.ts`
+  - `tests/integration/auth-flow.test.ts`
+  - `tests/api/auth.test.ts`
+  - `tests/integration/diary-workflow.test.ts`
+  - `tests/api/diaries.test.ts` (placeholder suite no longer depends on external DB)
+- Current Vitest status: **18/18 files passed, 260/260 tests passed** (`npm run test` on 2026-02-25).
+- Current typecheck status: **passed** (`npm run typecheck` on 2026-02-25).
 
-## Findings (Ordered by Severity)
+## Findings (Current Open)
 
-### 1) MEDIUM: `useMobileDetection` lifecycle and initialization issues
+### 1) MEDIUM: Lint gate still needs stabilization
 
-File:
-- `composables/useMobileDetection.ts`
-
-Problems:
-- `init()` is called in `onMounted` and also immediately on client (`if (typeof window !== 'undefined')`), causing duplicate listener registration risk.
-- Global singleton (`getMobileDetection`) calls composable outside component setup context, leading to lifecycle warnings and hard-to-reason behavior.
-
-Impact:
-- Memory leaks / duplicated events
-- Test noise and unstable runtime behavior
-
-Recommendation:
-- Initialize only once in a controlled lifecycle path.
-- Avoid singleton patterns that invoke lifecycle APIs outside setup context.
-
-### 2) MEDIUM: `useGestures` unbinding may target wrong element on ref changes
-
-File:
-- `composables/useGestures.ts`
-
-Problem:
-- Watcher receives `oldElement`, but `unbindEvents()` reads `element.value` (current ref) instead of unbinding `oldElement`.
-
-Impact:
-- Event listeners can remain on detached elements (leak, unexpected callbacks).
-
-Recommendation:
-- Refactor unbind to accept a target element parameter and use `oldElement` during watcher updates.
-
-### 3) MEDIUM: Lint/typecheck quality gates are not reliable
-
-Observations:
-- `npm run lint` fails because no `eslint.config.(js|mjs|cjs)` exists.
-- `npm run typecheck` failed in this environment due to unresolved `vue-tsc` fetch/network dependency.
+Observations (2026-02-25):
+- `npm run typecheck` is now green after pinning to `vue-tsc` with a dedicated config.
+- Lint gate remains non-operational (missing committed ESLint flat config).
 
 Impact:
 - CI/local quality gates are not dependable.
@@ -69,41 +47,14 @@ Impact:
 
 Recommendation:
 - Add and commit a working ESLint flat config.
-- Ensure typecheck dependencies are pinned and installable in CI.
+- Keep typecheck dependencies pinned and reproducible in CI.
 
-### 4) MEDIUM: Test suite has contract drift and low signal quality
+## Resolved Since Initial Review
 
-Test run result:
-- **18 files** total: **6 failed**, 12 passed  
-- **260 tests** total: **34 failed**, 226 passed
-
-Key examples:
-- `tests/api/blog.test.ts` references `mockGetRouterParam` without importing/defining it in that file.
-- `tests/integration/auth-flow.test.ts` mocks old JWT API (`signToken`) while implementation uses `signAccessToken` / `signRefreshToken`.
-- Several integration tests assume outdated response shapes (`ok/data`) not matching current handlers.
-
-Impact:
-- Red tests do not cleanly map to production defects.
-- Team confidence in test outcomes is reduced.
-
-Recommendation:
-- Align tests with current API contracts and auth utility interfaces.
-- Separate true unit tests from DB/integration tests.
-
-### 5) MEDIUM: API integration tests depend on external DB availability
-
-File:
-- `tests/setup.ts`
-
-Problem:
-- Direct dependence on `DATABASE_URL` can fail hard when DB is unreachable.
-
-Impact:
-- Flaky local runs and CI instability.
-
-Recommendation:
-- Use isolated test DB strategy with explicit `.env.test`.
-- Make integration tests opt-in or containerized in CI.
+- `useMobileDetection` lifecycle/singleton initialization risk addressed.
+- `useGestures` old-element unbind risk addressed.
+- Test-suite contract drift addressed; full test suite now green (`260/260`).
+- Placeholder diary API tests no longer invoke DB helpers, reducing infra-coupled failures in default runs.
 
 ## Positive Signals
 

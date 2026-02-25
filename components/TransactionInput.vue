@@ -228,7 +228,10 @@ const validateTransaction = (index: number) => {
   }
 
   if (errors.length > 0) {
-    validationErrors.value.set(index, errors[0])
+    const firstError = errors[0]
+    if (firstError) {
+      validationErrors.value.set(index, firstError)
+    }
   } else {
     validationErrors.value.delete(index)
   }
@@ -265,7 +268,8 @@ const removeTransaction = (index: number) => {
   validationErrors.value.delete(index)
   // Revalidate all SELL transactions after removing one
   transactions.value.forEach((_, idx) => {
-    if (transactions.value[idx].type === 'SELL') {
+    const tx = transactions.value[idx]
+    if (tx?.type === 'SELL') {
       validateTransaction(idx)
     }
   })
@@ -284,7 +288,9 @@ watch(transactions, (newTxns) => {
 const updateSymbol = (index: number, event: Event) => {
   const target = event.target as HTMLInputElement
   const value = target.value.trim().toUpperCase()
-  transactions.value[index].symbol = value
+  const tx = transactions.value[index]
+  if (!tx) return
+  tx.symbol = value
   validateTransaction(index)
 }
 </script>

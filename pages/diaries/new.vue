@@ -167,7 +167,7 @@ watch(() => form.date, async (newDate) => {
 
   checkingDate.value = true
   try {
-    const existingDiary = await $fetch(`/api/diaries/by-date?date=${newDate}`)
+    const existingDiary = await $fetch<any>(`/api/diaries/by-date?date=${newDate}`)
     if (existingDiary) {
       // Diary exists for this date, load it for editing
       isEditing.value = true
@@ -339,10 +339,10 @@ const saveDiary = async () => {
 
     if (isEditing.value && existingDiaryId.value) {
       // Update existing diary
-      await $fetch(`/api/diaries/${existingDiaryId.value}`, {
-        method: 'PUT',
+      await $fetch(`/api/diaries/${existingDiaryId.value}` as string, {
+        method: 'PUT' as const,
         body: payload
-      })
+      } as any)
       toast.success('日記更新成功！')
     } else {
       // Create new diary

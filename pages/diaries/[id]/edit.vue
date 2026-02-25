@@ -130,7 +130,7 @@ const toast = useToast()
 const { user } = useAuth()
 
 // Use lazy fetch to avoid calling API during SSR before auth check
-const { data: diary, pending, error } = await useLazyFetch(`/api/diaries/${id}`)
+const { data: diary, pending, error } = await useLazyFetch<any>(`/api/diaries/${id}`)
 
 const form = reactive({
   date: new Date().toISOString().slice(0, 10),
@@ -144,7 +144,7 @@ watch(diary, (newDiary) => {
   if (newDiary) {
     form.date = newDiary.date ? new Date(newDiary.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
     form.title = newDiary.title
-    form.content = newDiary.content
+    form.content = newDiary.content || ''
     form.transactions = newDiary.transactions.map((t: any) => ({
       ...t,
       trade_date: new Date(t.tradeDate).toISOString().slice(0, 16)
@@ -225,10 +225,10 @@ const saveDiary = async () => {
       }))
     }
 
-    await $fetch(`/api/diaries/${id}`, {
-      method: 'PUT',
+    await $fetch(`/api/diaries/${id}` as string, {
+      method: 'PUT' as const,
       body: payload
-    })
+    } as any)
 
     toast.success('日記更新成功！')
 

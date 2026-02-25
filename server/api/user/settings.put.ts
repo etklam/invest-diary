@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof z.ZodError) {
       throw createError({
         statusCode: 400,
-        statusMessage: error.errors[0].message
+        statusMessage: error.issues[0]?.message ?? 'Invalid input'
       })
     }
     throw error

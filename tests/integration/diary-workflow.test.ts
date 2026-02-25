@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mockReadBody, mockGetQuery } from '../vi-setup'
+import { mockReadBody, mockGetQuery, mockGetRouterParam } from '../vi-setup'
 
 /**
  * Integration Tests for Diary Workflow
@@ -15,6 +15,14 @@ const mockDiaryFindFirst = vi.fn()
 const mockDiaryCreate = vi.fn()
 const mockDiaryUpdate = vi.fn()
 const mockDiaryDelete = vi.fn()
+const mockDiaryCount = vi.fn()
+const mockTransactionDeleteMany = vi.fn()
+const mockAlertDeleteMany = vi.fn()
+const mockPrismaTransaction = vi.fn(async (callback: any) => callback({
+  transaction: { deleteMany: mockTransactionDeleteMany },
+  alert: { deleteMany: mockAlertDeleteMany },
+  diary: { update: mockDiaryUpdate },
+}))
 
 vi.mock('~/lib/prisma', () => ({
   default: {
@@ -22,6 +30,7 @@ vi.mock('~/lib/prisma', () => ({
       findMany: mockDiaryFindMany,
       findUnique: mockDiaryFindUnique,
       findFirst: mockDiaryFindFirst,
+      count: mockDiaryCount,
       create: mockDiaryCreate,
       update: mockDiaryUpdate,
       delete: mockDiaryDelete,
@@ -30,6 +39,7 @@ vi.mock('~/lib/prisma', () => ({
       create: vi.fn(),
       findMany: vi.fn(),
     },
+    $transaction: mockPrismaTransaction,
     $connect: vi.fn(),
     $disconnect: vi.fn(),
   },
@@ -50,6 +60,7 @@ describe('Diary Workflow Integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetQuery.mockReturnValue({})
   })
 
   afterEach(() => {
@@ -72,6 +83,7 @@ describe('Diary Workflow Integration', () => {
       // Create
       mockDiaryCreate.mockResolvedValueOnce(mockDiary)
       mockReadBody.mockResolvedValueOnce({
+        title: 'Test Diary',
         content: 'Test diary entry',
         mood: 'HAPPY',
       })
@@ -86,6 +98,7 @@ describe('Diary Workflow Integration', () => {
       // Read
       mockDiaryFindUnique.mockResolvedValueOnce(mockDiary)
       mockDiaryFindMany.mockResolvedValueOnce([mockDiary])
+      mockDiaryCount.mockResolvedValueOnce(1)
 
       const { default: listHandler } = await import('~/server/api/diaries.get')
       await listHandler({
@@ -96,13 +109,18 @@ describe('Diary Workflow Integration', () => {
 
       // Update
       const updatedDiary = { ...mockDiary, content: 'Updated content' }
+      mockDiaryFindFirst.mockResolvedValueOnce(mockDiary)
       mockDiaryUpdate.mockResolvedValueOnce(updatedDiary)
-      mockReadBody.mockResolvedValueOnce({ content: 'Updated content' })
+      mockReadBody.mockResolvedValueOnce({
+        title: 'Updated Title',
+        content: 'Updated content',
+      })
 
       const { default: updateHandler } = await import('~/server/api/diaries/[id].put')
+      mockGetRouterParam.mockReturnValueOnce('1')
       await updateHandler({
         context: {
-          user: { userId: userId.toString() },
+          user: { id: userId.toString() },
           params: { id: '1' },
         },
       } as any)
@@ -110,9 +128,11 @@ describe('Diary Workflow Integration', () => {
       expect(mockDiaryUpdate).toHaveBeenCalled()
 
       // Delete
+      mockDiaryFindFirst.mockResolvedValueOnce(mockDiary)
       mockDiaryDelete.mockResolvedValueOnce({ id: 1n })
 
       const { default: deleteHandler } = await import('~/server/api/diaries/[id].delete')
+      mockGetRouterParam.mockReturnValueOnce('1')
       await deleteHandler({
         context: {
           user: mockUser,
@@ -147,6 +167,7 @@ describe('Diary Workflow Integration', () => {
 
       mockDiaryCreate.mockResolvedValueOnce(mockDiaryWithTransactions)
       mockReadBody.mockResolvedValueOnce({
+        title: 'Trading Diary',
         content: 'Trading day',
         mood: 'NEUTRAL',
         transactions: [
@@ -173,7 +194,7 @@ describe('Diary Workflow Integration', () => {
         createdAt: new Date('2024-01-15'),
       }
 
-      mockDiaryFindMany.mockResolvedValueOnce([mockDiary])
+      mockDiaryFindFirst.mockResolvedValueOnce(mockDiary)
       mockGetQuery.mockReturnValueOnce({ date: '2024-01-15' })
 
       const { default: handler } = await import('~/server/api/diaries/by-date.get')
@@ -181,7 +202,7 @@ describe('Diary Workflow Integration', () => {
         context: { user: mockUser },
       } as any)
 
-      expect(mockDiaryFindMany).toHaveBeenCalledWith(
+      expect(mockDiaryFindFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.any(Object),
         })

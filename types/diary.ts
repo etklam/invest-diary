@@ -62,3 +62,23 @@ export interface DiariesApiResponse {
     totalPages: number
   }
 }
+
+export interface PaginationResponse {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
+export interface DiaryAlert {
+  id: bigint | string
+  message: string
+  triggerAt: Date | string
+  isDismissed?: boolean
+}
+
+export interface DiaryGroup {
+  period: string
+  periodLabel: string
+  diaries: Diary[]
+}

@@ -64,7 +64,7 @@
 
     <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
       <div class="px-4 py-5 sm:p-6 prose dark:prose-invert max-w-none">
-        <MDC :value="diary.content" />
+        <MDC :value="diary.content || ''" />
       </div>
     </div>
 
@@ -97,7 +97,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ tx.quantity }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ tx.price }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ (tx.quantity * tx.price).toFixed(2) }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ (Number(tx.quantity) * Number(tx.price)).toFixed(2) }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ new Date(tx.tradeDate).toLocaleString() }}</td>
               </tr>
             </tbody>
@@ -105,7 +105,7 @@
         </div>
       </div>
 
-      <HoldingsDisplay :transactions="diary.transactions" />
+      <HoldingsDisplay :transactions="diary.transactions.map((tx: any) => ({ ...tx, quantity: Number(tx.quantity), price: Number(tx.price) }))" />
     </div>
 
   </div>
@@ -123,7 +123,7 @@ const router = useRouter()
 const id = route.params.id
 
 // Use lazy fetch to avoid calling API during SSR before auth check
-const { data: diary, pending, error } = await useLazyFetch(`/api/diaries/${id}`)
+const { data: diary, pending, error } = await useLazyFetch<any>(`/api/diaries/${id}`)
 
 const toast = useToast()
 const { user } = useAuth()
@@ -135,9 +135,9 @@ const deleteDiary = async () => {
   if (!confirm('確定要刪除這篇日記嗎？此操作無法復原。')) return
 
   try {
-    await $fetch(`/api/diaries/${id}`, {
-      method: 'DELETE'
-    })
+    await $fetch(`/api/diaries/${id}` as string, {
+      method: 'DELETE' as const
+    } as any)
     toast.success('日記已刪除')
     router.push('/diaries')
   } catch (e: any) {

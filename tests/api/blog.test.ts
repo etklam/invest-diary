@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mockGetQuery, mockReadBody } from '../vi-setup'
+import { mockGetQuery, mockReadBody, mockGetRouterParam } from '../vi-setup'
 
 // Create mock functions
 const mockPostFindMany = vi.fn()
@@ -316,15 +316,17 @@ describe('Blog API', () => {
         title: 'Updated Post',
         slug: 'updated-post',
         content: 'Updated content',
+        category: 'TECH',
         status: 'PUBLISHED',
       }
 
-      mockPostFindFirst.mockResolvedValue(mockPost)
+      mockPostFindUnique.mockResolvedValue(mockPost)
       mockPostUpdate.mockResolvedValue(mockPost)
 
       mockReadBody.mockResolvedValue({
         title: 'Updated Post',
         content: 'Updated content',
+        category: 'TECH',
         status: 'PUBLISHED',
       })
 
@@ -340,6 +342,7 @@ describe('Blog API', () => {
       const result = await handler(mockEvent)
 
       expect(result).toHaveProperty('id')
+      expect(mockPostUpdate).toHaveBeenCalled()
     })
   })
 
@@ -364,7 +367,10 @@ describe('Blog API', () => {
 
       const result = await handler(mockEvent)
 
-      expect(result).toHaveProperty('id')
+      expect(result).toEqual({
+        success: true,
+        message: 'Post deleted successfully',
+      })
     })
   })
 })

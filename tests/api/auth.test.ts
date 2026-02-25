@@ -7,6 +7,8 @@ const mockUserCreate = vi.fn()
 const mockUserFindMany = vi.fn()
 const mockUserUpdate = vi.fn()
 const mockUserDelete = vi.fn()
+const mockRefreshTokenCreate = vi.fn()
+const mockRefreshTokenDeleteMany = vi.fn()
 
 // Mock modules
 vi.mock('~/lib/prisma', () => ({
@@ -17,6 +19,10 @@ vi.mock('~/lib/prisma', () => ({
       findMany: mockUserFindMany,
       update: mockUserUpdate,
       delete: mockUserDelete,
+    },
+    refreshToken: {
+      create: mockRefreshTokenCreate,
+      deleteMany: mockRefreshTokenDeleteMany,
     },
     $connect: vi.fn(),
     $disconnect: vi.fn(),
@@ -59,6 +65,9 @@ describe('Auth API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockSignToken.mockResolvedValue('mock-jwt-token')
+    mockSignAccessToken.mockResolvedValue('mock-access-token')
+    mockSignRefreshToken.mockResolvedValue('mock-refresh-token')
+    mockRefreshTokenCreate.mockResolvedValue({ id: 1n })
   })
 
   afterEach(() => {
@@ -91,10 +100,10 @@ describe('Auth API', () => {
 
       const result = await handler(mockEvent)
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         ok: true,
         data: {
-          id: mockUser.id,
+          id: mockUser.id.toString(),
           email: mockUser.email,
           name: mockUser.name,
           role: mockUser.role,
@@ -103,6 +112,7 @@ describe('Auth API', () => {
           expectedAvgHolding: mockUser.expectedAvgHolding,
         },
       })
+      expect(mockSetCookie).toHaveBeenCalledTimes(2)
     })
 
     it('should reject invalid email format', async () => {
@@ -306,10 +316,8 @@ describe('Auth API', () => {
       const { default: handler } = await import('~/server/api/auth/me.get')
       const mockEvent = { context: {} } as any
 
-      const result = await handler(mockEvent)
-
-      expect(result).toMatchObject({
-        ok: false,
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 401,
       })
     })
   })
