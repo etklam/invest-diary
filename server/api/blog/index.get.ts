@@ -1,5 +1,12 @@
 import prisma from '~/lib/prisma'
 
+const LEGACY_CATEGORY_ALIASES: Record<string, string[]> = {
+  fundamental: ['基本面分析', 'Fundamental Analysis'],
+  technical: ['技术面分析', '技術面分析', 'Technical Analysis'],
+  market: ['市场观察', '市場觀察', 'Market Watch'],
+  strategy: ['投资策略', '投資策略', 'Investment Strategy']
+}
+
 export default defineEventHandler(async (event) => {
   console.log('[Blog] Fetching public blog posts...')
   try {
@@ -9,7 +16,8 @@ export default defineEventHandler(async (event) => {
     const skip = (page - 1) * limit
     const category = query.category as string | undefined
     const tag = query.tag as string | undefined
-    const search = query.search as string | undefined
+    const rawSearch = query.search as string | undefined
+    const search = rawSearch?.trim()
 
     // Build where clause for published posts only
     // 效能優化：使用型別安全的 where 條件
@@ -23,7 +31,9 @@ export default defineEventHandler(async (event) => {
 
     // Filter by category
     if (category) {
-      where.category = category
+      const normalizedCategory = category.trim()
+      const categoryAliases = LEGACY_CATEGORY_ALIASES[normalizedCategory] || []
+      where.category = { in: [normalizedCategory, ...categoryAliases] }
     }
 
     // Filter by tag (tags are stored as comma-separated string)
@@ -32,11 +42,12 @@ export default defineEventHandler(async (event) => {
       where.tags = { contains: tag }
     }
 
-    // Search in title and excerpt
+    // Search in title, excerpt and content
     if (search) {
       where.OR = [
         { title: { contains: search } },
-        { excerpt: { contains: search } }
+        { excerpt: { contains: search } },
+        { content: { contains: search } }
       ]
     }
 

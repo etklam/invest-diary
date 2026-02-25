@@ -22,6 +22,11 @@ watch(() => route.path, () => {
   mobileNavOpen.value = false
 })
 const isHomeRoute = computed(() => route.path === '/')
+const isMounted = ref(false)
+
+onMounted(() => {
+  isMounted.value = true
+})
 
 // Navigation items for main nav
 const mainNavItems = computed(() => {
@@ -46,7 +51,8 @@ const secondaryNavItems = computed(() => {
     return [
       { label: t('nav.about'), to: '/about', icon: 'information-circle' },
       { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
-      { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' }
+      { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
+      { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' }
     ]
   }
 
@@ -55,7 +61,8 @@ const secondaryNavItems = computed(() => {
     { label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
     { label: t('nav.blog'), to: '/blog', icon: 'document-text' },
     { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
-    { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' }
+    { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
+    { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' }
   ]
 
   if (user.value?.role === 'ADMIN') {
@@ -72,6 +79,11 @@ const secondaryNavItems = computed(() => {
 const getIconName = (icon: string) => {
   return `heroicons:${icon}`
 }
+
+const themeToggleIcon = computed(() => {
+  if (!isMounted.value) return 'heroicons:moon'
+  return colorMode.value === 'dark' ? 'heroicons:sun' : 'heroicons:moon'
+})
 </script>
 
 <template>
@@ -134,7 +146,7 @@ const getIconName = (icon: string) => {
             :aria-label="$t('theme.toggleDarkMode')"
           >
             <Icon
-              :name="colorMode.value === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
+              :name="themeToggleIcon"
               class="h-5 w-5"
             />
           </button>
@@ -364,7 +376,7 @@ const getIconName = (icon: string) => {
                 :aria-label="$t('theme.toggleDarkMode')"
               >
                 <Icon
-                  :name="colorMode.value === 'dark' ? 'heroicons:sun' : 'heroicons:moon'"
+                  :name="themeToggleIcon"
                   class="h-5 w-5"
                 />
               </button>

@@ -1,8 +1,8 @@
 export default defineNuxtPlugin(async () => {
-  // ✅ Only initialize auth on client to avoid SSR/client mismatch
-  if (process.client) {
-    const { fetchMe } = useAuth()
-    // ✅ Ensure auth state is fully resolved before middleware logic
+  const { fetchMe, isInitialized } = useAuth()
+
+  // Keep SSR/client initial auth state aligned to avoid hydration branch mismatch.
+  if (!isInitialized.value) {
     await fetchMe()
   }
 })

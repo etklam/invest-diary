@@ -48,7 +48,8 @@
     "logout": "Logout",
     "tools": "Tools",
     "positionSizing": "Position Sizing Calculator",
-    "seasonality": "Seasonality"
+    "seasonality": "Seasonality",
+    "etf": "ETF Analysis"
   },
 
   "auth": {
@@ -810,6 +811,100 @@
         "description": "May to October (\"Sell in May and go away\" phenomenon)",
         "strategy": "Volatility is higher in autumn (especially September-October), relatively stable in summer"
       }
+    },
+    "etf": {
+      "title": "ETF Trend Analysis",
+      "subtitle": "Track and analyze ETF price changes with multi-dimensional comparisons",
+      "symbol": "ETF Symbol",
+      "symbolPlaceholder": "e.g., SPY, QQQ, IWM, VTI...",
+      "analyze": "Analyze",
+      "refresh": "Refresh",
+      "marketState": "Market",
+      "lastUpdate": "Last update",
+      "tabs": {
+        "all": "All ETFs",
+        "overview": "Overview",
+        "comparison": "Comparison",
+        "technical": "Technical"
+      },
+      "fields": {
+        "symbol": "Symbol",
+        "currentPrice": "Price",
+        "dailyChange": "Daily",
+        "monthlyChange": "Monthly",
+        "quarterlyChange": "Quarterly",
+        "ytdChange": "YTD",
+        "ma20": "MA20",
+        "ma60": "MA60",
+        "trend": "Trend",
+        "actions": "Actions"
+      },
+      "monthlyComparison": "Monthly Comparison",
+      "previousMonth": "Previous Month",
+      "twoMonthsAgo": "Two Months Ago",
+      "quarterlyChange": "Quarterly Change",
+      "vsPreviousQuarter": "vs Previous Quarter",
+      "yearlyComparison": "Year-over-Year Comparison",
+      "lastYear": "Last Year",
+      "thisYear": "This Year",
+      "difference": "Difference",
+      "improved": "Improved compared to last year",
+      "declined": "Declined compared to last year",
+      "noYearlyData": "No yearly comparison data available",
+      "technicalIndicators": "Technical Indicators",
+      "trend": "Trend",
+      "trends": {
+        "bullish": "Bullish",
+        "bearish": "Bearish",
+        "neutral": "Neutral"
+      },
+      "watchlist": {
+        "title": "My Watchlist",
+        "add": "Add",
+        "addSuccess": "Added to watchlist",
+        "addFailed": "Failed to add to watchlist",
+        "removeSuccess": "Removed from watchlist",
+        "removeFailed": "Failed to remove from watchlist",
+        "empty": "No ETFs in watchlist yet. Add some to track them here."
+      },
+      "admin": {
+        "title": "ETF Management",
+        "subtitle": "Manage ETFs and initialize historical data",
+        "addEtf": "Add ETF",
+        "addNewEtf": "Add New ETF",
+        "symbolRequired": "Symbol is required",
+        "symbolPlaceholder": "e.g., SPY, QQQ, IWM",
+        "namePlaceholder": "e.g., SPDR S&P 500 ETF",
+        "addHint": "The symbol will be validated against Yahoo Finance before adding.",
+        "addSuccess": "ETF {symbol} added successfully",
+        "addFailed": "Failed to add ETF",
+        "confirmDelete": "Are you sure you want to delete {symbol}? This will also delete all related prices, alerts, and watchlist entries.",
+        "deleteSuccess": "ETF deleted",
+        "deleteFailed": "Failed to delete ETF",
+        "confirmInitialize": "Initialize historical data for {symbol}? This will fetch up to 5 years of monthly data from Yahoo Finance.",
+        "initialize": "Initialize Data",
+        "initializeSuccess": "Initialized {count} data points for {symbol}",
+        "initializeFailed": "Failed to initialize historical data",
+        "fetchFailed": "Failed to fetch data",
+        "noEtfs": "No ETFs found. Add your first ETF to get started.",
+        "priceCount": "Prices",
+        "alertCount": "Alerts",
+        "createdAt": "Created",
+        "infoTitle": "Managing ETFs",
+        "infoPoint1": "Add ETFs using their ticker symbols (e.g., SPY, QQQ, IWM)",
+        "infoPoint2": "Initialize historical data to populate price history for analysis",
+        "infoPoint3": "Deleting an ETF will cascade delete all related prices, alerts, and watchlist entries",
+        "adminOnly": "Admin access required",
+        "rateLimitExceeded": "Yahoo Finance API rate limit exceeded. Please try again later or skip validation",
+        "skipValidation": "Skip Yahoo Finance validation",
+        "skipValidationHint": "Check to add ETF without verifying if the symbol is valid",
+        "seed": "Add Common ETFs",
+        "confirmSeed": "This will add 25 popular US ETFs. Continue?",
+        "seedSuccess": "Successfully added {added} ETFs, {total} total",
+        "seedFailed": "Failed to seed ETFs"
+      },
+      "name": "Name",
+      "fetchFailed": "Failed to fetch data. Please try again."
     }
   },
 

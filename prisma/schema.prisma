@@ -43,6 +43,8 @@ model User {
   disciplines           Discipline[]
   posts                 Post[]
   refreshTokens         RefreshToken[]
+  etfAlerts             EtfAlert[]
+  etfWatchlist          EtfWatchlist[]
 
   @@map("users")
 }
@@ -134,6 +136,13 @@ enum TransactionType {
   SELL
 }
 
+enum AlertType {
+  PRICE_ABOVE
+  PRICE_BELOW
+  CHANGE_PERCENT
+  MOVING_AVG
+}
+
 model Post {
   id          BigInt       @id @default(autoincrement())
   authorId    BigInt       @map("author_id")
@@ -159,4 +168,75 @@ model Post {
   // 複合索引：優化分類查詢
   @@index([category, status], map: "posts_category_status_idx")
   @@map("posts")
+}
+
+model Etf {
+  id          BigInt        @id @default(autoincrement())
+  symbol      String        @unique @db.VarChar(20)
+  name        String?       @db.VarChar(255)
+
+  prices      EtfPrice[]
+  alerts      EtfAlert[]
+  watchlists  EtfWatchlist[]
+
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@index([symbol], map: "etfs_symbol_idx")
+  @@map("etfs")
+}
+
+model EtfPrice {
+  id          BigInt       @id @default(autoincrement())
+  etfId       BigInt       @map("etf_id")
+  date        DateTime     @db.Date
+
+  open        Decimal      @db.Decimal(10, 4)
+  high        Decimal      @db.Decimal(10, 4)
+  low         Decimal      @db.Decimal(10, 4)
+  close       Decimal      @db.Decimal(10, 4)
+  adjClose    Decimal      @db.Decimal(10, 4) @map("adj_close")
+  volume      Int?         @map("volume")
+
+  etf         Etf          @relation(fields: [etfId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  @@unique([etfId, date], map: "etf_prices_etf_id_date_key")
+  @@index([etfId, date(sort: Desc)], map: "etf_prices_etf_id_date_idx")
+  @@map("etf_prices")
+}
+
+model EtfAlert {
+  id          BigInt     @id @default(autoincrement())
+  userId      BigInt     @map("user_id")
+  etfId       BigInt     @map("etf_id")
+  type        AlertType
+  threshold   Decimal    @db.Decimal(10, 4)
+  message     String     @db.VarChar(500)
+  isTriggered Boolean    @default(false) @map("is_triggered")
+  triggeredAt DateTime?  @map("triggered_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  etf         Etf        @relation(fields: [etfId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isTriggered], map: "etf_alerts_user_id_is_triggered_idx")
+  @@index([etfId, isTriggered], map: "etf_alerts_etf_id_is_triggered_idx")
+  @@map("etf_alerts")
+}
+
+model EtfWatchlist {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt   @map("user_id")
+  etfId      BigInt   @map("etf_id")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  etf        Etf      @relation(fields: [etfId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, etfId], map: "etf_watchlists_user_id_etf_id_key")
+  @@index([userId, sortOrder], map: "etf_watchlists_user_id_sort_order_idx")
+  @@map("etf_watchlists")
 }

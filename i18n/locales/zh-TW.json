@@ -48,7 +48,8 @@
     "logout": "登出",
     "tools": "投資工具",
     "positionSizing": "建倉計算器",
-    "seasonality": "季節性分析"
+    "seasonality": "季節性分析",
+    "etf": "ETF 分析"
   },
 
   "auth": {
@@ -550,7 +551,6 @@
       "archived": "已歸檔"
     },
     "searchPlaceholder": "搜尋文章標題或內容...",
-    "loadFailed": "載入失敗",
     "publishSuccess": "文章已發布",
     "publishFailed": "發布失敗",
     "confirmArchive": "確定要歸檔這篇文章嗎？",
@@ -810,6 +810,100 @@
         "description": "5月～10月（「Sell in May and go away」現象）",
         "strategy": "波動性在秋季（尤其是9-10月）較高，夏季相對平穩"
       }
+    },
+    "etf": {
+      "title": "ETF 趨勢分析",
+      "subtitle": "追蹤和分析 ETF 價格變化，提供多維度比較",
+      "symbol": "ETF 代碼",
+      "symbolPlaceholder": "例如：SPY, QQQ, IWM, VTI...",
+      "analyze": "分析",
+      "refresh": "重新整理",
+      "marketState": "市場狀態",
+      "lastUpdate": "最後更新",
+      "tabs": {
+        "all": "全部 ETF",
+        "overview": "總覽",
+        "comparison": "同比比較",
+        "technical": "技術指標"
+      },
+      "fields": {
+        "symbol": "代碼",
+        "currentPrice": "價格",
+        "dailyChange": "日漲跌",
+        "monthlyChange": "月漲跌",
+        "quarterlyChange": "季漲跌",
+        "ytdChange": "年初至今",
+        "ma20": "MA20",
+        "ma60": "MA60",
+        "trend": "趨勢",
+        "actions": "操作"
+      },
+      "monthlyComparison": "月度比較",
+      "previousMonth": "上個月",
+      "twoMonthsAgo": "兩個月前",
+      "quarterlyChange": "季度變化",
+      "vsPreviousQuarter": "相較上季",
+      "yearlyComparison": "同比分析",
+      "lastYear": "去年",
+      "thisYear": "今年",
+      "difference": "差異",
+      "improved": "較去年改善",
+      "declined": "較去年衰退",
+      "noYearlyData": "沒有同比數據",
+      "technicalIndicators": "技術指標",
+      "trend": "趨勢",
+      "trends": {
+        "bullish": "多頭",
+        "bearish": "空頭",
+        "neutral": "中性"
+      },
+      "watchlist": {
+        "title": "我的追蹤清單",
+        "add": "加入",
+        "addSuccess": "已加入追蹤清單",
+        "addFailed": "加入追蹤清單失敗",
+        "removeSuccess": "已從追蹤清單移除",
+        "removeFailed": "移除失敗",
+        "empty": "追蹤清單是空的，加入一些 ETF 來追蹤吧"
+      },
+      "admin": {
+        "title": "ETF 管理",
+        "subtitle": "管理 ETF 並初始化歷史數據",
+        "addEtf": "新增 ETF",
+        "addNewEtf": "新增 ETF",
+        "symbolRequired": "代碼為必填",
+        "symbolPlaceholder": "例如：SPY, QQQ, IWM",
+        "namePlaceholder": "例如：SPDR S&P 500 ETF",
+        "addHint": "代碼將在新增前透過 Yahoo Finance 驗證。",
+        "addSuccess": "ETF {symbol} 新增成功",
+        "addFailed": "新增 ETF 失敗",
+        "confirmDelete": "確定要刪除 {symbol} 嗎？這將同時刪除所有相關的價格、提醒和追蹤清單。",
+        "deleteSuccess": "ETF 已刪除",
+        "deleteFailed": "刪除 ETF 失敗",
+        "confirmInitialize": "初始化 {symbol} 的歷史數據？這將從 Yahoo Finance 獲取最多 5 年的月度數據。",
+        "initialize": "初始化數據",
+        "initializeSuccess": "已為 {symbol} 初始化 {count} 筆數據",
+        "initializeFailed": "初始化歷史數據失敗",
+        "fetchFailed": "獲取數據失敗，請稍後再試",
+        "adminOnly": "需要管理員權限",
+        "rateLimitExceeded": "Yahoo Finance API 請求過多，請稍後再試或跳過驗證",
+        "skipValidation": "跳過 Yahoo Finance 驗證",
+        "skipValidationHint": "勾選後將不驗證代碼是否有效，直接新增到資料庫",
+        "seed": "快速新增常用 ETF",
+        "confirmSeed": "這將新增 25 個常用美股 ETF，確定要繼續嗎？",
+        "seedSuccess": "成功新增 {added} 個 ETF，總共 {total} 個",
+        "seedFailed": "新增 ETF 失敗",
+        "noEtfs": "沒有 ETF。新增第一個 ETF 開始使用。",
+        "priceCount": "價格數據",
+        "alertCount": "提醒",
+        "createdAt": "建立時間",
+        "infoTitle": "管理 ETF",
+        "infoPoint1": "使用代碼新增 ETF（例如：SPY, QQQ, IWM）",
+        "infoPoint2": "初始化歷史數據以填充價格歷史供分析使用",
+        "infoPoint3": "刪除 ETF 會級聯刪除所有相關的價格、提醒和追蹤清單"
+      },
+      "name": "名稱",
+      "fetchFailed": "獲取數據失敗，請稍後再試"
     }
   },
 

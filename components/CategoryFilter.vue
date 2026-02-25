@@ -7,7 +7,9 @@
       <NuxtLink
         v-for="cat in categories"
         :key="cat.key"
-        :to="cat.key ? `/blog?category=${encodeURIComponent(cat.value)}` : '/blog'"
+        :to="buildCategoryLink(cat)"
+        active-class=""
+        exact-active-class=""
         class="category-item flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm font-medium transition-all duration-200"
         :class="isActive(cat.key, cat.value)
           ? 'category-item-active'
@@ -23,6 +25,8 @@
 </template>
 
 <script setup lang="ts">
+import type { LocationQueryValue } from 'vue-router'
+
 const route = useRoute()
 
 interface Category {
@@ -36,9 +40,31 @@ defineProps<{
   categories: Category[]
 }>()
 
+const getQueryValue = (value: LocationQueryValue | LocationQueryValue[] | undefined): string | undefined => {
+  if (Array.isArray(value)) {
+    const first = value[0]
+    return typeof first === 'string' ? first : undefined
+  }
+  return typeof value === 'string' ? value : undefined
+}
+
+const buildCategoryLink = (category: Category) => {
+  const query: Record<string, string> = {}
+  Object.entries(route.query).forEach(([k, v]) => {
+    if (typeof v === 'string') query[k] = v
+  })
+
+  if (category.key) query.category = category.value
+  else delete query.category
+  delete query.page
+
+  return { path: '/blog', query }
+}
+
 const isActive = (key: string, value: string) => {
-  if (!key) return !route.query.category
-  return route.query.category === value
+  const activeCategory = getQueryValue(route.query.category)
+  if (!key) return !activeCategory
+  return activeCategory === value
 }
 </script>
 

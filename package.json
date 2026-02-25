@@ -43,6 +43,7 @@
     "jsonwebtoken": "^9.0.3",
     "nuxt": "^4.3.1",
     "prisma": "^5.22.0",
+    "rate-limiter-flexible": "^9.1.1",
     "rehype-pretty-code": "^0.14.1",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",

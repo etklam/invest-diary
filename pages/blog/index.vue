@@ -57,6 +57,7 @@
                   id="search"
                   v-model="searchQuery"
                   type="text"
+                  @input="handleSearchInput"
                   @keyup.enter="performSearch"
                   class="search-input w-full rounded-xl border border-slate-200/80 bg-white/85 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500"
                   :placeholder="$t('blog.searchPlaceholder')"
@@ -146,6 +147,7 @@
 
 <script setup lang="ts">
 import { CATEGORY_OPTIONS } from '~/types/blog'
+import type { LocationQueryValue } from 'vue-router'
 
 // Blog is a public page
 definePageMeta({
@@ -179,7 +181,16 @@ interface Post {
 
 const route = useRoute()
 const router = useRouter()
-const searchQuery = ref((route.query.search as string) || '')
+const getQueryValue = (value: LocationQueryValue | LocationQueryValue[] | undefined): string | undefined => {
+  if (Array.isArray(value)) {
+    const first = value[0]
+    return typeof first === 'string' ? first : undefined
+  }
+  return typeof value === 'string' ? value : undefined
+}
+
+const searchQuery = ref(getQueryValue(route.query.search) || '')
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
 // Build query params
 const buildQueryParams = (page = 1) => {
@@ -188,12 +199,14 @@ const buildQueryParams = (page = 1) => {
     limit: 9
   }
 
-  if (route.query.category) {
-    params.category = route.query.category as string
+  const category = getQueryValue(route.query.category)
+  if (category) {
+    params.category = category
   }
 
-  if (searchQuery.value) {
-    params.search = searchQuery.value
+  const search = getQueryValue(route.query.search)
+  if (search) {
+    params.search = search
   }
 
   return params
@@ -228,11 +241,33 @@ const performSearch = () => {
   Object.entries(route.query).forEach(([k, v]) => {
     if (typeof v === 'string') query[k] = v
   })
-  if (searchQuery.value) query.search = searchQuery.value
+  const keyword = searchQuery.value.trim()
+  if (keyword) query.search = keyword
   else delete query.search
   query.page = '1'
   router.push({ query })
 }
+
+const handleSearchInput = () => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    performSearch()
+  }, 300)
+}
+
+onBeforeUnmount(() => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+})
+
+watch(
+  () => getQueryValue(route.query.search),
+  (querySearch) => {
+    const nextValue = querySearch || ''
+    if (nextValue !== searchQuery.value) {
+      searchQuery.value = nextValue
+    }
+  }
+)
 
 // Pagination
 const goToPage = (page: number) => {
@@ -243,7 +278,9 @@ const goToPage = (page: number) => {
     if (typeof v === 'string') query[k] = v
   })
   query.page = page.toString()
-  if (searchQuery.value) query.search = searchQuery.value
+  const keyword = searchQuery.value.trim()
+  if (keyword) query.search = keyword
+  else delete query.search
 
   navigateTo({ query })
 }

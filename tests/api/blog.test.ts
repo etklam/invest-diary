@@ -98,7 +98,7 @@ describe('Blog API', () => {
           id: 1,
           title: 'Tech Post',
           slug: 'tech-post',
-          category: 'TECH',
+          category: 'technical',
           status: 'PUBLISHED',
           publishedAt: new Date('2024-01-01'),
           author: { id: 1, name: 'Author', email: 'author@test.com' },
@@ -108,7 +108,7 @@ describe('Blog API', () => {
       mockPostFindMany.mockResolvedValue(mockPosts)
       mockPostCount.mockResolvedValue(1)
 
-      mockGetQuery.mockReturnValue({ category: 'TECH' })
+      mockGetQuery.mockReturnValue({ category: 'technical' })
 
       const { default: handler } = await import('~/server/api/blog/index.get')
       const mockEvent = { context: {} } as any
@@ -118,7 +118,9 @@ describe('Blog API', () => {
       expect(mockPostFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            category: 'TECH',
+            category: expect.objectContaining({
+              in: expect.arrayContaining(['technical']),
+            }),
           }),
         })
       )
@@ -144,7 +146,7 @@ describe('Blog API', () => {
       )
     })
 
-    it('should search in title and excerpt', async () => {
+    it('should search in title, excerpt and content', async () => {
       mockPostFindMany.mockResolvedValue([])
       mockPostCount.mockResolvedValue(0)
 
@@ -161,6 +163,7 @@ describe('Blog API', () => {
             OR: [
               { title: { contains: 'test keyword' } },
               { excerpt: { contains: 'test keyword' } },
+              { content: { contains: 'test keyword' } },
             ],
           }),
         })

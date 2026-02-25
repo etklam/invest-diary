@@ -1,0 +1,351 @@
+<script setup lang="ts">
+const { t } = useI18n()
+const toast = useToast()
+
+// State
+const loading = ref(false)
+const etfs = ref<any[]>([])
+const showAddForm = ref(false)
+const newSymbol = ref('')
+const newName = ref('')
+const adding = ref(false)
+const initializing = ref<string | null>(null)
+const skipValidation = ref(false)
+const seeding = ref(false)
+
+// Fetch all ETFs
+const fetchEtfs = async () => {
+  loading.value = true
+  try {
+    const response = await $fetch<any>('/api/admin/etf')
+    etfs.value = response || []
+  } catch (error: any) {
+    if (error.statusCode === 403) {
+      toast.error(t('tools.etf.admin.adminOnly'))
+    } else {
+      toast.error(t('tools.etf.admin.fetchFailed'))
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+// Add new ETF
+const addEtf = async () => {
+  if (!newSymbol.value.trim()) {
+    toast.error(t('tools.etf.admin.symbolRequired'))
+    return
+  }
+
+  adding.value = true
+  try {
+    const response = await $fetch<any>('/api/admin/etf', {
+      method: 'POST',
+      body: {
+        symbol: newSymbol.value.trim(),
+        name: newName.value.trim() || undefined,
+        skipValidation: skipValidation.value,
+      },
+    })
+
+    toast.success(t('tools.etf.admin.addSuccess', { symbol: response.symbol }))
+    newSymbol.value = ''
+    newName.value = ''
+    skipValidation.value = false
+    showAddForm.value = false
+    await fetchEtfs()
+  } catch (error: any) {
+    if (error.statusCode === 429) {
+      toast.error(t('tools.etf.admin.rateLimitExceeded'))
+      // Show skip validation option after rate limit error
+      skipValidation.value = true
+    } else if (error.statusCode === 403) {
+      toast.error(t('tools.etf.admin.adminOnly'))
+    } else {
+      toast.error(error.data?.message || t('tools.etf.admin.addFailed'))
+    }
+  } finally {
+    adding.value = false
+  }
+}
+
+// Delete ETF
+const deleteEtf = async (id: string, symbol: string) => {
+  if (!confirm(t('tools.etf.admin.confirmDelete', { symbol }))) {
+    return
+  }
+
+  try {
+    await $fetch(`/api/admin/etf/${id}`, { method: 'DELETE' })
+    toast.success(t('tools.etf.admin.deleteSuccess'))
+    await fetchEtfs()
+  } catch (error) {
+    toast.error(t('tools.etf.admin.deleteFailed'))
+  }
+}
+
+// Initialize historical data
+const initializeHistoricalData = async (id: string, symbol: string) => {
+  if (!confirm(t('tools.etf.admin.confirmInitialize', { symbol }))) {
+    return
+  }
+
+  initializing.value = id
+  try {
+    const response = await $fetch<any>(`/api/admin/etf/${id}/initialize`, {
+      method: 'POST',
+    })
+
+    toast.success(
+      t('tools.etf.admin.initializeSuccess', {
+        symbol,
+        count: response.added,
+      })
+    )
+    await fetchEtfs()
+  } catch (error: any) {
+    toast.error(error.data?.message || t('tools.etf.admin.initializeFailed'))
+  } finally {
+    initializing.value = null
+  }
+}
+
+// Seed common ETFs
+const seedCommonEtfs = async () => {
+  if (!confirm(t('tools.etf.admin.confirmSeed'))) {
+    return
+  }
+
+  seeding.value = true
+  try {
+    const response = await $fetch<any>('/api/admin/etf/seed', {
+      method: 'POST',
+    })
+
+    toast.success(
+      t('tools.etf.admin.seedSuccess', {
+        added: response.added,
+        total: response.total,
+      })
+    )
+    await fetchEtfs()
+  } catch (error: any) {
+    if (error.statusCode === 403) {
+      toast.error(t('tools.etf.admin.adminOnly'))
+    } else {
+      toast.error(error.data?.message || t('tools.etf.admin.seedFailed'))
+    }
+  } finally {
+    seeding.value = false
+  }
+}
+
+// On mount
+onMounted(() => {
+  fetchEtfs()
+})
+
+// SEO
+useHead({
+  title: 'ETF 管理 - Admin',
+})
+
+definePageMeta({
+  requiresAuth: true,
+})
+</script>
+
+<template>
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          {{ t('tools.etf.admin.title') }}
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">
+          {{ t('tools.etf.admin.subtitle') }}
+        </p>
+      </div>
+      <div class="flex gap-2">
+        <button
+          @click="seedCommonEtfs"
+          :disabled="seeding"
+          class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
+        >
+          {{ seeding ? t('common.loading') : t('tools.etf.admin.seed') }}
+        </button>
+        <button
+          @click="showAddForm = !showAddForm"
+          class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition"
+        >
+          {{ showAddForm ? t('common.cancel') : t('tools.etf.admin.addEtf') }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Add ETF Form -->
+    <div
+      v-if="showAddForm"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6"
+    >
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        {{ t('tools.etf.admin.addNewEtf') }}
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {{ t('tools.etf.symbol') }}
+            <span class="text-red-500">*</span>
+          </label>
+          <input
+            v-model="newSymbol"
+            type="text"
+            :placeholder="t('tools.etf.admin.symbolPlaceholder')"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            :disabled="adding"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {{ t('tools.etf.name') }}
+          </label>
+          <input
+            v-model="newName"
+            type="text"
+            :placeholder="t('tools.etf.admin.namePlaceholder')"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            :disabled="adding"
+          />
+        </div>
+      </div>
+
+      <!-- Skip Validation Option -->
+      <div class="mt-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            v-model="skipValidation"
+            type="checkbox"
+            :disabled="adding"
+            class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">
+            {{ t('tools.etf.admin.skipValidation') }}
+          </span>
+        </label>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
+          {{ t('tools.etf.admin.skipValidationHint') }}
+        </p>
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <button
+          @click="addEtf"
+          :disabled="adding || !newSymbol.trim()"
+          class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
+        >
+          {{ adding ? t('common.loading') : t('tools.etf.admin.addEtf') }}
+        </button>
+        <button
+          @click="showAddForm = false; newSymbol = ''; newName = ''; skipValidation = false"
+          class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition"
+        >
+          {{ t('common.cancel') }}
+        </button>
+      </div>
+      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+        {{ t('tools.etf.admin.addHint') }}
+      </p>
+    </div>
+
+    <!-- ETF List -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+      <div v-if="loading" class="p-8 text-center text-gray-600 dark:text-gray-400">
+        {{ t('common.loading') }}
+      </div>
+
+      <div v-else-if="etfs.length === 0" class="p-8 text-center text-gray-600 dark:text-gray-400">
+        {{ t('tools.etf.admin.noEtfs') }}
+      </div>
+
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                {{ t('tools.etf.symbol') }}
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                {{ t('tools.etf.name') }}
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                {{ t('tools.etf.admin.priceCount') }}
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                {{ t('tools.etf.admin.alertCount') }}
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                {{ t('tools.etf.admin.createdAt') }}
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                {{ t('tools.etf.fields.actions') }}
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr
+              v-for="etf in etfs"
+              :key="etf.id"
+              class="hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                {{ etf.symbol }}
+              </td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                {{ etf.name || '-' }}
+              </td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                {{ etf.priceCount }}
+              </td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                {{ etf.alertCount }}
+              </td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                {{ new Date(etf.createdAt).toLocaleDateString() }}
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex gap-2">
+                  <button
+                    @click="initializeHistoricalData(etf.id, etf.symbol)"
+                    :disabled="initializing === etf.id"
+                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded text-sm transition"
+                  >
+                    {{ initializing === etf.id ? t('common.loading') : t('tools.etf.admin.initialize') }}
+                  </button>
+                  <button
+                    @click="deleteEtf(etf.id, etf.symbol)"
+                    class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition"
+                  >
+                    {{ t('common.delete') }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
+        {{ t('tools.etf.admin.infoTitle') }}
+      </h3>
+      <ul class="text-sm text-blue-800 dark:text-blue-400 space-y-1">
+        <li>• {{ t('tools.etf.admin.infoPoint1') }}</li>
+        <li>• {{ t('tools.etf.admin.infoPoint2') }}</li>
+        <li>• {{ t('tools.etf.admin.infoPoint3') }}</li>
+      </ul>
+    </div>
+  </div>
+</template>
