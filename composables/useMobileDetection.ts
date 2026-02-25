@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 
 export interface DeviceInfo {
   isMobile: boolean
@@ -12,7 +12,8 @@ export interface DeviceInfo {
   userAgent: string
 }
 
-export function useMobileDetection() {
+export function useMobileDetection(options: { manageLifecycle?: boolean } = {}) {
+  const manageLifecycle = options.manageLifecycle ?? true
   // 響應式數據
   const screenWidth = ref(0)
   const screenHeight = ref(0)
@@ -20,6 +21,7 @@ export function useMobileDetection() {
   const isTouch = ref(false)
   const dpr = ref(1)
   const userAgent = ref('')
+  let initialized = false
 
   // 計算屬性
   const isMobile = computed(() => {
@@ -115,54 +117,65 @@ export function useMobileDetection() {
 
   // 初始化
   const init = () => {
+    if (initialized || typeof window === 'undefined') return
+
     updateScreenInfo()
     detectTouchCapability()
+    initialized = true
     
-    if (typeof window !== 'undefined') {
-      // 監聽視窗大小變化
-      window.addEventListener('resize', handleResize)
-      
-      // 監聽螢幕方向變化
-      window.addEventListener('orientationchange', handleOrientationChange)
-      
-      // 監聽媒體查詢變化
-      const mediaQuery = window.matchMedia('(orientation: portrait)')
-      if (mediaQuery.addEventListener) {
-        mediaQuery.addEventListener('change', handleOrientationChange)
-      } else {
-        // 後備方案
-        mediaQuery.addListener(handleOrientationChange)
-      }
+    // 監聽視窗大小變化
+    window.addEventListener('resize', handleResize)
+    
+    // 監聽螢幕方向變化
+    window.addEventListener('orientationchange', handleOrientationChange)
+    
+    // 監聽媒體查詢變化
+    const mediaQuery = window.matchMedia('(orientation: portrait)')
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleOrientationChange)
+    } else {
+      // 後備方案
+      mediaQuery.addListener(handleOrientationChange)
     }
   }
 
   // 清理
   const cleanup = () => {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('resize', handleResize)
-      window.removeEventListener('orientationchange', handleOrientationChange)
-      
-      const mediaQuery = window.matchMedia('(orientation: portrait)')
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handleOrientationChange)
-      } else {
-        // 後備方案
-        mediaQuery.removeListener(handleOrientationChange)
-      }
+    if (!initialized || typeof window === 'undefined') return
+
+    window.removeEventListener('resize', handleResize)
+    window.removeEventListener('orientationchange', handleOrientationChange)
+    
+    const mediaQuery = window.matchMedia('(orientation: portrait)')
+    if (mediaQuery.removeEventListener) {
+      mediaQuery.removeEventListener('change', handleOrientationChange)
+    } else {
+      // 後備方案
+      mediaQuery.removeListener(handleOrientationChange)
     }
+
+    initialized = false
   }
 
-  // 生命週期
-  onMounted(() => {
-    init()
-  })
-
-  onUnmounted(() => {
-    cleanup()
-  })
-
-  // 立即初始化（如果在客戶端）
+  // 初始化一次基礎資訊，避免 setup 階段讀到全 0
   if (typeof window !== 'undefined') {
+    updateScreenInfo()
+    detectTouchCapability()
+  }
+
+  const hasComponentInstance = !!getCurrentInstance()
+
+  // 僅在 component setup 內註冊生命週期，避免 setup 外呼叫時出現 Vue lifecycle warning
+  if (manageLifecycle && hasComponentInstance) {
+    onMounted(() => {
+      init()
+    })
+
+    onUnmounted(() => {
+      cleanup()
+    })
+  } else if (typeof window !== 'undefined') {
+    // setup 外使用時直接初始化，確保功能可用
     init()
   }
 
@@ -205,7 +218,7 @@ let globalMobileDetection: ReturnType<typeof useMobileDetection> | null = null
 // 獲取全域實例
 export function getMobileDetection() {
   if (!globalMobileDetection) {
-    globalMobileDetection = useMobileDetection()
+    globalMobileDetection = useMobileDetection({ manageLifecycle: false })
   }
   return globalMobileDetection
 }

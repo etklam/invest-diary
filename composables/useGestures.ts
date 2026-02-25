@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, watch, readonly, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch, readonly, getCurrentInstance, type Ref } from 'vue'
 
 export interface GestureConfig {
   longPressDelay: number
@@ -75,6 +75,7 @@ export function useGestures(
   
   // 長按定時器
   let longPressTimer: NodeJS.Timeout | null = null
+  let boundElement: HTMLElement | null = null
   
   // 計算距離
   const calculateDistance = (x1: number, y1: number, x2: number, y2: number) => {
@@ -183,8 +184,8 @@ export function useGestures(
     gestureState.value.distance = distance
     gestureState.value.direction = calculateDirection(dx, dy)
     
-    // 如果移動距離超過 swipeThreshold，則認為是滑動
-    if (distance > gestureConfig.value.swipeThreshold) {
+    // 如果移動距離達到 swipeThreshold，則認為是滑動
+    if (distance >= gestureConfig.value.swipeThreshold) {
       if (!gestureState.value.isSwiping) {
         gestureState.value.isSwiping = true
         callbacks.onSwipeStart?.(gestureState.value)
@@ -203,6 +204,29 @@ export function useGestures(
   // 處理結束
   const handleEnd = (event: TouchEvent | MouseEvent) => {
     if (gestureConfig.value.disabled) return
+
+    const point = getPoint(event)
+    if (point) {
+      gestureState.value.currentX = point.clientX
+      gestureState.value.currentY = point.clientY
+
+      const dx = point.clientX - gestureState.value.startX
+      const dy = point.clientY - gestureState.value.startY
+      const distance = calculateDistance(
+        gestureState.value.startX,
+        gestureState.value.startY,
+        point.clientX,
+        point.clientY
+      )
+
+      gestureState.value.distance = distance
+      gestureState.value.direction = calculateDirection(dx, dy)
+
+      // 支援僅 touchstart + touchend 的快速滑動（未觸發 move）
+      if (distance >= gestureConfig.value.swipeThreshold) {
+        gestureState.value.isSwiping = true
+      }
+    }
     
     const currentTime = Date.now()
     const duration = currentTime - gestureState.value.startTime
@@ -225,10 +249,10 @@ export function useGestures(
     
     // 處理滑動結束
     if (gestureState.value.isSwiping) {
-      // 檢查速度與距離，避免誤觸
+      // 優先以距離判定滑動；若可計算速度，再套用速度閾值
       if (
         gestureState.value.distance >= gestureConfig.value.swipeThreshold &&
-        gestureState.value.velocity >= gestureConfig.value.swipeVelocityThreshold
+        (duration <= 0 || gestureState.value.velocity >= gestureConfig.value.swipeVelocityThreshold)
       ) {
         callbacks.onSwipeEnd?.(gestureState.value)
       }
@@ -253,29 +277,37 @@ export function useGestures(
   }
   
   // 綁定事件監聽器
-  const bindEvents = () => {
-    if (!element.value) return
-    
-    const el = element.value
+  const bindEvents = (target: HTMLElement | null = element.value) => {
+    if (!target || gestureConfig.value.disabled) return
+    if (boundElement === target) return
+
+    // 若已綁定在其他元素，先解除舊元素監聽
+    if (boundElement && boundElement !== target) {
+      unbindEvents(boundElement)
+    }
+
+    const el = target
     
     // 觸控事件
-    el.addEventListener('touchstart', handleStart, { passive: true })
-    el.addEventListener('touchmove', handleMove, { passive: true })
-    el.addEventListener('touchend', handleEnd, { passive: true })
-    el.addEventListener('touchcancel', handleCancel, { passive: true })
+    el.addEventListener('touchstart', handleStart, { passive: false })
+    el.addEventListener('touchmove', handleMove, { passive: false })
+    el.addEventListener('touchend', handleEnd, { passive: false })
+    el.addEventListener('touchcancel', handleCancel, { passive: false })
     
     // 滑鼠事件（桌面支援）
     el.addEventListener('mousedown', handleStart)
     el.addEventListener('mousemove', handleMove)
     el.addEventListener('mouseup', handleEnd)
     el.addEventListener('mouseleave', handleCancel)
+
+    boundElement = el
   }
   
   // 解綁事件監聽器
-  const unbindEvents = () => {
-    if (!element.value) return
+  const unbindEvents = (target: HTMLElement | null = boundElement ?? element.value) => {
+    if (!target) return
     
-    const el = element.value
+    const el = target
     
     el.removeEventListener('touchstart', handleStart)
     el.removeEventListener('touchmove', handleMove)
@@ -286,6 +318,10 @@ export function useGestures(
     el.removeEventListener('mousemove', handleMove)
     el.removeEventListener('mouseup', handleEnd)
     el.removeEventListener('mouseleave', handleCancel)
+
+    if (boundElement === el) {
+      boundElement = null
+    }
   }
   
   // 更新配置
@@ -318,25 +354,32 @@ export function useGestures(
     }
   }
   
-  // 生命週期
-  onMounted(() => {
+  const hasComponentInstance = !!getCurrentInstance()
+
+  // 生命週期（僅在 component setup 內使用）
+  if (hasComponentInstance) {
+    onMounted(() => {
+      bindEvents()
+    })
+    
+    onUnmounted(() => {
+      unbindEvents()
+      if (longPressTimer) {
+        clearTimeout(longPressTimer)
+      }
+    })
+  } else {
+    // setup 外使用（例如測試）直接綁定，避免 lifecycle warning 且保持可測
     bindEvents()
-  })
-  
-  onUnmounted(() => {
-    unbindEvents()
-    if (longPressTimer) {
-      clearTimeout(longPressTimer)
-    }
-  })
+  }
   
   // 監聽元素變化
   watch(element, (newElement, oldElement) => {
     if (oldElement) {
-      unbindEvents()
+      unbindEvents(oldElement)
     }
     if (newElement) {
-      bindEvents()
+      bindEvents(newElement)
     }
   })
   
