@@ -3,7 +3,7 @@
     <div class="panel flex flex-wrap justify-between items-center gap-3">
       <div>
         <p class="kicker">Diary Ledger</p>
-        <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">日記列表</h1>
+        <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">日記列表</h1>
       </div>
       <div class="flex gap-2">
         <button
@@ -107,14 +107,14 @@
       <p class="mt-2 text-slate-500">載入中...</p>
     </div>
 
-    <div v-else-if="error" class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20">
+    <div v-else-if="error" class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/80 dark:bg-red-950/30">
       <div class="flex">
         <div class="flex-shrink-0">
           <Icon name="heroicons:x-circle" class="h-5 w-5 text-red-400" />
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-semibold text-red-800 dark:text-red-300">載入失敗</h3>
-          <div class="mt-2 text-sm text-red-700">
+          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200">載入失敗</h3>
+          <div class="mt-2 text-sm text-red-700 dark:text-red-200/90">
             {{ error.message }}
           </div>
         </div>
@@ -123,7 +123,7 @@
 
     <div v-else-if="diaries.length === 0" class="panel text-center py-12">
       <Icon name="heroicons:document-text" class="mx-auto h-12 w-12 text-slate-400" />
-      <h3 class="mt-2 text-sm font-semibold text-slate-900 dark:text-white">尚無日記</h3>
+      <h3 class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">尚無日記</h3>
       <p class="mt-1 text-sm text-slate-500">開始記錄您的第一篇投資日記吧！</p>
       <div class="mt-6">
         <NuxtLink
@@ -145,7 +145,7 @@
       >
         <div class="p-6">
           <div class="flex justify-between items-start">
-            <h2 class="text-xl font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+            <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-200 truncate group-hover:text-blue-700 dark:group-hover:text-sky-300 transition-colors">
               {{ diary.title }}
             </h2>
             <span class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap ml-2">
@@ -166,7 +166,7 @@
                 {{ diary.alerts.length }} 個提醒
               </span>
             </div>
-            <span class="text-blue-700 dark:text-blue-300 text-sm font-semibold">
+            <span class="text-blue-700 dark:text-sky-300 text-sm font-semibold">
               閱讀更多 &rarr;
             </span>
           </div>
@@ -381,39 +381,57 @@ watch(error, (error) => {
   transform: translateY(-2px);
 }
 
-:global(.dark) .panel {
-  border-color: rgb(51 65 85);
-  background: rgb(15 23 42 / 84%);
-  box-shadow: 0 12px 26px rgb(2 6 23 / 35%);
+:global(.dark .panel) , :global(.dark-mode .panel)  {
+  border-color: rgb(71 85 105);
+  background: rgb(3 10 24 / 92%);
+  box-shadow: 0 12px 26px rgb(2 6 23 / 45%);
 }
 
-:global(.dark) .field {
-  border-color: rgb(71 85 105);
-  background: rgb(30 41 59);
+:global(.dark .field) , :global(.dark-mode .field)  {
+  border-color: rgb(100 116 139);
+  background: rgb(12 19 35);
   color: rgb(226 232 240);
 }
 
-:global(.dark) .field:focus-visible {
+:global(.dark .field):focus-visible , :global(.dark-mode .field):focus-visible  {
   border-color: rgb(56 189 248);
 }
 
-:global(.dark) .action-btn-muted {
+:global(.dark .action-btn-muted) , :global(.dark-mode .action-btn-muted)  {
+  border-color: rgb(100 116 139);
+  color: rgb(186 230 253);
+  background: rgb(12 19 35);
+}
+
+:global(.dark .action-btn-muted):hover , :global(.dark-mode .action-btn-muted):hover  {
+  background: rgb(20 30 48);
+}
+
+:global(.dark .card) , :global(.dark-mode .card)  {
   border-color: rgb(71 85 105);
-  color: rgb(147 197 253);
-  background: rgb(30 41 59);
+  background: rgb(3 10 24 / 94%);
+  box-shadow: 0 8px 22px rgb(2 6 23 / 45%);
 }
 
-:global(.dark) .action-btn-muted:hover {
-  background: rgb(51 65 85);
-}
-
-:global(.dark) .card {
-  border-color: rgb(51 65 85);
-  background: rgb(15 23 42 / 86%);
-  box-shadow: 0 8px 22px rgb(2 6 23 / 35%);
-}
-
-:global(.dark) .card:hover {
+:global(.dark .card):hover , :global(.dark-mode .card):hover  {
   border-color: rgb(56 189 248);
+}
+
+:global(.dark .action-btn), :global(.dark-mode .action-btn) {
+  background: #1e3a8a;
+  color: rgb(226 232 240);
+}
+
+:global(.dark .action-btn):hover, :global(.dark-mode .action-btn):hover {
+  background: #1d4ed8;
+}
+
+:global(.dark .action-btn-success), :global(.dark-mode .action-btn-success) {
+  background: #065f46;
+  color: rgb(226 232 240);
+}
+
+:global(.dark .action-btn-success):hover, :global(.dark-mode .action-btn-success):hover {
+  background: #047857;
 }
 </style>

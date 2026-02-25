@@ -5,8 +5,8 @@
       <div class="panel">
         <div class="flex items-center justify-between">
           <div>
-            <p class="kicker">Portfolio Console</p>
-            <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">股票管理</h1>
+            <p class="kicker mb-1">Portfolio Console</p>
+            <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">股票管理</h1>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">查看所有持股資訊 (FIFO 計算)</p>
           </div>
           <NuxtLink
@@ -30,7 +30,7 @@
             <dt class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
               總持股數量
             </dt>
-            <dd class="mt-1 text-3xl font-semibold text-slate-900 dark:text-white">
+            <dd class="mt-1 text-3xl font-semibold text-slate-900 dark:text-slate-100">
               {{ totalHoldings }}
             </dd>
           </div>
@@ -42,7 +42,7 @@
             <dt class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
               總成本
             </dt>
-            <dd class="mt-1 text-3xl font-semibold text-slate-900 dark:text-white">
+            <dd class="mt-1 text-3xl font-semibold text-slate-900 dark:text-slate-100">
               {{ formatCurrency(totalCost) }}
             </dd>
           </div>
@@ -54,7 +54,7 @@
             <dt class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
               持股種類
             </dt>
-            <dd class="mt-1 text-3xl font-semibold text-slate-900 dark:text-white">
+            <dd class="mt-1 text-3xl font-semibold text-slate-900 dark:text-slate-100">
               {{ holdings?.length ?? 0 }}
             </dd>
           </div>
@@ -66,7 +66,7 @@
         <div class="pt-4 px-6 pb-6 panel">
             <div class="flex flex-wrap items-center justify-between mb-11 -m-2">
               <div class="w-auto p-2">
-                <h3 class="font-heading text-lg font-semibold text-slate-900 dark:text-white">
+                <h3 class="font-heading text-lg font-semibold text-slate-900 dark:text-slate-100">
                   {{ t('stock.analytics') }}
                 </h3>
               </div>
@@ -101,10 +101,10 @@
                 <!-- Center text overlay -->
                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div class="text-center">
-                    <div class="text-lg font-bold text-slate-800 dark:text-gray-100">
+                    <div class="text-lg font-bold text-slate-800 dark:text-slate-100">
                       {{ holdings?.length ?? 0 }}
                     </div>
-                    <div class="text-xs text-slate-500 dark:text-gray-400">
+                    <div class="text-xs text-slate-500 dark:text-slate-400">
                       {{ t('stock.holdings') }}
                     </div>
                   </div>
@@ -116,7 +116,7 @@
               <div v-for="(slice, index) in pieSlices" :key="index" class="w-auto p-5">
                 <div class="inline-flex items-center">
                   <span class="mr-3 w-3 h-3 rounded-full" :style="{ backgroundColor: slice.color }"></span>
-                  <span class="font-medium text-slate-900 dark:text-white">{{ slice.label }} ({{ slice.percentage }})</span>
+                  <span class="font-medium text-slate-900 dark:text-slate-100">{{ slice.label }} ({{ slice.percentage }})</span>
                 </div>
               </div>
             </div>
@@ -126,7 +126,7 @@
       <!-- Holdings Table -->
       <div class="panel overflow-hidden">
         <div class="px-4 py-5 sm:px-6 border-b border-slate-200 dark:border-slate-700">
-          <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white">
+          <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-slate-100">
             當前持股明細
           </h3>
           <p class="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
@@ -153,8 +153,8 @@
         <div v-else>
           <!-- Desktop Table -->
           <div class="hidden md:block overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-              <thead class="bg-slate-50 dark:bg-slate-700">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+              <thead class="bg-slate-50 dark:bg-slate-950">
                 <tr>
                   <th
                     scope="col"
@@ -164,7 +164,7 @@
                     <button
                       type="button"
                       @click="sortBy('symbol')"
-                      class="inline-flex items-center gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      class="inline-flex items-center gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                       代碼
                       <Icon v-if="sortColumn === 'symbol'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
@@ -179,7 +179,7 @@
                     <button
                       type="button"
                       @click="sortBy('quantity')"
-                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                       數量
                       <Icon v-if="sortColumn === 'quantity'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
@@ -194,7 +194,7 @@
                     <button
                       type="button"
                       @click="sortBy('avgCost')"
-                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                       平均成本
                       <Icon v-if="sortColumn === 'avgCost'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
@@ -218,7 +218,7 @@
                     <button
                       type="button"
                       @click="sortBy('totalCost')"
-                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                       總成本
                       <Icon v-if="sortColumn === 'totalCost'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
@@ -233,7 +233,7 @@
                     <button
                       type="button"
                       @click="sortBy('percentage')"
-                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                       成本占比
                       <Icon v-if="sortColumn === 'percentage'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
@@ -242,21 +242,21 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              <tbody class="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
                 <tr v-for="holding in sortedHoldings" :key="holding.symbol">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-700 dark:text-blue-300">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-700 dark:text-blue-400">
                     {{ holding.symbol }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white text-right">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 text-right">
                     {{ formatQuantity(holding.quantity) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-300 text-right">
                     {{ formatCurrency(holding.avgCost) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white text-right">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 text-right">
                     {{ holding.price ? formatCurrency(holding.price) : '—' }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white text-right">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 text-right">
                     {{ holding.price ? formatCurrency(holding.price * holding.quantity) : '—' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
@@ -264,7 +264,7 @@
                       {{ holding.price ? formatCurrency(holding.price * holding.quantity - holding.totalCost) : '—' }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white text-right">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 text-right">
                     {{ formatCurrency(holding.totalCost) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
@@ -283,7 +283,7 @@
                       <p>目前無持股</p>
                       <NuxtLink
                         to="/diaries/new"
-                        class="mt-2 text-blue-700 dark:text-blue-300 hover:text-blue-500 dark:hover:text-blue-200"
+                        class="mt-2 text-blue-700 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-200"
                       >
                         建立新日記並新增交易
                       </NuxtLink>
@@ -297,8 +297,8 @@
           <!-- Mobile Card Layout -->
           <div class="md:hidden space-y-4 px-4 py-4">
             <div v-if="!holdings || holdings.length === 0" class="text-center py-8">
-              <Icon name="heroicons:document" class="h-12 w-12 text-gray-400 mb-2 mx-auto" />
-              <p class="text-sm text-gray-500 dark:text-gray-400">目前無持股</p>
+              <Icon name="heroicons:document" class="h-12 w-12 text-slate-400 mb-2 mx-auto" />
+              <p class="text-sm text-slate-500 dark:text-slate-400">目前無持股</p>
               <NuxtLink
                 to="/diaries/new"
                 class="mt-2 inline-block text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
@@ -310,10 +310,10 @@
             <div
               v-for="holding in sortedHoldings"
               :key="holding.symbol"
-              class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4"
+              class="bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 p-4"
             >
               <div class="flex items-center justify-between mb-3">
-                <h4 class="text-lg font-semibold text-blue-700 dark:text-blue-300">
+                <h4 class="text-lg font-semibold text-blue-700 dark:text-blue-400">
                   {{ holding.symbol }}
                 </h4>
                 <span
@@ -326,19 +326,19 @@
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
                   <span class="text-slate-500 dark:text-slate-400">數量</span>
-                  <span class="font-medium text-slate-900 dark:text-white">
+                  <span class="font-medium text-slate-900 dark:text-slate-100">
                     {{ formatQuantity(holding.quantity) }}
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-slate-500 dark:text-slate-400">平均成本</span>
-                  <span class="font-medium text-slate-900 dark:text-white">
+                  <span class="font-medium text-slate-900 dark:text-slate-100">
                     {{ formatCurrency(holding.avgCost) }}
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-slate-500 dark:text-slate-400">總成本</span>
-                  <span class="font-medium text-slate-900 dark:text-white">
+                  <span class="font-medium text-slate-900 dark:text-slate-100">
                     {{ formatCurrency(holding.totalCost) }}
                   </span>
                 </div>
@@ -484,16 +484,16 @@ const formatPercentage = (cost: number): string => {
 
 // Get percentage badge class
 const getPercentageClass = (cost: number): string => {
-  if (totalCost.value === 0) return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+  if (totalCost.value === 0) return 'bg-gray-100 text-gray-800 dark:bg-slate-900 dark:text-slate-300'
 
   const percentage = (cost / totalCost.value) * 100
 
   if (percentage >= 20) {
-    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+    return 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-200'
   } else if (percentage >= 10) {
-    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
+    return 'bg-yellow-100 text-yellow-800 dark:bg-amber-950/30 dark:text-amber-200'
   } else {
-    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+    return 'bg-green-100 text-green-800 dark:bg-emerald-950/30 dark:text-emerald-200'
   }
 }
 
@@ -674,26 +674,35 @@ useHead({
   background: rgb(219 234 254);
 }
 
-:global(.dark) .stocks-page {
+:global(.dark .stocks-page) , :global(.dark-mode .stocks-page)  {
   background:
-    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 14%), transparent 62%),
-    radial-gradient(800px 380px at 96% -12%, rgb(245 158 11 / 10%), transparent 65%),
-    rgb(2 6 23);
+    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 9%), transparent 62%),
+    radial-gradient(800px 380px at 96% -12%, rgb(15 23 42 / 12%), transparent 65%),
+    rgb(2 6 18);
 }
 
-:global(.dark) .panel {
-  border-color: rgb(51 65 85);
-  background: rgb(15 23 42 / 84%);
-  box-shadow: 0 12px 26px rgb(2 6 23 / 35%);
-}
-
-:global(.dark) .action-btn-muted {
+:global(.dark .panel) , :global(.dark-mode .panel)  {
   border-color: rgb(71 85 105);
-  color: rgb(147 197 253);
-  background: rgb(30 41 59);
+  background: rgb(3 10 24 / 92%);
+  box-shadow: 0 12px 26px rgb(2 6 23 / 45%);
 }
 
-:global(.dark) .action-btn-muted:hover {
-  background: rgb(51 65 85);
+:global(.dark .action-btn-muted) , :global(.dark-mode .action-btn-muted)  {
+  border-color: rgb(100 116 139);
+  color: rgb(186 230 253);
+  background: rgb(12 19 35);
+}
+
+:global(.dark .action-btn-muted):hover , :global(.dark-mode .action-btn-muted):hover  {
+  background: rgb(20 30 48);
+}
+
+:global(.dark .action-btn), :global(.dark-mode .action-btn) {
+  background: #1e3a8a;
+  color: rgb(226 232 240);
+}
+
+:global(.dark .action-btn):hover, :global(.dark-mode .action-btn):hover {
+  background: #1d4ed8;
 }
 </style>

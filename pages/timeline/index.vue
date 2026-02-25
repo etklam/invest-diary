@@ -56,14 +56,14 @@
       <p class="mt-2 text-slate-500">{{ t('common.loading') }}</p>
     </div>
 
-    <div v-else-if="error" class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20">
+    <div v-else-if="error" class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/80 dark:bg-red-950/30">
       <div class="flex">
         <div class="flex-shrink-0">
           <Icon name="heroicons:x-circle" class="h-5 w-5 text-red-400" />
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-semibold text-red-800 dark:text-red-300">{{ t('diary.loadFailed') }}</h3>
-          <div class="mt-2 text-sm text-red-700">
+          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200">{{ t('diary.loadFailed') }}</h3>
+          <div class="mt-2 text-sm text-red-700 dark:text-red-200/90">
             {{ error.message }}
           </div>
         </div>
@@ -72,7 +72,7 @@
 
     <div v-else-if="groupedDiaries.length === 0" class="panel text-center py-12">
       <Icon name="heroicons:clock" class="mx-auto h-12 w-12 text-slate-400" />
-      <h3 class="mt-2 text-sm font-semibold text-slate-900 dark:text-white">{{ t('timeline.noEntries') }}</h3>
+      <h3 class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ t('timeline.noEntries') }}</h3>
       <p class="mt-1 text-sm text-slate-500">{{ t('diary.noDiaries') }}</p>
       <div class="mt-6">
         <NuxtLink
@@ -88,14 +88,14 @@
     <!-- Timeline -->
     <div v-else class="relative">
       <!-- Vertical line -->
-      <div class="absolute left-4 sm:left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-700 via-blue-500 to-blue-300"></div>
+      <div class="absolute left-4 sm:left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-700 via-blue-500 to-blue-300 dark:from-slate-700 dark:via-slate-600 dark:to-slate-800"></div>
 
       <!-- Timeline items grouped by year/month -->
       <div v-for="group in groupedDiaries" :key="group.period" class="mb-8">
         <!-- Period header -->
         <div class="relative flex items-center mb-4 pl-10 sm:pl-20">
-          <div class="absolute left-4 sm:left-8 w-4 h-4 bg-indigo-500 rounded-full border-4 border-white dark:border-gray-900 transform -translate-x-1/2"></div>
-          <h2 class="text-lg sm:text-xl font-semibold text-slate-800 dark:text-white">
+          <div class="absolute left-4 sm:left-8 w-4 h-4 bg-indigo-500 dark:bg-slate-500 rounded-full border-4 border-white dark:border-slate-950 transform -translate-x-1/2"></div>
+          <h2 class="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100">
             {{ group.periodLabel }}
           </h2>
           <span class="ml-3 text-sm text-slate-500 dark:text-slate-400">
@@ -112,23 +112,23 @@
             class="relative block group"
           >
             <!-- Timeline dot -->
-            <div class="absolute left-0 sm:left-8 top-6 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 transform -translate-x-1/2 group-hover:scale-125 transition-all"
-              :class="diary.alerts?.length ? 'bg-amber-400 group-hover:bg-amber-500' : 'bg-blue-500 group-hover:bg-blue-700'" />
+            <div class="absolute left-0 sm:left-8 top-6 w-3 h-3 rounded-full border-2 border-white dark:border-slate-950 transform -translate-x-1/2 group-hover:scale-125 transition-all"
+              :class="diary.alerts?.length ? 'bg-amber-400 dark:bg-amber-700 group-hover:bg-amber-500 dark:group-hover:bg-amber-600' : 'bg-blue-500 dark:bg-sky-600 group-hover:bg-blue-700 dark:group-hover:bg-sky-500'" />
 
             <!-- Card -->
             <div class="ml-6 sm:ml-12 rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
-              :class="diary.alerts?.length ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700' : 'bg-white dark:bg-slate-800 border-blue-100 dark:border-slate-700'">
+              :class="diary.alerts?.length ? 'bg-amber-50 dark:bg-slate-900 border-amber-200 dark:border-amber-900/70' : 'bg-white dark:bg-slate-950 border-blue-100 dark:border-slate-800'">
               <!-- 提醒標籤 -->
-              <div v-if="diary.alerts?.length" class="bg-amber-100 dark:bg-amber-800/50 px-4 py-2 border-b border-amber-200 dark:border-amber-700">
+              <div v-if="diary.alerts?.length" class="bg-amber-100 dark:bg-amber-950/20 px-4 py-2 border-b border-amber-200 dark:border-amber-900/70">
                 <div class="flex items-center gap-2">
-                  <Icon name="heroicons:bell-alert" class="h-4 w-4 text-amber-600 dark:text-amber-300" />
+                  <Icon name="heroicons:bell-alert" class="h-4 w-4 text-amber-600 dark:text-amber-200" />
                   <span class="text-xs font-medium text-amber-800 dark:text-amber-200">{{ t('timeline.reminders') }}</span>
                 </div>
                 <div class="mt-1 space-y-1">
-                  <p v-for="(alert, idx) in diary.alerts.slice(0, 2)" :key="idx" class="text-xs text-amber-700 dark:text-amber-300 truncate">
+                  <p v-for="(alert, idx) in diary.alerts.slice(0, 2)" :key="idx" class="text-xs text-amber-700 dark:text-amber-200/90 truncate">
                     • {{ alert.message }}
                   </p>
-                  <p v-if="diary.alerts.length > 2" class="text-xs text-amber-600 dark:text-amber-400">
+                  <p v-if="diary.alerts.length > 2" class="text-xs text-amber-600 dark:text-amber-300/90">
                     {{ t('timeline.moreReminders', { count: diary.alerts.length - 2 }) }}
                   </p>
                 </div>
@@ -136,7 +136,7 @@
 
               <div class="p-4 sm:p-6">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                  <h3 class="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+                  <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-sky-300 transition-colors">
                     {{ diary.title }}
                   </h3>
                   <span class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap flex items-center">
@@ -158,7 +158,7 @@
                     <Icon name="heroicons:bell" class="mr-1 h-4 w-4" />
                     {{ t('timeline.alertsCount', { count: diary.alerts.length }) }}
                   </span>
-                  <span class="text-blue-700 dark:text-blue-300 text-xs font-semibold group-hover:text-blue-500">
+                  <span class="text-blue-700 dark:text-sky-300 text-xs font-semibold group-hover:text-blue-500 dark:group-hover:text-sky-200">
                     {{ t('timeline.viewDetails') }}
                   </span>
                 </div>
@@ -285,29 +285,38 @@ const {
   overflow: hidden;
 }
 
-:global(.dark) .panel {
-  border-color: rgb(51 65 85);
-  background: rgb(15 23 42 / 84%);
-  box-shadow: 0 12px 26px rgb(2 6 23 / 35%);
+:global(.dark .panel) , :global(.dark-mode .panel)  {
+  border-color: rgb(71 85 105);
+  background: rgb(3 10 24 / 92%);
+  box-shadow: 0 12px 26px rgb(2 6 23 / 45%);
 }
 
-:global(.dark) .field {
-  border-color: rgb(71 85 105);
-  background: rgb(30 41 59);
+:global(.dark .field) , :global(.dark-mode .field)  {
+  border-color: rgb(100 116 139);
+  background: rgb(12 19 35);
   color: rgb(226 232 240);
 }
 
-:global(.dark) .field:focus-visible {
+:global(.dark .field):focus-visible , :global(.dark-mode .field):focus-visible  {
   border-color: rgb(56 189 248);
 }
 
-:global(.dark) .action-btn-muted {
-  border-color: rgb(71 85 105);
-  color: rgb(147 197 253);
-  background: rgb(30 41 59);
+:global(.dark .action-btn-muted) , :global(.dark-mode .action-btn-muted)  {
+  border-color: rgb(100 116 139);
+  color: rgb(186 230 253);
+  background: rgb(12 19 35);
 }
 
-:global(.dark) .action-btn-muted:hover {
-  background: rgb(51 65 85);
+:global(.dark .action-btn-muted):hover , :global(.dark-mode .action-btn-muted):hover  {
+  background: rgb(20 30 48);
+}
+
+:global(.dark .action-btn), :global(.dark-mode .action-btn) {
+  background: #1e3a8a;
+  color: rgb(226 232 240);
+}
+
+:global(.dark .action-btn):hover, :global(.dark-mode .action-btn):hover {
+  background: #1d4ed8;
 }
 </style>

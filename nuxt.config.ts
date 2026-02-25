@@ -219,8 +219,8 @@ export default defineNuxtConfig({
       // 執行時快取策略
       runtimeCaching: [
         {
-          // 靜態資源使用 StaleWhileRevalidate
-          urlPattern: /^https?:\/\/.*\.(?:js|css|html|png|svg|ico|txt|woff|woff2)$/,
+          // 靜態資源使用 StaleWhileRevalidate（排除 html，避免部署後需硬刷新）
+          urlPattern: /^https?:\/\/.*\.(?:js|css|png|svg|ico|txt|woff|woff2)$/,
           handler: 'StaleWhileRevalidate',
           options: {
             cacheName: 'static-resources',

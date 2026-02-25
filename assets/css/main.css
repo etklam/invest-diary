@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #__nuxt {
+    background-color: var(--color-background);
+    color: #0f172a;
+  }
+
+  :root.dark body,
+  :root.dark-mode body,
+  .dark body,
+  .dark-mode body,
+  :root.dark #__nuxt,
+  :root.dark-mode #__nuxt,
+  .dark #__nuxt,
+  .dark-mode #__nuxt {
+    background-color: #020617;
+    color: #e2e8f0;
+  }
+}

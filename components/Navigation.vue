@@ -79,7 +79,7 @@ const getIconName = (icon: string) => {
     <div class="mx-auto w-full max-w-7xl">
       <!-- Primary Navigation Bar -->
       <div
-        class="flex items-center rounded-2xl px-4 py-2.5 backdrop-blur-xl sm:px-5 sm:py-3"
+        class="relative z-30 flex items-center rounded-2xl px-4 py-2.5 backdrop-blur-xl sm:px-5 sm:py-3"
         :class="isHomeRoute
           ? 'border border-sky-200/70 bg-white/72 shadow-lg shadow-sky-200/35 dark:border-slate-700 dark:bg-slate-900/82 dark:shadow-slate-950/40'
           : 'border border-cyan-100/80 bg-white/80 shadow-lg shadow-cyan-100/40 dark:border-slate-700 dark:bg-slate-900/85 dark:shadow-slate-950/40'"
@@ -87,7 +87,7 @@ const getIconName = (icon: string) => {
         <!-- Logo -->
         <NuxtLink
           to="/"
-          class="mr-6 flex-shrink-0 text-lg font-semibold tracking-tight transition-colors sm:mr-8 sm:text-xl"
+          class="mr-6 inline-flex min-h-[40px] flex-shrink-0 items-center text-lg font-semibold tracking-tight transition-colors sm:mr-8 sm:min-h-[44px] sm:text-xl"
           :class="isHomeRoute
             ? 'text-sky-900 hover:text-sky-700 dark:text-sky-100 dark:hover:text-sky-200'
             : 'text-cyan-900 hover:text-cyan-700 dark:text-cyan-50 dark:hover:text-cyan-200'"
@@ -107,8 +107,8 @@ const getIconName = (icon: string) => {
                   : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:bg-slate-800 dark:hover:text-cyan-200',
                 isActive(item.to)
                   ? (isHomeRoute
-                      ? 'bg-sky-600 text-white shadow-sm shadow-sky-700/30 hover:bg-sky-600 hover:text-white dark:bg-sky-500 dark:text-slate-950 dark:hover:bg-sky-500'
-                      : 'bg-cyan-600 text-white shadow-sm shadow-cyan-700/30 hover:bg-cyan-600 hover:text-white dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-500')
+                      ? 'bg-sky-600 text-white shadow-sm shadow-sky-700/30 hover:bg-sky-600 hover:text-white dark:bg-sky-700 dark:text-slate-100 dark:hover:bg-sky-600'
+                      : 'bg-cyan-600 text-white shadow-sm shadow-cyan-700/30 hover:bg-cyan-600 hover:text-white dark:bg-cyan-700 dark:text-slate-100 dark:hover:bg-cyan-600')
                   : ''
               ]"
             >
@@ -142,7 +142,7 @@ const getIconName = (icon: string) => {
 
         <!-- Authenticated User -->
         <li v-if="isAuthenticated">
-          <div class="relative">
+          <div class="relative z-40">
             <button
               @click="userMenuOpen = !userMenuOpen"
               class="flex cursor-pointer items-center rounded-xl border border-cyan-100/80 bg-white/70 py-1.5 pl-3 pr-2 transition-colors duration-200 hover:border-cyan-200 hover:bg-cyan-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
@@ -168,7 +168,7 @@ const getIconName = (icon: string) => {
             <!-- User Dropdown Menu -->
             <div
               v-if="userMenuOpen"
-              class="absolute right-0 z-50 mt-2 w-48 rounded-xl border border-cyan-100 bg-white/95 py-1 shadow-lg shadow-cyan-100/50 backdrop-blur dark:border-slate-700 dark:bg-slate-800/95"
+              class="absolute right-0 z-[80] mt-2 w-48 rounded-xl border border-cyan-100 bg-white/95 py-1 shadow-lg shadow-cyan-100/50 backdrop-blur dark:border-slate-700 dark:bg-slate-800/95"
             >
               <NuxtLink
                 to="/settings"
@@ -202,8 +202,8 @@ const getIconName = (icon: string) => {
               to="/auth/register"
               class="inline-flex items-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:text-slate-950 dark:focus:ring-offset-slate-900"
               :class="isHomeRoute
-                ? 'bg-orange-500 shadow-orange-700/25 hover:bg-orange-400 focus:ring-orange-400 dark:bg-orange-400 dark:hover:bg-orange-300'
-                : 'bg-emerald-600 shadow-emerald-700/30 hover:bg-emerald-700 focus:ring-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400'"
+                ? 'bg-orange-500 shadow-orange-700/25 hover:bg-orange-400 focus:ring-orange-400 dark:bg-orange-600 dark:hover:bg-orange-500'
+                : 'bg-emerald-600 shadow-emerald-700/30 hover:bg-emerald-700 focus:ring-emerald-500 dark:bg-emerald-600 dark:hover:bg-emerald-500'"
             >
               {{ $t('auth.register') }}
             </NuxtLink>
@@ -231,7 +231,7 @@ const getIconName = (icon: string) => {
 
       <!-- Secondary Navigation Bar (Desktop) -->
       <div
-        class="mt-2 hidden rounded-2xl px-4 py-2.5 backdrop-blur-xl xl:block xl:px-5 xl:py-3"
+        class="relative z-10 mt-2 hidden rounded-2xl px-4 py-2.5 backdrop-blur-xl xl:block xl:px-5 xl:py-3"
         :class="isHomeRoute
           ? 'border border-sky-200/65 bg-white/70 shadow-md shadow-sky-200/30 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-slate-950/40'
           : 'border border-cyan-100/70 bg-white/80 shadow-md shadow-cyan-100/30 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-slate-950/40'"
@@ -247,7 +247,7 @@ const getIconName = (icon: string) => {
                     ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200'
                     : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:text-cyan-200',
                   isActive(item.to)
-                    ? (isHomeRoute ? 'bg-sky-50 text-sky-700 dark:bg-slate-800 dark:text-sky-200' : 'bg-cyan-50 text-cyan-700 dark:bg-slate-800 dark:text-cyan-200')
+                    ? (isHomeRoute ? 'bg-sky-50 text-sky-700 dark:bg-slate-800 dark:text-sky-300' : 'bg-cyan-50 text-cyan-700 dark:bg-slate-800 dark:text-cyan-300')
                     : ''
                 ]"
               >
@@ -317,7 +317,7 @@ const getIconName = (icon: string) => {
                 :class="[
                   isHomeRoute ? 'hover:bg-sky-100/80' : 'hover:bg-cyan-50',
                   isActive(item.to)
-                    ? (isHomeRoute ? 'bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950' : 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950')
+                    ? (isHomeRoute ? 'bg-sky-600 text-white dark:bg-sky-700 dark:text-slate-100' : 'bg-cyan-600 text-white dark:bg-cyan-700 dark:text-slate-100')
                     : ''
                 ]"
                 @click="mobileNavOpen = false"
@@ -339,7 +339,7 @@ const getIconName = (icon: string) => {
                 :class="[
                   isHomeRoute ? 'hover:bg-sky-100/80' : 'hover:bg-cyan-50',
                   isActive(item.to)
-                    ? (isHomeRoute ? 'bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950' : 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950')
+                    ? (isHomeRoute ? 'bg-sky-600 text-white dark:bg-sky-700 dark:text-slate-100' : 'bg-cyan-600 text-white dark:bg-cyan-700 dark:text-slate-100')
                     : ''
                 ]"
                 @click="mobileNavOpen = false"
@@ -408,8 +408,8 @@ const getIconName = (icon: string) => {
                 to="/auth/register"
                 class="flex items-center rounded-xl px-3 py-3 pr-2 text-white transition-colors dark:text-slate-950"
                 :class="isHomeRoute
-                  ? 'bg-orange-500 hover:bg-orange-400 dark:bg-orange-400 dark:hover:bg-orange-300'
-                  : 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400'"
+                  ? 'bg-orange-500 hover:bg-orange-400 dark:bg-orange-600 dark:hover:bg-orange-500'
+                  : 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500'"
                 @click="mobileNavOpen = false"
               >
                 <Icon name="heroicons:user-plus" class="mr-3 h-5 w-5" />

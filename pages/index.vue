@@ -1,5 +1,5 @@
 <template>
-  <main class="fintech-home min-h-screen text-slate-900">
+  <main class="fintech-home min-h-screen text-slate-900 dark:text-slate-100">
     <section class="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
       <div class="bg-grid absolute inset-0 opacity-35" aria-hidden="true" />
       <div class="orb orb-cyan" aria-hidden="true" />
@@ -8,14 +8,14 @@
       <div class="relative mx-auto max-w-7xl">
         <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div class="reveal">
-            <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-300/60 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 backdrop-blur">
-              <Icon name="heroicons:shield-check-20-solid" class="h-4 w-4 text-sky-600" />
+            <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-300/60 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 backdrop-blur dark:border-sky-700/60 dark:bg-slate-900/80 dark:text-sky-200">
+              <Icon name="heroicons:shield-check-20-solid" class="h-4 w-4 text-sky-600 dark:text-sky-300" />
               Fintech Journal OS
             </p>
-            <h1 class="text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl lg:text-6xl">
+            <h1 class="text-4xl font-semibold leading-tight text-slate-950 dark:text-slate-100 sm:text-5xl lg:text-6xl">
               {{ $t('home.hero.title') }}
             </h1>
-            <p class="mt-6 max-w-2xl text-base leading-relaxed text-slate-700 sm:text-lg">
+            <p class="mt-6 max-w-2xl text-base leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg">
               {{ $t('home.hero.subtitle') }}
             </p>
 
@@ -37,16 +37,16 @@
 
             <dl class="mt-10 grid gap-4 sm:grid-cols-3">
               <div class="metric-card reveal reveal-2">
-                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Success Rate</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">94.8%</dd>
+                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Success Rate</dt>
+                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">94.8%</dd>
               </div>
               <div class="metric-card reveal reveal-3">
-                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Latency</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">52 ms</dd>
+                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Latency</dt>
+                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">52 ms</dd>
               </div>
               <div class="metric-card reveal reveal-4">
-                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Audit Events</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">1.2M+</dd>
+                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Audit Events</dt>
+                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">1.2M+</dd>
               </div>
             </dl>
           </div>
@@ -86,7 +86,7 @@
     <section class="px-4 pb-20 sm:px-6">
       <div class="mx-auto max-w-7xl">
         <div class="trust-strip reveal">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Trusted Workflow Signals</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Trusted Workflow Signals</p>
           <div class="mt-4 flex flex-wrap gap-3">
             <span class="trust-pill">Bank-grade auth</span>
             <span class="trust-pill">Private timeline</span>
@@ -101,10 +101,10 @@
     <section class="px-4 pb-20 sm:px-6">
       <div class="mx-auto max-w-7xl">
         <div class="mb-10 reveal">
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+          <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
             {{ $t('home.features.title') }}
           </h2>
-          <p class="mt-3 max-w-3xl text-base text-slate-600 sm:text-lg">
+          <p class="mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
             {{ $t('home.features.subtitle') }}
           </p>
         </div>
@@ -112,33 +112,33 @@
         <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           <article class="feature-card reveal">
             <Icon name="heroicons:book-open-20-solid" class="feature-icon text-sky-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950">{{ $t('home.features.diary.title') }}</h3>
-            <p class="mt-2 text-slate-600">{{ $t('home.features.diary.description') }}</p>
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.diary.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.diary.description') }}</p>
           </article>
           <article class="feature-card reveal reveal-2">
             <Icon name="heroicons:chart-bar-square-20-solid" class="feature-icon text-emerald-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950">{{ $t('home.features.stocks.title') }}</h3>
-            <p class="mt-2 text-slate-600">{{ $t('home.features.stocks.description') }}</p>
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.stocks.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.stocks.description') }}</p>
           </article>
           <article class="feature-card reveal reveal-3">
             <Icon name="heroicons:bell-alert-20-solid" class="feature-icon text-orange-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950">{{ $t('home.features.alerts.title') }}</h3>
-            <p class="mt-2 text-slate-600">{{ $t('home.features.alerts.description') }}</p>
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.alerts.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.alerts.description') }}</p>
           </article>
           <article class="feature-card reveal">
             <Icon name="heroicons:clock-20-solid" class="feature-icon text-indigo-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950">{{ $t('home.features.timeline.title') }}</h3>
-            <p class="mt-2 text-slate-600">{{ $t('home.features.timeline.description') }}</p>
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.timeline.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.timeline.description') }}</p>
           </article>
           <article class="feature-card reveal reveal-2">
             <Icon name="heroicons:lock-closed-20-solid" class="feature-icon text-rose-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950">{{ $t('home.features.security.title') }}</h3>
-            <p class="mt-2 text-slate-600">{{ $t('home.features.security.description') }}</p>
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.security.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.security.description') }}</p>
           </article>
           <article class="feature-card reveal reveal-3">
             <Icon name="heroicons:moon-20-solid" class="feature-icon text-cyan-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950">{{ $t('home.features.themes.title') }}</h3>
-            <p class="mt-2 text-slate-600">{{ $t('home.features.themes.description') }}</p>
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.themes.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.themes.description') }}</p>
           </article>
         </div>
       </div>
@@ -185,11 +185,11 @@
       </div>
     </section>
 
-    <footer class="border-t border-slate-200/70 bg-slate-50 px-4 py-10 sm:px-6">
-      <div class="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-        <p class="font-semibold text-slate-900">{{ $t('common.appName') }}</p>
+    <footer class="border-t border-slate-200/70 bg-slate-50 dark:bg-slate-950 dark:border-slate-700 px-4 py-10 sm:px-6">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+        <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $t('common.appName') }}</p>
         <div class="flex items-center gap-6">
-          <NuxtLink to="/about" class="transition-colors duration-200 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 cursor-pointer">
+          <NuxtLink to="/about" class="transition-colors duration-200 hover:text-slate-900 dark:hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 cursor-pointer">
             {{ $t('nav.about') }}
           </NuxtLink>
           <p>&copy; {{ currentYear }} {{ $t('home.footer.rights') }}</p>
@@ -221,6 +221,22 @@ const currentYear = new Date().getFullYear()
     radial-gradient(1200px 700px at 12% -10%, rgb(56 189 248 / 18%), transparent 58%),
     radial-gradient(1100px 620px at 95% -5%, rgb(249 115 22 / 12%), transparent 62%),
     var(--home-bg);
+}
+
+:global(.dark .fintech-home),
+:global(.dark-mode .fintech-home) {
+  background:
+    radial-gradient(1100px 640px at 10% -10%, rgb(56 189 248 / 10%), transparent 58%),
+    radial-gradient(900px 520px at 95% -8%, rgb(249 115 22 / 7%), transparent 62%),
+    rgb(2 8 23);
+}
+
+:global(.dark .bg-grid),
+:global(.dark-mode .bg-grid) {
+  opacity: 0.14;
+  background-image:
+    linear-gradient(to right, rgb(148 163 184 / 10%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(148 163 184 / 10%) 1px, transparent 1px);
 }
 
 .bg-grid {
@@ -294,12 +310,31 @@ const currentYear = new Date().getFullYear()
   background: rgb(255 255 255 / 88%);
 }
 
+:global(.dark .action-btn-secondary),
+:global(.dark-mode .action-btn-secondary) {
+  border-color: rgb(71 85 105);
+  color: rgb(186 230 253);
+  background: rgb(15 23 42 / 82%);
+}
+
+:global(.dark .action-btn-secondary:hover),
+:global(.dark-mode .action-btn-secondary:hover) {
+  background: rgb(30 41 59);
+  border-color: rgb(100 116 139);
+}
+
 .metric-card {
   border: 1px solid rgb(186 230 253 / 95%);
   border-radius: 0.95rem;
   background: rgb(255 255 255 / 82%);
   backdrop-filter: blur(8px);
   padding: 1rem;
+}
+
+:global(.dark .metric-card),
+:global(.dark-mode .metric-card) {
+  border-color: rgb(71 85 105);
+  background: rgb(10 16 30 / 86%);
 }
 
 .terminal-panel {
@@ -334,6 +369,12 @@ const currentYear = new Date().getFullYear()
   padding: 1.2rem;
 }
 
+:global(.dark .trust-strip),
+:global(.dark-mode .trust-strip) {
+  border-color: rgb(71 85 105);
+  background: rgb(10 16 30 / 86%);
+}
+
 .trust-pill {
   border: 1px solid rgb(14 165 233 / 30%);
   border-radius: 999px;
@@ -346,6 +387,13 @@ const currentYear = new Date().getFullYear()
   letter-spacing: 0.08em;
 }
 
+:global(.dark .trust-pill),
+:global(.dark-mode .trust-pill) {
+  border-color: rgb(71 85 105);
+  background: rgb(22 32 50 / 84%);
+  color: rgb(186 230 253);
+}
+
 .feature-card {
   border: 1px solid rgb(186 230 253 / 82%);
   border-radius: 1rem;
@@ -355,10 +403,22 @@ const currentYear = new Date().getFullYear()
   transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
 
+:global(.dark .feature-card),
+:global(.dark-mode .feature-card) {
+  border-color: rgb(71 85 105);
+  background: rgb(10 16 30 / 88%);
+}
+
 .feature-card:hover {
   transform: translateY(-3px);
   border-color: rgb(14 165 233 / 45%);
   box-shadow: 0 14px 30px rgb(14 165 233 / 14%);
+}
+
+:global(.dark .feature-card:hover),
+:global(.dark-mode .feature-card:hover) {
+  border-color: rgb(56 189 248 / 70%);
+  box-shadow: 0 14px 30px rgb(2 6 23 / 45%);
 }
 
 .feature-icon {

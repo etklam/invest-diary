@@ -383,57 +383,70 @@ watch(isAuthenticated, (authenticated) => {
   }
 }
 
-:global(.dark) .fin-card {
-  border-color: rgb(51 65 85);
-  background: rgb(15 23 42 / 84%);
-  box-shadow: 0 14px 28px rgb(2 6 23 / 35%);
+:global(.dark .calendar-page), :global(.dark-mode .calendar-page) {
+  color: rgb(226 232 240);
 }
 
-:global(.dark) .nav-btn {
+:global(.dark .fin-card) , :global(.dark-mode .fin-card)  {
+  border-color: rgb(71 85 105);
+  background: rgb(3 10 24 / 92%);
+  box-shadow: 0 14px 28px rgb(2 6 23 / 45%);
+}
+
+:global(.dark .nav-btn) , :global(.dark-mode .nav-btn)  {
   border-color: rgb(51 65 85);
-  background: rgb(30 41 59);
+  background: rgb(12 19 35);
   color: rgb(125 211 252);
 }
 
-:global(.dark) .nav-btn:hover {
-  background: rgb(51 65 85);
+:global(.dark .nav-btn):hover , :global(.dark-mode .nav-btn):hover  {
+  background: rgb(20 30 48);
 }
 
-:global(.dark) .metric {
-  border-color: rgb(51 65 85);
-  background: rgb(15 23 42 / 72%);
+:global(.dark .metric) , :global(.dark-mode .metric)  {
+  border-color: rgb(71 85 105);
+  background: rgb(8 15 30 / 84%);
 }
 
-:global(.dark) .metric-label {
+:global(.dark .metric-label) , :global(.dark-mode .metric-label)  {
   color: rgb(148 163 184);
 }
 
-:global(.dark) .metric-value {
+:global(.dark .metric-value) , :global(.dark-mode .metric-value)  {
   color: rgb(186 230 253);
 }
 
-:global(.dark) .day-card {
-  border-color: rgb(51 65 85);
-  background: rgb(15 23 42 / 86%);
+:global(.dark .day-card) , :global(.dark-mode .day-card)  {
+  border-color: rgb(71 85 105);
+  background: rgb(4 12 25 / 92%);
 }
 
-:global(.dark) .day-card:hover {
-  background: rgb(30 41 59);
-  border-color: rgb(56 189 248);
+:global(.dark .day-card):hover , :global(.dark-mode .day-card):hover  {
+  background: rgb(12 20 36);
+  border-color: rgb(71 85 105);
 }
 
-:global(.dark) .day-card-today {
-  border-color: rgb(59 130 246);
-  background: rgb(30 58 138 / 32%);
+:global(.dark .day-card-today) , :global(.dark-mode .day-card-today)  {
+  border-color: rgb(30 64 175);
+  background: rgb(30 64 175 / 22%);
 }
 
-:global(.dark) .action-secondary {
+:global(.dark .action-secondary) , :global(.dark-mode .action-secondary)  {
   border-color: rgb(51 65 85);
   color: rgb(147 197 253);
-  background: rgb(30 41 59);
+  background: rgb(12 19 35);
 }
 
-:global(.dark) .action-secondary:hover {
-  background: rgb(51 65 85);
+:global(.dark .action-secondary):hover , :global(.dark-mode .action-secondary):hover  {
+  background: rgb(20 30 48);
+}
+
+:global(.dark .action-primary), :global(.dark-mode .action-primary) {
+  background: #1e3a8a;
+  color: rgb(226 232 240);
+}
+
+:global(.dark .action-primary):hover, :global(.dark-mode .action-primary):hover {
+  background: #1d4ed8;
 }
 </style>

@@ -1,152 +1,147 @@
 <template>
-  <div class="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-    <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 -z-10 overflow-hidden">
-      <div class="hero-orb mx-auto h-72 w-[90%] max-w-6xl rounded-full" />
-    </div>
+  <main class="fintech-blog min-h-screen text-slate-900 dark:text-slate-100">
+    <section class="relative overflow-hidden px-4 pb-12 pt-10 sm:px-6 sm:pt-14">
+      <div class="bg-grid absolute inset-0 opacity-35" aria-hidden="true" />
+      <div class="orb orb-cyan" aria-hidden="true" />
+      <div class="orb orb-amber" aria-hidden="true" />
 
-    <header class="relative mb-10 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/90 p-6 shadow-sm backdrop-blur-sm sm:p-8 dark:border-zinc-700/70 dark:bg-zinc-900/70">
-      <div class="grid gap-6 lg:grid-cols-12 lg:items-end">
-        <div class="lg:col-span-8">
-          <p class="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
-            Diary Editorial
-          </p>
-          <h1 class="font-serif text-3xl font-semibold leading-tight text-zinc-950 sm:text-4xl dark:text-zinc-100">
-            {{ $t('blog.title') }}
-          </h1>
-          <p class="mt-3 max-w-2xl text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
-            {{ $t('blog.description') }}
-          </p>
-        </div>
-        <div class="grid gap-3 sm:grid-cols-2 lg:col-span-4">
-          <div class="rounded-xl border border-zinc-200 bg-zinc-50/90 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/80">
-            <p class="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              {{ $t('blog.categoriesLabel') }}
-            </p>
-            <p class="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              {{ categories.length - 1 }}
-            </p>
-          </div>
-          <div class="rounded-xl border border-zinc-200 bg-zinc-50/90 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/80">
-            <p class="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              {{ $t('admin.pagination.showing') }}
-            </p>
-            <p class="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              {{ posts.length }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </header>
+      <div class="relative mx-auto max-w-7xl">
+        <header class="hero-shell reveal rounded-3xl p-6 sm:p-8 lg:p-10">
+          <div class="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-end">
+            <div>
+              <p class="inline-flex items-center gap-2 rounded-full border border-sky-300/50 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 backdrop-blur dark:border-sky-600/60 dark:bg-slate-900/80 dark:text-sky-200">
+                <Icon name="heroicons:newspaper-20-solid" class="h-4 w-4" />
+                Fintech Editorial Desk
+              </p>
+              <h1 class="mt-4 text-3xl font-semibold leading-tight text-slate-950 dark:text-slate-100 sm:text-4xl lg:text-5xl">
+                {{ $t('blog.title') }}
+              </h1>
+              <p class="mt-4 max-w-3xl text-base leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg">
+                {{ $t('blog.description') }}
+              </p>
+            </div>
 
-    <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
-      <!-- Sidebar -->
-      <aside class="lg:col-span-3">
-        <div class="sticky top-4 rounded-2xl border border-zinc-200/80 bg-white/90 p-5 shadow-sm backdrop-blur-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
-          <!-- Search -->
-          <div class="mb-6">
-            <label for="search" class="mb-2 block text-sm font-semibold tracking-wide text-zinc-700 dark:text-zinc-300">
-              {{ $t('common.search') }}
-            </label>
-            <div class="relative">
-              <input
-                type="text"
-                id="search"
-                v-model="searchQuery"
-                @keyup.enter="performSearch"
-                class="w-full rounded-xl border border-zinc-300 bg-white py-3 pl-10 pr-4 text-sm text-zinc-800 transition-colors duration-200 placeholder:text-zinc-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
-                :placeholder="$t('blog.searchPlaceholder')"
-              />
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i-heroicons-magnifying-glass class="h-5 w-5 text-zinc-400 dark:text-zinc-500" />
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <div class="metric-card reveal reveal-2">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  {{ $t('blog.categoriesLabel') }}
+                </p>
+                <p class="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                  {{ categories.length - 1 }}
+                </p>
+              </div>
+              <div class="metric-card reveal reveal-3">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  {{ $t('admin.pagination.showing') }}
+                </p>
+                <p class="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                  {{ posts.length }}
+                </p>
               </div>
             </div>
           </div>
+        </header>
+      </div>
+    </section>
 
-          <!-- Category Filter -->
-          <CategoryFilter :categories="categories" />
-        </div>
-      </aside>
-
-      <!-- Main Content -->
-      <main class="lg:col-span-9">
-        <!-- Loading State / Skeleton -->
-        <div v-if="pending" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          <div
-            v-for="i in 6"
-            :key="i"
-            class="animate-pulse rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/70"
-          >
-            <div class="mb-4 aspect-video rounded-xl bg-zinc-200 dark:bg-zinc-800" />
-            <div class="mb-2 h-4 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800" />
-            <div class="mb-4 h-4 w-1/2 rounded bg-zinc-200 dark:bg-zinc-800" />
-            <div class="mb-2 h-3 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
-            <div class="h-3 w-5/6 rounded bg-zinc-200 dark:bg-zinc-800" />
-          </div>
-        </div>
-
-        <!-- Error State -->
-        <div v-else-if="error" class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800/50 dark:bg-red-900/20">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <i-heroicons-x-circle class="h-5 w-5 text-red-400" />
+    <section class="px-4 pb-20 sm:px-6">
+      <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-12">
+        <aside class="lg:col-span-3">
+          <div class="sidebar-shell sticky top-4 rounded-2xl p-5">
+            <div class="mb-6">
+              <label for="search" class="mb-2 block text-sm font-semibold tracking-wide text-slate-700 dark:text-slate-300">
+                {{ $t('common.search') }}
+              </label>
+              <div class="relative">
+                <input
+                  id="search"
+                  v-model="searchQuery"
+                  type="text"
+                  @keyup.enter="performSearch"
+                  class="search-input w-full rounded-xl border border-slate-200/80 bg-white/85 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  :placeholder="$t('blog.searchPlaceholder')"
+                />
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <i-heroicons-magnifying-glass class="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                </div>
+              </div>
             </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800 dark:text-red-300">
+
+            <CategoryFilter :categories="categories" />
+          </div>
+        </aside>
+
+        <div class="lg:col-span-9">
+          <div v-if="pending" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div
+              v-for="i in 6"
+              :key="i"
+              class="skeleton-card animate-pulse rounded-2xl p-6"
+            >
+              <div class="mb-4 aspect-video rounded-xl bg-slate-200/70 dark:bg-slate-800/70" />
+              <div class="mb-2 h-4 w-3/4 rounded bg-slate-200/70 dark:bg-slate-800/70" />
+              <div class="mb-4 h-4 w-1/2 rounded bg-slate-200/70 dark:bg-slate-800/70" />
+              <div class="mb-2 h-3 w-full rounded bg-slate-200/70 dark:bg-slate-800/70" />
+              <div class="h-3 w-5/6 rounded bg-slate-200/70 dark:bg-slate-800/70" />
+            </div>
+          </div>
+
+          <div v-else-if="error" class="rounded-2xl border border-red-300/70 bg-red-50/90 p-4 text-red-900 dark:border-red-800/50 dark:bg-red-900/20 dark:text-red-300">
+            <div class="flex items-start gap-3">
+              <i-heroicons-x-circle class="h-5 w-5" />
+              <h3 class="text-sm font-medium">
                 {{ $t('blog.loadFailed') }}
               </h3>
             </div>
           </div>
-        </div>
 
-        <!-- Empty State -->
-        <div v-else-if="posts.length === 0" class="rounded-2xl border border-zinc-200/80 bg-white/90 py-16 text-center shadow-sm dark:border-zinc-700/70 dark:bg-zinc-900/70">
-          <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-            <i-heroicons-document-text class="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
+          <div v-else-if="posts.length === 0" class="empty-shell rounded-2xl py-16 text-center">
+            <div class="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full border border-slate-200/80 bg-white/85 dark:border-slate-700/80 dark:bg-slate-900/80">
+              <i-heroicons-document-text class="h-8 w-8 text-slate-400 dark:text-slate-500" />
+            </div>
+            <h3 class="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">
+              {{ $t('blog.noPosts') }}
+            </h3>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              {{ $t('blog.noPostsDescription') }}
+            </p>
           </div>
-          <h3 class="mt-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            {{ $t('blog.noPosts') }}
-          </h3>
-          <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            {{ $t('blog.noPostsDescription') }}
-          </p>
+
+          <div v-else class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <BlogCard
+              v-for="post in posts"
+              :key="post.id"
+              :post="post"
+            />
+          </div>
+
+          <div v-if="pagination && pagination.totalPages > 1" class="mt-10 flex justify-center">
+            <nav class="pager-shell flex items-center gap-2 rounded-xl px-3 py-2">
+              <button
+                :disabled="pagination.page <= 1"
+                class="pager-btn cursor-pointer rounded-lg px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                @click="goToPage(pagination.page - 1)"
+              >
+                {{ $t('admin.pagination.previous') }}
+              </button>
+
+              <span class="px-2 text-sm text-slate-700 dark:text-slate-300">
+                {{ $t('admin.pagination.showing') }} {{ pagination.page }} {{ $t('admin.pagination.to') }} {{ pagination.totalPages }}
+              </span>
+
+              <button
+                :disabled="pagination.page >= pagination.totalPages"
+                class="pager-btn cursor-pointer rounded-lg px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                @click="goToPage(pagination.page + 1)"
+              >
+                {{ $t('admin.pagination.next') }}
+              </button>
+            </nav>
+          </div>
         </div>
-
-        <!-- Blog Posts Grid -->
-        <div v-else class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          <BlogCard
-            v-for="post in posts"
-            :key="post.id"
-            :post="post"
-          />
-        </div>
-
-        <!-- Pagination -->
-        <div v-if="pagination && pagination.totalPages > 1" class="mt-10 flex justify-center">
-          <nav class="flex items-center gap-2 rounded-xl border border-zinc-200/80 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/80">
-            <button
-              @click="goToPage(pagination.page - 1)"
-              :disabled="pagination.page <= 1"
-              class="cursor-pointer rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              {{ $t('admin.pagination.previous') }}
-            </button>
-
-            <span class="px-2 text-sm text-zinc-700 dark:text-zinc-400">
-              {{ $t('admin.pagination.showing') }} {{ pagination.page }} {{ $t('admin.pagination.to') }} {{ pagination.totalPages }}
-            </span>
-
-            <button
-              @click="goToPage(pagination.page + 1)"
-              :disabled="pagination.page >= pagination.totalPages"
-              class="cursor-pointer rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              {{ $t('admin.pagination.next') }}
-            </button>
-          </nav>
-        </div>
-      </main>
-    </div>
-  </div>
+      </div>
+    </section>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -221,7 +216,7 @@ const categories = computed(() => {
     { key: '', value: '', label: t('blog.allCategories') },
     ...CATEGORY_OPTIONS.map(cat => ({
       key: cat,
-      value: cat, // 使用英文 key作為 API查詢值
+      value: cat,
       label: t(`blog.categories.${cat}`)
     }))
   ]
@@ -255,10 +250,147 @@ const goToPage = (page: number) => {
 </script>
 
 <style scoped>
-.hero-orb {
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+.fintech-blog {
+  font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
   background:
-    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.12), transparent 35%),
-    radial-gradient(circle at 85% 10%, rgba(24, 24, 27, 0.08), transparent 30%),
-    linear-gradient(180deg, rgba(250, 250, 250, 0.7), rgba(250, 250, 250, 0));
+    radial-gradient(1200px 700px at 12% -10%, rgb(56 189 248 / 18%), transparent 58%),
+    radial-gradient(1100px 620px at 95% -5%, rgb(245 158 11 / 14%), transparent 62%),
+    rgb(240 249 255);
+}
+
+:global(.dark .fintech-blog),
+:global(.dark-mode .fintech-blog) {
+  background:
+    radial-gradient(1100px 640px at 10% -10%, rgb(56 189 248 / 10%), transparent 58%),
+    radial-gradient(900px 520px at 95% -8%, rgb(245 158 11 / 7%), transparent 62%),
+    rgb(2 8 23);
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(12 74 110 / 6%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(12 74 110 / 6%) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+:global(.dark .bg-grid),
+:global(.dark-mode .bg-grid) {
+  opacity: 0.14;
+  background-image:
+    linear-gradient(to right, rgb(148 163 184 / 10%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(148 163 184 / 10%) 1px, transparent 1px);
+}
+
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(58px);
+  pointer-events: none;
+}
+
+.orb-cyan {
+  width: 280px;
+  height: 280px;
+  background: rgb(56 189 248 / 28%);
+  top: 26px;
+  right: 12%;
+}
+
+.orb-amber {
+  width: 230px;
+  height: 230px;
+  background: rgb(245 158 11 / 24%);
+  bottom: 20px;
+  left: 10%;
+}
+
+.hero-shell,
+.sidebar-shell,
+.empty-shell,
+.pager-shell,
+.metric-card,
+.skeleton-card {
+  border: 1px solid rgb(186 230 253 / 80%);
+  background: rgb(255 255 255 / 82%);
+  backdrop-filter: blur(9px);
+}
+
+.metric-card {
+  padding: 1rem;
+}
+
+:global(.dark .hero-shell),
+:global(.dark .sidebar-shell),
+:global(.dark .empty-shell),
+:global(.dark .pager-shell),
+:global(.dark .metric-card),
+:global(.dark .skeleton-card),
+:global(.dark-mode .hero-shell),
+:global(.dark-mode .sidebar-shell),
+:global(.dark-mode .empty-shell),
+:global(.dark-mode .pager-shell),
+:global(.dark-mode .metric-card),
+:global(.dark-mode .skeleton-card) {
+  border-color: rgb(71 85 105);
+  background: rgb(10 16 30 / 86%);
+}
+
+.pager-btn {
+  border: 1px solid rgb(14 165 233 / 30%);
+  color: rgb(12 74 110);
+  background: rgb(224 242 254 / 60%);
+  transition: all 200ms ease;
+}
+
+.pager-btn:hover {
+  border-color: rgb(14 165 233 / 55%);
+  background: rgb(224 242 254 / 85%);
+}
+
+:global(.dark .pager-btn),
+:global(.dark-mode .pager-btn) {
+  border-color: rgb(71 85 105);
+  color: rgb(186 230 253);
+  background: rgb(22 32 50 / 85%);
+}
+
+:global(.dark .pager-btn:hover),
+:global(.dark-mode .pager-btn:hover) {
+  border-color: rgb(56 189 248 / 70%);
+  background: rgb(30 41 59);
+}
+
+.reveal {
+  animation: reveal-up 700ms ease both;
+}
+
+.reveal-2 {
+  animation-delay: 120ms;
+}
+
+.reveal-3 {
+  animation-delay: 220ms;
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .pager-btn {
+    animation: none;
+    transition: none;
+  }
 }
 </style>

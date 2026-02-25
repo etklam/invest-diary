@@ -121,7 +121,7 @@ onUnmounted(() => {
 .mobile-layout {
   min-height: 100vh;
   position: relative;
-  background-color: var(--color-background, #ffffff);
+  background-color: var(--color-background, #020617);
   overflow-x: hidden;
 }
 
