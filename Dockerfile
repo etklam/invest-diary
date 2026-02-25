@@ -3,6 +3,7 @@ FROM node:20-bookworm-slim
 
 # Install runtime dependencies for canvas (prebuilt binaries will be used)
 RUN apt-get update && apt-get install -y \
+    openssl \
     libcairo2 \
     libjpeg62-turbo \
     libpango-1.0-0 \
