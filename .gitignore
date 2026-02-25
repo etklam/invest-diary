@@ -21,6 +21,7 @@ coverage
 .fleet
 .idea
 .codex/
+.claude/
 
 # Local env files
 .env
