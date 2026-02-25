@@ -1,89 +1,41 @@
-# =============================================================================
-# Stage 1: Builder (fast build, fewer stages)
-# =============================================================================
-FROM node:20 AS builder
+# Single-stage build to avoid compiling canvas twice
+FROM node:20-bookworm-slim
 
-ENV NODE_ENV=production \
-    NUXT_TELEMETRY_DISABLED=1
-
-WORKDIR /app
-
-# Install build dependencies (once)
+# Install runtime dependencies for canvas (prebuilt binaries will be used)
 RUN apt-get update && apt-get install -y \
-    openssl \
-    python3 \
-    make \
-    g++ \
-    libcairo2-dev \
-    libpango1.0-dev \
-    libjpeg-dev \
-    libgif-dev \
-    librsvg2-dev \
+    libcairo2 \
+    libjpeg62-turbo \
+    libpango-1.0-0 \
+    libgif7 \
+    librsvg2-2 \
+    libpixman-1-0 \
+    libpangomm-1.4-1v5 \
+    libfreetype6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files and install deps (including dev for build)
-COPY package.json package-lock.json ./
-# Skip prepare script (husky) - not needed in Docker
-RUN npm install --legacy-peer-deps --include=dev --ignore-scripts
-
-# Prepare Nuxt (needed for build)
-RUN npx nuxt prepare
-
-# Prisma client
-COPY prisma ./prisma
-RUN npx prisma generate
-
-# Copy source and build
-COPY . .
-# IMPORTANT: do NOT prune dev deps here because Prisma Client is required at runtime
-RUN npm run build
-
-# =============================================================================
-# Stage 2: Runner (Production)
-# =============================================================================
-FROM node:20-alpine AS runner
-
-ENV NODE_ENV=production \
-    PORT=3000 \
-    HOST="0.0.0.0" \
-    NITRO_PORT=3000 \
-    NUXT_TELEMETRY_DISABLED=1
-
+# Set working directory
 WORKDIR /app
 
-# Install runtime dependencies
-RUN apk add --no-cache \
-    openssl \
-    curl \
-    tini \
-    cairo \
-    pango \
-    libjpeg-turbo \
-    giflib \
-    librsvg
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies (canvas will use prebuilt binaries)
+RUN npm ci --ignore-scripts
+
+# Copy all source files
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Build Nuxt application
+RUN npm run build
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 --ingroup nodejs nuxt
+    adduser --system --uid 1001 nuxt
 
-# Copy entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-# Copy built application
-COPY --from=builder --chown=nuxt:nodejs /app/.output ./.output
-
-# Copy Prisma client into Nitro runtime node_modules (CRITICAL)
-RUN mkdir -p ./.output/server/node_modules
-COPY --from=builder --chown=nuxt:nodejs /app/node_modules/@prisma ./.output/server/node_modules/@prisma
-
-# (Optional) keep full node_modules if other runtime deps are needed
-# COPY --from=builder --chown=nuxt:nodejs /app/node_modules ./node_modules
-
-# Prisma schema (for migrations / introspection if needed)
-COPY --from=builder --chown=nuxt:nodejs /app/prisma ./prisma
-
-# Ensure proper permissions
+# Set ownership
 RUN chown -R nuxt:nodejs /app
 
 # Switch to non-root user
@@ -92,12 +44,10 @@ USER nuxt
 # Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
-
-# Use tini as init process
-ENTRYPOINT ["tini", "--", "/usr/local/bin/docker-entrypoint.sh"]
+# Set the host to 0.0.0.0 for container compatibility
+ENV HOST=0.0.0.0
+ENV PORT=3000
+ENV NODE_ENV=production
 
 # Start the application
 CMD ["node", ".output/server/index.mjs"]
