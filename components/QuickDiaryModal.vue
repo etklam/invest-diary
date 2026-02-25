@@ -52,7 +52,7 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
                   {{ t('quickDiary.title') }}
                 </h3>
-                <button @click="close" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                <button @click="close" :aria-label="t('common.close')" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
                   <Icon name="heroicons:x-mark" class="h-6 w-6" />
                 </button>
               </div>

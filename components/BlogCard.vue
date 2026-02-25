@@ -78,7 +78,7 @@
       <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700/50">
         <NuxtLink
           :to="`/blog/${post.slug}`"
-          class="inline-flex items-center text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors"
+          class="group inline-flex items-center text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors"
         >
           {{ $t('blog.readMore') }}
           <i-heroicons-arrow-right class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />

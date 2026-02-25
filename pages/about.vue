@@ -191,35 +191,51 @@
 
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             <div class="bg-white dark:bg-gray-900 rounded-lg p-6 text-center shadow-md">
-              <div class="text-3xl mb-2">⚡️</div>
+              <div class="text-3xl mb-2 flex justify-center">
+                <Icon name="heroicons:bolt" class="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
               <div class="text-sm font-medium text-gray-900 dark:text-white">Nuxt 3</div>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-6 text-center shadow-md">
-              <div class="text-3xl mb-2">💚</div>
+              <div class="text-3xl mb-2 flex justify-center">
+                <Icon name="heroicons:heart" class="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+              </div>
               <div class="text-sm font-medium text-gray-900 dark:text-white">Vue 3</div>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-6 text-center shadow-md">
-              <div class="text-3xl mb-2">🔷</div>
+              <div class="text-3xl mb-2 flex justify-center">
+                <Icon name="heroicons:code-bracket-square" class="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              </div>
               <div class="text-sm font-medium text-gray-900 dark:text-white">TypeScript</div>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-6 text-center shadow-md">
-              <div class="text-3xl mb-2">🗄️</div>
+              <div class="text-3xl mb-2 flex justify-center">
+                <Icon name="heroicons:circle-stack" class="w-8 h-8 text-sky-600 dark:text-sky-400" />
+              </div>
               <div class="text-sm font-medium text-gray-900 dark:text-white">MySQL</div>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-6 text-center shadow-md">
-              <div class="text-3xl mb-2">🎨</div>
+              <div class="text-3xl mb-2 flex justify-center">
+                <Icon name="heroicons:swatch" class="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
+              </div>
               <div class="text-sm font-medium text-gray-900 dark:text-white">Tailwind CSS</div>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-6 text-center shadow-md">
-              <div class="text-3xl mb-2">🔐</div>
+              <div class="text-3xl mb-2 flex justify-center">
+                <Icon name="heroicons:lock-closed" class="w-8 h-8 text-rose-600 dark:text-rose-400" />
+              </div>
               <div class="text-sm font-medium text-gray-900 dark:text-white">JWT</div>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-6 text-center shadow-md">
-              <div class="text-3xl mb-2">📝</div>
+              <div class="text-3xl mb-2 flex justify-center">
+                <Icon name="heroicons:cube-transparent" class="w-8 h-8 text-violet-600 dark:text-violet-400" />
+              </div>
               <div class="text-sm font-medium text-gray-900 dark:text-white">Prisma</div>
             </div>
             <div class="bg-white dark:bg-gray-900 rounded-lg p-6 text-center shadow-md">
-              <div class="text-3xl mb-2">✅</div>
+              <div class="text-3xl mb-2 flex justify-center">
+                <Icon name="heroicons:check-badge" class="w-8 h-8 text-amber-600 dark:text-amber-400" />
+              </div>
               <div class="text-sm font-medium text-gray-900 dark:text-white">Vitest</div>
             </div>
           </div>

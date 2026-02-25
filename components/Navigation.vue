@@ -107,7 +107,7 @@ const getIconName = (icon: string) => {
         <li>
           <button
             @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
-            class="text-gray-600 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
+            class="text-gray-300 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
             :aria-label="$t('theme.toggleDarkMode')"
           >
             <Icon
@@ -122,7 +122,7 @@ const getIconName = (icon: string) => {
           <div class="relative">
             <button
               @click="userMenuOpen = !userMenuOpen"
-              class="flex items-center focus:outline-none"
+              class="flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
             >
               <div class="mr-3 text-right">
                 <p class="text-sm text-white">{{ user?.name || user?.email }}</p>
@@ -169,7 +169,7 @@ const getIconName = (icon: string) => {
           <li>
             <NuxtLink
               to="/auth/login"
-              class="text-gray-600 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
+              class="text-gray-300 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800 rounded"
             >
               {{ $t('auth.login') }}
             </NuxtLink>
@@ -189,7 +189,7 @@ const getIconName = (icon: string) => {
       <div class="ml-auto flex xl:hidden">
         <button
           @click="mobileNavOpen = !mobileNavOpen"
-          class="flex items-center rounded focus:outline-none p-2"
+          class="flex items-center rounded p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
           :aria-label="mobileNavOpen ? $t('theme.closeMenu') : $t('theme.openMenu')"
         >
           <Icon
@@ -210,7 +210,7 @@ const getIconName = (icon: string) => {
               class="flex mr-10 items-center text-sm text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
               :class="isActive(item.to) ? '!text-indigo-600 dark:!text-indigo-400' : ''"
             >
-              <Icon :name="getIconName(item.icon)" class="text-gray-100 w-5 h-5 mr-2" width="18" height="18" />
+              <Icon :name="getIconName(item.icon)" class="text-gray-500 dark:text-gray-400 w-5 h-5 mr-2" width="18" height="18" />
               <span>{{ item.label }}</span>
             </NuxtLink>
           </li>
@@ -221,7 +221,7 @@ const getIconName = (icon: string) => {
           <li v-if="isAuthenticated">
             <NuxtLink
               to="/settings"
-              class="text-gray-200 hover:text-gray-300 dark:text-gray-600 dark:hover:text-gray-500 transition-colors"
+              class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
             >
               <Icon name="heroicons:cog-6-tooth" class="w-5 h-5" width="18" height="18" />
             </NuxtLink>
@@ -293,7 +293,7 @@ const getIconName = (icon: string) => {
               <LanguageSwitcher dropdown-position="left" />
               <button
                 @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
-                class="p-2 rounded-lg text-gray-500 hover:bg-gray-700 dark:text-gray-400 transition-colors"
+                class="p-2 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
                 :aria-label="$t('theme.toggleDarkMode')"
               >
                 <Icon

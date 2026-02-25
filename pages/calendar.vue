@@ -42,11 +42,13 @@
       ></div>
 
       <!-- 日期格子 -->
-      <div
+      <button
         v-for="day in daysInMonth"
         :key="day"
+        type="button"
         @click="handleDateClick(day)"
-        class="h-16 sm:h-24 p-1 sm:p-2 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative"
+        class="h-16 sm:h-24 p-1 sm:p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1"
+        :aria-label="`${currentYear}年${currentMonth + 1}月${day}日`"
         :class="{
           'bg-indigo-50 dark:bg-indigo-900/40': isToday(day),
           'border-indigo-500': isToday(day)
@@ -71,7 +73,7 @@
         >
           {{ getDiaryTitle(day) }}
         </div>
-      </div>
+      </button>
     </div>
 
     <!-- 今日按鈕 -->

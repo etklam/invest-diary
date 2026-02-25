@@ -159,36 +159,48 @@
                 <tr>
                   <th
                     scope="col"
-                    @click="sortBy('symbol')"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                    :aria-sort="getAriaSort('symbol')"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    <div class="flex items-center gap-1">
+                    <button
+                      type="button"
+                      @click="sortBy('symbol')"
+                      class="inline-flex items-center gap-1 rounded px-1 py-1 hover:bg-gray-100 dark:hover:bg-gray-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    >
                       代碼
                       <Icon v-if="sortColumn === 'symbol'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
                       <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </div>
+                    </button>
                   </th>
                   <th
                     scope="col"
-                    @click="sortBy('quantity')"
-                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                    :aria-sort="getAriaSort('quantity')"
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    <div class="flex items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      @click="sortBy('quantity')"
+                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-gray-100 dark:hover:bg-gray-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    >
                       數量
                       <Icon v-if="sortColumn === 'quantity'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
                       <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </div>
+                    </button>
                   </th>
                   <th
                     scope="col"
-                    @click="sortBy('avgCost')"
-                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                    :aria-sort="getAriaSort('avgCost')"
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    <div class="flex items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      @click="sortBy('avgCost')"
+                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-gray-100 dark:hover:bg-gray-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    >
                       平均成本
                       <Icon v-if="sortColumn === 'avgCost'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
                       <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </div>
+                    </button>
                   </th>
                   <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     現價
@@ -201,25 +213,33 @@
                   </th>
                   <th
                     scope="col"
-                    @click="sortBy('totalCost')"
-                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                    :aria-sort="getAriaSort('totalCost')"
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    <div class="flex items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      @click="sortBy('totalCost')"
+                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-gray-100 dark:hover:bg-gray-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    >
                       總成本
                       <Icon v-if="sortColumn === 'totalCost'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
                       <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </div>
+                    </button>
                   </th>
                   <th
                     scope="col"
-                    @click="sortBy('percentage')"
-                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none"
+                    :aria-sort="getAriaSort('percentage')"
+                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    <div class="flex items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      @click="sortBy('percentage')"
+                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-gray-100 dark:hover:bg-gray-600 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    >
                       成本占比
                       <Icon v-if="sortColumn === 'percentage'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
                       <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </div>
+                    </button>
                   </th>
                 </tr>
               </thead>
@@ -382,11 +402,13 @@ const { data: holdings, pending, error, refresh } = await useLazyFetch<Holding[]
 )
 
 // Sorting state
-const sortColumn = ref<'symbol' | 'quantity' | 'avgCost' | 'totalCost' | 'percentage'>('totalCost')
+type SortColumn = 'symbol' | 'quantity' | 'avgCost' | 'totalCost' | 'percentage'
+
+const sortColumn = ref<SortColumn>('totalCost')
 const sortDirection = ref<'asc' | 'desc'>('desc')
 
 // Sort holdings by selected column
-const sortBy = (column: typeof sortColumn.value) => {
+const sortBy = (column: SortColumn) => {
   if (sortColumn.value === column) {
     // Toggle direction if clicking same column
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
@@ -395,6 +417,11 @@ const sortBy = (column: typeof sortColumn.value) => {
     sortColumn.value = column
     sortDirection.value = column === 'symbol' ? 'asc' : 'desc'
   }
+}
+
+const getAriaSort = (column: SortColumn): 'ascending' | 'descending' | 'none' => {
+  if (sortColumn.value !== column) return 'none'
+  return sortDirection.value === 'asc' ? 'ascending' : 'descending'
 }
 
 // Sorted holdings with current sort
