@@ -178,9 +178,7 @@ export function calculatePositionSizing(input: CalculationInput): {
  * 格式化貨幣（與頁面一致）
  */
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return '$' + new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(value)

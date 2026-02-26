@@ -48,7 +48,8 @@
     "logout": "登出",
     "tools": "投资工具",
     "positionSizing": "建仓计算器",
-    "seasonality": "季节性分析"
+    "seasonality": "季节性分析",
+    "financialFreedom": "财务自由计算器"
   },
 
   "auth": {
@@ -906,6 +907,64 @@
         "description": "5月～10月（「Sell in May and go away」现象）",
         "strategy": "波动性在秋季（尤其是9-10月）较高，夏季相对平稳"
       }
+    },
+    "financialFreedom": {
+      "title": "财务自由计算器",
+      "subtitle": "计算您的财务自由金额（FIRE Number），了解目前进度与达成时间",
+      "inputParams": "输入参数",
+      "annualExpenses": "年度支出",
+      "annualExpensesPlaceholder": "例如：600000",
+      "annualExpensesHint": "您退休后每年需要的花费金额",
+      "currentAssets": "目前资产",
+      "currentAssetsPlaceholder": "例如：1000000",
+      "monthlyContribution": "每月投入",
+      "monthlyContributionPlaceholder": "例如：20000",
+      "expectedReturn": "预期年化报酬率",
+      "expectedReturnHint": "投资组合的预期年报酬率，建议 6-10%",
+      "withdrawalRate": "提领率设定",
+      "withdrawalPresets": {
+        "conservative": {
+          "name": "保守型 (3%)",
+          "description": "适合保守型投资人，资产使用寿命极长"
+        },
+        "moderate": {
+          "name": "稳健型 (4%)",
+          "description": "传统 4% 法则，平衡风险与收益"
+        },
+        "aggressive": {
+          "name": "积极型 (5%)",
+          "description": "较高提领率，资产可能较早耗尽"
+        }
+      },
+      "fireNumber": "财务自由金额 (FIRE Number)",
+      "progress": "已完成 {percent}%",
+      "amountNeeded": "还需要",
+      "yearsToFreedom": "距离财务自由",
+      "years": "年",
+      "alreadyFree": "已达成！",
+      "freedomDate": "预计达成日期",
+      "now": "现在",
+      "withdrawalCapacity": "达成后每年可提领",
+      "monthly": "每月",
+      "weekly": "每周",
+      "daily": "每日",
+      "yearlyProjection": "年度成长预测",
+      "year": "年份",
+      "yearN": "第 {n} 年",
+      "startingAssets": "期初资产",
+      "contribution": "投入",
+      "returns": "报酬",
+      "endingAssets": "期末资产",
+      "freed": "已达成",
+      "whatIsFireNumber": "什么是 FIRE Number？",
+      "whatIsFireNumberDesc": "FIRE Number 是根据您的年度支出和提领率计算出来的财务自由目标金额。例如：年支出 60 万、4% 提领率，FIRE Number = 60 万 ÷ 4% = 1,500 万。",
+      "aboutWithdrawalRate": "关于提领率",
+      "aboutWithdrawalRateDesc": "4% 法则来自于美国历史回测，表示每年提领资产的 4% 作为生活费，有很高机率资产可以维持 30 年以上。3% 更保守，5% 更积极但风险较高。",
+      "privacyNote": "🔒 所有计算都在您的浏览器中进行，服务器不会储存任何资料。",
+      "disclaimer": "本工具仅供参考，不构成投资建议。实际报酬率可能因市场波动而有所不同，建议咨询专业财务顾问。",
+      "emptyState": "请输入年度支出与目前资产以计算财务自由",
+      "copySuccess": "已复制到剪贴板",
+      "copyFailed": "复制失败"
     }
   },
 

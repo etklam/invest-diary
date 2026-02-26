@@ -131,9 +131,8 @@ export function formatDateWithWeekday(date: Date | string, timezone?: string): s
  * 格式化金額
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('zh-TW', {
-    style: 'currency',
-    currency: 'TWD',
-    minimumFractionDigits: 2
+  return '$' + new Intl.NumberFormat('zh-TW', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   }).format(amount)
 }

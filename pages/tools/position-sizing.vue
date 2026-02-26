@@ -139,8 +139,8 @@ const generateMarkdown = () => {
   lines.push(`# ${title}`)
   lines.push('')
   lines.push(`**${t('tools.positionSizing.markdown.strategy')}**: ${selectedStrategy.value.name}`)
-  lines.push(`**${t('tools.positionSizing.markdown.totalCapital')}**: ${formatCurrency(effectiveCapital.value)} (USD)`)
-  lines.push(`**${t('tools.positionSizing.markdown.stockPrice')}**: ${stockPrice.value} USD`)
+  lines.push(`**${t('tools.positionSizing.markdown.totalCapital')}**: ${formatCurrency(effectiveCapital.value)} ($)`)
+  lines.push(`**${t('tools.positionSizing.markdown.stockPrice')}**: ${stockPrice.value} $`)
   lines.push(`**${t('tools.positionSizing.markdown.reserveCash')}**: ${reserveCashPercent.value}%`)
   lines.push('')
   
@@ -150,18 +150,18 @@ const generateMarkdown = () => {
   lines.push(`| ${t('tools.positionSizing.markdown.item')} | ${t('tools.positionSizing.markdown.value')} |`)
   lines.push(`|------|------|`)
   lines.push(`| ${t('tools.positionSizing.markdown.totalShares')} | ${formatNumber(summary.value.totalShares)} ${t('tools.positionSizing.markdown.sharesUnit')} |`)
-  lines.push(`| ${t('tools.positionSizing.markdown.totalInvested')} | ${formatCurrency(summary.value.totalInvested)} USD |`)
-  lines.push(`| ${t('tools.positionSizing.markdown.avgPrice')} | ${summary.value.avgPrice.toFixed(2)} USD/${t('tools.positionSizing.markdown.perShare')}（${t('tools.positionSizing.markdown.samePriceAssumption')}）|`)
+  lines.push(`| ${t('tools.positionSizing.markdown.totalInvested')} | ${formatCurrency(summary.value.totalInvested)} $ |`)
+  lines.push(`| ${t('tools.positionSizing.markdown.avgPrice')} | ${summary.value.avgPrice.toFixed(2)} $/${t('tools.positionSizing.markdown.perShare')}（${t('tools.positionSizing.markdown.samePriceAssumption')}）|`)
   lines.push(`| ${t('tools.positionSizing.markdown.utilizationRate')} | ${summary.value.utilizationRate.toFixed(1)}% |`)
   // 現金明細
   if (summary.value.reservedCash > 0 || summary.value.unallocatedCash > 0) {
-    lines.push(`| ${t('tools.positionSizing.markdown.strategicReserve')} | ${formatCurrency(summary.value.reservedCash)} USD |`)
-    lines.push(`| ${t('tools.positionSizing.markdown.technicalRemainder')} | ${formatCurrency(summary.value.unallocatedCash)} USD |`)
-    lines.push(`| ${t('tools.positionSizing.markdown.totalRemainingCash')} | ${formatCurrency(summary.value.totalRemainingCash)} USD |`)
+    lines.push(`| ${t('tools.positionSizing.markdown.strategicReserve')} | ${formatCurrency(summary.value.reservedCash)} $ |`)
+    lines.push(`| ${t('tools.positionSizing.markdown.technicalRemainder')} | ${formatCurrency(summary.value.unallocatedCash)} $ |`)
+    lines.push(`| ${t('tools.positionSizing.markdown.totalRemainingCash')} | ${formatCurrency(summary.value.totalRemainingCash)} $ |`)
   }
   // 超額警告
   if (summary.value.isOverBudget) {
-    lines.push(`| ⚠️ ${t('tools.positionSizing.markdown.overBudget')} | ${formatCurrency(summary.value.overBudgetAmount)} USD（${t('tools.positionSizing.markdown.adjusted')}）|`)
+    lines.push(`| ⚠️ ${t('tools.positionSizing.markdown.overBudget')} | ${formatCurrency(summary.value.overBudgetAmount)} $（${t('tools.positionSizing.markdown.adjusted')}）|`)
   }
   lines.push('')
   
@@ -275,7 +275,7 @@ definePageMeta({
               :placeholder="t('tools.positionSizing.stockPricePlaceholder')"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
             />
-            <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400">USD</span>
+            <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400">$</span>
           </div>
         </div>
       </div>
@@ -310,7 +310,7 @@ definePageMeta({
                 :placeholder="t('tools.positionSizing.baseCapitalPlaceholder')"
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
               />
-              <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400">USD</span>
+              <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400">$</span>
             </div>
           </div>
 
@@ -348,7 +348,7 @@ definePageMeta({
               :placeholder="t('tools.positionSizing.totalCapitalPlaceholder')"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
             />
-            <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400">USD</span>
+            <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400">$</span>
           </div>
         </div>
 

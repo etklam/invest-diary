@@ -49,6 +49,7 @@
     "tools": "投資工具",
     "positionSizing": "建倉計算器",
     "seasonality": "季節性分析",
+    "financialFreedom": "財務自由計算機",
     "etf": "ETF 分析"
   },
 
@@ -1000,6 +1001,64 @@
       },
       "name": "名稱",
       "fetchFailed": "獲取數據失敗，請稍後再試"
+    },
+    "financialFreedom": {
+      "title": "財務自由計算機",
+      "subtitle": "計算您的財務自由金額（FIRE Number），了解目前進度與達成時間",
+      "inputParams": "輸入參數",
+      "annualExpenses": "年度支出",
+      "annualExpensesPlaceholder": "例如：600000",
+      "annualExpensesHint": "您退休後每年需要的花費金額",
+      "currentAssets": "目前資產",
+      "currentAssetsPlaceholder": "例如：1000000",
+      "monthlyContribution": "每月投入",
+      "monthlyContributionPlaceholder": "例如：20000",
+      "expectedReturn": "預期年化報酬率",
+      "expectedReturnHint": "投資組合的預期年報酬率，建議 6-10%",
+      "withdrawalRate": "提領率設定",
+      "withdrawalPresets": {
+        "conservative": {
+          "name": "保守型 (3%)",
+          "description": "適合保守型投資人，資產使用壽命極長"
+        },
+        "moderate": {
+          "name": "穩健型 (4%)",
+          "description": "傳統 4% 法則，平衡風險與收益"
+        },
+        "aggressive": {
+          "name": "積極型 (5%)",
+          "description": "較高提領率，資產可能較早耗盡"
+        }
+      },
+      "fireNumber": "財務自由金額 (FIRE Number)",
+      "progress": "已完成 {percent}%",
+      "amountNeeded": "還需要",
+      "yearsToFreedom": "距離財務自由",
+      "years": "年",
+      "alreadyFree": "已達成！",
+      "freedomDate": "預計達成日期",
+      "now": "現在",
+      "withdrawalCapacity": "達成後每年可提領",
+      "monthly": "每月",
+      "weekly": "每週",
+      "daily": "每日",
+      "yearlyProjection": "年度成長預測",
+      "year": "年份",
+      "yearN": "第 {n} 年",
+      "startingAssets": "期初資產",
+      "contribution": "投入",
+      "returns": "報酬",
+      "endingAssets": "期末資產",
+      "freed": "已達成",
+      "whatIsFireNumber": "什麼是 FIRE Number？",
+      "whatIsFireNumberDesc": "FIRE Number 是根據您的年度支出和提領率計算出來的財務自由目標金額。例如：年支出 60 萬、4% 提領率，FIRE Number = 60 萬 ÷ 4% = 1,500 萬。",
+      "aboutWithdrawalRate": "關於提領率",
+      "aboutWithdrawalRateDesc": "4% 法則來自於美國歷史回測，表示每年提領資產的 4% 作為生活費，有很高機率資產可以維持 30 年以上。3% 更保守，5% 更積極但風險較高。",
+      "privacyNote": "🔒 所有計算都在您的瀏覽器中進行，伺服器不會儲存任何資料。",
+      "disclaimer": "本工具僅供參考，不構成投資建議。實際報酬率可能因市場波動而有所不同，建議諮詢專業財務顧問。",
+      "emptyState": "請輸入年度支出與目前資產以計算財務自由",
+      "copySuccess": "已複製到剪貼簿",
+      "copyFailed": "複製失敗"
     }
   },
 

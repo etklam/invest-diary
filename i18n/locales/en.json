@@ -49,6 +49,7 @@
     "tools": "Tools",
     "positionSizing": "Position Sizing Calculator",
     "seasonality": "Seasonality",
+    "financialFreedom": "Financial Freedom Calculator",
     "etf": "ETF Analysis"
   },
 
@@ -1001,6 +1002,64 @@
       },
       "name": "Name",
       "fetchFailed": "Failed to fetch data. Please try again."
+    },
+    "financialFreedom": {
+      "title": "Financial Freedom Calculator",
+      "subtitle": "Calculate your FIRE Number and track your progress to financial freedom",
+      "inputParams": "Input Parameters",
+      "annualExpenses": "Annual Expenses",
+      "annualExpensesPlaceholder": "e.g., 600000",
+      "annualExpensesHint": "Your annual spending after retirement",
+      "currentAssets": "Current Assets",
+      "currentAssetsPlaceholder": "e.g., 1000000",
+      "monthlyContribution": "Monthly Contribution",
+      "monthlyContributionPlaceholder": "e.g., 20000",
+      "expectedReturn": "Expected Annual Return",
+      "expectedReturnHint": "Expected annual return of your portfolio, recommend 6-10%",
+      "withdrawalRate": "Withdrawal Rate",
+      "withdrawalPresets": {
+        "conservative": {
+          "name": "Conservative (3%)",
+          "description": "For conservative investors, portfolio lasts longer"
+        },
+        "moderate": {
+          "name": "Moderate (4%)",
+          "description": "Traditional 4% rule, balanced risk and return"
+        },
+        "aggressive": {
+          "name": "Aggressive (5%)",
+          "description": "Higher withdrawal rate, portfolio may deplete sooner"
+        }
+      },
+      "fireNumber": "FIRE Number",
+      "progress": "{percent}% Complete",
+      "amountNeeded": "Amount Needed",
+      "yearsToFreedom": "Years to Freedom",
+      "years": "years",
+      "alreadyFree": "Achieved!",
+      "freedomDate": "Target Date",
+      "now": "Now",
+      "withdrawalCapacity": "Annual Withdrawal Capacity",
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "daily": "Daily",
+      "yearlyProjection": "Yearly Projection",
+      "year": "Year",
+      "yearN": "Year {n}",
+      "startingAssets": "Starting Assets",
+      "contribution": "Contribution",
+      "returns": "Returns",
+      "endingAssets": "Ending Assets",
+      "freed": "Freed",
+      "whatIsFireNumber": "What is FIRE Number?",
+      "whatIsFireNumberDesc": "FIRE Number is your financial freedom target based on annual expenses and withdrawal rate. For example: 600k annual expenses, 4% withdrawal rate = 600k ÷ 4% = 15 million.",
+      "aboutWithdrawalRate": "About Withdrawal Rate",
+      "aboutWithdrawalRateDesc": "The 4% rule comes from US historical backtesting, showing that withdrawing 4% annually has a high probability of portfolio lasting 30+ years. 3% is more conservative, 5% is more aggressive but riskier.",
+      "privacyNote": "🔒 All calculations are performed in your browser. No data is sent to the server.",
+      "disclaimer": "This tool is for reference only and does not constitute investment advice. Actual returns may vary due to market fluctuations. Please consult a professional financial advisor.",
+      "emptyState": "Enter your annual expenses and current assets to calculate your financial freedom",
+      "copySuccess": "Copied to clipboard",
+      "copyFailed": "Copy failed"
     }
   },
 
