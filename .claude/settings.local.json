@@ -59,7 +59,8 @@
       "mcp__chrome-devtools__take_snapshot",
       "mcp__chrome-devtools__list_console_messages",
       "mcp__chrome-devtools__list_network_requests",
-      "mcp__chrome-devtools__click"
+      "mcp__chrome-devtools__click",
+      "Bash(npx vue-tsc --noEmit 2>&1 | head -50)"
     ]
   }
 }

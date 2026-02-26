@@ -20,6 +20,36 @@ const withdrawalRatePreset = ref<WithdrawalRatePreset>('moderate') // 預設4%
 const customWithdrawalRate = ref<number>(4) // 自訂提領率
 const inflationRate = ref<number>(2) // 通膨率
 
+// Return rate level indicator
+const returnRateLevel = computed(() => {
+  const rate = expectedReturn.value
+  if (rate <= 4) return 'conservative'
+  if (rate <= 10) return 'target'
+  return 'expert'
+})
+
+const returnRateIndicator = computed(() => {
+  const rate = expectedReturn.value
+  const levels = ['conservative', 'target', 'expert'] as const
+  const currentIndex = levels.indexOf(returnRateLevel.value)
+
+  return levels.map((level, index) => {
+    const isActive = index === currentIndex
+    const isPast = index < currentIndex
+
+    let colorClass = ''
+    if (isActive) {
+      colorClass = level === 'conservative' ? 'bg-gray-500' : level === 'target' ? 'bg-green-500' : 'bg-purple-500'
+    } else if (isPast) {
+      colorClass = level === 'conservative' ? 'bg-gray-400' : 'bg-green-400'
+    } else {
+      colorClass = 'bg-gray-200 dark:bg-gray-700'
+    }
+
+    return { level, isActive, isPast, colorClass }
+  })
+})
+
 // Computed
 const withdrawalRate = computed(() => {
   const preset = withdrawalRatePresets.find(p => p.id === withdrawalRatePreset.value)
@@ -260,6 +290,86 @@ definePageMeta({
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
             {{ t('tools.financialFreedom.expectedReturnHint') }}
           </p>
+        </div>
+      </div>
+
+      <!-- Return Rate Level Indicator -->
+      <div class="mt-6 bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          {{ t('tools.financialFreedom.expectedReturn') }} {{ t('common.range') }}
+        </h3>
+        <div class="flex items-center gap-2 mb-4">
+          <template v-for="(indicator, index) in returnRateIndicator" :key="indicator.level">
+            <!-- Progress bar segment -->
+            <div
+              class="h-3 flex-1 rounded-full transition-all duration-300"
+              :class="indicator.colorClass"
+            />
+            <!-- Spacer between segments (except last) -->
+            <span v-if="index < returnRateIndicator.length - 1" class="text-xs text-gray-400 font-medium">→</span>
+          </template>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Conservative -->
+          <div
+            class="rounded-lg p-3 border-2 transition-all cursor-pointer"
+            :class="returnRateLevel === 'conservative'
+              ? 'border-gray-500 bg-gray-100 dark:bg-gray-800'
+              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+          >
+            <div class="flex items-center gap-2 mb-1">
+              <div class="w-3 h-3 rounded-full bg-gray-500" />
+              <span class="font-semibold text-sm text-gray-700 dark:text-gray-300">
+                {{ t(`tools.financialFreedom.returnRateLevels.conservative.label`) }}
+              </span>
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+              {{ t(`tools.financialFreedom.returnRateLevels.conservative.range`) }}
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+              {{ t(`tools.financialFreedom.returnRateLevels.conservative.description`) }}
+            </p>
+          </div>
+          <!-- Target -->
+          <div
+            class="rounded-lg p-3 border-2 transition-all cursor-pointer"
+            :class="returnRateLevel === 'target'
+              ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+              : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600'"
+          >
+            <div class="flex items-center gap-2 mb-1">
+              <div class="w-3 h-3 rounded-full bg-green-500" />
+              <span class="font-semibold text-sm text-green-700 dark:text-green-300">
+                {{ t(`tools.financialFreedom.returnRateLevels.target.label`) }}
+              </span>
+            </div>
+            <div class="text-xs text-green-600 dark:text-green-400 mb-1">
+              {{ t(`tools.financialFreedom.returnRateLevels.target.range`) }}
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+              {{ t(`tools.financialFreedom.returnRateLevels.target.description`) }}
+            </p>
+          </div>
+          <!-- Expert -->
+          <div
+            class="rounded-lg p-3 border-2 transition-all cursor-pointer"
+            :class="returnRateLevel === 'expert'
+              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+              : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'"
+          >
+            <div class="flex items-center gap-2 mb-1">
+              <div class="w-3 h-3 rounded-full bg-purple-500" />
+              <span class="font-semibold text-sm text-purple-700 dark:text-purple-300">
+                {{ t(`tools.financialFreedom.returnRateLevels.expert.label`) }}
+              </span>
+            </div>
+            <div class="text-xs text-purple-600 dark:text-purple-400 mb-1">
+              {{ t(`tools.financialFreedom.returnRateLevels.expert.range`) }}
+            </div>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+              {{ t(`tools.financialFreedom.returnRateLevels.expert.description`) }}
+            </p>
+          </div>
         </div>
       </div>
 

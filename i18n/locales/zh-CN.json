@@ -20,7 +20,10 @@
     "switchLanguage": "切换语言",
     "or": "或",
     "and": "与",
-    "optional": "选填"
+    "optional": "选填",
+    "range": "等级",
+    "copy": "复制",
+    "copied": "已复制"
   },
 
   "nav": {
@@ -921,6 +924,26 @@
       "monthlyContributionPlaceholder": "例如：20000",
       "expectedReturn": "预期年化报酬率",
       "expectedReturnHint": "投资组合的预期年报酬率，建议 6-10%",
+      "returnRateLevels": {
+        "conservative": {
+          "label": "太保守",
+          "range": "≤4%",
+          "description": "低于历史市场报酬。长期可能无法跑赢通胀。",
+          "color": "gray"
+        },
+        "target": {
+          "label": "目标区间",
+          "range": "5-10%",
+          "description": "符合股票市场长期历史报酬的平衡配置。",
+          "color": "green"
+        },
+        "expert": {
+          "label": "高手等级",
+          "range": "10-15%",
+          "description": "需要主动管理与较高风险承受度。不适合被动投资者。",
+          "color": "purple"
+        }
+      },
       "withdrawalRate": "提领率设定",
       "withdrawalPresets": {
         "conservative": {
@@ -965,6 +988,11 @@
       "emptyState": "请输入年度支出与目前资产以计算财务自由",
       "copySuccess": "已复制到剪贴板",
       "copyFailed": "复制失败"
+    },
+    "etf": {
+      "title": "ETF 趋势分析",
+      "subtitle": "追踪和分析 ETF 价格变化，提供多维度比较",
+      "developmentNotice": "此功能仍在开发中"
     }
   },
 

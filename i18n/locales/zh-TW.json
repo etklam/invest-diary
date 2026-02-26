@@ -20,7 +20,10 @@
     "switchLanguage": "切換語言",
     "or": "或",
     "and": "與",
-    "optional": "選填"
+    "optional": "選填",
+    "range": "等級",
+    "copy": "複製",
+    "copied": "已複製"
   },
 
   "nav": {
@@ -911,6 +914,7 @@
     "etf": {
       "title": "ETF 趨勢分析",
       "subtitle": "追蹤和分析 ETF 價格變化，提供多維度比較",
+      "developmentNotice": "此功能仍在開發中",
       "symbol": "ETF 代碼",
       "symbolPlaceholder": "例如：SPY, QQQ, IWM, VTI...",
       "analyze": "分析",
@@ -1015,6 +1019,26 @@
       "monthlyContributionPlaceholder": "例如：20000",
       "expectedReturn": "預期年化報酬率",
       "expectedReturnHint": "投資組合的預期年報酬率，建議 6-10%",
+      "returnRateLevels": {
+        "conservative": {
+          "label": "太保守",
+          "range": "≤4%",
+          "description": "低於歷史市場報酬。長期可能無法跑贏通膨。",
+          "color": "gray"
+        },
+        "target": {
+          "label": "目標區間",
+          "range": "5-10%",
+          "description": "符合股票市場長期歷史報酬的平衡配置。",
+          "color": "green"
+        },
+        "expert": {
+          "label": "高手等級",
+          "range": "10-15%",
+          "description": "需要主動管理與較高風險承受度。不適合被動投資者。",
+          "color": "purple"
+        }
+      },
       "withdrawalRate": "提領率設定",
       "withdrawalPresets": {
         "conservative": {

@@ -237,8 +237,11 @@ definePageMeta({
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
         {{ t('tools.etf.title') }}
       </h1>
-      <p class="text-gray-600 dark:text-gray-400">
+      <p class="text-gray-600 dark:text-gray-400 mb-3">
         {{ t('tools.etf.subtitle') }}
+      </p>
+      <p class="text-amber-600 dark:text-amber-400 text-sm">
+        ⚠️ {{ t('tools.etf.developmentNotice') }}
       </p>
     </div>
 

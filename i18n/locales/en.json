@@ -20,7 +20,10 @@
     "switchLanguage": "Switch language",
     "or": "or",
     "and": "and",
-    "optional": "optional"
+    "optional": "optional",
+    "range": "Level",
+    "copy": "Copy",
+    "copied": "Copied!"
   },
 
   "nav": {
@@ -912,6 +915,7 @@
     "etf": {
       "title": "ETF Trend Analysis",
       "subtitle": "Track and analyze ETF price changes with multi-dimensional comparisons",
+      "developmentNotice": "This feature is still under development",
       "symbol": "ETF Symbol",
       "symbolPlaceholder": "e.g., SPY, QQQ, IWM, VTI...",
       "analyze": "Analyze",
@@ -1016,6 +1020,26 @@
       "monthlyContributionPlaceholder": "e.g., 20000",
       "expectedReturn": "Expected Annual Return",
       "expectedReturnHint": "Expected annual return of your portfolio, recommend 6-10%",
+      "returnRateLevels": {
+        "conservative": {
+          "label": "Too Conservative",
+          "range": "≤4%",
+          "description": "Below historical market returns. May not keep up with inflation over long periods.",
+          "color": "gray"
+        },
+        "target": {
+          "label": "Target Range",
+          "range": "5-10%",
+          "description": "Balanced approach aligned with long-term stock market historical returns.",
+          "color": "green"
+        },
+        "expert": {
+          "label": "Expert Level",
+          "range": "10-15%",
+          "description": "Requires active management and higher risk tolerance. Not suitable for passive investors.",
+          "color": "purple"
+        }
+      },
       "withdrawalRate": "Withdrawal Rate",
       "withdrawalPresets": {
         "conservative": {

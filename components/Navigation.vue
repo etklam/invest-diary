@@ -33,6 +33,7 @@ const mainNavItems = computed(() => {
   if (!isAuthenticated.value) {
     return [
       { label: t('nav.home'), to: '/', icon: 'home' },
+      { label: t('nav.about'), to: '/about', icon: 'information-circle' },
       { label: t('nav.blog'), to: '/blog', icon: 'document' }
     ]
   }
@@ -41,7 +42,8 @@ const mainNavItems = computed(() => {
     { label: t('nav.calendar'), to: '/calendar', icon: 'calendar' },
     { label: t('nav.timeline'), to: '/timeline', icon: 'clock' },
     { label: t('nav.diaries'), to: '/diaries', icon: 'document-text' },
-    { label: t('nav.stocks'), to: '/stocks', icon: 'chart-bar' }
+    { label: t('nav.stocks'), to: '/stocks', icon: 'chart-bar' },
+    { label: t('nav.about'), to: '/about', icon: 'information-circle' }
   ]
 })
 
@@ -49,30 +51,22 @@ const mainNavItems = computed(() => {
 const secondaryNavItems = computed(() => {
   if (!isAuthenticated.value) {
     return [
-      { label: t('nav.about'), to: '/about', icon: 'information-circle' },
+      { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
       { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
       { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
       { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' }
     ]
   }
 
-  const items = [
+  return [
     { label: t('nav.discipline'), to: '/discipline', icon: 'light-bulb' },
     { label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
     { label: t('nav.blog'), to: '/blog', icon: 'document-text' },
+    { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
     { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
     { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
     { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' }
   ]
-
-  if (user.value?.role === 'ADMIN') {
-    items.push(
-      { label: t('nav.admin'), to: '/admin', icon: 'cog' },
-      { label: t('nav.manageBlog'), to: '/admin/blog', icon: 'pencil' }
-    )
-  }
-
-  return items
 })
 
 // Get heroicon name from simple key
@@ -180,20 +174,48 @@ const themeToggleIcon = computed(() => {
             <!-- User Dropdown Menu -->
             <div
               v-if="userMenuOpen"
-              class="absolute right-0 z-[80] mt-2 w-48 rounded-xl border border-cyan-100 bg-white/95 py-1 shadow-lg shadow-cyan-100/50 backdrop-blur dark:border-slate-700 dark:bg-slate-800/95"
+              class="absolute right-0 z-[80] mt-2 w-52 rounded-xl border border-cyan-100 bg-white/95 py-1 shadow-lg shadow-cyan-100/50 backdrop-blur dark:border-slate-700 dark:bg-slate-800/95"
             >
               <NuxtLink
                 to="/settings"
-                class="block cursor-pointer px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
+                class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
                 @click="userMenuOpen = false"
               >
-                {{ $t('nav.settings') }}
+                <Icon name="heroicons:cog-6-tooth" class="h-4 w-4" />
+                <span>{{ $t('nav.settings') }}</span>
               </NuxtLink>
+
+              <!-- Admin Section -->
+              <template v-if="user?.role === 'ADMIN'">
+                <div class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                  Admin
+                </div>
+                <NuxtLink
+                  to="/admin"
+                  class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
+                  @click="userMenuOpen = false"
+                >
+                  <Icon name="heroicons:cog" class="h-4 w-4" />
+                  <span>{{ $t('nav.admin') }}</span>
+                </NuxtLink>
+                <NuxtLink
+                  to="/admin/blog"
+                  class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
+                  @click="userMenuOpen = false"
+                >
+                  <Icon name="heroicons:pencil" class="h-4 w-4" />
+                  <span>{{ $t('nav.manageBlog') }}</span>
+                </NuxtLink>
+              </template>
+
+              <div class="my-1 border-t border-slate-200 dark:border-slate-700"></div>
+
               <button
                 @click="async () => { const { logout } = useAuth(); await logout(); userMenuOpen = false; }"
-                class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-700"
+                class="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-700"
               >
-                {{ $t('nav.logout') }}
+                <Icon name="heroicons:arrow-left-on-rectangle" class="h-4 w-4" />
+                <span>{{ $t('nav.logout') }}</span>
               </button>
             </div>
           </div>
