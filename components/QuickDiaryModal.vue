@@ -1,10 +1,10 @@
 <template>
   <Teleport to="body">
     <Transition
-      enter-active-class="transition ease-out duration-300"
+      enter-active-class="transition-all duration-300 ease-out"
       enter-from-class="opacity-0"
       enter-to-class="opacity-100"
-      leave-active-class="transition ease-in duration-200"
+      leave-active-class="transition-all duration-200 ease-in"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
@@ -15,19 +15,19 @@
         role="dialog"
         aria-modal="true"
       >
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <!-- Background overlay -->
+        <div class="flex items-end justify-center min-h-screen px-4 pb-20 text-center sm:block sm:p-0">
+          <!-- Glassmorphic background overlay -->
           <Transition
-            enter-active-class="ease-out duration-300"
-            enter-from-class="opacity-0"
-            enter-to-class="opacity-100"
-            leave-active-class="ease-in duration-200"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 backdrop-blur-none"
+            enter-to-class="opacity-100 backdrop-blur-sm"
+            leave-active-class="transition-all duration-200 ease-in"
+            leave-from-class="opacity-100 backdrop-blur-sm"
+            leave-to-class="opacity-0 backdrop-blur-none"
           >
             <div
               v-if="show"
-              class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+              class="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/60 to-indigo-900/40 backdrop-blur-md transition-all"
               @click="close"
             ></div>
           </Transition>
@@ -36,341 +36,691 @@
           <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
           <Transition
-            enter-active-class="ease-out duration-300"
-            enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            enter-to-class="opacity-100 translate-y-0 sm:scale-100"
-            leave-active-class="ease-in duration-200"
-            leave-from-class="opacity-100 translate-y-0 sm:scale-100"
-            leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 translate-y-8 scale-95"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition-all duration-200 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-8 scale-95"
           >
             <div
               v-if="show"
-              class="inline-block align-bottom bg-white dark:bg-gray-800 text-left overflow-hidden shadow-xl transform transition-all w-full h-full sm:h-auto sm:rounded-lg sm:my-8 sm:align-middle sm:max-w-2xl"
+              class="relative inline-block align-bottom w-full text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle"
             >
-              <!-- Header -->
-              <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 flex justify-between items-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
-                  {{ t('quickDiary.title') }}
-                </h3>
-                <button @click="close" :aria-label="t('common.close')" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                  <Icon name="heroicons:x-mark" class="h-6 w-6" />
-                </button>
-              </div>
-
-              <!-- Step 1: Choose Template -->
-              <div v-if="step === 1" class="px-4 py-5 sm:p-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t('quickDiary.selectTemplate') }}</p>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <!-- Trading Diary -->
-                  <button
-                    @click="selectTemplate('trading')"
-                    class="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors text-left"
-                  >
-                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center mb-3">
-                      <Icon name="heroicons:currency-dollar" class="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
-                    <h4 class="font-medium text-gray-900 dark:text-white">{{ t('quickDiary.templates.trading') }}</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('quickDiary.templates.tradingDesc') }}</p>
-                  </button>
-
-                  <!-- Reflection Diary -->
-                  <button
-                    @click="selectTemplate('reflection')"
-                    class="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors text-left"
-                  >
-                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center mb-3">
-                      <Icon name="heroicons:light-bulb" class="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <h4 class="font-medium text-gray-900 dark:text-white">{{ t('quickDiary.templates.reflection') }}</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('quickDiary.templates.reflectionDesc') }}</p>
-                  </button>
-
-                  <!-- Observation Diary -->
-                  <button
-                    @click="selectTemplate('observation')"
-                    class="p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors text-left"
-                  >
-                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center mb-3">
-                      <Icon name="heroicons:eye" class="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <h4 class="font-medium text-gray-900 dark:text-white">{{ t('quickDiary.templates.observation') }}</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('quickDiary.templates.observationDesc') }}</p>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Step 2: Fill Form -->
-              <div v-else-if="step === 2" class="px-4 py-5 sm:p-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
-                <!-- Date Picker -->
-                <div class="mb-6">
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {{ t('quickDiary.date') }}
-                  </label>
-                  <input
-                    v-model="selectedDate"
-                    type="date"
-                    :max="maxDate"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-
-                <!-- Trading Template Form -->
-                <div v-if="selectedTemplate === 'trading'" class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.trading.operation') }}
-                    </label>
-                    <div class="flex gap-2">
-                      <button
-                        v-for="type in ['buy', 'sell', 'both']"
-                        :key="type"
-                        @click="formData.tradingType = type"
-                        :class="[
-                          'flex-1 px-4 py-2 border-2 rounded-lg text-sm font-medium transition-colors',
-                          formData.tradingType === type
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
-                            : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
-                        ]"
-                      >
-                        {{ type === 'buy' ? t('quickDiary.trading.buy') : type === 'sell' ? t('quickDiary.trading.sell') : t('quickDiary.trading.both') }}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.trading.symbols') }}
-                    </label>
-                    <input
-                      v-model="formData.symbols"
-                      type="text"
-                      :placeholder="t('quickDiary.trading.symbolsPlaceholder')"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.trading.marketFeeling') }}
-                    </label>
-                    <div class="flex gap-2">
-                      <button
-                        v-for="mood in ['bullish', 'bearish', 'neutral']"
-                        :key="mood"
-                        @click="formData.marketMood = mood"
-                        :class="[
-                          'flex-1 px-4 py-2 border-2 rounded-lg text-sm font-medium transition-colors',
-                          formData.marketMood === mood
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
-                            : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
-                        ]"
-                      >
-                        {{ mood === 'bullish' ? t('quickDiary.trading.bullish') : mood === 'bearish' ? t('quickDiary.trading.bearish') : t('quickDiary.trading.neutral') }}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.trading.note') }}
-                    </label>
-                    <textarea
-                      v-model="formData.note"
-                      rows="3"
-                      :placeholder="t('quickDiary.trading.notePlaceholder')"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                    ></textarea>
-                  </div>
-                </div>
-
-                <!-- Reflection Template Form -->
-                <div v-else-if="selectedTemplate === 'reflection'" class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.reflection.marketCondition') }}
-                    </label>
-                    <select
-                      v-model="formData.marketCondition"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+              <!-- Mobile: Full screen -->
+              <div class="sm:hidden h-screen">
+                <div class="h-full backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 flex flex-col">
+                  <!-- Mobile header -->
+                  <div class="flex-shrink-0 px-4 py-4 flex justify-between items-center border-b border-gray-200/50 dark:border-gray-700/50">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modal-title">
+                      {{ t('quickDiary.title') }}
+                    </h3>
+                    <button
+                      @click="close"
+                      :aria-label="t('common.close')"
+                      class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
                     >
-                      <option value="">{{ t('quickDiary.reflection.selectCondition') }}</option>
-                      <optgroup :label="locale === 'zh-TW' || locale === 'zh-CN' ? '漲跌' : 'Price Change'">
-                        <option value="大漲">大漲</option>
-                        <option value="小漲">小漲</option>
-                        <option value="盤整">盤整</option>
-                        <option value="小跌">小跌</option>
-                        <option value="大跌">大跌</option>
-                      </optgroup>
-                      <optgroup :label="locale === 'zh-TW' || locale === 'zh-CN' ? '走勢型態' : 'Trend Pattern'">
-                        <option value="高開高走">高開高走</option>
-                        <option value="高開低走">高開低走</option>
-                        <option value="低開高走">低開高走</option>
-                        <option value="低開低走">低開低走</option>
-                        <option value="震盪">震盪</option>
-                      </optgroup>
-                      <optgroup :label="locale === 'zh-TW' || locale === 'zh-CN' ? '市場結構' : 'Market Structure'">
-                        <option value="個股分化">個股分化</option>
-                        <option value="齊漲">齊漲</option>
-                        <option value="齊跌">齊跌</option>
-                        <option value="指數穩個股弱">指數穩、個股弱</option>
-                        <option value="指數弱個股強">指數弱、個股強</option>
-                      </optgroup>
-                    </select>
+                      <Icon name="heroicons:x-mark" class="h-5 w-5" />
+                    </button>
                   </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.reflection.rating') }}
-                    </label>
-                    <div class="flex gap-2">
+                  <!-- Mobile content -->
+                  <div class="flex-1 overflow-y-auto">
+                    <!-- Step 1: Choose Template -->
+                    <div v-if="step === 1" class="p-4 space-y-4">
+                      <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('quickDiary.selectTemplate') }}</p>
+
                       <button
-                        v-for="rating in [1, 2, 3, 4, 5]"
-                        :key="rating"
-                        @click="formData.rating = rating"
-                        :class="[
-                          'flex-1 px-4 py-2 border-2 rounded-lg text-sm font-medium transition-colors',
-                          formData.rating === rating
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
-                            : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
-                        ]"
+                        @click="selectTemplate('trading')"
+                        class="w-full p-5 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:border-indigo-400/60 dark:hover:border-indigo-500/60 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-200 text-left cursor-pointer group"
                       >
-                        {{ rating }} {{ rating === 1 ? '星' : '星' }}
+                        <div class="flex items-center gap-4">
+                          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <Icon name="heroicons:currency-dollar-solid" class="h-6 w-6 text-white" />
+                          </div>
+                          <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 dark:text-white">{{ t('quickDiary.templates.trading') }}</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('quickDiary.templates.tradingDesc') }}</p>
+                          </div>
+                        </div>
+                      </button>
+
+                      <button
+                        @click="selectTemplate('reflection')"
+                        class="w-full p-5 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:border-purple-400/60 dark:hover:border-purple-500/60 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-200 text-left cursor-pointer group"
+                      >
+                        <div class="flex items-center gap-4">
+                          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <Icon name="heroicons:light-bulb-solid" class="h-6 w-6 text-white" />
+                          </div>
+                          <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 dark:text-white">{{ t('quickDiary.templates.reflection') }}</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('quickDiary.templates.reflectionDesc') }}</p>
+                          </div>
+                        </div>
+                      </button>
+
+                      <button
+                        @click="selectTemplate('observation')"
+                        class="w-full p-5 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:border-blue-400/60 dark:hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 text-left cursor-pointer group"
+                      >
+                        <div class="flex items-center gap-4">
+                          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <Icon name="heroicons:eye-solid" class="h-6 w-6 text-white" />
+                          </div>
+                          <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 dark:text-white">{{ t('quickDiary.templates.observation') }}</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('quickDiary.templates.observationDesc') }}</p>
+                          </div>
+                        </div>
                       </button>
                     </div>
-                  </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.reflection.goodPoints') }}
-                    </label>
-                    <div class="mb-2">
-                      <label class="flex items-center space-x-2 cursor-pointer">
+                    <!-- Step 2: Form -->
+                    <div v-else-if="step === 2" class="p-4 space-y-5">
+                      <!-- Date Picker -->
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {{ t('quickDiary.date') }}
+                        </label>
                         <input
-                          v-model="formData.noRashTrading"
-                          type="checkbox"
-                          class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          v-model="selectedDate"
+                          type="date"
+                          :max="maxDate"
+                          class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
                         />
-                        <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('quickDiary.reflection.noRashTrading') }}</span>
-                      </label>
+                      </div>
+
+                      <!-- Trading Template Form -->
+                      <div v-if="selectedTemplate === 'trading'" class="space-y-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.trading.operation') }}
+                          </label>
+                          <div class="flex gap-2">
+                            <button
+                              v-for="type in ['buy', 'sell', 'both']"
+                              :key="type"
+                              @click="formData.tradingType = type"
+                              :class="[
+                                'flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer',
+                                formData.tradingType === type
+                                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                                  : 'backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                              ]"
+                            >
+                              {{ type === 'buy' ? t('quickDiary.trading.buy') : type === 'sell' ? t('quickDiary.trading.sell') : t('quickDiary.trading.both') }}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.trading.symbols') }}
+                          </label>
+                          <input
+                            v-model="formData.symbols"
+                            type="text"
+                            :placeholder="t('quickDiary.trading.symbolsPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
+                          />
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.trading.marketFeeling') }}
+                          </label>
+                          <div class="flex gap-2">
+                            <button
+                              v-for="mood in ['bullish', 'bearish', 'neutral']"
+                              :key="mood"
+                              @click="formData.marketMood = mood"
+                              :class="[
+                                'flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer',
+                                formData.marketMood === mood
+                                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                                  : 'backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                              ]"
+                            >
+                              {{ mood === 'bullish' ? t('quickDiary.trading.bullish') : mood === 'bearish' ? t('quickDiary.trading.bearish') : t('quickDiary.trading.neutral') }}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.trading.note') }}
+                          </label>
+                          <textarea
+                            v-model="formData.note"
+                            rows="3"
+                            :placeholder="t('quickDiary.trading.notePlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200 resize-none"
+                          ></textarea>
+                        </div>
+                      </div>
+
+                      <!-- Reflection Template Form -->
+                      <div v-else-if="selectedTemplate === 'reflection'" class="space-y-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.reflection.marketCondition') }}
+                          </label>
+                          <select
+                            v-model="formData.marketCondition"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
+                          >
+                            <option value="">{{ t('quickDiary.reflection.selectCondition') }}</option>
+                            <optgroup :label="locale === 'zh-TW' || locale === 'zh-CN' ? '漲跌' : 'Price Change'">
+                              <option value="大漲">大漲</option>
+                              <option value="小漲">小漲</option>
+                              <option value="盤整">盤整</option>
+                              <option value="小跌">小跌</option>
+                              <option value="大跌">大跌</option>
+                            </optgroup>
+                            <optgroup :label="locale === 'zh-TW' || locale === 'zh-CN' ? '走勢型態' : 'Trend Pattern'">
+                              <option value="高開高走">高開高走</option>
+                              <option value="高開低走">高開低走</option>
+                              <option value="低開高走">低開高走</option>
+                              <option value="低開低走">低開低走</option>
+                              <option value="震盪">震盪</option>
+                            </optgroup>
+                            <optgroup :label="locale === 'zh-TW' || locale === 'zh-CN' ? '市場結構' : 'Market Structure'">
+                              <option value="個股分化">個股分化</option>
+                              <option value="齊漲">齊漲</option>
+                              <option value="齊跌">齊跌</option>
+                              <option value="指數穩個股弱">指數穩、個股弱</option>
+                              <option value="指數弱個股強">指數弱、個股強</option>
+                            </optgroup>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.reflection.rating') }}
+                          </label>
+                          <div class="flex gap-2">
+                            <button
+                              v-for="rating in [1, 2, 3, 4, 5]"
+                              :key="rating"
+                              @click="formData.rating = rating"
+                              :class="[
+                                'flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer',
+                                formData.rating === rating
+                                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                                  : 'backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                              ]"
+                            >
+                              {{ rating }}⭐
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.reflection.goodPoints') }}
+                          </label>
+                          <div class="mb-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                              <input
+                                v-model="formData.noRashTrading"
+                                type="checkbox"
+                                class="w-4 h-4 text-indigo-600 focus:ring-indigo-500/50 border-gray-300 rounded"
+                              />
+                              <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('quickDiary.reflection.noRashTrading') }}</span>
+                            </label>
+                          </div>
+                          <textarea
+                            v-model="formData.goodPoints"
+                            rows="2"
+                            :placeholder="t('quickDiary.reflection.goodPointsPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200 resize-none"
+                          ></textarea>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.reflection.improvePoints') }}
+                          </label>
+                          <textarea
+                            v-model="formData.improvePoints"
+                            rows="2"
+                            :placeholder="t('quickDiary.reflection.improvePointsPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200 resize-none"
+                          ></textarea>
+                        </div>
+                      </div>
+
+                      <!-- Observation Template Form -->
+                      <div v-else-if="selectedTemplate === 'observation'" class="space-y-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.observation.topic') }}
+                          </label>
+                          <input
+                            v-model="formData.topic"
+                            type="text"
+                            :placeholder="t('quickDiary.observation.topicPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
+                          />
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.observation.type') }}
+                          </label>
+                          <div class="flex flex-wrap gap-2">
+                            <button
+                              v-for="type in ['板塊熱點', '個股走勢', '市場消息', '技術分析', '其他']"
+                              :key="type"
+                              @click="formData.observationType = type"
+                              :class="[
+                                'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer',
+                                formData.observationType === type
+                                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                                  : 'backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                              ]"
+                            >
+                              {{ type }}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.observation.content') }}
+                          </label>
+                          <textarea
+                            v-model="formData.content"
+                            rows="4"
+                            :placeholder="t('quickDiary.observation.contentPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200 resize-none"
+                          ></textarea>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.observation.action') }}
+                          </label>
+                          <input
+                            v-model="formData.action"
+                            type="text"
+                            :placeholder="t('quickDiary.observation.actionPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Preview -->
+                      <div class="pt-5 border-t border-gray-200/50 dark:border-gray-700/50">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ t('quickDiary.preview') }}</h4>
+                        <div class="backdrop-blur-xl bg-gray-50/80 dark:bg-gray-900/80 p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50">
+                          <p class="font-medium text-gray-900 dark:text-white">{{ previewTitle }}</p>
+                          <div class="mt-2 text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{{ previewContent }}</div>
+                        </div>
+                      </div>
                     </div>
-                    <textarea
-                      v-model="formData.goodPoints"
-                      rows="2"
-                      :placeholder="t('quickDiary.reflection.goodPointsPlaceholder')"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                    ></textarea>
                   </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.reflection.improvePoints') }}
-                    </label>
-                    <textarea
-                      v-model="formData.improvePoints"
-                      rows="2"
-                      :placeholder="t('quickDiary.reflection.improvePointsPlaceholder')"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                    ></textarea>
-                  </div>
-                </div>
-
-                <!-- Observation Template Form -->
-                <div v-else-if="selectedTemplate === 'observation'" class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.observation.topic') }}
-                    </label>
-                    <input
-                      v-model="formData.topic"
-                      type="text"
-                      :placeholder="t('quickDiary.observation.topicPlaceholder')"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.observation.type') }}
-                    </label>
-                    <div class="flex flex-wrap gap-2">
-                      <button
-                        v-for="type in ['板塊熱點', '個股走勢', '市場消息', '技術分析', '其他']"
-                        :key="type"
-                        @click="formData.observationType = type"
-                        :class="[
-                          'px-4 py-2 border-2 rounded-lg text-sm font-medium transition-colors',
-                          formData.observationType === type
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
-                            : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
-                        ]"
-                      >
-                        {{ type }}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.observation.content') }}
-                    </label>
-                    <textarea
-                      v-model="formData.content"
-                      rows="4"
-                      :placeholder="t('quickDiary.observation.contentPlaceholder')"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                    ></textarea>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {{ t('quickDiary.observation.action') }}
-                    </label>
-                    <input
-                      v-model="formData.action"
-                      type="text"
-                      :placeholder="t('quickDiary.observation.actionPlaceholder')"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                <!-- Preview -->
-                <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ t('quickDiary.preview') }}</h4>
-                  <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-gray-200 dark:border-gray-700">
-                    <p class="font-medium text-gray-900 dark:text-white">{{ previewTitle }}</p>
-                    <div class="mt-2 text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{{ previewContent }}</div>
+                  <!-- Mobile footer -->
+                  <div class="flex-shrink-0 px-4 py-4 border-t border-gray-200/50 dark:border-gray-700/50 flex gap-3">
+                    <button
+                      v-if="step === 2"
+                      @click="step = 1"
+                      class="flex-1 px-4 py-3 rounded-xl border border-gray-300/60 dark:border-gray-600/60 bg-white/60 dark:bg-gray-800/60 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50/80 dark:hover:bg-gray-700/60 transition-all duration-200 cursor-pointer"
+                    >
+                      {{ t('common.back') }}
+                    </button>
+                    <button
+                      @click="close"
+                      class="flex-1 px-4 py-3 rounded-xl border border-gray-300/60 dark:border-gray-600/60 bg-white/60 dark:bg-gray-800/60 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50/80 dark:hover:bg-gray-700/60 transition-all duration-200 cursor-pointer"
+                    >
+                      {{ t('common.cancel') }}
+                    </button>
+                    <button
+                      v-if="step === 2"
+                      @click="createDiary"
+                      :disabled="saving"
+                      class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-medium hover:from-indigo-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-indigo-500/25 cursor-pointer"
+                    >
+                      <Icon v-if="saving" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4 inline" />
+                      {{ saving ? t('quickDiary.creating') : t('quickDiary.createDiary') }}
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <!-- Footer -->
-              <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  v-if="step === 2"
-                  @click="createDiary"
-                  :disabled="saving"
-                  class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
-                >
-                  <Icon v-if="saving" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4" />
-                  {{ saving ? t('quickDiary.creating') : t('quickDiary.createDiary') }}
-                </button>
-                <button
-                  v-if="step === 2"
-                  @click="step = 1"
-                  type="button"
-                  class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  {{ t('common.back') }}
-                </button>
-                <button
-                  @click="close"
-                  type="button"
-                  class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                >
-                  {{ t('common.cancel') }}
-                </button>
+              <!-- Desktop: Centered modal -->
+              <div class="hidden sm:block">
+                <div class="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 rounded-3xl shadow-2xl shadow-gray-900/20 border border-white/40 dark:border-white/10 overflow-hidden max-w-2xl">
+                  <!-- Header -->
+                  <div class="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title">
+                      {{ t('quickDiary.title') }}
+                    </h3>
+                    <button
+                      @click="close"
+                      :aria-label="t('common.close')"
+                      class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
+                    >
+                      <Icon name="heroicons:x-mark" class="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <!-- Content -->
+                  <div class="max-h-[calc(100vh-12rem)] overflow-y-auto">
+                    <!-- Step 1: Choose Template -->
+                    <div v-if="step === 1" class="p-6">
+                      <p class="text-sm text-gray-600 dark:text-gray-400 mb-5">{{ t('quickDiary.selectTemplate') }}</p>
+
+                      <div class="grid grid-cols-3 gap-4">
+                        <button
+                          @click="selectTemplate('trading')"
+                          class="p-5 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:border-indigo-400/60 dark:hover:border-indigo-500/60 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-200 text-left cursor-pointer group"
+                        >
+                          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
+                            <Icon name="heroicons:currency-dollar-solid" class="h-6 w-6 text-white" />
+                          </div>
+                          <h4 class="font-semibold text-gray-900 dark:text-white text-sm">{{ t('quickDiary.templates.trading') }}</h4>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('quickDiary.templates.tradingDesc') }}</p>
+                        </button>
+
+                        <button
+                          @click="selectTemplate('reflection')"
+                          class="p-5 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:border-purple-400/60 dark:hover:border-purple-500/60 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-200 text-left cursor-pointer group"
+                        >
+                          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
+                            <Icon name="heroicons:light-bulb-solid" class="h-6 w-6 text-white" />
+                          </div>
+                          <h4 class="font-semibold text-gray-900 dark:text-white text-sm">{{ t('quickDiary.templates.reflection') }}</h4>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('quickDiary.templates.reflectionDesc') }}</p>
+                        </button>
+
+                        <button
+                          @click="selectTemplate('observation')"
+                          class="p-5 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:border-blue-400/60 dark:hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 text-left cursor-pointer group"
+                        >
+                          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
+                            <Icon name="heroicons:eye-solid" class="h-6 w-6 text-white" />
+                          </div>
+                          <h4 class="font-semibold text-gray-900 dark:text-white text-sm">{{ t('quickDiary.templates.observation') }}</h4>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('quickDiary.templates.observationDesc') }}</p>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Step 2: Fill Form -->
+                    <div v-else-if="step === 2" class="p-6 space-y-5">
+                      <!-- Date Picker -->
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {{ t('quickDiary.date') }}
+                        </label>
+                        <input
+                          v-model="selectedDate"
+                          type="date"
+                          :max="maxDate"
+                          class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
+                        />
+                      </div>
+
+                      <!-- Trading Template Form -->
+                      <div v-if="selectedTemplate === 'trading'" class="space-y-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.trading.operation') }}
+                          </label>
+                          <div class="flex gap-2">
+                            <button
+                              v-for="type in ['buy', 'sell', 'both']"
+                              :key="type"
+                              @click="formData.tradingType = type"
+                              :class="[
+                                'flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer',
+                                formData.tradingType === type
+                                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                                  : 'backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                              ]"
+                            >
+                              {{ type === 'buy' ? t('quickDiary.trading.buy') : type === 'sell' ? t('quickDiary.trading.sell') : t('quickDiary.trading.both') }}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.trading.symbols') }}
+                          </label>
+                          <input
+                            v-model="formData.symbols"
+                            type="text"
+                            :placeholder="t('quickDiary.trading.symbolsPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
+                          />
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.trading.marketFeeling') }}
+                          </label>
+                          <div class="flex gap-2">
+                            <button
+                              v-for="mood in ['bullish', 'bearish', 'neutral']"
+                              :key="mood"
+                              @click="formData.marketMood = mood"
+                              :class="[
+                                'flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer',
+                                formData.marketMood === mood
+                                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                                  : 'backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                              ]"
+                            >
+                              {{ mood === 'bullish' ? t('quickDiary.trading.bullish') : mood === 'bearish' ? t('quickDiary.trading.bearish') : t('quickDiary.trading.neutral') }}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.trading.note') }}
+                          </label>
+                          <textarea
+                            v-model="formData.note"
+                            rows="3"
+                            :placeholder="t('quickDiary.trading.notePlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200 resize-none"
+                          ></textarea>
+                        </div>
+                      </div>
+
+                      <!-- Reflection Template Form -->
+                      <div v-else-if="selectedTemplate === 'reflection'" class="space-y-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.reflection.marketCondition') }}
+                          </label>
+                          <select
+                            v-model="formData.marketCondition"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
+                          >
+                            <option value="">{{ t('quickDiary.reflection.selectCondition') }}</option>
+                            <optgroup :label="locale === 'zh-TW' || locale === 'zh-CN' ? '漲跌' : 'Price Change'">
+                              <option value="大漲">大漲</option>
+                              <option value="小漲">小漲</option>
+                              <option value="盤整">盤整</option>
+                              <option value="小跌">小跌</option>
+                              <option value="大跌">大跌</option>
+                            </optgroup>
+                            <optgroup :label="locale === 'zh-TW' || locale === 'zh-CN' ? '走勢型態' : 'Trend Pattern'">
+                              <option value="高開高走">高開高走</option>
+                              <option value="高開低走">高開低走</option>
+                              <option value="低開高走">低開高走</option>
+                              <option value="低開低走">低開低走</option>
+                              <option value="震盪">震盪</option>
+                            </optgroup>
+                            <optgroup :label="locale === 'zh-TW' || locale === 'zh-CN' ? '市場結構' : 'Market Structure'">
+                              <option value="個股分化">個股分化</option>
+                              <option value="齊漲">齊漲</option>
+                              <option value="齊跌">齊跌</option>
+                              <option value="指數穩個股弱">指數穩、個股弱</option>
+                              <option value="指數弱個股強">指數弱、個股強</option>
+                            </optgroup>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.reflection.rating') }}
+                          </label>
+                          <div class="flex gap-2">
+                            <button
+                              v-for="rating in [1, 2, 3, 4, 5]"
+                              :key="rating"
+                              @click="formData.rating = rating"
+                              :class="[
+                                'flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer',
+                                formData.rating === rating
+                                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                                  : 'backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                              ]"
+                            >
+                              {{ rating }}⭐
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.reflection.goodPoints') }}
+                          </label>
+                          <div class="mb-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                              <input
+                                v-model="formData.noRashTrading"
+                                type="checkbox"
+                                class="w-4 h-4 text-indigo-600 focus:ring-indigo-500/50 border-gray-300 rounded"
+                              />
+                              <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('quickDiary.reflection.noRashTrading') }}</span>
+                            </label>
+                          </div>
+                          <textarea
+                            v-model="formData.goodPoints"
+                            rows="2"
+                            :placeholder="t('quickDiary.reflection.goodPointsPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200 resize-none"
+                          ></textarea>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.reflection.improvePoints') }}
+                          </label>
+                          <textarea
+                            v-model="formData.improvePoints"
+                            rows="2"
+                            :placeholder="t('quickDiary.reflection.improvePointsPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200 resize-none"
+                          ></textarea>
+                        </div>
+                      </div>
+
+                      <!-- Observation Template Form -->
+                      <div v-else-if="selectedTemplate === 'observation'" class="space-y-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.observation.topic') }}
+                          </label>
+                          <input
+                            v-model="formData.topic"
+                            type="text"
+                            :placeholder="t('quickDiary.observation.topicPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
+                          />
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.observation.type') }}
+                          </label>
+                          <div class="flex flex-wrap gap-2">
+                            <button
+                              v-for="type in ['板塊熱點', '個股走勢', '市場消息', '技術分析', '其他']"
+                              :key="type"
+                              @click="formData.observationType = type"
+                              :class="[
+                                'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer',
+                                formData.observationType === type
+                                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                                  : 'backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                              ]"
+                            >
+                              {{ type }}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.observation.content') }}
+                          </label>
+                          <textarea
+                            v-model="formData.content"
+                            rows="4"
+                            :placeholder="t('quickDiary.observation.contentPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200 resize-none"
+                          ></textarea>
+                        </div>
+
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ t('quickDiary.observation.action') }}
+                          </label>
+                          <input
+                            v-model="formData.action"
+                            type="text"
+                            :placeholder="t('quickDiary.observation.actionPlaceholder')"
+                            class="w-full px-4 py-3 backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-gray-300/60 dark:border-gray-600/60 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-white transition-all duration-200"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Preview -->
+                      <div class="pt-5 border-t border-gray-200/50 dark:border-gray-700/50">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ t('quickDiary.preview') }}</h4>
+                        <div class="backdrop-blur-xl bg-gray-50/80 dark:bg-gray-900/80 p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50">
+                          <p class="font-medium text-gray-900 dark:text-white">{{ previewTitle }}</p>
+                          <div class="mt-2 text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{{ previewContent }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Footer -->
+                  <div class="px-6 py-4 border-t border-gray-200/50 dark:border-gray-700/50 flex justify-end gap-3">
+                    <button
+                      v-if="step === 2"
+                      @click="step = 1"
+                      class="px-5 py-2.5 rounded-xl border border-gray-300/60 dark:border-gray-600/60 bg-white/60 dark:bg-gray-800/60 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50/80 dark:hover:bg-gray-700/60 transition-all duration-200 cursor-pointer"
+                    >
+                      {{ t('common.back') }}
+                    </button>
+                    <button
+                      @click="close"
+                      class="px-5 py-2.5 rounded-xl border border-gray-300/60 dark:border-gray-600/60 bg-white/60 dark:bg-gray-800/60 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50/80 dark:hover:bg-gray-700/60 transition-all duration-200 cursor-pointer"
+                    >
+                      {{ t('common.cancel') }}
+                    </button>
+                    <button
+                      v-if="step === 2"
+                      @click="createDiary"
+                      :disabled="saving"
+                      class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-medium hover:from-indigo-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-indigo-500/25 cursor-pointer"
+                    >
+                      <Icon v-if="saving" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4 inline" />
+                      {{ saving ? t('quickDiary.creating') : t('quickDiary.createDiary') }}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </Transition>
