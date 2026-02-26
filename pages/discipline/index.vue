@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from 'vue-i18n'
+import { useTimezone } from '~/composables/useTimezone'
 import type {
   DisciplineShareData,
   DisciplineImportPreview
@@ -9,6 +10,7 @@ import type {
 
 const { t } = useI18n()
 const toast = useToast()
+const { formatLocaleDate, formatLocaleTime } = useTimezone()
 
 const content = ref('')
 const loading = ref(false)
@@ -546,14 +548,14 @@ definePageMeta({
                     <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    {{ new Date(item.createdAt).toLocaleDateString() }}
+                    {{ formatLocaleDate(item.createdAt) }}
                   </div>
                   <div class="w-px h-3 bg-[#C9A962]/10 dark:bg-[#C9A962]/20"></div>
                   <div class="flex items-center text-slate-500 dark:text-[#6B7280]">
                     <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    {{ new Date(item.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) }}
+                    {{ formatLocaleTime(item.createdAt) }}
                   </div>
                 </div>
               </div>

@@ -741,16 +741,13 @@ const emit = defineEmits<{
 }>()
 
 const { t, locale } = useI18n()
+const { getTodayDateString, getDateInTimezone } = useTimezone()
 const step = ref(1)
 const selectedTemplate = ref<'trading' | 'reflection' | 'observation' | null>(null)
 const saving = ref(false)
 
-// Initialize with today's date in YYYY-MM-DD format (local timezone)
-const todayLocal = new Date()
-const year = todayLocal.getFullYear()
-const month = String(todayLocal.getMonth() + 1).padStart(2, '0')
-const day = String(todayLocal.getDate()).padStart(2, '0')
-const todayStr = `${year}-${month}-${day}`
+// Initialize with today's date in YYYY-MM-DD format (user's timezone)
+const todayStr = getTodayDateString()
 
 const selectedDate = ref(todayStr)
 const maxDate = ref(todayStr) // Don't allow future dates
@@ -791,7 +788,7 @@ watch(() => formData.symbols, (newValue) => {
 // Format date for display (e.g., 2024/01/15)
 const formattedDate = computed(() => {
   if (!selectedDate.value) return todayStr
-  const d = new Date(selectedDate.value + 'T00:00:00') // Add time to avoid UTC conversion
+  const d = getDateInTimezone(new Date(selectedDate.value + 'T12:00:00'))
   const yyyy = d.getFullYear()
   const mm = String(d.getMonth() + 1).padStart(2, '0')
   const dd = String(d.getDate()).padStart(2, '0')
@@ -891,7 +888,7 @@ const createDiary = async () => {
   }
 
   // Create date object from selected date (at noon to avoid timezone issues)
-  const dateObj = new Date(selectedDate.value + 'T12:00:00')
+  const dateObj = getDateInTimezone(new Date(selectedDate.value + 'T12:00:00'))
 
   saving.value = true
   try {

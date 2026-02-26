@@ -149,9 +149,10 @@ const checkingDate = ref(false)
 const loadingLatest = ref(false)
 const isEditing = ref(false)
 const existingDiaryId = ref<string | null>(null)
+const { getTodayDateString, getDateInTimezone, formatLocaleDate } = useTimezone()
 
 // Get date from URL query parameter or use today
-const initialDate = (route.query.date as string) || new Date().toISOString().slice(0, 10)
+const initialDate = (route.query.date as string) || getTodayDateString()
 
 const form = reactive({
   date: initialDate,
@@ -184,14 +185,14 @@ watch(() => form.date, async (newDate) => {
         type: tx.type,
         quantity: parseFloat(tx.quantity),
         price: parseFloat(tx.price),
-        trade_date: new Date(tx.tradeDate).toISOString().slice(0, 10)
+        trade_date: getDateInTimezone(new Date(tx.tradeDate)).toISOString().slice(0, 10)
       })) || []
 
       // Load alerts
       form.alerts = existingDiary.alerts?.map((a: any) => ({
         id: a.id.toString(),
         message: a.message,
-        trigger_at: new Date(a.triggerAt).toISOString().slice(0, 10)
+        trigger_at: getDateInTimezone(new Date(a.triggerAt)).toISOString().slice(0, 10)
       })) || []
     } else {
       // No diary exists for this date, reset form for new entry
@@ -213,7 +214,7 @@ watch(() => form.date, async (newDate) => {
 // For now, we start fresh
 
 const addAlert = () => {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = getTodayDateString()
 
   form.alerts.push({
     message: '',
@@ -247,7 +248,7 @@ const copyFromLatest = async () => {
         type: tx.type,
         quantity: parseFloat(tx.quantity),
         price: parseFloat(tx.price),
-        trade_date: new Date().toISOString().slice(0, 10) // Use today's date
+        trade_date: getTodayDateString() // Use today's date in user's timezone
       }))
 
       // Append to existing transactions or replace if empty
@@ -258,7 +259,7 @@ const copyFromLatest = async () => {
       }
 
       // Show success feedback
-      const diaryDate = new Date(latest.diary_date).toLocaleDateString('zh-TW')
+      const diaryDate = formatLocaleDate(latest.diary_date)
       toast.success(`已複製 ${newTransactions.length} 筆交易記錄（來源：${diaryDate}）`)
     } else {
       toast.warning('沒有找到之前的交易記錄')
@@ -321,18 +322,22 @@ const saveDiary = async () => {
 
   saving.value = true
   try {
-    // Format dates for API
+    // Format dates for API - use noon to avoid timezone boundary issues
+    const toApiDate = (dateStr: string) => {
+      return new Date(dateStr + 'T12:00:00').toISOString()
+    }
+
     const payload = {
       title: form.title,
       content: form.content,
-      date: new Date(form.date).toISOString(),
+      date: toApiDate(form.date),
       transactions: form.transactions.map(t => ({
         ...t,
-        trade_date: new Date(t.trade_date).toISOString()
+        trade_date: toApiDate(t.trade_date)
       })),
       alerts: form.alerts.map(a => ({
         ...a,
-        trigger_at: new Date(a.trigger_at).toISOString(),
+        trigger_at: toApiDate(a.trigger_at),
         recurring_mode: a.recurring_mode || undefined
       }))
     }

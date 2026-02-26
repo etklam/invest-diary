@@ -27,6 +27,8 @@
 </template>
 
 <script setup lang="ts">
+const { formatLocaleDate } = useTimezone()
+
 const props = defineProps<{
   author: string
   date: Date | string
@@ -34,11 +36,6 @@ const props = defineProps<{
 }>()
 
 const formattedDate = computed(() => {
-  const date = typeof props.date === 'string' ? new Date(props.date) : props.date
-  return new Intl.DateTimeFormat('zh-TW', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }).format(date)
+  return formatLocaleDate(props.date)
 })
 </script>

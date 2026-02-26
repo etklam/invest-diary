@@ -41,7 +41,7 @@
       <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ diary.title }}</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {{ new Date(diary.createdAt).toLocaleString() }}
+          {{ formatLocaleDateTime(diary.createdAt) }}
         </p>
       </div>
       <div class="flex space-x-3">
@@ -98,7 +98,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ tx.quantity }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ tx.price }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ (Number(tx.quantity) * Number(tx.price)).toFixed(2) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ new Date(tx.tradeDate).toLocaleString() }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ formatLocaleDateTime(tx.tradeDate) }}</td>
               </tr>
             </tbody>
           </table>
@@ -127,6 +127,7 @@ const { data: diary, pending, error } = await useLazyFetch<any>(`/api/diaries/${
 
 const toast = useToast()
 const { user } = useAuth()
+const { formatLocaleDateTime } = useTimezone()
 
 // Rename for template compatibility
 const formatDate = formatShortDate

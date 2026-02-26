@@ -120,8 +120,9 @@ definePageMeta({
   middleware: 'auth'
 })
 
-// Get auth state
-const { isAuthenticated } = useAuth()
+// Get auth state and timezone
+const { isAuthenticated, user } = useAuth()
+const { getTimezone } = useTimezone()
 
 // Quick diary modal state
 const showQuickModal = ref(false)
@@ -130,9 +131,39 @@ const handleDiaryCreated = () => {
   fetchDiaries()
 }
 
-// 狀態
-const currentYear = ref(new Date().getFullYear())
-const currentMonth = ref(new Date().getMonth())
+// Get date in user's timezone
+const getDateInUserTimezone = (date?: Date): Date => {
+  const inputDate = date || new Date()
+  const userTimezone = getTimezone()
+
+  // Create a date string in the user's timezone
+  const dateFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: userTimezone,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false
+  })
+
+  // Format the date in user's timezone and parse it back
+  const parts = dateFormatter.formatToParts(inputDate)
+  const year = parseInt(parts.find(p => p.type === 'year')?.value || '0')
+  const month = parseInt(parts.find(p => p.type === 'month')?.value || '0') - 1
+  const day = parseInt(parts.find(p => p.type === 'day')?.value || '0')
+  const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0')
+  const minute = parseInt(parts.find(p => p.type === 'minute')?.value || '0')
+  const second = parseInt(parts.find(p => p.type === 'second')?.value || '0')
+
+  return new Date(year, month, day, hour, minute, second)
+}
+
+// 狀態 - Use user's timezone for initial date
+const nowInTimezone = getDateInUserTimezone()
+const currentYear = ref(nowInTimezone.getFullYear())
+const currentMonth = ref(nowInTimezone.getMonth())
 const diaries = ref<Diary[]>([])
 
 // 星期名稱
@@ -145,7 +176,8 @@ const daysInMonth = computed(() => {
 
 // 當月第一天是星期幾
 const firstDayOfWeek = computed(() => {
-  return new Date(currentYear.value, currentMonth.value, 1).getDay()
+  const firstDay = getDateInUserTimezone(new Date(currentYear.value, currentMonth.value, 1))
+  return firstDay.getDay()
 })
 const monthDiaryCount = computed(() => {
   let count = 0
@@ -181,7 +213,7 @@ const fetchDiaries = async () => {
 const diaryMap = computed(() => {
   const map = new Map<string, Diary>()
   diaries.value.forEach(diary => {
-    const diaryDate = new Date(diary.date || diary.createdAt)
+    const diaryDate = getDateInUserTimezone(new Date(diary.date || diary.createdAt))
     const key = `${diaryDate.getFullYear()}-${diaryDate.getMonth()}-${diaryDate.getDate()}`
     map.set(key, diary)
   })
@@ -202,7 +234,7 @@ const getDiaryTitle = (day: number): string => {
 
 // 檢查是否是今天
 const isToday = (day: number): boolean => {
-  const today = new Date()
+  const today = getDateInUserTimezone()
   return today.getDate() === day &&
          today.getMonth() === currentMonth.value &&
          today.getFullYear() === currentYear.value
@@ -230,7 +262,7 @@ const nextMonth = () => {
 
 // 回到今天
 const goToToday = () => {
-  const today = new Date()
+  const today = getDateInUserTimezone()
   currentYear.value = today.getFullYear()
   currentMonth.value = today.getMonth()
 }

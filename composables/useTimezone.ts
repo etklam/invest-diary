@@ -31,8 +31,10 @@ export const useTimezone = () => {
     if (process.client) {
       const stored = localStorage.getItem('user_timezone')
       if (stored) return stored
+      // For users without stored timezone (not logged in or not set), use browser's detected timezone
+      return detectLocalTimezone()
     }
-    return 'Asia/Taipei' // Default to Taipei timezone
+    return 'Asia/Taipei' // Default for server-side
   }
 
   // Set timezone and persist to localStorage
@@ -83,12 +85,107 @@ export const useTimezone = () => {
     return found || { value: tz, label: tz, offset: '' }
   }
 
+  // Convert date to user's timezone and return a Date object
+  const getDateInTimezone = (date?: Date | string): Date => {
+    const inputDate = date ? (typeof date === 'string' ? new Date(date) : date) : new Date()
+    const userTimezone = getTimezone()
+
+    // Create a date string in the user's timezone
+    const dateFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: userTimezone,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false
+    })
+
+    // Format the date in user's timezone and parse it back
+    const parts = dateFormatter.formatToParts(inputDate)
+    const year = parseInt(parts.find(p => p.type === 'year')?.value || '0')
+    const month = parseInt(parts.find(p => p.type === 'month')?.value || '0') - 1
+    const day = parseInt(parts.find(p => p.type === 'day')?.value || '0')
+    const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0')
+    const minute = parseInt(parts.find(p => p.type === 'minute')?.value || '0')
+    const second = parseInt(parts.find(p => p.type === 'second')?.value || '0')
+
+    return new Date(year, month, day, hour, minute, second)
+  }
+
+  // Get today's date in user's timezone as YYYY-MM-DD string
+  const getTodayDateString = (): string => {
+    const dateInTz = getDateInTimezone()
+    const year = dateInTz.getFullYear()
+    const month = String(dateInTz.getMonth() + 1).padStart(2, '0')
+    const day = String(dateInTz.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  // Format date using user's locale and timezone
+  const formatLocaleDate = (
+    date: Date | string,
+    options?: Intl.DateTimeFormatOptions
+  ): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    const userTimezone = getTimezone()
+
+    return new Intl.DateTimeFormat(undefined, {
+      timeZone: userTimezone,
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      ...options
+    }).format(dateObj)
+  }
+
+  // Format date and time using user's locale and timezone
+  const formatLocaleDateTime = (
+    date: Date | string,
+    options?: Intl.DateTimeFormatOptions
+  ): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    const userTimezone = getTimezone()
+
+    return new Intl.DateTimeFormat(undefined, {
+      timeZone: userTimezone,
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      ...options
+    }).format(dateObj)
+  }
+
+  // Format time only using user's locale and timezone
+  const formatLocaleTime = (
+    date: Date | string,
+    options?: Intl.DateTimeFormatOptions
+  ): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    const userTimezone = getTimezone()
+
+    return new Intl.DateTimeFormat(undefined, {
+      timeZone: userTimezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      ...options
+    }).format(dateObj)
+  }
+
   return {
     commonTimezones,
     detectLocalTimezone,
     getTimezone,
     setTimezone,
     formatDateInTimezone,
-    getTimezoneInfo
+    getTimezoneInfo,
+    getDateInTimezone,
+    getTodayDateString,
+    formatLocaleDate,
+    formatLocaleDateTime,
+    formatLocaleTime
   }
 }
