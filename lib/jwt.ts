@@ -16,7 +16,17 @@ function getSecret() {
   const secret = process.env.JWT_SECRET || globalThis.process?.env?.JWT_SECRET
 
   if (!secret) {
+    // Log for debugging
+    if (process.server) {
+      console.error('[JWT] JWT_SECRET is not defined in process.env')
+      console.error('[JWT] Available env vars:', Object.keys(process.env).filter(k => k.includes('JWT') || k.includes('NUXT')))
+    }
     throw new Error('JWT_SECRET is not defined')
+  }
+
+  // Log secret length for debugging (don't log the actual secret)
+  if (process.server && secret === 'CHANGE_THIS_RANDOM_SECRET') {
+    console.error('[JWT] WARNING: JWT_SECRET is still using the placeholder value!')
   }
 
   return new TextEncoder().encode(secret)

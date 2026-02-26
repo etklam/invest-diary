@@ -189,6 +189,7 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg'],
+    strategies: 'generateSW', // Use generateSW for better precaching control
     manifest: {
       name: '投資日記',
       short_name: '投資日記',
@@ -226,6 +227,7 @@ export default defineNuxtConfig({
       // 客戶端聲明：新版本時自動重新載入
       clientsClaim: true,
       // 導航失敗時的回退策略 (SSR mode - no index.html)
+      navigateFallback: '/',
       navigateFallbackDenylist: [/^\/api\//],
       // 執行時快取策略
       runtimeCaching: [
