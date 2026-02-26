@@ -1,4 +1,5 @@
 import { verifyToken } from '~/lib/jwt'
+import prisma from '~/lib/prisma'
 
 /**
  * Global API authentication middleware
@@ -31,10 +32,26 @@ export default defineEventHandler(async (event) => {
       return
     }
 
+    // Enforce tokenVersion check so password change/logout can immediately revoke access tokens
+    const user = await prisma.user.findUnique({
+      where: { id: BigInt(payload.userId) },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        tokenVersion: true
+      }
+    })
+
+    if (!user || (user.tokenVersion || 0) !== (payload.tokenVersion || 0)) {
+      event.context.user = undefined
+      return
+    }
+
     event.context.user = {
-      id: payload.userId,
-      email: payload.email,
-      role: payload.role
+      id: user.id.toString(),
+      email: user.email,
+      role: user.role
     }
   } catch {
     event.context.user = undefined

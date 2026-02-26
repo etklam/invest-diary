@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import prisma from '../../../lib/prisma'
+import { clearAuthCookies } from '~/server/utils/auth'
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
@@ -52,17 +53,30 @@ export default defineEventHandler(async (event) => {
     // Hash new password
     const hashedPassword = await bcrypt.hash(validatedData.newPassword, 10)
 
-    // Update password
-    await prisma.user.update({
-      where: { id: BigInt(userId) },
-      data: { password: hashedPassword }
-    })
+    const userIdBigInt = BigInt(userId)
+
+    // Update password and revoke all tokens atomically
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userIdBigInt },
+        data: {
+          password: hashedPassword,
+          tokenVersion: { increment: 1 }
+        }
+      }),
+      prisma.refreshToken.deleteMany({
+        where: { userId: userIdBigInt }
+      })
+    ])
+
+    // Clear current session cookies as well
+    clearAuthCookies(event)
 
     console.log('[API] User password changed:', userId)
 
     return {
       success: true,
-      message: 'Password changed successfully'
+      message: 'Password changed successfully. Please login again.'
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
