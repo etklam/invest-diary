@@ -256,15 +256,95 @@
   },
 
   "home": {
+    "badge": "交易基础共学平台",
     "hero": {
-      "title": "追踪您的投资旅程",
-      "subtitle": "专为投资人设计的日记系统，记录每一笔交易、提醒与洞察，让您的投资决策更明智。",
-      "getStarted": "开始使用",
-      "learnMore": "了解更多"
+      "title": "从交易基础开始，建立可持续的投资纪律",
+      "subtitle": "以共同学习与记录复盘为核心，朝财富自由与被动收入的长期目标前进，不追求短线神话。",
+      "getStarted": "开始共学",
+      "learnMore": "了解学习路径"
+    },
+    "progress": {
+      "journalLabel": "记录习惯",
+      "journalValue": "每日 1 条",
+      "reviewLabel": "复盘节奏",
+      "reviewValue": "每周 1 次",
+      "rulesLabel": "纪律清单",
+      "rulesValue": "持续更新"
+    },
+    "snapshot": {
+      "title": "学习快照",
+      "status": "进行中",
+      "focusLabel": "本期重点",
+      "focusValue": "Trade Basics",
+      "methodLabel": "方法",
+      "methodValue": "记录 -> 复盘 -> 修正",
+      "communityLabel": "共学模式",
+      "communityValue": "同伴互评",
+      "description": "把每次交易想法、执行与复盘放在同一条时间线，逐步减少重复犯错。"
+    },
+    "promise": {
+      "title": "学习承诺",
+      "basics": "基础先行",
+      "risk": "风险优先",
+      "community": "共同学习",
+      "longTerm": "长期积累",
+      "noGuarantee": "不保证盈利"
+    },
+    "learning": {
+      "title": "Trade Basics 学习路径",
+      "subtitle": "先建立方法，再追求结果。每一步都可执行、可回顾。",
+      "basics": {
+        "title": "市场与策略基础",
+        "description": "厘清交易逻辑、进出场条件与常见误区，避免凭感觉下单。"
+      },
+      "risk": {
+        "title": "风险管理",
+        "description": "练习仓位、止损与回撤控制，先活下来再谈成长。"
+      },
+      "review": {
+        "title": "记录与复盘",
+        "description": "用固定模板记录决策，通过每周复盘找到可改进的行为。"
+      }
+    },
+    "community": {
+      "title": "共同学习，不单打独斗",
+      "subtitle": "通过讨论与互评，让盲点更快被看见。",
+      "share": {
+        "title": "分享纪律",
+        "description": "公开你的交易原则与检查清单，让方法可被检视。"
+      },
+      "feedback": {
+        "title": "获得反馈",
+        "description": "针对记录与复盘拿到具体建议，而不是情绪化评价。"
+      },
+      "accountability": {
+        "title": "互相监督",
+        "description": "维持固定练习与复盘节奏，减少临场冲动操作。"
+      }
+    },
+    "turnaround": {
+      "title": "扭亏为盈：以流程改进为核心",
+      "subtitle": "不承诺结果，专注减少重复错误并提升一致性。",
+      "step1": {
+        "title": "1. 记录错误",
+        "description": "如实写下亏损决策的背景与执行细节。"
+      },
+      "step2": {
+        "title": "2. 找出模式",
+        "description": "识别重复出现的错误触发条件与情境。"
+      },
+      "step3": {
+        "title": "3. 制定修正规则",
+        "description": "把修正方案写成可执行的纪律条款。"
+      },
+      "step4": {
+        "title": "4. 反复验证",
+        "description": "持续检查规则效果，必要时迭代更新。"
+      }
     },
     "features": {
       "title": "强大功能",
-      "subtitle": "为投资人打造的全功能平台",
+      "subtitle": "用记录、分析与提醒支持你的学习节奏",
       "diary": {
         "title": "投资日记",
         "description": "使用 Markdown 撰写丰富的投资日记，记录交易理由与市场洞察。"
@@ -275,7 +355,7 @@
       },
       "alerts": {
         "title": "智能提醒",
-        "description": "设定时间触发的提醒，确保您不会错过重要的交易时机。"
+        "description": "设定时间触发的提醒，帮助你减少漏掉重要观察时点。"
       },
       "timeline": {
         "title": "时间轴视图",
@@ -291,10 +371,26 @@
       }
     },
     "cta": {
-      "title": "准备开始了吗？",
-      "description": "立即注册，开始您的投资日记之旅。完全免费，无需绑定信用卡。",
-      "register": "免费注册",
-      "login": "登录账户"
+      "title": "准备开始你的学习循环？",
+      "description": "从今天开始记录、每周复盘、与同伴互相校准。以财富自由与被动收入为长期方向，但不对任何回报做保证。",
+      "register": "立即加入",
+      "login": "已有账号登录",
+      "step1": {
+        "label": "步骤 01",
+        "title": "记录",
+        "description": "写下每次决策的理由、风险与计划。"
+      },
+      "step2": {
+        "label": "步骤 02",
+        "title": "复盘",
+        "description": "比较执行结果与原始假设，找出偏差。"
+      },
+      "step3": {
+        "label": "步骤 03",
+        "title": "优化",
+        "description": "把反馈转成下一轮可执行的规则。"
+      },
+      "disclaimer": "本平台内容仅供教育与学习交流，不构成投资建议；投资有风险，结果会因策略与执行而异。"
     },
     "footer": {
       "rights": "保留所有权利"

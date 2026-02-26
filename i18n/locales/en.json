@@ -257,15 +257,95 @@
   },
 
   "home": {
+    "badge": "Trade Basics Co-Learning",
     "hero": {
-      "title": "Track Your Investment Journey",
-      "subtitle": "A diary system designed for investors to record every trade, alert, and insight, making your investment decisions wiser.",
-      "getStarted": "Get Started",
-      "learnMore": "Learn More"
+      "title": "Start with trade basics and build sustainable discipline",
+      "subtitle": "Use co-learning plus structured journaling and review to move toward long-term goals like financial freedom and passive income, without hype.",
+      "getStarted": "Start Learning",
+      "learnMore": "See Learning Path"
+    },
+    "progress": {
+      "journalLabel": "Journaling Habit",
+      "journalValue": "1 entry / day",
+      "reviewLabel": "Review Cadence",
+      "reviewValue": "1 review / week",
+      "rulesLabel": "Discipline Rules",
+      "rulesValue": "Continuously refined"
+    },
+    "snapshot": {
+      "title": "Learning Snapshot",
+      "status": "In Progress",
+      "focusLabel": "Current Focus",
+      "focusValue": "Trade Basics",
+      "methodLabel": "Method",
+      "methodValue": "Record -> Review -> Improve",
+      "communityLabel": "Co-Learning Mode",
+      "communityValue": "Peer feedback",
+      "description": "Keep each thesis, execution, and review in one timeline to reduce repeated mistakes over time."
+    },
+    "promise": {
+      "title": "Learning Promise",
+      "basics": "Basics first",
+      "risk": "Risk first",
+      "community": "Learn together",
+      "longTerm": "Long-term compounding",
+      "noGuarantee": "No return guarantees"
+    },
+    "learning": {
+      "title": "Trade Basics Learning Path",
+      "subtitle": "Build process first, then pursue results. Every step is practical and reviewable.",
+      "basics": {
+        "title": "Market and strategy foundations",
+        "description": "Clarify setup logic, entry/exit conditions, and common mistakes before placing trades."
+      },
+      "risk": {
+        "title": "Risk management",
+        "description": "Practice position sizing, stop-loss rules, and drawdown control before scaling."
+      },
+      "review": {
+        "title": "Journaling and review",
+        "description": "Use a fixed template and weekly review rhythm to improve decision quality."
+      }
+    },
+    "community": {
+      "title": "Learn with others, not in isolation",
+      "subtitle": "Discussion and peer review help blind spots surface earlier.",
+      "share": {
+        "title": "Share your rules",
+        "description": "Publish discipline checklists and principles so your process can be challenged."
+      },
+      "feedback": {
+        "title": "Get useful feedback",
+        "description": "Receive concrete comments on your logs and reviews, not emotional reactions."
+      },
+      "accountability": {
+        "title": "Mutual accountability",
+        "description": "Keep a steady practice and review cadence to reduce impulse trades."
+      }
+    },
+    "turnaround": {
+      "title": "From losses to stability: process over promises",
+      "subtitle": "No outcome guarantees. Focus on reducing repeated errors and improving consistency.",
+      "step1": {
+        "title": "1. Record mistakes",
+        "description": "Write down the context and execution details behind losing decisions."
+      },
+      "step2": {
+        "title": "2. Find patterns",
+        "description": "Identify recurring triggers and conditions behind repeated mistakes."
+      },
+      "step3": {
+        "title": "3. Define corrective rules",
+        "description": "Turn corrections into clear, executable discipline rules."
+      },
+      "step4": {
+        "title": "4. Re-test and iterate",
+        "description": "Review rule effectiveness regularly and update when needed."
+      }
     },
     "features": {
       "title": "Powerful Features",
-      "subtitle": "A full-featured platform built for investors",
+      "subtitle": "Tools that support your learning rhythm through logs, analytics, and reminders",
       "diary": {
         "title": "Investment Diary",
         "description": "Write rich investment diaries in Markdown, documenting trade reasons and market insights."
@@ -276,7 +356,7 @@
       },
       "alerts": {
         "title": "Smart Alerts",
-        "description": "Set time-triggered alerts to ensure you never miss important trading opportunities."
+        "description": "Set time-based reminders to reduce the chance of missing important review moments."
       },
       "timeline": {
         "title": "Timeline View",
@@ -292,10 +372,26 @@
       }
     },
     "cta": {
-      "title": "Ready to Get Started?",
-      "description": "Sign up now and begin your investment diary journey. Completely free, no credit card required.",
-      "register": "Sign Up Free",
-      "login": "Login"
+      "title": "Ready to start your learning loop?",
+      "description": "Start logging today, run weekly reviews, and calibrate with peers. Financial freedom and passive income are long-term directions, not guaranteed outcomes.",
+      "register": "Join Now",
+      "login": "Log In",
+      "step1": {
+        "label": "Step 01",
+        "title": "Record",
+        "description": "Capture your rationale, risk assumptions, and trade plan."
+      },
+      "step2": {
+        "label": "Step 02",
+        "title": "Review",
+        "description": "Compare outcomes with your original thesis and detect gaps."
+      },
+      "step3": {
+        "label": "Step 03",
+        "title": "Refine",
+        "description": "Convert feedback into clearer rules for the next cycle."
+      },
+      "disclaimer": "This platform is for education and shared learning only, not investment advice. All investing carries risk, and outcomes vary by strategy and execution."
     },
     "footer": {
       "rights": "All rights reserved"

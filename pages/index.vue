@@ -10,7 +10,7 @@
           <div class="reveal">
             <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-300/60 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 backdrop-blur dark:border-sky-700/60 dark:bg-slate-900/80 dark:text-sky-200">
               <Icon name="heroicons:shield-check-20-solid" class="h-4 w-4 text-sky-600 dark:text-sky-300" />
-              Fintech Journal OS
+              {{ $t('home.badge') }}
             </p>
             <h1 class="text-4xl font-semibold leading-tight text-slate-950 dark:text-slate-100 sm:text-5xl lg:text-6xl">
               {{ $t('home.hero.title') }}
@@ -37,16 +37,16 @@
 
             <dl class="mt-10 grid gap-4 sm:grid-cols-3">
               <div class="metric-card reveal reveal-2">
-                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Success Rate</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">94.8%</dd>
+                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.progress.journalLabel') }}</dt>
+                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('home.progress.journalValue') }}</dd>
               </div>
               <div class="metric-card reveal reveal-3">
-                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Latency</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">52 ms</dd>
+                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.progress.reviewLabel') }}</dt>
+                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('home.progress.reviewValue') }}</dd>
               </div>
               <div class="metric-card reveal reveal-4">
-                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Audit Events</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">1.2M+</dd>
+                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.progress.rulesLabel') }}</dt>
+                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('home.progress.rulesValue') }}</dd>
               </div>
             </dl>
           </div>
@@ -54,27 +54,27 @@
           <div class="reveal reveal-2">
             <div class="terminal-panel">
               <header class="terminal-head">
-                <span class="font-medium text-slate-200">Live Position Briefing</span>
+                <span class="font-medium text-slate-200">{{ $t('home.snapshot.title') }}</span>
                 <span class="rounded-full border border-emerald-400/50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-300">
-                  Synced
+                  {{ $t('home.snapshot.status') }}
                 </span>
               </header>
               <div class="space-y-3 p-5">
                 <div class="row-item">
-                  <span class="text-slate-300">Portfolio Risk</span>
-                  <span class="font-semibold text-emerald-300">Low / Guarded</span>
+                  <span class="text-slate-300">{{ $t('home.snapshot.focusLabel') }}</span>
+                  <span class="font-semibold text-emerald-300">{{ $t('home.snapshot.focusValue') }}</span>
                 </div>
                 <div class="row-item">
-                  <span class="text-slate-300">Concentration</span>
-                  <span class="font-semibold text-amber-300">Moderate</span>
+                  <span class="text-slate-300">{{ $t('home.snapshot.methodLabel') }}</span>
+                  <span class="font-semibold text-amber-300">{{ $t('home.snapshot.methodValue') }}</span>
                 </div>
                 <div class="row-item">
-                  <span class="text-slate-300">Signal Strength</span>
-                  <span class="font-semibold text-sky-300">+18.7%</span>
+                  <span class="text-slate-300">{{ $t('home.snapshot.communityLabel') }}</span>
+                  <span class="font-semibold text-sky-300">{{ $t('home.snapshot.communityValue') }}</span>
                 </div>
                 <div class="h-px bg-slate-700/60" />
                 <p class="text-sm leading-6 text-slate-400">
-                  Chronicle every thesis, position, and reminder in one secure timeline designed for disciplined investing.
+                  {{ $t('home.snapshot.description') }}
                 </p>
               </div>
             </div>
@@ -86,14 +86,105 @@
     <section class="px-4 pb-20 sm:px-6">
       <div class="mx-auto max-w-7xl">
         <div class="trust-strip reveal">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Trusted Workflow Signals</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.promise.title') }}</p>
           <div class="mt-4 flex flex-wrap gap-3">
-            <span class="trust-pill">Bank-grade auth</span>
-            <span class="trust-pill">Private timeline</span>
-            <span class="trust-pill">Event reminders</span>
-            <span class="trust-pill">Position analytics</span>
-            <span class="trust-pill">Audit-friendly records</span>
+            <span class="trust-pill">{{ $t('home.promise.basics') }}</span>
+            <span class="trust-pill">{{ $t('home.promise.risk') }}</span>
+            <span class="trust-pill">{{ $t('home.promise.community') }}</span>
+            <span class="trust-pill">{{ $t('home.promise.longTerm') }}</span>
+            <span class="trust-pill">{{ $t('home.promise.noGuarantee') }}</span>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="px-4 pb-20 sm:px-6">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-10 reveal">
+          <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+            {{ $t('home.learning.title') }}
+          </h2>
+          <p class="mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+            {{ $t('home.learning.subtitle') }}
+          </p>
+        </div>
+        <div class="grid gap-5 md:grid-cols-3">
+          <article class="feature-card reveal">
+            <Icon name="heroicons:academic-cap-20-solid" class="feature-icon text-sky-700" />
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.basics.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.basics.description') }}</p>
+          </article>
+          <article class="feature-card reveal reveal-2">
+            <Icon name="heroicons:shield-exclamation-20-solid" class="feature-icon text-amber-700" />
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.risk.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.risk.description') }}</p>
+          </article>
+          <article class="feature-card reveal reveal-3">
+            <Icon name="heroicons:arrow-path-20-solid" class="feature-icon text-emerald-700" />
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.review.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.review.description') }}</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="px-4 pb-20 sm:px-6">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-10 reveal">
+          <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+            {{ $t('home.community.title') }}
+          </h2>
+          <p class="mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+            {{ $t('home.community.subtitle') }}
+          </p>
+        </div>
+        <div class="grid gap-5 md:grid-cols-3">
+          <article class="feature-card reveal">
+            <Icon name="heroicons:chat-bubble-left-right-20-solid" class="feature-icon text-cyan-700" />
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.share.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.share.description') }}</p>
+          </article>
+          <article class="feature-card reveal reveal-2">
+            <Icon name="heroicons:hand-thumb-up-20-solid" class="feature-icon text-indigo-700" />
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.feedback.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.feedback.description') }}</p>
+          </article>
+          <article class="feature-card reveal reveal-3">
+            <Icon name="heroicons:user-group-20-solid" class="feature-icon text-rose-700" />
+            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.accountability.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.accountability.description') }}</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="px-4 pb-20 sm:px-6">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-10 reveal">
+          <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+            {{ $t('home.turnaround.title') }}
+          </h2>
+          <p class="mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+            {{ $t('home.turnaround.subtitle') }}
+          </p>
+        </div>
+        <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <article class="feature-card reveal">
+            <h3 class="text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step1.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step1.description') }}</p>
+          </article>
+          <article class="feature-card reveal reveal-2">
+            <h3 class="text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step2.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step2.description') }}</p>
+          </article>
+          <article class="feature-card reveal reveal-3">
+            <h3 class="text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step3.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step3.description') }}</p>
+          </article>
+          <article class="feature-card reveal reveal-4">
+            <h3 class="text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step4.title') }}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step4.description') }}</p>
+          </article>
         </div>
       </div>
     </section>
@@ -159,21 +250,24 @@
           </p>
           <div class="mt-8 grid gap-4 md:grid-cols-3">
             <article class="chapter-card">
-              <p class="chapter-label">Chapter 01</p>
-              <h3 class="mt-2 text-lg font-semibold text-white">Capture</h3>
-              <p class="mt-2 text-sm text-slate-300">Log each decision with context and market assumptions.</p>
+              <p class="chapter-label">{{ $t('home.cta.step1.label') }}</p>
+              <h3 class="mt-2 text-lg font-semibold text-white">{{ $t('home.cta.step1.title') }}</h3>
+              <p class="mt-2 text-sm text-slate-300">{{ $t('home.cta.step1.description') }}</p>
             </article>
             <article class="chapter-card">
-              <p class="chapter-label">Chapter 02</p>
-              <h3 class="mt-2 text-lg font-semibold text-white">Evaluate</h3>
-              <p class="mt-2 text-sm text-slate-300">Compare results with your thesis and identify weak signals.</p>
+              <p class="chapter-label">{{ $t('home.cta.step2.label') }}</p>
+              <h3 class="mt-2 text-lg font-semibold text-white">{{ $t('home.cta.step2.title') }}</h3>
+              <p class="mt-2 text-sm text-slate-300">{{ $t('home.cta.step2.description') }}</p>
             </article>
             <article class="chapter-card">
-              <p class="chapter-label">Chapter 03</p>
-              <h3 class="mt-2 text-lg font-semibold text-white">Compound</h3>
-              <p class="mt-2 text-sm text-slate-300">Build discipline from feedback loops and consistent review.</p>
+              <p class="chapter-label">{{ $t('home.cta.step3.label') }}</p>
+              <h3 class="mt-2 text-lg font-semibold text-white">{{ $t('home.cta.step3.title') }}</h3>
+              <p class="mt-2 text-sm text-slate-300">{{ $t('home.cta.step3.description') }}</p>
             </article>
           </div>
+          <p class="mt-6 text-sm leading-6 text-slate-300">
+            {{ $t('home.cta.disclaimer') }}
+          </p>
           <NuxtLink
             to="/auth/register"
             class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-orange-500 px-7 py-3 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 cursor-pointer"

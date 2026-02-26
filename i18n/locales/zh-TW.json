@@ -257,15 +257,95 @@
   },
 
   "home": {
+    "badge": "交易基礎共學平台",
     "hero": {
-      "title": "追蹤您的投資旅程",
-      "subtitle": "專為投資人設計的日記系統，記錄每一筆交易、提醒與洞察，讓您的投資決策更明智。",
-      "getStarted": "開始使用",
-      "learnMore": "了解更多"
+      "title": "從交易基礎開始，建立可持續的投資紀律",
+      "subtitle": "以共同學習與紀錄復盤為核心，朝財富自由與被動收入的長期目標前進，不追求短線神話。",
+      "getStarted": "開始共學",
+      "learnMore": "了解學習路徑"
+    },
+    "progress": {
+      "journalLabel": "紀錄習慣",
+      "journalValue": "每日 1 則",
+      "reviewLabel": "復盤節奏",
+      "reviewValue": "每週 1 次",
+      "rulesLabel": "紀律清單",
+      "rulesValue": "持續更新"
+    },
+    "snapshot": {
+      "title": "學習快照",
+      "status": "進行中",
+      "focusLabel": "本期重點",
+      "focusValue": "Trade Basics",
+      "methodLabel": "方法",
+      "methodValue": "記錄 -> 復盤 -> 修正",
+      "communityLabel": "共學模式",
+      "communityValue": "同伴互評",
+      "description": "把每次交易想法、執行與檢討留在同一條時間線，逐步降低重複犯錯。"
+    },
+    "promise": {
+      "title": "學習承諾",
+      "basics": "基礎先行",
+      "risk": "風險優先",
+      "community": "共同學習",
+      "longTerm": "長期累積",
+      "noGuarantee": "不保證獲利"
+    },
+    "learning": {
+      "title": "Trade Basics 學習路徑",
+      "subtitle": "先建立方法，再追求結果。每一步都可執行、可回顧。",
+      "basics": {
+        "title": "市場與策略基礎",
+        "description": "釐清交易邏輯、進出場條件與常見誤區，避免憑感覺下單。"
+      },
+      "risk": {
+        "title": "風險管理",
+        "description": "練習倉位、止損與回撤控制，先活下來再談成長。"
+      },
+      "review": {
+        "title": "紀錄與復盤",
+        "description": "用固定模板記錄決策，透過每週復盤找出可改善的行為。"
+      }
+    },
+    "community": {
+      "title": "共同學習，不單打獨鬥",
+      "subtitle": "透過討論與互評，讓盲點更快被看見。",
+      "share": {
+        "title": "分享紀律",
+        "description": "公開你的交易原則與檢查清單，讓方法可被檢視。"
+      },
+      "feedback": {
+        "title": "獲得回饋",
+        "description": "針對紀錄與復盤拿到具體建議，而不是情緒化評價。"
+      },
+      "accountability": {
+        "title": "互相監督",
+        "description": "維持固定練習與檢討節奏，減少臨場衝動操作。"
+      }
+    },
+    "turnaround": {
+      "title": "扭虧為盈：以流程改善為核心",
+      "subtitle": "不承諾結果，專注降低重複錯誤與提升一致性。",
+      "step1": {
+        "title": "1. 記錄錯誤",
+        "description": "如實記下虧損決策的背景與執行細節。"
+      },
+      "step2": {
+        "title": "2. 找出模式",
+        "description": "辨識重複出現的錯誤觸發條件與情境。"
+      },
+      "step3": {
+        "title": "3. 制定修正規則",
+        "description": "把修正方案寫成可執行的紀律條款。"
+      },
+      "step4": {
+        "title": "4. 反覆驗證",
+        "description": "持續檢查規則效果，必要時迭代更新。"
+      }
     },
     "features": {
       "title": "強大功能",
-      "subtitle": "專為投資人打造的全功能平台",
+      "subtitle": "以紀錄、分析與提醒支持你的學習節奏",
       "diary": {
         "title": "投資日記",
         "description": "使用 Markdown 撰寫豐富的投資日記，記錄交易理由與市場洞察。"
@@ -276,7 +356,7 @@
       },
       "alerts": {
         "title": "智能提醒",
-        "description": "設定時間觸發的提醒，確保您不會錯過重要的交易時機。"
+        "description": "設定時間觸發的提醒，幫助你減少漏掉重要觀察時點。"
       },
       "timeline": {
         "title": "時間軸視圖",
@@ -292,10 +372,26 @@
       }
     },
     "cta": {
-      "title": "準備開始了嗎？",
-      "description": "立即註冊，開始您的投資日記之旅。完全免費，無需綁定信用卡。",
-      "register": "免費註冊",
-      "login": "登入帳戶"
+      "title": "準備開始你的學習循環？",
+      "description": "從今天開始記錄、每週復盤、與同伴互相校準。以財富自由與被動收入為長期方向，但不對任何報酬做保證。",
+      "register": "立即加入",
+      "login": "已有帳戶登入",
+      "step1": {
+        "label": "步驟 01",
+        "title": "記錄",
+        "description": "寫下每次決策的理由、風險與計畫。"
+      },
+      "step2": {
+        "label": "步驟 02",
+        "title": "復盤",
+        "description": "比較執行結果與原始假設，找出偏差。"
+      },
+      "step3": {
+        "label": "步驟 03",
+        "title": "優化",
+        "description": "把回饋轉成下一輪可執行的規則。"
+      },
+      "disclaimer": "本平台內容僅供教育與學習交流，不構成投資建議；投資有風險，結果會因策略與執行而異。"
     },
     "footer": {
       "rights": "保留所有權利"
