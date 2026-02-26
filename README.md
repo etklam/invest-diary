@@ -18,7 +18,7 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 - **Educational Blog**: Public investment education articles (admin-managed) with category filtering
 - **Multi-language**: English, Traditional Chinese (繁體中文), Simplified Chinese (简体中文)
 - **Dark/Light Mode**: System preference detection with manual toggle
-- **PWA Support**: Installable progressive web application (mobile-first, no offline cache)
+- **PWA Support**: Installable progressive web application with controlled runtime caching (API excluded)
 - **Authentication**: JWT-based with secure httpOnly cookies
 - **Performance**: SWR caching with Cloudflare CDN support
 - **SEO**: Dynamic sitemap generation for search engine optimization
@@ -132,7 +132,7 @@ This project uses PWA **as a mobile app shell**, not as an offline-first applica
 
 - ✅ Installable to home screen (Android / desktop Chrome)
 - ✅ Auto-update via Service Worker
-- ❌ No offline-first caching (to avoid stale investment data)
+- ✅ Runtime caching for static assets/fonts; API routes are always network-only
 - ✅ API routes are never cached
 
 ### Core Files
@@ -151,7 +151,7 @@ This project uses PWA **as a mobile app shell**, not as an offline-first applica
 
 - [`nuxt.config.ts`](nuxt.config.ts:174)
   - PWA manifest configuration
-  - Minimal Workbox setup (no runtime caching)
+  - Workbox runtime caching for static assets/fonts with API `NetworkOnly`
 
 ### Known Platform Differences
 

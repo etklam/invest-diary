@@ -124,6 +124,7 @@ export const useAppPWA = () => {
     if (import.meta.client) {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
       window.removeEventListener('appinstalled', handleAppInstalled)
+      isInitialized = false
     }
   }
 

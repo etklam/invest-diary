@@ -182,7 +182,7 @@ export default defineNuxtConfig({
 
   pwa: {
     registerType: 'autoUpdate',
-    includeAssets: ['favicon.ico', 'robots.txt'],
+    includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg'],
     manifest: {
       name: '投資日記',
       short_name: '投資日記',
@@ -224,26 +224,45 @@ export default defineNuxtConfig({
       // 執行時快取策略
       runtimeCaching: [
         {
-          // 靜態資源使用 StaleWhileRevalidate（排除 html，避免部署後需硬刷新）
-          urlPattern: /^https?:\/\/.*\.(?:js|css|png|svg|ico|txt|woff|woff2)$/,
-          handler: 'StaleWhileRevalidate',
+          // 字體資源較穩定，採用 CacheFirst 降低重複下載
+          urlPattern: /^https?:\/\/.*\.(?:woff|woff2|ttf|otf)$/,
+          handler: 'CacheFirst',
           options: {
-            cacheName: 'static-resources',
+            cacheName: 'font-assets',
             expiration: {
-              maxEntries: 100,
-              maxAgeSeconds: 60 * 60 * 24 * 7 // 7 天
+              maxEntries: 30,
+              maxAgeSeconds: 60 * 60 * 24 * 30 // 30 天
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
             }
           }
         },
         {
-          // API 請求使用 NetworkOnly（不快取）
+          // 一般靜態資源用 StaleWhileRevalidate 保持更新速度與體驗平衡
+          urlPattern: /^https?:\/\/.*\.(?:js|css|png|svg|ico|txt)$/,
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'static-assets',
+            expiration: {
+              maxEntries: 120,
+              maxAgeSeconds: 60 * 60 * 24 * 7 // 7 天
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        },
+        {
+          // API 請求維持 NetworkOnly，避免個人資料與動態資料被快取
           urlPattern: /^https?:\/\/.*\/api\//,
           handler: 'NetworkOnly'
         }
       ]
     },
     devOptions: {
-      enabled: true,
+      // 開發環境預設關閉，避免 SW 影響日常開發；需要時設 NUXT_PWA_DEV=true
+      enabled: process.env.NUXT_PWA_DEV === 'true',
       type: 'module',
       suppressWarnings: true
     },

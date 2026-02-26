@@ -41,6 +41,7 @@
 <script setup lang="ts">
 const { toasts, removeToast } = useToast()
 const { user, fetchMe, isInitialized, isAuthenticated } = useAuth()
+const { canInstall } = useAppPWA()
 const showInstallPrompt = ref(false)
 const showQuickDiaryModal = ref(false)
 const route = useRoute()
@@ -135,6 +136,10 @@ watch(
   },
   { immediate: true }
 )
+
+watch(canInstall, (value) => {
+  showInstallPrompt.value = value
+}, { immediate: true })
 
 // Fetch current user on mount only if not already initialized
 onMounted(async () => {
