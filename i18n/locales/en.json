@@ -400,21 +400,21 @@
 
   "about": {
     "hero": {
-      "title": "Personal Investment Diary",
-      "subtitle": "A personal project built for individual investment management"
+      "title": "About Me",
+      "subtitle": "Builder notes behind a trade-basics co-learning project"
     },
     "intro": {
-      "title": "Project Introduction",
-      "content": "This is a personally developed investment diary system, specifically designed for recording personal investment decisions, transaction records, and market insights. As a personal project, it combines practical investment needs with modern development technologies to provide a simple yet powerful tool."
+      "title": "Who I Am",
+      "content": "I am the developer of this site and a trader still learning every day. This project started as my own journal and evolved into a structured workflow for recording, reviewing, and improving decisions with others."
     },
     "motivation": {
-      "title": "Development Motivation",
-      "paragraph1": "Throughout my investment journey, I discovered that systematically recording trading decisions and reflections is crucial for investment growth. While there are many investment management tools on the market, most are overly complex or lack personalized features.",
-      "paragraph2": "Therefore, I decided to develop an investment diary system that meets my personal needs—one that can record trading decisions, track investment performance, and provide timely reminders to help myself continuously learn and improve on the investment path."
+      "title": "Why I Built This",
+      "paragraph1": "I used to repeat the same mistakes in emotional, low-discipline trades. Over time, I learned the real issue was not a lack of information, but the lack of a consistent process I could review.",
+      "paragraph2": "This site is not built to promise quick wins. It is a practical training environment: log each decision, review it regularly, and refine your rules to reduce repeated errors while moving toward long-term goals like financial freedom and passive income."
     },
     "features": {
       "title": "Main Features",
-      "subtitle": "Features tailored for personal investment management",
+      "subtitle": "Tools I use in practice and share with the community",
       "diary": {
         "title": "Investment Diary",
         "description": "Write detailed investment diaries using Markdown syntax, documenting trading reasons, market analysis, and personal reflections to build a complete record of investment decisions."
@@ -433,7 +433,7 @@
       },
       "alerts": {
         "title": "Alert System",
-        "description": "Set time-triggered personal reminders to ensure you never miss important trading opportunities or market events."
+        "description": "Set reminder checkpoints to reduce missed observations and review moments."
       },
       "discipline": {
         "title": "Trading Discipline",
@@ -449,11 +449,11 @@
       "subtitle": "Developed with modern technology stack"
     },
     "personal": {
-      "title": "Personal Project Features",
-      "content": "As a personal project, the system focuses on practicality rather than commercialization. No ads, no data collection, no unnecessary features—only pure investment management tools. All features are developed based on actual investment needs, with continuous optimization and improvement."
+      "title": "My Principles",
+      "content": "I keep this project simple, transparent, and sustainable: no overpromising, no hype language, and strong focus on verifiable process improvements. All content is for education and shared learning only, not investment advice."
     },
     "footer": {
-      "rights": "Personal project, all rights reserved"
+      "rights": "Personal co-learning project, all rights reserved"
     }
   },
 

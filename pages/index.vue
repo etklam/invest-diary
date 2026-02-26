@@ -99,12 +99,12 @@
     </section>
 
     <section class="px-4 pb-20 sm:px-6">
-      <div class="mx-auto max-w-7xl">
+      <div class="section-panel mx-auto max-w-7xl">
         <div class="mb-10 reveal">
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+          <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
             {{ $t('home.learning.title') }}
           </h2>
-          <p class="mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+          <p class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
             {{ $t('home.learning.subtitle') }}
           </p>
         </div>
@@ -129,12 +129,12 @@
     </section>
 
     <section class="px-4 pb-20 sm:px-6">
-      <div class="mx-auto max-w-7xl">
+      <div class="section-panel mx-auto max-w-7xl">
         <div class="mb-10 reveal">
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+          <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
             {{ $t('home.community.title') }}
           </h2>
-          <p class="mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+          <p class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
             {{ $t('home.community.subtitle') }}
           </p>
         </div>
@@ -159,12 +159,12 @@
     </section>
 
     <section class="px-4 pb-20 sm:px-6">
-      <div class="mx-auto max-w-7xl">
+      <div class="section-panel mx-auto max-w-7xl">
         <div class="mb-10 reveal">
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+          <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
             {{ $t('home.turnaround.title') }}
           </h2>
-          <p class="mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+          <p class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
             {{ $t('home.turnaround.subtitle') }}
           </p>
         </div>
@@ -190,12 +190,12 @@
     </section>
 
     <section class="px-4 pb-20 sm:px-6">
-      <div class="mx-auto max-w-7xl">
+      <div class="section-panel mx-auto max-w-7xl">
         <div class="mb-10 reveal">
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+          <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
             {{ $t('home.features.title') }}
           </h2>
-          <p class="mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+          <p class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
             {{ $t('home.features.subtitle') }}
           </p>
         </div>
@@ -317,6 +317,43 @@ const currentYear = new Date().getFullYear()
     var(--home-bg);
 }
 
+.section-panel {
+  border: 1px solid rgb(186 230 253 / 70%);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 72%), rgb(255 255 255 / 56%));
+  box-shadow: 0 16px 35px rgb(15 23 42 / 8%);
+}
+
+:global(.dark .section-panel),
+:global(.dark-mode .section-panel) {
+  border-color: rgb(51 65 85 / 88%);
+  background:
+    linear-gradient(180deg, rgb(10 16 30 / 86%), rgb(10 16 30 / 76%));
+  box-shadow: 0 16px 35px rgb(2 6 23 / 32%);
+}
+
+.section-title {
+  position: relative;
+  padding-left: 0.85rem;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  width: 4px;
+  height: 1.2em;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(14 165 233), rgb(249 115 22));
+}
+
+.section-subtitle {
+  line-height: 1.75;
+}
+
 :global(.dark .fintech-home),
 :global(.dark-mode .fintech-home) {
   background:
@@ -423,6 +460,7 @@ const currentYear = new Date().getFullYear()
   background: rgb(255 255 255 / 82%);
   backdrop-filter: blur(8px);
   padding: 1rem;
+  box-shadow: 0 10px 20px rgb(14 165 233 / 10%);
 }
 
 :global(.dark .metric-card),
@@ -437,7 +475,7 @@ const currentYear = new Date().getFullYear()
   overflow: hidden;
   background:
     linear-gradient(145deg, rgb(15 23 42 / 98%), rgb(30 41 59 / 94%));
-  box-shadow: 0 20px 45px rgb(15 23 42 / 26%);
+  box-shadow: 0 20px 45px rgb(15 23 42 / 28%);
 }
 
 .terminal-head {
@@ -458,9 +496,11 @@ const currentYear = new Date().getFullYear()
 .trust-strip {
   border: 1px solid rgb(186 230 253 / 80%);
   border-radius: 1rem;
-  background: rgb(255 255 255 / 76%);
+  background:
+    linear-gradient(120deg, rgb(255 255 255 / 82%), rgb(224 242 254 / 72%));
   backdrop-filter: blur(8px);
-  padding: 1.2rem;
+  padding: 1.25rem;
+  box-shadow: 0 12px 28px rgb(14 165 233 / 10%);
 }
 
 :global(.dark .trust-strip),
@@ -494,7 +534,17 @@ const currentYear = new Date().getFullYear()
   background: rgb(255 255 255 / 84%);
   backdrop-filter: blur(8px);
   padding: 1.35rem;
+  position: relative;
+  overflow: hidden;
   transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.feature-card::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgb(14 165 233 / 95%), rgb(56 189 248 / 25%));
 }
 
 :global(.dark .feature-card),
@@ -506,7 +556,7 @@ const currentYear = new Date().getFullYear()
 .feature-card:hover {
   transform: translateY(-3px);
   border-color: rgb(14 165 233 / 45%);
-  box-shadow: 0 14px 30px rgb(14 165 233 / 14%);
+  box-shadow: 0 16px 34px rgb(14 165 233 / 18%);
 }
 
 :global(.dark .feature-card:hover),
@@ -523,10 +573,11 @@ const currentYear = new Date().getFullYear()
 .story-panel {
   border: 1px solid rgb(30 41 59 / 70%);
   border-radius: 1.25rem;
-  padding: 1.5rem;
+  padding: 1.6rem;
   background:
     radial-gradient(900px 200px at 0% 0%, rgb(56 189 248 / 18%), transparent 60%),
     linear-gradient(145deg, rgb(2 6 23), rgb(15 23 42));
+  box-shadow: 0 22px 46px rgb(2 6 23 / 38%);
 }
 
 .chapter-card {
@@ -585,6 +636,16 @@ const currentYear = new Date().getFullYear()
   .feature-card:hover,
   .action-btn-primary:hover {
     transform: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .section-panel {
+    padding: 2rem;
+  }
+
+  .story-panel {
+    padding: 2rem;
   }
 }
 </style>
