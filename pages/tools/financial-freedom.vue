@@ -7,7 +7,6 @@ import {
   formatDate
 } from '~/lib/financialFreedom'
 import type { FinancialFreedomInput, WithdrawalRatePreset } from '~/lib/financialFreedom'
-import type { FinancialFreedomInput, WithdrawalRatePreset } from '~/lib/financialFreedom'
 
 const { t, locale } = useI18n()
 const toast = useToast()
