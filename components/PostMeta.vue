@@ -2,7 +2,7 @@
   <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500 dark:text-gray-500">
     <!-- Author -->
     <div class="flex items-center gap-1.5 dark:text-gray-400">
-      <i-heroicons-user class="w-4 h-4" />
+      <Icon name="heroicons:user-20-solid" class="h-4 w-4" />
       <span class="truncate">{{ author }}</span>
     </div>
 
@@ -11,7 +11,7 @@
 
     <!-- Date -->
     <div class="flex items-center gap-1.5 dark:text-gray-400">
-      <i-heroicons-calendar class="w-4 h-4" />
+      <Icon name="heroicons:calendar-days-20-solid" class="h-4 w-4" />
       <span>{{ formattedDate }}</span>
     </div>
 
@@ -20,7 +20,7 @@
 
     <!-- Reading Time -->
     <div class="flex items-center gap-1.5 dark:text-gray-400">
-      <i-heroicons-clock class="w-4 h-4" />
+      <Icon name="heroicons:clock-20-solid" class="h-4 w-4" />
       <span>{{ $t('blog.readingTime', { min: readingTime }) }}</span>
     </div>
   </div>

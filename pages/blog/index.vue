@@ -63,7 +63,7 @@
                   :placeholder="$t('blog.searchPlaceholder')"
                 />
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <i-heroicons-magnifying-glass class="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                  <Icon name="heroicons:magnifying-glass-20-solid" class="h-5 w-5 text-slate-400 dark:text-slate-500" />
                 </div>
               </div>
             </div>
@@ -89,7 +89,7 @@
 
           <div v-else-if="error" class="rounded-2xl border border-red-300/70 bg-red-50/90 p-4 text-red-900 dark:border-red-800/50 dark:bg-red-900/20 dark:text-red-300">
             <div class="flex items-start gap-3">
-              <i-heroicons-x-circle class="h-5 w-5" />
+              <Icon name="heroicons:x-circle-20-solid" class="h-5 w-5" />
               <h3 class="text-sm font-medium">
                 {{ $t('blog.loadFailed') }}
               </h3>
@@ -98,7 +98,7 @@
 
           <div v-else-if="posts.length === 0" class="empty-shell rounded-2xl py-16 text-center">
             <div class="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full border border-slate-200/80 bg-white/85 dark:border-slate-700/80 dark:bg-slate-900/80">
-              <i-heroicons-document-text class="h-8 w-8 text-slate-400 dark:text-slate-500" />
+              <Icon name="heroicons:document-text-20-solid" class="h-8 w-8 text-slate-400 dark:text-slate-500" />
             </div>
             <h3 class="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">
               {{ $t('blog.noPosts') }}

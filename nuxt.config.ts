@@ -40,6 +40,11 @@ export default defineNuxtConfig({
     '@nuxtjs/sitemap'
   ],
 
+  icon: {
+    provider: 'iconify',
+    serverBundle: false
+  },
+
   css: [
     '~/assets/css/design-tokens.css',
     '~/assets/css/mobile.css',
