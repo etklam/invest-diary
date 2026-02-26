@@ -282,9 +282,15 @@ describe('Auth API', () => {
         email: 'test@example.com',
         name: 'Test User',
         role: 'USER',
+        password: 'hashed-password',
+        tokenVersion: 3,
         expectedMonthlyTrades: 10,
         expectedProfit: 1000,
         expectedAvgHolding: 5,
+        timezone: 'Asia/Taipei',
+        favoriteTagsString: 'etf,swing',
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-02'),
       }
 
       mockUserFindUnique.mockResolvedValue(mockUser)
@@ -307,6 +313,30 @@ describe('Auth API', () => {
 
       expect(result).toMatchObject({
         ok: true,
+        data: {
+          id: '1',
+          email: 'test@example.com',
+          role: 'USER',
+          timezone: 'Asia/Taipei',
+        },
+      })
+      expect((result as any).data.password).toBeUndefined()
+      expect((result as any).data.tokenVersion).toBeUndefined()
+      expect(mockUserFindUnique).toHaveBeenCalledWith({
+        where: { id: 1n },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          expectedMonthlyTrades: true,
+          expectedProfit: true,
+          expectedAvgHolding: true,
+          timezone: true,
+          favoriteTagsString: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       })
     })
 

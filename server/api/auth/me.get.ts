@@ -5,7 +5,20 @@ export default defineEventHandler(async (event) => {
   const auth = requireUser(event)
 
   const user = await prisma.user.findUnique({
-    where: { id: BigInt(auth.id) }
+    where: { id: BigInt(auth.id) },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      expectedMonthlyTrades: true,
+      expectedProfit: true,
+      expectedAvgHolding: true,
+      timezone: true,
+      favoriteTagsString: true,
+      createdAt: true,
+      updatedAt: true
+    }
   })
 
   if (!user) {
@@ -14,6 +27,18 @@ export default defineEventHandler(async (event) => {
 
   return {
     ok: true,
-    data: user
+    data: {
+      id: user.id.toString(),
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      expectedMonthlyTrades: user.expectedMonthlyTrades,
+      expectedProfit: user.expectedProfit,
+      expectedAvgHolding: user.expectedAvgHolding,
+      timezone: user.timezone,
+      favoriteTagsString: user.favoriteTagsString,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    }
   }
 })
