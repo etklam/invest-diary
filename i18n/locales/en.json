@@ -1018,8 +1018,8 @@
       "currentAssetsPlaceholder": "e.g., 1000000",
       "monthlyContribution": "Monthly Contribution",
       "monthlyContributionPlaceholder": "e.g., 20000",
-      "expectedReturn": "Expected Annual Return",
-      "expectedReturnHint": "Expected annual return of your portfolio, recommend 6-10%",
+      "expectedReturn": "Target Annual Return",
+      "expectedReturnHint": "Target annual return of your portfolio, recommend 6-10%",
       "returnRateLevels": {
         "conservative": {
           "label": "Too Conservative",
@@ -1082,6 +1082,19 @@
       "privacyNote": "🔒 All calculations are performed in your browser. No data is sent to the server.",
       "disclaimer": "This tool is for reference only and does not constitute investment advice. Actual returns may vary due to market fluctuations. Please consult a professional financial advisor.",
       "emptyState": "Enter your annual expenses and current assets to calculate your financial freedom",
+      "recommendations": {
+        "progress": {
+          "alreadyFree": "🎉 Congratulations! You are financially free!",
+          "veryClose": "🔥 Very close! Keep up your current contribution pace.",
+          "halfway": "💪 Already halfway! Getting closer to your goal.",
+          "goodStart": "📈 Good start, consistent contributions are key.",
+          "justStarted": "🌱 Your financial freedom journey starts now, every step matters."
+        },
+        "withdrawal": {
+          "conservative": "You chose a conservative withdrawal rate. Your portfolio will likely last longer, suitable for long-term planning.",
+          "aggressive": "You chose an aggressive withdrawal rate. Be mindful of market volatility, consider maintaining a larger buffer."
+        }
+      },
       "copySuccess": "Copied to clipboard",
       "copyFailed": "Copy failed"
     }

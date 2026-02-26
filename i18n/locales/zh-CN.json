@@ -922,8 +922,8 @@
       "currentAssetsPlaceholder": "例如：1000000",
       "monthlyContribution": "每月投入",
       "monthlyContributionPlaceholder": "例如：20000",
-      "expectedReturn": "预期年化报酬率",
-      "expectedReturnHint": "投资组合的预期年报酬率，建议 6-10%",
+      "expectedReturn": "目标年化报酬率",
+      "expectedReturnHint": "投资组合的目标年报酬率，建议 6-10%",
       "returnRateLevels": {
         "conservative": {
           "label": "太保守",
@@ -986,6 +986,19 @@
       "privacyNote": "🔒 所有计算都在您的浏览器中进行，服务器不会储存任何资料。",
       "disclaimer": "本工具仅供参考，不构成投资建议。实际报酬率可能因市场波动而有所不同，建议咨询专业财务顾问。",
       "emptyState": "请输入年度支出与目前资产以计算财务自由",
+      "recommendations": {
+        "progress": {
+          "alreadyFree": "🎉 恭喜！您已达成财务自由！",
+          "veryClose": "🔥 非常接近了！继续保持目前的投入速度。",
+          "halfway": "💪 已经过半！距离目标越来越近。",
+          "goodStart": "📈 良好的开始，持续投入是关键。",
+          "justStarted": "🌱 财务自由之旅从现在开始，每一步都很重要。"
+        },
+        "withdrawal": {
+          "conservative": "您选择保守型提领率，资产使用寿命较长，适合长期规划。",
+          "aggressive": "您选择积极型提领率，注意市场波动风险，建议保留更多缓冲。"
+        }
+      },
       "copySuccess": "已复制到剪贴板",
       "copyFailed": "复制失败"
     },

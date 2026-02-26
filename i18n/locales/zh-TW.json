@@ -1017,8 +1017,8 @@
       "currentAssetsPlaceholder": "例如：1000000",
       "monthlyContribution": "每月投入",
       "monthlyContributionPlaceholder": "例如：20000",
-      "expectedReturn": "預期年化報酬率",
-      "expectedReturnHint": "投資組合的預期年報酬率，建議 6-10%",
+      "expectedReturn": "目標年化報酬率",
+      "expectedReturnHint": "投資組合的目標年報酬率，建議 6-10%",
       "returnRateLevels": {
         "conservative": {
           "label": "太保守",
@@ -1081,6 +1081,19 @@
       "privacyNote": "🔒 所有計算都在您的瀏覽器中進行，伺服器不會儲存任何資料。",
       "disclaimer": "本工具僅供參考，不構成投資建議。實際報酬率可能因市場波動而有所不同，建議諮詢專業財務顧問。",
       "emptyState": "請輸入年度支出與目前資產以計算財務自由",
+      "recommendations": {
+        "progress": {
+          "alreadyFree": "🎉 恭喜！您已達成財務自由！",
+          "veryClose": "🔥 非常接近了！繼續保持目前的投入速度。",
+          "halfway": "💪 已經過半！距離目標越來越近。",
+          "goodStart": "📈 良好的開始，持續投入是關鍵。",
+          "justStarted": "🌱 財務自由之旅從現在開始，每一步都很重要。"
+        },
+        "withdrawal": {
+          "conservative": "您選擇保守型提領率，資產使用壽命較長，適合長期規劃。",
+          "aggressive": "您選擇積極型提領率，注意市場波動風險，建議保留更多緩衝。"
+        }
+      },
       "copySuccess": "已複製到剪貼簿",
       "copyFailed": "複製失敗"
     }

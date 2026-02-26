@@ -89,6 +89,39 @@ const progressColor = computed(() => {
   return 'bg-gray-400'
 })
 
+// Localized recommendation
+const localizedRecommendation = computed(() => {
+  if (!result.value) return ''
+
+  const progress = result.value.currentProgress
+  const years = result.value.yearsToFreedom
+  const wr = withdrawalRate.value
+
+  const lines: string[] = []
+
+  // Progress-based recommendation
+  if (progress >= 100) {
+    lines.push(t('tools.financialFreedom.recommendations.progress.alreadyFree'))
+  } else if (progress >= 75) {
+    lines.push(t('tools.financialFreedom.recommendations.progress.veryClose'))
+  } else if (progress >= 50) {
+    lines.push(t('tools.financialFreedom.recommendations.progress.halfway'))
+  } else if (progress >= 25) {
+    lines.push(t('tools.financialFreedom.recommendations.progress.goodStart'))
+  } else {
+    lines.push(t('tools.financialFreedom.recommendations.progress.justStarted'))
+  }
+
+  // Withdrawal rate recommendation
+  if (wr <= 3) {
+    lines.push(t('tools.financialFreedom.recommendations.withdrawal.conservative'))
+  } else if (wr >= 5) {
+    lines.push(t('tools.financialFreedom.recommendations.withdrawal.aggressive'))
+  }
+
+  return lines.join('\n\n')
+})
+
 // Get localized preset name
 const getPresetName = (preset: typeof withdrawalRatePresets[0]) => {
   return t(`tools.financialFreedom.withdrawalPresets.${preset.id}.name`)
@@ -312,10 +345,10 @@ definePageMeta({
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <!-- Conservative -->
           <div
-            class="rounded-lg p-3 border-2 transition-all cursor-pointer"
+            class="rounded-lg p-3 border-2 transition-all"
             :class="returnRateLevel === 'conservative'
               ? 'border-gray-500 bg-gray-100 dark:bg-gray-800'
-              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+              : 'border-gray-200 dark:border-gray-700'"
           >
             <div class="flex items-center gap-2 mb-1">
               <div class="w-3 h-3 rounded-full bg-gray-500" />
@@ -332,10 +365,10 @@ definePageMeta({
           </div>
           <!-- Target -->
           <div
-            class="rounded-lg p-3 border-2 transition-all cursor-pointer"
+            class="rounded-lg p-3 border-2 transition-all"
             :class="returnRateLevel === 'target'
               ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-              : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600'"
+              : 'border-gray-200 dark:border-gray-700'"
           >
             <div class="flex items-center gap-2 mb-1">
               <div class="w-3 h-3 rounded-full bg-green-500" />
@@ -352,10 +385,10 @@ definePageMeta({
           </div>
           <!-- Expert -->
           <div
-            class="rounded-lg p-3 border-2 transition-all cursor-pointer"
+            class="rounded-lg p-3 border-2 transition-all"
             :class="returnRateLevel === 'expert'
               ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-              : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'"
+              : 'border-gray-200 dark:border-gray-700'"
           >
             <div class="flex items-center gap-2 mb-1">
               <div class="w-3 h-3 rounded-full bg-purple-500" />
@@ -587,7 +620,7 @@ definePageMeta({
         <div class="flex items-start gap-3">
           <Icon name="heroicons:light-bulb" class="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
           <div class="text-sm text-amber-800 dark:text-amber-200 whitespace-pre-line">
-            {{ result.recommendation }}
+            {{ localizedRecommendation }}
           </div>
         </div>
       </div>
