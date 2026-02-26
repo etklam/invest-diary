@@ -5,6 +5,12 @@ export default defineNuxtConfig({
       external: ['@prisma/client']
     },
     nodeModulesDirs: ['../node_modules'],
+    // Allow all environment variables (not just NUXT_ prefixed)
+    experimental: {
+      vars: true
+    },
+    // Ensure non-NUXT_ prefixed env vars are available at runtime
+    envPrefix: '',
     routeRules: {
       '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } },
       '/blog': {

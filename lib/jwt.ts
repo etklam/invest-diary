@@ -12,10 +12,14 @@ export interface TokenPayload {
 }
 
 function getSecret() {
-  if (!process.env.JWT_SECRET) {
+  // Try multiple sources for JWT_SECRET to support different Nitro environments
+  const secret = process.env.JWT_SECRET || globalThis.process?.env?.JWT_SECRET
+
+  if (!secret) {
     throw new Error('JWT_SECRET is not defined')
   }
-  return new TextEncoder().encode(process.env.JWT_SECRET)
+
+  return new TextEncoder().encode(secret)
 }
 
 /**
