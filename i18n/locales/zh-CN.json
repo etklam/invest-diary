@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "投资日记",
+    "appName": "交易基础",
     "loading": "加载中...",
     "loadMore": "加载更多",
     "save": "保存",
@@ -346,7 +346,7 @@
       "title": "强大功能",
       "subtitle": "用记录、分析与提醒支持你的学习节奏",
       "diary": {
-        "title": "投资日记",
+        "title": "交易基础",
         "description": "使用 Markdown 撰写丰富的投资日记，记录交易理由与市场洞察。"
       },
       "stocks": {
@@ -415,7 +415,7 @@
       "title": "主要功能",
       "subtitle": "我日常在用，也希望对你有帮助的工具",
       "diary": {
-        "title": "投资日记",
+        "title": "交易基础",
         "description": "使用 Markdown 语法撰写详细的投资日记，记录交易理由、市场分析与个人反思，建立完整的投资决策记录。"
       },
       "calendar": {
@@ -911,7 +911,7 @@
 
   "pwa": {
     "install": {
-      "title": "安装投资日记",
+      "title": "安装交易基础",
       "description": "将应用程序安装到主屏幕，获得更好的体验",
       "install": "安装",
       "later": "稍后"

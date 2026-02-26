@@ -191,9 +191,9 @@ export default defineNuxtConfig({
     includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg'],
     strategies: 'generateSW', // Use generateSW for better precaching control
     manifest: {
-      name: '投資日記',
-      short_name: '投資日記',
-      description: '個人投資日記系統 - 追蹤投資筆記與股票組合',
+      name: '交易基礎',
+      short_name: '交易基礎',
+      description: '個人交易基礎學習系統 - 追蹤投資筆記與股票組合',
       lang: 'zh-TW',
       display: 'standalone',
       start_url: '/',

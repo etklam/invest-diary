@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Investment Diary",
+    "appName": "Trade Basic",
     "loading": "Loading...",
     "loadMore": "Load More",
     "save": "Save",
@@ -347,7 +347,7 @@
       "title": "Powerful Features",
       "subtitle": "Tools that support your learning rhythm through logs, analytics, and reminders",
       "diary": {
-        "title": "Investment Diary",
+        "title": "Trade Basic",
         "description": "Write rich investment diaries in Markdown, documenting trade reasons and market insights."
       },
       "stocks": {
@@ -416,7 +416,7 @@
       "title": "Main Features",
       "subtitle": "Tools I use in practice and share with the community",
       "diary": {
-        "title": "Investment Diary",
+        "title": "Trade Basic",
         "description": "Write detailed investment diaries using Markdown syntax, documenting trading reasons, market analysis, and personal reflections to build a complete record of investment decisions."
       },
       "calendar": {
@@ -1006,7 +1006,7 @@
 
   "pwa": {
     "install": {
-      "title": "Install Investment Diary",
+      "title": "Install Trade Basic",
       "description": "Add to home screen for a better experience",
       "install": "Install",
       "later": "Later"
