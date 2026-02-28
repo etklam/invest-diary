@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
-import { signAccessToken, signRefreshToken } from '~/lib/jwt'
+import { signAccessToken, signRefreshToken, REFRESH_TOKEN_MAX_AGE_SECONDS } from '~/lib/jwt'
 import prisma from '~/lib/prisma'
 import { setAuthCookies } from '~/server/utils/auth'
 import { Errors, AppError } from '~/lib/errors/factory'
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
       data: {
         token: refreshToken,
         userId: user.id,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_SECONDS * 1000)
       }
     })
 

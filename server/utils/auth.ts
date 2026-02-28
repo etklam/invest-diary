@@ -1,4 +1,5 @@
 import { H3Event } from 'h3'
+import { ACCESS_TOKEN_MAX_AGE_SECONDS, REFRESH_TOKEN_MAX_AGE_SECONDS } from '~/lib/jwt'
 
 const ACCESS_TOKEN_COOKIE = 'access-token'
 const REFRESH_TOKEN_COOKIE = 'refresh-token'
@@ -11,21 +12,21 @@ export function setAuthCookies(
   accessToken: string,
   refreshToken: string
 ) {
-  // Access token - short-lived (15 minutes)
+  // Access token - 1 hour
   setCookie(event, ACCESS_TOKEN_COOKIE, accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 60 * 15, // 15 minutes
+    maxAge: ACCESS_TOKEN_MAX_AGE_SECONDS,
     path: '/'
   })
 
-  // Refresh token - long-lived (7 days)
+  // Refresh token - 30 days
   setCookie(event, REFRESH_TOKEN_COOKIE, refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,
     path: '/'
   })
 }
@@ -38,7 +39,7 @@ export function setAccessTokenCookie(event: H3Event, accessToken: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 60 * 15, // 15 minutes
+    maxAge: ACCESS_TOKEN_MAX_AGE_SECONDS,
     path: '/'
   })
 }

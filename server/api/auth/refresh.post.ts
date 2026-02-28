@@ -1,4 +1,9 @@
-import { verifyToken, signAccessToken, signRefreshToken } from '~/lib/jwt'
+import {
+  verifyToken,
+  signAccessToken,
+  signRefreshToken,
+  REFRESH_TOKEN_MAX_AGE_SECONDS
+} from '~/lib/jwt'
 import prisma from '~/lib/prisma'
 import { setAccessTokenCookie } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
@@ -82,7 +87,7 @@ export default defineEventHandler(async (event) => {
       data: {
         token: newRefreshToken,
         userId: user.id,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_SECONDS * 1000)
       }
     })
 
@@ -94,7 +99,7 @@ export default defineEventHandler(async (event) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,
       path: '/'
     })
 

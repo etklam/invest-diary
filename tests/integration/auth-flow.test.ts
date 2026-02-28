@@ -54,6 +54,8 @@ vi.mock('~/lib/jwt', () => ({
   signAccessToken: mockSignAccessToken,
   signRefreshToken: mockSignRefreshToken,
   verifyToken: mockVerifyToken,
+  ACCESS_TOKEN_MAX_AGE_SECONDS: 60 * 60,
+  REFRESH_TOKEN_MAX_AGE_SECONDS: 60 * 60 * 24 * 30,
 }))
 
 describe('Authentication Flow Integration', () => {
