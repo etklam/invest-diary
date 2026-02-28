@@ -33,10 +33,11 @@ import QuickTags from '~/components/QuickTags.vue'
 import VoiceInput from '~/components/VoiceInput.vue'
 
 const { t } = useI18n()
+const { getTodayDateString } = useTimezone()
 
 const content = ref('')
 const tags = ref<string[]>([])
-const date = ref(new Date().toISOString().slice(0, 10))
+const date = ref(getTodayDateString())
 const saving = ref(false)
 
 function appendText(text: string) {
@@ -52,7 +53,7 @@ async function save() {
       body: {
         title: 'Quick Diary',
         content: content.value,
-        date: date.value,
+        date: `${date.value}T12:00:00.000Z`,
         tags: tags.value,
       },
     })

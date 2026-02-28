@@ -118,6 +118,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatYmdInTimezone, toDateTimeLocalValue } from '~/lib/diary-date'
+
 definePageMeta({
   middleware: 'auth'
 })
@@ -128,12 +130,13 @@ const id = route.params.id
 const saving = ref(false)
 const toast = useToast()
 const { user } = useAuth()
+const { getTodayDateString, getTimezone } = useTimezone()
 
 // Use lazy fetch to avoid calling API during SSR before auth check
 const { data: diary, pending, error } = await useLazyFetch<any>(`/api/diaries/${id}`)
 
 const form = reactive({
-  date: new Date().toISOString().slice(0, 10),
+  date: getTodayDateString(),
   title: '',
   content: '',
   transactions: [] as any[],
@@ -142,22 +145,24 @@ const form = reactive({
 
 watch(diary, (newDiary) => {
   if (newDiary) {
-    form.date = newDiary.date ? new Date(newDiary.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
+    form.date = newDiary.date
+      ? formatYmdInTimezone(newDiary.date, getTimezone())
+      : getTodayDateString()
     form.title = newDiary.title
     form.content = newDiary.content || ''
     form.transactions = newDiary.transactions.map((t: any) => ({
       ...t,
-      trade_date: new Date(t.tradeDate).toISOString().slice(0, 16)
+      trade_date: toDateTimeLocalValue(t.tradeDate)
     }))
     form.alerts = newDiary.alerts.map((a: any) => ({
       ...a,
-      trigger_at: new Date(a.triggerAt).toISOString().slice(0, 10)
+      trigger_at: formatYmdInTimezone(a.triggerAt, getTimezone())
     }))
   }
 }, { immediate: true })
 
 const addAlert = () => {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = getTodayDateString()
 
   form.alerts.push({
     message: '',
@@ -214,14 +219,14 @@ const saveDiary = async () => {
     const payload = {
       title: form.title,
       content: form.content,
-      date: new Date(form.date).toISOString(),
+      date: `${form.date}T12:00:00.000Z`,
       transactions: form.transactions.map(t => ({
         ...t,
         trade_date: new Date(t.trade_date).toISOString()
       })),
       alerts: form.alerts.map(a => ({
         ...a,
-        trigger_at: new Date(a.trigger_at).toISOString()
+        trigger_at: `${a.trigger_at}T12:00:00.000Z`
       }))
     }
 

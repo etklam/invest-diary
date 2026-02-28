@@ -1,5 +1,6 @@
 import prisma from '~/lib/prisma'
 import type { DiaryInput, Diary } from '~/types/diary'
+import { getUtcDayRange, toUtcNoonDate } from '~/lib/diary-date'
 
 export default defineEventHandler(async (event): Promise<Diary> => {
   const userId = event.context.user?.id
@@ -30,19 +31,15 @@ export default defineEventHandler(async (event): Promise<Diary> => {
   const { title, content, date, transactions, alerts, appendToToday } = body
 
   try {
-    const diaryDate = date ? new Date(date) : new Date()
-    const startOfDay = new Date(diaryDate)
-    startOfDay.setHours(0, 0, 0, 0)
-
-    const endOfDay = new Date(diaryDate)
-    endOfDay.setHours(23, 59, 59, 999)
+    const diaryDate = date ? toUtcNoonDate(date) : toUtcNoonDate(new Date())
+    const { startOfDayUtc, endOfDayUtc } = getUtcDayRange(diaryDate)
 
     const existingDiary = await prisma.diary.findFirst({
       where: {
         userId: userId,
         date: {
-          gte: startOfDay,
-          lte: endOfDay,
+          gte: startOfDayUtc,
+          lte: endOfDayUtc,
         },
       },
     })
@@ -92,7 +89,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
         alerts: {
           create: alerts?.map((a) => ({
             message: a.message,
-            triggerAt: new Date((a.trigger_at ?? a.triggerAt) as any),
+            triggerAt: toUtcNoonDate((a.trigger_at ?? a.triggerAt) as any),
           })),
         },
       },

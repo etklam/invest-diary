@@ -1,4 +1,5 @@
 import prisma from '~/lib/prisma'
+import { getUtcDayRange } from '~/lib/diary-date'
 
 export default defineEventHandler(async (event) => {
   const userId = event.context.user?.id
@@ -23,21 +24,16 @@ export default defineEventHandler(async (event) => {
   console.log('Checking diary for date:', dateStr, 'user:', userId)
 
   try {
-    // Parse the date and get start/end of day
-    const date = new Date(dateStr)
-    const startOfDay = new Date(date)
-    startOfDay.setHours(0, 0, 0, 0)
-
-    const endOfDay = new Date(date)
-    endOfDay.setHours(23, 59, 59, 999)
+    // Normalize date search to UTC day range for timezone-stable matching
+    const { startOfDayUtc, endOfDayUtc } = getUtcDayRange(dateStr)
 
     // Find diary within the date range for this user
     const diary = await prisma.diary.findFirst({
       where: {
         userId: userId,
         date: {
-          gte: startOfDay,
-          lte: endOfDay,
+          gte: startOfDayUtc,
+          lte: endOfDayUtc,
         },
       },
       include: {

@@ -138,6 +138,8 @@
 </template>
 
 <script setup lang="ts">
+import { toDateTimeLocalValue } from '~/lib/diary-date'
+
 definePageMeta({
   middleware: 'auth'
 })
@@ -149,7 +151,7 @@ const checkingDate = ref(false)
 const loadingLatest = ref(false)
 const isEditing = ref(false)
 const existingDiaryId = ref<string | null>(null)
-const { getTodayDateString, getDateInTimezone, formatLocaleDate } = useTimezone()
+const { getTodayDateString, formatLocaleDate, getTimezone } = useTimezone()
 
 // Get date from URL query parameter or use today
 const initialDate = (route.query.date as string) || getTodayDateString()
@@ -185,14 +187,19 @@ watch(() => form.date, async (newDate) => {
         type: tx.type,
         quantity: parseFloat(tx.quantity),
         price: parseFloat(tx.price),
-        trade_date: getDateInTimezone(new Date(tx.tradeDate)).toISOString().slice(0, 10)
+        trade_date: toDateTimeLocalValue(tx.tradeDate)
       })) || []
 
       // Load alerts
       form.alerts = existingDiary.alerts?.map((a: any) => ({
         id: a.id.toString(),
         message: a.message,
-        trigger_at: getDateInTimezone(new Date(a.triggerAt)).toISOString().slice(0, 10)
+        trigger_at: new Intl.DateTimeFormat('en-CA', {
+          timeZone: getTimezone(),
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(new Date(a.triggerAt))
       })) || []
     } else {
       // No diary exists for this date, reset form for new entry
@@ -322,22 +329,27 @@ const saveDiary = async () => {
 
   saving.value = true
   try {
-    // Format dates for API - use noon to avoid timezone boundary issues
-    const toApiDate = (dateStr: string) => {
-      return new Date(dateStr + 'T12:00:00').toISOString()
+    // Store date-only fields at UTC noon for timezone-stable day semantics
+    const toApiDayNoon = (dateStr: string) => {
+      return `${dateStr}T12:00:00.000Z`
+    }
+
+    // Keep transaction datetime precision
+    const toApiDateTime = (dateTimeStr: string) => {
+      return new Date(dateTimeStr).toISOString()
     }
 
     const payload = {
       title: form.title,
       content: form.content,
-      date: toApiDate(form.date),
+      date: toApiDayNoon(form.date),
       transactions: form.transactions.map(t => ({
         ...t,
-        trade_date: toApiDate(t.trade_date)
+        trade_date: toApiDateTime(t.trade_date)
       })),
       alerts: form.alerts.map(a => ({
         ...a,
-        trigger_at: toApiDate(a.trigger_at),
+        trigger_at: toApiDayNoon(a.trigger_at),
         recurring_mode: a.recurring_mode || undefined
       }))
     }

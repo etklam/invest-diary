@@ -741,7 +741,7 @@ const emit = defineEmits<{
 }>()
 
 const { t, locale } = useI18n()
-const { getTodayDateString, getDateInTimezone } = useTimezone()
+const { getTodayDateString } = useTimezone()
 const step = ref(1)
 const selectedTemplate = ref<'trading' | 'reflection' | 'observation' | null>(null)
 const saving = ref(false)
@@ -788,11 +788,7 @@ watch(() => formData.symbols, (newValue) => {
 // Format date for display (e.g., 2024/01/15)
 const formattedDate = computed(() => {
   if (!selectedDate.value) return todayStr
-  const d = getDateInTimezone(new Date(selectedDate.value + 'T12:00:00'))
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${yyyy}/${mm}/${dd}`
+  return selectedDate.value.replace(/-/g, '/')
 })
 
 // Preview computed
@@ -887,9 +883,6 @@ const createDiary = async () => {
     return
   }
 
-  // Create date object from selected date (at noon to avoid timezone issues)
-  const dateObj = getDateInTimezone(new Date(selectedDate.value + 'T12:00:00'))
-
   saving.value = true
   try {
     const diary = await $fetch<{ id: { toString: () => string } }>('/api/diaries', {
@@ -897,7 +890,7 @@ const createDiary = async () => {
       body: {
         title: previewTitle.value,
         content: previewContent.value,
-        date: dateObj.toISOString(),
+        date: `${selectedDate.value}T12:00:00.000Z`,
         appendToToday: true
       }
     })

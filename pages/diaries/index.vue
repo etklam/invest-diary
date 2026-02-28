@@ -149,7 +149,7 @@
               {{ diary.title }}
             </h2>
             <span class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap ml-2">
-              {{ new Date(diary.date || diary.createdAt).toLocaleDateString() }}
+              {{ formatDiaryDate(diary.date || diary.createdAt) }}
             </span>
           </div>
           <p class="mt-2 text-slate-600 dark:text-slate-300 line-clamp-3 text-sm">
@@ -177,9 +177,12 @@
 </template>
 
 <script setup lang="ts">
+import { formatYmdInTimezone } from '~/lib/diary-date'
+
 definePageMeta({
   middleware: 'auth'
 })
+const { formatLocaleDate, getTimezone } = useTimezone()
 
 // Quick diary modal state
 const showQuickModal = ref(false)
@@ -226,21 +229,17 @@ const filteredDiaries = computed(() => {
 
   // Date from filter
   if (filters.dateFrom) {
-    const fromDate = new Date(filters.dateFrom)
-    fromDate.setHours(0, 0, 0, 0)
     result = result.filter(d => {
-      const diaryDate = new Date(d.date || d.createdAt)
-      return diaryDate >= fromDate
+      const diaryYmd = formatYmdInTimezone(d.date || d.createdAt, getTimezone())
+      return diaryYmd >= filters.dateFrom
     })
   }
 
   // Date to filter
   if (filters.dateTo) {
-    const toDate = new Date(filters.dateTo)
-    toDate.setHours(23, 59, 59, 999)
     result = result.filter(d => {
-      const diaryDate = new Date(d.date || d.createdAt)
-      return diaryDate <= toDate
+      const diaryYmd = formatYmdInTimezone(d.date || d.createdAt, getTimezone())
+      return diaryYmd <= filters.dateTo
     })
   }
 
@@ -278,6 +277,14 @@ watch(error, (error) => {
     console.error('Error fetching diaries:', error)
   }
 })
+
+const formatDiaryDate = (date: string | Date) => {
+  return formatLocaleDate(date, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+}
 </script>
 
 <style scoped>

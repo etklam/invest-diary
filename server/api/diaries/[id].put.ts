@@ -2,6 +2,7 @@ import prisma from '../../../lib/prisma'
 import type { DiaryInput, Diary } from '~/types/diary'
 import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
+import { toUtcNoonDate } from '~/lib/diary-date'
 
 export default defineEventHandler(async (event): Promise<Diary> => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -60,7 +61,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
         data: {
           title,
           content,
-          date: date ? new Date(date) : undefined,
+          date: date ? toUtcNoonDate(date) : undefined,
           transactions: {
             create: transactions?.map((tx) => ({
               symbol: tx.symbol?.trim().toUpperCase(),
@@ -73,7 +74,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
           alerts: {
             create: alerts?.map((a) => ({
               message: a.message,
-              triggerAt: new Date((a.trigger_at ?? a.triggerAt) as any),
+              triggerAt: toUtcNoonDate((a.trigger_at ?? a.triggerAt) as any),
             })),
           },
         },

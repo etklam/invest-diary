@@ -1,5 +1,6 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { formatDateWithWeekday } from '~/lib/utils'
+import { formatYmdInTimezone } from '~/lib/diary-date'
 import type {
   Diary,
   DiaryGroup,
@@ -98,21 +99,17 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
 
     // Date from filter
     if (filters.dateFrom) {
-      const fromDate = new Date(filters.dateFrom)
-      fromDate.setHours(0, 0, 0, 0)
       result = result.filter(d => {
-        const diaryDate = new Date(d.date || d.createdAt)
-        return diaryDate >= fromDate
+        const diaryYmd = formatYmdInTimezone(d.date || d.createdAt, userTimezone.value)
+        return diaryYmd >= filters.dateFrom
       })
     }
 
     // Date to filter
     if (filters.dateTo) {
-      const toDate = new Date(filters.dateTo)
-      toDate.setHours(23, 59, 59, 999)
       result = result.filter(d => {
-        const diaryDate = new Date(d.date || d.createdAt)
-        return diaryDate <= toDate
+        const diaryYmd = formatYmdInTimezone(d.date || d.createdAt, userTimezone.value)
+        return diaryYmd <= filters.dateTo
       })
     }
 
@@ -129,9 +126,10 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
     const groups = new Map<string, DiaryGroup>()
 
     filteredDiaries.value.forEach(diary => {
-      const date = new Date(diary.date || diary.createdAt)
-      const year = date.getFullYear()
-      const month = date.getMonth() + 1
+      const ymd = formatYmdInTimezone(diary.date || diary.createdAt, userTimezone.value)
+      const [yearStr, monthStr] = ymd.split('-')
+      const year = Number(yearStr)
+      const month = Number(monthStr)
       const period = `${year}-${String(month).padStart(2, '0')}`
       const periodLabel = t('timeline.periodLabel', { year, month })
 
