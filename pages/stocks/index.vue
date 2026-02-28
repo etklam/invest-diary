@@ -61,8 +61,84 @@
         </div>
       </div>
 
+      <!-- Controls -->
+      <section class="panel mb-8 p-4 sm:p-6">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-4">
+          <div class="lg:col-span-2">
+            <label for="stocks-search" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+              搜尋代碼
+            </label>
+            <input
+              id="stocks-search"
+              v-model="searchQuery"
+              type="text"
+              placeholder="例如 AAPL, TSLA"
+              class="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            >
+          </div>
+          <div>
+            <label for="profit-filter" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+              損益狀態
+            </label>
+            <select
+              id="profit-filter"
+              v-model="profitStatusFilter"
+              class="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            >
+              <option value="all">全部</option>
+              <option value="gain">盈利</option>
+              <option value="loss">虧損</option>
+              <option value="no-quote">無報價</option>
+            </select>
+          </div>
+          <div>
+            <label for="concentration-filter" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+              成本占比
+            </label>
+            <select
+              id="concentration-filter"
+              v-model="concentrationFilter"
+              class="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            >
+              <option value="all">全部</option>
+              <option value="ge10">>= 10%</option>
+              <option value="ge20">>= 20%</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">快速排序</span>
+          <button
+            v-for="option in quickSortOptions"
+            :key="option"
+            type="button"
+            :aria-pressed="quickSortKey === option"
+            @click="toggleQuickSort(option)"
+            class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors"
+            :class="quickSortKey === option
+              ? 'border-blue-500 bg-blue-100 text-blue-900 dark:border-blue-400 dark:bg-blue-950/40 dark:text-blue-100'
+              : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'"
+          >
+            {{ quickSortLabels[option] }}
+            <Icon
+              v-if="quickSortKey === option"
+              :name="quickSortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+              class="ml-1 h-4 w-4"
+            />
+          </button>
+          <button
+            v-if="hasActiveControls"
+            type="button"
+            @click="resetControls"
+            class="ml-auto inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            清除條件
+          </button>
+        </div>
+      </section>
+
       <!-- Holdings Donut Chart -->
-      <section v-if="holdings.length > 0" class="py-4 overflow-hidden mb-8">
+      <section v-if="baseHoldings.length > 0" class="py-4 overflow-hidden mb-8">
         <div class="pt-4 px-6 pb-6 panel">
             <div class="flex flex-wrap items-center justify-between mb-11 -m-2">
               <div class="w-auto p-2">
@@ -260,8 +336,10 @@
                     {{ holding.price ? formatCurrency(holding.price * holding.quantity) : '—' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <span :class="holding.price && holding.price * holding.quantity - holding.totalCost >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-                      {{ holding.price ? formatCurrency(holding.price * holding.quantity - holding.totalCost) : '—' }}
+                    <span
+                      :class="holding.unrealizedAmount === null ? 'text-slate-500 dark:text-slate-400' : holding.unrealizedAmount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                    >
+                      {{ holding.unrealizedAmount !== null ? formatCurrency(holding.unrealizedAmount) : '—' }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 text-right">
@@ -276,8 +354,8 @@
                     </span>
                   </td>
                 </tr>
-                <tr v-if="!holdings || holdings.length === 0">
-                  <td colspan="5" class="px-6 py-12 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 text-center">
+                <tr v-if="baseHoldings.length === 0">
+                  <td colspan="9" class="px-6 py-12 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 text-center">
                     <div class="flex flex-col items-center">
                       <Icon name="heroicons:document" class="h-12 w-12 text-slate-400 mb-2" />
                       <p>目前無持股</p>
@@ -290,13 +368,18 @@
                     </div>
                   </td>
                 </tr>
+                <tr v-else-if="sortedHoldings.length === 0">
+                  <td colspan="9" class="px-6 py-12 text-sm text-slate-500 dark:text-slate-400 text-center">
+                    目前篩選條件下沒有符合的持股
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
 
           <!-- Mobile Card Layout -->
           <div class="md:hidden space-y-4 px-4 py-4">
-            <div v-if="!holdings || holdings.length === 0" class="text-center py-8">
+            <div v-if="baseHoldings.length === 0" class="text-center py-8">
               <Icon name="heroicons:document" class="h-12 w-12 text-slate-400 mb-2 mx-auto" />
               <p class="text-sm text-slate-500 dark:text-slate-400">目前無持股</p>
               <NuxtLink
@@ -305,6 +388,9 @@
               >
                 建立新日記並新增交易
               </NuxtLink>
+            </div>
+            <div v-else-if="sortedHoldings.length === 0" class="text-center py-8 text-sm text-slate-500 dark:text-slate-400">
+              目前篩選條件下沒有符合的持股
             </div>
 
             <div
@@ -342,6 +428,21 @@
                     {{ formatCurrency(holding.totalCost) }}
                   </span>
                 </div>
+                <div class="flex justify-between" :class="quickSortKey === 'marketValue' ? 'font-semibold text-blue-700 dark:text-blue-300' : ''">
+                  <span class="text-slate-500 dark:text-slate-400">市值</span>
+                  <span class="font-medium">
+                    {{ holding.marketValue !== null ? formatCurrency(holding.marketValue) : '—' }}
+                  </span>
+                </div>
+                <div class="flex justify-between" :class="quickSortKey === 'unrealizedPct' ? 'font-semibold text-blue-700 dark:text-blue-300' : ''">
+                  <span class="text-slate-500 dark:text-slate-400">未實現損益%</span>
+                  <span
+                    class="font-medium"
+                    :class="holding.unrealizedPct !== null && holding.unrealizedPct >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                  >
+                    {{ holding.unrealizedPct !== null ? `${holding.unrealizedPct.toFixed(2)}%` : '—' }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -361,7 +462,7 @@
       </div>
 
       <!-- Transaction History Link -->
-      <div v-if="holdings.length > 0" class="mt-4 text-center">
+      <div v-if="baseHoldings.length > 0" class="mt-4 text-center">
         <NuxtLink
           to="/diaries"
           class="action-btn cursor-pointer"
@@ -376,6 +477,15 @@
 
 <script setup lang="ts">
 import { formatCurrency } from '~/lib/utils'
+import {
+  applyStocksView,
+  type ConcentrationFilter,
+  type HoldingView,
+  type HoldingViewInput,
+  type ProfitStatusFilter,
+  type SortDirection,
+  type StocksSortKey
+} from '~/lib/stocks-view'
 
 const { t } = useI18n()
 
@@ -383,22 +493,20 @@ definePageMeta({
   middleware: 'auth'
 })
 
-interface Holding {
-  symbol: string
-  quantity: number
-  avgCost: number
-  totalCost: number
-  price?: number
-}
-
 // Fetch holdings from API (client-only to avoid auth mismatch on SSR)
-const { data: holdings, pending, error, refresh } = await useLazyFetch<Holding[]>(
+const { data: holdings, pending, error, refresh } = await useLazyFetch<HoldingViewInput[]>(
   '/api/stocks/holdings',
   {
     server: false,
     default: () => []
   }
 )
+
+const searchQuery = ref('')
+const profitStatusFilter = ref<ProfitStatusFilter>('all')
+const concentrationFilter = ref<ConcentrationFilter>('all')
+const quickSortKey = ref<StocksSortKey | null>(null)
+const quickSortDirection = ref<SortDirection>('desc')
 
 // Sorting state
 type SortColumn = 'symbol' | 'quantity' | 'avgCost' | 'totalCost' | 'percentage'
@@ -408,6 +516,7 @@ const sortDirection = ref<'asc' | 'desc'>('desc')
 
 // Sort holdings by selected column
 const sortBy = (column: SortColumn) => {
+  quickSortKey.value = null
   if (sortColumn.value === column) {
     // Toggle direction if clicking same column
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
@@ -423,51 +532,58 @@ const getAriaSort = (column: SortColumn): 'ascending' | 'descending' | 'none' =>
   return sortDirection.value === 'asc' ? 'ascending' : 'descending'
 }
 
+const quickSortLabels: Record<StocksSortKey, string> = {
+  symbol: '代碼',
+  quantity: '數量',
+  avgCost: '平均成本',
+  totalCost: '總成本',
+  percentage: '成本占比',
+  marketValue: '市值',
+  unrealizedPct: '未實現損益%'
+}
+
+const quickSortOptions: StocksSortKey[] = ['marketValue', 'unrealizedPct', 'percentage']
+
+const toggleQuickSort = (key: StocksSortKey) => {
+  if (quickSortKey.value === key) {
+    quickSortDirection.value = quickSortDirection.value === 'asc' ? 'desc' : 'asc'
+    return
+  }
+  quickSortKey.value = key
+  quickSortDirection.value = 'desc'
+}
+
+const activeSortKey = computed<StocksSortKey>(() => {
+  if (quickSortKey.value) return quickSortKey.value
+  return sortColumn.value
+})
+
+const activeSortDir = computed<SortDirection>(() => {
+  if (quickSortKey.value) return quickSortDirection.value
+  return sortDirection.value
+})
+
+const baseHoldings = computed(() => holdings.value ?? [])
+
 // Sorted holdings with current sort
-const sortedHoldings = computed(() => {
-  if (!holdings.value) return []
-
-  const sorted = [...holdings.value]
-
-  sorted.sort((a, b) => {
-    let comparison = 0
-
-    switch (sortColumn.value) {
-      case 'symbol':
-        comparison = a.symbol.localeCompare(b.symbol)
-        break
-      case 'quantity':
-        comparison = a.quantity - b.quantity
-        break
-      case 'avgCost':
-        comparison = a.avgCost - b.avgCost
-        break
-      case 'totalCost':
-        comparison = a.totalCost - b.totalCost
-        break
-      case 'percentage':
-        const aPercentage = totalCost.value > 0 ? (a.totalCost / totalCost.value) : 0
-        const bPercentage = totalCost.value > 0 ? (b.totalCost / totalCost.value) : 0
-        comparison = aPercentage - bPercentage
-        break
-    }
-
-    return sortDirection.value === 'asc' ? comparison : -comparison
+const sortedHoldings = computed<HoldingView[]>(() => {
+  return applyStocksView(baseHoldings.value, {
+    search: searchQuery.value,
+    profitStatus: profitStatusFilter.value,
+    concentration: concentrationFilter.value,
+    sortKey: activeSortKey.value,
+    sortDir: activeSortDir.value
   })
-
-  return sorted
 })
 
 // Calculate total holdings count
 const totalHoldings = computed(() => {
-  if (!holdings.value) return 0
-  return holdings.value.length
+  return baseHoldings.value.length
 })
 
 // Calculate total cost
 const totalCost = computed(() => {
-  if (!holdings.value) return 0
-  return holdings.value.reduce((sum, h) => sum + h.totalCost, 0)
+  return baseHoldings.value.reduce((sum, h) => sum + h.totalCost, 0)
 })
 
 // Format quantity for display
@@ -499,14 +615,14 @@ const getPercentageClass = (cost: number): string => {
 
 // Pie chart slices based on cost percentage
 const pieSlices = computed(() => {
-  if (!holdings.value || totalCost.value === 0) return []
+  if (!baseHoldings.value.length || totalCost.value === 0) return []
 
   const colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7']
   // Circle circumference: 2 * π * r = 2 * π * 16 ≈ 100.53
   const circumference = 2 * Math.PI * 16
   let cumulative = 0
 
-  return holdings.value.map((h, index) => {
+  return baseHoldings.value.map((h, index) => {
     const percentage = h.totalCost / totalCost.value
     const strokeLength = percentage * circumference
     const dashArray = `${strokeLength} ${circumference - strokeLength}`
@@ -525,7 +641,7 @@ const pieSlices = computed(() => {
 
 // Donut chart slices for proper donut visualization
 const donutSlices = computed(() => {
-  if (!holdings.value || totalCost.value === 0) return []
+  if (!baseHoldings.value.length || totalCost.value === 0) return []
 
   const colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7']
   // For donut: radius 32.5, stroke-width 15 creates outer edge at 40, inner at 25
@@ -534,7 +650,7 @@ const donutSlices = computed(() => {
   const circumference = 2 * Math.PI * radius
   let cumulative = 0
 
-  return holdings.value.map((h, index) => {
+  return baseHoldings.value.map((h, index) => {
     const percentage = h.totalCost / totalCost.value
     const strokeLength = percentage * circumference
     const dashArray = `${strokeLength} ${circumference - strokeLength}`
@@ -576,14 +692,14 @@ const fetchStockPrices = async () => {
   const toast = useToast()
 
   try {
-    if (!holdings.value || holdings.value.length === 0) {
+    if (!baseHoldings.value.length) {
       toast.warning(t('stock.noHoldingsData'))
       return
     }
 
     isFetchingPrices.value = true
 
-    const symbols = holdings.value.map(h => h.symbol)
+    const symbols = baseHoldings.value.map(h => h.symbol)
 
     const prices = await $fetch<Record<string, number>>('/api/stocks/prices', {
       method: 'POST',
@@ -591,7 +707,7 @@ const fetchStockPrices = async () => {
     })
 
     // attach price to holdings
-    holdings.value = holdings.value.map(h => ({
+    holdings.value = baseHoldings.value.map(h => ({
       ...h,
       price: prices[h.symbol]
     }))
@@ -613,6 +729,23 @@ const fetchStockPrices = async () => {
     isFetchingPrices.value = false
   }
 }
+
+const resetControls = () => {
+  searchQuery.value = ''
+  profitStatusFilter.value = 'all'
+  concentrationFilter.value = 'all'
+  quickSortKey.value = null
+  quickSortDirection.value = 'desc'
+}
+
+const hasActiveControls = computed(() => {
+  return Boolean(
+    searchQuery.value.trim() ||
+    profitStatusFilter.value !== 'all' ||
+    concentrationFilter.value !== 'all' ||
+    quickSortKey.value
+  )
+})
 
 useHead({
   title: '股票管理 - 投資日記'
