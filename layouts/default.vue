@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 const { toasts, removeToast } = useToast()
-const { user, fetchMe, isInitialized, isAuthenticated } = useAuth()
+const { user, fetchMe, isInitialized, isAuthenticated, refreshAccessToken } = useAuth()
 const { canInstall } = useAppPWA()
 const showInstallPrompt = ref(false)
 const showQuickDiaryModal = ref(false)
@@ -85,7 +85,7 @@ const isPublicRoute = computed(() => {
 
 
 // Check for due alerts (queue-based)
-const checkForDueAlerts = async () => {
+const checkForDueAlerts = async (hasRetriedAuth = false) => {
   if (!isAuthenticated.value || isPublicRoute.value) return
 
   checkDailyReset()
@@ -94,19 +94,25 @@ const checkForDueAlerts = async () => {
     const alerts = await $fetch<any[]>('/api/alerts')
 
     if (!alerts || alerts.length === 0) {
-      applyBackoff(checkForDueAlerts)
+      applyBackoff(() => checkForDueAlerts(false))
       return
     }
 
     enqueueAlerts(alerts)
     setBaseInterval()
-    scheduleNextPoll(checkForDueAlerts)
+    scheduleNextPoll(() => checkForDueAlerts(false))
   } catch (error: any) {
-    if (error?.statusCode === 401) {
+    if (!hasRetriedAuth && error?.statusCode === 401) {
+      const refreshed = await refreshAccessToken()
+      if (refreshed) {
+        return checkForDueAlerts(true)
+      }
+    }
+    if (error?.statusCode === 401 || error?.response?.status === 401) {
       user.value = null
     }
     console.error('Error checking for alerts:', error)
-    applyBackoff(checkForDueAlerts)
+    applyBackoff(() => checkForDueAlerts(false))
   }
 }
 

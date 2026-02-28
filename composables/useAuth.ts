@@ -10,6 +10,7 @@ export const useAuth = () => {
   const isRefreshing = ref(false)
   // Queue of pending refresh waiters; boolean indicates refresh success
   const refreshQueue: Array<(ok: boolean) => void> = []
+  const isAuthError = (error: any) => error?.statusCode === 401 || error?.response?.status === 401
 
   /**
    * Refresh access token using refresh token cookie
@@ -128,7 +129,25 @@ export const useAuth = () => {
           localStorage.setItem('user_timezone', response.data.timezone)
         }
       }
-    } catch {
+    } catch (error: any) {
+      if (isAuthError(error)) {
+        const refreshed = await refreshAccessToken()
+        if (refreshed) {
+          try {
+            const retryResponse = await $fetch('/api/auth/me') as any
+            if (retryResponse.ok) {
+              user.value = retryResponse.data
+              if (retryResponse.data.timezone && process.client) {
+                localStorage.setItem('user_timezone', retryResponse.data.timezone)
+              }
+              return
+            }
+          } catch {
+            // fall through to unauthenticated state
+          }
+        }
+      }
+
       user.value = null
     } finally {
       isLoading.value = false

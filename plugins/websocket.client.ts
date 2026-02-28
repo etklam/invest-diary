@@ -23,7 +23,7 @@ const lastError = ref<string | null>(null)
 let isConnecting = false
 let refreshTried = false
 
-const getAccessToken = () => useCookie('access_token').value
+const getAccessToken = () => useCookie('access-token').value
 
 // ===== Core Connect / Disconnect =====
 const connect = async () => {
@@ -75,7 +75,7 @@ const connect = async () => {
         }
 
         // refresh 成功但 token 缺失，視為失敗
-        console.warn('[WS] Token refresh succeeded but access_token is missing')
+        console.warn('[WS] Token refresh succeeded but access-token is missing')
       } catch (e) {
         console.error('[WS] Token refresh threw exception', e)
       }

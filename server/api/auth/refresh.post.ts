@@ -1,8 +1,6 @@
 import {
   verifyToken,
-  signAccessToken,
-  signRefreshToken,
-  REFRESH_TOKEN_MAX_AGE_SECONDS
+  signAccessToken
 } from '~/lib/jwt'
 import prisma from '~/lib/prisma'
 import { setAccessTokenCookie } from '~/server/utils/auth'
@@ -68,40 +66,9 @@ export default defineEventHandler(async (event) => {
       user.tokenVersion || 0
     )
 
-    // Optional: Rotate refresh token for better security
-    const newRefreshToken = await signRefreshToken(
-      user.id.toString(),
-      user.email,
-      (user as any).role,
-      user.tokenVersion || 0
-    )
-
-    // Delete old refresh token and create new one
-    // @ts-ignore Prisma model access
-    await prisma.refreshToken.delete({
-      where: { token: refreshToken }
-    })
-
-    // @ts-ignore Prisma model access
-    await prisma.refreshToken.create({
-      data: {
-        token: newRefreshToken,
-        userId: user.id,
-        expiresAt: new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_SECONDS * 1000)
-      }
-    })
-
-    // Set new access token cookie
+    // Set new access token cookie only.
+    // Keep refresh token stable to avoid cross-tab refresh races causing forced logout.
     setAccessTokenCookie(event, newAccessToken)
-
-    // Set new refresh token cookie
-    setCookie(event, 'refresh-token', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,
-      path: '/'
-    })
 
     log.info('Token refreshed', { userId: user.id.toString() })
     return { ok: true }

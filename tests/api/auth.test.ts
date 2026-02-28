@@ -9,6 +9,8 @@ const mockUserUpdate = vi.fn()
 const mockUserDelete = vi.fn()
 const mockRefreshTokenCreate = vi.fn()
 const mockRefreshTokenDeleteMany = vi.fn()
+const mockRefreshTokenFindUnique = vi.fn()
+const mockRefreshTokenDelete = vi.fn()
 
 // Mock modules
 vi.mock('~/lib/prisma', () => ({
@@ -23,6 +25,8 @@ vi.mock('~/lib/prisma', () => ({
     refreshToken: {
       create: mockRefreshTokenCreate,
       deleteMany: mockRefreshTokenDeleteMany,
+      findUnique: mockRefreshTokenFindUnique,
+      delete: mockRefreshTokenDelete,
     },
     $connect: vi.fn(),
     $disconnect: vi.fn(),
@@ -70,6 +74,8 @@ describe('Auth API', () => {
     mockSignAccessToken.mockResolvedValue('mock-access-token')
     mockSignRefreshToken.mockResolvedValue('mock-refresh-token')
     mockRefreshTokenCreate.mockResolvedValue({ id: 1n })
+    mockRefreshTokenFindUnique.mockResolvedValue(null)
+    mockRefreshTokenDelete.mockResolvedValue({ id: 1n })
   })
 
   afterEach(() => {
@@ -351,6 +357,48 @@ describe('Auth API', () => {
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 401,
       })
+    })
+  })
+
+  describe('POST /api/auth/refresh', () => {
+    it('should refresh access token without rotating refresh token', async () => {
+      mockGetCookie.mockReturnValue('valid-refresh-token')
+      mockVerifyToken.mockResolvedValue({
+        userId: '1',
+        email: 'test@example.com',
+        role: 'USER',
+        tokenVersion: 0,
+        type: 'refresh',
+      })
+      mockRefreshTokenFindUnique.mockResolvedValue({
+        token: 'valid-refresh-token',
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        user: {
+          id: 1n,
+          email: 'test@example.com',
+          role: 'USER',
+          tokenVersion: 0,
+        },
+      })
+      mockSignAccessToken.mockResolvedValue('new-access-token')
+
+      const { default: handler } = await import('~/server/api/auth/refresh.post')
+      const mockEvent = { context: { requestId: 'req-refresh-1' } } as any
+
+      const result = await handler(mockEvent)
+
+      expect(result).toEqual({ ok: true })
+      expect(mockSignAccessToken).toHaveBeenCalled()
+      expect(mockSignRefreshToken).not.toHaveBeenCalled()
+      expect(mockRefreshTokenDelete).not.toHaveBeenCalled()
+      expect(mockRefreshTokenCreate).not.toHaveBeenCalled()
+      expect(mockSetCookie).toHaveBeenCalledTimes(1)
+      expect(mockSetCookie).toHaveBeenCalledWith(
+        mockEvent,
+        'access-token',
+        'new-access-token',
+        expect.objectContaining({ maxAge: 60 * 60 })
+      )
     })
   })
 })
