@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (alert.userId !== user.id) {
+  if (String(alert.userId) !== String(user.id)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'Forbidden',

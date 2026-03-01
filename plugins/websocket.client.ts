@@ -23,14 +23,9 @@ const lastError = ref<string | null>(null)
 let isConnecting = false
 let refreshTried = false
 
-const getAccessToken = () => useCookie('access-token').value
-
 // ===== Core Connect / Disconnect =====
 const connect = async () => {
   if (socket?.connected || isConnecting) return
-
-  const token = getAccessToken()
-  if (!token) return
 
   isConnecting = true
   connectionStatus.value = 'connecting'
@@ -38,7 +33,7 @@ const connect = async () => {
 
   socket = io(window.location.origin, {
     path: '/socket.io/',
-    auth: { token },
+    withCredentials: true,
     transports: ['websocket', 'polling'],
     reconnection: true,
     reconnectionAttempts: 10,
@@ -66,16 +61,11 @@ const connect = async () => {
         const { refreshAccessToken } = useAuth()
         const ok = await refreshAccessToken()
 
-        // ✅ 修復：refresh 成功後重新讀取並驗證 token
-        const newToken = getAccessToken()
-        if (ok && newToken && socket) {
-          socket.auth = { token: newToken }
+        // access-token is httpOnly; reconnect after refresh to resend cookies.
+        if (ok && socket) {
           socket.connect()
           return
         }
-
-        // refresh 成功但 token 缺失，視為失敗
-        console.warn('[WS] Token refresh succeeded but access-token is missing')
       } catch (e) {
         console.error('[WS] Token refresh threw exception', e)
       }

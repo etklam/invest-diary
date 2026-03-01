@@ -5,6 +5,18 @@ import { connectionManager } from '../websocket/connectionManager'
 import { setupAlertHandlers } from '../websocket/alertHandler'
 import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
 
+function getCookieValue(cookieHeader: string | undefined, name: string): string | undefined {
+  if (!cookieHeader) return undefined
+  const key = `${name}=`
+  for (const part of cookieHeader.split(';')) {
+    const trimmed = part.trim()
+    if (trimmed.startsWith(key)) {
+      return decodeURIComponent(trimmed.slice(key.length))
+    }
+  }
+  return undefined
+}
+
 // 擴充 NitroApp 類型以包含 socketIo
 declare module 'nitropack' {
   interface NitroApp {
@@ -56,7 +68,10 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
     // 認證中間件
     io.use(async (socket, next) => {
-      const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '')
+      const authToken = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '')
+      const cookieHeader = socket.handshake.headers.cookie
+      const cookieToken = getCookieValue(cookieHeader, 'access-token') || getCookieValue(cookieHeader, 'auth-token')
+      const token = authToken || cookieToken
 
       if (!token) {
         console.warn(`[WS] Connection rejected: No token provided (socket: ${socket.id})`)

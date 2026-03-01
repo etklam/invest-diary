@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 describe('auth client regressions', () => {
-  it('websocket plugin should read access-token cookie name', () => {
+  it('websocket plugin should not read httpOnly access-token cookie from client JS', () => {
     const source = readFileSync(resolve(process.cwd(), 'plugins/websocket.client.ts'), 'utf-8')
-    expect(source).toContain("useCookie('access-token')")
-    expect(source).not.toContain("useCookie('access_token')")
+    expect(source).not.toContain("useCookie('access-token')")
+    expect(source).toContain('withCredentials: true')
   })
 
   it('fetchMe should attempt token refresh on 401 before clearing user', () => {
