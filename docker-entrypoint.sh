@@ -37,10 +37,9 @@ wait_for_db() {
 # Function to run migrations
 run_migrations() {
     if [ "$RUN_MIGRATIONS" = "true" ]; then
-        echo "🔄 Running database migrations..."
-        # Use node directly to avoid npx overhead and "prisma not found" issues
-        node ./node_modules/prisma/build/index.js migrate deploy
-        echo "✅ Migrations completed!"
+        echo "❌ RUN_MIGRATIONS=true is not supported in the slim runtime image."
+        echo "   Run prisma migrations in pre-deploy/init job instead."
+        return 1
     else
         echo "⏭️  Skipping migrations (RUN_MIGRATIONS=false)"
     fi
@@ -49,9 +48,9 @@ run_migrations() {
 # Function to seed database
 seed_database() {
     if [ "$SEED_DATABASE" = "true" ]; then
-        echo "🌱 Seeding database..."
-        npm run seed
-        echo "✅ Database seeded!"
+        echo "❌ SEED_DATABASE=true is not supported in the slim runtime image."
+        echo "   Run seed scripts in a separate admin/init container instead."
+        return 1
     fi
 }
 
@@ -70,10 +69,16 @@ main() {
     if [ -z "$RUN_MIGRATIONS" ]; then
         RUN_MIGRATIONS=false
     fi
-    run_migrations
+    run_migrations || {
+        echo "❌ Failed to execute migration step. Exiting..."
+        exit 1
+    }
 
     # Seed database (if requested)
-    seed_database
+    seed_database || {
+        echo "❌ Failed to execute seed step. Exiting..."
+        exit 1
+    }
 
     # Display startup information
     echo ""
