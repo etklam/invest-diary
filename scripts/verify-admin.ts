@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
+import { createPrismaClientOptions } from '../lib/prisma-client-options'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient(createPrismaClientOptions())
 
 async function verifyData() {
   console.log('🔍 驗證數據庫數據...\n')

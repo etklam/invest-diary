@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { createPrismaClientOptions } from '../lib/prisma-client-options'
 
 /**
  * Test database utilities
@@ -10,13 +11,7 @@ import bcrypt from 'bcryptjs'
  * 3. Seed test data as needed
  */
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-})
+const prisma = new PrismaClient(createPrismaClientOptions())
 
 /**
  * Clean all database tables

@@ -155,7 +155,11 @@ runCheck(
       // If direct execute fails, try through Prisma Client
       try {
         const { PrismaClient } = require('@prisma/client')
-        const prisma = new PrismaClient()
+        const { PrismaMariaDb } = require('@prisma/adapter-mariadb')
+        const databaseUrl = process.env.DATABASE_URL || 'mysql://root:password@localhost:3306/test'
+        const prisma = new PrismaClient({
+          adapter: new PrismaMariaDb(databaseUrl)
+        })
         prisma.$disconnect()
       } catch (prismaError) {
         throw new Error('Cannot connect to database. Check DATABASE_URL and ensure MySQL is running.')

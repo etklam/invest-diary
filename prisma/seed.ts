@@ -1,7 +1,8 @@
 import { PrismaClient, TransactionType, UserRole } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { createPrismaClientOptions } from '../lib/prisma-client-options'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient(createPrismaClientOptions())
 
 async function main() {
   // 清理現有數據（可選，用於重新生成種子數據）

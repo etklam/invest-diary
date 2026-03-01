@@ -1,16 +1,11 @@
 import { PrismaClient, UserRole, TransactionType } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { createPrismaClientOptions } from '../../lib/prisma-client-options'
 
 /**
  * 測試用 Prisma Client
  */
-export const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-})
+export const prisma = new PrismaClient(createPrismaClientOptions())
 
 /**
  * 清理所有資料庫表
