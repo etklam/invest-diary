@@ -25,7 +25,6 @@
     "copy": "Copy",
     "copied": "Copied!"
   },
-
   "nav": {
     "home": "Home",
     "calendar": "Calendar",
@@ -55,7 +54,6 @@
     "financialFreedom": "Financial Freedom Calculator",
     "etf": "ETF Analysis"
   },
-
   "auth": {
     "login": "Login",
     "logout": "Logout",
@@ -82,7 +80,6 @@
     "confirmPasswordPlaceholder": "Enter password again",
     "passwordMismatchError": "Passwords do not match"
   },
-
   "quickDiary": {
     "title": "Quick Diary",
     "selectTemplate": "Choose a template to start",
@@ -167,7 +164,6 @@
     "createdAt": "Created at",
     "updatedAt": "Updated at"
   },
-
   "alert": {
     "title": "Alerts",
     "markAsRead": "Mark as read",
@@ -180,7 +176,6 @@
     "loadFailed": "Failed to load",
     "dismissFailed": "Failed to dismiss alert"
   },
-
   "stock": {
     "title": "Stock Management",
     "holdings": "Holdings",
@@ -200,7 +195,6 @@
     "analytics": "Analytics",
     "costDistribution": "Cost Distribution"
   },
-
   "settings": {
     "title": "Account Settings",
     "profile": "Profile",
@@ -228,7 +222,6 @@
     "passwordMismatch": "Passwords do not match",
     "passwordTooShort": "Password must be at least 6 characters"
   },
-
   "timeline": {
     "title": "Timeline",
     "noEntries": "No timeline entries yet",
@@ -242,13 +235,11 @@
     "viewDetails": "View details →",
     "periodLabel": "{year}-{month}"
   },
-
   "theme": {
     "toggleDarkMode": "Toggle dark mode",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
   },
-
   "error": {
     "unauthorized": "Unauthorized, please login first",
     "invalidCredentials": "Invalid email or password",
@@ -259,7 +250,6 @@
     "notFound": "Page not found",
     "serverError": "Server error"
   },
-
   "home": {
     "badge": "Trade Basics Co-Learning",
     "hero": {
@@ -401,7 +391,6 @@
       "rights": "All rights reserved"
     }
   },
-
   "about": {
     "hero": {
       "title": "About Me",
@@ -460,7 +449,6 @@
       "rights": "Personal co-learning project, all rights reserved"
     }
   },
-
   "discipline": {
     "title": "Trading Discipline",
     "subtitle": "Trading principles remembered in heart are the cornerstone of successful investors",
@@ -545,7 +533,6 @@
       "import": "Import"
     }
   },
-
   "admin": {
     "title": "System Administration",
     "subtitle": "Manage users and view statistics",
@@ -594,9 +581,8 @@
       "deleteUserFailed": "Failed to delete user"
     }
   },
-
   "blog": {
-    "title": "Investment Blog",
+    "title": "Title",
     "description": "Professional investment knowledge sharing",
     "allCategories": "All Categories",
     "allStatus": "All Status",
@@ -620,7 +606,6 @@
     "manageBlog": "Manage Blog",
     "createPost": "Create Post",
     "editPost": "Edit Post",
-    "title": "Title",
     "titlePlaceholder": "Enter post title",
     "slug": "Slug",
     "content": "Content",
@@ -651,7 +636,6 @@
       "archived": "Archived"
     },
     "searchPlaceholder": "Search post title or content...",
-    "loadFailed": "Failed to load",
     "publishSuccess": "Post published",
     "publishFailed": "Failed to publish",
     "confirmArchive": "Are you sure you want to archive this post?",
@@ -662,7 +646,6 @@
     "deleteFailed": "Failed to delete",
     "translate": "Translate"
   },
-
   "tools": {
     "positionSizing": {
       "title": "Position Sizing Calculator",
@@ -756,26 +739,54 @@
         "pyramid": {
           "name": "Pyramid (4-3-2-1)",
           "description": "The most robust strategy, emphasizing a solid foundation. 40% base position at fair valuation or trend confirmation, then scale in.",
-          "pros": ["Lower average cost", "Strong risk resistance", "Suitable for long-term investment"],
-          "cons": ["If base position is poorly timed, adding too fast during decline may lead to being trapped"]
+          "pros": [
+            "Lower average cost",
+            "Strong risk resistance",
+            "Suitable for long-term investment"
+          ],
+          "cons": [
+            "If base position is poorly timed, adding too fast during decline may lead to being trapped"
+          ]
         },
         "pyramidVariant": {
           "name": "Pyramid Variant (2-2-3-2-1)",
           "description": "Split the base position to reduce initial entry risk, suitable for volatile markets.",
-          "pros": ["Reduced initial entry risk", "Diversified timing risk", "More flexible capital allocation"],
-          "cons": ["More trades required", "Need more time to observe market"]
+          "pros": [
+            "Reduced initial entry risk",
+            "Diversified timing risk",
+            "More flexible capital allocation"
+          ],
+          "cons": [
+            "More trades required",
+            "Need more time to observe market"
+          ]
         },
         "rectangular": {
           "name": "Rectangular (3-3-3-1)",
           "description": "Buy 30% three times, keep 10% cash as 'emergency fund' for black swan events.",
-          "pros": ["Balanced approach", "Peace of mind", "Reserved emergency funds"],
-          "cons": ["May miss best entry timing", "Lower capital utilization"]
+          "pros": [
+            "Balanced approach",
+            "Peace of mind",
+            "Reserved emergency funds"
+          ],
+          "cons": [
+            "May miss best entry timing",
+            "Lower capital utilization"
+          ]
         },
         "invertedPyramid": {
           "name": "Inverted Pyramid (1-2-3-4)",
           "description": "Minimal initial investment, then significantly increase. Suitable when highly confident in the target and expecting significant upside.",
-          "pros": ["Minimal initial risk", "Add after trend confirmation", "Suitable for momentum tracking"],
-          "cons": ["Higher average cost", "Larger loss if judgment is wrong", "Requires precise timing"]
+          "pros": [
+            "Minimal initial risk",
+            "Add after trend confirmation",
+            "Suitable for momentum tracking"
+          ],
+          "cons": [
+            "Higher average cost",
+            "Larger loss if judgment is wrong",
+            "Requires precise timing"
+          ]
         }
       }
     },
@@ -926,7 +937,10 @@
         "all": "All ETFs",
         "overview": "Overview",
         "comparison": "Comparison",
-        "technical": "Technical"
+        "technical": "Technical",
+        "risk": "Risk",
+        "valuation": "Valuation",
+        "rs": "RS"
       },
       "fields": {
         "symbol": "Symbol",
@@ -1005,7 +1019,24 @@
         "seedFailed": "Failed to seed ETFs"
       },
       "name": "Name",
-      "fetchFailed": "Failed to fetch data. Please try again."
+      "fetchFailed": "Failed to fetch data. Please try again.",
+      "profile": {
+        "riskTitle": "Risk Profile",
+        "riskHint": "Understand volatility, drawdown, and 52-week positioning before sizing.",
+        "valuationTitle": "Valuation & Fund Basics",
+        "valuationHint": "Use these fields to compare fee drag and broad valuation context.",
+        "rsTitle": "Relative Strength",
+        "rsHint": "Track outperformance versus benchmark over the selected horizon.",
+        "distanceTo52WHigh": "Distance to 52W High",
+        "volatility252": "Volatility (252D, Ann.)",
+        "maxDrawdown": "Max Drawdown (1Y)",
+        "aum": "AUM",
+        "expenseRatio": "Expense Ratio",
+        "pe": "P/E",
+        "benchmark": "Benchmark",
+        "relativeReturn": "Relative Return",
+        "rsTrend": "RS Trend"
+      }
     },
     "financialFreedom": {
       "title": "Financial Freedom Calculator",
@@ -1099,7 +1130,6 @@
       "copyFailed": "Copy failed"
     }
   },
-
   "pwa": {
     "install": {
       "title": "Install Trade Basic",

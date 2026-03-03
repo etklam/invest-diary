@@ -25,7 +25,6 @@
     "copy": "複製",
     "copied": "已複製"
   },
-
   "nav": {
     "home": "首頁",
     "calendar": "月曆",
@@ -55,7 +54,6 @@
     "financialFreedom": "財務自由計算機",
     "etf": "ETF 分析"
   },
-
   "auth": {
     "login": "登入",
     "logout": "登出",
@@ -82,7 +80,6 @@
     "passwordMismatchError": "密碼不一致",
     "loginNow": "立即登入"
   },
-
   "quickDiary": {
     "title": "快速日記",
     "selectTemplate": "選擇一個模板開始快速創建日記",
@@ -167,7 +164,6 @@
     "createdAt": "建立於",
     "updatedAt": "更新於"
   },
-
   "alert": {
     "title": "提醒管理",
     "markAsRead": "標記為已讀",
@@ -180,7 +176,6 @@
     "loadFailed": "載入失敗",
     "dismissFailed": "關閉提醒失敗"
   },
-
   "stock": {
     "title": "股票管理",
     "holdings": "持倉",
@@ -200,7 +195,6 @@
     "analytics": "分析",
     "costDistribution": "成本占比"
   },
-
   "settings": {
     "title": "帳戶設定",
     "profile": "個人資料",
@@ -228,7 +222,6 @@
     "passwordMismatch": "兩次輸入的密碼不一致",
     "passwordTooShort": "密碼至少需要 6 個字元"
   },
-
   "timeline": {
     "title": "時間軸",
     "noEntries": "尚無時間軸紀錄",
@@ -242,13 +235,11 @@
     "viewDetails": "查看詳情 →",
     "periodLabel": "{year}年 {month}月"
   },
-
   "theme": {
     "toggleDarkMode": "切換深色模式",
     "openMenu": "開啟選單",
     "closeMenu": "關閉選單"
   },
-
   "error": {
     "unauthorized": "未授權，請先登入",
     "invalidCredentials": "電子郵件或密碼錯誤",
@@ -259,7 +250,6 @@
     "notFound": "找不到頁面",
     "serverError": "伺服器錯誤"
   },
-
   "home": {
     "badge": "交易基礎共學平台",
     "hero": {
@@ -401,7 +391,6 @@
       "rights": "保留所有權利"
     }
   },
-
   "about": {
     "hero": {
       "title": "關於我",
@@ -460,7 +449,6 @@
       "rights": "個人共學專案，保留所有權利"
     }
   },
-
   "discipline": {
     "title": "交易紀律",
     "subtitle": "銘記於心的交易原則，是成功投資者的基石",
@@ -545,7 +533,6 @@
       "import": "導入"
     }
   },
-
   "admin": {
     "title": "系統管理",
     "subtitle": "管理用戶、查看統計數據",
@@ -594,9 +581,8 @@
       "deleteUserFailed": "刪除用戶失敗"
     }
   },
-
   "blog": {
-    "title": "投資教學",
+    "title": "標題",
     "description": "專業投資知識分享",
     "allCategories": "全部分類",
     "allStatus": "全部狀態",
@@ -620,7 +606,6 @@
     "manageBlog": "博客管理",
     "createPost": "建立文章",
     "editPost": "編輯文章",
-    "title": "標題",
     "titlePlaceholder": "輸入文章標題",
     "slug": "網址",
     "content": "內容",
@@ -661,7 +646,6 @@
     "deleteFailed": "刪除失敗",
     "translate": "翻譯"
   },
-
   "tools": {
     "positionSizing": {
       "title": "建倉比例計算器",
@@ -755,26 +739,54 @@
         "pyramid": {
           "name": "正金字塔 (4-3-2-1)",
           "description": "最穩健的策略，強調底部基礎紮實。底倉 40% 在估值合理或趨勢確認點買入，隨後分批加碼。",
-          "pros": ["平均成本較低", "抗風險能力強", "適合長期投資"],
-          "cons": ["若底倉位置不佳，下跌過程中加倉過快可能導致被套"]
+          "pros": [
+            "平均成本較低",
+            "抗風險能力強",
+            "適合長期投資"
+          ],
+          "cons": [
+            "若底倉位置不佳，下跌過程中加倉過快可能導致被套"
+          ]
         },
         "pyramidVariant": {
           "name": "變體金字塔 (2-2-3-2-1)",
           "description": "將底倉拆分，降低初次入場風險，適合波動較大的市場。",
-          "pros": ["降低初次入場風險", "分散時點風險", "更靈活的資金配置"],
-          "cons": ["操作次數較多", "需要更多時間觀察市場"]
+          "pros": [
+            "降低初次入場風險",
+            "分散時點風險",
+            "更靈活的資金配置"
+          ],
+          "cons": [
+            "操作次數較多",
+            "需要更多時間觀察市場"
+          ]
         },
         "rectangular": {
           "name": "矩形建倉 (3-3-3-1)",
           "description": "分三次各買入 30%，保留 10% 現金作為「救命錢」應對黑天鵝事件。",
-          "pros": ["進可攻退可守", "心態較為平和", "保留應急資金"],
-          "cons": ["可能錯過最佳入場時機", "資金利用率較低"]
+          "pros": [
+            "進可攻退可守",
+            "心態較為平和",
+            "保留應急資金"
+          ],
+          "cons": [
+            "可能錯過最佳入場時機",
+            "資金利用率較低"
+          ]
         },
         "invertedPyramid": {
           "name": "倒金字塔 (1-2-3-4)",
           "description": "初次投入極少，隨後大幅加碼。適合對標的有高度信心且預期大幅上漲的情況。",
-          "pros": ["初期風險極小", "確認趨勢後加碼", "適合強勢股追蹤"],
-          "cons": ["平均成本較高", "若判斷錯誤損失較大", "需要精準判斷"]
+          "pros": [
+            "初期風險極小",
+            "確認趨勢後加碼",
+            "適合強勢股追蹤"
+          ],
+          "cons": [
+            "平均成本較高",
+            "若判斷錯誤損失較大",
+            "需要精準判斷"
+          ]
         }
       }
     },
@@ -925,7 +937,10 @@
         "all": "全部 ETF",
         "overview": "總覽",
         "comparison": "同比比較",
-        "technical": "技術指標"
+        "technical": "技術指標",
+        "risk": "風險",
+        "valuation": "估值",
+        "rs": "相對強弱"
       },
       "fields": {
         "symbol": "代碼",
@@ -1004,7 +1019,24 @@
         "infoPoint3": "刪除 ETF 會級聯刪除所有相關的價格、提醒和追蹤清單"
       },
       "name": "名稱",
-      "fetchFailed": "獲取數據失敗，請稍後再試"
+      "fetchFailed": "獲取數據失敗，請稍後再試",
+      "profile": {
+        "riskTitle": "風險輪廓",
+        "riskHint": "先看波動、回撤與 52 週位置，再決定部位大小。",
+        "valuationTitle": "估值與基金基本面",
+        "valuationHint": "用來比較費用拖累與整體估值區間。",
+        "rsTitle": "相對強弱 (RS)",
+        "rsHint": "觀察相對基準在不同區間的超額報酬。",
+        "distanceTo52WHigh": "距離 52 週高點",
+        "volatility252": "波動率（252日年化）",
+        "maxDrawdown": "最大回撤（1年）",
+        "aum": "資產規模 AUM",
+        "expenseRatio": "費用率",
+        "pe": "本益比 P/E",
+        "benchmark": "比較基準",
+        "relativeReturn": "相對報酬",
+        "rsTrend": "RS 趨勢"
+      }
     },
     "financialFreedom": {
       "title": "財務自由計算機",
@@ -1098,7 +1130,6 @@
       "copyFailed": "複製失敗"
     }
   },
-
   "pwa": {
     "install": {
       "title": "安裝交易基礎",

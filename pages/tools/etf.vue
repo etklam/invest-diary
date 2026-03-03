@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { EtfAnalysis } from '~/lib/etf-analyzer'
+import type { EtfProfileResponse } from '~/lib/etf-profile/types'
 
-type TabKey = 'all' | 'overview' | 'comparison' | 'technical'
+type TabKey = 'all' | 'overview' | 'comparison' | 'technical' | 'risk' | 'valuation' | 'rs'
 type SortField =
   | 'symbol'
   | 'currentPrice'
@@ -12,7 +13,7 @@ type SortField =
   | 'ma20'
   | 'trendScore'
 
-const tabs: TabKey[] = ['all', 'overview', 'comparison', 'technical']
+const tabs: TabKey[] = ['all', 'overview', 'comparison', 'technical', 'risk', 'valuation', 'rs']
 const sortableFields: Array<{ key: SortField; label: string }> = [
   { key: 'symbol', label: 'tools.etf.fields.symbol' },
   { key: 'currentPrice', label: 'tools.etf.fields.currentPrice' },
@@ -32,6 +33,7 @@ const selectedSymbol = ref<string>('')
 const allEtfsLoading = ref(false)
 const analysisLoading = ref(false)
 const quoteLoading = ref(false)
+const profileLoading = ref(false)
 const activeTab = ref<TabKey>('all')
 const sortBy = ref<SortField>('symbol')
 const sortOrder = ref<'asc' | 'desc'>('asc')
@@ -44,6 +46,7 @@ const selectedAnalysis = ref<EtfAnalysis | null>(null)
 
 // Real-time quote for selected ETF
 const liveQuote = ref<any>(null)
+const etfProfile = ref<EtfProfileResponse | null>(null)
 
 // Auto-refresh quote
 const quoteRefreshInterval = ref<NodeJS.Timeout | null>(null)
@@ -77,10 +80,25 @@ const fetchEtfAnalysis = async (symbol: string) => {
     selectedAnalysis.value = response
     selectedSymbol.value = symbol
     await fetchLiveQuote(symbol)
+    await fetchEtfProfile(symbol)
   } catch (error) {
     toast.error(t('tools.etf.fetchFailed'))
   } finally {
     analysisLoading.value = false
+  }
+}
+
+const fetchEtfProfile = async (symbol: string) => {
+  profileLoading.value = true
+  try {
+    const response = await $fetch<EtfProfileResponse>(`/api/etf/${encodeURIComponent(symbol)}/profile`, {
+      timeout: 12000,
+    })
+    etfProfile.value = response
+  } catch {
+    etfProfile.value = null
+  } finally {
+    profileLoading.value = false
   }
 }
 
@@ -120,6 +138,15 @@ const formatNumber = (num: number | null | undefined, decimals = 2) => {
   const normalized = normalizeNumber(num)
   if (normalized === null) return '--'
   return normalized.toFixed(decimals)
+}
+
+const formatAum = (num: number | null | undefined) => {
+  const normalized = normalizeNumber(num)
+  if (normalized === null) return '--'
+  if (normalized >= 1_000_000_000_000) return `${(normalized / 1_000_000_000_000).toFixed(2)}T`
+  if (normalized >= 1_000_000_000) return `${(normalized / 1_000_000_000).toFixed(2)}B`
+  if (normalized >= 1_000_000) return `${(normalized / 1_000_000).toFixed(2)}M`
+  return normalized.toFixed(2)
 }
 
 // Format percentage
@@ -539,6 +566,93 @@ definePageMeta({
               {{ getTrendIcon(selectedAnalysis.technical.trend) }}
               {{ t(`tools.etf.trends.${selectedAnalysis.technical.trend}`) }}
             </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk Tab -->
+    <div v-if="activeTab === 'risk'" class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          {{ t('tools.etf.profile.riskTitle') }}
+        </h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          {{ t('tools.etf.profile.riskHint') }}
+        </p>
+        <div v-if="profileLoading" class="text-sm text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</div>
+        <div v-else-if="etfProfile" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('tools.etf.profile.distanceTo52WHigh') }}</p>
+            <p class="text-xl font-bold" :class="getPercentColorClass(etfProfile.risk.distanceTo52WHighPct)">
+              {{ formatPercent(etfProfile.risk.distanceTo52WHighPct) }}
+            </p>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('tools.etf.profile.volatility252') }}</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white">{{ formatPercent(etfProfile.risk.volatility252dAnn) }}</p>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('tools.etf.profile.maxDrawdown') }}</p>
+            <p class="text-xl font-bold" :class="getPercentColorClass(etfProfile.risk.maxDrawdown1yPct)">
+              {{ formatPercent(etfProfile.risk.maxDrawdown1yPct) }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Valuation Tab -->
+    <div v-if="activeTab === 'valuation'" class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          {{ t('tools.etf.profile.valuationTitle') }}
+        </h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          {{ t('tools.etf.profile.valuationHint') }}
+        </p>
+        <div v-if="profileLoading" class="text-sm text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</div>
+        <div v-else-if="etfProfile" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('tools.etf.profile.aum') }}</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white">{{ formatAum(etfProfile.valuation.aum) }}</p>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('tools.etf.profile.expenseRatio') }}</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white">{{ formatPercent(etfProfile.valuation.expenseRatioPct) }}</p>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('tools.etf.profile.pe') }}</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white">{{ formatNumber(etfProfile.valuation.pe) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Relative Strength Tab -->
+    <div v-if="activeTab === 'rs'" class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          {{ t('tools.etf.profile.rsTitle') }}
+        </h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          {{ t('tools.etf.profile.rsHint') }}
+        </p>
+        <div v-if="profileLoading" class="text-sm text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</div>
+        <div v-else-if="etfProfile" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('tools.etf.profile.benchmark') }}</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white">{{ etfProfile.rs.benchmark }}</p>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('tools.etf.profile.relativeReturn') }}</p>
+            <p class="text-xl font-bold" :class="getPercentColorClass(etfProfile.rs.relativeReturnPct)">
+              {{ formatPercent(etfProfile.rs.relativeReturnPct) }}
+            </p>
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('tools.etf.profile.rsTrend') }}</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white">{{ etfProfile.rs.trend }}</p>
           </div>
         </div>
       </div>

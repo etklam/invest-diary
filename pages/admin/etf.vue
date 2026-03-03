@@ -151,6 +151,7 @@ useHead({
 })
 
 definePageMeta({
+  middleware: 'admin',
   requiresAuth: true,
 })
 </script>

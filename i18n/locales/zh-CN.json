@@ -25,7 +25,6 @@
     "copy": "复制",
     "copied": "已复制"
   },
-
   "nav": {
     "home": "首页",
     "calendar": "月历",
@@ -54,7 +53,6 @@
     "seasonality": "季节性分析",
     "financialFreedom": "财务自由计算器"
   },
-
   "auth": {
     "login": "登录",
     "logout": "登出",
@@ -81,7 +79,6 @@
     "passwordMismatchError": "密码不一致",
     "loginNow": "立即登录"
   },
-
   "quickDiary": {
     "title": "快速日记",
     "selectTemplate": "选择一个模板开始快速创建日记",
@@ -166,7 +163,6 @@
     "createdAt": "创建于",
     "updatedAt": "更新于"
   },
-
   "alert": {
     "title": "提醒管理",
     "markAsRead": "标记为已读",
@@ -179,7 +175,6 @@
     "loadFailed": "加载失败",
     "dismissFailed": "关闭提醒失败"
   },
-
   "stock": {
     "title": "股票管理",
     "holdings": "持仓",
@@ -199,7 +194,6 @@
     "analytics": "分析",
     "costDistribution": "成本占比"
   },
-
   "settings": {
     "title": "账户设置",
     "profile": "个人资料",
@@ -227,7 +221,6 @@
     "passwordMismatch": "两次输入的密码不一致",
     "passwordTooShort": "密码至少需要 6 个字符"
   },
-
   "timeline": {
     "title": "时间轴",
     "noEntries": "尚无时间轴记录",
@@ -241,13 +234,11 @@
     "viewDetails": "查看详情 →",
     "periodLabel": "{year}年 {month}月"
   },
-
   "theme": {
     "toggleDarkMode": "切换深色模式",
     "openMenu": "开启菜单",
     "closeMenu": "关闭菜单"
   },
-
   "error": {
     "unauthorized": "未授权，请先登录",
     "invalidCredentials": "电子邮件或密码错误",
@@ -258,7 +249,6 @@
     "notFound": "找不到页面",
     "serverError": "服务器错误"
   },
-
   "home": {
     "badge": "交易基础共学平台",
     "hero": {
@@ -400,7 +390,6 @@
       "rights": "保留所有权利"
     }
   },
-
   "about": {
     "hero": {
       "title": "关于我",
@@ -459,7 +448,6 @@
       "rights": "个人共学项目，保留所有权利"
     }
   },
-
   "discipline": {
     "title": "交易纪律",
     "subtitle": "铭记于心的交易原则，是成功投资者的基石",
@@ -544,7 +532,6 @@
       "import": "导入"
     }
   },
-
   "admin": {
     "title": "系统管理",
     "subtitle": "管理用户、查看统计数据",
@@ -593,9 +580,8 @@
       "deleteUserFailed": "删除用户失败"
     }
   },
-
   "blog": {
-    "title": "投资教学",
+    "title": "标题",
     "description": "专业投资知识分享",
     "allCategories": "全部分类",
     "allStatus": "全部状态",
@@ -619,7 +605,6 @@
     "manageBlog": "博客管理",
     "createPost": "创建文章",
     "editPost": "编辑文章",
-    "title": "标题",
     "titlePlaceholder": "输入文章标题",
     "slug": "网址",
     "content": "内容",
@@ -650,7 +635,6 @@
       "archived": "已归档"
     },
     "searchPlaceholder": "搜索文章标题或内容...",
-    "loadFailed": "加载失败",
     "publishSuccess": "文章已发布",
     "publishFailed": "发布失败",
     "confirmArchive": "确定要归档这篇文章吗？",
@@ -661,7 +645,6 @@
     "deleteFailed": "删除失败",
     "translate": "翻译"
   },
-
   "tools": {
     "positionSizing": {
       "title": "建仓比例计算器",
@@ -755,26 +738,54 @@
         "pyramid": {
           "name": "正金字塔 (4-3-2-1)",
           "description": "最稳健的策略，强调底部基础扎实。底仓 40% 在估值合理或趋势确认点买入，随后分批加码。",
-          "pros": ["平均成本较低", "抗风险能力强", "适合长期投资"],
-          "cons": ["若底仓位置不佳，下跌过程中加仓过快可能导致被套"]
+          "pros": [
+            "平均成本较低",
+            "抗风险能力强",
+            "适合长期投资"
+          ],
+          "cons": [
+            "若底仓位置不佳，下跌过程中加仓过快可能导致被套"
+          ]
         },
         "pyramidVariant": {
           "name": "变体金字塔 (2-2-3-2-1)",
           "description": "将底仓拆分，降低初次入场风险，适合波动较大的市场。",
-          "pros": ["降低初次入场风险", "分散时点风险", "更灵活的资金配置"],
-          "cons": ["操作次数较多", "需要更多时间观察市场"]
+          "pros": [
+            "降低初次入场风险",
+            "分散时点风险",
+            "更灵活的资金配置"
+          ],
+          "cons": [
+            "操作次数较多",
+            "需要更多时间观察市场"
+          ]
         },
         "rectangular": {
           "name": "矩形建仓 (3-3-3-1)",
           "description": "分三次各买入 30%，保留 10% 现金作为「救命钱」应对黑天鹅事件。",
-          "pros": ["进可攻退可守", "心态较为平和", "保留应急资金"],
-          "cons": ["可能错过最佳入场时机", "资金利用率较低"]
+          "pros": [
+            "进可攻退可守",
+            "心态较为平和",
+            "保留应急资金"
+          ],
+          "cons": [
+            "可能错过最佳入场时机",
+            "资金利用率较低"
+          ]
         },
         "invertedPyramid": {
           "name": "倒金字塔 (1-2-3-4)",
           "description": "初次投入极少，随后大幅加码。适合对标的具有高度信心且预期大幅上涨的情况。",
-          "pros": ["初期风险极小", "确认趋势后加码", "适合强势股追踪"],
-          "cons": ["平均成本较高", "若判断错误损失较大", "需要精准判断"]
+          "pros": [
+            "初期风险极小",
+            "确认趋势后加码",
+            "适合强势股追踪"
+          ],
+          "cons": [
+            "平均成本较高",
+            "若判断错误损失较大",
+            "需要精准判断"
+          ]
         }
       }
     },
@@ -1005,10 +1016,31 @@
     "etf": {
       "title": "ETF 趋势分析",
       "subtitle": "追踪和分析 ETF 价格变化，提供多维度比较",
-      "developmentNotice": "此功能仍在开发中"
+      "developmentNotice": "此功能仍在开发中",
+      "tabs": {
+        "risk": "风险",
+        "valuation": "估值",
+        "rs": "相对强弱"
+      },
+      "profile": {
+        "riskTitle": "风险画像",
+        "riskHint": "先看波动、回撤与 52 周位置，再决定仓位大小。",
+        "valuationTitle": "估值与基金基本面",
+        "valuationHint": "用于比较费用拖累与整体估值区间。",
+        "rsTitle": "相对强弱 (RS)",
+        "rsHint": "观察相对基准在不同区间的超额收益。",
+        "distanceTo52WHigh": "距离 52 周高点",
+        "volatility252": "波动率（252日年化）",
+        "maxDrawdown": "最大回撤（1年）",
+        "aum": "资产规模 AUM",
+        "expenseRatio": "费率",
+        "pe": "市盈率 P/E",
+        "benchmark": "比较基准",
+        "relativeReturn": "相对收益",
+        "rsTrend": "RS 趋势"
+      }
     }
   },
-
   "pwa": {
     "install": {
       "title": "安装交易基础",

@@ -51,6 +51,7 @@ ENV PORT=3000
 ENV NUXT_TELEMETRY_DISABLED=1
 
 COPY --from=builder /app/.output ./.output
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
 RUN addgroup --system --gid 1001 nodejs && \
