@@ -583,7 +583,13 @@
   },
   "blog": {
     "title": "Title",
+    "pageTitle": "Investment Insights",
+    "loadingTitle": "Loading post",
     "description": "Professional investment knowledge sharing",
+    "retryLoad": "Try again",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "pageIndicator": "Page {page} of {totalPages}",
     "allCategories": "All Categories",
     "allStatus": "All Status",
     "readMore": "Read More",

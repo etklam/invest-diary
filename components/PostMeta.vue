@@ -15,14 +15,16 @@
       <span>{{ formattedDate }}</span>
     </div>
 
-    <!-- Separator -->
-    <span class="text-gray-300 dark:text-gray-700">·</span>
+    <template v-if="showReadingTime">
+      <!-- Separator -->
+      <span class="text-gray-300 dark:text-gray-700">·</span>
 
-    <!-- Reading Time -->
-    <div class="flex items-center gap-1.5 dark:text-gray-400">
-      <Icon name="heroicons:clock-20-solid" class="h-4 w-4" />
-      <span>{{ $t('blog.readingTime', { min: readingTime }) }}</span>
-    </div>
+      <!-- Reading Time -->
+      <div class="flex items-center gap-1.5 dark:text-gray-400">
+        <Icon name="heroicons:clock-20-solid" class="h-4 w-4" />
+        <span>{{ $t('blog.readingTime', { min: readingTime }) }}</span>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -32,10 +34,12 @@ const { formatLocaleDate } = useTimezone()
 const props = defineProps<{
   author: string
   date: Date | string
-  readingTime: number
+  readingTime?: number
 }>()
 
 const formattedDate = computed(() => {
   return formatLocaleDate(props.date)
 })
+
+const showReadingTime = computed(() => (props.readingTime || 0) > 0)
 </script>

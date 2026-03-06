@@ -221,6 +221,16 @@ describe('calculateReadingTime', () => {
       const content = 'a'.repeat(1000)
       expect(calculateReadingTime(content)).toBe(5) // ceil(1000/200) = 5
     })
+
+    it('should calculate by words for space-delimited text', () => {
+      const content = Array.from({ length: 200 }, () => 'word').join(' ')
+      expect(calculateReadingTime(content)).toBe(1)
+    })
+
+    it('should treat continuous CJK text as character-based estimation', () => {
+      const content = '這是一段測試內容'.repeat(200)
+      expect(calculateReadingTime(content)).toBe(4)
+    })
   })
 
   describe('edge cases', () => {

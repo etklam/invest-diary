@@ -1,4 +1,4 @@
 User-Agent: *
 Disallow:
 
-Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: https://trade-basic.com/sitemap.xml

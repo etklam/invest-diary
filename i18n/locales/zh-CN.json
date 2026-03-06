@@ -582,7 +582,13 @@
   },
   "blog": {
     "title": "标题",
+    "pageTitle": "投资教学",
+    "loadingTitle": "文章加载中",
     "description": "专业投资知识分享",
+    "retryLoad": "重试",
+    "previousPage": "上一页",
+    "nextPage": "下一页",
+    "pageIndicator": "第 {page} 页，共 {totalPages} 页",
     "allCategories": "全部分类",
     "allStatus": "全部状态",
     "readMore": "阅读更多",

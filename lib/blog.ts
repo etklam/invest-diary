@@ -31,9 +31,27 @@ export function generateExcerpt(content: string, maxLength = 150): string {
  * Calculate reading time in minutes
  */
 export function calculateReadingTime(content: string): number {
+  const plain = content.trim()
+  if (!plain) return 1
+
   const wordsPerMinute = 200
-  const wordCount = content.length
-  const result = Math.ceil(wordCount / wordsPerMinute)
+  const cjkCharsPerMinute = 400
+
+  const latinWords = plain.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g)?.length || 0
+  const cjkChars = plain.match(/[\u3400-\u9FFF]/g)?.length || 0
+  const hasWhitespace = /\s/.test(plain)
+
+  let result = 0
+
+  if (cjkChars === 0 && latinWords <= 1 && !hasWhitespace) {
+    result = Math.ceil(plain.length / wordsPerMinute)
+  } else if (latinWords > 0 || cjkChars > 0) {
+    result = Math.ceil(latinWords / wordsPerMinute + cjkChars / cjkCharsPerMinute)
+  } else {
+    // Fallback for symbol-heavy content (e.g. code blocks).
+    result = Math.ceil(plain.length / wordsPerMinute)
+  }
+
   return result < 1 ? 1 : result
 }
 

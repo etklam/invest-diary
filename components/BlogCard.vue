@@ -64,7 +64,7 @@
         v-if="post.author"
         :author="post.author.name || post.author.email"
         :date="post.publishedAt!"
-        :reading-time="readingTime ?? 0"
+        :reading-time="readingTime"
       />
 
       <div class="mt-4 border-t border-slate-200/70 pt-4 dark:border-slate-700/60">
@@ -108,6 +108,7 @@ const props = defineProps<{
 }>()
 
 const { isAdmin } = useAuth()
+const { t } = useI18n()
 const toast = useToast()
 
 const parsedTags = computed(() => parseTags(props.post.tags))
@@ -116,15 +117,15 @@ const readingTime = computed(() =>
 )
 
 const handleDelete = async () => {
-  if (!confirm(`確定要刪除文章「${props.post.title}」嗎？此操作無法復原。`)) return
+  if (!confirm(t('blog.confirmDelete', { title: props.post.title }))) return
 
   try {
     await $fetch(`/api/blog/${props.post.id}`, { method: 'DELETE' })
-    toast.success('文章已刪除')
+    toast.success(t('blog.deleteSuccess'))
     refreshNuxtData()
   } catch (error: any) {
     console.error('Failed to delete post:', error)
-    toast.error(error.data?.statusMessage || '刪除失敗')
+    toast.error(error.data?.statusMessage || t('blog.deleteFailed'))
   }
 }
 

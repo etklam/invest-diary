@@ -13,16 +13,28 @@ export default defineNuxtConfig({
     envPrefix: '',
     routeRules: {
       '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } },
-      '/blog': {
-        swr: true,
+      '/api/blog': {
+        cors: true,
         headers: {
           'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=300'
         }
       },
-      '/blog/**': {
-        swr: true,
+      '/api/blog/**': {
+        cors: true,
         headers: {
-          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=3600'
+          'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=900'
+        }
+      },
+      '/blog': {
+        headers: {
+          'Cache-Control': 'public, max-age=120',
+          Vary: 'Cookie, Accept-Language'
+        }
+      },
+      '/blog/**': {
+        headers: {
+          'Cache-Control': 'public, max-age=300',
+          Vary: 'Cookie, Accept-Language'
         }
       }
     }
@@ -128,14 +140,14 @@ export default defineNuxtConfig({
     // Public to both client and server
     public: {
       appName: process.env.NUXT_PUBLIC_APP_NAME || '投資日記',
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://trade-basic.com'
     }
   },
 
   // Sitemap configuration
   sitemap: {
     // 你的網站 URL（生產環境需要設置 NUXT_PUBLIC_SITE_URL）
-    siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://trade-basic.com',
     // 動態獲取所有 blog 文章（DB 不可用時要能安全失敗）
     async urls() {
       const baseUrls = [

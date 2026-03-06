@@ -14,7 +14,7 @@
                 Fintech Editorial Desk
               </p>
               <h1 class="mt-4 text-3xl font-semibold leading-tight text-slate-950 dark:text-slate-100 sm:text-4xl lg:text-5xl">
-                {{ $t('blog.title') }}
+                {{ $t('blog.pageTitle') }}
               </h1>
               <p class="mt-4 max-w-3xl text-base leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg">
                 {{ $t('blog.description') }}
@@ -90,9 +90,16 @@
           <div v-else-if="error" class="rounded-2xl border border-red-300/70 bg-red-50/90 p-4 text-red-900 dark:border-red-800/50 dark:bg-red-900/20 dark:text-red-300">
             <div class="flex items-start gap-3">
               <Icon name="heroicons:x-circle-20-solid" class="h-5 w-5" />
-              <h3 class="text-sm font-medium">
-                {{ $t('blog.loadFailed') }}
-              </h3>
+              <div>
+                <h3 class="text-sm font-medium">
+                  {{ $t('blog.loadFailed') }}
+                </h3>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <button class="pager-btn cursor-pointer rounded-lg px-4 py-2 text-sm font-medium" type="button" @click="refresh()">
+                    {{ $t('blog.retryLoad') }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -121,18 +128,20 @@
               <button
                 :disabled="pagination.page <= 1"
                 class="pager-btn cursor-pointer rounded-lg px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                :aria-label="$t('blog.previousPage')"
                 @click="goToPage(pagination.page - 1)"
               >
                 {{ $t('admin.pagination.previous') }}
               </button>
 
               <span class="px-2 text-sm text-slate-700 dark:text-slate-300">
-                {{ $t('admin.pagination.showing') }} {{ pagination.page }} {{ $t('admin.pagination.to') }} {{ pagination.totalPages }}
+                {{ $t('blog.pageIndicator', { page: pagination.page, totalPages: pagination.totalPages }) }}
               </span>
 
               <button
                 :disabled="pagination.page >= pagination.totalPages"
                 class="pager-btn cursor-pointer rounded-lg px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                :aria-label="$t('blog.nextPage')"
                 @click="goToPage(pagination.page + 1)"
               >
                 {{ $t('admin.pagination.next') }}
@@ -155,12 +164,24 @@ definePageMeta({
 })
 
 // SEO
-useHead({
-  title: '投資教學 - 投資日記',
+const { t } = useI18n()
+const config = useRuntimeConfig()
+const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').replace(/\/+$/, '')
+const canonicalUrl = `${siteUrl}/blog`
+useHead(() => ({
+  title: `${t('blog.pageTitle')} - ${t('common.appName')}`,
+  link: [{ rel: 'canonical', href: canonicalUrl }],
   meta: [
-    { name: 'description', content: '專業投資知識分享，包括基本面分析、技術面分析、市場觀察和投資策略' }
+    { name: 'description', content: t('blog.description') },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:title', content: `${t('blog.pageTitle')} - ${t('common.appName')}` },
+    { property: 'og:description', content: t('blog.description') },
+    { property: 'og:url', content: canonicalUrl },
+    { name: 'twitter:card', content: 'summary' },
+    { name: 'twitter:title', content: `${t('blog.pageTitle')} - ${t('common.appName')}` },
+    { name: 'twitter:description', content: t('blog.description') }
   ]
-})
+}))
 
 interface Post {
   id: string | number
@@ -213,7 +234,7 @@ const buildQueryParams = (page = 1) => {
 }
 
 // Fetch posts
-const { data, pending, error } = await useLazyFetch('/api/blog', {
+const { data, pending, error, refresh } = await useLazyFetch('/api/blog', {
   params: () => buildQueryParams(Number(route.query.page || 1)),
   watch: [() => route.query.category, () => route.query.page, () => route.query.search],
   transform: (res: any) => res
@@ -223,7 +244,6 @@ const posts = computed(() => data.value?.data || [])
 const pagination = computed(() => data.value?.pagination)
 
 // Categories for filter - using unified English keys
-const { t } = useI18n()
 const categories = computed(() => {
   return [
     { key: '', value: '', label: t('blog.allCategories') },
@@ -379,6 +399,11 @@ const goToPage = (page: number) => {
   color: rgb(12 74 110);
   background: rgb(224 242 254 / 60%);
   transition: all 200ms ease;
+  outline: none;
+}
+
+.pager-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgb(14 165 233 / 35%);
 }
 
 .pager-btn:hover {

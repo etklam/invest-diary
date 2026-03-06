@@ -22,9 +22,19 @@
     >
       <div class="flex items-start gap-3">
         <i-heroicons-x-circle class="h-5 w-5" />
-        <h3 class="text-sm font-medium">
-          {{ $t('blog.postNotFound') }}
-        </h3>
+        <div>
+          <h3 class="text-sm font-medium">
+            {{ $t('blog.postNotFound') }}
+          </h3>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button class="btn btn-red" type="button" @click="refresh()">
+              {{ $t('blog.retryLoad') }}
+            </button>
+            <NuxtLink to="/blog" class="btn btn-sky">
+              {{ $t('blog.backToList') }}
+            </NuxtLink>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -35,14 +45,15 @@
           class="btn btn-sky"
         >
           <i-heroicons-pencil class="btn-icon" />
-          <span class="btn-label">編輯文章</span>
+          <span class="btn-label">{{ $t('blog.editPost') }}</span>
         </NuxtLink>
         <button
           class="btn btn-red"
+          type="button"
           @click="handleDelete"
         >
           <i-heroicons-trash class="btn-icon" />
-          <span class="btn-label">刪除文章</span>
+          <span class="btn-label">{{ $t('common.delete') }}</span>
         </button>
       </div>
 
@@ -56,7 +67,7 @@
           <li>/</li>
           <li>
             <NuxtLink to="/blog" class="cursor-pointer transition-colors duration-200 hover:text-slate-800 dark:hover:text-slate-200">
-              {{ $t('blog.title') }}
+              {{ $t('blog.pageTitle') }}
             </NuxtLink>
           </li>
           <li>/</li>
@@ -196,12 +207,14 @@ interface Post {
 
 const route = useRoute()
 const { t } = useI18n()
+const config = useRuntimeConfig()
 const { isAdmin } = useAuth()
 const copied = ref(false)
 const toast = useToast()
 const router = useRouter()
+const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').replace(/\/+$/, '')
 
-const { data: post, pending, error } = await useAsyncData(`blog-${route.params.slug}`, () =>
+const { data: post, pending, error, refresh } = await useAsyncData(`blog-${route.params.slug}`, () =>
   $fetch<Post>(`/api/blog/${route.params.slug}`)
 )
 
@@ -215,18 +228,31 @@ const categoryKey = computed(() => {
   return normalizeCategory(post.value.category)
 })
 
+const canonicalUrl = computed(() => {
+  const slug = String(post.value?.slug || route.params.slug || '').trim()
+  if (!slug) return `${siteUrl}/blog`
+  return `${siteUrl}/blog/${encodeURIComponent(slug)}`
+})
+
 useHead(() => ({
-  title: post.value ? `${post.value.title} - 投資教學` : '文章載入中',
+  title: post.value ? `${post.value.title} - ${t('blog.pageTitle')}` : t('blog.loadingTitle'),
+  link: [{ rel: 'canonical', href: canonicalUrl.value }],
   meta: post.value
     ? [
         { name: 'description', content: post.value.excerpt || t('blog.description') },
         { property: 'og:title', content: post.value.title },
         { property: 'og:description', content: post.value.excerpt || t('blog.description') },
         { property: 'og:type', content: 'article' },
+        { property: 'og:url', content: canonicalUrl.value },
         { property: 'og:image', content: post.value.coverImage || '' },
-        { name: 'twitter:card', content: 'summary_large_image' }
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: post.value.title },
+        { name: 'twitter:description', content: post.value.excerpt || t('blog.description') },
+        { name: 'twitter:image', content: post.value.coverImage || '' }
       ]
-    : []
+    : [
+        { name: 'robots', content: 'noindex, nofollow' }
+      ]
 }))
 
 const copyLink = async () => {
@@ -244,15 +270,15 @@ const copyLink = async () => {
 
 const handleDelete = async () => {
   if (!post.value) return
-  if (!confirm(`確定要刪除文章「${post.value.title}」嗎？此操作無法復原。`)) return
+  if (!confirm(t('blog.confirmDelete', { title: post.value.title }))) return
 
   try {
     await $fetch(`/api/blog/${post.value.id}`, { method: 'DELETE' })
-    toast.success('文章已刪除')
+    toast.success(t('blog.deleteSuccess'))
     await router.push('/blog')
   } catch (apiError: any) {
     console.error('Failed to delete post:', apiError)
-    toast.error(apiError.data?.statusMessage || '刪除失敗')
+    toast.error(apiError.data?.statusMessage || t('blog.deleteFailed'))
   }
 }
 </script>
@@ -341,6 +367,11 @@ const handleDelete = async () => {
   transition: all 0.2s ease;
   text-decoration: none;
   cursor: pointer;
+  outline: none;
+}
+
+.btn:focus-visible {
+  box-shadow: 0 0 0 2px rgb(14 165 233 / 35%);
 }
 
 .btn-icon {

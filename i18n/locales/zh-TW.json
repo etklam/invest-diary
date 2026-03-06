@@ -583,7 +583,13 @@
   },
   "blog": {
     "title": "標題",
+    "pageTitle": "投資教學",
+    "loadingTitle": "文章載入中",
     "description": "專業投資知識分享",
+    "retryLoad": "重新載入",
+    "previousPage": "上一頁",
+    "nextPage": "下一頁",
+    "pageIndicator": "第 {page} 頁，共 {totalPages} 頁",
     "allCategories": "全部分類",
     "allStatus": "全部狀態",
     "readMore": "閱讀更多",

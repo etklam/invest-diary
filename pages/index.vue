@@ -298,6 +298,31 @@ definePageMeta({
   requiresAuth: false
 })
 
+const { t } = useI18n()
+const config = useRuntimeConfig()
+const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').replace(/\/+$/, '')
+const canonicalUrl = `${siteUrl}/`
+
+useHead(() => {
+  const title = `${t('home.hero.title')} - ${t('common.appName')}`
+  const description = t('home.hero.subtitle')
+
+  return {
+    title,
+    link: [{ rel: 'canonical', href: canonicalUrl }],
+    meta: [
+      { name: 'description', content: description },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: description },
+      { property: 'og:url', content: canonicalUrl },
+      { name: 'twitter:card', content: 'summary' },
+      { name: 'twitter:title', content: title },
+      { name: 'twitter:description', content: description }
+    ]
+  }
+})
+
 const currentYear = new Date().getFullYear()
 </script>
 

@@ -4,6 +4,17 @@ type CacheEntry<T> = {
 }
 
 const cache = new Map<string, CacheEntry<unknown>>()
+const MAX_CACHE_ENTRIES = 500
+
+function evictIfNeeded(nextKey: string): void {
+  if (cache.has(nextKey)) return
+  if (cache.size < MAX_CACHE_ENTRIES) return
+
+  const oldestKey = cache.keys().next().value as string | undefined
+  if (oldestKey) {
+    cache.delete(oldestKey)
+  }
+}
 
 export function getCached<T>(key: string): T | null {
   const entry = cache.get(key)
@@ -18,6 +29,9 @@ export function getCached<T>(key: string): T | null {
 }
 
 export function setCached<T>(key: string, value: T, ttlSeconds = 900): void {
+  clearExpired()
+  evictIfNeeded(key)
+
   cache.set(key, {
     value,
     expiresAt: Date.now() + ttlSeconds * 1000,
@@ -31,4 +45,8 @@ export function clearExpired(): void {
       cache.delete(key)
     }
   }
+}
+
+export function getCacheSize(): number {
+  return cache.size
 }
