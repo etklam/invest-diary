@@ -15,7 +15,7 @@ export const useNavigation = () => {
   const navItems = computed<NavItem[]>(() => [
     // Home only visible for guests
     { label: t('nav.home'), to: '/', auth: false },
-    { label: t('nav.blog'), to: '/blog' },
+    { label: t('nav.blog'), to: '/acticles' },
     { label: t('nav.calendar'), to: '/calendar', auth: true },
     { label: t('nav.timeline'), to: '/timeline', auth: true },
     { label: t('nav.diaries'), to: '/diaries', auth: true },

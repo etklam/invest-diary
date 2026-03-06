@@ -41,7 +41,7 @@
       </div>
 
       <h3 class="mb-2 line-clamp-2 text-xl font-semibold text-slate-950 dark:text-slate-100">
-        <NuxtLink :to="`/blog/${post.slug}`" class="cursor-pointer transition-colors duration-200 hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 dark:hover:text-sky-300">
+        <NuxtLink :to="`/acticles/${post.slug}`" class="cursor-pointer transition-colors duration-200 hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 dark:hover:text-sky-300">
           {{ post.title }}
         </NuxtLink>
       </h3>
@@ -69,7 +69,7 @@
 
       <div class="mt-4 border-t border-slate-200/70 pt-4 dark:border-slate-700/60">
         <NuxtLink
-          :to="`/blog/${post.slug}`"
+          :to="`/acticles/${post.slug}`"
           class="inline-flex cursor-pointer items-center font-semibold text-sky-700 transition-colors duration-200 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200"
         >
           {{ $t('blog.readMore') }}

@@ -4,7 +4,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const publicRoutes = ['/auth/login', '/auth/register']
 
   // Check if the route is blog-related (public)
-  const isBlogRoute = to.path.startsWith('/blog')
+  const isBlogRoute = to.path.startsWith('/acticles')
 
   // Check route meta for requiresAuth
   const metaRequiresAuth = to.meta.requiresAuth

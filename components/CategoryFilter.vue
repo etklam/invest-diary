@@ -58,7 +58,7 @@ const buildCategoryLink = (category: Category) => {
   else delete query.category
   delete query.page
 
-  return { path: '/blog', query }
+  return { path: '/acticles', query }
 }
 
 const isActive = (key: string, value: string) => {

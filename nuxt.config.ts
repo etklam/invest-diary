@@ -25,13 +25,13 @@ export default defineNuxtConfig({
           'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=900'
         }
       },
-      '/blog': {
+      '/acticles': {
         headers: {
           'Cache-Control': 'public, max-age=120',
           Vary: 'Cookie, Accept-Language'
         }
       },
-      '/blog/**': {
+      '/acticles/**': {
         headers: {
           'Cache-Control': 'public, max-age=300',
           Vary: 'Cookie, Accept-Language'
@@ -157,7 +157,7 @@ export default defineNuxtConfig({
           priority: 1.0
         },
         {
-          loc: '/blog',
+          loc: '/acticles',
           changefreq: 'daily',
           priority: 0.9,
           lastmod: new Date().toISOString()
@@ -185,7 +185,7 @@ export default defineNuxtConfig({
         return [
           ...baseUrls,
           ...posts.map(post => ({
-            loc: `/blog/${post.slug}`,
+            loc: `/acticles/${post.slug}`,
             changefreq: 'weekly',
             priority: 0.8,
             lastmod: post.updatedAt.toISOString()

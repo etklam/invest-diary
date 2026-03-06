@@ -34,7 +34,7 @@ const mainNavItems = computed(() => {
     return [
       { label: t('nav.home'), to: '/', icon: 'home' },
       { label: t('nav.about'), to: '/about', icon: 'information-circle' },
-      { label: t('nav.blog'), to: '/blog', icon: 'document' }
+      { label: t('nav.blog'), to: '/acticles', icon: 'document' }
     ]
   }
 
@@ -61,7 +61,7 @@ const secondaryNavItems = computed(() => {
   return [
     { label: t('nav.discipline'), to: '/discipline', icon: 'light-bulb' },
     { label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
-    { label: t('nav.blog'), to: '/blog', icon: 'document-text' },
+    { label: t('nav.blog'), to: '/acticles', icon: 'document-text' },
     { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
     { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
     { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
