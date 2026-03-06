@@ -65,6 +65,19 @@
               {{ t('settings.timezoneDesc') }}
             </p>
           </div>
+          <div>
+            <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <input
+                v-model="settingsForm.excludeHolidaysInStats"
+                type="checkbox"
+                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              >
+              <span>統計排除國定假日（依時區）</span>
+            </label>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              以 Nager.Date 自動抓取假日，計算記錄率時不納入分母。
+            </p>
+          </div>
         </div>
       </div>
 
@@ -240,7 +253,8 @@ const settingsForm = ref({
   expectedMonthlyTrades: 20,
   expectedProfit: 0,
   expectedAvgHolding: 0,
-  timezone: 'Asia/Taipei'
+  timezone: 'Asia/Taipei',
+  excludeHolidaysInStats: true
 })
 
 // Password form
@@ -256,7 +270,8 @@ const originalSettings = ref({
   expectedMonthlyTrades: 20,
   expectedProfit: 0,
   expectedAvgHolding: 0,
-  timezone: 'Asia/Taipei'
+  timezone: 'Asia/Taipei',
+  excludeHolidaysInStats: true
 })
 
 const hasSettingsChanged = computed(() => {
@@ -265,7 +280,8 @@ const hasSettingsChanged = computed(() => {
     settingsForm.value.expectedMonthlyTrades !== originalSettings.value.expectedMonthlyTrades ||
     settingsForm.value.expectedProfit !== originalSettings.value.expectedProfit ||
     settingsForm.value.expectedAvgHolding !== originalSettings.value.expectedAvgHolding ||
-    settingsForm.value.timezone !== originalSettings.value.timezone
+    settingsForm.value.timezone !== originalSettings.value.timezone ||
+    settingsForm.value.excludeHolidaysInStats !== originalSettings.value.excludeHolidaysInStats
   )
 })
 
@@ -328,7 +344,8 @@ onMounted(async () => {
       expectedMonthlyTrades: user.value.expectedMonthlyTrades || 20,
       expectedProfit: Number(user.value.expectedProfit) || 0,
       expectedAvgHolding: Number(user.value.expectedAvgHolding) || 0,
-      timezone: user.value.timezone || 'Asia/Taipei'
+      timezone: user.value.timezone || 'Asia/Taipei',
+      excludeHolidaysInStats: localStorage.getItem('exclude_holidays_in_stats') !== 'false'
     }
     originalSettings.value = { ...settingsForm.value }
   }
@@ -342,6 +359,7 @@ const handleSaveSettings = async () => {
     expectedAvgHolding: settingsForm.value.expectedAvgHolding,
     timezone: settingsForm.value.timezone
   })
+  localStorage.setItem('exclude_holidays_in_stats', String(settingsForm.value.excludeHolidaysInStats))
 
   // Update original settings after save
   originalSettings.value = { ...settingsForm.value }
