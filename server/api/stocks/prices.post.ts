@@ -1,6 +1,11 @@
+import { rateLimiters } from '~/lib/rate-limiter'
+import { requireUser } from '~/server/utils/auth'
+
 type Body = {
   symbols: string[]
 }
+
+const MAX_SYMBOLS_PER_REQUEST = 25
 
 // Helper function to fetch Taiwan stock prices from TWSE
 async function fetchTWStockPrice(symbol: string): Promise<number | null> {
@@ -65,10 +70,29 @@ async function fetchYahooFinancePrice(symbol: string): Promise<number | null> {
 }
 
 export default defineEventHandler(async (event) => {
+  requireUser(event)
+
   const body = await readBody<Body>(event)
 
   if (!body?.symbols || body.symbols.length === 0) {
     throw createError({ statusCode: 400, statusMessage: 'No symbols provided' })
+  }
+
+  if (body.symbols.length > MAX_SYMBOLS_PER_REQUEST) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `Maximum ${MAX_SYMBOLS_PER_REQUEST} symbols per request`,
+    })
+  }
+
+  const ip = getRequestIP(event) || 'unknown'
+  try {
+    await rateLimiters.generalApi(ip)
+  } catch {
+    throw createError({
+      statusCode: 429,
+      statusMessage: 'Too many requests. Please try again later.',
+    })
   }
 
   const result: Record<string, number> = {}

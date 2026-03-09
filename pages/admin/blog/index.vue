@@ -7,6 +7,11 @@ const { isAuthenticated, isAdmin } = useAuth()
 const toast = useToast()
 const router = useRouter()
 
+definePageMeta({
+  middleware: 'admin',
+  requiresAuth: true,
+})
+
 // Client-side guard for admin page
 watchEffect(() => {
   if (!process.client) return

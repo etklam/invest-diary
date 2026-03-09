@@ -134,6 +134,11 @@ const toast = useToast()
 const router = useRouter()
 const route = useRoute()
 
+definePageMeta({
+  middleware: 'admin',
+  requiresAuth: true,
+})
+
 const postId = route.params.id as string
 
 // State
@@ -165,14 +170,7 @@ const isFormValid = computed(() => {
 const fetchPost = async () => {
   try {
     loading.value = true
-    const response = await $fetch(`/api/blog/admin`) as any
-    const foundPost = response.data.find((p: any) => p.id.toString() === postId)
-
-    if (!foundPost) {
-      error.value = { message: 'Post not found' }
-      return
-    }
-
+    const foundPost = await $fetch(`/api/blog/admin/${postId}`) as any
     post.value = foundPost
     form.value = {
       title: foundPost.title,

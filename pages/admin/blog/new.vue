@@ -94,6 +94,11 @@ const { t } = useI18n()
 const toast = useToast()
 const router = useRouter()
 
+definePageMeta({
+  middleware: 'admin',
+  requiresAuth: true,
+})
+
 // Form state
 const form = ref({
   title: '',

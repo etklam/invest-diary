@@ -39,7 +39,18 @@ export default defineEventHandler(async (event) => {
       prisma.post.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          coverImage: true,
+          category: true,
+          tags: true,
+          status: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
           author: {
             select: {
               id: true,

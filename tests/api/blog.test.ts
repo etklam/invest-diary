@@ -256,6 +256,68 @@ describe('Blog API', () => {
     })
   })
 
+  describe('GET /api/blog/admin', () => {
+    it('should fetch admin post list without full content payload', async () => {
+      mockPostFindMany.mockResolvedValue([])
+      mockPostCount.mockResolvedValue(0)
+      mockGetQuery.mockReturnValue({})
+
+      const { default: handler } = await import('~/server/api/blog/admin/index.get')
+      const mockEvent = {
+        context: {
+          user: { id: '1', email: 'admin@test.com', role: 'ADMIN' },
+        },
+      } as any
+
+      await handler(mockEvent)
+
+      const firstCall = mockPostFindMany.mock.calls[0]?.[0]
+      expect(firstCall?.select).toMatchObject({
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+      })
+      expect(firstCall?.select).not.toHaveProperty('content')
+    })
+  })
+
+  describe('GET /api/blog/admin/[id]', () => {
+    it('should fetch a single admin post by id with full content', async () => {
+      const mockPost = {
+        id: 42,
+        title: 'Deep Post',
+        slug: 'deep-post',
+        content: 'Full article body',
+        category: 'technical',
+        status: 'DRAFT',
+        author: { id: 1, name: 'Admin', email: 'admin@test.com' },
+      }
+
+      mockPostFindUnique.mockResolvedValue(mockPost)
+      mockGetRouterParam.mockReturnValue('42')
+
+      const { default: handler } = await import('~/server/api/blog/admin/[id].get')
+      const mockEvent = {
+        context: {
+          user: { id: '1', email: 'admin@test.com', role: 'ADMIN' },
+        },
+      } as any
+
+      const result = await handler(mockEvent)
+
+      expect(result).toEqual(mockPost)
+      expect(mockPostFindUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: BigInt(42) },
+          include: expect.objectContaining({
+            author: expect.any(Object),
+          }),
+        })
+      )
+    })
+  })
+
   describe('POST /api/blog (admin)', () => {
     it('should create a new blog post', async () => {
       const mockPost = {
