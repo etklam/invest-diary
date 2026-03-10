@@ -15,7 +15,7 @@
         role="dialog"
         aria-modal="true"
       >
-        <div class="flex items-end justify-center min-h-screen px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-end justify-center min-h-screen px-4 pb-20 text-center sm:flex sm:items-center sm:justify-center sm:p-0">
           <!-- Glassmorphic background overlay -->
           <Transition
             enter-active-class="transition-all duration-300 ease-out"
@@ -45,7 +45,7 @@
           >
             <div
               v-if="show"
-              class="relative inline-block align-bottom w-full text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle"
+              class="relative inline-block align-bottom w-full text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:mx-auto sm:max-w-3xl"
             >
               <!-- Mobile: Full screen -->
               <div class="sm:hidden h-screen">
