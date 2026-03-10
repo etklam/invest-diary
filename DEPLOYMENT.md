@@ -1,8 +1,8 @@
 # 部署指南 | Deployment Guide
 
-本指南說明如何使用 Docker 將投資日記系統部署到已有 MySQL 的伺服器上。
+本指南說明如何使用 Docker 或 CapRover 將投資日記系統部署到已有 MySQL 的伺服器上。
 
-This guide explains how to deploy the Investment Diary System using Docker to a server with an existing MySQL installation.
+This guide explains how to deploy the Investment Diary System using Docker or CapRover to a server with an existing MySQL installation.
 
 ## 目錄 | Table of Contents
 
@@ -24,6 +24,8 @@ This guide explains how to deploy the Investment Diary System using Docker to a 
 - **網路**: 開放 3000 埠（或使用反向代理）
 
 ### 必要軟體
+
+**選項 1: Docker（標準部署）**
 ```bash
 # Docker Engine 20.10+
 docker --version
@@ -94,6 +96,81 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 # 生成隨機金鑰
 openssl rand -base64 32
 ```
+
+---
+
+## CapRover 部署
+
+CapRover 是一個簡單的 PaaS 平台，可以輕鬆部署 Docker 應用程式。
+
+### 1. 準備 CapRover App
+
+1. 登錄 CapRover 管理面板
+2. 建立一個新的 App（例如：`diary-vue`）
+
+### 2. 配置環境變量
+
+在 CapRover App 設定中添加以下環境變量：
+
+```bash
+# 資料庫連線字串
+DATABASE_URL="mysql://diary_user:password@your-mysql-host:3306/invest_diary"
+
+# JWT 金鑰（必須是 32 字元以上的隨機字串）
+JWT_SECRET="your-very-secure-random-32-character-secret-key"
+
+# 應用程式名稱
+NUXT_PUBLIC_APP_NAME="投資日記"
+
+# Site URL（用於 SEO/Sitemap）
+NUXT_PUBLIC_SITE_URL="https://your-domain.com"
+
+# 調度器啟用狀態（重要！）
+# 只在主實例上設置為 "true"，其他實例設為 "false" 或不設置
+# 這可以防止多實例環境中的重複執行
+SCHEDULER_ENABLED="true"
+```
+
+**⚠️ 重要說明**：
+
+- **單實例部署**：設置 `SCHEDULER_ENABLED="true"`
+- **多實例部署**：只對其中一個實例設置 `SCHEDULER_ENABLED="true"`，其他實例不設置或設置為 `"false"`
+
+### 3. 配置持久化
+
+如果需要持久化數據，可以在 CapRover 中配置卷（volume）映射。
+
+### 4. 部署
+
+#### 方法 A：直接部署 Git 倉庫
+
+在 CapRover App 設定中：
+
+1. 選擇 "Create New App from Dockerfile"
+2. 輸入 Git 倉庫 URL
+3. 設置分支（例如：`main`）
+4. 點擊 "Create & Deploy"
+
+#### 方法 B：部署預建映像
+
+1. 建置映像並推送到 Docker Registry
+2. 在 CapRover App 設定中，選擇 "Deploy Image"
+3. 輸入映像名稱（例如：`your-registry/diary-vue:latest`）
+4. 點擊 "Deploy"
+
+### 5. 配置域名
+
+1. 在 CapRover App 設定中，點擊 "Domains"
+2. 添加域名（例如：`diary.yourdomain.com`）
+3. 開啟 HTTPS（Let's Encrypt）
+
+### 6. 監控日誌
+
+在 CapRover 管理面板中：
+
+1. 點擊你的 App
+2. 點擊 "Logs" 標籤
+3. 查看實時日誌輸出
 
 ---
 

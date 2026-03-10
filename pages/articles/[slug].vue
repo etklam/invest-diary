@@ -30,7 +30,7 @@
             <button class="btn btn-red" type="button" @click="refresh()">
               {{ $t('blog.retryLoad') }}
             </button>
-            <NuxtLink to="/acticles" class="btn btn-sky">
+            <NuxtLink to="/articles" class="btn btn-sky">
               {{ $t('blog.backToList') }}
             </NuxtLink>
           </div>
@@ -66,7 +66,7 @@
           </li>
           <li>/</li>
           <li>
-            <NuxtLink to="/acticles" class="cursor-pointer transition-colors duration-200 hover:text-slate-800 dark:hover:text-slate-200">
+            <NuxtLink to="/articles" class="cursor-pointer transition-colors duration-200 hover:text-slate-800 dark:hover:text-slate-200">
               {{ $t('blog.pageTitle') }}
             </NuxtLink>
           </li>
@@ -170,7 +170,7 @@
       </div>
 
       <div class="flex w-full items-center justify-center pb-8">
-        <NuxtLink to="/acticles" class="btn btn-sky">
+        <NuxtLink to="/articles" class="btn btn-sky">
           <i-heroicons-arrow-left class="btn-icon" />
           <span class="btn-label">{{ $t('blog.backToList') }}</span>
         </NuxtLink>
@@ -230,8 +230,8 @@ const categoryKey = computed(() => {
 
 const canonicalUrl = computed(() => {
   const slug = String(post.value?.slug || route.params.slug || '').trim()
-  if (!slug) return `${siteUrl}/acticles`
-  return `${siteUrl}/acticles/${encodeURIComponent(slug)}`
+  if (!slug) return `${siteUrl}/articles`
+  return `${siteUrl}/articles/${encodeURIComponent(slug)}`
 })
 
 useHead(() => ({
@@ -275,7 +275,7 @@ const handleDelete = async () => {
   try {
     await $fetch(`/api/blog/${post.value.id}`, { method: 'DELETE' })
     toast.success(t('blog.deleteSuccess'))
-    await router.push('/acticles')
+    await router.push('/articles')
   } catch (apiError: any) {
     console.error('Failed to delete post:', apiError)
     toast.error(apiError.data?.statusMessage || t('blog.deleteFailed'))

@@ -177,8 +177,8 @@ describe('BlogCard Component', () => {
   describe('navigation', () => {
     it('should generate correct blog post URL', () => {
       const slug = 'test-blog-post'
-      const url = `/acticles/${slug}`
-      expect(url).toBe('/acticles/test-blog-post')
+      const url = `/articles/${slug}`
+      expect(url).toBe('/articles/test-blog-post')
     })
 
     it('should generate correct edit URL for admin', () => {

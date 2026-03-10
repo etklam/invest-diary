@@ -1,3 +1,3 @@
 <script setup lang="ts">
-await navigateTo('/acticles', { redirectCode: 301 })
+await navigateTo('/articles', { redirectCode: 301 })
 </script>

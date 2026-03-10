@@ -293,7 +293,7 @@ const statusLabel = (status: string) => {
                     {{ post.title }}
                   </div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">
-                    /acticles/{{ post.slug }}
+                    /articles/{{ post.slug }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">

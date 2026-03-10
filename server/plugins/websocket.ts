@@ -49,12 +49,14 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     }
 
     // 建立 Socket.io Server
+    const siteUrl = process.env.NUXT_PUBLIC_SITE_URL
+
     const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
       httpServer,
       {
         cors: {
-          origin: process.env.NUXT_PUBLIC_SITE_URL || '*',
-          credentials: true,
+          origin: siteUrl || '*',
+          credentials: !!siteUrl, // 只有在明確設定 origin 時才使用 credentials
           methods: ['GET', 'POST']
         },
         path: '/socket.io/',

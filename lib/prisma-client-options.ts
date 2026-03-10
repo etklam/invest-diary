@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client'
-import { PrismaMariaDb } from '@prisma/adapter-mariadb'
+import { PrismaMySQL } from '@prisma/adapter-mysql'
 
 const TEST_DATABASE_URL = 'mysql://root:password@localhost:3306/test'
 
@@ -20,6 +20,6 @@ export function createPrismaClientOptions(
 ): Prisma.PrismaClientOptions {
   return {
     ...options,
-    adapter: new PrismaMariaDb(getDatabaseUrl()),
+    adapter: new PrismaMySQL(getDatabaseUrl()),
   }
 }

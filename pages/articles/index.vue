@@ -167,7 +167,7 @@ definePageMeta({
 const { t } = useI18n()
 const config = useRuntimeConfig()
 const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').replace(/\/+$/, '')
-const canonicalUrl = `${siteUrl}/acticles`
+const canonicalUrl = `${siteUrl}/articles`
 useHead(() => ({
   title: `${t('blog.pageTitle')} - ${t('common.appName')}`,
   link: [{ rel: 'canonical', href: canonicalUrl }],

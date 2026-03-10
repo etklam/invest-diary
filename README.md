@@ -248,6 +248,10 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 
 # Site URL (Required for production - used for SEO/Sitemap)
 NUXT_PUBLIC_SITE_URL="https://your-domain.com"
+
+# Scheduler (Optional - Set to "true" only on one instance in multi-instance deployments)
+# If not set, only one instance will run scheduled tasks to avoid duplicates
+SCHEDULER_ENABLED="true"
 ```
 
 ### Generating a Secure JWT Secret
