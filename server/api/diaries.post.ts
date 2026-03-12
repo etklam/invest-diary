@@ -1,34 +1,32 @@
 import prisma from '~/lib/prisma'
 import type { DiaryInput, Diary } from '~/types/diary'
 import { getUtcDayRange, toUtcNoonDate } from '~/lib/diary-date'
+import { Errors, AppError } from '~/lib/errors/factory'
+import { validateTransactions } from '~/lib/transactions/validate'
 
 export default defineEventHandler(async (event): Promise<Diary> => {
   const userId = event.context.user?.id
 
   if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   const body = await readBody<DiaryInput & { appendToToday?: boolean }>(event)
 
   if (!body.title) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Title is required',
-    })
+    throw Errors.validationError([{ field: 'title', message: 'Title is required' }]).toH3Error()
   }
 
   if (!body.content) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Content is required',
-    })
+    throw Errors.validationError([{ field: 'content', message: 'Content is required' }]).toH3Error()
   }
 
   const { title, content, date, transactions, alerts, appendToToday } = body
+
+  const transactionError = validateTransactions(transactions)
+  if (transactionError) {
+    throw Errors.validationError([{ field: 'transactions', message: transactionError }]).toH3Error()
+  }
 
   try {
     const diaryDate = date ? toUtcNoonDate(date) : toUtcNoonDate(new Date())
@@ -61,14 +59,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     }
 
     if (existingDiary) {
-      throw createError({
-        statusCode: 409,
-        statusMessage: 'Diary already exists for this date',
-        data: {
-          existingDiaryId: existingDiary.id.toString(),
-          date: date,
-        },
-      })
+      throw Errors.diaryAlreadyExists(date ?? diaryDate.toISOString()).toH3Error()
     }
 
     const diary = await prisma.diary.create({
@@ -102,13 +93,10 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     console.log('[API] Diary created:', diary.id, 'for user:', userId)
     return diary as Diary
   } catch (error) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
+    if (error instanceof AppError) {
+      throw error.toH3Error()
     }
     console.error('Error creating diary:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to create diary',
-    })
+    throw Errors.internalError(error).toH3Error()
   }
 })

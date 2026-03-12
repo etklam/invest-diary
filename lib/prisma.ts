@@ -1,5 +1,8 @@
-import { PrismaClient } from '@prisma/client'
+import { createRequire } from 'node:module'
 import { createPrismaClientOptions } from './prisma-client-options'
+
+const require = createRequire(import.meta.url)
+const { PrismaClient } = require('@prisma/client')
 
 const prismaClientSingleton = () => {
   return new PrismaClient(createPrismaClientOptions())

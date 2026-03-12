@@ -3,6 +3,7 @@ import type { DiaryInput, Diary } from '~/types/diary'
 import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
 import { toUtcNoonDate } from '~/lib/diary-date'
+import { validateTransactions } from '~/lib/transactions/validate'
 
 export default defineEventHandler(async (event): Promise<Diary> => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -19,17 +20,27 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     throw Errors.validationError([{ field: 'id', message: 'ID is required' }]).toH3Error()
   }
 
+  const idNum = Number(id)
+  if (!Number.isInteger(idNum) || idNum <= 0) {
+    throw Errors.validationError([{ field: 'id', message: 'Invalid ID format' }]).toH3Error()
+  }
+
   if (!body.title) {
     throw Errors.validationError([{ field: 'title', message: 'Title is required' }]).toH3Error()
   }
 
   const { title, content, date, transactions, alerts } = body
+  const transactionError = validateTransactions(transactions)
+  if (transactionError) {
+    throw Errors.validationError([{ field: 'transactions', message: transactionError }]).toH3Error()
+  }
 
   try {
+    const diaryId = BigInt(idNum)
     // First verify ownership
     const existingDiary = await prisma.diary.findFirst({
       where: {
-        id: BigInt(id),
+        id: diaryId,
         userId: userId
       }
     })
@@ -44,19 +55,19 @@ export default defineEventHandler(async (event): Promise<Diary> => {
       // Delete existing transactions and alerts
       await tx.transaction.deleteMany({
         where: {
-          diaryId: BigInt(id),
+          diaryId: diaryId,
         },
       })
       await tx.alert.deleteMany({
         where: {
-          diaryId: BigInt(id),
+          diaryId: diaryId,
         },
       })
 
       // Update diary and create new transactions and alerts
       return await tx.diary.update({
         where: {
-          id: BigInt(id),
+          id: diaryId,
         },
         data: {
           title,

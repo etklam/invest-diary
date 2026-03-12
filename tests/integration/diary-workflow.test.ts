@@ -182,6 +182,66 @@ describe('Diary Workflow Integration', () => {
 
       expect(mockDiaryCreate).toHaveBeenCalled()
     })
+
+    it('should reject invalid sell transactions without holdings', async () => {
+      mockReadBody.mockResolvedValueOnce({
+        title: 'Trading Diary',
+        content: 'Trading day',
+        transactions: [
+          { symbol: '2330.TW', type: 'SELL', quantity: 5, price: 500 },
+        ],
+      })
+
+      const { default: handler } = await import('~/server/api/diaries.post')
+
+      await expect(handler({
+        context: { user: mockUser },
+      } as any)).rejects.toMatchObject({
+        statusCode: 400,
+        statusMessage: 'Validation failed',
+      })
+
+      expect(mockDiaryCreate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Validation errors', () => {
+    it('should reject missing title with validation error', async () => {
+      mockReadBody.mockResolvedValueOnce({
+        content: 'Missing title',
+      })
+
+      const { default: handler } = await import('~/server/api/diaries.post')
+
+      await expect(handler({
+        context: { user: mockUser },
+      } as any)).rejects.toMatchObject({
+        statusCode: 400,
+        statusMessage: 'Validation failed',
+      })
+    })
+
+    it('should reject invalid diary id for update', async () => {
+      mockReadBody.mockResolvedValueOnce({
+        title: 'Updated Title',
+        content: 'Updated content',
+      })
+      mockGetRouterParam.mockReturnValueOnce('abc')
+
+      const { default: handler } = await import('~/server/api/diaries/[id].put')
+
+      await expect(handler({
+        context: {
+          user: { id: '1' },
+          params: { id: 'abc' },
+        },
+      } as any)).rejects.toMatchObject({
+        statusCode: 400,
+        statusMessage: 'Validation failed',
+      })
+
+      expect(mockDiaryFindFirst).not.toHaveBeenCalled()
+    })
   })
 
   describe('Date-based Queries', () => {

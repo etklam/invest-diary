@@ -60,7 +60,9 @@
       "mcp__chrome-devtools__list_console_messages",
       "mcp__chrome-devtools__list_network_requests",
       "mcp__chrome-devtools__click",
-      "Bash(npx vue-tsc --noEmit 2>&1 | head -50)"
+      "Bash(npx vue-tsc --noEmit 2>&1 | head -50)",
+      "Bash(wc -l /Users/klam/Desktop/project/diary-vue/pages/tools/*.vue)",
+      "Bash(grep -r \"definePageMeta\" /Users/klam/Desktop/project/diary-vue/pages/tools/*.vue)"
     ]
   }
 }
