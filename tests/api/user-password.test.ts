@@ -89,4 +89,49 @@ describe('User Password API', () => {
     expect(mockUserUpdate).not.toHaveBeenCalled()
     expect(mockRefreshTokenDeleteMany).not.toHaveBeenCalled()
   })
+
+  it('should return 404 when user is missing', async () => {
+    mockReadBody.mockResolvedValue({
+      currentPassword: 'old-password',
+      newPassword: 'new-password-123',
+    })
+    mockUserFindUnique.mockResolvedValue(null)
+
+    const { default: handler } = await import('~/server/api/user/password.put')
+
+    await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
+      statusCode: 404,
+    })
+    expect(mockBcryptCompare).not.toHaveBeenCalled()
+  })
+
+  it('bubbles bcrypt failures', async () => {
+    mockReadBody.mockResolvedValue({
+      currentPassword: 'old-password',
+      newPassword: 'new-password-123',
+    })
+    mockUserFindUnique.mockResolvedValue({ id: 1n, password: 'hashed-old' })
+    mockBcryptCompare.mockRejectedValue(new Error('bcrypt failed'))
+
+    const { default: handler } = await import('~/server/api/user/password.put')
+
+    await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toBeDefined()
+    expect(mockTransaction).not.toHaveBeenCalled()
+  })
+
+  it('returns error when transaction fails', async () => {
+    mockReadBody.mockResolvedValue({
+      currentPassword: 'old-password',
+      newPassword: 'new-password-123',
+    })
+    mockUserFindUnique.mockResolvedValue({ id: 1n, password: 'hashed-old' })
+    mockBcryptCompare.mockResolvedValue(true)
+    mockBcryptHash.mockResolvedValue('hashed-new')
+    mockTransaction.mockRejectedValue(new Error('tx failed'))
+
+    const { default: handler } = await import('~/server/api/user/password.put')
+
+    await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toBeDefined()
+    expect(mockDeleteCookie).not.toHaveBeenCalled()
+  })
 })

@@ -66,4 +66,27 @@ describe('POST /api/stocks/prices', () => {
     })
     expect(mockFetch).not.toHaveBeenCalled()
   })
+
+  it('returns prices for TWSE and Yahoo symbols', async () => {
+    mockReadBody.mockResolvedValue({ symbols: ['2330.TW', 'AAPL'] })
+    mockGeneralApi.mockResolvedValueOnce(true)
+
+    mockFetch
+      .mockResolvedValueOnce({
+        text: async () => 'prefix{"msgArray":[{"z":"123.45"}]}'
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          chart: { result: [{ meta: { regularMarketPrice: 234.56 } }] },
+        }),
+      })
+
+    const { default: handler } = await import('~/server/api/stocks/prices.post')
+
+    const result = await handler({ context: { user: { id: '1' } } } as any)
+
+    expect(result).toEqual({ '2330.TW': 123.45, AAPL: 234.56 })
+    expect(mockGeneralApi).toHaveBeenCalledWith('127.0.0.1')
+  })
 })

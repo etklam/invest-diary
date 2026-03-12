@@ -1,177 +1,194 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { mockGetQuery, mockReadBody, mockGetRouterParam } from '../vi-setup'
+
+const mockDiaryFindMany = vi.fn()
+const mockDiaryCount = vi.fn()
+const mockDiaryFindFirst = vi.fn()
+const mockDiaryCreate = vi.fn()
+const mockDiaryUpdate = vi.fn()
+const mockDiaryDelete = vi.fn()
+const mockTransaction = vi.fn()
+const mockTxTransactionDeleteMany = vi.fn()
+const mockTxAlertDeleteMany = vi.fn()
+
+vi.mock('~/lib/prisma', () => ({
+  default: {
+    diary: {
+      findMany: mockDiaryFindMany,
+      count: mockDiaryCount,
+      findFirst: mockDiaryFindFirst,
+      create: mockDiaryCreate,
+      update: mockDiaryUpdate,
+      delete: mockDiaryDelete,
+    },
+    $transaction: mockTransaction,
+  },
+}))
 
 describe('Diary API Routes', () => {
-  describe('GET /api/diaries', () => {
-    it('should return empty array when no diaries exist', async () => {
-      // This test would require running the Nuxt server
-      // For now, we'll skip and document the structure
-      expect(true).toBe(true)
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockGetQuery.mockReturnValue({})
+    mockReadBody.mockResolvedValue(null)
+    mockGetRouterParam.mockReturnValue(null)
+    mockTransaction.mockImplementation(async (callback: (tx: any) => Promise<unknown>) => {
+      const tx = {
+        transaction: { deleteMany: mockTxTransactionDeleteMany },
+        alert: { deleteMany: mockTxAlertDeleteMany },
+        diary: { update: mockDiaryUpdate },
+      }
+      return callback(tx)
     })
+  })
 
-    it('should return list of diaries with transactions', async () => {
-      // This would call the API endpoint
-      // const response = await $fetch('/api/diaries')
-      // expect(response).toHaveLength(1)
-      expect(true).toBe(true)
+  describe('GET /api/diaries', () => {
+    it('should return paginated diaries for the user', async () => {
+      const now = new Date('2026-01-05T10:00:00.000Z')
+      mockGetQuery.mockReturnValue({ page: '1', limit: '2' })
+      mockDiaryFindMany.mockResolvedValue([
+        {
+          id: 1n,
+          title: 'First diary',
+          content: 'content',
+          date: now,
+          createdAt: now,
+          updatedAt: now,
+          alerts: [{ id: 11n, message: 'Alert', triggerAt: now, isDismissed: false }],
+          transactions: [{ id: 21n, symbol: 'AAPL', type: 'BUY', quantity: 1, price: 100, tradeDate: now }],
+        },
+      ])
+      mockDiaryCount.mockResolvedValue(1)
+
+      const { default: handler } = await import('~/server/api/diaries.get')
+
+      const result = await handler({ context: { user: { id: '1' } } } as any)
+
+      expect(mockDiaryFindMany).toHaveBeenCalled()
+      expect(result.pagination).toEqual({ page: 1, limit: 2, total: 1, totalPages: 1 })
+      expect(result.data[0].id).toBe('1')
+      expect(result.data[0].alerts[0].id).toBe('11')
+      expect(result.data[0].transactions[0].id).toBe('21')
     })
   })
 
   describe('POST /api/diaries', () => {
     it('should create a new diary', async () => {
-      // Test data
-      const diaryData = {
+      const diaryDate = new Date('2026-01-02T00:00:00.000Z')
+      mockReadBody.mockResolvedValue({
         title: 'New Diary',
         content: 'New content',
-        date: '2024-01-01',
-      }
+        date: diaryDate.toISOString(),
+        transactions: [{ symbol: 'AAPL', type: 'BUY', quantity: 1, price: 100, tradeDate: diaryDate }],
+        alerts: [{ message: 'Reminder', triggerAt: diaryDate }],
+      })
+      mockDiaryFindFirst.mockResolvedValue(null)
+      mockDiaryCreate.mockResolvedValue({
+        id: 100n,
+        title: 'New Diary',
+        content: 'New content',
+        date: diaryDate,
+        transactions: [],
+        alerts: [],
+      })
 
-      // This would call the API endpoint
-      // const response = await $fetch('/api/diaries', {
-      //   method: 'POST',
-      //   body: diaryData,
-      // })
-      // expect(response.title).toBe('New Diary')
-      expect(true).toBe(true)
+      const { default: handler } = await import('~/server/api/diaries.post')
+
+      const result = await handler({ context: { user: { id: '1' } } } as any)
+
+      expect(mockDiaryCreate).toHaveBeenCalled()
+      expect(result.id).toBe(100n)
     })
 
     it('should return 400 when title is missing', async () => {
-      // Test validation
-      expect(true).toBe(true)
+      mockReadBody.mockResolvedValue({ content: 'No title' })
+
+      const { default: handler } = await import('~/server/api/diaries.post')
+
+      await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
+        statusCode: 400,
+      })
     })
 
     it('should append to existing diary when appendToToday is true', async () => {
-      // Create new content with appendToToday flag
-      const diaryData = {
-        title: 'New Entry',
+      mockReadBody.mockResolvedValue({
+        title: 'Entry',
         content: 'Additional content',
         appendToToday: true,
-      }
+      })
+      mockDiaryFindFirst.mockResolvedValue({ id: 5n, content: 'Original content' })
+      mockDiaryUpdate.mockResolvedValue({
+        id: 5n,
+        content: 'Original content\n\n---\n\nAdditional content',
+      })
 
-      // This would call the API endpoint
-      // const response = await $fetch('/api/diaries', {
-      //   method: 'POST',
-      //   body: diaryData,
-      // })
-      // expect(response.content).toContain('Original content')
-      // expect(response.content).toContain('Additional content')
-      // expect(response.content).toContain('---')
-      expect(true).toBe(true)
+      const { default: handler } = await import('~/server/api/diaries.post')
+
+      const result = await handler({ context: { user: { id: '1' } } } as any)
+
+      expect(mockDiaryUpdate).toHaveBeenCalled()
+      expect(result.content).toContain('Original content')
+      expect(result.content).toContain('Additional content')
+      expect(result.content).toContain('---')
     })
 
-    it('should create separate diary when appendToToday is false', async () => {
-      // Create new content without appendToToday
-      const diaryData = {
-        title: 'New Entry',
+    it('should reject when diary exists and appendToToday is false', async () => {
+      mockReadBody.mockResolvedValue({
+        title: 'Entry',
         content: 'New content',
         appendToToday: false,
-      }
+      })
+      mockDiaryFindFirst.mockResolvedValue({ id: 6n, content: 'Existing content' })
 
-      // This should create a separate diary entry
-      expect(true).toBe(true)
-    })
-  })
+      const { default: handler } = await import('~/server/api/diaries.post')
 
-  describe('GET /api/diaries/:id', () => {
-    it('should return a single diary by id', async () => {
-      const diary = {
-        id: '1',
-        title: 'Single Diary',
-      }
-
-      // This would call the API endpoint
-      // const response = await $fetch(`/api/diaries/${diary.id}`)
-      // expect(response.id).toBe(diary.id)
-      expect(diary.id).toBeDefined()
-    })
-
-    it('should return 404 when diary not found', async () => {
-      // Test not found scenario
-      expect(true).toBe(true)
+      await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
+        statusCode: 409,
+      })
     })
   })
 
   describe('PUT /api/diaries/:id', () => {
-    it('should update an existing diary', async () => {
-      const diary = {
-        id: '1',
-        title: 'Original Title',
-      }
+    it('should update an existing diary and replace relations', async () => {
+      mockGetRouterParam.mockReturnValue('12')
+      mockReadBody.mockResolvedValue({
+        title: 'Updated Title',
+        content: 'Updated content',
+        transactions: [{ symbol: 'TSLA', type: 'BUY', quantity: 2, price: 300, tradeDate: new Date() }],
+        alerts: [{ message: 'Alert', triggerAt: new Date() }],
+      })
+      mockDiaryFindFirst.mockResolvedValue({ id: 12n, userId: '1' })
+      mockDiaryUpdate.mockResolvedValue({
+        id: 12n,
+        title: 'Updated Title',
+        content: 'Updated content',
+      })
 
-      // This would call the API endpoint
-      // const response = await $fetch(`/api/diaries/${diary.id}`, {
-      //   method: 'PUT',
-      //   body: { title: 'Updated Title' },
-      // })
-      // expect(response.title).toBe('Updated Title')
-      expect(true).toBe(true)
+      const { default: handler } = await import('~/server/api/diaries/[id].put')
+
+      const result = await handler({
+        context: { user: { id: '1' }, requestId: 'req-1' },
+      } as any)
+
+      expect(mockTxTransactionDeleteMany).toHaveBeenCalled()
+      expect(mockTxAlertDeleteMany).toHaveBeenCalled()
+      expect(result.title).toBe('Updated Title')
     })
   })
 
   describe('DELETE /api/diaries/:id', () => {
     it('should delete a diary', async () => {
-      const diary = {
-        id: '1',
-        title: 'To Delete',
-      }
+      mockGetRouterParam.mockReturnValue('3')
+      mockDiaryFindFirst.mockResolvedValue({ id: 3n })
+      mockDiaryDelete.mockResolvedValue({ id: 3n })
 
-      // This would call the API endpoint
-      // await $fetch(`/api/diaries/${diary.id}`, {
-      //   method: 'DELETE',
-      // })
-      // Verify deletion
-      expect(true).toBe(true)
-    })
+      const { default: handler } = await import('~/server/api/diaries/[id].delete')
 
-    it('should cascade delete transactions and alerts', async () => {
-      const diary = {
-        id: '1',
-        title: 'Diary with Relations',
-        transactions: [
-          {
-            symbol: '2330.TW',
-            type: 'BUY',
-            quantity: 10,
-            price: 500,
-            tradeDate: new Date(),
-          },
-        ],
-        alerts: [
-          {
-            message: 'Test alert',
-            triggerAt: new Date(),
-          },
-        ],
-      }
+      const result = await handler({
+        context: { user: { id: '1' }, requestId: 'req-2' },
+      } as any)
 
-      // Delete diary and verify cascade
-      expect(diary.transactions).toHaveLength(1)
-      expect(diary.alerts).toHaveLength(1)
+      expect(mockDiaryDelete).toHaveBeenCalledWith({ where: { id: 3n } })
+      expect(result).toEqual({ success: true })
     })
   })
 })
-
-/**
- * Note: These tests provide structure but need full Nuxt test server setup
- * to run properly. To complete implementation:
- *
- * 1. Install @nuxt/test-utils-dev if using Nuxt 3
- * 2. Use setup() from @nuxt/test-utils to spin up test server
- * 3. Replace expect(true).toBe(true) with actual API calls
- * 4. Add proper assertions for each test case
- *
- * Example:
- * ```ts
- * import { describe, it, expect } from 'vitest'
- * import { $fetch, setup } from '@nuxt/test-utils/e2e'
- *
- * await setup({
- *   server: true,
- *   dev: process.env.NODE_ENV !== 'production'
- * })
- *
- * it('should work', async () => {
- *   const html = await $fetch('/')
- *   expect(html).toContain('Nuxt')
- * })
- * ```
- */

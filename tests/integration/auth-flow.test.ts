@@ -227,14 +227,36 @@ describe('Authentication Flow Integration', () => {
   })
 
   describe('Admin Access Control', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
     it('should allow admin users to access admin endpoints', async () => {
-      const user = { id: '1', role: 'ADMIN' }
-      expect(user.role).toBe('ADMIN')
+      vi.stubGlobal('getRequestURL', () => ({ pathname: '/api/admin/users' }))
+
+      const { default: handler } = await import('~/server/middleware/admin')
+
+      await expect(handler({ context: { user: { id: '1', role: 'ADMIN' } } } as any)).resolves.toBeUndefined()
     })
 
     it('should deny non-admin users from admin endpoints', async () => {
-      const user = { id: '2', role: 'USER' }
-      expect(user.role).not.toBe('ADMIN')
+      vi.stubGlobal('getRequestURL', () => ({ pathname: '/api/admin/users' }))
+
+      const { default: handler } = await import('~/server/middleware/admin')
+
+      await expect(handler({ context: { user: { id: '2', role: 'USER' } } } as any)).rejects.toMatchObject({
+        statusCode: 403,
+      })
+    })
+
+    it('should reject unauthenticated access to admin endpoints', async () => {
+      vi.stubGlobal('getRequestURL', () => ({ pathname: '/api/admin/users' }))
+
+      const { default: handler } = await import('~/server/middleware/admin')
+
+      await expect(handler({ context: {} } as any)).rejects.toMatchObject({
+        statusCode: 401,
+      })
     })
   })
 })

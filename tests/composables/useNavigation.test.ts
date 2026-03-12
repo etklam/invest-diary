@@ -1,44 +1,60 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { ref } from 'vue'
 
 describe('useNavigation composable', () => {
-  describe('module exports', () => {
-    it('should export useNavigation function', () => {
-      // This test verifies the composable can be imported
-      // Full integration testing requires Nuxt test environment
-      expect(true).toBe(true)
-    })
-
-    it('should have navigation items with required properties', () => {
-      // Verify the expected navigation structure
-      const expectedItems = [
-        { label: '月曆', to: '/', auth: undefined },
-        { label: '時間軸', to: '/timeline', auth: true },
-        { label: '日記列表', to: '/diaries', auth: true },
-        { label: '提醒管理', to: '/alerts', auth: true },
-        { label: '股票管理', to: '/stocks', auth: true }
-      ]
-
-      expect(expectedItems.length).toBeGreaterThan(0)
-    })
+  beforeEach(() => {
+    vi.stubGlobal('useRoute', () => ({ path: '/calendar' }))
+    vi.stubGlobal('useI18n', () => ({
+      t: (key: string) => key,
+    }))
   })
 
-  describe('NavItem interface', () => {
-    it('should support required properties', () => {
-      interface NavItem {
-        label: string
-        to: string
-        auth?: boolean
-      }
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
 
-      const item: NavItem = {
-        label: 'Test',
-        to: '/test',
-        auth: true
-      }
+  it('filters navigation items for guests', async () => {
+    vi.stubGlobal('useAuth', () => ({
+      isAuthenticated: ref(false),
+      user: ref(null),
+    }))
 
-      expect(item.label).toBe('Test')
-      expect(item.to).toBe('/test')
-      expect(item.auth).toBe(true)
-    })
+    const { useNavigation } = await import('~/composables/useNavigation')
+    const { visibleNavItems } = useNavigation()
+
+    const paths = visibleNavItems.value.map(item => item.to)
+    expect(paths).toContain('/')
+    expect(paths).toContain('/articles')
+    expect(paths).toContain('/about')
+    expect(paths).not.toContain('/admin')
+  })
+
+  it('includes admin-only items for admin users', async () => {
+    vi.stubGlobal('useAuth', () => ({
+      isAuthenticated: ref(true),
+      user: ref({ role: 'ADMIN' }),
+    }))
+
+    const { useNavigation } = await import('~/composables/useNavigation')
+    const { visibleNavItems } = useNavigation()
+
+    const paths = visibleNavItems.value.map(item => item.to)
+    expect(paths).toContain('/admin')
+    expect(paths).toContain('/admin/blog')
+  })
+
+  it('hides admin-only items for non-admin users', async () => {
+    vi.stubGlobal('useAuth', () => ({
+      isAuthenticated: ref(true),
+      user: ref({ role: 'USER' }),
+    }))
+
+    const { useNavigation } = await import('~/composables/useNavigation')
+    const { visibleNavItems } = useNavigation()
+
+    const paths = visibleNavItems.value.map(item => item.to)
+    expect(paths).not.toContain('/admin')
+    expect(paths).not.toContain('/admin/blog')
+    expect(paths).toContain('/calendar')
   })
 })
