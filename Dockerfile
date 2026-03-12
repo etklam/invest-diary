@@ -2,7 +2,7 @@ FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
-# Canvas and Prisma runtime dependencies are needed at build time to install/load native modules.
+# Install build dependencies in a single layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl \
     libcairo2 \
@@ -15,25 +15,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfreetype6 \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy dependency files first for better caching
 COPY package.json package-lock.json ./
 
-# Avoid failing on root "prepare: husky" script, then explicitly rebuild native deps.
-RUN npm ci --ignore-scripts
-RUN npm rebuild canvas sharp
-RUN npm run postinstall
+# Install dependencies and rebuild native modules
+RUN npm ci --ignore-scripts && \
+    npm rebuild canvas sharp && \
+    npm run postinstall
 
+# Copy source code
 COPY . .
 
-RUN npx prisma generate
-RUN npm run build
+# Build application
+RUN npx prisma generate && \
+    npm run build && \
+    npm prune --omit=dev --omit=optional && \
+    npm cache clean --force
 
-# Keep @prisma/client when pruning dev dependencies
-RUN npm prune --omit=dev --omit=optional && npm cache clean --force
-
+# Runtime stage
 FROM node:20-bookworm-slim AS runtime
 
 WORKDIR /app
 
+# Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl \
     netcat-openbsd \
@@ -47,19 +51,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfreetype6 \
     && rm -rf /var/lib/apt/lists/*
 
-ENV NODE_ENV=production
-ENV HOST=0.0.0.0
-ENV PORT=3000
-ENV NUXT_TELEMETRY_DISABLED=1
+# Set production environment
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=3000 \
+    NUXT_TELEMETRY_DISABLED=1
 
+# Copy built application from builder
 COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/package-lock.json ./package-lock.json
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder /app/package.json ./package.json
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
+# Create non-root user and set permissions
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nuxt && \
     chmod +x /app/docker-entrypoint.sh && \
