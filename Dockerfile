@@ -26,7 +26,9 @@ COPY . .
 
 RUN npx prisma generate
 RUN npm run build
-RUN npm prune --omit=dev && npm cache clean --force
+
+# Keep @prisma/client when pruning dev dependencies
+RUN npm prune --omit=dev --omit=optional && npm cache clean --force
 
 FROM node:20-bookworm-slim AS runtime
 
@@ -54,6 +56,7 @@ COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/package-lock.json ./package-lock.json
+COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
