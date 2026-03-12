@@ -4,7 +4,7 @@ export default defineNuxtConfig({
     externals: {
       external: ['@prisma/client']
     },
-    nodeModulesDirs: ['../node_modules'],
+    nodeModulesDirs: [process.cwd() + '/node_modules'],
     // Allow all environment variables (not just NUXT_ prefixed)
     experimental: {
       vars: true

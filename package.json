@@ -19,7 +19,6 @@
     "test:ci": "vitest run --coverage --reporter=json",
     "lint": "eslint . --ext .ts,.vue,.js",
     "typecheck": "vue-tsc --noEmit -p tsconfig.typecheck.json",
-    "prepare": "husky",
     "health:check": "tsx scripts/health-check.ts",
     "health:full": "tsx scripts/health-check.ts && npm run build",
     "health:quick": "npm test && npx prisma validate"

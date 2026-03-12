@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY package.json package-lock.json ./
 
 # Install dependencies and rebuild native modules
-RUN npm ci --ignore-scripts && \
+RUN npm install --ignore-scripts && \
     npm rebuild canvas sharp && \
     npm run postinstall
 
@@ -55,7 +55,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=3000 \
-    NUXT_TELEMETRY_DISABLED=1
+    NUXT_TELEMETRY_DISABLED=1 \
+    NODE_PATH=/app/node_modules
 
 # Copy built application from builder
 COPY --from=builder /app/.output ./.output
