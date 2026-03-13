@@ -1,42 +1,75 @@
-# Diary Vue - Technical Documentation
+# CLAUDE.md
 
-## Prisma + Nuxt + Vite 本地 500 Error 最終解法備忘
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-### 問題背景
-在 Nuxt 3 專案中使用 Prisma（MySQL）時，本地開發（`npm run dev`）出現以下錯誤，但 **Docker / production 正常**：
+---
 
-- `(0, Fo.promisify) is not a function`
-- `The requested module '/_nuxt/node_modules/@prisma/client/runtime/library.js' does not provide an export named 'Decimal'`
-- `/timeline` SSR 500 error
+## Project Overview
 
-## 根本原因（重點）
-**Prisma runtime 被 Vite dev server 當成 client/shared dependency 打包**。
+**Diary Vue** is a personal investment diary application built with Nuxt 4, featuring investment journaling, stock portfolio tracking, educational blog, and investment tools. It uses MySQL with Prisma ORM, JWT authentication, and is deployable via Docker.
 
-只要下列任一情況成立，錯誤一定會發生：
-- 在 shared / utils / client code 中 `import '@prisma/client/runtime/*'`
-- 在 client 可達檔案中 `import { PrismaClient } from '@prisma/client'`
-- Vite `optimizeDeps` 沒排除 Prisma
-- Vite cache 未清乾淨
+**Tech Stack**: Nuxt 4 (Vue 3), TypeScript, MySQL 8.0+, Prisma ORM, TailwindCSS, JWT auth, PWA support, i18n (EN/ZH-TW/ZH-CN)
 
-這是 **Vite dev 專屬問題**，不是 Prisma、不是 DB、不是 migration 問題。
+---
 
-## 最終正確做法（不可缺一）
+## Development Commands
 
-### 1. Prisma 僅能存在於 server runtime
-**`lib/prisma.ts`（ESM-safe）**
-```ts
+```bash
+# Development
+npm run dev              # Start dev server (http://localhost:3000)
+npm run build           # Build for production
+npm run preview         # Preview production build
+
+# Database
+npm run seed            # Seed database with test data
+npx prisma studio       # Open Prisma Studio (DB GUI)
+npx prisma generate     # Generate Prisma client
+npx prisma migrate dev  # Create and apply migrations
+
+# Testing
+npm test                # Run all tests
+npm run test:watch      # Watch mode
+npm run test:ui         # Vitest UI
+npm run test:coverage   # Coverage report
+npm run test:unit       # Unit tests only
+npm run test:integration # Integration tests only
+
+# Code Quality
+npm run lint            # ESLint
+npm run typecheck       # TypeScript checking
+
+# Health Checks
+npm run health:check    # System health validation
+npm run health:full     # Health check + build
+npm run health:quick    # Quick tests + Prisma validate
+```
+
+---
+
+## Critical Architecture Patterns
+
+### 1. Prisma + Nuxt + Vite Integration (CRITICAL)
+
+**Problem**: Prisma runtime gets bundled by Vite dev server, causing 500 errors in local development (production/Docker work fine).
+
+**Root Cause**: Vite treats Prisma as client/shared dependency if:
+- `import '@prisma/client/runtime/*'` exists in shared/utils/client code
+- `import { PrismaClient }` exists in client-reachable files
+- Vite `optimizeDeps` doesn't exclude Prisma
+- Vite cache is stale
+
+**Solution (ALL required)**:
+
+1. **Prisma ONLY in server runtime** (`lib/prisma.ts`):
+```typescript
 import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-
 const { PrismaClient } = require('@prisma/client')
 
 const prismaClientSingleton = () => new PrismaClient()
-
 declare global {
-  // eslint-disable-next-line no-var
   var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>
 }
-
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
 export default prisma
 
@@ -45,218 +78,386 @@ if (process.env.NODE_ENV !== 'production') {
 }
 ```
 
-✅ 不可使用 `import { PrismaClient } from '@prisma/client'`
-
----
-
-### 2. **禁止任何 runtime import Prisma Decimal**
-❌ 錯誤示例（一定會炸）：
-```ts
+2. **Never runtime import Prisma Decimal**:
+```typescript
+// ❌ WRONG - will crash
 import { Decimal } from '@prisma/client/runtime/library'
-```
 
-✅ 正確（型別專用）：
-```ts
+// ✅ CORRECT - type-only import
 import type { Prisma } from '@prisma/client'
-
 quantity: Prisma.Decimal | number
-price: Prisma.Decimal | number
 ```
 
-> 型別 import 會在編譯期消失，不會進 runtime / client bundle。
-
----
-
-### 3. 明確告訴 Vite 不要碰 Prisma
-**`nuxt.config.ts`**
-```ts
-export default defineNuxtConfig({
-  vite: {
-    optimizeDeps: {
-      exclude: ['@prisma/client', '@prisma/client/runtime']
-    }
+3. **Vite config** (`nuxt.config.ts`):
+```typescript
+vite: {
+  optimizeDeps: {
+    exclude: ['@prisma/client', '@prisma/client/runtime']
   }
-})
+}
 ```
 
----
-
-### 4. 一定要清 Vite cache（一次）
+4. **Clear Vite cache once**:
 ```bash
 rm -rf node_modules/.cache/vite
 npm run dev
 ```
 
-> Vite 不會因為 config 改變自動失效 cache。
-
----
-
-## 為什麼 server / docker 不會中
-- Production / Docker 使用 **Nitro server bundle**
-- 不經過 Vite dev / optimizeDeps
-- Prisma 永遠只在 Node server side
-
-所以這類錯誤 **理論上只會在 local dev 發生**。
-
-## 上線前自檢清單
+**Pre-deployment checks**:
 ```bash
-# 必須為 0 筆
-rg "@prisma/client/runtime"
-
-# PrismaClient 只能存在於 lib/prisma.ts
-rg "PrismaClient"
+rg "@prisma/client/runtime"  # Must return 0 results
+rg "PrismaClient"            # Should only appear in lib/prisma.ts
 ```
-
-通過以上檢查即可確保：
-- local ✅
-- docker ✅
-- production ✅
-
-## 結論
-這不是 Prisma 或資料庫問題，而是 **Nuxt + Vite + Prisma 的經典踩雷點**。
-只要遵守上述結構，問題不會再復發。
 
 ---
 
-## Stock Seasonality Implementation Notes
+### 2. PWA + Nitro Dynamic Route Gotcha (Blog Slug Issue)
 
-### Architecture
-The seasonality analyzer is a **client-side only tool** with no server dependencies:
+**Problem**: Blog list works, but clicking a post shows "文章不存在" (article not found). Network shows `400 Slug is required (from service worker)`.
 
-- **Data Source**: `lib/stockSeasonality.ts` contains static historical data (1950-present S&P 500)
-- **No Prisma/DB Queries**: All analysis is computed in-browser from the static `monthlyData` array
-- **i18n Integration**: Uses Vue I18n for all labels, descriptions, and recommendations
-- **Public Access**: Page sets `requiresAuth: false` in `definePageMeta`
+**Root Cause**: Service Worker caches API routes, returning stale/incorrect responses. Dynamic route params may not resolve correctly through SW cache.
 
-### Key Files
+**Solution**:
 
-#### `utils/stockSeasonality.ts`
-- **Core Data**: `monthlyData` array with 12 months of historical averages
-- **Analysis Functions**:
-  - `getBestMonths(count)` / `getWorstMonths(count)` - Sort by avgReturn
-  - `calculatePeriodAvgReturn(months[])` - Period analysis (Nov-Apr vs May-Oct)
-  - `analyzeSeasonality()` - Complete analysis object
-- **Utilities**: Month name localization, return formatting, color classes
-- **Volatility Levels**: 5-tier system (low, low-medium, medium, medium-high, high)
-- **Strength Levels**: 5-tier system (weakest, weak, neutral, strong, strongest)
-
-#### `pages/tools/seasonality.vue`
-- **Reactive Analysis**: Uses `computed()` for all derived data
-- **Current Month Highlight**: Automatically detects current month and next month
-- **Copy to Clipboard**: Exports analysis as markdown in EN/ZH-TW/ZH-CN
-- **SEO**: Includes meta description for search engines
-- **Responsive**: Mobile-first grid layouts
-
-### Data Format
-
+1. **Never cache `/api/**` routes** (`nuxt.config.ts`):
 ```typescript
-export interface MonthData {
-  month: number              // 1-12
-  avgReturn: number          // Average return percentage
-  characteristicsKey: string // i18n key for characteristics
-  volatility: VolatilityLevel
-  possibleReasonsKeys: string[] // i18n keys for reasons
+pwa: {
+  workbox: {
+    runtimeCaching: [
+      {
+        urlPattern: /^https?:\/\/.*\/api\//,
+        handler: 'NetworkOnly'  // CRITICAL
+      }
+    ]
+  }
 }
 ```
 
-### Localization Strategy
-
-All user-facing text uses i18n keys:
-- Characteristics: `tools.seasonality.months.{jan,feb,...}.characteristics`
-- Reasons: `tools.seasonality.months.{jan,feb,...}.reasons.{0,1,2}`
-- Volatility: Handled in `getVolatilityLabel()` function
-- Strength: Handled in `getStrengthLabel()` function
-
-### Public Tool Considerations
-
-Since this is a **public-access tool** (no authentication required):
-- ✅ No sensitive data exposure
-- ✅ No server-side computation (static data only)
-- ✅ SEO-optimized with meta tags
-- ✅ Shareable via clipboard export
-- ✅ Mobile-responsive design
-
-### Adding Historical Data Updates
-
-When updating with new historical data:
-
-1. Recalculate averages in `monthlyData` array
-2. Update i18n files for any new characteristics/reasons
-3. Verify `getBestMonths()` / `getWorstMonths()` still return correct results
-4. Test period calculations (strong vs weak)
-
----
-
-## Recurring Alerts Implementation
-
-### Architecture
-Recurring alerts allow users to set up **multi-instance reminders** for diary entries:
-
-- **WEEK Mode**: Daily alerts from start date through Friday of the same week (skips weekends)
-- **MONTH Mode**: Daily alerts from start date through the last day of the month (skips weekends)
-- **Smart Scheduling**: Automatically skips Saturday/Sunday
-- **Parent-Child Relationship**: First alert is parent, subsequent alerts link via `parentId`
-
-### Key Files
-
-#### `lib/recurring-alerts.ts`
-- **Core Functions**:
-  - `calculateRecurringAlertDates(config)` - Returns array of trigger dates
-  - `calculateEndDate(startDate, mode)` - Determines end date based on WEEK/MONTH mode
-  - `generateRecurringAlertsData(config)` - Creates Prisma batch insert data
-  - `isWeekday(date)` / `getNextWeekday(date)` - Date utilities
-- **Weekend Handling**: Automatically skips Saturday (6) and Sunday (0)
-- **Time Preservation**: Maintains the original trigger time from diary creation
-
-#### Database Schema (`prisma/schema.prisma`)
-```prisma
-model Alert {
-  id             BigInt    @id @default(autoincrement())
-  diaryId        BigInt
-  message        String
-  triggerAt      DateTime  @db.Date
-  recurringMode  String?   // 'WEEK' | 'MONTH' | null for one-time
-  instanceNumber Int?      // 1 for parent, 2+ for children
-  parentId       BigInt?   // null for parent alert
-  isTriggered    Boolean   @default(false)
-  createdAt      DateTime  @default(now())
-
-  diary          Diary     @relation(fields: [diaryId], references: [id], onDelete: Cascade)
-
-  @@index([triggerAt, isTriggered])
-  @@index([diaryId])
+2. **Robust slug parsing** (`server/api/blog/[slug].get.ts`):
+```typescript
+const resolveSlug = (event: any) => {
+  const rawFromParams = event.context?.params?.slug
+  const rawFromRouter = getRouterParam(event, 'slug')
+  const rawFromPath = event.path?.split('/').filter(Boolean).pop()
+  const rawSlug = rawFromParams ?? rawFromRouter ?? rawFromPath
+  return rawSlug ? decodeURIComponent(String(rawSlug)) : undefined
 }
 ```
 
-### Implementation Flow
+3. **API routes must use `no-store`** (`nuxt.config.ts`):
+```typescript
+nitro: {
+  routeRules: {
+    '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } }
+  }
+}
+```
 
-1. **User Creates Diary**: In `pages/diaries/new.vue`
-   - User selects recurring mode (none/week/month)
-   - Trigger time is set based on diary creation time
-
-2. **Server Processing**: `server/api/alerts.post.ts`
-   - Calls `generateRecurringAlertsData()`
-   - Batch creates all alert instances via Prisma
-   - Updates first alert's `parentId` to its own `id`
-
-3. **Alert Display**: `pages/alerts/index.vue`
-   - Shows all pending alerts sorted by trigger date
-   - Groups recurring alerts visually
-   - Displays instance number for recurring alerts
-
-### Important Notes
-
-- **Time Zone Handling**: All dates stored in UTC, trigger time preserved from user's input
-- **Cascade Delete**: When diary is deleted, all related alerts are automatically removed (`onDelete: Cascade`)
-- **Performance**: Batch creation uses `createMany()` for efficiency
-- **Edge Cases**:
-  - If start date is Saturday, alerts begin Monday
-  - If start date is Sunday, alerts begin Monday
-  - WEEK mode always ends on Friday of the same week
-  - MONTH mode always ends on last day of the same month
+**Symptoms**: Blog list works, individual posts fail with 400/404 from SW.
 
 ---
 
-## PWA + Nitro Dynamic Route Gotcha (Blog Slug Issue)
+### 3. Authentication Architecture
 
-### Problem Description
+**JWT Token System**:
+- **Access Token**: 1 hour, httpOnly cookie (`access-token`)
+- **Refresh Token**: 30 days, httpOnly cookie (`refresh-token`), stored in DB
+- **Token Versioning**: `tokenVersion` field invalidates all tokens on password change
+
+**Auth Flow**:
+1. `server/middleware/auth.ts` runs on all `/api/**` routes
+2. Checks `access-token` cookie → verifies JWT → sets `event.context.user`
+3. If access token expired, tries refresh token → issues new access token
+4. Client-side: `composables/useAuth.ts` manages user state
+5. Protected pages: Use `definePageMeta({ middleware: 'auth' })`
+
+**Key Files**:
+- `lib/jwt.ts` - Token signing/verification (jose library)
+- `server/middleware/auth.ts` - Global auth middleware
+- `composables/useAuth.ts` - Client-side auth state
+- `server/utils/auth.ts` - Auth utilities (requireAuth, requireAdmin)
+
+**Important**: Never use `import { PrismaClient }` in auth middleware - use `import prisma from '~/lib/prisma'`
+
+---
+
+### 4. Database Schema Overview
+
+**Core Models**:
+- `User` - Authentication + investment settings (expectedMonthlyTrades, expectedProfit, timezone)
+- `Diary` - Investment journal entries with markdown content
+- `Transaction` - Stock trades (BUY/SELL) linked to diaries
+- `Alert` - Time-based reminders with recurring support (WEEK/MONTH modes)
+- `Discipline` - Investment principles/quotes with shareable tokens
+- `Post` - Blog articles (DRAFT/PUBLISHED/ARCHIVED)
+- `Etf` / `EtfPrice` / `EtfAlert` / `EtfWatchlist` - ETF tracking system
+
+**Key Relationships**:
+- User → Diaries (1:N, cascade delete)
+- Diary → Transactions (1:N, cascade delete)
+- Diary → Alerts (1:N, cascade delete)
+- Alert → Alert (parent-child via `parentId` for recurring alerts)
+
+**Indexes**: Optimized for common queries (user diaries by date, transactions by symbol, alerts by trigger date)
+
+---
+
+### 5. Recurring Alerts System
+
+**Architecture**:
+- **WEEK Mode**: Daily alerts from start date through Friday of same week (skips weekends)
+- **MONTH Mode**: Daily alerts from start date through last day of month (skips weekends)
+- **Parent-Child**: First alert is parent (`parentId` = own `id`), subsequent alerts link via `parentId`
+
+**Key Functions** (`lib/recurring-alerts.ts`):
+- `calculateRecurringAlertDates(config)` - Returns array of trigger dates
+- `calculateEndDate(startDate, mode)` - Determines end date based on mode
+- `generateRecurringAlertsData(config)` - Creates Prisma batch insert data
+- `isWeekday(date)` / `getNextWeekday(date)` - Weekend handling
+
+**Implementation**:
+1. User creates diary with recurring mode in `pages/diaries/new.vue`
+2. `server/api/alerts.post.ts` calls `generateRecurringAlertsData()`
+3. Batch creates all alert instances via `prisma.alert.createMany()`
+4. Updates first alert's `parentId` to its own `id`
+
+**Edge Cases**:
+- If start date is Saturday/Sunday, alerts begin Monday
+- WEEK mode always ends on Friday of same week
+- MONTH mode always ends on last day of same month
+- Time zone handling: All dates stored in UTC, trigger time preserved
+
+---
+
+### 6. Stock Seasonality Analyzer
+
+**Architecture**: Client-side only tool, no server dependencies
+
+**Data Source**: `lib/stockSeasonality.ts` contains static historical data (1950-present S&P 500)
+
+**Key Features**:
+- Monthly performance data with average returns
+- Best/worst months identification (Nov, Dec, Apr, Jul vs Sep, Feb, Aug)
+- Period analysis: Strong period (Nov-Apr) vs weak period (May-Oct)
+- Volatility assessment (5-tier system)
+- Investment recommendations based on seasonal patterns
+- Export to markdown (EN/ZH-TW/ZH-CN)
+
+**Public Access**: Page sets `requiresAuth: false` in `definePageMeta`
+
+**i18n Integration**: All labels/descriptions use i18n keys:
+- `tools.seasonality.months.{jan,feb,...}.characteristics`
+- `tools.seasonality.months.{jan,feb,...}.reasons.{0,1,2}`
+
+---
+
+### 7. PWA Configuration
+
+**Design Principle**: PWA as mobile app shell, NOT offline-first application
+
+**Key Features**:
+- ✅ Installable to home screen (Android/desktop Chrome)
+- ✅ Auto-update via Service Worker
+- ✅ Runtime caching for static assets/fonts
+- ✅ API routes are NEVER cached (NetworkOnly)
+
+**Core Files**:
+- `composables/useAppPWA.ts` - Centralized PWA state management
+- `components/PWAInstallPrompt.vue` - Install banner with 7-day dismiss logic
+- `components/PWAUpdatePrompt.vue` - Update notification
+- `nuxt.config.ts` - PWA manifest + Workbox config
+
+**Platform Differences**:
+- iOS Safari: No `beforeinstallprompt` support (users must use Share → Add to Home Screen)
+- Android/Chrome: Native install prompt available
+
+---
+
+### 8. i18n Strategy
+
+**Locales**: English (en), Traditional Chinese (zh-TW), Simplified Chinese (zh-CN)
+
+**Configuration**:
+- Strategy: `no_prefix` (no locale in URL)
+- Detection: Browser language with cookie fallback
+- Lazy loading: Translation files loaded on demand
+
+**Usage**:
+```vue
+<template>
+  <h1>{{ $t('common.welcome') }}</h1>
+</template>
+```
+
+**Translation Files**: `i18n/locales/{en,zh-TW,zh-CN}.json`
+
+---
+
+### 9. Testing Strategy
+
+**Test Types**:
+- **Unit Tests**: `tests/unit/` - Individual functions/components
+- **Integration Tests**: `tests/integration/` - Multi-component workflows
+- **API Tests**: `tests/api/` - Server endpoint testing
+
+**Key Test Files**:
+- `tests/unit/lib/prisma-runtime-contract.test.ts` - Ensures Prisma isolation
+- `tests/unit/pwa-regressions.test.ts` - PWA cache behavior
+- `tests/integration/auth-flow.test.ts` - Complete auth workflow
+- `tests/integration/diary-workflow.test.ts` - Diary CRUD operations
+
+**Running Tests**:
+```bash
+npm test                # All tests
+npm run test:watch      # Watch mode
+npm run test:coverage   # Coverage report
+```
+
+---
+
+### 10. Environment Variables
+
+**Required**:
+```bash
+DATABASE_URL="mysql://user:pass@host:3306/invest_diary"
+JWT_SECRET="your-32-character-random-secret"  # Generate: openssl rand -base64 32
+```
+
+**Optional**:
+```bash
+NUXT_PUBLIC_APP_NAME="投資日記"
+NUXT_PUBLIC_SITE_URL="https://your-domain.com"  # Required for production SEO/sitemap
+SCHEDULER_ENABLED="true"  # Set on ONE instance only in multi-instance deployments
+```
+
+**Security**: Never commit `.env` file. Use `.env.example` as template.
+
+---
+
+### 11. Deployment
+
+**Docker (Recommended)**:
+```bash
+docker-compose up -d     # Start all services
+docker-compose logs -f   # View logs
+docker-compose down      # Stop services
+```
+
+**Manual**:
+```bash
+npm run build
+node .output/server/index.mjs
+```
+
+**Pre-deployment Checklist**:
+1. Set `JWT_SECRET` to secure random value
+2. Configure `DATABASE_URL` for production MySQL
+3. Set `NUXT_PUBLIC_SITE_URL` for SEO/sitemap
+4. Run `npm run health:full` to validate
+5. Ensure MySQL migrations are applied: `npx prisma migrate deploy`
+
+**Docker Files**:
+- `Dockerfile` - Multi-stage build (builder + runtime)
+- `docker-compose.yml` - Service orchestration
+- `docker-entrypoint.sh` - Startup script (DB wait + migrations)
+
+---
+
+### 12. File Structure Conventions
+
+**Server API Routes** (`server/api/`):
+- RESTful naming: `[resource].get.ts`, `[resource].post.ts`, `[resource]/[id].put.ts`
+- Dynamic routes: `[id].get.ts`, `[slug].get.ts`
+- Nested resources: `admin/users/[id]/role.put.ts`
+
+**Pages** (`pages/`):
+- File-based routing: `pages/diaries/[id]/edit.vue` → `/diaries/:id/edit`
+- Protected pages: Use `definePageMeta({ middleware: 'auth' })`
+- Public pages: Use `definePageMeta({ requiresAuth: false })`
+
+**Composables** (`composables/`):
+- Naming: `use[Feature].ts` (e.g., `useAuth.ts`, `useToast.ts`)
+- Auto-imported by Nuxt
+
+**Lib** (`lib/`):
+- Shared utilities and business logic
+- `prisma.ts` - Prisma client singleton (CRITICAL - see section 1)
+- `jwt.ts` - JWT utilities
+- `recurring-alerts.ts` - Alert calculation logic
+- `stockSeasonality.ts` - Seasonality data and analysis
+
+---
+
+### 13. Common Pitfalls
+
+1. **Prisma Import**: Never `import { PrismaClient }` directly - always use `import prisma from '~/lib/prisma'`
+
+2. **Decimal Types**: Never runtime import `Decimal` from Prisma - use `import type { Prisma }` for types only
+
+3. **API Caching**: Never cache `/api/**` routes in PWA - always use `NetworkOnly`
+
+4. **Dynamic Routes**: Always implement fallback slug parsing (params → router → path)
+
+5. **Auth Middleware**: Runs on ALL `/api/**` routes - check `event.context.user` for auth state
+
+6. **BigInt Serialization**: Use `server/plugins/bigint.ts` to handle BigInt JSON serialization
+
+7. **Vite Cache**: Clear `node_modules/.cache/vite` if Prisma errors occur in dev
+
+8. **Time Zones**: All dates stored in UTC, user timezone in `User.timezone` field
+
+---
+
+### 14. Performance Optimizations
+
+**SWR Caching**: Nitro route rules enable stale-while-revalidate for blog routes:
+```typescript
+nitro: {
+  routeRules: {
+    '/api/blog/**': {
+      headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=900' }
+    }
+  }
+}
+```
+
+**Image Optimization**: `@nuxt/image` with IPX provider, WebP format, responsive sizes
+
+**Database Indexes**: Composite indexes on frequently queried columns (see `prisma/schema.prisma`)
+
+**PWA Caching**: Static assets cached with `CacheFirst`, fonts with 30-day expiry
+
+---
+
+### 15. Security Considerations
+
+**Authentication**:
+- JWT tokens in httpOnly cookies (not localStorage)
+- Refresh token rotation on use
+- Token versioning for instant invalidation
+- CSRF protection via SameSite cookies
+
+**Database**:
+- Parameterized queries via Prisma (SQL injection protection)
+- Cascade deletes for data integrity
+- User-scoped queries (always filter by `userId`)
+
+**Input Validation**:
+- Zod schemas for API request validation
+- DOMPurify for markdown sanitization
+- Rate limiting on auth endpoints
+
+**Environment**:
+- Secrets in environment variables (never in code)
+- `.env` excluded from git
+- Production uses secure random JWT_SECRET
+
+---
+
+## Additional Documentation
+
+- **DEPLOYMENT.md** - Detailed deployment guide (Docker, manual, production checklist)
+- **IMPROVEMENTS.md** - Planned features and enhancement roadmap
+- **docs/TESTING.md** - Testing guide and best practices
+- **docs/HEALTH_CHECK.md** - Health check system documentation
+- **README.md** - Project overview and quick start guide

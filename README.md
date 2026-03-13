@@ -1,10 +1,87 @@
 # Diary Vue
 
-A personal investment diary application built with Nuxt 3, featuring investment journaling, stock portfolio tracking, and an educational blog.
+A personal investment diary application built with Nuxt 4, featuring investment journaling, stock portfolio tracking, and an educational blog.
 
 [![Nuxt](https://img.shields.io/badge/Nuxt-4.3.1+-00DC82?logo=nuxt.js)](https://nuxt.com)
 [![Vue](https://img.shields.io/badge/Vue-3.5.27-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+## Tech Statement
+
+**Diary Vue** is a full-stack investment journaling platform designed to help traders and investors track their trading decisions, analyze portfolio performance, and build disciplined trading habits through systematic record-keeping.
+
+### Purpose
+
+This application addresses the critical need for **investment discipline** by providing:
+- **Structured Journaling**: Document trading decisions with context, emotions, and market conditions
+- **Portfolio Analytics**: Track stock transactions and calculate real-time holdings
+- **Performance Insights**: Analyze trading patterns and identify areas for improvement
+- **Educational Resources**: Access curated investment education content through the blog
+- **Behavioral Tools**: Position sizing calculator, seasonality analyzer, and discipline reminders
+
+### Technology Choices
+
+**Frontend Framework**: Nuxt 4 (Vue 3 Composition API)
+- Server-side rendering (SSR) for SEO and performance
+- File-based routing for intuitive page structure
+- Auto-imported components and composables
+- Built-in TypeScript support
+
+**Database**: MySQL 8.0+ with Prisma ORM
+- Relational data model for complex investment relationships
+- Type-safe database queries with Prisma Client
+- Migration system for schema versioning
+- Optimized indexes for query performance
+
+**Authentication**: JWT with httpOnly cookies
+- Secure token storage (not localStorage)
+- Refresh token rotation for extended sessions
+- Token versioning for instant invalidation
+- CSRF protection via SameSite cookies
+
+**Styling**: TailwindCSS + @tailwindcss/typography
+- Utility-first CSS for rapid development
+- Dark mode support with system preference detection
+- Responsive design with mobile-first approach
+- Typography plugin for markdown content
+
+**Internationalization**: @nuxtjs/i18n
+- Multi-language support (EN, ZH-TW, ZH-CN)
+- Browser language detection
+- Lazy-loaded translation files
+
+**Progressive Web App**: @vite-pwa/nuxt
+- Installable to home screen (mobile/desktop)
+- Service Worker for auto-updates
+- Runtime caching for static assets
+- Network-only strategy for API routes (no offline data caching)
+
+**Content Management**: @nuxtjs/mdc (Markdown Components)
+- Markdown-based blog system
+- Syntax highlighting with Shiki
+- GitHub Flavored Markdown support
+- Rehype plugins for enhanced rendering
+
+**Performance**: Nitro SWR (Stale-While-Revalidate)
+- Edge-compatible server engine
+- Built-in caching with configurable TTL
+- Cloudflare CDN support
+- Optimized for serverless deployment
+
+**Testing**: Vitest + Playwright
+- Unit tests for business logic
+- Integration tests for workflows
+- E2E tests for critical user paths
+- Coverage reporting
+
+### Architecture Highlights
+
+- **Server Middleware**: Global authentication on all `/api/**` routes
+- **Composables**: Reusable state management (auth, alerts, toasts)
+- **Type Safety**: End-to-end TypeScript from database to UI
+- **SEO**: Dynamic sitemap generation, meta tags, Open Graph support
+- **Security**: Input validation with Zod, DOMPurify for markdown sanitization
+- **Deployment**: Docker multi-stage builds, production-ready configuration
 
 ## Features
 
@@ -28,26 +105,6 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 
 > TODO: Add application screenshots
 
-## Tech Stack
-
-| Category | Technology |
-|----------|-----------|
-| **Framework** | Nuxt 4 (Vue 3 Composition API) |
-| **Language** | TypeScript (bundled with Nuxt) |
-| **Database** | MySQL 8.0+ with Prisma ORM |
-| **Styling** | TailwindCSS + @tailwindcss/typography |
-| **Authentication** | JWT + bcrypt + jose |
-| **i18n** | @nuxtjs/i18n |
-| **Markdown** | @nuxtjs/mdc (with rehype-pretty-code, shiki) |
-| **PWA** | @vite-pwa/nuxt (installable shell, auto-update) |
-| **Icons** | @nuxt/icon (Heroicons) |
-| **Images** | @nuxt/image |
-| **Dark Mode** | @nuxtjs/color-mode |
-| **SEO** | @nuxtjs/sitemap (Dynamic XML sitemap) |
-| **Caching** | Nitro SWR (Stale-While-Revalidate) |
-| **Testing** | Vitest (unit/integration), Playwright (E2E) |
-| **Validation** | Zod |
-
 ## Quick Start
 
 ### Prerequisites
@@ -60,7 +117,7 @@ A personal investment diary application built with Nuxt 3, featuring investment 
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/yourusername/diary-vue.git
 cd diary-vue
 
 # Install dependencies
@@ -406,35 +463,33 @@ For more troubleshooting tips, see [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ---
 
-## ⚠️ Critical: Blog Slug & PWA Gotcha (Nuxt 3)
+## ⚠️ Critical: Known Issues & Gotchas
 
-If you add or modify **dynamic API routes** (e.g. `/api/blog/:slug`):
+### Blog Slug & PWA Dynamic Routes
 
-### ✅ Mandatory Rules
+If you encounter issues with dynamic API routes (e.g., blog posts not loading):
 
-1. **Do NOT rely on a single slug source**
-   - Always fallback through:
-     - `event.context.params`
-     - `getRouterParam`
-     - URL path parsing
+**Symptoms**:
+- Blog list works fine
+- Individual posts show "文章不存在" (article not found)
+- Network tab shows `400 Slug is required (from service worker)`
 
-2. **Never let PWA cache `/api/**`**
-   - APIs must always be `no-store`
-   - Otherwise Service Worker may return fake 400/404 errors
+**Root Cause**: Service Worker caching API routes incorrectly
 
-### ✅ Reference Implementation
+**Solution**: See detailed troubleshooting in [`CLAUDE.md`](CLAUDE.md) - PWA + Nitro Dynamic Route section
 
-- Slug parsing: `server/api/blog/[slug].get.ts`
-- PWA exclusion: `nuxt.config.ts`
-- Incident record: [`CLAUDE.md`](CLAUDE.md)
+### Prisma + Vite Development Errors
 
-### ✅ Symptoms
+If you see Prisma-related errors in local development (but production works):
 
-- Blog list works
-- Clicking post shows "文章不存在"
-- Network shows `400 Slug is required (from service worker)`
+**Symptoms**:
+- `(0, Fo.promisify) is not a function`
+- `The requested module does not provide an export named 'Decimal'`
+- 500 errors on pages using Prisma
 
-**If this happens, check PWA + Nitro params first, not Prisma or Vue.**
+**Root Cause**: Vite bundling Prisma runtime as client dependency
+
+**Solution**: See detailed fix in [`CLAUDE.md`](CLAUDE.md) - Prisma + Nuxt + Vite section
 
 ## License
 
@@ -442,7 +497,7 @@ MIT
 
 ## Support
 
-For issues, questions, or contributions, please visit the [GitHub repository](<repository-url>).
+For issues, questions, or contributions, please visit the GitHub repository.
 
 ---
 
