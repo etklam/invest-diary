@@ -90,6 +90,8 @@
 </template>
 
 <script setup lang="ts">
+import { useDebounceFn, useLocalStorage } from '@vueuse/core'
+
 const { t } = useI18n()
 const toast = useToast()
 const router = useRouter()
@@ -111,6 +113,18 @@ const form = ref({
 })
 
 const loading = ref(false)
+const draftKey = 'blog-draft:new'
+const draft = useLocalStorage(draftKey, {
+  title: '',
+  content: '',
+  excerpt: '',
+  coverImage: '',
+  category: '',
+  tags: '',
+  status: 'DRAFT',
+  savedAt: ''
+})
+const readyForAutosave = ref(false)
 
 // Form validation
 const isFormValid = computed(() => {
@@ -124,6 +138,23 @@ const saveAsDraft = async () => {
   form.value.status = 'DRAFT'
   await createPost()
 }
+
+const persistDraft = useDebounceFn(() => {
+  if (!readyForAutosave.value) return
+  draft.value = {
+    ...draft.value,
+    ...form.value,
+    savedAt: new Date().toISOString()
+  }
+  toast.success('草稿已儲存')
+}, 5000)
+
+watch(
+  () => [form.value.title, form.value.content],
+  () => {
+    persistDraft()
+  }
+)
 
 // Create post
 const createPost = async () => {
@@ -150,6 +181,20 @@ const createPost = async () => {
 
     toast.success(form.value.status === 'PUBLISHED' ? '文章已發布' : '文章已儲存為草稿')
 
+    if (form.value.status === 'PUBLISHED') {
+      draft.value = {
+        title: '',
+        content: '',
+        excerpt: '',
+        coverImage: '',
+        category: '',
+        tags: '',
+        status: 'DRAFT',
+        savedAt: ''
+      }
+    }
+    readyForAutosave.value = false
+
     // Redirect to edit page or list
     if (form.value.status === 'PUBLISHED') {
       router.push('/admin/blog')
@@ -163,4 +208,42 @@ const createPost = async () => {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  const hasDraft = draft.value.title || draft.value.content
+  if (hasDraft) {
+    const shouldRestore = confirm('偵測到尚未發布的草稿，是否恢復？')
+    if (shouldRestore) {
+      form.value = {
+        ...form.value,
+        title: draft.value.title || '',
+        content: draft.value.content || '',
+        excerpt: draft.value.excerpt || '',
+        coverImage: draft.value.coverImage || '',
+        category: draft.value.category || '',
+        tags: draft.value.tags || '',
+        status: draft.value.status || 'DRAFT'
+      }
+    } else {
+      draft.value = {
+        title: '',
+        content: '',
+        excerpt: '',
+        coverImage: '',
+        category: '',
+        tags: '',
+        status: 'DRAFT',
+        savedAt: ''
+      }
+    }
+  }
+  readyForAutosave.value = true
+})
+
+onBeforeUnmount(() => {
+  readyForAutosave.value = false
+  if (persistDraft && typeof persistDraft === 'function') {
+    persistDraft()
+  }
+})
 </script>

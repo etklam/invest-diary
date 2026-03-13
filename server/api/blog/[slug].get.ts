@@ -1,14 +1,23 @@
 import prisma from '~/lib/prisma'
 import { PostStatus } from '@prisma/client'
+import { cachedEventHandler } from '#imports'
 
-export default defineEventHandler(async (event) => {
-  // ✅ 極度保險的 slug 解析：依序嘗試 params / routerParam / URL path
+const resolveSlug = (event: any) => {
   const rawFromParams = (event.context as any)?.params?.slug
   const rawFromRouter = getRouterParam(event, 'slug')
   const rawFromPath = event.path?.split('/').filter(Boolean).pop()
 
   const rawSlug = rawFromParams ?? rawFromRouter ?? rawFromPath
-  const slug = rawSlug ? decodeURIComponent(String(rawSlug)) : undefined
+  return rawSlug ? decodeURIComponent(String(rawSlug)) : undefined
+}
+
+export default cachedEventHandler(
+  async (event) => {
+  // ✅ 極度保險的 slug 解析：依序嘗試 params / routerParam / URL path
+  const rawFromParams = (event.context as any)?.params?.slug
+  const rawFromRouter = getRouterParam(event, 'slug')
+  const rawFromPath = event.path?.split('/').filter(Boolean).pop()
+  const slug = resolveSlug(event)
 
   console.log('[Blog API] slug sources =', {
     rawFromParams,
@@ -79,4 +88,10 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Failed to fetch post',
     })
   }
-})
+  },
+  {
+    maxAge: 600,
+    swr: true,
+    getKey: (event) => `blog:post:${resolveSlug(event)}`
+  }
+)

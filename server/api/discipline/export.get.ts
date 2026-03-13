@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
     // Export data
     const { exportDisciplines, shareDataToJSON } = await import('~/lib/disciplineShare')
 
-    const normalized = disciplines.map(d => ({
+    const normalized = disciplines.map((d: any) => ({
       ...d,
       id: Number(d.id),
       userId: Number(d.userId),

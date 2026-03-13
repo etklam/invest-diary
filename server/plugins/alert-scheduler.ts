@@ -1,6 +1,6 @@
-import prisma from '../../lib/prisma'
-import { connectionManager } from '../websocket/connectionManager'
-import type { AlertPayload } from '../../types/websocket'
+import prisma from '~/lib/prisma'
+import { connectionManager } from '~/server/websocket/connectionManager'
+import type { AlertPayload } from '~/types/websocket'
 
 /**
  * Alert 推播排程器

@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     orderBy: { createdAt: 'desc' },
   })
 
-  return alerts.map(alert => ({
+  return alerts.map((alert: any) => ({
     id: alert.id.toString(),
     symbol: alert.etf.symbol,
     name: alert.etf.name,

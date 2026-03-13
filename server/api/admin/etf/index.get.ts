@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  return etfs.map(etf => ({
+  return etfs.map((etf: any) => ({
     id: etf.id.toString(),
     symbol: etf.symbol,
     name: etf.name,

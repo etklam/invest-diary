@@ -1,6 +1,36 @@
 import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
 
+const normalizeQueryValue = (value: unknown) => {
+  if (value === undefined || value === null) return ''
+  return String(value).trim()
+}
+
+const parsePage = (value: unknown, fallback: number) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback
+  return Math.floor(parsed)
+}
+
+const parseLimit = (value: unknown, fallback: number, max: number) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > max) return fallback
+  return Math.floor(parsed)
+}
+
+const parseDateParam = (value: unknown, label: string) => {
+  const normalized = normalizeQueryValue(value)
+  if (!normalized) return undefined
+  const parsed = new Date(normalized)
+  if (Number.isNaN(parsed.getTime())) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `Invalid ${label}`
+    })
+  }
+  return parsed
+}
+
 export default defineEventHandler(async (event) => {
   // Check admin permission
   await adminMiddleware(event)
@@ -8,12 +38,16 @@ export default defineEventHandler(async (event) => {
   console.log('[Blog] Admin: Fetching all posts...')
   try {
     const query = getQuery(event)
-    const page = Number(query.page) || 1
-    const limit = Number(query.limit) || 20
+    const page = parsePage(query.page, 1)
+    const limit = parseLimit(query.limit, 20, 50)
     const skip = (page - 1) * limit
-    const status = query.status as string | undefined
-    const category = query.category as string | undefined
-    const search = query.search as string | undefined
+    const status = normalizeQueryValue(query.status) || undefined
+    const category = normalizeQueryValue(query.category) || undefined
+    const search = normalizeQueryValue(query.search) || undefined
+    const author = normalizeQueryValue(query.author) || undefined
+    const dateFrom = parseDateParam(query.dateFrom, 'dateFrom')
+    const dateTo = parseDateParam(query.dateTo, 'dateTo')
+    const sortBy = normalizeQueryValue(query.sortBy) || 'createdAt_desc'
 
     // Build where clause (no status filter by default - show all)
     const where: any = {}
@@ -35,10 +69,44 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // Filter by author (name or email)
+    if (author) {
+      where.author = {
+        OR: [
+          { name: { contains: author } },
+          { email: { contains: author } }
+        ]
+      }
+    }
+
+    // Filter by date range (createdAt)
+    if (dateFrom || dateTo) {
+      where.createdAt = {}
+      if (dateFrom) {
+        where.createdAt.gte = dateFrom
+      }
+      if (dateTo) {
+        const endDate = new Date(dateTo)
+        endDate.setHours(23, 59, 59, 999)
+        where.createdAt.lte = endDate
+      }
+    }
+
+    const sortOptions: Record<string, any> = {
+      createdAt_desc: { createdAt: 'desc' },
+      createdAt_asc: { createdAt: 'asc' },
+      updatedAt_desc: { updatedAt: 'desc' },
+      publishedAt_desc: { publishedAt: 'desc' },
+      publishedAt_asc: { publishedAt: 'asc' },
+      title_asc: { title: 'asc' },
+      title_desc: { title: 'desc' }
+    }
+    const orderBy = sortOptions[sortBy] || sortOptions.createdAt_desc
+
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         select: {
           id: true,
           title: true,

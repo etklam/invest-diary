@@ -127,6 +127,7 @@
 </template>
 
 <script setup lang="ts">
+import { useDebounceFn, useLocalStorage } from '@vueuse/core'
 import { formatDate } from '~/lib/utils'
 
 const { t } = useI18n()
@@ -140,6 +141,18 @@ definePageMeta({
 })
 
 const postId = route.params.id as string
+const draftKey = `blog-draft:${postId}`
+const draft = useLocalStorage(draftKey, {
+  title: '',
+  content: '',
+  excerpt: '',
+  coverImage: '',
+  category: '',
+  tags: '',
+  status: 'DRAFT',
+  savedAt: ''
+})
+const readyForAutosave = ref(false)
 
 // State
 const post = ref<any>(null)
@@ -166,6 +179,23 @@ const isFormValid = computed(() => {
          form.value.category !== ''
 })
 
+const persistDraft = useDebounceFn(() => {
+  if (!readyForAutosave.value) return
+  draft.value = {
+    ...draft.value,
+    ...form.value,
+    savedAt: new Date().toISOString()
+  }
+  toast.success('草稿已儲存')
+}, 5000)
+
+watch(
+  () => [form.value.title, form.value.content],
+  () => {
+    persistDraft()
+  }
+)
+
 // Fetch post
 const fetchPost = async () => {
   try {
@@ -182,6 +212,35 @@ const fetchPost = async () => {
       status: foundPost.status,
       slug: foundPost.slug
     }
+
+    const hasDraft = draft.value.title || draft.value.content
+    if (hasDraft) {
+      const shouldRestore = confirm('偵測到尚未發布的草稿，是否恢復？')
+      if (shouldRestore) {
+        form.value = {
+          ...form.value,
+          title: draft.value.title || form.value.title,
+          content: draft.value.content || form.value.content,
+          excerpt: draft.value.excerpt || form.value.excerpt,
+          coverImage: draft.value.coverImage || form.value.coverImage,
+          category: draft.value.category || form.value.category,
+          tags: draft.value.tags || form.value.tags,
+          status: draft.value.status || form.value.status
+        }
+      } else {
+        draft.value = {
+          title: '',
+          content: '',
+          excerpt: '',
+          coverImage: '',
+          category: '',
+          tags: '',
+          status: 'DRAFT',
+          savedAt: ''
+        }
+      }
+    }
+    readyForAutosave.value = true
   } catch (err: any) {
     console.error('Failed to fetch post:', err)
     error.value = err
@@ -214,6 +273,19 @@ const updatePost = async () => {
     })
 
     toast.success('文章已更新')
+    if (form.value.status === 'PUBLISHED') {
+      draft.value = {
+        title: '',
+        content: '',
+        excerpt: '',
+        coverImage: '',
+        category: '',
+        tags: '',
+        status: 'DRAFT',
+        savedAt: ''
+      }
+    }
+    readyForAutosave.value = false
     router.push('/admin/blog')
   } catch (err: any) {
     console.error('Failed to update post:', err)
@@ -226,5 +298,12 @@ const updatePost = async () => {
 // Fetch post on mount
 onMounted(() => {
   fetchPost()
+})
+
+onBeforeUnmount(() => {
+  readyForAutosave.value = false
+  if (persistDraft && typeof persistDraft === 'function') {
+    persistDraft()
+  }
 })
 </script>

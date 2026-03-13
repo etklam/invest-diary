@@ -46,7 +46,7 @@
 
     <section class="px-4 pb-20 sm:px-6">
       <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-12">
-        <aside class="lg:col-span-3">
+        <aside v-if="!isMobile" class="lg:col-span-3">
           <div class="sidebar-shell sticky top-4 rounded-2xl p-5">
             <div class="mb-6">
               <label for="search" class="mb-2 block text-sm font-semibold tracking-wide text-slate-700 dark:text-slate-300">
@@ -123,7 +123,21 @@
             />
           </div>
 
-          <div v-if="pagination && pagination.totalPages > 1" class="mt-10 flex justify-center">
+          <div
+            v-if="enableInfiniteScroll"
+            class="mt-10 flex flex-col items-center gap-4"
+          >
+            <div ref="loadMoreTrigger" class="h-4 w-full" aria-hidden="true" />
+            <div v-if="loadingMore" class="flex items-center gap-3 rounded-full border border-sky-200/70 bg-white/80 px-4 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200">
+              <span class="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></span>
+              {{ $t('common.loading') }}
+            </div>
+            <p v-else-if="!hasMore" class="text-sm text-slate-500 dark:text-slate-400">
+              已載入全部文章
+            </p>
+          </div>
+
+          <div v-if="pagination && pagination.totalPages > 1 && !enableInfiniteScroll" class="mt-10 flex justify-center">
             <nav class="pager-shell flex items-center gap-2 rounded-xl px-3 py-2">
               <button
                 :disabled="pagination.page <= 1"
@@ -151,10 +165,61 @@
         </div>
       </div>
     </section>
+
+    <div v-if="isMobile" class="fixed bottom-6 right-4 z-40 flex flex-col gap-3 sm:right-6">
+      <button
+        type="button"
+        class="fab-btn"
+        aria-label="回到頂部"
+        @click="scrollToTop"
+      >
+        <Icon name="heroicons:arrow-up-20-solid" class="h-5 w-5" />
+      </button>
+      <button
+        type="button"
+        class="fab-btn"
+        aria-label="切換篩選"
+        @click="toggleMobileFilters"
+      >
+        <Icon name="heroicons:adjustments-horizontal-20-solid" class="h-5 w-5" />
+      </button>
+    </div>
+
+    <div
+      v-if="isMobile && showMobileFilters"
+      class="fixed inset-x-4 bottom-24 z-40 rounded-2xl border border-sky-200/70 bg-white/95 p-4 shadow-xl backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/95"
+    >
+      <div class="mb-3 flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+          篩選
+        </h3>
+        <button type="button" class="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200" @click="toggleMobileFilters">
+          關閉
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label for="mobile-search" class="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            {{ $t('common.search') }}
+          </label>
+          <input
+            id="mobile-search"
+            v-model="searchQuery"
+            type="text"
+            @input="handleSearchInput"
+            @keyup.enter="performSearch"
+            class="search-input w-full rounded-xl border border-slate-200/80 bg-white/85 py-3 px-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500"
+            :placeholder="$t('blog.searchPlaceholder')"
+          />
+        </div>
+        <CategoryFilter :categories="categories" />
+      </div>
+    </div>
   </main>
 </template>
 
 <script setup lang="ts">
+import { useInfiniteScroll, useMediaQuery } from '@vueuse/core'
 import { CATEGORY_OPTIONS } from '~/types/blog'
 import type { LocationQueryValue } from 'vue-router'
 
@@ -212,6 +277,16 @@ const getQueryValue = (value: LocationQueryValue | LocationQueryValue[] | undefi
 
 const searchQuery = ref(getQueryValue(route.query.search) || '')
 let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+const enableInfiniteScroll = ref(true)
+const isMobile = useMediaQuery('(max-width: 768px)')
+const showMobileFilters = ref(false)
+const loadMoreTrigger = ref<HTMLElement | null>(null)
+const loadingMore = ref(false)
+const currentPage = ref(Number(route.query.page || 1))
+const posts = ref<Post[]>([])
+const pagination = ref<{ page: number; limit: number; total: number; totalPages: number } | null>(null)
+const prefetchCache = new Map<number, any>()
+const prefetching = new Set<number>()
 
 // Build query params
 const buildQueryParams = (page = 1) => {
@@ -233,15 +308,46 @@ const buildQueryParams = (page = 1) => {
   return params
 }
 
-// Fetch posts
-const { data, pending, error, refresh } = await useLazyFetch('/api/blog', {
-  params: () => buildQueryParams(Number(route.query.page || 1)),
-  watch: [() => route.query.category, () => route.query.page, () => route.query.search],
-  transform: (res: any) => res
-})
+const pending = ref(true)
+const error = ref<any>(null)
 
-const posts = computed(() => data.value?.data || [])
-const pagination = computed(() => data.value?.pagination)
+const fetchPage = async (page: number) => {
+  return await $fetch('/api/blog', {
+    params: buildQueryParams(page)
+  }) as any
+}
+
+const setPageData = (page: number, payload: any, append = false) => {
+  if (!payload) return
+  const nextPosts = payload.data || []
+  if (append) {
+    posts.value = [...posts.value, ...nextPosts]
+  } else {
+    posts.value = nextPosts
+  }
+  pagination.value = payload.pagination || null
+  currentPage.value = page
+}
+
+const loadInitial = async () => {
+  try {
+    pending.value = true
+    error.value = null
+    prefetchCache.clear()
+    const payload = await fetchPage(currentPage.value)
+    setPageData(currentPage.value, payload, false)
+    await prefetchNextPage()
+  } catch (err: any) {
+    console.error('Failed to fetch posts:', err)
+    error.value = err
+  } finally {
+    pending.value = false
+  }
+}
+
+const refresh = async () => {
+  await loadInitial()
+}
 
 // Categories for filter - using unified English keys
 const categories = computed(() => {
@@ -289,6 +395,14 @@ watch(
   }
 )
 
+watch(
+  () => [route.query.category, route.query.search],
+  () => {
+    currentPage.value = 1
+    loadInitial()
+  }
+)
+
 // Pagination
 const goToPage = (page: number) => {
   if (page < 1 || page > (pagination.value?.totalPages || 1)) return
@@ -304,6 +418,75 @@ const goToPage = (page: number) => {
 
   navigateTo({ query })
 }
+
+const hasMore = computed(() => {
+  if (!pagination.value) return false
+  return currentPage.value < pagination.value.totalPages
+})
+
+const prefetchNextPage = async () => {
+  if (!pagination.value) return
+  const nextPage = currentPage.value + 1
+  if (nextPage > pagination.value.totalPages) return
+  if (prefetchCache.has(nextPage) || prefetching.has(nextPage)) return
+
+  prefetching.add(nextPage)
+  try {
+    const payload = await fetchPage(nextPage)
+    prefetchCache.set(nextPage, payload)
+  } catch (err) {
+    console.warn('Prefetch next page failed:', err)
+  } finally {
+    prefetching.delete(nextPage)
+  }
+}
+
+const loadMore = async () => {
+  if (!enableInfiniteScroll.value) return
+  if (loadingMore.value || pending.value || !hasMore.value) return
+  loadingMore.value = true
+  const nextPage = currentPage.value + 1
+
+  try {
+    let payload = prefetchCache.get(nextPage)
+    if (!payload) {
+      payload = await fetchPage(nextPage)
+    }
+    setPageData(nextPage, payload, true)
+    prefetchCache.delete(nextPage)
+    await prefetchNextPage()
+  } catch (err) {
+    console.error('Failed to load more posts:', err)
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+if (process.client) {
+  useInfiniteScroll(
+    loadMoreTrigger,
+    () => loadMore(),
+    { distance: 280 }
+  )
+}
+
+watch(
+  () => pagination.value?.page,
+  () => {
+    prefetchNextPage()
+  }
+)
+
+const scrollToTop = () => {
+  if (!process.client) return
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const toggleMobileFilters = () => {
+  showMobileFilters.value = !showMobileFilters.value
+}
+
+await loadInitial()
 </script>
 
 <style scoped>
@@ -434,6 +617,33 @@ const goToPage = (page: number) => {
 
 .reveal-3 {
   animation-delay: 220ms;
+}
+
+.fab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 3rem;
+  width: 3rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(14 165 233 / 25%);
+  background: rgb(224 242 254 / 85%);
+  color: rgb(12 74 110);
+  box-shadow: 0 12px 30px rgb(14 165 233 / 20%);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.fab-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgb(14 165 233 / 28%);
+}
+
+:global(.dark .fab-btn),
+:global(.dark-mode .fab-btn) {
+  border-color: rgb(56 189 248 / 45%);
+  background: rgb(15 23 42 / 90%);
+  color: rgb(186 230 253);
+  box-shadow: 0 12px 30px rgb(2 6 23 / 45%);
 }
 
 @keyframes reveal-up {

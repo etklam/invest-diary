@@ -63,12 +63,12 @@ export default defineEventHandler(async (event) => {
 
   // Analyze each ETF (fetch real-time quote for each)
   const results = await Promise.allSettled(
-    etfs.map(async (etf) => {
+    etfs.map(async (etf: any) => {
       const quote = etf.prices.length > 0
         ? await fetchQuote(etf.symbol).catch(() => null)
         : null
 
-      const prices = etf.prices.map(p => ({
+      const prices = etf.prices.map((p: any) => ({
         date: p.date,
         open: p.open,
         high: p.high,

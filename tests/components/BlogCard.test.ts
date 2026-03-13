@@ -5,6 +5,20 @@ import BlogCard from '~/components/BlogCard.vue'
 import { calculateReadingTime } from '~/lib/blog'
 import { normalizeCategory } from '~/types/blog'
 
+const mockUseAuth = vi.fn()
+const mockUseI18n = vi.fn()
+const mockUseToast = vi.fn()
+const mockRefreshNuxtData = vi.fn()
+const mockFetch = vi.fn()
+
+vi.mock('#imports', () => ({
+  useAuth: () => mockUseAuth(),
+  useI18n: () => mockUseI18n(),
+  useToast: () => mockUseToast(),
+  refreshNuxtData: () => mockRefreshNuxtData(),
+  $fetch: (...args: any[]) => mockFetch(...args),
+}))
+
 const postBase = {
   id: 1,
   title: 'Test Blog Post',
@@ -43,23 +57,24 @@ const stubs = {
 
 describe('BlogCard Component', () => {
   beforeEach(() => {
-    vi.stubGlobal('useAuth', () => ({
+    mockUseAuth.mockReturnValue({
       isAdmin: ref(false),
       user: ref(null),
-    }))
-    vi.stubGlobal('useI18n', () => ({
+    })
+    mockUseI18n.mockReturnValue({
       t: (key: string) => key,
-    }))
-    vi.stubGlobal('useToast', () => ({
+    })
+    mockUseToast.mockReturnValue({
       success: vi.fn(),
       error: vi.fn(),
-    }))
-    vi.stubGlobal('refreshNuxtData', vi.fn())
-    vi.stubGlobal('$fetch', vi.fn())
+    })
+    mockRefreshNuxtData.mockClear()
+    mockFetch.mockClear()
     vi.stubGlobal('confirm', vi.fn(() => true))
   })
 
   afterEach(() => {
+    vi.clearAllMocks()
     vi.unstubAllGlobals()
   })
 

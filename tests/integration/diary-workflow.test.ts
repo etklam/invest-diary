@@ -288,7 +288,7 @@ describe('Diary Workflow Integration', () => {
         userId: 2n,
       }
 
-      mockDiaryFindFirst.mockResolvedValueOnce(null)
+      mockDiaryFindFirst.mockResolvedValueOnce(otherUserDiary)
 
       const { default: handler } = await import('~/server/api/diaries/[id].get')
 
@@ -298,7 +298,7 @@ describe('Diary Workflow Integration', () => {
           params: { id: '1' },
         },
       } as any)).rejects.toMatchObject({
-        statusCode: 404,
+        statusCode: 403,
       })
     })
   })

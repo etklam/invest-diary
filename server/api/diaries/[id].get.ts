@@ -31,7 +31,6 @@ export default defineEventHandler(async (event) => {
     const diary = await prisma.diary.findFirst({
       where: {
         id: BigInt(id),
-        userId: typeof rawUserId === 'string' ? BigInt(rawUserId) : rawUserId
       },
       include: {
         transactions: true,
@@ -41,6 +40,10 @@ export default defineEventHandler(async (event) => {
 
     if (!diary) {
       throw Errors.diaryNotFound(id)
+    }
+
+    if (diary.userId?.toString() !== rawUserId.toString()) {
+      throw Errors.diaryAccessDenied()
     }
 
     log.info('Diary fetched', { diaryId: id })

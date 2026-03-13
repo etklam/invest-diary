@@ -1,4 +1,5 @@
 import prisma from '~/lib/prisma'
+import { cachedEventHandler } from '#imports'
 
 const LEGACY_CATEGORY_ALIASES: Record<string, string[]> = {
   fundamental: ['基本面分析', 'Fundamental Analysis'],
@@ -7,17 +8,49 @@ const LEGACY_CATEGORY_ALIASES: Record<string, string[]> = {
   strategy: ['投资策略', '投資策略', 'Investment Strategy']
 }
 
-export default defineEventHandler(async (event) => {
+const normalizeQueryValue = (value: unknown) => {
+  if (value === undefined || value === null) return ''
+  return String(value).trim()
+}
+
+const parsePage = (value: unknown, fallback: number) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback
+  return Math.floor(parsed)
+}
+
+const parseLimit = (value: unknown, fallback: number, max: number) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > max) return fallback
+  return Math.floor(parsed)
+}
+
+const parseDateParam = (value: unknown, label: string) => {
+  const normalized = normalizeQueryValue(value)
+  if (!normalized) return undefined
+  const parsed = new Date(normalized)
+  if (Number.isNaN(parsed.getTime())) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `Invalid ${label}`
+    })
+  }
+  return parsed
+}
+
+export default cachedEventHandler(
+  async (event) => {
   console.log('[Blog] Fetching public blog posts...')
   try {
     const query = getQuery(event)
-    const page = Number(query.page) || 1
-    const limit = Number(query.limit) || 9
+    const page = parsePage(query.page, 1)
+    const limit = parseLimit(query.limit, 9, 50)
     const skip = (page - 1) * limit
-    const category = query.category as string | undefined
-    const tag = query.tag as string | undefined
-    const rawSearch = query.search as string | undefined
-    const search = rawSearch?.trim()
+    const category = normalizeQueryValue(query.category) || undefined
+    const tag = normalizeQueryValue(query.tag) || undefined
+    const search = normalizeQueryValue(query.search) || undefined
+    const dateFrom = parseDateParam(query.dateFrom, 'dateFrom')
+    const dateTo = parseDateParam(query.dateTo, 'dateTo')
 
     // Build where clause for published posts only
     // 效能優化：使用型別安全的 where 條件
@@ -31,9 +64,8 @@ export default defineEventHandler(async (event) => {
 
     // Filter by category
     if (category) {
-      const normalizedCategory = category.trim()
-      const categoryAliases = LEGACY_CATEGORY_ALIASES[normalizedCategory] || []
-      where.category = { in: [normalizedCategory, ...categoryAliases] }
+      const categoryAliases = LEGACY_CATEGORY_ALIASES[category] || []
+      where.category = { in: [category, ...categoryAliases] }
     }
 
     // Filter by tag (tags are stored as comma-separated string)
@@ -42,13 +74,26 @@ export default defineEventHandler(async (event) => {
       where.tags = { contains: tag }
     }
 
-    // Search in title, excerpt and content
+    // Search in title and excerpt (fulltext)
     if (search) {
       where.OR = [
-        { title: { contains: search } },
-        { excerpt: { contains: search } },
-        { content: { contains: search } }
+        { title: { search } },
+        { excerpt: { search } }
       ]
+    }
+
+    if (dateFrom || dateTo) {
+      where.publishedAt = {
+        ...where.publishedAt,
+        ...(dateFrom ? { gte: dateFrom } : {}),
+        ...(dateTo
+          ? (() => {
+              const endDate = new Date(dateTo)
+              endDate.setHours(23, 59, 59, 999)
+              return { lte: endDate }
+            })()
+          : {})
+      }
     }
 
     // 效能優化：使用 select 只選擇列表頁需要的欄位
@@ -99,4 +144,19 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Failed to fetch posts'
     })
   }
-})
+  },
+  {
+    maxAge: 300,
+    swr: true,
+    varies: ['cookie'],
+    getKey: (event) => {
+      const query = getQuery(event)
+      const page = parsePage(query.page, 1)
+      const limit = parseLimit(query.limit, 9, 50)
+      const category = normalizeQueryValue(query.category)
+      const search = normalizeQueryValue(query.search)
+      const tag = normalizeQueryValue(query.tag)
+      return `blog:list:${page}:${category}:${search}:${tag}:${limit}`
+    }
+  }
+)

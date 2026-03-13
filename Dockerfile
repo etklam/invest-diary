@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY package.json package-lock.json ./
 
 # Install dependencies and rebuild native modules
-RUN npm install --ignore-scripts && \
+RUN npm install --ignore-scripts --legacy-peer-deps && \
     npm rebuild canvas sharp && \
     npm run postinstall
 
@@ -29,7 +29,7 @@ COPY . .
 # Build application
 RUN npx prisma generate && \
     npm run build && \
-    npm prune --omit=dev --omit=optional && \
+    npm prune --omit=dev --omit=optional --legacy-peer-deps && \
     npm cache clean --force
 
 # Runtime stage
@@ -62,6 +62,7 @@ ENV NODE_ENV=production \
 COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/package.json ./package.json
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 

@@ -1,6 +1,7 @@
 <template>
   <article
     class="blog-card group relative flex h-full flex-col overflow-hidden rounded-2xl border p-0 transition-all duration-200"
+    @mouseenter="prefetchDetail"
   >
     <div v-if="isAdmin" class="absolute right-3 top-3 z-20 flex gap-2">
       <NuxtLink
@@ -25,8 +26,10 @@
         :alt="post.title"
         width="800"
         height="450"
-        format="webp"
         loading="lazy"
+        sizes="sm:400px md:350px lg:400px"
+        quality="80"
+        preset="blogCover"
         class="h-full w-full object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.03]"
       />
     </div>
@@ -41,7 +44,11 @@
       </div>
 
       <h3 class="mb-2 line-clamp-2 text-xl font-semibold text-slate-950 dark:text-slate-100">
-        <NuxtLink :to="`/articles/${post.slug}`" class="cursor-pointer transition-colors duration-200 hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 dark:hover:text-sky-300">
+        <NuxtLink
+          :to="`/articles/${post.slug}`"
+          prefetch
+          class="cursor-pointer transition-colors duration-200 hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 dark:hover:text-sky-300"
+        >
           {{ post.title }}
         </NuxtLink>
       </h3>
@@ -70,6 +77,7 @@
       <div class="mt-4 border-t border-slate-200/70 pt-4 dark:border-slate-700/60">
         <NuxtLink
           :to="`/articles/${post.slug}`"
+          prefetch
           class="inline-flex cursor-pointer items-center font-semibold text-sky-700 transition-colors duration-200 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200"
         >
           {{ $t('blog.readMore') }}
@@ -81,6 +89,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { refreshNuxtData, useAuth, useI18n, useToast } from '#imports'
 import { calculateReadingTime, parseTags } from '~/lib/blog'
 import { normalizeCategory } from '~/types/blog'
 
@@ -115,12 +125,14 @@ const parsedTags = computed(() => parseTags(props.post.tags))
 const readingTime = computed(() =>
   props.post.content ? calculateReadingTime(props.post.content) : undefined
 )
+const hasPrefetched = ref(false)
 
 const handleDelete = async () => {
   if (!confirm(t('blog.confirmDelete', { title: props.post.title }))) return
 
   try {
-    await $fetch(`/api/blog/${props.post.id}`, { method: 'DELETE' })
+    const response = await fetch(`/api/blog/${props.post.id}`, { method: 'DELETE' })
+    if (!response.ok) throw new Error('Delete failed')
     toast.success(t('blog.deleteSuccess'))
     refreshNuxtData()
   } catch (error: any) {
@@ -130,6 +142,16 @@ const handleDelete = async () => {
 }
 
 const categoryKey = computed(() => normalizeCategory(props.post.category))
+
+const prefetchDetail = async () => {
+  if (hasPrefetched.value || !props.post.slug) return
+  hasPrefetched.value = true
+  try {
+    await fetch(`/api/blog/${props.post.slug}`)
+  } catch (prefetchError) {
+    console.warn('Prefetch blog detail failed:', prefetchError)
+  }
+}
 </script>
 
 <style scoped>

@@ -123,4 +123,48 @@ describe('server/middleware/auth', () => {
     expect(mockSignAccessToken).toHaveBeenCalledWith('1', 'db@example.com', 'ADMIN', 2)
     expect(mockSetCookie).toHaveBeenCalled()
   })
+
+  it('should clear context when access token is a refresh token', async () => {
+    mockGetCookie.mockReturnValueOnce('refresh-token-as-access').mockReturnValueOnce(null).mockReturnValueOnce(null)
+    mockVerifyToken.mockResolvedValue({
+      userId: '1',
+      email: 'token@example.com',
+      role: 'USER',
+      tokenVersion: 1,
+      type: 'refresh',
+    })
+
+    const { default: handler } = await import('~/server/middleware/auth')
+    const event = { context: {} } as any
+    await handler(event)
+
+    expect(event.context.user).toBeUndefined()
+    expect(mockUserFindUnique).not.toHaveBeenCalled()
+  })
+
+  it('should clear context when refresh token is missing in storage', async () => {
+    mockGetCookie
+      .mockReturnValueOnce('expired-access-token')
+      .mockReturnValueOnce(null)
+      .mockReturnValueOnce('valid-refresh-token')
+
+    mockVerifyToken
+      .mockRejectedValueOnce(new Error('jwt expired'))
+      .mockResolvedValueOnce({
+        userId: '1',
+        email: 'token@example.com',
+        role: 'USER',
+        tokenVersion: 2,
+        type: 'refresh',
+      })
+
+    mockRefreshTokenFindUnique.mockResolvedValue(null)
+
+    const { default: handler } = await import('~/server/middleware/auth')
+    const event = { context: {} } as any
+    await handler(event)
+
+    expect(event.context.user).toBeUndefined()
+    expect(mockSetCookie).not.toHaveBeenCalled()
+  })
 })

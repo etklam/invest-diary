@@ -147,7 +147,8 @@
           prose-th:text-slate-900 dark:prose-th:text-slate-100 prose-th:font-semibold prose-th:px-4 prose-th:py-3
           prose-td:text-slate-700 dark:prose-td:text-slate-300 prose-td:border-b prose-td:border-slate-200 dark:prose-td:border-slate-800 prose-td:px-4 prose-td:py-3"
         >
-          <MDC :value="post.content" />
+          <div v-if="isHtmlContent" v-html="sanitizedContent" />
+          <MDC v-else :value="post.content" />
         </div>
       </div>
 
@@ -184,6 +185,8 @@ definePageMeta({
   requiresAuth: false
 })
 
+import DOMPurify from 'dompurify'
+import type { Config as DOMPurifyConfig } from 'dompurify'
 import { calculateReadingTime, parseTags } from '~/lib/blog'
 import { usePerformance } from '~/composables/usePerformance'
 import { normalizeCategory } from '~/types/blog'
@@ -197,7 +200,9 @@ interface Post {
   category: string
   tags?: string | null
   publishedAt: Date | string
+  updatedAt?: Date | string
   content: string
+  contentType?: string | null
   author: {
     id: string | number
     name: string | null
@@ -206,7 +211,7 @@ interface Post {
 }
 
 const route = useRoute()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const config = useRuntimeConfig()
 const { isAdmin } = useAuth()
 const copied = ref(false)
@@ -228,10 +233,68 @@ const categoryKey = computed(() => {
   return normalizeCategory(post.value.category)
 })
 
+const htmlSanitizeConfig: DOMPurifyConfig = {
+  ALLOWED_TAGS: [
+    'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'strike',
+    'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'a', 'img',
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    'hr', 'span', 'div'
+  ],
+  ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'src', 'alt', 'class'],
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|data:image\/(?:png|jpe?g|gif|webp|svg\+xml);)/i
+}
+
+const contentType = computed(() => {
+  const type = post.value?.contentType
+  return type ? String(type).toLowerCase() : 'html'
+})
+
+const isHtmlContent = computed(() => contentType.value === 'html')
+
+const sanitizedContent = computed(() => {
+  if (!post.value?.content) return ''
+  if (typeof DOMPurify?.sanitize !== 'function') {
+    return post.value.content
+  }
+  return DOMPurify.sanitize(post.value.content, htmlSanitizeConfig)
+})
+
 const canonicalUrl = computed(() => {
   const slug = String(post.value?.slug || route.params.slug || '').trim()
   if (!slug) return `${siteUrl}/articles`
   return `${siteUrl}/articles/${encodeURIComponent(slug)}`
+})
+
+const jsonLd = computed(() => {
+  if (!post.value) return null
+  const publishedAt = post.value.publishedAt ? new Date(post.value.publishedAt).toISOString() : undefined
+  const updatedAt = post.value.updatedAt ? new Date(post.value.updatedAt).toISOString() : publishedAt
+  const image = post.value.coverImage ? [post.value.coverImage] : undefined
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.value.title,
+    image,
+    datePublished: publishedAt,
+    dateModified: updatedAt,
+    author: {
+      '@type': 'Person',
+      name: post.value.author.name || post.value.author.email
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: t('common.appName'),
+      url: siteUrl
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalUrl.value
+    },
+    description: post.value.excerpt || t('blog.description'),
+    inLanguage: locale.value
+  }
 })
 
 useHead(() => ({
@@ -252,7 +315,15 @@ useHead(() => ({
       ]
     : [
         { name: 'robots', content: 'noindex, nofollow' }
+      ],
+  script: jsonLd.value
+    ? [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify(jsonLd.value)
+        }
       ]
+    : []
 }))
 
 const copyLink = async () => {

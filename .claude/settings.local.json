@@ -63,7 +63,19 @@
       "Bash(npx vue-tsc --noEmit 2>&1 | head -50)",
       "Bash(wc -l /Users/klam/Desktop/project/diary-vue/pages/tools/*.vue)",
       "Bash(grep -r \"definePageMeta\" /Users/klam/Desktop/project/diary-vue/pages/tools/*.vue)",
-      "Bash(npm install --ignore-scripts && npm run postinstall)"
+      "Bash(npm install --ignore-scripts && npm run postinstall)",
+      "Bash(git diff pages/admin/blog/new.vue pages/admin/blog/[id]/edit.vue | head -40)",
+      "Bash(git diff pages/articles/[slug].vue | head -20)",
+      "Bash(grep -r \"TODO\\\\|FIXME\\\\|XXX\\\\|HACK\\\\|BUG\" --include=\"*.vue\" --include=\"*.ts\" --include=\"*.js\" . 2>/dev/null | grep -v node_modules | grep -v .nuxt | head -20)",
+      "Bash(grep -r \"console\\\\.\\(log|error|warn\\)\" --include=\"*.vue\" --include=\"*.ts\" . 2>/dev/null | grep -v node_modules | grep -v .nuxt | grep -v \"test\" | wc -l)",
+      "Bash(grep -r \"password\\\\|secret\\\\|token\\\\|key\" --include=\"*.vue\" --include=\"*.ts\" . 2>/dev/null | grep -v node_modules | grep -v .nuxt | grep -v test | grep -v \"i18n\\\\|locale\\\\|translation\" | grep -E \"\\(console\\\\.log|alert\\\\\\(\\)\" | head -10)",
+      "Bash(grep -r \"eval\\\\|Function\\\\\\(\" --include=\"*.ts\" --include=\"*.vue\" --include=\"*.js\" . 2>/dev/null | grep -v node_modules | grep -v .nuxt | grep -v test | head -5)",
+      "mcp__chrome-devtools__new_page",
+      "Bash(npm rebuild canvas)",
+      "mcp__chrome-devtools__fill_form",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__get_network_request"
     ]
   }
 }

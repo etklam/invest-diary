@@ -1,7 +1,9 @@
+import type { Prisma } from '@prisma/client'
+
 export type TransactionInput = {
   symbol?: string | null
   type?: string | null
-  quantity?: number | null
+  quantity?: number | Prisma.Decimal | null
 }
 
 export const validateTransactions = (
@@ -16,7 +18,9 @@ export const validateTransactions = (
 
     const symbol = tx.symbol.trim().toUpperCase()
     const current = holdings.get(symbol) ?? 0
-    const quantity = tx.quantity ?? 0
+    const quantity = typeof tx.quantity === 'object' && tx.quantity !== null
+      ? Number(tx.quantity.toString())
+      : (tx.quantity ?? 0)
 
     if (tx.type === 'BUY') {
       holdings.set(symbol, current + quantity)

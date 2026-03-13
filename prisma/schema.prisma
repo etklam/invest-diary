@@ -166,6 +166,7 @@ model Post {
   @@index([status, publishedAt(sort: Desc)], map: "posts_status_published_idx")
   // 複合索引：優化分類查詢
   @@index([category, status], map: "posts_category_status_idx")
+  // Note: Fulltext index for title/excerpt should be created via raw SQL migration
   @@map("posts")
 }
 

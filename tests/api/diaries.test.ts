@@ -178,7 +178,7 @@ describe('Diary API Routes', () => {
   describe('DELETE /api/diaries/:id', () => {
     it('should delete a diary', async () => {
       mockGetRouterParam.mockReturnValue('3')
-      mockDiaryFindFirst.mockResolvedValue({ id: 3n })
+      mockDiaryFindFirst.mockResolvedValue({ id: 3n, userId: 1n })
       mockDiaryDelete.mockResolvedValue({ id: 3n })
 
       const { default: handler } = await import('~/server/api/diaries/[id].delete')
@@ -189,6 +189,54 @@ describe('Diary API Routes', () => {
 
       expect(mockDiaryDelete).toHaveBeenCalledWith({ where: { id: 3n } })
       expect(result).toEqual({ success: true })
+    })
+  })
+
+  describe('Error scenarios', () => {
+    it('should return 401 when fetching diaries without auth', async () => {
+      const { default: handler } = await import('~/server/api/diaries.get')
+
+      await expect(handler({ context: {} } as any)).rejects.toMatchObject({
+        statusCode: 401,
+      })
+    })
+
+    it('should return 403 when accessing a diary owned by another user', async () => {
+      mockGetRouterParam.mockReturnValue('9')
+      mockDiaryFindFirst.mockResolvedValue({
+        id: 9n,
+        userId: 2n,
+        transactions: [],
+        alerts: [],
+      })
+
+      const { default: handler } = await import('~/server/api/diaries/[id].get')
+
+      await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
+        statusCode: 403,
+      })
+    })
+
+    it('should return 404 when diary is missing', async () => {
+      mockGetRouterParam.mockReturnValue('10')
+      mockDiaryFindFirst.mockResolvedValue(null)
+
+      const { default: handler } = await import('~/server/api/diaries/[id].get')
+
+      await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
+        statusCode: 404,
+      })
+    })
+
+    it('should return 500 when diaries query fails', async () => {
+      mockDiaryFindMany.mockRejectedValueOnce(new Error('DB down'))
+      mockDiaryCount.mockResolvedValueOnce(0)
+
+      const { default: handler } = await import('~/server/api/diaries.get')
+
+      await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
+        statusCode: 500,
+      })
     })
   })
 })

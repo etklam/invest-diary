@@ -35,8 +35,14 @@ const pagination = ref({
 const filters = ref({
   status: '',
   category: '',
-  search: ''
+  search: '',
+  author: '',
+  dateFrom: '',
+  dateTo: '',
+  sortBy: 'createdAt_desc'
 })
+const selectedPosts = ref(new Set<string>())
+const selectedCount = computed(() => selectedPosts.value.size)
 
 // Categories - using unified English keys
 const categories = computed(() => [
@@ -55,6 +61,16 @@ const statusOptions = computed(() => [
   { value: 'ARCHIVED', label: t('blog.postStatuses.archived') },
 ])
 
+const sortOptions = computed(() => [
+  { value: 'createdAt_desc', label: '建立時間（新到舊）' },
+  { value: 'createdAt_asc', label: '建立時間（舊到新）' },
+  { value: 'updatedAt_desc', label: '更新時間（新到舊）' },
+  { value: 'publishedAt_desc', label: '發布時間（新到舊）' },
+  { value: 'publishedAt_asc', label: '發布時間（舊到新）' },
+  { value: 'title_asc', label: '標題（A → Z）' },
+  { value: 'title_desc', label: '標題（Z → A）' }
+])
+
 // Fetch posts
 const fetchPosts = async (page = 1) => {
   try {
@@ -67,11 +83,16 @@ const fetchPosts = async (page = 1) => {
     if (filters.value.status) params.append('status', filters.value.status)
     if (filters.value.category) params.append('category', filters.value.category)
     if (filters.value.search) params.append('search', filters.value.search)
+    if (filters.value.author) params.append('author', filters.value.author)
+    if (filters.value.dateFrom) params.append('dateFrom', filters.value.dateFrom)
+    if (filters.value.dateTo) params.append('dateTo', filters.value.dateTo)
+    if (filters.value.sortBy) params.append('sortBy', filters.value.sortBy)
 
     const response = await $fetch(`/api/blog/admin?${params.toString()}`) as any
 
     posts.value = response.data
     pagination.value = response.pagination
+    selectedPosts.value = new Set()
   } catch (error: any) {
     console.error('Failed to fetch posts:', error)
     toast.error(error.data?.statusMessage || t('blog.loadFailed'))
@@ -139,7 +160,10 @@ const handleFilterChange = () => {
 }
 
 watch(() => [filters.value.status, filters.value.category], handleFilterChange)
-watch(() => filters.value.search, handleFilterChange)
+watch(
+  () => [filters.value.search, filters.value.author, filters.value.dateFrom, filters.value.dateTo, filters.value.sortBy],
+  handleFilterChange
+)
 
 // Load data on mount
 onMounted(() => {
@@ -168,6 +192,66 @@ const statusLabel = (status: string) => {
     default: return status
   }
 }
+
+const isSelected = (postId: string) => selectedPosts.value.has(postId)
+
+const toggleSelection = (postId: string) => {
+  const next = new Set(selectedPosts.value)
+  if (next.has(postId)) {
+    next.delete(postId)
+  } else {
+    next.add(postId)
+  }
+  selectedPosts.value = next
+}
+
+const isAllSelected = computed(() => {
+  if (posts.value.length === 0) return false
+  return posts.value.every((post) => selectedPosts.value.has(String(post.id)))
+})
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedPosts.value = new Set()
+    return
+  }
+  const next = new Set<string>()
+  posts.value.forEach((post) => next.add(String(post.id)))
+  selectedPosts.value = next
+}
+
+const bulkPublish = async () => {
+  const ids = Array.from(selectedPosts.value)
+  if (ids.length === 0) return
+  try {
+    await $fetch('/api/blog/admin/bulk-publish', {
+      method: 'POST',
+      body: { ids }
+    })
+    toast.success('已批量發布')
+    await fetchPosts(pagination.value.page)
+  } catch (error: any) {
+    console.error('Failed to bulk publish:', error)
+    toast.error(error.data?.statusMessage || '批量發布失敗')
+  }
+}
+
+const bulkDelete = async () => {
+  const ids = Array.from(selectedPosts.value)
+  if (ids.length === 0) return
+  if (!confirm(`確定刪除選取的 ${ids.length} 篇文章？`)) return
+  try {
+    await $fetch('/api/blog/admin/bulk-delete', {
+      method: 'POST',
+      body: { ids }
+    })
+    toast.success('已批量刪除')
+    await fetchPosts(pagination.value.page)
+  } catch (error: any) {
+    console.error('Failed to bulk delete:', error)
+    toast.error(error.data?.statusMessage || '批量刪除失敗')
+  }
+}
 </script>
 
 <template>
@@ -193,10 +277,10 @@ const statusLabel = (status: string) => {
       </div>
 
       <!-- Filters -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mb-6">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mb-6 space-y-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
           <!-- Search -->
-          <div class="sm:col-span-2">
+          <div class="md:col-span-2 xl:col-span-2">
             <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               搜尋標題
             </label>
@@ -212,6 +296,20 @@ const statusLabel = (status: string) => {
                 <i-heroicons-magnifying-glass class="h-5 w-5 text-gray-400" />
               </div>
             </div>
+          </div>
+
+          <!-- Author -->
+          <div class="md:col-span-1 xl:col-span-1">
+            <label for="author" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              作者
+            </label>
+            <input
+              id="author"
+              v-model="filters.author"
+              type="text"
+              placeholder="姓名或信箱"
+              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+            />
           </div>
 
           <!-- Status Filter -->
@@ -245,6 +343,66 @@ const statusLabel = (status: string) => {
               </option>
             </select>
           </div>
+
+          <!-- Date From -->
+          <div>
+            <label for="dateFrom" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              開始日期
+            </label>
+            <input
+              id="dateFrom"
+              v-model="filters.dateFrom"
+              type="date"
+              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+            />
+          </div>
+
+          <!-- Date To -->
+          <div>
+            <label for="dateTo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              結束日期
+            </label>
+            <input
+              id="dateTo"
+              v-model="filters.dateTo"
+              type="date"
+              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+            />
+          </div>
+
+          <!-- Sort -->
+          <div>
+            <label for="sortBy" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              排序
+            </label>
+            <select
+              id="sortBy"
+              v-model="filters.sortBy"
+              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+            >
+              <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div v-if="selectedCount > 0" class="flex flex-wrap items-center gap-3 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-900/30 dark:text-indigo-100">
+          <span>已選取 {{ selectedCount }} 筆</span>
+          <button
+            type="button"
+            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+            @click="bulkPublish"
+          >
+            批量發布
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+            @click="bulkDelete"
+          >
+            批量刪除
+          </button>
         </div>
       </div>
 
@@ -254,6 +412,14 @@ const statusLabel = (status: string) => {
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-gray-900">
               <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <input
+                    type="checkbox"
+                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                    :checked="isAllSelected"
+                    @change="toggleSelectAll"
+                  />
+                </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   標題
                 </th>
@@ -276,18 +442,26 @@ const statusLabel = (status: string) => {
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-if="loading">
-                <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                   <div class="flex justify-center">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
                   </div>
                 </td>
               </tr>
               <tr v-else-if="posts.length === 0">
-                <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                   沒有找到文章
                 </td>
               </tr>
               <tr v-else v-for="post in posts" :key="post.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4">
+                  <input
+                    type="checkbox"
+                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                    :checked="isSelected(String(post.id))"
+                    @change="toggleSelection(String(post.id))"
+                  />
+                </td>
                 <td class="px-6 py-4">
                   <div class="text-sm font-medium text-gray-900 dark:text-white">
                     {{ post.title }}

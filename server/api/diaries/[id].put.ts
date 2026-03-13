@@ -41,12 +41,15 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     const existingDiary = await prisma.diary.findFirst({
       where: {
         id: diaryId,
-        userId: userId
       }
     })
 
     if (!existingDiary) {
       throw Errors.diaryNotFound(id)
+    }
+
+    if (existingDiary.userId?.toString() !== userId.toString()) {
+      throw Errors.diaryAccessDenied()
     }
 
     // Update diary and handle transactions and alerts

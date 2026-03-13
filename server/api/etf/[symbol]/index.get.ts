@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
         ? await fetchQuote(etf.symbol).catch(() => null)
         : null
 
-      const prices = etf.prices.map(p => ({
+      const prices = etf.prices.map((p: any) => ({
         date: p.date,
         open: p.open,
         high: p.high,

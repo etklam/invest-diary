@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     orderBy: { sortOrder: 'asc' },
   })
 
-  return watchlist.map(item => ({
+  return watchlist.map((item: any) => ({
     id: item.id.toString(),
     symbol: item.etf.symbol,
     name: item.etf.name,

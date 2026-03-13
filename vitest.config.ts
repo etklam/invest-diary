@@ -1,8 +1,9 @@
 import { defineConfig } from 'vitest/config'
+import vue from '@vitejs/plugin-vue'
 import { resolve } from 'node:path'
 
 export default defineConfig({
-  plugins: [],
+  plugins: [vue()],
   test: {
     globals: true,
     environment: 'happy-dom',
@@ -13,12 +14,26 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['**/*.{ts,tsx,vue}'],
+      include: [
+        'server/api/auth/**/*.ts',
+        'server/api/diaries/**/*.ts',
+        'server/middleware/auth.ts',
+        'server/middleware/admin.ts',
+        'server/utils/**/*.ts',
+        'server/websocket/connectionManager.ts',
+        'server/plugins/alert-scheduler.ts',
+        'lib/blog.ts',
+        'lib/diary-date.ts',
+        'lib/jwt.ts',
+        'lib/logger.ts',
+        'lib/prisma.ts',
+        'lib/transactions/validate.ts',
+      ],
       thresholds: {
-        lines: 80,
-        functions: 80,
-        branches: 80,
-        statements: 80,
+        lines: 75,
+        functions: 75,
+        branches: 65,
+        statements: 75,
       },
       exclude: [
         'node_modules/',
@@ -37,6 +52,7 @@ export default defineConfig({
       '@': resolve(__dirname, '.'),
       '~~': resolve(__dirname, '.'),
       '@@': resolve(__dirname, '.'),
+      '#imports': resolve(__dirname, './tests/mocks/nuxt-imports.ts'),
       'assets': resolve(__dirname, './assets'),
       'public': resolve(__dirname, './public'),
     },

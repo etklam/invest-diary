@@ -49,6 +49,9 @@ global.createError = (params: { statusCode: number; statusMessage: string }) => 
 // Make useToast available as a global for auto-imported composables
 global.useToast = () => mockToast
 
+// Mock cachedEventHandler for Nuxt caching
+global.cachedEventHandler = (handler: Function) => handler
+
 // Mock event context
 global.event = {
   context: {

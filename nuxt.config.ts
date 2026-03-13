@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   nitro: {
     externals: {
-      external: ['@prisma/client']
+      external: ['@prisma/client', 'canvas']
     },
     nodeModulesDirs: [process.cwd() + '/node_modules'],
     // Allow all environment variables (not just NUXT_ prefixed)
@@ -12,7 +12,6 @@ export default defineNuxtConfig({
     // Ensure non-NUXT_ prefixed env vars are available at runtime
     envPrefix: '',
     routeRules: {
-      '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } },
       '/api/blog': {
         cors: true,
         headers: {
@@ -25,6 +24,7 @@ export default defineNuxtConfig({
           'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=900'
         }
       },
+      '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } },
       '/articles': {
         headers: {
           'Cache-Control': 'public, max-age=120',
@@ -41,7 +41,12 @@ export default defineNuxtConfig({
   },
   vite: {
     optimizeDeps: {
-      exclude: ['@prisma/client', '@prisma/client/runtime']
+      exclude: ['@prisma/client', '@prisma/client/runtime', 'canvas'],
+      include: [
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        'socket.io-client'
+      ]
     }
   },
   compatibilityDate: '2025-07-15',
@@ -57,6 +62,27 @@ export default defineNuxtConfig({
     '@vite-pwa/nuxt',
     '@nuxtjs/sitemap'
   ],
+
+  image: {
+    provider: 'ipx',
+    format: ['webp'],
+    screens: {
+      xs: 320,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280
+    },
+    presets: {
+      blogCover: {
+        modifiers: {
+          width: 800,
+          height: 450,
+          quality: 80
+        }
+      }
+    }
+  },
 
   icon: {
     provider: 'iconify',

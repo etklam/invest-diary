@@ -11,11 +11,15 @@ export function generateSlug(title: string): string {
     .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
 }
 
+const stripHtml = (input: string): string => {
+  return input.replace(/<[^>]*>/g, ' ')
+}
+
 /**
  * Generate excerpt from content (removes Markdown syntax)
  */
 export function generateExcerpt(content: string, maxLength = 150): string {
-  const plainText = content
+  const plainText = stripHtml(content)
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links, keep text
     .replace(/[#*`_\[\]]/g, '') // Remove other Markdown characters
     .replace(/\n/g, ' ') // Replace newlines with spaces
@@ -31,7 +35,7 @@ export function generateExcerpt(content: string, maxLength = 150): string {
  * Calculate reading time in minutes
  */
 export function calculateReadingTime(content: string): number {
-  const plain = content.trim()
+  const plain = stripHtml(content).trim()
   if (!plain) return 1
 
   const wordsPerMinute = 200

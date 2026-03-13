@@ -21,13 +21,25 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const page = Number(query.page) || 1
     const limit = Number(query.limit) || 20
     const skip = (page - 1) * limit
+    const quickOnly = String(query.quickOnly || '').toLowerCase() === 'true' || query.quickOnly === '1'
+    const days = Number(query.days)
+
+    const where: any = { userId }
+    if (quickOnly) {
+      where.title = 'Quick Diary'
+    }
+    if (Number.isFinite(days) && days > 0) {
+      const since = new Date()
+      since.setDate(since.getDate() - days)
+      where.createdAt = { gte: since }
+    }
 
     //效能優化：使用 select 只選擇必要欄位
     // - transactions 只選擇必要欄位（不需要 diaryId, createdAt）
     // - diary 不載入完整 content（列表頁不需要）
     const [diaries, total] = await Promise.all([
       prisma.diary.findMany({
-        where: { userId },
+        where,
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
@@ -59,7 +71,7 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
         skip,
         take: limit,
       }),
-      prisma.diary.count({ where: { userId } })
+      prisma.diary.count({ where })
     ])
 
     // 將 BigInt 轉為 string，避免本機 Nitro JSON 序列化 500 error

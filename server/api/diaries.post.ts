@@ -59,7 +59,8 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     }
 
     if (existingDiary) {
-      throw Errors.diaryAlreadyExists(date ?? diaryDate.toISOString()).toH3Error()
+      const errorDate = date ? (typeof date === 'string' ? date : date.toISOString()) : diaryDate.toISOString()
+      throw Errors.diaryAlreadyExists(errorDate)
     }
 
     const diary = await prisma.diary.create({
@@ -95,6 +96,9 @@ export default defineEventHandler(async (event): Promise<Diary> => {
   } catch (error) {
     if (error instanceof AppError) {
       throw error.toH3Error()
+    }
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error
     }
     console.error('Error creating diary:', error)
     throw Errors.internalError(error).toH3Error()

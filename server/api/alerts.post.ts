@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
     })
 
     // Use transaction for batch creation
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Create all alerts
       await tx.alert.createMany({
         data: alertsData,
@@ -87,7 +87,7 @@ export default defineEventHandler(async (event) => {
       const parentId = allAlerts[0]!.id
       await tx.alert.updateMany({
         where: {
-          id: { in: allAlerts.map(a => a.id) }
+          id: { in: allAlerts.map((a: any) => a.id) }
         },
         data: { parentId }
       })

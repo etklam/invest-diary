@@ -21,12 +21,15 @@ export default defineEventHandler(async (event) => {
     const diary = await prisma.diary.findFirst({
       where: {
         id: BigInt(id),
-        userId: userId
       }
     })
 
     if (!diary) {
       throw Errors.diaryNotFound(id)
+    }
+
+    if (diary.userId?.toString() !== userId.toString()) {
+      throw Errors.diaryAccessDenied()
     }
 
     await prisma.diary.delete({
