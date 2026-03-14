@@ -43,19 +43,17 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Fast reorder: single SQL update using CASE WHEN to avoid deadlocks
-    const ids = orders.map(o => BigInt(o.id))
-    const cases = orders
-      .map(o => `WHEN ${o.id} THEN ${o.order}`)
-      .join(' ')
-
-    await prisma.$executeRawUnsafe(`
-      UPDATE disciplines
-      SET display_order = CASE id
-        ${cases}
-      END
-      WHERE id IN (${ids.join(',')}) AND user_id = ${userId}
-    `)
+    await prisma.$transaction(
+      orders.map((item) => prisma.discipline.updateMany({
+        where: {
+          id: BigInt(item.id),
+          userId,
+        },
+        data: {
+          order: item.order,
+        },
+      }))
+    )
 
     console.log('[discipline.reorder] updated orders for user:', user.id)
 
