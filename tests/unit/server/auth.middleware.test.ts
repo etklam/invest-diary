@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mockGetCookie, mockSetCookie } from '../../vi-setup'
+import { createHash } from 'node:crypto'
 
 const mockVerifyToken = vi.fn()
 const mockSignAccessToken = vi.fn()
 const mockUserFindUnique = vi.fn()
 const mockRefreshTokenFindUnique = vi.fn()
+const mockRefreshTokenUpdate = vi.fn()
 
 vi.mock('~/lib/jwt', () => ({
   verifyToken: mockVerifyToken,
@@ -19,6 +21,7 @@ vi.mock('~/lib/prisma', () => ({
     },
     refreshToken: {
       findUnique: mockRefreshTokenFindUnique,
+      update: mockRefreshTokenUpdate,
     },
   },
 }))
@@ -31,6 +34,8 @@ describe('server/middleware/auth', () => {
   afterEach(() => {
     vi.clearAllMocks()
   })
+
+  const hashToken = (token: string) => createHash('sha256').update(token).digest('hex')
 
   it('should set user when token is valid and tokenVersion matches', async () => {
     mockGetCookie.mockReturnValueOnce('valid-access-token').mockReturnValueOnce(null)
@@ -99,7 +104,7 @@ describe('server/middleware/auth', () => {
       })
 
     mockRefreshTokenFindUnique.mockResolvedValue({
-      token: 'valid-refresh-token',
+      token: hashToken('valid-refresh-token'),
       expiresAt: new Date(Date.now() + 60 * 60 * 1000),
       user: {
         id: 1n,
@@ -166,5 +171,23 @@ describe('server/middleware/auth', () => {
 
     expect(event.context.user).toBeUndefined()
     expect(mockSetCookie).not.toHaveBeenCalled()
+  })
+
+  it('should reject user when database user is missing even if access token verifies', async () => {
+    mockGetCookie.mockReturnValueOnce('valid-access-token').mockReturnValueOnce(null)
+    mockVerifyToken.mockResolvedValue({
+      userId: '999',
+      email: 'ghost@example.com',
+      role: 'USER',
+      tokenVersion: 1,
+      type: 'access',
+    })
+    mockUserFindUnique.mockResolvedValue(null)
+
+    const { default: handler } = await import('~/server/middleware/auth')
+    const event = { context: {} } as any
+    await handler(event)
+
+    expect(event.context.user).toBeUndefined()
   })
 })

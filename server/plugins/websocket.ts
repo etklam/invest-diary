@@ -1,9 +1,9 @@
 import { Server } from 'socket.io'
 import type { NitroApp } from 'nitropack'
-import { verifyToken } from '../../lib/jwt'
 import { connectionManager } from '../websocket/connectionManager'
 import { setupAlertHandlers } from '../websocket/alertHandler'
 import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
+import { authenticateAccessToken } from '../utils/auth-session'
 
 function getCookieValue(cookieHeader: string | undefined, name: string): string | undefined {
   if (!cookieHeader) return undefined
@@ -81,20 +81,19 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       }
 
       try {
-        const payload = await verifyToken(token)
-
-        // 只接受 access token
-        if (payload.type !== 'access') {
-          return next(new Error('Invalid token type'))
+        const user = await authenticateAccessToken(token)
+        if (!user) {
+          console.warn(`[WS] Connection rejected: user not found or token revoked (socket: ${socket.id})`)
+          return next(new Error('Invalid token'))
         }
 
         // 將用戶資訊存入 socket.data
         socket.data = {
-          userId: payload.userId,
+          userId: user.id,
           connectedAt: new Date()
         }
 
-        console.log(`[WS] User ${payload.userId} authenticated (socket: ${socket.id})`)
+        console.log(`[WS] User ${user.id} authenticated (socket: ${socket.id})`)
         next()
       } catch (err: any) {
         console.warn(`[WS] Token verification failed: ${err.message} (socket: ${socket.id})`)
