@@ -1,6 +1,7 @@
 import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
 import { z } from 'zod'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 const updateRoleSchema = z.object({
   role: z.enum(['USER', 'ADMIN'])
@@ -10,19 +11,13 @@ export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
 
   try {
-    const userId = getRouterParam(event, 'id')
-    if (!userId) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'User ID is required'
-      })
-    }
+    const userId = parsePositiveBigIntParam(event, 'id')
 
     const body = await readBody(event)
     const validatedData = updateRoleSchema.parse(body)
 
     // Prevent self-modification
-    if (userId === event.context.user?.id) {
+    if (userId.toString() === event.context.user?.id) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Cannot modify your own role'
@@ -31,7 +26,7 @@ export default defineEventHandler(async (event) => {
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: BigInt(userId) }
+      where: { id: userId }
     })
 
     if (!existingUser) {
@@ -43,7 +38,7 @@ export default defineEventHandler(async (event) => {
 
     // Update user role
     const updatedUser = await prisma.user.update({
-      where: { id: BigInt(userId) },
+      where: { id: userId },
       data: { role: validatedData.role },
       select: {
         id: true,
@@ -55,7 +50,7 @@ export default defineEventHandler(async (event) => {
 
     console.log('[ADMIN] Update user role', {
       adminId: event.context.user?.id,
-      targetUserId: userId,
+      targetUserId: userId.toString(),
       newRole: validatedData.role
     })
 

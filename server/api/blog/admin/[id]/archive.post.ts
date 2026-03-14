@@ -1,22 +1,16 @@
 import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   // Check admin permission
   await adminMiddleware(event)
 
-  const id = getRouterParam(event, 'id')
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID is required',
-    })
-  }
+  const postId = parsePositiveBigIntParam(event, 'id')
 
   try {
     const post = await prisma.post.update({
-      where: { id: BigInt(id) },
+      where: { id: postId },
       data: {
         status: 'ARCHIVED',
         publishedAt: null,

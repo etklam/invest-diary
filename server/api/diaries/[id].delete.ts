@@ -1,6 +1,7 @@
 import prisma from '../../../lib/prisma'
 import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -10,22 +11,19 @@ export default defineEventHandler(async (event) => {
     throw Errors.unauthorized().toH3Error()
   }
 
-  const id = getRouterParam(event, 'id')
-
-  if (!id) {
-    throw Errors.validationError([{ field: 'id', message: 'ID is required' }]).toH3Error()
-  }
+  const diaryId = parsePositiveBigIntParam(event, 'id')
+  const diaryIdString = diaryId.toString()
 
   try {
     // First verify ownership
     const diary = await prisma.diary.findFirst({
       where: {
-        id: BigInt(id),
+        id: diaryId,
       }
     })
 
     if (!diary) {
-      throw Errors.diaryNotFound(id)
+      throw Errors.diaryNotFound(diaryIdString)
     }
 
     if (diary.userId?.toString() !== userId.toString()) {
@@ -34,11 +32,11 @@ export default defineEventHandler(async (event) => {
 
     await prisma.diary.delete({
       where: {
-        id: BigInt(id),
+        id: diaryId,
       },
     })
 
-    log.info('Diary deleted', { diaryId: id, userId })
+    log.info('Diary deleted', { diaryId: diaryIdString, userId })
     return { success: true }
   } catch (error) {
     if (error instanceof AppError) {

@@ -1,21 +1,13 @@
-import { defineEventHandler, getRouterParam, createError } from 'h3'
+import { defineEventHandler, createError } from 'h3'
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   try {
     const user = await requireUser(event)
 
-    // Defensive ID parsing
-    const rawId = getRouterParam(event, 'id')
-    if (!rawId) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'ID is required'
-      })
-    }
-
-    const id = BigInt(rawId)
+    const id = parsePositiveBigIntParam(event, 'id')
 
     // Verify ownership before deletion
     const discipline = await prisma.discipline.findFirst({

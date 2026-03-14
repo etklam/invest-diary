@@ -4,6 +4,7 @@ import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
 import { toUtcNoonDate } from '~/lib/diary-date'
 import { validateTransactions } from '~/lib/transactions/validate'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event): Promise<Diary> => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -13,17 +14,9 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     throw Errors.unauthorized().toH3Error()
   }
 
-  const id = getRouterParam(event, 'id')
+  const diaryId = parsePositiveBigIntParam(event, 'id')
+  const diaryIdString = diaryId.toString()
   const body = await readBody<DiaryInput>(event)
-
-  if (!id) {
-    throw Errors.validationError([{ field: 'id', message: 'ID is required' }]).toH3Error()
-  }
-
-  const idNum = Number(id)
-  if (!Number.isInteger(idNum) || idNum <= 0) {
-    throw Errors.validationError([{ field: 'id', message: 'Invalid ID format' }]).toH3Error()
-  }
 
   if (!body.title) {
     throw Errors.validationError([{ field: 'title', message: 'Title is required' }]).toH3Error()
@@ -36,7 +29,6 @@ export default defineEventHandler(async (event): Promise<Diary> => {
   }
 
   try {
-    const diaryId = BigInt(idNum)
     // First verify ownership
     const existingDiary = await prisma.diary.findFirst({
       where: {
@@ -45,7 +37,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     })
 
     if (!existingDiary) {
-      throw Errors.diaryNotFound(id)
+      throw Errors.diaryNotFound(diaryIdString)
     }
 
     if (existingDiary.userId?.toString() !== userId.toString()) {

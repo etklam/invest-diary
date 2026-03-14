@@ -1,26 +1,21 @@
 import prisma from '~/lib/prisma'
-import { generateSlug, generateExcerpt } from '~/lib/blog'
+import { generateSlug } from '~/lib/blog'
+import { ZodError } from 'zod'
 import adminMiddleware from '~/server/middleware/admin'
+import { AppError, Errors } from '~/lib/errors/factory'
+import { blogPostInputSchema, resolveExcerpt } from '~/server/utils/blog-schemas'
 
 export default defineEventHandler(async (event) => {
-  // Check admin permission
   await adminMiddleware(event)
 
   const userId = BigInt(event.context.user!.id)
-  const body = await readBody(event)
-
-  if (!body.title || !body.content || !body.category) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Title, content, and category are required',
-    })
-  }
-
-  const { title, content, excerpt, coverImage, category, tags, status } = body
 
   try {
+    const body = await readBody(event)
+    const input = blogPostInputSchema.parse(body)
+
     // Generate slug from title
-    let slug = generateSlug(title)
+    let slug = generateSlug(input.title)
 
     // Check if slug already exists, add suffix if needed
     const existingPost = await prisma.post.findUnique({
@@ -32,21 +27,20 @@ export default defineEventHandler(async (event) => {
       slug = `${slug}-${Date.now()}`
     }
 
-    // Generate excerpt if not provided
-    const finalExcerpt = excerpt || generateExcerpt(content)
+    const finalExcerpt = resolveExcerpt(input)
 
     const post = await prisma.post.create({
       data: {
         authorId: userId,
-        title,
+        title: input.title,
         slug,
-        content,
+        content: input.content,
         excerpt: finalExcerpt,
-        coverImage: coverImage || null,
-        category,
-        tags: tags || null,
-        status: status || 'DRAFT',
-        publishedAt: status === 'PUBLISHED' ? new Date() : null,
+        coverImage: input.coverImage || null,
+        category: input.category,
+        tags: input.tags || null,
+        status: input.status,
+        publishedAt: input.status === 'PUBLISHED' ? new Date() : null,
       },
       include: {
         author: {
@@ -62,10 +56,18 @@ export default defineEventHandler(async (event) => {
     console.log('[Blog] Post created:', post.id, 'by user:', userId)
     return post
   } catch (error) {
+    if (error instanceof AppError) {
+      throw error.toH3Error()
+    }
+    if (error instanceof ZodError) {
+      throw Errors.validationError(
+        error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }))
+      ).toH3Error()
+    }
     console.error('[Blog] Error creating post:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to create post',
-    })
+    throw Errors.internalError(error).toH3Error()
   }
 })

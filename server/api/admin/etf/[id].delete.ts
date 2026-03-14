@@ -6,25 +6,13 @@
 import { requireUser } from '~/server/utils/auth'
 import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   requireUser(event)
   await adminMiddleware(event)
 
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing ETF ID',
-    })
-  }
-  if (!/^\d+$/.test(id)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid ETF ID',
-    })
-  }
-  const etfId = BigInt(id)
+  const etfId = parsePositiveBigIntParam(event, 'id')
 
   // Check if ETF exists
   const etf = await prisma.etf.findUnique({

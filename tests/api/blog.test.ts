@@ -27,6 +27,10 @@ vi.mock('~/lib/prisma', () => ({
   },
 }))
 
+vi.mock('#imports', () => ({
+  cachedEventHandler: (handler: Function) => handler,
+}))
+
 vi.mock('h3', () => ({
   createError: (params: { statusCode: number; statusMessage: string }) => {
     const error = new Error(params.statusMessage)
@@ -35,6 +39,7 @@ vi.mock('h3', () => ({
     return error
   },
   defineEventHandler: (handler: Function) => handler,
+  cachedEventHandler: (handler: Function) => handler,
   getHeader: vi.fn(),
   sendRedirect: vi.fn(),
 }))
@@ -161,9 +166,8 @@ describe('Blog API', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             OR: [
-              { title: { contains: 'test keyword' } },
-              { excerpt: { contains: 'test keyword' } },
-              { content: { contains: 'test keyword' } },
+              { title: { search: 'test keyword' } },
+              { excerpt: { search: 'test keyword' } },
             ],
           }),
         })

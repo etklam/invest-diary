@@ -4,24 +4,12 @@
 
 import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const user = requireUser(event)
 
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing alert ID',
-    })
-  }
-  if (!/^\d+$/.test(id)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid alert ID',
-    })
-  }
-  const alertId = BigInt(id)
+  const alertId = parsePositiveBigIntParam(event, 'id')
 
   // Check if alert exists and belongs to user
   const alert = await prisma.etfAlert.findUnique({

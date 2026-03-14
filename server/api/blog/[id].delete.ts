@@ -1,25 +1,19 @@
 import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   // Check admin permission
   await adminMiddleware(event)
 
-  const id = getRouterParam(event, 'id')
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID is required',
-    })
-  }
+  const postId = parsePositiveBigIntParam(event, 'id')
 
   try {
     await prisma.post.delete({
-      where: { id: BigInt(id) }
+      where: { id: postId }
     })
 
-    console.log('[Blog] Post deleted:', id)
+    console.log('[Blog] Post deleted:', postId.toString())
     return { success: true, message: 'Post deleted successfully' }
   } catch (error) {
     console.error('[Blog] Error deleting post:', error)

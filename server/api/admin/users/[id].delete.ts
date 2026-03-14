@@ -1,20 +1,15 @@
 import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
 
   try {
-    const userId = getRouterParam(event, 'id')
-    if (!userId) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'User ID is required'
-      })
-    }
+    const userId = parsePositiveBigIntParam(event, 'id')
 
     // Prevent self-deletion
-    if (userId === event.context.user?.id) {
+    if (userId.toString() === event.context.user?.id) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Cannot delete your own account'
@@ -23,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: BigInt(userId) }
+      where: { id: userId }
     })
 
     if (!existingUser) {
@@ -35,12 +30,12 @@ export default defineEventHandler(async (event) => {
 
     // Delete user (cascade deletes will handle diaries, alerts, transactions)
     await prisma.user.delete({
-      where: { id: BigInt(userId) }
+      where: { id: userId }
     })
 
     console.log('[ADMIN] Delete user', {
       adminId: event.context.user?.id,
-      deletedUserId: userId,
+      deletedUserId: userId.toString(),
       deletedUserEmail: existingUser.email
     })
 

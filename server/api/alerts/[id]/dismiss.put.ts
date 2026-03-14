@@ -1,4 +1,5 @@
 import prisma from '../../../../lib/prisma'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const userId = event.context.user?.id
@@ -10,20 +11,13 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const id = getRouterParam(event, 'id')
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID is required',
-    })
-  }
+  const alertId = parsePositiveBigIntParam(event, 'id')
 
   try {
     // Verify ownership via diary relation
     const alert = await prisma.alert.findFirst({
       where: {
-        id: BigInt(id),
+        id: alertId,
         diary: {
           userId: userId
         }
@@ -39,14 +33,14 @@ export default defineEventHandler(async (event) => {
 
     const updatedAlert = await prisma.alert.update({
       where: {
-        id: BigInt(id),
+        id: alertId,
       },
       data: {
         isDismissed: true,
       },
     })
 
-    console.log('[API] Alert dismissed:', id, 'for user:', userId)
+    console.log('[API] Alert dismissed:', alertId.toString(), 'for user:', userId)
     return updatedAlert
   } catch (error) {
     if (error && typeof error === 'object' && 'statusCode' in error) {

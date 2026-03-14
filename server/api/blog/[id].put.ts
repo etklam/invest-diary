@@ -1,53 +1,39 @@
+import { ZodError } from 'zod'
 import prisma from '~/lib/prisma'
-import { generateSlug, generateExcerpt } from '~/lib/blog'
+import { generateSlug } from '~/lib/blog'
 import adminMiddleware from '~/server/middleware/admin'
+import { AppError, Errors } from '~/lib/errors/factory'
+import { blogPostInputSchema, resolveExcerpt } from '~/server/utils/blog-schemas'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  // Check admin permission
   await adminMiddleware(event)
 
-  const id = getRouterParam(event, 'id')
-  const body = await readBody(event)
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID is required',
-    })
-  }
-
-  if (!body.title || !body.content || !body.category) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Title, content, and category are required',
-    })
-  }
-
-  const { title, content, excerpt, coverImage, category, tags, status } = body
+  const postId = parsePositiveBigIntParam(event, 'id')
 
   try {
+    const body = await readBody(event)
+    const input = blogPostInputSchema.parse(body)
+
     // Check if post exists
     const existingPost = await prisma.post.findUnique({
-      where: { id: BigInt(id) }
+      where: { id: postId }
     })
 
     if (!existingPost) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Post not found',
-      })
+      throw Errors.blogNotFound(postId.toString())
     }
 
     // Update slug only if title changed
     let slug = existingPost.slug
-    if (title !== existingPost.title) {
-      slug = generateSlug(title)
+    if (input.title !== existingPost.title) {
+      slug = generateSlug(input.title)
 
       // Check if new slug already exists (and it's not this post)
       const slugExists = await prisma.post.findFirst({
         where: {
           slug,
-          NOT: { id: BigInt(id) }
+          NOT: { id: postId }
         }
       })
 
@@ -56,28 +42,27 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Generate excerpt if not provided
-    const finalExcerpt = excerpt || generateExcerpt(content)
+    const finalExcerpt = resolveExcerpt(input)
 
     // If status is being changed to PUBLISHED and it wasn't before, set publishedAt
     let publishedAt = existingPost.publishedAt
-    if (status === 'PUBLISHED' && existingPost.status !== 'PUBLISHED') {
+    if (input.status === 'PUBLISHED' && existingPost.status !== 'PUBLISHED') {
       publishedAt = new Date()
-    } else if (status !== 'PUBLISHED') {
+    } else if (input.status !== 'PUBLISHED') {
       publishedAt = null
     }
 
     const post = await prisma.post.update({
-      where: { id: BigInt(id) },
+      where: { id: postId },
       data: {
-        title,
+        title: input.title,
         slug,
-        content,
+        content: input.content,
         excerpt: finalExcerpt,
-        coverImage: coverImage || null,
-        category,
-        tags: tags || null,
-        status,
+        coverImage: input.coverImage || null,
+        category: input.category,
+        tags: input.tags || null,
+        status: input.status,
         publishedAt,
       },
       include: {
@@ -94,13 +79,18 @@ export default defineEventHandler(async (event) => {
     console.log('[Blog] Post updated:', post.id)
     return post
   } catch (error) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
+    if (error instanceof AppError) {
+      throw error.toH3Error()
+    }
+    if (error instanceof ZodError) {
+      throw Errors.validationError(
+        error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }))
+      ).toH3Error()
     }
     console.error('[Blog] Error updating post:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to update post',
-    })
+    throw Errors.internalError(error).toH3Error()
   }
 })

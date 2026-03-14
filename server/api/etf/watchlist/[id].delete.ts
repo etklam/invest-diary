@@ -4,24 +4,12 @@
 
 import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const user = requireUser(event)
 
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing watchlist item ID',
-    })
-  }
-  if (!/^\d+$/.test(id)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid watchlist item ID',
-    })
-  }
-  const watchlistId = BigInt(id)
+  const watchlistId = parsePositiveBigIntParam(event, 'id')
 
   // Check if item exists and belongs to user
   const item = await prisma.etfWatchlist.findUnique({

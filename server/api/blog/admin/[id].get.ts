@@ -1,21 +1,15 @@
 import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
 
-  const id = getRouterParam(event, 'id')
-
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'ID is required',
-    })
-  }
+  const postId = parsePositiveBigIntParam(event, 'id')
 
   try {
     const post = await prisma.post.findUnique({
-      where: { id: BigInt(id) },
+      where: { id: postId },
       include: {
         author: {
           select: {
