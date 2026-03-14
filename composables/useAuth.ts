@@ -1,145 +1,156 @@
+interface AuthUser {
+  id: string
+  email: string
+  role: string
+  name?: string | null
+  expectedMonthlyTrades?: number
+  expectedProfit?: number
+  expectedAvgHolding?: number
+  timezone?: string
+}
+
+interface AuthApiResponse<T> {
+  ok?: boolean
+  success?: boolean
+  data?: T
+  settings?: Partial<AuthUser>
+}
+
+interface AuthErrorShape {
+  statusCode?: number
+  response?: {
+    status?: number
+  }
+  data?: {
+    statusMessage?: string
+  }
+}
+
+interface RegisterPayload {
+  email: string
+  password: string
+  name?: string
+}
+
+interface UserSettingsPayload {
+  name?: string
+  expectedMonthlyTrades?: number
+  expectedProfit?: number
+  expectedAvgHolding?: number
+  timezone?: string
+}
+
+let refreshPipeline: Promise<boolean> | null = null
+
+function isAuthError(error: AuthErrorShape): boolean {
+  return error.statusCode === 401 || error.response?.status === 401
+}
+
+async function runRefreshPipeline(): Promise<boolean> {
+  try {
+    const response = await $fetch<AuthApiResponse<never>>('/api/auth/refresh', {
+      method: 'POST',
+    })
+
+    return response.ok === true
+  } catch {
+    return false
+  } finally {
+    refreshPipeline = null
+  }
+}
+
 export const useAuth = () => {
-  const user = useState<any>('auth:user', () => null)
+  const user = useState<AuthUser | null>('auth:user', () => null)
   const isAuthenticated = computed(() => Boolean(user.value))
   const isAdmin = computed(() => user.value?.role === 'ADMIN')
   const isLoading = useState<boolean>('auth:loading', () => false)
   const isInitialized = useState<boolean>('auth:initialized', () => false)
   const toast = useToast()
 
-  // Track if a refresh is in progress to prevent multiple simultaneous refresh attempts
-  const isRefreshing = ref(false)
-  // Queue of pending refresh waiters; boolean indicates refresh success
-  const refreshQueue: Array<(ok: boolean) => void> = []
-  const isAuthError = (error: any) => error?.statusCode === 401 || error?.response?.status === 401
-
-  /**
-   * Refresh access token using refresh token cookie
-   */
-  const refreshAccessToken = async (): Promise<boolean> => {
-    // Prevent multiple simultaneous refresh attempts
-    if (isRefreshing.value) {
-      // If already refreshing, wait for it to complete
-      return new Promise((resolve) => {
-        refreshQueue.push(resolve)
-      })
-    }
-
-    isRefreshing.value = true
-
-    try {
-      const response = await $fetch('/api/auth/refresh', {
-        method: 'POST'
-      }) as any
-
-      if (response.ok) {
-        // Refresh successful - resolve queued requests
-        isRefreshing.value = false
-        refreshQueue.forEach(fn => fn(true))
-        refreshQueue.length = 0
-        return true
-      }
-
-      // Refresh endpoint responded but not OK
-      isRefreshing.value = false
-      refreshQueue.forEach(fn => fn(false))
-      refreshQueue.length = 0
-      return false
-    } catch (error) {
-      // Refresh failed - user needs to re-login
-      isRefreshing.value = false
-      refreshQueue.forEach(fn => fn(false))
-      refreshQueue.length = 0
-      return false
+  const syncTimezone = (timezone?: string) => {
+    if (timezone && process.client) {
+      localStorage.setItem('user_timezone', timezone)
     }
   }
 
-  /**
-   * Login with email and password
-   * Server sets httpOnly cookie, client only syncs user state
-   */
+  const refreshAccessToken = async (): Promise<boolean> => {
+    if (!refreshPipeline) {
+      refreshPipeline = runRefreshPipeline()
+    }
+
+    return refreshPipeline
+  }
+
   const login = async (email: string, password: string) => {
     isLoading.value = true
     try {
-      const response = await $fetch('/api/auth/login', {
+      const response = await $fetch<AuthApiResponse<AuthUser>>('/api/auth/login', {
         method: 'POST',
-        body: { email, password }
-      }) as any
+        body: { email, password },
+      })
 
-      if (response.ok) {
+      if (response.ok && response.data) {
         user.value = response.data
-        // Sync timezone to localStorage
-        if (response.data.timezone && process.client) {
-          localStorage.setItem('user_timezone', response.data.timezone)
-        }
+        syncTimezone(response.data.timezone)
         toast.success('登入成功')
         await navigateTo('/')
       }
-    } catch (error: any) {
-      toast.error(error.data?.statusMessage || '登入失敗')
+    } catch (error) {
+      const authError = error as AuthErrorShape
+      toast.error(authError.data?.statusMessage || '登入失敗')
       throw error
     } finally {
       isLoading.value = false
     }
   }
 
-  /**
-   * Register a new user
-   */
-  const register = async (data: { email: string; password: string; name?: string }) => {
+  const register = async (data: RegisterPayload) => {
     try {
       isLoading.value = true
-      const response = await $fetch('/api/auth/register', {
+      const response = await $fetch<AuthApiResponse<never>>('/api/auth/register', {
         method: 'POST',
-        body: data
-      }) as any
+        body: data,
+      })
 
       if (response.success) {
         toast.success('註冊成功，請登入')
         await navigateTo('/auth/login')
       }
-    } catch (error: any) {
-      const errorMessage = error.data?.statusMessage || '註冊失敗'
-      toast.error(errorMessage)
+    } catch (error) {
+      const authError = error as AuthErrorShape
+      toast.error(authError.data?.statusMessage || '註冊失敗')
       throw error
     } finally {
       isLoading.value = false
     }
   }
 
-  /**
-   * Logout current user
-   */
   const logout = async () => {
-    await $fetch('/api/auth/logout', { method: 'POST' })
+    await $fetch<AuthApiResponse<never>>('/api/auth/logout', { method: 'POST' })
     user.value = null
     await navigateTo('/auth/login')
   }
 
-  /**
-   * Fetch current user info
-   */
   const fetchMe = async () => {
     try {
       isLoading.value = true
-      const response = await $fetch('/api/auth/me') as any
-      if (response.ok) {
+      const response = await $fetch<AuthApiResponse<AuthUser>>('/api/auth/me')
+      if (response.ok && response.data) {
         user.value = response.data
-        // Sync timezone to localStorage
-        if (response.data.timezone && process.client) {
-          localStorage.setItem('user_timezone', response.data.timezone)
-        }
+        syncTimezone(response.data.timezone)
       }
-    } catch (error: any) {
-      if (isAuthError(error)) {
+    } catch (error) {
+      const authError = error as AuthErrorShape
+
+      if (isAuthError(authError)) {
         const refreshed = await refreshAccessToken()
         if (refreshed) {
           try {
-            const retryResponse = await $fetch('/api/auth/me') as any
-            if (retryResponse.ok) {
+            const retryResponse = await $fetch<AuthApiResponse<AuthUser>>('/api/auth/me')
+            if (retryResponse.ok && retryResponse.data) {
               user.value = retryResponse.data
-              if (retryResponse.data.timezone && process.client) {
-                localStorage.setItem('user_timezone', retryResponse.data.timezone)
-              }
+              syncTimezone(retryResponse.data.timezone)
               return
             }
           } catch {
@@ -155,73 +166,52 @@ export const useAuth = () => {
     }
   }
 
-  /**
-   * Update user settings
-   */
-  const updateSettings = async (settings: {
-    name?: string
-    expectedMonthlyTrades?: number
-    expectedProfit?: number
-    expectedAvgHolding?: number
-    timezone?: string
-  }) => {
+  const updateSettings = async (settings: UserSettingsPayload) => {
     try {
       isLoading.value = true
-      const response = await $fetch('/api/user/settings', {
+      const response = await $fetch<AuthApiResponse<never>>('/api/user/settings', {
         method: 'PUT',
-        body: settings
-      }) as any
+        body: settings,
+      })
 
       if (response.success) {
-        // Update local user state
         user.value = {
           ...user.value,
-          ...response.settings
-        }
-        // Sync timezone to localStorage
-        if (settings.timezone && process.client) {
-          localStorage.setItem('user_timezone', settings.timezone)
-        }
+          ...response.settings,
+        } as AuthUser
+        syncTimezone(settings.timezone)
         toast.success('設定已更新')
         return true
       }
-    } catch (error: any) {
-      const errorMessage = error.data?.statusMessage || '更新設定失敗'
-      toast.error(errorMessage)
+    } catch (error) {
+      const authError = error as AuthErrorShape
+      toast.error(authError.data?.statusMessage || '更新設定失敗')
       throw error
     } finally {
       isLoading.value = false
     }
   }
 
-  /**
-   * Change password
-   */
   const changePassword = async (currentPassword: string, newPassword: string) => {
     try {
       isLoading.value = true
-      const response = await $fetch('/api/user/password', {
+      const response = await $fetch<AuthApiResponse<never>>('/api/user/password', {
         method: 'PUT',
-        body: { currentPassword, newPassword }
-      }) as any
+        body: { currentPassword, newPassword },
+      })
 
       if (response.success) {
         toast.success('密碼已更改')
         return true
       }
-    } catch (error: any) {
-      const errorMessage = error.data?.statusMessage || '更改密碼失敗'
-      toast.error(errorMessage)
+    } catch (error) {
+      const authError = error as AuthErrorShape
+      toast.error(authError.data?.statusMessage || '更改密碼失敗')
       throw error
     } finally {
       isLoading.value = false
     }
   }
-
-  /**
-   * Fetch with authentication and 401 error handling
-   */
-  // ❌ 移除 fetchWithAuth：401 UX 由 global error handler 處理
 
   return {
     user,
@@ -235,6 +225,6 @@ export const useAuth = () => {
     fetchMe,
     updateSettings,
     changePassword,
-    refreshAccessToken
+    refreshAccessToken,
   }
 }

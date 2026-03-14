@@ -74,6 +74,28 @@ describe('useAuth composable', () => {
     await expect(auth.refreshAccessToken()).resolves.toBe(true)
   })
 
+  it('shares one refresh pipeline across composable instances', async () => {
+    const { useAuth } = await import('~/composables/useAuth')
+    const authA = useAuth()
+    const authB = useAuth()
+
+    const mockFetch = globalThis.$fetch as ReturnType<typeof vi.fn>
+    let resolveRefresh: ((value: { ok: true }) => void) | undefined
+    mockFetch.mockImplementationOnce(() => new Promise((resolve) => {
+      resolveRefresh = resolve
+    }))
+
+    const refreshA = authA.refreshAccessToken()
+    const refreshB = authB.refreshAccessToken()
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    resolveRefresh?.({ ok: true })
+
+    await expect(refreshA).resolves.toBe(true)
+    await expect(refreshB).resolves.toBe(true)
+  })
+
   it('logs out and clears user state', async () => {
     const { useAuth } = await import('~/composables/useAuth')
     const auth = useAuth()
