@@ -1,5 +1,5 @@
 import { clearAuthCookies } from '~/server/utils/auth'
-import prisma from '~/lib/prisma'
+import { deleteStoredRefreshToken } from '~/server/utils/auth-session'
 
 export default defineEventHandler(async (event) => {
   // Get the refresh token from cookie
@@ -8,13 +8,7 @@ export default defineEventHandler(async (event) => {
   // Delete refresh token from database if it exists
   if (refreshToken && event.context.user) {
     try {
-      // @ts-ignore Prisma model access
-      await prisma.refreshToken.deleteMany({
-        where: {
-          token: refreshToken,
-          userId: BigInt(event.context.user.id)
-        }
-      })
+      await deleteStoredRefreshToken(refreshToken, BigInt(event.context.user.id))
     } catch (error) {
       // Log but don't throw - logout should succeed even if db cleanup fails
       console.error('Error deleting refresh token:', error)

@@ -1,11 +1,10 @@
 import {
-  verifyToken,
   signAccessToken
 } from '~/lib/jwt'
-import prisma from '~/lib/prisma'
 import { setAccessTokenCookie } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
+import { authenticateRefreshToken, deleteStoredRefreshToken } from '~/server/utils/auth-session'
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
@@ -16,54 +15,25 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Verify the refresh token
-    const payload = await verifyToken(refreshToken)
-
-    // Make sure it's actually a refresh token
-    if (payload.type !== 'refresh') {
-      throw Errors.tokenInvalid().toH3Error()
-    }
-
-    // Check if refresh token exists in database and is not expired
-    // @ts-ignore Prisma model access
-    const storedToken = await prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
-      include: { user: true }
-    })
-
-    if (!storedToken) {
+    const refreshSession = await authenticateRefreshToken(refreshToken)
+    if (!refreshSession) {
       throw Errors.tokenNotFound().toH3Error()
     }
 
-    // Check if token is expired
+    const storedToken = refreshSession.storedToken
     if (storedToken.expiresAt < new Date()) {
-      // Delete expired token
-      // @ts-ignore Prisma model access
-      await prisma.refreshToken.delete({
-        where: { token: refreshToken }
-      })
-
+      await deleteStoredRefreshToken(refreshToken)
       throw Errors.tokenExpired().toH3Error()
     }
 
-    // Check if user's token version has changed (logout/password change)
     const user = storedToken.user
-    if ((user.tokenVersion || 0) !== payload.tokenVersion) {
-      // Delete the token
-      // @ts-ignore Prisma model access
-      await prisma.refreshToken.delete({
-        where: { token: refreshToken }
-      })
-
-      throw Errors.tokenRevoked().toH3Error()
-    }
 
     // Generate new access token
     const newAccessToken = await signAccessToken(
       user.id.toString(),
       user.email,
-      (user as any).role,
-      user.tokenVersion || 0
+      user.role,
+      user.tokenVersion
     )
 
     // Set new access token cookie only.

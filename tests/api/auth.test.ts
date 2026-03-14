@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mockReadBody, mockGetCookie, mockSetCookie, mockDeleteCookie } from '../vi-setup'
+import { createHash } from 'node:crypto'
 
 // Create mock functions
 const mockUserFindUnique = vi.fn()
@@ -11,6 +12,7 @@ const mockRefreshTokenCreate = vi.fn()
 const mockRefreshTokenDeleteMany = vi.fn()
 const mockRefreshTokenFindUnique = vi.fn()
 const mockRefreshTokenDelete = vi.fn()
+const mockRefreshTokenUpdate = vi.fn()
 
 // Mock modules
 vi.mock('~/lib/prisma', () => ({
@@ -27,6 +29,7 @@ vi.mock('~/lib/prisma', () => ({
       deleteMany: mockRefreshTokenDeleteMany,
       findUnique: mockRefreshTokenFindUnique,
       delete: mockRefreshTokenDelete,
+      update: mockRefreshTokenUpdate,
     },
     $connect: vi.fn(),
     $disconnect: vi.fn(),
@@ -76,6 +79,7 @@ describe('Auth API', () => {
     mockRefreshTokenCreate.mockResolvedValue({ id: 1n })
     mockRefreshTokenFindUnique.mockResolvedValue(null)
     mockRefreshTokenDelete.mockResolvedValue({ id: 1n })
+    mockRefreshTokenUpdate.mockResolvedValue({ id: 1n })
   })
 
   afterEach(() => {
@@ -121,6 +125,11 @@ describe('Auth API', () => {
         },
       })
       expect(mockSetCookie).toHaveBeenCalledTimes(2)
+      expect(mockRefreshTokenCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          token: createHash('sha256').update('mock-refresh-token').digest('hex'),
+        }),
+      })
     })
 
     it('should reject invalid email format', async () => {
@@ -371,7 +380,7 @@ describe('Auth API', () => {
         type: 'refresh',
       })
       mockRefreshTokenFindUnique.mockResolvedValue({
-        token: 'valid-refresh-token',
+        token: createHash('sha256').update('valid-refresh-token').digest('hex'),
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
         user: {
           id: 1n,

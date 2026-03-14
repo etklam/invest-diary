@@ -5,6 +5,7 @@ import prisma from '~/lib/prisma'
 import { setAuthCookies } from '~/server/utils/auth'
 import { Errors, AppError } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
+import { hashToken } from '~/server/utils/auth-session'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -18,7 +19,6 @@ export default defineEventHandler(async (event) => {
     const validatedData = loginSchema.parse(body)
 
     // Find user
-    // @ts-ignore Prisma model access
     const user = await prisma.user.findUnique({ where: { email: validatedData.email } })
 
     if (!user) {
@@ -32,16 +32,15 @@ export default defineEventHandler(async (event) => {
       throw Errors.invalidCredentials()
     }
 
-    const role = (user as any).role
-    const tokenVersion = (user as any).tokenVersion || 0
+    const role = user.role
+    const tokenVersion = user.tokenVersion || 0
 
     const accessToken = await signAccessToken(user.id.toString(), user.email, role, tokenVersion)
     const refreshToken = await signRefreshToken(user.id.toString(), user.email, role, tokenVersion)
 
-    // @ts-ignore Prisma model access
     await prisma.refreshToken.create({
       data: {
-        token: refreshToken,
+        token: hashToken(refreshToken),
         userId: user.id,
         expiresAt: new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_SECONDS * 1000)
       }
@@ -57,11 +56,11 @@ export default defineEventHandler(async (event) => {
         id: user.id.toString(),
         email: user.email,
         name: user.name,
-        role: (user as any).role,
+        role: user.role,
         expectedMonthlyTrades: user.expectedMonthlyTrades,
         expectedProfit: user.expectedProfit,
         expectedAvgHolding: user.expectedAvgHolding,
-        timezone: (user as any).timezone
+        timezone: user.timezone
       }
     }
   } catch (error) {

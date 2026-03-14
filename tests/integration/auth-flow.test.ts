@@ -5,6 +5,7 @@ import {
   mockSetCookie,
   mockDeleteCookie,
 } from '../vi-setup'
+import { createHash } from 'node:crypto'
 
 /**
  * Integration Tests for Authentication Flow
@@ -18,6 +19,8 @@ const mockUserFindUnique = vi.fn()
 const mockUserCreate = vi.fn()
 const mockRefreshTokenCreate = vi.fn()
 const mockRefreshTokenDeleteMany = vi.fn()
+const mockRefreshTokenFindUnique = vi.fn()
+const mockRefreshTokenUpdate = vi.fn()
 
 vi.mock('~/lib/prisma', () => ({
   default: {
@@ -28,6 +31,8 @@ vi.mock('~/lib/prisma', () => ({
     refreshToken: {
       create: mockRefreshTokenCreate,
       deleteMany: mockRefreshTokenDeleteMany,
+      findUnique: mockRefreshTokenFindUnique,
+      update: mockRefreshTokenUpdate,
     },
     $connect: vi.fn(),
     $disconnect: vi.fn(),
@@ -66,6 +71,8 @@ describe('Authentication Flow Integration', () => {
     mockBcryptHash.mockResolvedValue('hashed-password')
     mockRefreshTokenCreate.mockResolvedValue({ id: 1n })
     mockRefreshTokenDeleteMany.mockResolvedValue({ count: 1 })
+    mockRefreshTokenFindUnique.mockResolvedValue(null)
+    mockRefreshTokenUpdate.mockResolvedValue({ id: 1n })
   })
 
   afterEach(() => {
@@ -151,6 +158,11 @@ describe('Authentication Flow Integration', () => {
       expect(mockSignAccessToken).toHaveBeenCalled()
       expect(mockSignRefreshToken).toHaveBeenCalled()
       expect(mockRefreshTokenCreate).toHaveBeenCalled()
+      expect(mockRefreshTokenCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          token: createHash('sha256').update('mock-refresh-token').digest('hex'),
+        }),
+      })
       expect(mockSetCookie).toHaveBeenCalledTimes(2)
     })
 
