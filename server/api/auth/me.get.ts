@@ -1,5 +1,6 @@
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const auth = requireUser(event)
@@ -22,7 +23,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!user) {
-    throw createError({ statusCode: 404, statusMessage: 'USER_NOT_FOUND' })
+    throw Errors.userNotFound().toH3Error()
   }
 
   return {

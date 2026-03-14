@@ -1,4 +1,4 @@
-import { getRouterParam, type H3Event } from 'h3'
+import type { H3Event } from 'h3'
 import { z } from 'zod'
 import { Errors } from '~/lib/errors/factory'
 
@@ -37,7 +37,11 @@ export function normalizedRequiredString(field: string, maxLength: number, minLe
 
 export function parsePositiveBigIntParam(event: H3Event, name: string): bigint {
   const rawFromParams = event.context.params?.[name]
-  const rawFromRouter = getRouterParam(event, name)
+  const rawFromRouter = (
+    globalThis as typeof globalThis & {
+      getRouterParam?: (event: H3Event, name: string) => string | undefined
+    }
+  ).getRouterParam?.(event, name)
   const pathSegments = event.path?.split('/').filter(Boolean) ?? []
   const rawFromPath = pathSegments.at(-1)
   const fallbackPathValue = rawFromPath && /^[1-9]\d*$/.test(rawFromPath) ? rawFromPath : undefined

@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
+import { AppError, Errors } from '~/lib/errors/factory'
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -16,23 +17,18 @@ export default defineEventHandler(async (event) => {
     const validatedData = registerSchema.parse(body)
 
     // Check if user already exists
-    // @ts-ignore Prisma model access
     const existingUser = await prisma.user.findUnique({
       where: { email: validatedData.email }
     })
 
     if (existingUser) {
-      throw createError({
-        statusCode: 409,
-        statusMessage: 'User with this email already exists'
-      })
+      throw Errors.userEmailExists(validatedData.email)
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(validatedData.password, 10)
 
     // Create user
-    // @ts-ignore Prisma model access
     const user = await prisma.user.create({
       data: {
         email: validatedData.email,
@@ -60,11 +56,16 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: error.issues?.[0]?.message ?? 'Invalid request body'
-      })
+      throw Errors.validationError(
+        error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }))
+      ).toH3Error()
     }
-    throw error
+    if (error instanceof AppError) {
+      throw error.toH3Error()
+    }
+    throw Errors.internalError(error).toH3Error()
   }
 })

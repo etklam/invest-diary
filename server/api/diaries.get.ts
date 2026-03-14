@@ -1,21 +1,18 @@
 import prisma from '../../lib/prisma'
+import type { Prisma } from '@prisma/client'
 import type { DiariesApiResponse } from '~/types/diary'
 import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
+import { requireUser } from '~/server/utils/auth'
+
+type DiaryListItem = Awaited<ReturnType<typeof prisma.diary.findMany>>[number]
 
 export default defineEventHandler(async (event): Promise<DiariesApiResponse> => {
-  console.log('[Diaries] Fetching diaries with pagination...')
+  const log = logger.diary.withRequestId(event.context.requestId)
   try {
-    // Check authentication
-    if (!event.context.user?.id) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Unauthorized - Please login'
-      })
-    }
+    const user = requireUser(event)
 
-    // 確保 userId 為 BigInt（避免 string/number 混用）
-    const userId = BigInt(event.context.user.id)
+    const userId = BigInt(user.id)
 
     const query = getQuery(event)
     const page = Number(query.page) || 1
@@ -24,7 +21,7 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const quickOnly = String(query.quickOnly || '').toLowerCase() === 'true' || query.quickOnly === '1'
     const days = Number(query.days)
 
-    const where: any = { userId }
+    const where: Prisma.DiaryWhereInput = { userId }
     if (quickOnly) {
       where.title = 'Quick Diary'
     }
@@ -75,11 +72,11 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     ])
 
     // 將 BigInt 轉為 string，避免本機 Nitro JSON 序列化 500 error
-    const safeDiaries = diaries.map((d: any) => ({
+    const safeDiaries = diaries.map((d: DiaryListItem) => ({
       ...d,
       id: d.id.toString(),
-      alerts: d.alerts?.map((a: any) => ({ ...a, id: a.id.toString() })),
-      transactions: d.transactions?.map((t: any) => ({
+      alerts: d.alerts.map((a) => ({ ...a, id: a.id.toString() })),
+      transactions: d.transactions.map((t) => ({
         ...t,
         id: t.id.toString(),
       })),
@@ -94,15 +91,14 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
         totalPages: Math.ceil(total / limit),
       },
     }
-  } catch (error: any) {
-    // If error already has a statusCode, re-throw it (e.g., 401 auth errors)
-    if (error?.statusCode) {
+  } catch (error: unknown) {
+    if (error instanceof AppError) {
+      throw error.toH3Error()
+    }
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
-    console.error('[Diaries] Error fetching diaries:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch diaries'
-    })
+    log.error('Failed to fetch diaries', { error: String(error) })
+    throw Errors.internalError(error).toH3Error()
   }
 })

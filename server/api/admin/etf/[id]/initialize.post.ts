@@ -76,8 +76,8 @@ export default defineEventHandler(async (event) => {
         to: new Date(lastPrice.date).toISOString().split('T')[0],
       },
     }
-  } catch (error: any) {
-    if (error.statusCode) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
     throw createError({

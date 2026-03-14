@@ -42,11 +42,11 @@ export default defineEventHandler(async (event) => {
 
     log.info('Token refreshed', { userId: user.id.toString() })
     return { ok: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof AppError) {
       throw error.toH3Error()
     }
-    if (error.statusCode) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
     log.error('Token refresh error', { error: String(error) })

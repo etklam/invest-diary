@@ -46,9 +46,16 @@ export default defineEventHandler(async (event) => {
           statusMessage: 'Invalid ETF symbol - not found on Yahoo Finance',
         })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If Yahoo API fails, allow user to retry or skip validation
-      if (error.statusCode === 429 || error.message?.includes('Too Many Requests')) {
+      if (
+        error
+        && typeof error === 'object'
+        && (
+          ('statusCode' in error && error.statusCode === 429)
+          || ('message' in error && typeof error.message === 'string' && error.message.includes('Too Many Requests'))
+        )
+      ) {
         throw createError({
           statusCode: 429,
           statusMessage: 'Yahoo Finance rate limit exceeded. Please try again later or skip validation.',
