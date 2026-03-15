@@ -654,6 +654,7 @@
   "tools": {
     "positionSizing": {
       "title": "建仓比例计算器",
+      "heroKicker": "建仓规划",
       "subtitle": "输入资金与股价，自动计算各建仓策略的分配比例",
       "inputParams": "输入参数",
       "totalCapital": "总资金",
@@ -684,6 +685,8 @@
       "avgPrice": "平均成本",
       "utilizationRate": "资金利用率",
       "detailTable": "详细分配表",
+      "cashBufferTitle": "现金缓冲",
+      "batches": "批",
       "table": {
         "batch": "批次",
         "batchN": "第 {n} 批",
@@ -704,6 +707,7 @@
       "copied": "已复制",
       "copySuccess": "已复制到剪贴板",
       "copyFailed": "复制失败",
+      "overBudgetWarning": "因进位导致超额投入 {amount}，已自动调整最后一批股数",
       "shares": "股",
       "markdown": {
         "title": "建仓计划",
@@ -797,6 +801,10 @@
     },
     "seasonality": {
       "title": "美股月份季节性分析",
+      "heroKicker": "市场季节性观察",
+      "mapTitle": "季节性地图",
+      "regimeViewTitle": "区间检视",
+      "dataPeriod": "1950 年至今",
       "subtitle": "基于1950年至今的历史数据，分析S&P 500月份季节性模式",
       "currentMonth": "当前月份",
       "nextMonth": "下个月份",
@@ -975,6 +983,12 @@
           "name": "积极型 (5%)",
           "description": "较高提领率，资产可能较早耗尽"
         }
+      },
+      "heroKicker": "财务自由规划",
+      "units": {
+        "currency": "$",
+        "perYearCurrency": "$/年",
+        "perMonthCurrency": "$/月"
       },
       "fireNumber": "财务自由金额 (FIRE Number)",
       "progress": "已完成 {percent}%",

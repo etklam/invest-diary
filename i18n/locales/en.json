@@ -732,6 +732,7 @@
   "tools": {
     "positionSizing": {
       "title": "Position Sizing Calculator",
+      "heroKicker": "Position Builder",
       "subtitle": "Enter capital and stock price to calculate allocation ratios for different strategies",
       "inputParams": "Input Parameters",
       "totalCapital": "Total Capital",
@@ -762,6 +763,8 @@
       "avgPrice": "Average Cost",
       "utilizationRate": "Capital Utilization",
       "detailTable": "Detailed Allocation",
+      "cashBufferTitle": "Cash Buffer",
+      "batches": "batches",
       "table": {
         "batch": "Batch",
         "batchN": "Batch {n}",
@@ -782,6 +785,7 @@
       "copied": "Copied",
       "copySuccess": "Copied to clipboard",
       "copyFailed": "Copy failed",
+      "overBudgetWarning": "Rounding caused an extra {amount} to be allocated, so the final batch share count was adjusted automatically",
       "shares": "shares",
       "markdown": {
         "title": "Position Sizing Plan",
@@ -875,6 +879,10 @@
     },
     "seasonality": {
       "title": "US Stock Market Seasonality",
+      "heroKicker": "Market Seasonality Desk",
+      "mapTitle": "Seasonality Map",
+      "regimeViewTitle": "Regime View",
+      "dataPeriod": "1950+",
       "subtitle": "Based on historical data from 1950 to present, analyzing S&P 500 monthly seasonality patterns",
       "currentMonth": "Current Month",
       "nextMonth": "Next Month",
@@ -1168,6 +1176,12 @@
           "name": "Aggressive (5%)",
           "description": "Higher withdrawal rate, portfolio may deplete sooner"
         }
+      },
+      "heroKicker": "Financial Freedom Planner",
+      "units": {
+        "currency": "$",
+        "perYearCurrency": "$/year",
+        "perMonthCurrency": "$/month"
       },
       "fireNumber": "FIRE Number",
       "progress": "{percent}% Complete",

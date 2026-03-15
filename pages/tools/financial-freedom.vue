@@ -117,6 +117,30 @@ const getPresetName = (preset: typeof withdrawalRatePresets[0]) => {
 
 const formatCurrencyLocal = (value: number) => formatCurrency(value, locale.value)
 
+const formatCompactValue = (value: number) => {
+  const abs = Math.abs(value)
+  const currentLocale = locale.value
+
+  const formatCompactNumber = (scaled: number) => {
+    const digits = Math.abs(scaled) >= 100 ? 0 : Math.abs(scaled) >= 10 ? 1 : 1
+    return new Intl.NumberFormat(currentLocale === 'en' ? 'en-US' : currentLocale, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: digits
+    }).format(scaled)
+  }
+
+  if (currentLocale === 'en') {
+    if (abs >= 1_000_000) return `$${formatCompactNumber(value / 1_000_000)}M`
+    if (abs >= 1_000) return `$${formatCompactNumber(value / 1_000)}K`
+    return formatCurrencyLocal(value)
+  }
+
+  if (abs >= 1_000_000) return `$${formatCompactNumber(value / 1_000_000)}百萬`
+  if (abs >= 10_000) return `$${formatCompactNumber(value / 10_000)}萬`
+  if (abs >= 1_000) return `$${formatCompactNumber(value / 1_000)}千`
+  return formatCurrencyLocal(value)
+}
+
 const copySuccess = ref(false)
 
 const copyToClipboard = async () => {
@@ -204,7 +228,7 @@ definePageMeta({
       <div class="panel overflow-hidden p-6 sm:p-8">
         <div class="grid gap-8 lg:grid-cols-[1.25fr_0.9fr] lg:items-center">
           <div>
-            <p class="kicker mb-3">FIRE Planning Console</p>
+            <p class="kicker mb-3">{{ t('tools.financialFreedom.heroKicker') }}</p>
             <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
               {{ t('tools.financialFreedom.title') }}
             </h1>
@@ -216,13 +240,13 @@ definePageMeta({
               <div class="metric-card">
                 <div class="metric-label">{{ t('tools.financialFreedom.fireNumber') }}</div>
                 <div class="metric-value">
-                  {{ result ? formatCurrencyLocal(result.fireNumber) : '—' }}
+                  {{ result ? formatCompactValue(result.fireNumber) : '—' }}
                 </div>
               </div>
               <div class="metric-card">
                 <div class="metric-label">{{ t('tools.financialFreedom.amountNeeded') }}</div>
                 <div class="metric-value">
-                  {{ result ? formatCurrencyLocal(result.amountNeeded) : '—' }}
+                  {{ result ? formatCompactValue(result.amountNeeded) : '—' }}
                 </div>
               </div>
               <div class="metric-card">
@@ -265,11 +289,11 @@ definePageMeta({
             <div class="mt-6 grid gap-3 sm:grid-cols-2">
               <div class="spotlight-stat">
                 <span class="spotlight-stat-label">{{ t('tools.financialFreedom.monthlyContribution') }}</span>
-                <span class="spotlight-stat-value">{{ monthlyContribution ? formatCurrencyLocal(monthlyContribution) : '—' }}</span>
+                <span class="spotlight-stat-value">{{ monthlyContribution ? formatCompactValue(monthlyContribution) : '—' }}</span>
               </div>
               <div class="spotlight-stat">
                 <span class="spotlight-stat-label">{{ t('tools.financialFreedom.currentAssets') }}</span>
-                <span class="spotlight-stat-value">{{ currentAssets !== null ? formatCurrencyLocal(currentAssets) : '—' }}</span>
+                <span class="spotlight-stat-value">{{ currentAssets !== null ? formatCompactValue(currentAssets) : '—' }}</span>
               </div>
             </div>
           </div>
@@ -297,7 +321,7 @@ definePageMeta({
               <label class="field-label">{{ t('tools.financialFreedom.annualExpenses') }}</label>
               <div class="field-shell">
                 <input v-model.number="annualExpenses" type="number" min="0" step="10000" :placeholder="t('tools.financialFreedom.annualExpensesPlaceholder')" class="field-input">
-                <span class="field-unit">$/年</span>
+                <span class="field-unit">{{ t('tools.financialFreedom.units.perYearCurrency') }}</span>
               </div>
               <p class="field-hint">{{ t('tools.financialFreedom.annualExpensesHint') }}</p>
             </div>
@@ -306,7 +330,7 @@ definePageMeta({
               <label class="field-label">{{ t('tools.financialFreedom.currentAssets') }}</label>
               <div class="field-shell">
                 <input v-model.number="currentAssets" type="number" min="0" step="100000" :placeholder="t('tools.financialFreedom.currentAssetsPlaceholder')" class="field-input">
-                <span class="field-unit">$</span>
+                <span class="field-unit">{{ t('tools.financialFreedom.units.currency') }}</span>
               </div>
             </div>
 
@@ -314,7 +338,7 @@ definePageMeta({
               <label class="field-label">{{ t('tools.financialFreedom.monthlyContribution') }}</label>
               <div class="field-shell">
                 <input v-model.number="monthlyContribution" type="number" min="0" step="5000" :placeholder="t('tools.financialFreedom.monthlyContributionPlaceholder')" class="field-input">
-                <span class="field-unit">$/月</span>
+                <span class="field-unit">{{ t('tools.financialFreedom.units.perMonthCurrency') }}</span>
               </div>
             </div>
 
@@ -410,7 +434,7 @@ definePageMeta({
                   {{ t('tools.financialFreedom.fireNumber') }}
                 </p>
                 <div class="mt-2 text-4xl font-semibold tracking-tight text-white">
-                  {{ formatCurrencyLocal(result.fireNumber) }}
+                  {{ formatCompactValue(result.fireNumber) }}
                 </div>
               </div>
               <button type="button" class="action-btn cursor-pointer" @click="copyToClipboard">
@@ -433,7 +457,7 @@ definePageMeta({
           <div class="grid gap-4 border-t border-slate-200/70 p-6 dark:border-slate-800 sm:grid-cols-3 sm:p-7">
             <div class="summary-card">
               <div class="summary-label">{{ t('tools.financialFreedom.amountNeeded') }}</div>
-              <div class="summary-value">{{ formatCurrencyLocal(result.amountNeeded) }}</div>
+              <div class="summary-value">{{ formatCompactValue(result.amountNeeded) }}</div>
             </div>
             <div class="summary-card">
               <div class="summary-label">{{ t('tools.financialFreedom.yearsToFreedom') }}</div>
@@ -482,15 +506,15 @@ definePageMeta({
           <div class="grid gap-4 sm:grid-cols-3">
             <div class="summary-card">
               <div class="summary-label">{{ t('tools.financialFreedom.monthly') }}</div>
-              <div class="summary-value">{{ formatCurrencyLocal(result.monthlyWithdrawal) }}</div>
+              <div class="summary-value">{{ formatCompactValue(result.monthlyWithdrawal) }}</div>
             </div>
             <div class="summary-card">
               <div class="summary-label">{{ t('tools.financialFreedom.weekly') }}</div>
-              <div class="summary-value">{{ formatCurrencyLocal(result.weeklyWithdrawal) }}</div>
+              <div class="summary-value">{{ formatCompactValue(result.weeklyWithdrawal) }}</div>
             </div>
             <div class="summary-card">
               <div class="summary-label">{{ t('tools.financialFreedom.daily') }}</div>
-              <div class="summary-value">{{ formatCurrencyLocal(result.dailyWithdrawal) }}</div>
+              <div class="summary-value">{{ formatCompactValue(result.dailyWithdrawal) }}</div>
             </div>
           </div>
         </div>
@@ -519,7 +543,7 @@ definePageMeta({
               </h3>
             </div>
             <div class="text-right text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-              {{ result.yearlyProjection.length }} years
+              {{ result.yearlyProjection.length }} {{ t('tools.financialFreedom.years') }}
             </div>
           </div>
 
@@ -536,28 +560,28 @@ definePageMeta({
                     {{ t('tools.financialFreedom.yearN', { n: year.year }) }}
                   </div>
                   <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    {{ t('tools.financialFreedom.startingAssets') }} {{ formatCurrencyLocal(year.startingAssets) }}
+                    {{ t('tools.financialFreedom.startingAssets') }} {{ formatCompactValue(year.startingAssets) }}
                   </div>
                 </div>
                 <div v-if="year.isFreed" class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                  FIRE
+                  {{ t('tools.financialFreedom.freed') }}
                 </div>
               </div>
 
               <div class="mt-4 grid gap-3 sm:grid-cols-3">
                 <div class="projection-stat">
                   <span class="projection-label">{{ t('tools.financialFreedom.contribution') }}</span>
-                  <span class="projection-value">+{{ formatCurrencyLocal(year.contribution) }}</span>
+                  <span class="projection-value">+{{ formatCompactValue(year.contribution) }}</span>
                 </div>
                 <div class="projection-stat">
                   <span class="projection-label">{{ t('tools.financialFreedom.returns') }}</span>
                   <span class="projection-value" :class="year.returns >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
-                    {{ year.returns >= 0 ? '+' : '' }}{{ formatCurrencyLocal(year.returns) }}
+                    {{ year.returns >= 0 ? '+' : '' }}{{ formatCompactValue(year.returns) }}
                   </span>
                 </div>
                 <div class="projection-stat">
                   <span class="projection-label">{{ t('tools.financialFreedom.endingAssets') }}</span>
-                  <span class="projection-value">{{ formatCurrencyLocal(year.endingAssets) }}</span>
+                  <span class="projection-value">{{ formatCompactValue(year.endingAssets) }}</span>
                 </div>
               </div>
             </div>
@@ -605,6 +629,7 @@ definePageMeta({
 .metric-card,
 .summary-card,
 .projection-stat {
+  min-width: 0;
   border: 1px solid rgb(226 232 240);
   border-radius: 0.95rem;
   background: rgb(255 255 255 / 70%);
@@ -629,7 +654,11 @@ definePageMeta({
 .spotlight-stat-value {
   margin-top: 0.5rem;
   display: block;
-  font-size: 1.35rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.2;
+  font-size: clamp(1rem, 1.3vw + 0.9rem, 1.35rem);
   font-weight: 600;
   color: rgb(15 23 42);
 }
@@ -653,12 +682,16 @@ definePageMeta({
 
 .hero-spotlight-value {
   margin-top: 0.5rem;
-  font-size: 2.5rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.1;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
   font-weight: 600;
   color: white;
 }
 
 .spotlight-stat {
+  min-width: 0;
   border: 1px solid rgb(148 163 184 / 18%);
   border-radius: 0.9rem;
   padding: 0.9rem 1rem;
@@ -668,6 +701,7 @@ definePageMeta({
 .subpanel,
 .recommendation-card,
 .projection-row {
+  min-width: 0;
   border: 1px solid rgb(226 232 240);
   border-radius: 1rem;
   background: rgb(248 250 252 / 78%);

@@ -115,7 +115,7 @@ definePageMeta({
       <div class="panel overflow-hidden p-6 sm:p-8">
         <div class="grid gap-8 lg:grid-cols-[1.15fr_0.95fr] lg:items-center">
           <div>
-            <p class="kicker mb-3">Market Seasonality Desk</p>
+            <p class="kicker mb-3">{{ t('tools.seasonality.heroKicker') }}</p>
             <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
               {{ t('tools.seasonality.title') }}
             </h1>
@@ -201,8 +201,8 @@ definePageMeta({
         <div class="panel p-6 sm:p-7">
           <div class="mb-5 flex items-center justify-between gap-4">
             <div>
-              <p class="kicker mb-2">Seasonality Map</p>
-              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Seasonality Map</h3>
+              <p class="kicker mb-2">{{ t('tools.seasonality.mapTitle') }}</p>
+              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ t('tools.seasonality.mapTitle') }}</h3>
             </div>
             <button type="button" class="action-btn cursor-pointer" @click="copyToClipboard">
               <Icon :name="copySuccess ? 'heroicons:check' : 'heroicons:clipboard-document'" class="mr-2 h-4 w-4" />
@@ -250,7 +250,7 @@ definePageMeta({
               </h3>
             </div>
             <div class="text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-              1950+
+              {{ t('tools.seasonality.dataPeriod') }}
             </div>
           </div>
 
@@ -349,8 +349,8 @@ definePageMeta({
         </div>
 
         <div class="panel p-6 sm:p-7">
-          <p class="kicker mb-2">Regime View</p>
-          <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Regime View</h3>
+          <p class="kicker mb-2">{{ t('tools.seasonality.regimeViewTitle') }}</p>
+          <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ t('tools.seasonality.regimeViewTitle') }}</h3>
 
           <div class="mt-5 grid gap-4">
             <div class="summary-card">

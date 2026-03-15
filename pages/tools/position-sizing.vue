@@ -193,7 +193,7 @@ definePageMeta({
       <div class="panel overflow-hidden p-6 sm:p-8">
         <div class="grid gap-8 lg:grid-cols-[1.2fr_0.9fr] lg:items-center">
           <div>
-            <p class="kicker mb-3">Position Builder</p>
+            <p class="kicker mb-3">{{ t('tools.positionSizing.heroKicker') }}</p>
             <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
               {{ t('tools.positionSizing.title') }}
             </h1>
@@ -433,8 +433,8 @@ definePageMeta({
         </div>
 
         <div v-if="summary && (summary.reservedCash > 0 || summary.unallocatedCash > 0)" class="panel p-6 sm:p-7">
-          <p class="kicker mb-2">Cash Buffer</p>
-          <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Cash Buffer</h3>
+          <p class="kicker mb-2">{{ t('tools.positionSizing.cashBufferTitle') }}</p>
+          <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ t('tools.positionSizing.cashBufferTitle') }}</h3>
           <div class="mt-5 grid gap-3">
             <div v-if="summary.reservedCash > 0" class="summary-card">
               <div class="summary-label">{{ t('tools.positionSizing.markdown.strategicReserve') }}</div>
@@ -463,7 +463,7 @@ definePageMeta({
             </h3>
           </div>
           <div class="text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-            {{ calculationResults.length }} batches
+            {{ calculationResults.length }} {{ t('tools.positionSizing.batches') }}
           </div>
         </div>
 
@@ -508,7 +508,7 @@ definePageMeta({
           <div v-if="summary && summary.isOverBudget" class="warning-card warning-card-danger">
             <Icon name="heroicons:exclamation-circle" class="h-5 w-5 text-rose-500" />
             <span class="text-sm text-rose-900 dark:text-rose-200">
-              因進位導致超額投入 {{ formatCurrency(summary.overBudgetAmount) }}，已自動調整最後一批股數
+              {{ t('tools.positionSizing.overBudgetWarning', { amount: formatCurrency(summary.overBudgetAmount) }) }}
             </span>
           </div>
         </div>

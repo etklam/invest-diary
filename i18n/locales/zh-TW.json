@@ -732,6 +732,7 @@
   "tools": {
     "positionSizing": {
       "title": "建倉比例計算器",
+      "heroKicker": "建倉規劃",
       "subtitle": "輸入資金與股價，自動計算各建倉策略的分配比例",
       "inputParams": "輸入參數",
       "totalCapital": "總資金",
@@ -762,6 +763,8 @@
       "avgPrice": "平均成本",
       "utilizationRate": "資金利用率",
       "detailTable": "詳細分配表",
+      "cashBufferTitle": "現金緩衝",
+      "batches": "批",
       "table": {
         "batch": "批次",
         "batchN": "第 {n} 批",
@@ -782,6 +785,7 @@
       "copied": "已複製",
       "copySuccess": "已複製到剪貼簿",
       "copyFailed": "複製失敗",
+      "overBudgetWarning": "因進位導致超額投入 {amount}，已自動調整最後一批股數",
       "shares": "股",
       "markdown": {
         "title": "建倉計劃",
@@ -875,6 +879,10 @@
     },
     "seasonality": {
       "title": "美股月份季節性分析",
+      "heroKicker": "市場季節性觀測",
+      "mapTitle": "季節性地圖",
+      "regimeViewTitle": "區間檢視",
+      "dataPeriod": "1950 年至今",
       "subtitle": "基於1950年至今的歷史數據，分析S&P 500月份季節性模式",
       "currentMonth": "當前月份",
       "nextMonth": "下個月份",
@@ -1168,6 +1176,12 @@
           "name": "積極型 (5%)",
           "description": "較高提領率，資產可能較早耗盡"
         }
+      },
+      "heroKicker": "財務自由規劃",
+      "units": {
+        "currency": "$",
+        "perYearCurrency": "$/年",
+        "perMonthCurrency": "$/月"
       },
       "fireNumber": "財務自由金額 (FIRE Number)",
       "progress": "已完成 {percent}%",
