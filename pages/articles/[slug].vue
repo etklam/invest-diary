@@ -187,7 +187,7 @@ definePageMeta({
 
 import DOMPurify from 'dompurify'
 import type { Config as DOMPurifyConfig } from 'dompurify'
-import { calculateReadingTime, parseTags } from '~/lib/blog'
+import { calculateReadingTime, looksLikeHtmlContent, parseTags } from '~/lib/blog'
 import { usePerformance } from '~/composables/usePerformance'
 import { normalizeCategory } from '~/types/blog'
 
@@ -248,10 +248,15 @@ const htmlSanitizeConfig: DOMPurifyConfig = {
 
 const contentType = computed(() => {
   const type = post.value?.contentType
-  return type ? String(type).toLowerCase() : 'html'
+  return type ? String(type).toLowerCase() : ''
 })
 
-const isHtmlContent = computed(() => contentType.value === 'html')
+const isHtmlContent = computed(() => {
+  if (!post.value?.content) return false
+  if (contentType.value === 'html') return true
+  if (contentType.value === 'markdown') return false
+  return looksLikeHtmlContent(post.value.content)
+})
 
 const sanitizedContent = computed(() => {
   if (!post.value?.content) return ''

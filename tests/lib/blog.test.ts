@@ -3,6 +3,7 @@ import {
   generateSlug,
   generateExcerpt,
   calculateReadingTime,
+  looksLikeHtmlContent,
   parseTags,
   stringifyTags,
 } from '~/lib/blog'
@@ -187,6 +188,20 @@ This is a very long piece of content that should be truncated at some point beca
       expect(result.length).toBe(53)
       expect(result.endsWith('...')).toBe(true)
     })
+  })
+})
+
+describe('looksLikeHtmlContent', () => {
+  it('detects HTML tags', () => {
+    expect(looksLikeHtmlContent('<p>Hello</p>')).toBe(true)
+  })
+
+  it('does not treat markdown as HTML', () => {
+    expect(looksLikeHtmlContent('# Hello\n- item')).toBe(false)
+  })
+
+  it('returns false for empty content', () => {
+    expect(looksLikeHtmlContent('')).toBe(false)
   })
 })
 

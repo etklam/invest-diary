@@ -15,6 +15,11 @@ const stripHtml = (input: string): string => {
   return input.replace(/<[^>]*>/g, ' ')
 }
 
+export function looksLikeHtmlContent(content: string | null | undefined): boolean {
+  if (!content) return false
+  return /<\/?[a-z][\w:-]*(?:\s[^<>]*)?>/i.test(content)
+}
+
 /**
  * Generate excerpt from content (removes Markdown syntax)
  */
