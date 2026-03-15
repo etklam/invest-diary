@@ -99,7 +99,7 @@
     </section>
 
     <section class="px-4 pb-20 sm:px-6">
-      <div class="section-panel mx-auto max-w-7xl">
+      <div class="section-panel editorial-panel mx-auto max-w-7xl">
         <div class="mb-10 reveal">
           <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
             {{ $t('home.learning.title') }}
@@ -108,83 +108,80 @@
             {{ $t('home.learning.subtitle') }}
           </p>
         </div>
-        <div class="grid gap-5 md:grid-cols-3">
-          <article class="feature-card reveal">
-            <Icon name="heroicons:academic-cap-20-solid" class="feature-icon text-sky-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.basics.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.basics.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-2">
-            <Icon name="heroicons:shield-exclamation-20-solid" class="feature-icon text-amber-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.risk.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.risk.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-3">
-            <Icon name="heroicons:arrow-path-20-solid" class="feature-icon text-emerald-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.review.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.review.description') }}</p>
-          </article>
-        </div>
-      </div>
-    </section>
 
-    <section class="px-4 pb-20 sm:px-6">
-      <div class="section-panel mx-auto max-w-7xl">
-        <div class="mb-10 reveal">
-          <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
-            {{ $t('home.community.title') }}
-          </h2>
-          <p class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
-            {{ $t('home.community.subtitle') }}
-          </p>
-        </div>
-        <div class="grid gap-5 md:grid-cols-3">
-          <article class="feature-card reveal">
-            <Icon name="heroicons:chat-bubble-left-right-20-solid" class="feature-icon text-cyan-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.share.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.share.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-2">
-            <Icon name="heroicons:hand-thumb-up-20-solid" class="feature-icon text-indigo-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.feedback.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.feedback.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-3">
-            <Icon name="heroicons:user-group-20-solid" class="feature-icon text-rose-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.accountability.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.accountability.description') }}</p>
-          </article>
-        </div>
-      </div>
-    </section>
+        <div class="split-grid">
+          <div class="space-y-5">
+            <article class="feature-card feature-card-soft reveal">
+              <Icon name="heroicons:academic-cap-20-solid" class="feature-icon text-sky-700" />
+              <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.basics.title') }}</h3>
+              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.basics.description') }}</p>
+            </article>
+            <article class="feature-card feature-card-soft reveal reveal-2">
+              <Icon name="heroicons:shield-exclamation-20-solid" class="feature-icon text-amber-700" />
+              <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.risk.title') }}</h3>
+              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.risk.description') }}</p>
+            </article>
+            <article class="feature-card feature-card-soft reveal reveal-3">
+              <Icon name="heroicons:arrow-path-20-solid" class="feature-icon text-emerald-700" />
+              <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.review.title') }}</h3>
+              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.review.description') }}</p>
+            </article>
+          </div>
 
-    <section class="px-4 pb-20 sm:px-6">
-      <div class="section-panel mx-auto max-w-7xl">
-        <div class="mb-10 reveal">
-          <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
-            {{ $t('home.turnaround.title') }}
-          </h2>
-          <p class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+          <div class="subpanel reveal reveal-2">
+            <div class="mb-8">
+              <p class="subpanel-kicker">{{ $t('home.community.title') }}</p>
+              <h3 class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+                {{ $t('home.community.subtitle') }}
+              </h3>
+            </div>
+            <div class="space-y-4">
+              <article class="feature-card feature-card-quiet">
+                <Icon name="heroicons:chat-bubble-left-right-20-solid" class="feature-icon text-cyan-700" />
+                <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.share.title') }}</h4>
+                <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.share.description') }}</p>
+              </article>
+              <article class="feature-card feature-card-quiet">
+                <Icon name="heroicons:hand-thumb-up-20-solid" class="feature-icon text-indigo-700" />
+                <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.feedback.title') }}</h4>
+                <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.feedback.description') }}</p>
+              </article>
+              <article class="feature-card feature-card-quiet">
+                <Icon name="heroicons:user-group-20-solid" class="feature-icon text-rose-700" />
+                <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.accountability.title') }}</h4>
+                <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.accountability.description') }}</p>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-12 reveal">
+          <p class="subpanel-kicker">{{ $t('home.turnaround.title') }}</p>
+          <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-3xl">
             {{ $t('home.turnaround.subtitle') }}
-          </p>
-        </div>
-        <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <article class="feature-card reveal">
-            <h3 class="text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step1.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step1.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-2">
-            <h3 class="text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step2.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step2.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-3">
-            <h3 class="text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step3.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step3.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-4">
-            <h3 class="text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step4.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step4.description') }}</p>
-          </article>
+          </h3>
+          <div class="sequence-grid mt-8">
+            <article class="number-card reveal">
+              <span class="number-chip">01</span>
+              <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step1.title') }}</h4>
+              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step1.description') }}</p>
+            </article>
+            <article class="number-card reveal reveal-2">
+              <span class="number-chip">02</span>
+              <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step2.title') }}</h4>
+              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step2.description') }}</p>
+            </article>
+            <article class="number-card reveal reveal-3">
+              <span class="number-chip">03</span>
+              <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step3.title') }}</h4>
+              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step3.description') }}</p>
+            </article>
+            <article class="number-card reveal reveal-4">
+              <span class="number-chip">04</span>
+              <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step4.title') }}</h4>
+              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step4.description') }}</p>
+            </article>
+          </div>
         </div>
       </div>
     </section>
@@ -200,8 +197,8 @@
           </p>
         </div>
 
-        <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          <article class="feature-card reveal">
+        <div class="feature-grid">
+          <article class="feature-card feature-card-featured reveal">
             <Icon name="heroicons:book-open-20-solid" class="feature-icon text-sky-700" />
             <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.diary.title') }}</h3>
             <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.diary.description') }}</p>
@@ -351,12 +348,30 @@ const currentYear = new Date().getFullYear()
   box-shadow: 0 16px 35px rgb(15 23 42 / 8%);
 }
 
+.editorial-panel {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 82%), rgb(248 250 252 / 74%));
+}
+
 :global(.dark .section-panel),
 :global(.dark-mode .section-panel) {
   border-color: rgb(51 65 85 / 88%);
   background:
     linear-gradient(180deg, rgb(10 16 30 / 86%), rgb(10 16 30 / 76%));
   box-shadow: 0 16px 35px rgb(2 6 23 / 32%);
+}
+
+:global(.dark .editorial-panel),
+:global(.dark-mode .editorial-panel) {
+  background:
+    linear-gradient(180deg, rgb(10 16 30 / 88%), rgb(8 15 28 / 80%));
+}
+
+:global(.dark .subpanel),
+:global(.dark-mode .subpanel) {
+  border-color: rgb(51 65 85);
+  background:
+    linear-gradient(180deg, rgb(7 14 27 / 92%), rgb(10 16 30 / 78%));
 }
 
 .section-title {
@@ -377,6 +392,27 @@ const currentYear = new Date().getFullYear()
 
 .section-subtitle {
   line-height: 1.75;
+}
+
+.split-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.subpanel {
+  border: 1px solid rgb(186 230 253 / 80%);
+  border-radius: 1.15rem;
+  padding: 1.5rem;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 92%), rgb(240 249 255 / 72%));
+}
+
+.subpanel-kicker {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(14 116 144);
 }
 
 :global(.dark .fintech-home),
@@ -572,10 +608,40 @@ const currentYear = new Date().getFullYear()
   background: linear-gradient(90deg, rgb(14 165 233 / 95%), rgb(56 189 248 / 25%));
 }
 
+.feature-card-soft::after {
+  background: linear-gradient(90deg, rgb(14 165 233 / 75%), rgb(56 189 248 / 18%));
+}
+
+.feature-card-quiet {
+  background: rgb(255 255 255 / 78%);
+  box-shadow: none;
+}
+
+.feature-card-quiet::after {
+  background: linear-gradient(90deg, rgb(148 163 184 / 55%), transparent);
+}
+
+.feature-card-featured {
+  grid-column: span 1;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 92%), rgb(224 242 254 / 78%));
+}
+
 :global(.dark .feature-card),
 :global(.dark-mode .feature-card) {
   border-color: rgb(71 85 105);
   background: rgb(10 16 30 / 88%);
+}
+
+:global(.dark .feature-card-quiet),
+:global(.dark-mode .feature-card-quiet) {
+  background: rgb(10 16 30 / 72%);
+}
+
+:global(.dark .feature-card-featured),
+:global(.dark-mode .feature-card-featured) {
+  background:
+    linear-gradient(145deg, rgb(10 16 30 / 92%), rgb(12 74 110 / 26%));
 }
 
 .feature-card:hover {
@@ -593,6 +659,49 @@ const currentYear = new Date().getFullYear()
 .feature-icon {
   width: 2rem;
   height: 2rem;
+}
+
+.sequence-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.number-card {
+  border: 1px solid rgb(186 230 253 / 82%);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 82%);
+  padding: 1.35rem;
+}
+
+.number-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.8rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgb(14 165 233 / 12%);
+  color: rgb(3 105 161);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.feature-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+:global(.dark .number-card),
+:global(.dark-mode .number-card) {
+  border-color: rgb(71 85 105);
+  background: rgb(10 16 30 / 88%);
+}
+
+:global(.dark .number-chip),
+:global(.dark-mode .number-chip) {
+  background: rgb(56 189 248 / 18%);
+  color: rgb(186 230 253);
 }
 
 .story-panel {
@@ -671,6 +780,37 @@ const currentYear = new Date().getFullYear()
 
   .story-panel {
     padding: 2rem;
+  }
+
+  .sequence-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .feature-card-featured {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .split-grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .feature-card-featured {
+    grid-column: span 1;
+    grid-row: span 2;
+  }
+
+  .sequence-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 </style>

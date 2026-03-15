@@ -38,7 +38,7 @@
       </div>
     </div>
 
-    <article v-else-if="post" class="mx-auto w-full max-w-4xl">
+    <article v-else-if="post" class="mx-auto w-full max-w-5xl">
       <div v-if="isAdmin" class="mb-6 flex w-full flex-wrap justify-center gap-2 sm:justify-end">
         <NuxtLink
           :to="`/admin/blog/${post.id}/edit`"
@@ -92,39 +92,64 @@
         />
       </div>
 
-      <header class="glass-shell mb-6 rounded-2xl p-5 sm:p-6">
-        <div class="mb-4">
-          <span
-            class="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/70 px-3 py-1 text-sm font-semibold text-amber-700 dark:border-amber-400/35 dark:bg-amber-400/15 dark:text-amber-300"
-          >
-            {{ $t(`blog.categories.${categoryKey}`) || post.category }}
-          </span>
+      <header class="article-hero glass-shell mb-6 rounded-2xl p-5 sm:p-6 lg:p-8">
+        <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+          <div>
+            <div class="mb-4">
+              <span
+                class="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/70 px-3 py-1 text-sm font-semibold text-amber-700 dark:border-amber-400/35 dark:bg-amber-400/15 dark:text-amber-300"
+              >
+                {{ $t(`blog.categories.${categoryKey}`) || post.category }}
+              </span>
+            </div>
+
+            <h1 class="text-3xl font-bold leading-tight text-slate-950 sm:text-4xl lg:text-5xl dark:text-white">
+              {{ post.title }}
+            </h1>
+
+            <p v-if="post.excerpt" class="article-excerpt mt-5 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+              {{ post.excerpt }}
+            </p>
+
+            <div v-if="parsedTags.length > 0" class="mt-5 flex flex-wrap gap-2">
+              <span
+                v-for="tag in parsedTags"
+                :key="tag"
+                class="inline-flex items-center rounded-full border border-sky-200/70 bg-sky-50/70 px-3 py-1 text-sm text-sky-700 dark:border-slate-700/70 dark:bg-slate-800/80 dark:text-slate-300"
+              >
+                #{{ tag }}
+              </span>
+            </div>
+          </div>
+
+          <aside class="article-summary">
+            <p class="summary-kicker">{{ $t('blog.readingTime') }}</p>
+            <p class="summary-reading">{{ readingTime }}</p>
+            <div class="summary-meta">
+              <div class="summary-row">
+                <span class="summary-label">{{ $t('blog.author') }}</span>
+                <span class="summary-value">{{ post.author.name || post.author.email }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">{{ $t('blog.publishedAt') }}</span>
+                <span class="summary-value">{{ publishedDateLabel }}</span>
+              </div>
+            </div>
+          </aside>
         </div>
 
-        <h1 class="mb-3 text-2xl font-bold leading-snug text-slate-950 sm:text-3xl lg:text-4xl dark:text-white">
-          {{ post.title }}
-        </h1>
-
-        <PostMeta
-          :author="post.author.name || post.author.email"
-          :date="post.publishedAt!"
-          :reading-time="readingTime"
-        />
-
-        <div v-if="parsedTags.length > 0" class="mt-4 flex flex-wrap gap-2">
-          <span
-            v-for="tag in parsedTags"
-            :key="tag"
-            class="inline-flex items-center rounded-full border border-sky-200/70 bg-sky-50/70 px-3 py-1 text-sm text-sky-700 dark:border-slate-700/70 dark:bg-slate-800/80 dark:text-slate-300"
-          >
-            #{{ tag }}
-          </span>
+        <div class="mt-6 border-t border-slate-200/80 pt-5 dark:border-slate-700/80">
+          <PostMeta
+            :author="post.author.name || post.author.email"
+            :date="post.publishedAt!"
+            :reading-time="readingTime"
+          />
         </div>
       </header>
 
-      <div class="glass-shell mb-6 rounded-2xl p-4 sm:p-6">
+      <div class="article-body glass-shell mb-6 rounded-2xl p-4 sm:p-6 lg:p-8">
         <div
-          class="prose prose-lg prose-slate dark:prose-invert max-w-none
+          class="article-prose prose prose-lg prose-slate dark:prose-invert mx-auto max-w-3xl
           prose-headings:font-semibold prose-headings:text-slate-950 dark:prose-headings:text-slate-100 prose-headings:scroll-mt-20
           prose-h1:text-3xl prose-h1:mb-4 prose-h1:mt-6
           prose-h2:text-2xl prose-h2:mb-3 prose-h2:mt-5
@@ -153,20 +178,25 @@
       </div>
 
       <div class="glass-shell mb-6 rounded-2xl p-4 sm:p-6">
-        <h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
-          {{ $t('blog.share') }}
-        </h3>
+        <div class="mx-auto flex max-w-3xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              {{ $t('blog.share') }}
+            </h3>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ publishedDateLabel }}</p>
+          </div>
 
-        <div class="flex w-full flex-wrap items-center justify-center gap-4">
-          <button class="btn btn-ink" @click="copyLink">
-            <i-heroicons-link class="btn-icon" />
-            <span class="btn-label">{{ $t('blog.copyLink') }}</span>
-          </button>
+          <div class="flex w-full flex-wrap items-center justify-start gap-4 sm:w-auto sm:justify-end">
+            <button class="btn btn-ink" @click="copyLink">
+              <i-heroicons-link class="btn-icon" />
+              <span class="btn-label">{{ $t('blog.copyLink') }}</span>
+            </button>
 
-          <span v-if="copied" class="flex items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400">
-            <i-heroicons-check-circle class="h-4 w-4" />
-            {{ $t('blog.linkCopied') }}
-          </span>
+            <span v-if="copied" class="flex items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400">
+              <i-heroicons-check-circle class="h-4 w-4" />
+              {{ $t('blog.linkCopied') }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -227,6 +257,14 @@ usePerformance()
 
 const readingTime = computed(() => (post.value ? calculateReadingTime(post.value.content) : 0))
 const parsedTags = computed(() => (post.value ? parseTags(post.value.tags) : []))
+const publishedDateLabel = computed(() => {
+  if (!post.value?.publishedAt) return ''
+  return new Intl.DateTimeFormat(locale.value === 'zh-TW' ? 'zh-TW' : 'en', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(new Date(post.value.publishedAt))
+})
 
 const categoryKey = computed(() => {
   if (!post.value) return ''
@@ -424,10 +462,102 @@ const handleDelete = async () => {
   backdrop-filter: blur(9px);
 }
 
+.article-hero {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 90%), rgb(248 250 252 / 78%));
+}
+
+.article-summary {
+  align-self: start;
+  border: 1px solid rgb(226 232 240 / 92%);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 78%);
+  padding: 1rem;
+}
+
+.summary-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(14 116 144);
+}
+
+.summary-reading {
+  margin-top: 0.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(15 23 42);
+}
+
+.summary-meta {
+  margin-top: 1rem;
+  border-top: 1px solid rgb(226 232 240);
+  padding-top: 1rem;
+}
+
+.summary-row + .summary-row {
+  margin-top: 0.85rem;
+}
+
+.summary-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgb(100 116 139);
+}
+
+.summary-value {
+  display: block;
+  margin-top: 0.25rem;
+  line-height: 1.6;
+  color: rgb(15 23 42);
+}
+
+.article-body {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 95%), rgb(255 255 255 / 82%));
+}
+
+.article-excerpt {
+  text-wrap: balance;
+}
+
 :global(.dark .glass-shell),
 :global(.dark-mode .glass-shell) {
   border-color: rgb(71 85 105);
   background: rgb(10 16 30 / 86%);
+}
+
+:global(.dark .article-hero),
+:global(.dark-mode .article-hero) {
+  background:
+    linear-gradient(180deg, rgb(8 15 28 / 90%), rgb(10 16 30 / 82%));
+}
+
+:global(.dark .article-summary),
+:global(.dark-mode .article-summary) {
+  border-color: rgb(51 65 85);
+  background: rgb(7 14 27 / 88%);
+}
+
+:global(.dark .summary-reading),
+:global(.dark .summary-value),
+:global(.dark-mode .summary-reading),
+:global(.dark-mode .summary-value) {
+  color: rgb(241 245 249);
+}
+
+:global(.dark .summary-meta),
+:global(.dark-mode .summary-meta) {
+  border-top-color: rgb(51 65 85);
+}
+
+:global(.dark .article-body),
+:global(.dark-mode .article-body) {
+  background:
+    linear-gradient(180deg, rgb(8 15 28 / 95%), rgb(8 15 28 / 82%));
 }
 
 .btn {

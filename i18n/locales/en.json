@@ -30,6 +30,7 @@
     "calendar": "Calendar",
     "timeline": "Timeline",
     "diaries": "Diaries",
+    "howToUse": "How to Use",
     "discipline": "Trading Discipline",
     "alerts": "Alerts",
     "stocks": "Stocks",
@@ -447,6 +448,82 @@
     },
     "footer": {
       "rights": "Personal co-learning project, all rights reserved"
+    }
+  },
+  "howToUse": {
+    "badge": "Workflow Guide",
+    "hero": {
+      "title": "How to use Trade Basic without turning it into another noisy dashboard",
+      "subtitle": "Keep the loop simple: capture the reason behind each trade, revisit the result, and turn repeated mistakes into process improvements."
+    },
+    "gettingStarted": {
+      "title": "Start with one operating routine",
+      "subtitle": "You do not need every feature on day one. Start with the core loop, then add tools only when they solve a real gap.",
+      "step1": {
+        "eyebrow": "Step 1",
+        "title": "Set up your base record",
+        "description": "Create an account and decide where your trading notes will live. A consistent place to write matters more than perfect formatting.",
+        "cta": "Create account"
+      },
+      "step2": {
+        "eyebrow": "Step 2",
+        "title": "Write the first diary before you optimize",
+        "description": "Use the diary to record thesis, risk, position plan, and emotional state. The goal is to make later review possible.",
+        "cta": "Open diaries"
+      },
+      "step3": {
+        "eyebrow": "Step 3",
+        "title": "Review patterns, not isolated wins",
+        "description": "Move to the timeline, alerts, and discipline pages after you already have real entries. Those views become useful when there is history to inspect.",
+        "cta": "View timeline"
+      }
+    },
+    "workflow": {
+      "title": "A practical weekly loop",
+      "subtitle": "This product works best when the pages support one sequence instead of competing for attention.",
+      "step1": {
+        "label": "Observe",
+        "title": "Watch the market with a question in mind",
+        "description": "Use watchlists, ETF analysis, or seasonal context to decide what deserves attention."
+      },
+      "step2": {
+        "label": "Record",
+        "title": "Write down the why before or right after the trade",
+        "description": "Capture setup, invalidation level, risk, and execution notes while the context is still fresh."
+      },
+      "step3": {
+        "label": "Review",
+        "title": "Use calendar and timeline to revisit clusters",
+        "description": "Look for repetition across days or market regimes instead of judging one trade in isolation."
+      },
+      "step4": {
+        "label": "Refine",
+        "title": "Convert findings into rules and reminders",
+        "description": "Promote repeated lessons into discipline rules or alerts so the next decision starts from a better baseline."
+      }
+    },
+    "surfaces": {
+      "title": "What each page is for",
+      "subtitle": "Treat each surface as a specific job, not another inbox.",
+      "diaries": {
+        "title": "Diaries",
+        "description": "Your source record for trade reasoning, market context, and post-trade reflection."
+      },
+      "calendar": {
+        "title": "Calendar",
+        "description": "Best for checking rhythm, frequency, and what happened around specific dates."
+      },
+      "discipline": {
+        "title": "Trading Discipline",
+        "description": "Where repeated review findings become operating rules you can actually follow."
+      }
+    },
+    "cta": {
+      "title": "Use fewer pages, but use them repeatedly",
+      "description": "Trade Basic is most effective when it supports a calm routine instead of constant tool-switching.",
+      "primaryGuest": "Start with an account",
+      "primaryAuth": "Go to diaries",
+      "secondary": "Read builder notes"
     }
   },
   "discipline": {

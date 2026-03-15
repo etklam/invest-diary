@@ -40,6 +40,13 @@ export default defineNuxtConfig({
     }
   },
   vite: {
+    build: {
+      chunkSizeWarningLimit: 1000,
+      sourcemap: false,
+      modulePreload: {
+        polyfill: false
+      }
+    },
     optimizeDeps: {
       exclude: ['@prisma/client', '@prisma/client/runtime', 'canvas'],
       include: [
@@ -64,7 +71,7 @@ export default defineNuxtConfig({
   ],
 
   image: {
-    provider: 'ipx',
+    provider: 'none',
     format: ['webp'],
     screens: {
       xs: 320,
@@ -174,54 +181,30 @@ export default defineNuxtConfig({
   sitemap: {
     // 你的網站 URL（生產環境需要設置 NUXT_PUBLIC_SITE_URL）
     siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://trade-basic.com',
-    // 動態獲取所有 blog 文章（DB 不可用時要能安全失敗）
-    async urls() {
-      const baseUrls = [
-        {
-          loc: '/',
-          changefreq: 'daily',
-          priority: 1.0
-        },
-        {
-          loc: '/articles',
-          changefreq: 'daily',
-          priority: 0.9,
-          lastmod: new Date().toISOString()
-        },
-        {
-          loc: '/about',
-          changefreq: 'monthly',
-          priority: 0.5
-        }
-      ]
-
-      try {
-        const prisma = (await import('./lib/prisma')).default
-        const posts = await prisma.post.findMany({
-          where: {
-            status: 'PUBLISHED',
-            publishedAt: { not: null }
-          },
-          select: {
-            slug: true,
-            updatedAt: true
-          }
-        })
-
-        return [
-          ...baseUrls,
-          ...posts.map(post => ({
-            loc: `/articles/${post.slug}`,
-            changefreq: 'weekly',
-            priority: 0.8,
-            lastmod: post.updatedAt.toISOString()
-          }))
-        ]
-      } catch (err: any) {
-        console.warn('[sitemap] Prisma unavailable, fallback to static urls:', err?.message)
-        return baseUrls
+    urls: [
+      {
+        loc: '/',
+        changefreq: 'daily',
+        priority: 1.0
+      },
+      {
+        loc: '/articles',
+        changefreq: 'daily',
+        priority: 0.9,
+        lastmod: new Date().toISOString()
+      },
+      {
+        loc: '/about',
+        changefreq: 'monthly',
+        priority: 0.5
+      },
+      {
+        loc: '/how-to-use',
+        changefreq: 'monthly',
+        priority: 0.6
       }
-    }
+    ],
+    sources: ['/api/__sitemap__/blog-urls']
   },
 
   pwa: {

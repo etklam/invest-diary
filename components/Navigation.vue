@@ -33,6 +33,7 @@ const mainNavItems = computed(() => {
   if (!isAuthenticated.value) {
     return [
       { label: t('nav.home'), to: '/', icon: 'home' },
+      { label: t('nav.howToUse'), to: '/how-to-use', icon: 'map' },
       { label: t('nav.about'), to: '/about', icon: 'information-circle' },
       { label: t('nav.blog'), to: '/articles', icon: 'document' }
     ]
@@ -42,6 +43,7 @@ const mainNavItems = computed(() => {
     { label: t('nav.calendar'), to: '/calendar', icon: 'calendar' },
     { label: t('nav.timeline'), to: '/timeline', icon: 'clock' },
     { label: t('nav.diaries'), to: '/diaries', icon: 'document-text' },
+    { label: t('nav.howToUse'), to: '/how-to-use', icon: 'map' },
     { label: t('nav.stocks'), to: '/stocks', icon: 'chart-bar' },
     { label: t('nav.about'), to: '/about', icon: 'information-circle' }
   ]
@@ -68,6 +70,9 @@ const secondaryNavItems = computed(() => {
     { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' }
   ]
 })
+
+const featuredSecondaryItems = computed(() => secondaryNavItems.value.slice(0, isAuthenticated.value ? 3 : 0))
+const toolSecondaryItems = computed(() => secondaryNavItems.value.slice(isAuthenticated.value ? 3 : 0))
 
 // Get heroicon name from simple key
 const getIconName = (icon: string) => {
@@ -270,9 +275,9 @@ const themeToggleIcon = computed(() => {
           ? 'border border-sky-200/65 bg-white/70 shadow-md shadow-sky-200/30 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-slate-950/40'
           : 'border border-cyan-100/70 bg-white/80 shadow-md shadow-cyan-100/30 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-slate-950/40'"
       >
-        <div class="flex items-center">
-          <ul class="flex items-center gap-1">
-            <li v-for="item in secondaryNavItems" :key="item.to">
+        <div class="flex items-center gap-4">
+          <ul v-if="featuredSecondaryItems.length > 0" class="flex items-center gap-1">
+            <li v-for="item in featuredSecondaryItems" :key="item.to">
               <NuxtLink
                 :to="item.to"
                 class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -291,7 +296,35 @@ const themeToggleIcon = computed(() => {
             </li>
           </ul>
 
-          <!-- Quick Actions (right side) -->
+          <div v-if="featuredSecondaryItems.length > 0" class="hidden h-7 w-px bg-slate-200 dark:bg-slate-700 xl:block" />
+
+          <div class="min-w-0 flex-1 overflow-hidden">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1">
+              <p class="shrink-0 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                {{ $t('nav.tools') }}
+              </p>
+              <ul class="flex items-center gap-1">
+                <li v-for="item in toolSecondaryItems" :key="item.to">
+                  <NuxtLink
+                    :to="item.to"
+                    class="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                    :class="[
+                      isHomeRoute
+                        ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200'
+                        : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:text-cyan-200',
+                      isActive(item.to)
+                        ? (isHomeRoute ? 'bg-sky-50 text-sky-700 dark:bg-slate-800 dark:text-sky-300' : 'bg-cyan-50 text-cyan-700 dark:bg-slate-800 dark:text-cyan-300')
+                        : ''
+                    ]"
+                  >
+                    <Icon :name="getIconName(item.icon)" class="h-[18px] w-[18px]" width="18" height="18" />
+                    <span>{{ item.label }}</span>
+                  </NuxtLink>
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <ul class="ml-auto flex items-center space-x-3">
             <li v-if="isAuthenticated">
               <NuxtLink
@@ -363,7 +396,7 @@ const themeToggleIcon = computed(() => {
           </ul>
 
           <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            {{ $t('common.search') }}
+            {{ $t('nav.tools') }}
           </h3>
           <ul class="text-sm font-medium">
             <li v-for="item in secondaryNavItems" :key="item.to">
