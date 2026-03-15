@@ -6,21 +6,19 @@ import {
   formatPercent,
   formatDate
 } from '~/lib/financialFreedom'
-import type { FinancialFreedomInput, WithdrawalRatePreset } from '~/lib/financialFreedom'
+import type { WithdrawalRatePreset } from '~/lib/financialFreedom'
 
 const { t, locale } = useI18n()
 const toast = useToast()
 
-// Form state
-const annualExpenses = ref<number | null>(600000) // 年度支出 (預設60萬)
-const currentAssets = ref<number | null>(1000000) // 目前資產 (預設100萬)
-const monthlyContribution = ref<number | null>(20000) // 每月投入 (預設2萬)
-const expectedReturn = ref<number>(8) // 預期年化報酬率
-const withdrawalRatePreset = ref<WithdrawalRatePreset>('moderate') // 預設4%
-const customWithdrawalRate = ref<number>(4) // 自訂提領率
-const inflationRate = ref<number>(2) // 通膨率
+const annualExpenses = ref<number | null>(600000)
+const currentAssets = ref<number | null>(1000000)
+const monthlyContribution = ref<number | null>(20000)
+const expectedReturn = ref<number>(8)
+const withdrawalRatePreset = ref<WithdrawalRatePreset>('moderate')
+const customWithdrawalRate = ref<number>(4)
+const inflationRate = ref<number>(2)
 
-// Return rate level indicator
 const returnRateLevel = computed(() => {
   const rate = expectedReturn.value
   if (rate <= 4) return 'conservative'
@@ -29,7 +27,6 @@ const returnRateLevel = computed(() => {
 })
 
 const returnRateIndicator = computed(() => {
-  const rate = expectedReturn.value
   const levels = ['conservative', 'target', 'expert'] as const
   const currentIndex = levels.indexOf(returnRateLevel.value)
 
@@ -39,18 +36,17 @@ const returnRateIndicator = computed(() => {
 
     let colorClass = ''
     if (isActive) {
-      colorClass = level === 'conservative' ? 'bg-gray-500' : level === 'target' ? 'bg-green-500' : 'bg-purple-500'
+      colorClass = level === 'conservative' ? 'bg-gray-500' : level === 'target' ? 'bg-green-500' : 'bg-violet-500'
     } else if (isPast) {
       colorClass = level === 'conservative' ? 'bg-gray-400' : 'bg-green-400'
     } else {
       colorClass = 'bg-gray-200 dark:bg-gray-700'
     }
 
-    return { level, isActive, isPast, colorClass }
+    return { level, colorClass }
   })
 })
 
-// Computed
 const withdrawalRate = computed(() => {
   const preset = withdrawalRatePresets.find(p => p.id === withdrawalRatePreset.value)
   return preset?.rate ?? customWithdrawalRate.value
@@ -65,7 +61,6 @@ const isValidInput = computed(() =>
   monthlyContribution.value >= 0
 )
 
-// Calculation result
 const result = computed(() => {
   if (!isValidInput.value) return null
 
@@ -80,7 +75,6 @@ const result = computed(() => {
   })
 })
 
-// Progress bar color
 const progressColor = computed(() => {
   const progress = result.value?.currentProgress ?? 0
   if (progress >= 75) return 'bg-green-500'
@@ -89,17 +83,13 @@ const progressColor = computed(() => {
   return 'bg-gray-400'
 })
 
-// Localized recommendation
 const localizedRecommendation = computed(() => {
   if (!result.value) return ''
 
   const progress = result.value.currentProgress
-  const years = result.value.yearsToFreedom
   const wr = withdrawalRate.value
-
   const lines: string[] = []
 
-  // Progress-based recommendation
   if (progress >= 100) {
     lines.push(t('tools.financialFreedom.recommendations.progress.alreadyFree'))
   } else if (progress >= 75) {
@@ -112,7 +102,6 @@ const localizedRecommendation = computed(() => {
     lines.push(t('tools.financialFreedom.recommendations.progress.justStarted'))
   }
 
-  // Withdrawal rate recommendation
   if (wr <= 3) {
     lines.push(t('tools.financialFreedom.recommendations.withdrawal.conservative'))
   } else if (wr >= 5) {
@@ -122,15 +111,12 @@ const localizedRecommendation = computed(() => {
   return lines.join('\n\n')
 })
 
-// Get localized preset name
 const getPresetName = (preset: typeof withdrawalRatePresets[0]) => {
   return t(`tools.financialFreedom.withdrawalPresets.${preset.id}.name`)
 }
 
-// Localized formatCurrency wrapper
 const formatCurrencyLocal = (value: number) => formatCurrency(value, locale.value)
 
-// Copy to clipboard
 const copySuccess = ref(false)
 
 const copyToClipboard = async () => {
@@ -140,11 +126,8 @@ const copyToClipboard = async () => {
   const isEnglish = locale.value === 'en'
   const isTraditional = locale.value === 'zh-TW'
 
-  // Title
   lines.push(isEnglish ? '# Financial Freedom Analysis' : (isTraditional ? '# 財務自由分析' : '# 财务自由分析'))
   lines.push('')
-
-  // Input Parameters
   lines.push(isEnglish ? '## Input Parameters' : (isTraditional ? '## 輸入參數' : '## 输入参数'))
   lines.push('')
   lines.push(`| ${isEnglish ? 'Parameter' : '參數'} | ${isEnglish ? 'Value' : '數值'} |`)
@@ -155,16 +138,12 @@ const copyToClipboard = async () => {
   lines.push(`| ${isEnglish ? 'Expected Return' : '預期報酬率'} | ${expectedReturn.value}% |`)
   lines.push(`| ${isEnglish ? 'Withdrawal Rate' : '提領率'} | ${withdrawalRate.value}% |`)
   lines.push('')
-
-  // Financial Target
   lines.push(isEnglish ? '## Financial Target' : (isTraditional ? '## 財務目標' : '## 财务目标'))
   lines.push('')
   lines.push(`- **${isEnglish ? 'FIRE Number' : '財務自由金額'}**: ${formatCurrencyLocal(result.value.fireNumber)}`)
   lines.push(`- **${isEnglish ? 'Progress' : '完成進度'}**: ${result.value.currentProgress.toFixed(1)}%`)
   lines.push(`- **${isEnglish ? 'Amount Needed' : '還需要'}**: ${formatCurrencyLocal(result.value.amountNeeded)}`)
   lines.push('')
-
-  // Time to Freedom
   lines.push(isEnglish ? '## Time to Freedom' : (isTraditional ? '## 距離財務自由' : '## 距离财务自由'))
   lines.push('')
   if (result.value.yearsToFreedom === 0) {
@@ -174,16 +153,12 @@ const copyToClipboard = async () => {
     lines.push(`- **${isEnglish ? 'Target Date' : '預計達成'}**: ${formatDate(result.value.freedomDate!, locale.value)}`)
   }
   lines.push('')
-
-  // Withdrawal Capacity
   lines.push(isEnglish ? '## Withdrawal Capacity (After Freedom)' : (isTraditional ? '## 達成後可提領金額' : '## 达成后可提领金额'))
   lines.push('')
   lines.push(`- **${isEnglish ? 'Monthly' : '每月'}**: ${formatCurrencyLocal(result.value.monthlyWithdrawal)}`)
   lines.push(`- **${isEnglish ? 'Weekly' : '每週'}**: ${formatCurrencyLocal(result.value.weeklyWithdrawal)}`)
   lines.push(`- **${isEnglish ? 'Daily' : '每日'}**: ${formatCurrencyLocal(result.value.dailyWithdrawal)}`)
   lines.push('')
-
-  // Yearly Projection (first 10 years)
   lines.push(isEnglish ? '## Yearly Projection (First 10 Years)' : (isTraditional ? '## 年度成長預測（前10年）' : '## 年度成长预测（前10年）'))
   lines.push('')
   lines.push(`| ${isEnglish ? 'Year' : '年份'} | ${isEnglish ? 'Starting' : '期初'} | ${isEnglish ? 'Contribution' : '投入'} | ${isEnglish ? 'Returns' : '報酬'} | ${isEnglish ? 'Ending' : '期末'} |`)
@@ -191,30 +166,26 @@ const copyToClipboard = async () => {
 
   for (const year of result.value.yearlyProjection.slice(0, 10)) {
     const yearLabel = isEnglish ? `Year ${year.year}` : `第 ${year.year} 年`
-    const freedTag = year.isFreed ? (isEnglish ? ' ✅' : ' ✅') : ''
+    const freedTag = year.isFreed ? ' ✅' : ''
     lines.push(`| ${yearLabel}${freedTag} | ${formatCurrencyLocal(year.startingAssets)} | +${formatCurrencyLocal(year.contribution)} | ${year.returns >= 0 ? '+' : ''}${formatCurrencyLocal(year.returns)} | ${formatCurrencyLocal(year.endingAssets)} |`)
   }
-  lines.push('')
 
-  // Footer
+  lines.push('')
   lines.push('---')
   lines.push(`*${isEnglish ? 'Generated by Financial Freedom Calculator' : '由財務自由計算機產生'}*`)
 
-  const markdown = lines.join('\n')
-
   try {
-    await navigator.clipboard.writeText(markdown)
+    await navigator.clipboard.writeText(lines.join('\n'))
     copySuccess.value = true
     toast.success(t('tools.financialFreedom.copySuccess'))
     setTimeout(() => {
       copySuccess.value = false
     }, 2000)
-  } catch (err) {
+  } catch {
     toast.error(t('tools.financialFreedom.copyFailed'))
   }
 }
 
-// SEO
 useHead({
   title: '財務自由計算機 - 投資工具',
   meta: [
@@ -222,453 +193,697 @@ useHead({
   ]
 })
 
-// Set page meta for public access
 definePageMeta({
   requiresAuth: false
 })
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-        {{ t('tools.financialFreedom.title') }}
-      </h1>
-      <p class="text-gray-600 dark:text-gray-400">
-        {{ t('tools.financialFreedom.subtitle') }}
-      </p>
-    </div>
-
-    <!-- Input Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        {{ t('tools.financialFreedom.inputParams') }}
-      </h2>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Annual Expenses -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('tools.financialFreedom.annualExpenses') }}
-          </label>
-          <div class="relative">
-            <input
-              v-model.number="annualExpenses"
-              type="number"
-              min="0"
-              step="10000"
-              :placeholder="t('tools.financialFreedom.annualExpensesPlaceholder')"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-            />
-            <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400 text-sm">$/年</span>
-          </div>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {{ t('tools.financialFreedom.annualExpensesHint') }}
-          </p>
-        </div>
-
-        <!-- Current Assets -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('tools.financialFreedom.currentAssets') }}
-          </label>
-          <div class="relative">
-            <input
-              v-model.number="currentAssets"
-              type="number"
-              min="0"
-              step="100000"
-              :placeholder="t('tools.financialFreedom.currentAssetsPlaceholder')"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-            />
-            <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400 text-sm">$</span>
-          </div>
-        </div>
-
-        <!-- Monthly Contribution -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('tools.financialFreedom.monthlyContribution') }}
-          </label>
-          <div class="relative">
-            <input
-              v-model.number="monthlyContribution"
-              type="number"
-              min="0"
-              step="5000"
-              :placeholder="t('tools.financialFreedom.monthlyContributionPlaceholder')"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-            />
-            <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400 text-sm">$/月</span>
-          </div>
-        </div>
-
-        <!-- Expected Return -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {{ t('tools.financialFreedom.expectedReturn') }}
-          </label>
-          <div class="relative">
-            <input
-              v-model.number="expectedReturn"
-              type="number"
-              min="0"
-              max="30"
-              step="0.5"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-            />
-            <span class="absolute right-3 top-2 text-gray-500 dark:text-gray-400 text-sm">%</span>
-          </div>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {{ t('tools.financialFreedom.expectedReturnHint') }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Return Rate Level Indicator -->
-      <div class="mt-6 bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
-        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-          {{ t('tools.financialFreedom.expectedReturn') }} {{ t('common.range') }}
-        </h3>
-        <div class="flex items-center gap-2 mb-4">
-          <template v-for="(indicator, index) in returnRateIndicator" :key="indicator.level">
-            <!-- Progress bar segment -->
-            <div
-              class="h-3 flex-1 rounded-full transition-all duration-300"
-              :class="indicator.colorClass"
-            />
-            <!-- Spacer between segments (except last) -->
-            <span v-if="index < returnRateIndicator.length - 1" class="text-xs text-gray-400 font-medium">→</span>
-          </template>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <!-- Conservative -->
-          <div
-            class="rounded-lg p-3 border-2 transition-all"
-            :class="returnRateLevel === 'conservative'
-              ? 'border-gray-500 bg-gray-100 dark:bg-gray-800'
-              : 'border-gray-200 dark:border-gray-700'"
-          >
-            <div class="flex items-center gap-2 mb-1">
-              <div class="w-3 h-3 rounded-full bg-gray-500" />
-              <span class="font-semibold text-sm text-gray-700 dark:text-gray-300">
-                {{ t(`tools.financialFreedom.returnRateLevels.conservative.label`) }}
-              </span>
-            </div>
-            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
-              {{ t(`tools.financialFreedom.returnRateLevels.conservative.range`) }}
-            </div>
-            <p class="text-xs text-gray-600 dark:text-gray-400">
-              {{ t(`tools.financialFreedom.returnRateLevels.conservative.description`) }}
+  <div class="freedom-page min-h-screen">
+    <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div class="panel overflow-hidden p-6 sm:p-8">
+        <div class="grid gap-8 lg:grid-cols-[1.25fr_0.9fr] lg:items-center">
+          <div>
+            <p class="kicker mb-3">FIRE Planning Console</p>
+            <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
+              {{ t('tools.financialFreedom.title') }}
+            </h1>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
+              {{ t('tools.financialFreedom.subtitle') }}
             </p>
+
+            <div class="mt-6 grid gap-3 sm:grid-cols-3">
+              <div class="metric-card">
+                <div class="metric-label">{{ t('tools.financialFreedom.fireNumber') }}</div>
+                <div class="metric-value">
+                  {{ result ? formatCurrencyLocal(result.fireNumber) : '—' }}
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">{{ t('tools.financialFreedom.amountNeeded') }}</div>
+                <div class="metric-value">
+                  {{ result ? formatCurrencyLocal(result.amountNeeded) : '—' }}
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">{{ t('tools.financialFreedom.yearsToFreedom') }}</div>
+                <div class="metric-value">
+                  <template v-if="result?.yearsToFreedom === 0">
+                    {{ t('tools.financialFreedom.alreadyFree') }}
+                  </template>
+                  <template v-else-if="result?.yearsToFreedom !== null && result?.yearsToFreedom !== undefined">
+                    {{ result.yearsToFreedom.toFixed(1) }}
+                  </template>
+                  <template v-else>
+                    —
+                  </template>
+                </div>
+              </div>
+            </div>
           </div>
-          <!-- Target -->
-          <div
-            class="rounded-lg p-3 border-2 transition-all"
-            :class="returnRateLevel === 'target'
-              ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-              : 'border-gray-200 dark:border-gray-700'"
-          >
-            <div class="flex items-center gap-2 mb-1">
-              <div class="w-3 h-3 rounded-full bg-green-500" />
-              <span class="font-semibold text-sm text-green-700 dark:text-green-300">
-                {{ t(`tools.financialFreedom.returnRateLevels.target.label`) }}
-              </span>
-            </div>
-            <div class="text-xs text-green-600 dark:text-green-400 mb-1">
-              {{ t(`tools.financialFreedom.returnRateLevels.target.range`) }}
-            </div>
-            <p class="text-xs text-gray-600 dark:text-gray-400">
-              {{ t(`tools.financialFreedom.returnRateLevels.target.description`) }}
+
+          <div class="hero-spotlight">
+            <div class="hero-spotlight-label">{{ t('tools.financialFreedom.withdrawalRate') }}</div>
+            <div class="hero-spotlight-value">{{ formatPercent(withdrawalRate) }}</div>
+            <p class="text-sm leading-6 text-slate-300">
+              {{ t(`tools.financialFreedom.withdrawalPresets.${withdrawalRatePreset}.description`) }}
             </p>
-          </div>
-          <!-- Expert -->
-          <div
-            class="rounded-lg p-3 border-2 transition-all"
-            :class="returnRateLevel === 'expert'
-              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-              : 'border-gray-200 dark:border-gray-700'"
-          >
-            <div class="flex items-center gap-2 mb-1">
-              <div class="w-3 h-3 rounded-full bg-purple-500" />
-              <span class="font-semibold text-sm text-purple-700 dark:text-purple-300">
-                {{ t(`tools.financialFreedom.returnRateLevels.expert.label`) }}
-              </span>
+
+            <div class="mt-5">
+              <div class="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-slate-400">
+                <span>{{ t('tools.financialFreedom.expectedReturn') }}</span>
+                <span>{{ expectedReturn }}%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <template v-for="(indicator, index) in returnRateIndicator" :key="indicator.level">
+                  <div class="h-2.5 flex-1 rounded-full transition-all duration-300" :class="indicator.colorClass" />
+                  <span v-if="index < returnRateIndicator.length - 1" class="text-[10px] text-slate-500">•</span>
+                </template>
+              </div>
             </div>
-            <div class="text-xs text-purple-600 dark:text-purple-400 mb-1">
-              {{ t(`tools.financialFreedom.returnRateLevels.expert.range`) }}
-            </div>
-            <p class="text-xs text-gray-600 dark:text-gray-400">
-              {{ t(`tools.financialFreedom.returnRateLevels.expert.description`) }}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      <!-- Withdrawal Rate Selection -->
-      <div class="mt-6">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {{ t('tools.financialFreedom.withdrawalRate') }}
-        </label>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button
-            v-for="preset in withdrawalRatePresets"
-            :key="preset.id"
-            @click="withdrawalRatePreset = preset.id"
-            class="px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all"
-            :class="withdrawalRatePreset === preset.id
-              ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
-              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300'"
-          >
-            <div class="font-semibold">{{ getPresetName(preset) }}</div>
-            <div class="text-xs opacity-70 mt-1">{{ preset.rate }}%</div>
-          </button>
-        </div>
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          {{ t(`tools.financialFreedom.withdrawalPresets.${withdrawalRatePreset}.description`) }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Results Section -->
-    <div v-if="isValidInput && result" class="space-y-6">
-      <!-- FIRE Number Card -->
-      <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
-        <div class="text-center">
-          <h3 class="text-lg font-medium opacity-80 mb-2">
-            {{ t('tools.financialFreedom.fireNumber') }}
-          </h3>
-          <div class="text-4xl font-bold mb-4">
-            {{ formatCurrencyLocal(result.fireNumber) }}
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="w-full bg-white/20 rounded-full h-4 mb-2 overflow-hidden">
-            <div
-              class="h-full transition-all duration-500"
-              :class="progressColor"
-              :style="{ width: `${Math.min(100, result.currentProgress)}%` }"
-            />
-          </div>
-          <div class="text-sm opacity-90">
-            {{ t('tools.financialFreedom.progress', { percent: result.currentProgress.toFixed(1) }) }}
-          </div>
-        </div>
-      </div>
-
-      <!-- Summary Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Amount Needed -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            {{ t('tools.financialFreedom.amountNeeded') }}
-          </div>
-          <div class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ formatCurrencyLocal(result.amountNeeded) }}
-          </div>
-        </div>
-
-        <!-- Years to Freedom -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            {{ t('tools.financialFreedom.yearsToFreedom') }}
-          </div>
-          <div class="text-xl font-bold" :class="result.yearsToFreedom === 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'">
-            <template v-if="result.yearsToFreedom === 0">
-              {{ t('tools.financialFreedom.alreadyFree') }}
-            </template>
-            <template v-else-if="result.yearsToFreedom !== null">
-              {{ result.yearsToFreedom.toFixed(1) }} {{ t('tools.financialFreedom.years') }}
-            </template>
-            <template v-else>
-              > 100 {{ t('tools.financialFreedom.years') }}
-            </template>
-          </div>
-        </div>
-
-        <!-- Freedom Date -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            {{ t('tools.financialFreedom.freedomDate') }}
-          </div>
-          <div class="text-xl font-bold text-gray-900 dark:text-white">
-            <template v-if="result.yearsToFreedom === 0">
-              {{ t('tools.financialFreedom.now') }}
-            </template>
-            <template v-else-if="result.freedomDate">
-              {{ formatDate(result.freedomDate, locale) }}
-            </template>
-          </div>
-        </div>
-      </div>
-
-      <!-- Withdrawal Capacity -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('tools.financialFreedom.withdrawalCapacity') }}
-          </h3>
-          <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-sm font-medium">
-            {{ formatPercent(withdrawalRate) }}
-          </span>
-        </div>
-
-        <div class="grid grid-cols-3 gap-4">
-          <div class="text-center">
-            <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">
-              {{ t('tools.financialFreedom.monthly') }}
-            </div>
-            <div class="text-lg font-bold text-green-600 dark:text-green-400">
-              {{ formatCurrencyLocal(result.monthlyWithdrawal) }}
-            </div>
-          </div>
-          <div class="text-center">
-            <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">
-              {{ t('tools.financialFreedom.weekly') }}
-            </div>
-            <div class="text-lg font-bold text-blue-600 dark:text-blue-400">
-              {{ formatCurrencyLocal(result.weeklyWithdrawal) }}
-            </div>
-          </div>
-          <div class="text-center">
-            <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">
-              {{ t('tools.financialFreedom.daily') }}
-            </div>
-            <div class="text-lg font-bold text-purple-600 dark:text-purple-400">
-              {{ formatCurrencyLocal(result.dailyWithdrawal) }}
+            <div class="mt-6 grid gap-3 sm:grid-cols-2">
+              <div class="spotlight-stat">
+                <span class="spotlight-stat-label">{{ t('tools.financialFreedom.monthlyContribution') }}</span>
+                <span class="spotlight-stat-value">{{ monthlyContribution ? formatCurrencyLocal(monthlyContribution) : '—' }}</span>
+              </div>
+              <div class="spotlight-stat">
+                <span class="spotlight-stat-label">{{ t('tools.financialFreedom.currentAssets') }}</span>
+                <span class="spotlight-stat-value">{{ currentAssets !== null ? formatCurrencyLocal(currentAssets) : '—' }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Yearly Projection -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ t('tools.financialFreedom.yearlyProjection') }}
-          </h3>
-          <button
-            @click="copyToClipboard"
-            class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition-all bg-indigo-600 hover:bg-indigo-700 text-white"
-          >
-            <Icon
-              :name="copySuccess ? 'heroicons:check' : 'heroicons:clipboard-document'"
-              class="w-4 h-4 mr-1"
-            />
-            {{ copySuccess ? t('common.copied') : t('common.copy') }}
-          </button>
-        </div>
+    <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8">
+      <div class="space-y-6">
+        <div class="panel p-6 sm:p-7">
+          <div class="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <p class="kicker mb-2">{{ t('tools.financialFreedom.inputParams') }}</p>
+              <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                {{ t('tools.financialFreedom.inputParams') }}
+              </h2>
+            </div>
+            <div class="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-300">
+              {{ t(`tools.financialFreedom.returnRateLevels.${returnRateLevel}.label`) }}
+            </div>
+          </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                <th class="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                  {{ t('tools.financialFreedom.year') }}
-                </th>
-                <th class="text-right py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                  {{ t('tools.financialFreedom.startingAssets') }}
-                </th>
-                <th class="text-right py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                  {{ t('tools.financialFreedom.contribution') }}
-                </th>
-                <th class="text-right py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                  {{ t('tools.financialFreedom.returns') }}
-                </th>
-                <th class="text-right py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                  {{ t('tools.financialFreedom.endingAssets') }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(year, index) in result.yearlyProjection.slice(0, 20)"
-                :key="index"
-                class="border-b border-gray-100 dark:border-gray-700/50"
-                :class="{
-                  'bg-green-50 dark:bg-green-900/20': year.isFreed,
-                  'bg-indigo-50 dark:bg-indigo-900/20': index === 0
-                }"
-              >
-                <td class="py-3 px-4 font-medium text-gray-900 dark:text-white">
-                  {{ t('tools.financialFreedom.yearN', { n: year.year }) }}
-                  <span v-if="year.isFreed" class="ml-2 px-2 py-0.5 bg-green-500 text-white text-xs rounded-full">
-                    {{ t('tools.financialFreedom.freed') }}
+          <div class="grid gap-5 md:grid-cols-2">
+            <div>
+              <label class="field-label">{{ t('tools.financialFreedom.annualExpenses') }}</label>
+              <div class="field-shell">
+                <input v-model.number="annualExpenses" type="number" min="0" step="10000" :placeholder="t('tools.financialFreedom.annualExpensesPlaceholder')" class="field-input">
+                <span class="field-unit">$/年</span>
+              </div>
+              <p class="field-hint">{{ t('tools.financialFreedom.annualExpensesHint') }}</p>
+            </div>
+
+            <div>
+              <label class="field-label">{{ t('tools.financialFreedom.currentAssets') }}</label>
+              <div class="field-shell">
+                <input v-model.number="currentAssets" type="number" min="0" step="100000" :placeholder="t('tools.financialFreedom.currentAssetsPlaceholder')" class="field-input">
+                <span class="field-unit">$</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">{{ t('tools.financialFreedom.monthlyContribution') }}</label>
+              <div class="field-shell">
+                <input v-model.number="monthlyContribution" type="number" min="0" step="5000" :placeholder="t('tools.financialFreedom.monthlyContributionPlaceholder')" class="field-input">
+                <span class="field-unit">$/月</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">{{ t('tools.financialFreedom.expectedReturn') }}</label>
+              <div class="field-shell">
+                <input v-model.number="expectedReturn" type="number" min="0" max="30" step="0.5" class="field-input">
+                <span class="field-unit">%</span>
+              </div>
+              <p class="field-hint">{{ t('tools.financialFreedom.expectedReturnHint') }}</p>
+            </div>
+          </div>
+
+          <div class="subpanel mt-6">
+            <div class="mb-4 flex items-center justify-between gap-4">
+              <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-300">
+                {{ t('tools.financialFreedom.expectedReturn') }} {{ t('common.range') }}
+              </h3>
+              <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ expectedReturn }}%</span>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-3">
+              <div class="range-card" :class="returnRateLevel === 'conservative' ? 'range-card-active-slate' : ''">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="h-2.5 w-2.5 rounded-full bg-slate-500" />
+                  <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    {{ t('tools.financialFreedom.returnRateLevels.conservative.label') }}
                   </span>
-                </td>
-                <td class="py-3 px-4 text-right text-gray-600 dark:text-gray-400">
-                  {{ formatCurrencyLocal(year.startingAssets) }}
-                </td>
-                <td class="py-3 px-4 text-right text-green-600 dark:text-green-400">
-                  +{{ formatCurrencyLocal(year.contribution) }}
-                </td>
-                <td class="py-3 px-4 text-right" :class="year.returns >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'">
-                  {{ year.returns >= 0 ? '+' : '' }}{{ formatCurrencyLocal(year.returns) }}
-                </td>
-                <td class="py-3 px-4 text-right font-medium text-gray-900 dark:text-white">
-                  {{ formatCurrencyLocal(year.endingAssets) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  {{ t('tools.financialFreedom.returnRateLevels.conservative.range') }}
+                </div>
+                <p class="mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                  {{ t('tools.financialFreedom.returnRateLevels.conservative.description') }}
+                </p>
+              </div>
 
-      <!-- Recommendation -->
-      <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-        <div class="flex items-start gap-3">
-          <Icon name="heroicons:light-bulb" class="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-          <div class="text-sm text-amber-800 dark:text-amber-200 whitespace-pre-line">
-            {{ localizedRecommendation }}
+              <div class="range-card" :class="returnRateLevel === 'target' ? 'range-card-active-green' : ''">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    {{ t('tools.financialFreedom.returnRateLevels.target.label') }}
+                  </span>
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  {{ t('tools.financialFreedom.returnRateLevels.target.range') }}
+                </div>
+                <p class="mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                  {{ t('tools.financialFreedom.returnRateLevels.target.description') }}
+                </p>
+              </div>
+
+              <div class="range-card" :class="returnRateLevel === 'expert' ? 'range-card-active-violet' : ''">
+                <div class="mb-2 flex items-center gap-2">
+                  <div class="h-2.5 w-2.5 rounded-full bg-violet-500" />
+                  <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    {{ t('tools.financialFreedom.returnRateLevels.expert.label') }}
+                  </span>
+                </div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  {{ t('tools.financialFreedom.returnRateLevels.expert.range') }}
+                </div>
+                <p class="mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                  {{ t('tools.financialFreedom.returnRateLevels.expert.description') }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <label class="field-label">{{ t('tools.financialFreedom.withdrawalRate') }}</label>
+            <div class="grid gap-3 sm:grid-cols-3">
+              <button
+                v-for="preset in withdrawalRatePresets"
+                :key="preset.id"
+                type="button"
+                class="choice-card cursor-pointer"
+                :class="withdrawalRatePreset === preset.id ? 'choice-card-active' : ''"
+                @click="withdrawalRatePreset = preset.id"
+              >
+                <div class="text-sm font-semibold">{{ getPresetName(preset) }}</div>
+                <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ preset.rate }}%</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="isValidInput && result" class="panel overflow-hidden">
+          <div class="result-banner p-6 sm:p-7">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/80">
+                  {{ t('tools.financialFreedom.fireNumber') }}
+                </p>
+                <div class="mt-2 text-4xl font-semibold tracking-tight text-white">
+                  {{ formatCurrencyLocal(result.fireNumber) }}
+                </div>
+              </div>
+              <button type="button" class="action-btn cursor-pointer" @click="copyToClipboard">
+                <Icon :name="copySuccess ? 'heroicons:check' : 'heroicons:clipboard-document'" class="mr-2 h-4 w-4" />
+                {{ copySuccess ? t('tools.financialFreedom.copied') : t('tools.financialFreedom.copyToClipboard') }}
+              </button>
+            </div>
+
+            <div class="mt-6">
+              <div class="mb-2 flex items-center justify-between text-sm text-sky-100/90">
+                <span>{{ t('tools.financialFreedom.progress', { percent: result.currentProgress.toFixed(1) }) }}</span>
+                <span>{{ result.currentProgress.toFixed(1) }}%</span>
+              </div>
+              <div class="h-3 overflow-hidden rounded-full bg-white/15">
+                <div class="h-full rounded-full transition-all duration-500" :class="progressColor" :style="{ width: `${Math.min(100, result.currentProgress)}%` }" />
+              </div>
+            </div>
+          </div>
+
+          <div class="grid gap-4 border-t border-slate-200/70 p-6 dark:border-slate-800 sm:grid-cols-3 sm:p-7">
+            <div class="summary-card">
+              <div class="summary-label">{{ t('tools.financialFreedom.amountNeeded') }}</div>
+              <div class="summary-value">{{ formatCurrencyLocal(result.amountNeeded) }}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">{{ t('tools.financialFreedom.yearsToFreedom') }}</div>
+              <div class="summary-value">
+                <template v-if="result.yearsToFreedom === 0">
+                  {{ t('tools.financialFreedom.alreadyFree') }}
+                </template>
+                <template v-else-if="result.yearsToFreedom !== null">
+                  {{ result.yearsToFreedom.toFixed(1) }} {{ t('tools.financialFreedom.years') }}
+                </template>
+                <template v-else>
+                  > 100 {{ t('tools.financialFreedom.years') }}
+                </template>
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">{{ t('tools.financialFreedom.freedomDate') }}</div>
+              <div class="summary-value">
+                <template v-if="result.yearsToFreedom === 0">
+                  {{ t('tools.financialFreedom.now') }}
+                </template>
+                <template v-else-if="result.freedomDate">
+                  {{ formatDate(result.freedomDate, locale) }}
+                </template>
+                <template v-else>
+                  —
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="isValidInput && result" class="panel p-6 sm:p-7">
+          <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="kicker mb-2">{{ t('tools.financialFreedom.withdrawalCapacity') }}</p>
+              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                {{ t('tools.financialFreedom.withdrawalCapacity') }}
+              </h3>
+            </div>
+            <span class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+              {{ formatPercent(withdrawalRate) }}
+            </span>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-3">
+            <div class="summary-card">
+              <div class="summary-label">{{ t('tools.financialFreedom.monthly') }}</div>
+              <div class="summary-value">{{ formatCurrencyLocal(result.monthlyWithdrawal) }}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">{{ t('tools.financialFreedom.weekly') }}</div>
+              <div class="summary-value">{{ formatCurrencyLocal(result.weeklyWithdrawal) }}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">{{ t('tools.financialFreedom.daily') }}</div>
+              <div class="summary-value">{{ formatCurrencyLocal(result.dailyWithdrawal) }}</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Empty State -->
-    <div v-else class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-12 text-center">
-      <Icon name="heroicons:calculator" class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-      <p class="text-gray-500 dark:text-gray-400">
-        {{ t('tools.financialFreedom.emptyState') }}
-      </p>
-    </div>
+      <div class="space-y-6">
+        <div v-if="isValidInput && result" class="panel p-6 sm:p-7">
+          <p class="kicker mb-2">{{ t('tools.financialFreedom.recommendation') }}</p>
+          <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            {{ t('tools.financialFreedom.recommendation') }}
+          </h3>
+          <div class="recommendation-card mt-5">
+            <Icon name="heroicons:light-bulb" class="h-5 w-5 text-emerald-500" />
+            <p class="whitespace-pre-line text-sm leading-6 text-slate-700 dark:text-slate-200">
+              {{ localizedRecommendation }}
+            </p>
+          </div>
+        </div>
 
-    <!-- Info Cards -->
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- What is FIRE Number -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          {{ t('tools.financialFreedom.whatIsFireNumber') }}
-        </h3>
-        <p class="text-gray-600 dark:text-gray-400 text-sm">
-          {{ t('tools.financialFreedom.whatIsFireNumberDesc') }}
-        </p>
+        <div v-if="isValidInput && result" class="panel p-6 sm:p-7">
+          <div class="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p class="kicker mb-2">{{ t('tools.financialFreedom.yearlyProjection') }}</p>
+              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                {{ t('tools.financialFreedom.yearlyProjection') }}
+              </h3>
+            </div>
+            <div class="text-right text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+              {{ result.yearlyProjection.length }} years
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div
+              v-for="year in result.yearlyProjection"
+              :key="year.year"
+              class="projection-row"
+              :class="year.isFreed ? 'projection-row-active' : ''"
+            >
+              <div class="flex items-center justify-between gap-4">
+                <div>
+                  <div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {{ t('tools.financialFreedom.yearN', { n: year.year }) }}
+                  </div>
+                  <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {{ t('tools.financialFreedom.startingAssets') }} {{ formatCurrencyLocal(year.startingAssets) }}
+                  </div>
+                </div>
+                <div v-if="year.isFreed" class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  FIRE
+                </div>
+              </div>
+
+              <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                <div class="projection-stat">
+                  <span class="projection-label">{{ t('tools.financialFreedom.contribution') }}</span>
+                  <span class="projection-value">+{{ formatCurrencyLocal(year.contribution) }}</span>
+                </div>
+                <div class="projection-stat">
+                  <span class="projection-label">{{ t('tools.financialFreedom.returns') }}</span>
+                  <span class="projection-value" :class="year.returns >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+                    {{ year.returns >= 0 ? '+' : '' }}{{ formatCurrencyLocal(year.returns) }}
+                  </span>
+                </div>
+                <div class="projection-stat">
+                  <span class="projection-label">{{ t('tools.financialFreedom.endingAssets') }}</span>
+                  <span class="projection-value">{{ formatCurrencyLocal(year.endingAssets) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="panel p-10 text-center">
+          <Icon name="heroicons:banknotes" class="mx-auto h-14 w-14 text-slate-300 dark:text-slate-600" />
+          <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">
+            {{ t('tools.financialFreedom.emptyState') }}
+          </p>
+        </div>
       </div>
-
-      <!-- About Withdrawal Rate -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          {{ t('tools.financialFreedom.aboutWithdrawalRate') }}
-        </h3>
-        <p class="text-gray-600 dark:text-gray-400 text-sm">
-          {{ t('tools.financialFreedom.aboutWithdrawalRateDesc') }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Privacy Note -->
-    <div class="mt-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-      <p class="text-sm text-green-700 dark:text-green-300 text-center">
-        {{ t('tools.financialFreedom.privacyNote') }}
-      </p>
-    </div>
-
-    <!-- Disclaimer -->
-    <div class="mt-4 bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-      <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-        {{ t('tools.financialFreedom.disclaimer') }}
-      </p>
-    </div>
+    </section>
   </div>
 </template>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+.freedom-page {
+  font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 11%), transparent 62%),
+    radial-gradient(820px 420px at 100% -8%, rgb(16 185 129 / 9%), transparent 62%),
+    #f8fafc;
+}
+
+.panel {
+  border: 1px solid rgb(191 219 254);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 84%);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 26px rgb(30 64 175 / 8%);
+}
+
+.kicker {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgb(59 130 246);
+  font-weight: 700;
+}
+
+.metric-card,
+.summary-card,
+.projection-stat {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.95rem;
+  background: rgb(255 255 255 / 70%);
+  padding: 1rem;
+}
+
+.metric-label,
+.summary-label,
+.projection-label,
+.spotlight-stat-label,
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+}
+
+.metric-value,
+.summary-value,
+.projection-value,
+.spotlight-stat-value {
+  margin-top: 0.5rem;
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.hero-spotlight {
+  border: 1px solid rgb(30 64 175 / 20%);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background:
+    linear-gradient(160deg, rgb(15 23 42), rgb(15 23 42 / 94%) 48%, rgb(30 41 59) 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
+}
+
+.hero-spotlight-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(148 163 184);
+}
+
+.hero-spotlight-value {
+  margin-top: 0.5rem;
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.spotlight-stat {
+  border: 1px solid rgb(148 163 184 / 18%);
+  border-radius: 0.9rem;
+  padding: 0.9rem 1rem;
+  background: rgb(255 255 255 / 4%);
+}
+
+.subpanel,
+.recommendation-card,
+.projection-row {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 1rem;
+  background: rgb(248 250 252 / 78%);
+  padding: 1rem;
+}
+
+.field-shell {
+  position: relative;
+  margin-top: 0.55rem;
+}
+
+.field-input {
+  width: 100%;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.9rem;
+  background: rgb(255 255 255 / 90%);
+  padding: 0.9rem 3.5rem 0.9rem 1rem;
+  color: rgb(15 23 42);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: rgb(59 130 246);
+  box-shadow: 0 0 0 4px rgb(191 219 254);
+}
+
+.field-unit {
+  position: absolute;
+  right: 0.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(100 116 139);
+}
+
+.field-hint {
+  margin-top: 0.45rem;
+  font-size: 0.8rem;
+  color: rgb(100 116 139);
+}
+
+.range-card,
+.choice-card {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.95rem;
+  background: rgb(255 255 255 / 70%);
+  padding: 1rem;
+  text-align: left;
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.choice-card:hover,
+.range-card:hover {
+  transform: translateY(-1px);
+}
+
+.choice-card-active {
+  border-color: rgb(59 130 246);
+  background: rgb(239 246 255);
+}
+
+.range-card-active-slate {
+  border-color: rgb(100 116 139);
+  background: rgb(248 250 252);
+}
+
+.range-card-active-green {
+  border-color: rgb(16 185 129);
+  background: rgb(236 253 245);
+}
+
+.range-card-active-violet {
+  border-color: rgb(139 92 246);
+  background: rgb(245 243 255);
+}
+
+.result-banner {
+  background:
+    radial-gradient(circle at top right, rgb(56 189 248 / 30%), transparent 28%),
+    linear-gradient(145deg, rgb(15 23 42), rgb(30 41 59));
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.8rem;
+  padding: 0.7rem 1rem;
+  color: white;
+  background: rgb(30 64 175 / 88%);
+  transition: background-color 180ms ease;
+}
+
+.action-btn:hover {
+  background: rgb(29 78 216);
+}
+
+.recommendation-card {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.projection-row-active {
+  border-color: rgb(16 185 129 / 45%);
+  background: rgb(236 253 245 / 70%);
+}
+
+:global(.dark .freedom-page),
+:global(.dark-mode .freedom-page) {
+  background:
+    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 9%), transparent 62%),
+    radial-gradient(820px 420px at 100% -8%, rgb(16 185 129 / 7%), transparent 62%),
+    rgb(2 6 18);
+}
+
+:global(.dark .panel),
+:global(.dark-mode .panel) {
+  border-color: rgb(71 85 105);
+  background: rgb(3 10 24 / 92%);
+  box-shadow: 0 12px 26px rgb(2 6 23 / 45%);
+}
+
+:global(.dark .metric-card),
+:global(.dark .summary-card),
+:global(.dark .projection-stat),
+:global(.dark .subpanel),
+:global(.dark .recommendation-card),
+:global(.dark .projection-row),
+:global(.dark .range-card),
+:global(.dark .choice-card),
+:global(.dark-mode .metric-card),
+:global(.dark-mode .summary-card),
+:global(.dark-mode .projection-stat),
+:global(.dark-mode .subpanel),
+:global(.dark-mode .recommendation-card),
+:global(.dark-mode .projection-row),
+:global(.dark-mode .range-card),
+:global(.dark-mode .choice-card) {
+  border-color: rgb(51 65 85);
+  background: rgb(8 15 30 / 78%);
+}
+
+:global(.dark .metric-label),
+:global(.dark .summary-label),
+:global(.dark .projection-label),
+:global(.dark .spotlight-stat-label),
+:global(.dark .field-label),
+:global(.dark .field-hint),
+:global(.dark-mode .metric-label),
+:global(.dark-mode .summary-label),
+:global(.dark-mode .projection-label),
+:global(.dark-mode .spotlight-stat-label),
+:global(.dark-mode .field-label),
+:global(.dark-mode .field-hint) {
+  color: rgb(148 163 184);
+}
+
+:global(.dark .metric-value),
+:global(.dark .summary-value),
+:global(.dark .projection-value),
+:global(.dark .spotlight-stat-value),
+:global(.dark-mode .metric-value),
+:global(.dark-mode .summary-value),
+:global(.dark-mode .projection-value),
+:global(.dark-mode .spotlight-stat-value) {
+  color: rgb(241 245 249);
+}
+
+:global(.dark .field-input),
+:global(.dark-mode .field-input) {
+  border-color: rgb(71 85 105);
+  background: rgb(15 23 42 / 88%);
+  color: rgb(241 245 249);
+}
+
+:global(.dark .field-input:focus),
+:global(.dark-mode .field-input:focus) {
+  border-color: rgb(96 165 250);
+  box-shadow: 0 0 0 4px rgb(30 41 59);
+}
+
+:global(.dark .field-unit),
+:global(.dark-mode .field-unit) {
+  color: rgb(148 163 184);
+}
+
+:global(.dark .choice-card-active),
+:global(.dark-mode .choice-card-active) {
+  border-color: rgb(96 165 250);
+  background: rgb(15 23 42);
+}
+
+:global(.dark .range-card-active-slate),
+:global(.dark-mode .range-card-active-slate) {
+  border-color: rgb(100 116 139);
+  background: rgb(15 23 42);
+}
+
+:global(.dark .range-card-active-green),
+:global(.dark-mode .range-card-active-green) {
+  border-color: rgb(16 185 129);
+  background: rgb(2 44 34);
+}
+
+:global(.dark .range-card-active-violet),
+:global(.dark-mode .range-card-active-violet) {
+  border-color: rgb(139 92 246);
+  background: rgb(30 27 75);
+}
+
+:global(.dark .projection-row-active),
+:global(.dark-mode .projection-row-active) {
+  border-color: rgb(16 185 129 / 45%);
+  background: rgb(2 44 34 / 55%);
+}
+</style>
