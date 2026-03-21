@@ -58,6 +58,16 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  app: {
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }
+      ]
+    }
+  },
 
   modules: [
     '@nuxtjs/tailwindcss',
@@ -209,7 +219,14 @@ export default defineNuxtConfig({
 
   pwa: {
     registerType: 'autoUpdate',
-    includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg'],
+    includeAssets: [
+      'favicon.ico',
+      'favicon-16x16.png',
+      'favicon-32x32.png',
+      'apple-touch-icon.png',
+      'robots.txt',
+      'icon.svg'
+    ],
     strategies: 'generateSW', // Use generateSW for better precaching control
     manifest: {
       name: '交易基礎',
