@@ -1,11 +1,14 @@
 import prisma from '../../lib/prisma'
 import type { Prisma } from '@prisma/client'
 import type { DiariesApiResponse } from '~/types/diary'
+import { parseDiaryTags } from '~/lib/diary-tags'
 import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
 import { requireUser } from '~/server/utils/auth'
 
 type DiaryListItem = Awaited<ReturnType<typeof prisma.diary.findMany>>[number]
+type DiaryAlertItem = DiaryListItem['alerts'][number]
+type DiaryTransactionItem = DiaryListItem['transactions'][number]
 
 export default defineEventHandler(async (event): Promise<DiariesApiResponse> => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -18,13 +21,9 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const page = Number(query.page) || 1
     const limit = Number(query.limit) || 20
     const skip = (page - 1) * limit
-    const quickOnly = String(query.quickOnly || '').toLowerCase() === 'true' || query.quickOnly === '1'
     const days = Number(query.days)
 
     const where: Prisma.DiaryWhereInput = { userId }
-    if (quickOnly) {
-      where.title = 'Quick Diary'
-    }
     if (Number.isFinite(days) && days > 0) {
       const since = new Date()
       since.setDate(since.getDate() - days)
@@ -42,6 +41,7 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
           id: true,
           title: true,
           content: true,
+          tagsString: true,
           date: true,
           createdAt: true,
           updatedAt: true,
@@ -75,8 +75,9 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const safeDiaries = diaries.map((d: DiaryListItem) => ({
       ...d,
       id: d.id.toString(),
-      alerts: d.alerts.map((a) => ({ ...a, id: a.id.toString() })),
-      transactions: d.transactions.map((t) => ({
+      tags: parseDiaryTags(d.tagsString),
+      alerts: d.alerts.map((a: DiaryAlertItem) => ({ ...a, id: a.id.toString() })),
+      transactions: d.transactions.map((t: DiaryTransactionItem) => ({
         ...t,
         id: t.id.toString(),
       })),

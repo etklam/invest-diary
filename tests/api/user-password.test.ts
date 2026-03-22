@@ -68,6 +68,8 @@ describe('User Password API', () => {
     })
     expect(mockDeleteCookie).toHaveBeenCalledWith(event, 'access-token', { path: '/' })
     expect(mockDeleteCookie).toHaveBeenCalledWith(event, 'refresh-token', { path: '/' })
+    expect(mockDeleteCookie).toHaveBeenCalledWith(event, 'auth-token')
+    expect(mockDeleteCookie).toHaveBeenCalledWith(event, 'auth-token', { path: '/' })
     expect(result).toEqual({
       success: true,
       message: 'Password changed successfully. Please login again.',

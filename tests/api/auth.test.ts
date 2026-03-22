@@ -279,15 +279,16 @@ describe('Auth API', () => {
   })
 
   describe('POST /api/auth/logout', () => {
-    it('should clear auth cookies', async () => {
+    it('should clear auth cookies including legacy auth-token', async () => {
       const { default: handler } = await import('~/server/api/auth/logout.post')
       const mockEvent = { context: {} } as any
 
       const result = await handler(mockEvent)
 
-      // Should clear access-token and refresh-token cookies
       expect(mockDeleteCookie).toHaveBeenCalledWith(mockEvent, 'access-token', { path: '/' })
       expect(mockDeleteCookie).toHaveBeenCalledWith(mockEvent, 'refresh-token', { path: '/' })
+      expect(mockDeleteCookie).toHaveBeenCalledWith(mockEvent, 'auth-token')
+      expect(mockDeleteCookie).toHaveBeenCalledWith(mockEvent, 'auth-token', { path: '/' })
       expect(result).toEqual({ ok: true })
     })
   })

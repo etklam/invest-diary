@@ -1,5 +1,6 @@
 import prisma from '~/lib/prisma'
 import { getUtcDayRange } from '~/lib/diary-date'
+import { attachDiaryTags } from '~/server/utils/diary-response'
 
 export default defineEventHandler(async (event) => {
   const userId = event.context.user?.id
@@ -43,7 +44,7 @@ export default defineEventHandler(async (event) => {
     })
 
     console.log('Found diary:', diary ? 'Yes' : 'No')
-    return diary || null
+    return diary ? attachDiaryTags(diary) : null
   } catch (error) {
     console.error('Error checking diary by date:', error)
     throw createError({

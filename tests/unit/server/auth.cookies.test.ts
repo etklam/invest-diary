@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mockSetCookie } from '../../vi-setup'
+import { mockDeleteCookie, mockSetCookie } from '../../vi-setup'
 
 describe('server/utils/auth cookies', () => {
   beforeEach(() => {
@@ -42,5 +42,17 @@ describe('server/utils/auth cookies', () => {
       'new-access-token',
       expect.objectContaining({ maxAge: 60 * 60 })
     )
+  })
+
+  it('should clear access, refresh, and legacy auth-token cookies', async () => {
+    const { clearAuthCookies } = await import('~/server/utils/auth')
+    const event = { context: {} } as any
+
+    clearAuthCookies(event)
+
+    expect(mockDeleteCookie).toHaveBeenCalledWith(event, 'access-token', { path: '/' })
+    expect(mockDeleteCookie).toHaveBeenCalledWith(event, 'refresh-token', { path: '/' })
+    expect(mockDeleteCookie).toHaveBeenCalledWith(event, 'auth-token')
+    expect(mockDeleteCookie).toHaveBeenCalledWith(event, 'auth-token', { path: '/' })
   })
 })

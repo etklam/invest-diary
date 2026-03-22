@@ -50,6 +50,9 @@ export function setAccessTokenCookie(event: H3Event, accessToken: string) {
 export function clearAuthCookies(event: H3Event) {
   deleteCookie(event, ACCESS_TOKEN_COOKIE, { path: '/' })
   deleteCookie(event, REFRESH_TOKEN_COOKIE, { path: '/' })
+  // Clear the legacy cookie for both the default path and root path.
+  deleteCookie(event, 'auth-token')
+  deleteCookie(event, 'auth-token', { path: '/' })
 }
 
 /**
@@ -71,6 +74,7 @@ export function setAuthCookie(event: H3Event, token: string) {
  */
 export function clearAuthCookie(event: H3Event) {
   deleteCookie(event, 'auth-token')
+  deleteCookie(event, 'auth-token', { path: '/' })
 }
 
 export function requireUser(event: H3Event) {

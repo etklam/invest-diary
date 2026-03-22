@@ -45,6 +45,7 @@ export interface Diary {
   userId: bigint | string
   title: string
   content: string | null
+  tags?: string[]
   tagsString?: string | null
   date: Date
   createdAt: Date

@@ -2,6 +2,7 @@ import prisma from '../../../lib/prisma'
 import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { attachDiaryTags } from '~/server/utils/diary-response'
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
     }
 
     log.info('Diary fetched', { diaryId: diaryIdString })
-    return diary
+    return attachDiaryTags(diary)
   } catch (error) {
     if (error instanceof AppError) {
       log.warn(error.message, { code: error.code })

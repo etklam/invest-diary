@@ -1,8 +1,10 @@
 import prisma from '~/lib/prisma'
 import type { DiaryInput, Diary } from '~/types/diary'
 import { getUtcDayRange, toUtcNoonDate } from '~/lib/diary-date'
+import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/diary-tags'
 import { Errors, AppError } from '~/lib/errors/factory'
 import { validateTransactions } from '~/lib/transactions/validate'
+import { attachDiaryTags } from '~/server/utils/diary-response'
 
 export default defineEventHandler(async (event): Promise<Diary> => {
   const userId = event.context.user?.id
@@ -21,7 +23,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     throw Errors.validationError([{ field: 'content', message: 'Content is required' }]).toH3Error()
   }
 
-  const { title, content, date, transactions, alerts, appendToToday } = body
+  const { title, content, date, transactions, alerts, appendToToday, tags } = body
 
   const transactionError = validateTransactions(transactions)
   if (transactionError) {
@@ -44,10 +46,14 @@ export default defineEventHandler(async (event): Promise<Diary> => {
 
     if (existingDiary && appendToToday) {
       const separator = '\n\n---\n\n'
+      const mergedTags = tags?.length
+        ? normalizeDiaryTags([...parseDiaryTags(existingDiary.tagsString), ...tags])
+        : null
       const updatedDiary = await prisma.diary.update({
         where: { id: existingDiary.id },
         data: {
-          content: existingDiary.content + separator + content,
+          content: `${existingDiary.content ?? ''}${separator}${content}`,
+          ...(mergedTags ? { tagsString: stringifyDiaryTags(mergedTags) } : {}),
         },
         include: {
           transactions: true,
@@ -55,7 +61,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
         },
       })
 
-      return updatedDiary as Diary
+      return attachDiaryTags(updatedDiary as Diary)
     }
 
     if (existingDiary) {
@@ -68,6 +74,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
         userId: userId,
         title,
         content,
+        tagsString: stringifyDiaryTags(tags),
         date: diaryDate,
         transactions: {
           create: transactions?.map((tx) => ({
@@ -92,7 +99,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     })
 
     console.log('[API] Diary created:', diary.id, 'for user:', userId)
-    return diary as Diary
+    return attachDiaryTags(diary as Diary)
   } catch (error) {
     if (error instanceof AppError) {
       throw error.toH3Error()

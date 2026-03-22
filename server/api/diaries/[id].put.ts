@@ -3,8 +3,10 @@ import type { DiaryInput, Diary } from '~/types/diary'
 import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
 import { toUtcNoonDate } from '~/lib/diary-date'
+import { stringifyDiaryTags } from '~/lib/diary-tags'
 import { validateTransactions } from '~/lib/transactions/validate'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { attachDiaryTags } from '~/server/utils/diary-response'
 
 export default defineEventHandler(async (event): Promise<Diary> => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -22,7 +24,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     throw Errors.validationError([{ field: 'title', message: 'Title is required' }]).toH3Error()
   }
 
-  const { title, content, date, transactions, alerts } = body
+  const { title, content, date, transactions, alerts, tags } = body
   const transactionError = validateTransactions(transactions)
   if (transactionError) {
     throw Errors.validationError([{ field: 'transactions', message: transactionError }]).toH3Error()
@@ -67,6 +69,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
         data: {
           title,
           content,
+          tagsString: tags !== undefined ? stringifyDiaryTags(tags) : undefined,
           date: date ? toUtcNoonDate(date) : undefined,
           transactions: {
             create: transactions?.map((tx) => ({
@@ -92,7 +95,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     })
 
     log.info('Diary updated', { diaryId: diary.id.toString(), userId })
-    return diary as Diary
+    return attachDiaryTags(diary as Diary)
   } catch (error) {
     if (error instanceof AppError) {
       log.warn(error.message, { code: error.code })

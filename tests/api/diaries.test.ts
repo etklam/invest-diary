@@ -50,6 +50,7 @@ describe('Diary API Routes', () => {
           id: 1n,
           title: 'First diary',
           content: 'content',
+          tagsString: 'profit, watch',
           date: now,
           createdAt: now,
           updatedAt: now,
@@ -66,17 +67,19 @@ describe('Diary API Routes', () => {
       expect(mockDiaryFindMany).toHaveBeenCalled()
       expect(result.pagination).toEqual({ page: 1, limit: 2, total: 1, totalPages: 1 })
       expect(result.data[0].id).toBe('1')
+      expect(result.data[0].tags).toEqual(['profit', 'watch'])
       expect(result.data[0].alerts[0].id).toBe('11')
       expect(result.data[0].transactions[0].id).toBe('21')
     })
   })
 
   describe('POST /api/diaries', () => {
-    it('should create a new diary', async () => {
+    it('should create a new diary and persist tags', async () => {
       const diaryDate = new Date('2026-01-02T00:00:00.000Z')
       mockReadBody.mockResolvedValue({
         title: 'New Diary',
         content: 'New content',
+        tags: ['profit', 'watch'],
         date: diaryDate.toISOString(),
         transactions: [{ symbol: 'AAPL', type: 'BUY', quantity: 1, price: 100, tradeDate: diaryDate }],
         alerts: [{ message: 'Reminder', triggerAt: diaryDate }],
@@ -86,6 +89,7 @@ describe('Diary API Routes', () => {
         id: 100n,
         title: 'New Diary',
         content: 'New content',
+        tagsString: 'profit,watch',
         date: diaryDate,
         transactions: [],
         alerts: [],
@@ -95,8 +99,13 @@ describe('Diary API Routes', () => {
 
       const result = await handler({ context: { user: { id: '1' } } } as any)
 
-      expect(mockDiaryCreate).toHaveBeenCalled()
+      expect(mockDiaryCreate).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          tagsString: 'profit,watch',
+        }),
+      }))
       expect(result.id).toBe(100n)
+      expect(result.tags).toEqual(['profit', 'watch'])
     })
 
     it('should return 400 when title is missing', async () => {
@@ -109,16 +118,18 @@ describe('Diary API Routes', () => {
       })
     })
 
-    it('should append to existing diary when appendToToday is true', async () => {
+    it('should append to existing diary and merge tags when appendToToday is true', async () => {
       mockReadBody.mockResolvedValue({
         title: 'Entry',
         content: 'Additional content',
+        tags: ['profit', 'watch'],
         appendToToday: true,
       })
-      mockDiaryFindFirst.mockResolvedValue({ id: 5n, content: 'Original content' })
+      mockDiaryFindFirst.mockResolvedValue({ id: 5n, content: 'Original content', tagsString: 'watch,learning' })
       mockDiaryUpdate.mockResolvedValue({
         id: 5n,
         content: 'Original content\n\n---\n\nAdditional content',
+        tagsString: 'watch,learning,profit',
       })
 
       const { default: handler } = await import('~/server/api/diaries.post')
@@ -129,6 +140,12 @@ describe('Diary API Routes', () => {
       expect(result.content).toContain('Original content')
       expect(result.content).toContain('Additional content')
       expect(result.content).toContain('---')
+      expect(mockDiaryUpdate).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          tagsString: 'watch,learning,profit',
+        }),
+      }))
+      expect(result.tags).toEqual(['watch', 'learning', 'profit'])
     })
 
     it('should reject when diary exists and appendToToday is false', async () => {
@@ -147,12 +164,41 @@ describe('Diary API Routes', () => {
     })
   })
 
+  describe('GET /api/diaries/:id', () => {
+    it('should return diary detail with parsed tags', async () => {
+      const now = new Date('2026-01-03T10:00:00.000Z')
+      mockGetRouterParam.mockReturnValue('9')
+      mockDiaryFindFirst.mockResolvedValue({
+        id: 9n,
+        userId: 1n,
+        title: 'Tagged diary',
+        content: 'Body',
+        tagsString: 'learning, swing',
+        date: now,
+        createdAt: now,
+        updatedAt: now,
+        transactions: [],
+        alerts: [],
+      })
+
+      const { default: handler } = await import('~/server/api/diaries/[id].get')
+
+      const result = await handler({
+        context: { user: { id: '1' }, requestId: 'req-3' },
+      } as any)
+
+      expect(result.tags).toEqual(['learning', 'swing'])
+      expect(result.tagsString).toBe('learning, swing')
+    })
+  })
+
   describe('PUT /api/diaries/:id', () => {
-    it('should update an existing diary and replace relations', async () => {
+    it('should update an existing diary, replace relations, and persist tags', async () => {
       mockGetRouterParam.mockReturnValue('12')
       mockReadBody.mockResolvedValue({
         title: 'Updated Title',
         content: 'Updated content',
+        tags: ['watch', 'mistake'],
         transactions: [{ symbol: 'TSLA', type: 'BUY', quantity: 2, price: 300, tradeDate: new Date() }],
         alerts: [{ message: 'Alert', triggerAt: new Date() }],
       })
@@ -161,6 +207,7 @@ describe('Diary API Routes', () => {
         id: 12n,
         title: 'Updated Title',
         content: 'Updated content',
+        tagsString: 'watch,mistake',
       })
 
       const { default: handler } = await import('~/server/api/diaries/[id].put')
@@ -171,7 +218,13 @@ describe('Diary API Routes', () => {
 
       expect(mockTxTransactionDeleteMany).toHaveBeenCalled()
       expect(mockTxAlertDeleteMany).toHaveBeenCalled()
+      expect(mockDiaryUpdate).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          tagsString: 'watch,mistake',
+        }),
+      }))
       expect(result.title).toBe('Updated Title')
+      expect(result.tags).toEqual(['watch', 'mistake'])
     })
   })
 
