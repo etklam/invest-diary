@@ -1,26 +1,22 @@
 <script setup lang="ts">
+import {
+  buildAdminBlogQueryString,
+  getBlogStatusBadgeClass,
+  getBlogStatusLabel,
+  toggleSelectionId,
+  toggleSelectAllIds,
+} from '~/lib/admin/blog-management'
+import { resolveReloadPageAfterDelete } from '~/lib/admin/user-management'
 import { formatDate } from '~/lib/utils'
 import { CATEGORY_OPTIONS } from '~/types/blog'
 
 const { t } = useI18n()
-const { isAuthenticated, isAdmin } = useAuth()
 const toast = useToast()
 const router = useRouter()
 
 definePageMeta({
   middleware: 'admin',
   requiresAuth: true,
-})
-
-// Client-side guard for admin page
-watchEffect(() => {
-  if (!process.client) return
-
-  if (!isAuthenticated.value) {
-    navigateTo('/auth/login')
-  } else if (!isAdmin.value) {
-    navigateTo('/')
-  }
 })
 
 // State
@@ -75,20 +71,13 @@ const sortOptions = computed(() => [
 const fetchPosts = async (page = 1) => {
   try {
     loading.value = true
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: pagination.value.limit.toString()
+    const query = buildAdminBlogQueryString({
+      page,
+      limit: pagination.value.limit,
+      filters: filters.value,
     })
 
-    if (filters.value.status) params.append('status', filters.value.status)
-    if (filters.value.category) params.append('category', filters.value.category)
-    if (filters.value.search) params.append('search', filters.value.search)
-    if (filters.value.author) params.append('author', filters.value.author)
-    if (filters.value.dateFrom) params.append('dateFrom', filters.value.dateFrom)
-    if (filters.value.dateTo) params.append('dateTo', filters.value.dateTo)
-    if (filters.value.sortBy) params.append('sortBy', filters.value.sortBy)
-
-    const response = await $fetch(`/api/blog/admin?${params.toString()}`) as any
+    const response = await $fetch(`/api/blog/admin?${query}`) as any
 
     posts.value = response.data
     pagination.value = response.pagination
@@ -134,16 +123,12 @@ const deletePost = async (postId: string, postTitle: string) => {
   try {
     await $fetch(`/api/blog/${postId}`, { method: 'DELETE' })
     toast.success(t('blog.deleteSuccess'))
-    // Refresh current page or go to previous if empty
-    const currentPage = pagination.value.page
-    const isLastPage = currentPage === pagination.value.totalPages
-    const isEmptyPage = posts.value.length === 1
-
-    if (isLastPage && isEmptyPage && currentPage > 1) {
-      await fetchPosts(currentPage - 1)
-    } else {
-      await fetchPosts(currentPage)
-    }
+    const nextPage = resolveReloadPageAfterDelete({
+      currentPage: pagination.value.page,
+      totalPages: pagination.value.totalPages,
+      visibleCount: posts.value.length,
+    })
+    await fetchPosts(nextPage)
   } catch (error: any) {
     console.error('Failed to delete post:', error)
     toast.error(error.data?.statusMessage || t('blog.deleteFailed'))
@@ -170,39 +155,14 @@ onMounted(() => {
   fetchPosts(1)
 })
 
-// Status badge class
-const statusBadgeClass = (status: string) => {
-  switch (status) {
-    case 'PUBLISHED':
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    case 'DRAFT':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-    case 'ARCHIVED':
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-  }
-}
+const statusBadgeClass = (status: string) => getBlogStatusBadgeClass(status)
 
-const statusLabel = (status: string) => {
-  switch (status) {
-    case 'PUBLISHED': return t('blog.postStatuses.published')
-    case 'DRAFT': return t('blog.postStatuses.draft')
-    case 'ARCHIVED': return t('blog.postStatuses.archived')
-    default: return status
-  }
-}
+const statusLabel = (status: string) => getBlogStatusLabel(status, t)
 
 const isSelected = (postId: string) => selectedPosts.value.has(postId)
 
 const toggleSelection = (postId: string) => {
-  const next = new Set(selectedPosts.value)
-  if (next.has(postId)) {
-    next.delete(postId)
-  } else {
-    next.add(postId)
-  }
-  selectedPosts.value = next
+  selectedPosts.value = toggleSelectionId(selectedPosts.value, postId)
 }
 
 const isAllSelected = computed(() => {
@@ -211,13 +171,7 @@ const isAllSelected = computed(() => {
 })
 
 const toggleSelectAll = () => {
-  if (isAllSelected.value) {
-    selectedPosts.value = new Set()
-    return
-  }
-  const next = new Set<string>()
-  posts.value.forEach((post) => next.add(String(post.id)))
-  selectedPosts.value = next
+  selectedPosts.value = toggleSelectAllIds(posts.value.map(post => String(post.id)), selectedPosts.value)
 }
 
 const bulkPublish = async () => {

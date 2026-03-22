@@ -154,6 +154,7 @@ import { computed, ref, watch } from 'vue'
 import QuickNoteEditorCore from '~/components/quicknote/QuickNoteEditorCore.vue'
 import QuickNoteTemplateAssistant from '~/components/quicknote/QuickNoteTemplateAssistant.vue'
 import { useQuickNoteComposer } from '~/composables/useQuickNoteComposer'
+import { createQuickNoteModalTemplates, resolveQuickNoteSaveErrorMessage } from '~/lib/quicknote/modal-shell'
 import type { QuickNoteTemplateKind } from '~/types/quicknote'
 
 const props = defineProps<{
@@ -200,29 +201,7 @@ const {
   defaultTemplateKind: 'trading',
 })
 
-const templates = computed(() => [
-  {
-    kind: 'trading' as QuickNoteTemplateKind,
-    label: t('quickDiary.templates.trading'),
-    description: t('quickDiary.templates.tradingDesc'),
-    icon: 'heroicons:currency-dollar-solid',
-    iconClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
-  },
-  {
-    kind: 'reflection' as QuickNoteTemplateKind,
-    label: t('quickDiary.templates.reflection'),
-    description: t('quickDiary.templates.reflectionDesc'),
-    icon: 'heroicons:light-bulb-solid',
-    iconClass: 'bg-gradient-to-br from-purple-400 to-purple-600',
-  },
-  {
-    kind: 'observation' as QuickNoteTemplateKind,
-    label: t('quickDiary.templates.observation'),
-    description: t('quickDiary.templates.observationDesc'),
-    icon: 'heroicons:eye-solid',
-    iconClass: 'bg-gradient-to-br from-blue-400 to-blue-600',
-  },
-])
+const templates = computed(() => createQuickNoteModalTemplates(t))
 
 watch(
   () => props.show,
@@ -280,16 +259,8 @@ async function handleSave() {
     emit('created', String(diary?.id))
     close()
   } catch (error: any) {
-    if (error?.message === 'CONTENT_REQUIRED') {
-      toast.error(t('quickDiary.fillRequired'))
-      return
-    }
-    if (error?.message === 'TITLE_REQUIRED') {
-      toast.error(t('quickDiary.fillRequired'))
-      return
-    }
     console.error('Error creating quick diary:', error)
-    toast.error('建立失敗：' + (error.data?.statusMessage || error.message))
+    toast.error(resolveQuickNoteSaveErrorMessage(error, t))
   } finally {
     saving.value = false
   }

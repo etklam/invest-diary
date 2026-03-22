@@ -1,88 +1,36 @@
-/**
- * Yahoo Finance API Types
- */
-export interface YahooQuoteMeta {
-  symbol: string
-  regularMarketPrice: number
-  previousClose: number
-  currency: string
-  marketState: string
-  regularMarketTime: number
-}
+import {
+  buildYahooChartUrl,
+  parseYahooMonthlyQuotes,
+  parseYahooQuoteResponse,
+  type QuoteResponse,
+  type YahooChartResponse,
+  type YahooMonthlyQuote,
+  type YahooQuoteMeta,
+  type YahooQuoteResult,
+} from '~/lib/market-data/yahoo'
 
-export interface YahooQuoteResult {
-  meta: YahooQuoteMeta
-  timestamp?: number[]
-  indicators?: {
-    quote?: Array<{
-      open?: Array<number | null>
-      high?: Array<number | null>
-      low?: Array<number | null>
-      close?: Array<number | null>
-      volume?: Array<number | null>
-    }>
-    adjclose?: Array<{
-      adjclose?: Array<number | null>
-    }>
-  }
-}
-
-export interface YahooChartResponse {
-  chart: {
-    result?: YahooQuoteResult[]
-    error: null | { code: number; description: string }
-  }
-}
-
-export interface YahooMonthlyQuote {
-  timestamp: number
-  open: number | null
-  high: number | null
-  low: number | null
-  close: number | null
-  volume: number | null
-  adjClose: number | null
-}
-
-export interface QuoteResponse {
-  symbol: string
-  regularMarketPrice: number
-  previousClose: number
-  change: number
-  changePercent: number
-  currency: string
-  marketState: string
-  lastUpdateTime: string
-}
+export type {
+  QuoteResponse,
+  YahooChartResponse,
+  YahooMonthlyQuote,
+  YahooQuoteMeta,
+  YahooQuoteResult,
+} from '~/lib/market-data/yahoo'
 
 /**
  * Fetch real-time quote for a symbol
  * @param symbol ETF symbol (e.g., "SPY", "QQQ", "0050.TW")
  */
 export async function fetchQuote(symbol: string): Promise<QuoteResponse> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`
+  const url = buildYahooChartUrl(symbol, { interval: '1d', range: '1d' })
 
   const response = await $fetch<YahooChartResponse>(url)
 
-  const result = response?.chart?.result?.[0]
-  if (!result?.meta) {
+  const quote = parseYahooQuoteResponse(response)
+  if (!quote) {
     throw new Error('Yahoo quote unavailable')
   }
-
-  const quote = result.meta
-  const change = quote.regularMarketPrice - quote.previousClose
-  const changePercent = (change / quote.previousClose) * 100
-
-  return {
-    symbol: quote.symbol,
-    regularMarketPrice: quote.regularMarketPrice,
-    previousClose: quote.previousClose,
-    change,
-    changePercent,
-    currency: quote.currency,
-    marketState: quote.marketState,
-    lastUpdateTime: new Date(quote.regularMarketTime * 1000).toISOString(),
-  }
+  return quote
 }
 
 /**
@@ -91,30 +39,15 @@ export async function fetchQuote(symbol: string): Promise<QuoteResponse> {
  * @param years Number of years of history to fetch (default: 5)
  */
 export async function fetchMonthlyData(symbol: string, years = 5): Promise<YahooMonthlyQuote[]> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1mo&range=${years}y`
+  const url = buildYahooChartUrl(symbol, { interval: '1mo', range: `${years}y` })
 
   const response = await $fetch<YahooChartResponse>(url)
 
-  const result = response?.chart?.result?.[0]
-  if (!result) {
+  const quotes = parseYahooMonthlyQuotes(response)
+  if (quotes.length === 0) {
     throw new Error('Yahoo historical data unavailable')
   }
-
-  const quotes = result.indicators?.quote?.[0]
-  const adjclose = result.indicators?.adjclose?.[0]?.adjclose
-  const timestamps = result.timestamp || []
-
-  return timestamps
-    .map((ts: number, i: number): YahooMonthlyQuote => ({
-      timestamp: ts,
-      open: quotes?.open?.[i] ?? null,
-      high: quotes?.high?.[i] ?? null,
-      low: quotes?.low?.[i] ?? null,
-      close: quotes?.close?.[i] ?? null,
-      volume: quotes?.volume?.[i] ?? null,
-      adjClose: adjclose?.[i] ?? quotes?.close?.[i] ?? null,
-    }))
-    .filter((q: YahooMonthlyQuote) => q.close !== null)
+  return quotes
 }
 
 /**

@@ -1,19 +1,14 @@
 <script setup lang="ts">
 import { formatDate } from '~/lib/utils'
+import { buildAdminUsersQueryString, resolveReloadPageAfterDelete } from '~/lib/admin/user-management'
 
 const { t } = useI18n()
 const { user: currentUser, isAuthenticated, isAdmin } = useAuth()
 const toast = useToast()
 
-// Client-side guard for admin page
-watchEffect(() => {
-  if (!process.client) return
-
-  if (!isAuthenticated.value) {
-    navigateTo('/auth/login')
-  } else if (!isAdmin.value) {
-    navigateTo('/')
-  }
+definePageMeta({
+  middleware: 'admin',
+  requiresAuth: true,
 })
 
 // State
@@ -51,15 +46,13 @@ const fetchStats = async () => {
 const fetchUsers = async (page = 1) => {
   try {
     loading.value.users = true
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: pagination.value.limit.toString()
+    const query = buildAdminUsersQueryString({
+      page,
+      limit: pagination.value.limit,
+      search: searchQuery.value,
     })
-    if (searchQuery.value) {
-      params.append('search', searchQuery.value)
-    }
 
-    const response = await $fetch(`/api/admin/users?${params.toString()}`) as any
+    const response = await $fetch(`/api/admin/users?${query}`) as any
     if (response.success) {
       users.value = response.data
       pagination.value = response.pagination
@@ -103,16 +96,12 @@ const deleteUser = async (userId: string, userEmail: string) => {
 
     if (response.success) {
       toast.success(t('admin.success.userDeleted'))
-      // Refresh current page or go to previous if empty
-      const currentPage = pagination.value.page
-      const isLastPage = currentPage === pagination.value.totalPages
-      const isEmptyPage = users.value.length === 1
-
-      if (isLastPage && isEmptyPage && currentPage > 1) {
-        await fetchUsers(currentPage - 1)
-      } else {
-        await fetchUsers(currentPage)
-      }
+      const nextPage = resolveReloadPageAfterDelete({
+        currentPage: pagination.value.page,
+        totalPages: pagination.value.totalPages,
+        visibleCount: users.value.length,
+      })
+      await fetchUsers(nextPage)
     }
   } catch (error: any) {
     console.error('Failed to delete user:', error)

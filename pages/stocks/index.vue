@@ -478,6 +478,12 @@
 <script setup lang="ts">
 import { formatCurrency } from '~/lib/utils'
 import {
+  buildHoldingChartSegments,
+  formatHoldingQuantity,
+  formatHoldingShare,
+  getHoldingConcentrationClass,
+} from '~/lib/stocks-analytics'
+import {
   applyStocksView,
   type ConcentrationFilter,
   type HoldingView,
@@ -588,84 +594,30 @@ const totalCost = computed(() => {
 
 // Format quantity for display
 const formatQuantity = (qty: number): string => {
-  return qty.toFixed(4).replace(/\.?0+$/, '')
+  return formatHoldingQuantity(qty)
 }
 
 // Format percentage
 const formatPercentage = (cost: number): string => {
-  if (totalCost.value === 0) return '0%'
-  const percentage = (cost / totalCost.value) * 100
-  return `${percentage.toFixed(1)}%`
+  return formatHoldingShare(cost, totalCost.value)
 }
 
 // Get percentage badge class
 const getPercentageClass = (cost: number): string => {
   if (totalCost.value === 0) return 'bg-gray-100 text-gray-800 dark:bg-slate-900 dark:text-slate-300'
-
-  const percentage = (cost / totalCost.value) * 100
-
-  if (percentage >= 20) {
-    return 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-200'
-  } else if (percentage >= 10) {
-    return 'bg-yellow-100 text-yellow-800 dark:bg-amber-950/30 dark:text-amber-200'
-  } else {
-    return 'bg-green-100 text-green-800 dark:bg-emerald-950/30 dark:text-emerald-200'
-  }
+  return getHoldingConcentrationClass((cost / totalCost.value) * 100)
 }
 
-// Pie chart slices based on cost percentage
-const pieSlices = computed(() => {
-  if (!baseHoldings.value.length || totalCost.value === 0) return []
+const donutSlices = computed(() => buildHoldingChartSegments(baseHoldings.value, {
+  radius: 32.5,
+  strokeWidth: 15,
+}))
 
-  const colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7']
-  // Circle circumference: 2 * π * r = 2 * π * 16 ≈ 100.53
-  const circumference = 2 * Math.PI * 16
-  let cumulative = 0
-
-  return baseHoldings.value.map((h, index) => {
-    const percentage = h.totalCost / totalCost.value
-    const strokeLength = percentage * circumference
-    const dashArray = `${strokeLength} ${circumference - strokeLength}`
-    const dashOffset = -cumulative * circumference
-    cumulative += percentage
-
-    return {
-      label: h.symbol,
-      percentage: `${(percentage * 100).toFixed(1)}%`,
-      dashArray,
-      dashOffset,
-      color: colors[index % colors.length]
-    }
-  })
-})
-
-// Donut chart slices for proper donut visualization
-const donutSlices = computed(() => {
-  if (!baseHoldings.value.length || totalCost.value === 0) return []
-
-  const colors = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7']
-  // For donut: radius 32.5, stroke-width 15 creates outer edge at 40, inner at 25
-  const radius = 32.5
-  const strokeWidth = 15
-  const circumference = 2 * Math.PI * radius
-  let cumulative = 0
-
-  return baseHoldings.value.map((h, index) => {
-    const percentage = h.totalCost / totalCost.value
-    const strokeLength = percentage * circumference
-    const dashArray = `${strokeLength} ${circumference - strokeLength}`
-    const dashOffset = -cumulative * circumference
-    cumulative += percentage
-
-    return {
-      radius,
-      strokeWidth,
-      dashArray,
-      dashOffset,
-      color: colors[index % colors.length]
-    }
-  })
-})
+const pieSlices = computed(() => donutSlices.value.map(slice => ({
+  label: slice.label,
+  percentage: slice.percentage,
+  color: slice.color,
+})))
 
 // Set page meta
 
