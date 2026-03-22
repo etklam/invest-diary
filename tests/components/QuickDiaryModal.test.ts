@@ -4,7 +4,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mockToast } from '../vi-setup'
 import QuickDiaryModal from '~/components/QuickDiaryModal.vue'
 
-const fetchMock = vi.fn()
+const submitQuickNoteMock = vi.fn()
+
+vi.mock('~/composables/useQuickNoteSubmit', () => ({
+  useQuickNoteSubmit: () => ({
+    submitQuickNote: submitQuickNoteMock,
+  }),
+}))
 
 function mountModal() {
   vi.stubGlobal('useI18n', () => ({
@@ -14,7 +20,6 @@ function mountModal() {
   vi.stubGlobal('useTimezone', () => ({
     getTodayDateString: () => '2026-03-22',
   }))
-  vi.stubGlobal('$fetch', fetchMock)
 
   return mount(QuickDiaryModal, {
     props: {
@@ -48,7 +53,7 @@ async function clickByText(wrapper: ReturnType<typeof mount>, text: string) {
 describe('QuickDiaryModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    fetchMock.mockResolvedValue({ id: '42' })
+    submitQuickNoteMock.mockResolvedValue({ id: '42' })
   })
 
   afterEach(() => {
@@ -66,14 +71,14 @@ describe('QuickDiaryModal', () => {
     await clickByText(wrapper, 'quickDiary.createDiary')
     await flushPromises()
 
-    expect(fetchMock).toHaveBeenCalledWith('/api/diaries', expect.objectContaining({
-      method: 'POST',
-      body: expect.objectContaining({
-        appendToToday: true,
-        title: expect.stringContaining('TSLA, NVDA'),
-        content: expect.stringContaining('Watch setup'),
-      }),
+    expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({
+      saveMode: 'append',
+      date: '2026-03-22',
+      title: expect.stringContaining('TSLA, NVDA'),
+      content: expect.stringContaining('Watch setup'),
+      tags: [],
     }))
+    expect(submitQuickNoteMock).toHaveBeenCalledTimes(1)
     expect(wrapper.emitted('created')).toEqual([['42']])
     expect(mockToast.success).toHaveBeenCalledWith('quickDiary.success')
   })
@@ -88,12 +93,12 @@ describe('QuickDiaryModal', () => {
     await clickByText(wrapper, 'quickDiary.createDiary')
     await flushPromises()
 
-    expect(fetchMock).toHaveBeenCalledWith('/api/diaries', expect.objectContaining({
-      body: expect.objectContaining({
-        appendToToday: true,
-        title: 'Semiconductor breadth',
-        content: expect.stringContaining('Breadth improved into the close.'),
-      }),
+    expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({
+      saveMode: 'append',
+      title: 'Semiconductor breadth',
+      content: expect.stringContaining('Breadth improved into the close.'),
+      date: '2026-03-22',
+      tags: [],
     }))
   })
 })

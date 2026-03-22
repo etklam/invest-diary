@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <!-- Quick Diary Modal -->
+    <!-- Quicknote Modal -->
     <QuickDiaryModal
       :show="showQuickModal"
       @close="showQuickModal = false"
