@@ -39,8 +39,11 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthRecovery } from '~/composables/useAuthRecovery'
+
 const { toasts, removeToast } = useToast()
-const { user, fetchMe, isInitialized, isAuthenticated, refreshAccessToken } = useAuth()
+const { fetchMe, isInitialized, isAuthenticated } = useAuth()
+const { runWithAuthRecovery } = useAuthRecovery()
 const { canInstall } = useAppPWA()
 const showInstallPrompt = ref(false)
 const showQuickDiaryModal = ref(false)
@@ -85,34 +88,25 @@ const isPublicRoute = computed(() => {
 
 
 // Check for due alerts (queue-based)
-const checkForDueAlerts = async (hasRetriedAuth = false) => {
+const checkForDueAlerts = async () => {
   if (!isAuthenticated.value || isPublicRoute.value) return
 
   checkDailyReset()
 
   try {
-    const alerts = await $fetch<any[]>('/api/alerts')
+    const alerts = await runWithAuthRecovery(() => $fetch<any[]>('/api/alerts'))
 
     if (!alerts || alerts.length === 0) {
-      applyBackoff(() => checkForDueAlerts(false))
+      applyBackoff(() => checkForDueAlerts())
       return
     }
 
     enqueueAlerts(alerts)
     setBaseInterval()
-    scheduleNextPoll(() => checkForDueAlerts(false))
+    scheduleNextPoll(() => checkForDueAlerts())
   } catch (error: any) {
-    if (!hasRetriedAuth && error?.statusCode === 401) {
-      const refreshed = await refreshAccessToken()
-      if (refreshed) {
-        return checkForDueAlerts(true)
-      }
-    }
-    if (error?.statusCode === 401 || error?.response?.status === 401) {
-      user.value = null
-    }
     console.error('Error checking for alerts:', error)
-    applyBackoff(() => checkForDueAlerts(false))
+    applyBackoff(() => checkForDueAlerts())
   }
 }
 

@@ -1,5 +1,6 @@
 import { H3Event } from 'h3'
 import { ACCESS_TOKEN_MAX_AGE_SECONDS, REFRESH_TOKEN_MAX_AGE_SECONDS } from '~/lib/jwt'
+import { Errors } from '~/lib/errors/factory'
 
 const ACCESS_TOKEN_COOKIE = 'access-token'
 const REFRESH_TOKEN_COOKIE = 'refresh-token'
@@ -80,10 +81,7 @@ export function clearAuthCookie(event: H3Event) {
 export function requireUser(event: H3Event) {
   const user = event.context.user
   if (!user) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'UNAUTHORIZED'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
   return user
 }

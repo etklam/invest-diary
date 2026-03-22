@@ -118,6 +118,19 @@ export const Errors = {
     message: 'Alert access denied',
   }),
 
+  // ETF
+  etfNotFound: (symbol: string) => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.ETF_NOT_FOUND,
+    message: `ETF ${symbol} not found`,
+  }),
+
+  etfAlreadyInWatchlist: (symbol: string) => new AppError({
+    statusCode: 409,
+    code: ErrorCodes.ETF_ALREADY_IN_WATCHLIST,
+    message: `ETF ${symbol} already in watchlist`,
+  }),
+
   // User
   userNotFound: () => new AppError({
     statusCode: 404,

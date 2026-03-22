@@ -1,24 +1,20 @@
 import prisma from '~/lib/prisma'
+import { Errors } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
 import { calculateHoldings } from '~/lib/utils'
+import { requireUser } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const userId = event.context.user?.id
+  const log = logger.stocks.withRequestId(event.context.requestId)
+  const user = requireUser(event)
 
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
-  }
-
-  console.log('[Stocks] Fetching holdings for user:', userId)
   try {
     //效能優化：直接查詢 transactions 表，避免載入完整的 diary 資料
     //透過 diary 關聯篩選 userId，只選擇計算所需的欄位
     const transactions = await prisma.transaction.findMany({
       where: {
         diary: {
-          userId: BigInt(userId)
+          userId: BigInt(user.id)
         }
       },
       select: {
@@ -38,14 +34,16 @@ export default defineEventHandler(async (event) => {
     // 計算持股（已經排序好，不需要在 calculateHoldings 中再排序）
     const holdings = calculateHoldings(transactions)
 
-    console.log('[Stocks] Calculated holdings:', holdings.length, 'symbols')
+    log.debug('Calculated holdings', {
+      userId: user.id,
+      symbolCount: holdings.length,
+    })
     return holdings
   } catch (error) {
-    console.error('[Stocks] Error fetching holdings:', error)
-    console.error('[Stocks] Error details:', JSON.stringify(error))
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch holdings',
+    log.error('Failed to fetch holdings', {
+      userId: user.id,
+      error,
     })
+    throw Errors.internalError(error).toH3Error()
   }
 })

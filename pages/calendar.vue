@@ -140,6 +140,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useAuthRecovery } from '~/composables/useAuthRecovery'
+import { isAuthSessionError } from '~/lib/auth/session-error'
 import type { Diary, DiariesApiResponse } from '~/types/diary'
 import {
   buildDailyActivityMap,
@@ -156,8 +158,9 @@ definePageMeta({
 })
 
 // Get auth state and timezone
-const { isAuthenticated, user } = useAuth()
+const { isAuthenticated } = useAuth()
 const { getTimezone } = useTimezone()
+const { runWithAuthRecovery } = useAuthRecovery()
 
 // Quick diary modal state
 const showQuickModal = ref(false)
@@ -240,15 +243,10 @@ const fetchDiaries = async () => {
   try {
     // API returns paginated response: { data: [...], pagination: {...} }
     // Set a large limit to fetch all diaries for calendar display
-    const response = await $fetch<DiariesApiResponse>('/api/diaries?limit=1000')
+    const response = await runWithAuthRecovery(() => $fetch<DiariesApiResponse>('/api/diaries?limit=1000'))
     diaries.value = response.data
   } catch (error) {
-    // Handle 401 Unauthorized errors
-    if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 401) {
-      const { user } = useAuth()
-      user.value = null
-      await navigateTo('/')
-    }
+    if (isAuthSessionError(error)) return
     console.error('獲取日記失敗:', error)
   }
 }

@@ -112,6 +112,8 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthRecovery } from '~/composables/useAuthRecovery'
+import { isAuthSessionError } from '~/lib/auth/session-error'
 import { formatShortDate } from '~/lib/utils'
 
 definePageMeta({
@@ -126,7 +128,7 @@ const id = route.params.id
 const { data: diary, pending, error } = await useLazyFetch<any>(`/api/diaries/${id}`)
 
 const toast = useToast()
-const { user } = useAuth()
+const { runWithAuthRecovery } = useAuthRecovery()
 const { formatLocaleDateTime } = useTimezone()
 
 // Rename for template compatibility
@@ -136,17 +138,15 @@ const deleteDiary = async () => {
   if (!confirm('確定要刪除這篇日記嗎？此操作無法復原。')) return
 
   try {
-    await $fetch(`/api/diaries/${id}` as string, {
-      method: 'DELETE' as const
-    } as any)
+    await runWithAuthRecovery(async (): Promise<void> => {
+      await $fetch(`/api/diaries/${id}` as string, {
+        method: 'DELETE' as const
+      } as any)
+    })
     toast.success('日記已刪除')
     router.push('/diaries')
   } catch (e: any) {
-    // Handle 401 Unauthorized errors
-    if (e?.statusCode === 401) {
-      user.value = null
-      await navigateTo('/')
-    }
+    if (isAuthSessionError(e)) return
     toast.error('刪除失敗')
     console.error(e)
   }

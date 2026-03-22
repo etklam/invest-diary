@@ -1,19 +1,16 @@
 import prisma from '../../../lib/prisma'
+import { Errors } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
+import { requireUser } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const userId = event.context.user?.id
-
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
-  }
+  const log = logger.diary.withRequestId(event.context.requestId)
+  const user = requireUser(event)
 
   try {
     const latestDiary = await prisma.diary.findFirst({
       where: {
-        userId: userId
+        userId: user.id
       },
       orderBy: {
         createdAt: 'desc',
@@ -33,10 +30,10 @@ export default defineEventHandler(async (event) => {
       transactions: latestDiary.transactions,
     }
   } catch (error) {
-    console.error('Error fetching latest transactions:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch latest transactions',
+    log.error('Failed to fetch latest transactions', {
+      userId: user.id,
+      error,
     })
+    throw Errors.internalError(error).toH3Error()
   }
 })

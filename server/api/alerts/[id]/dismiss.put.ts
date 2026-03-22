@@ -1,15 +1,13 @@
+import { H3Error } from 'h3'
 import prisma from '../../../../lib/prisma'
+import { Errors } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
+import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const userId = event.context.user?.id
-
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
-  }
+  const log = logger.alert.withRequestId(event.context.requestId)
+  const user = requireUser(event)
 
   const alertId = parsePositiveBigIntParam(event, 'id')
 
@@ -19,16 +17,13 @@ export default defineEventHandler(async (event) => {
       where: {
         id: alertId,
         diary: {
-          userId: userId
+          userId: user.id
         }
       }
     })
 
     if (!alert) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Alert not found',
-      })
+      throw Errors.alertNotFound(alertId.toString()).toH3Error()
     }
 
     const updatedAlert = await prisma.alert.update({
@@ -40,16 +35,20 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    console.log('[API] Alert dismissed:', alertId.toString(), 'for user:', userId)
+    log.info('Dismissed alert', {
+      userId: user.id,
+      alertId: alertId.toString(),
+    })
     return updatedAlert
   } catch (error) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
+    if (error instanceof H3Error) {
       throw error
     }
-    console.error('Error dismissing alert:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to dismiss alert',
+    log.error('Failed to dismiss alert', {
+      userId: user.id,
+      alertId: alertId.toString(),
+      error,
     })
+    throw Errors.internalError(error).toH3Error()
   }
 })

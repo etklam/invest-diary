@@ -138,7 +138,9 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { toDateTimeLocalValue } from '~/lib/diary-date'
+import { isAuthSessionError } from '~/lib/auth/session-error'
 
 definePageMeta({
   middleware: 'auth'
@@ -151,6 +153,7 @@ const checkingDate = ref(false)
 const loadingLatest = ref(false)
 const isEditing = ref(false)
 const existingDiaryId = ref<string | null>(null)
+const { runWithAuthRecovery } = useAuthRecovery()
 const { getTodayDateString, formatLocaleDate, getTimezone } = useTimezone()
 
 // Get date from URL query parameter or use today
@@ -170,7 +173,7 @@ watch(() => form.date, async (newDate) => {
 
   checkingDate.value = true
   try {
-    const existingDiary = await $fetch<any>(`/api/diaries/by-date?date=${newDate}`)
+    const existingDiary = await runWithAuthRecovery(() => $fetch<any>(`/api/diaries/by-date?date=${newDate}`))
     if (existingDiary) {
       // Diary exists for this date, load it for editing
       isEditing.value = true
@@ -211,6 +214,7 @@ watch(() => form.date, async (newDate) => {
       form.alerts = []
     }
   } catch (error) {
+    if (isAuthSessionError(error)) return
     console.error('Error checking existing diary:', error)
   } finally {
     checkingDate.value = false
@@ -243,10 +247,9 @@ const removeAlert = (index: number) => {
 // Copy transactions from latest diary
 const copyFromLatest = async () => {
   const toast = useToast()
-  const { user } = useAuth()
   loadingLatest.value = true
   try {
-    const latest = await $fetch<any>('/api/transactions/latest')
+    const latest = await runWithAuthRecovery(() => $fetch<any>('/api/transactions/latest'))
 
     if (latest && latest.transactions && latest.transactions.length > 0) {
       // Add transactions to form
@@ -272,11 +275,7 @@ const copyFromLatest = async () => {
       toast.warning('沒有找到之前的交易記錄')
     }
   } catch (error: any) {
-    // Handle 401 Unauthorized errors
-    if (error?.statusCode === 401) {
-      user.value = null
-      await navigateTo('/')
-    }
+    if (isAuthSessionError(error)) return
     console.error('Error fetching latest transactions:', error)
     toast.error('複製失敗，請稍後再試')
   } finally {
@@ -313,7 +312,6 @@ const validateTransactions = (): string | null => {
 
 const saveDiary = async () => {
   const toast = useToast()
-  const { user } = useAuth()
 
   if (!form.title) {
     toast.error('請輸入標題')
@@ -356,16 +354,20 @@ const saveDiary = async () => {
 
     if (isEditing.value && existingDiaryId.value) {
       // Update existing diary
-      await $fetch(`/api/diaries/${existingDiaryId.value}` as string, {
-        method: 'PUT' as const,
-        body: payload
-      } as any)
+      await runWithAuthRecovery(async (): Promise<void> => {
+        await $fetch(`/api/diaries/${existingDiaryId.value}` as string, {
+          method: 'PUT' as const,
+          body: payload
+        } as any)
+      })
       toast.success('日記更新成功！')
     } else {
       // Create new diary
-      await $fetch('/api/diaries', {
-        method: 'POST',
-        body: payload
+      await runWithAuthRecovery(async (): Promise<void> => {
+        await $fetch('/api/diaries', {
+          method: 'POST',
+          body: payload
+        })
       })
       toast.success('日記儲存成功！')
     }
@@ -375,11 +377,7 @@ const saveDiary = async () => {
 
     router.push('/diaries')
   } catch (e: any) {
-    // Handle 401 Unauthorized errors
-    if (e?.statusCode === 401) {
-      user.value = null
-      await navigateTo('/')
-    }
+    if (isAuthSessionError(e)) return
     console.error(e)
     toast.error('儲存失敗: ' + (e.data?.statusMessage || e.message))
   } finally {

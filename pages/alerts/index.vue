@@ -82,11 +82,13 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthRecovery } from '~/composables/useAuthRecovery'
+import { isAuthSessionError } from '~/lib/auth/session-error'
 import { formatDate, formatShortDate } from '~/lib/utils'
 
 const { t } = useI18n()
 const { user } = useAuth()
-const { getTimezone } = useTimezone()
+const { runWithAuthRecovery } = useAuthRecovery()
 
 definePageMeta({
   middleware: 'auth'
@@ -102,17 +104,15 @@ const userTimezone = computed(() => user.value?.timezone || 'Asia/Taipei')
 
 const dismissAlert = async (id: number) => {
   try {
-    await $fetch(`/api/alerts/${id}/dismiss`, {
-      method: 'PUT'
+    await runWithAuthRecovery(async (): Promise<void> => {
+      await $fetch(`/api/alerts/${id}/dismiss` as string, {
+        method: 'PUT'
+      })
     })
     toast.success(t('alert.markedAsRead'))
     refresh()
   } catch (e: any) {
-    // Handle 401 Unauthorized errors
-    if (e?.statusCode === 401) {
-      user.value = null
-      await navigateTo('/')
-    }
+    if (isAuthSessionError(e)) return
     console.error(e)
     toast.error(t('error.unknown'))
   }

@@ -1,20 +1,17 @@
 import prisma from '~/lib/prisma'
+import { Errors } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
+import { requireUser } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const userId = event.context.user?.id
-
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
-  }
+  const log = logger.alert.withRequestId(event.context.requestId)
+  const user = requireUser(event)
 
   try {
     const alerts = await prisma.alert.findMany({
       where: {
         diary: {
-          userId: userId
+          userId: user.id
         },
         isDismissed: false
       },
@@ -33,10 +30,10 @@ export default defineEventHandler(async (event) => {
 
     return alerts
   } catch (error) {
-    console.error('Error fetching alerts:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch alerts'
+    log.error('Failed to fetch alerts', {
+      userId: user.id,
+      error,
     })
+    throw Errors.internalError(error).toH3Error()
   }
 })

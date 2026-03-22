@@ -118,6 +118,8 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthRecovery } from '~/composables/useAuthRecovery'
+import { isAuthSessionError } from '~/lib/auth/session-error'
 import { formatYmdInTimezone, toDateTimeLocalValue } from '~/lib/diary-date'
 
 definePageMeta({
@@ -129,7 +131,7 @@ const router = useRouter()
 const id = route.params.id
 const saving = ref(false)
 const toast = useToast()
-const { user } = useAuth()
+const { runWithAuthRecovery } = useAuthRecovery()
 const { getTodayDateString, getTimezone } = useTimezone()
 
 // Use lazy fetch to avoid calling API during SSR before auth check
@@ -230,10 +232,12 @@ const saveDiary = async () => {
       }))
     }
 
-    await $fetch(`/api/diaries/${id}` as string, {
-      method: 'PUT' as const,
-      body: payload
-    } as any)
+    await runWithAuthRecovery(async (): Promise<void> => {
+      await $fetch(`/api/diaries/${id}` as string, {
+        method: 'PUT' as const,
+        body: payload
+      } as any)
+    })
 
     toast.success('日記更新成功！')
 
@@ -242,11 +246,7 @@ const saveDiary = async () => {
 
     router.push(`/diaries/${id}`)
   } catch (e: any) {
-    // Handle 401 Unauthorized errors
-    if (e?.statusCode === 401) {
-      user.value = null
-      await navigateTo('/')
-    }
+    if (isAuthSessionError(e)) return
     console.error(e)
     toast.error('儲存失敗: ' + (e.data?.statusMessage || e.message))
   } finally {

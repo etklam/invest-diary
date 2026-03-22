@@ -87,4 +87,5 @@ export const logger = {
   diary: createLogger('Diary'),
   discipline: createLogger('Discipline'),
   stocks: createLogger('Stocks'),
+  etf: createLogger('ETF'),
 }

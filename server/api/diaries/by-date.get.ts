@@ -1,28 +1,20 @@
 import prisma from '~/lib/prisma'
 import { getUtcDayRange } from '~/lib/diary-date'
+import { Errors } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
+import { requireUser } from '~/server/utils/auth'
 import { attachDiaryTags } from '~/server/utils/diary-response'
 
 export default defineEventHandler(async (event) => {
-  const userId = event.context.user?.id
-
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
-  }
+  const log = logger.diary.withRequestId(event.context.requestId)
+  const user = requireUser(event)
 
   const query = getQuery(event)
   const dateStr = query.date as string
 
   if (!dateStr) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Date parameter is required',
-    })
+    throw Errors.validationError([{ field: 'date', message: 'Date is required' }]).toH3Error()
   }
-
-  console.log('Checking diary for date:', dateStr, 'user:', userId)
 
   try {
     // Normalize date search to UTC day range for timezone-stable matching
@@ -31,7 +23,7 @@ export default defineEventHandler(async (event) => {
     // Find diary within the date range for this user
     const diary = await prisma.diary.findFirst({
       where: {
-        userId: userId,
+        userId: user.id,
         date: {
           gte: startOfDayUtc,
           lte: endOfDayUtc,
@@ -43,13 +35,19 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    console.log('Found diary:', diary ? 'Yes' : 'No')
+    log.debug('Loaded diary by date', {
+      userId: user.id,
+      date: dateStr,
+      found: Boolean(diary),
+    })
+
     return diary ? attachDiaryTags(diary) : null
   } catch (error) {
-    console.error('Error checking diary by date:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to check diary by date',
+    log.error('Failed to load diary by date', {
+      userId: user.id,
+      date: dateStr,
+      error,
     })
+    throw Errors.internalError(error).toH3Error()
   }
 })
