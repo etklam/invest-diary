@@ -69,6 +69,10 @@
 import QuickDiaryOneLiner from '~/components/QuickDiaryOneLiner.vue'
 import type { Diary, DiariesApiResponse } from '~/types/diary'
 
+definePageMeta({
+  middleware: 'auth'
+})
+
 const showHistory = ref(false)
 const recentNotes = ref<Diary[]>([])
 const loading = ref(false)
