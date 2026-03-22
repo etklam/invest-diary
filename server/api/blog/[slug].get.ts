@@ -1,9 +1,9 @@
+import type { H3Event } from 'h3'
 import prisma from '~/lib/prisma'
 import { PostStatus } from '@prisma/client'
-import { cachedEventHandler } from '#imports'
 
-const resolveSlug = (event: any) => {
-  const rawFromParams = (event.context as any)?.params?.slug
+const resolveSlug = (event: H3Event) => {
+  const rawFromParams = event.context.params?.slug
   const rawFromRouter = getRouterParam(event, 'slug')
   const rawFromPath = event.path?.split('/').filter(Boolean).pop()
 
@@ -11,20 +11,8 @@ const resolveSlug = (event: any) => {
   return rawSlug ? decodeURIComponent(String(rawSlug)) : undefined
 }
 
-export default cachedEventHandler(
-  async (event) => {
-  // ✅ 極度保險的 slug 解析：依序嘗試 params / routerParam / URL path
-  const rawFromParams = (event.context as any)?.params?.slug
-  const rawFromRouter = getRouterParam(event, 'slug')
-  const rawFromPath = event.path?.split('/').filter(Boolean).pop()
+export default defineEventHandler(async (event: H3Event) => {
   const slug = resolveSlug(event)
-
-  console.log('[Blog API] slug sources =', {
-    rawFromParams,
-    rawFromRouter,
-    rawFromPath,
-    finalSlug: slug,
-  })
 
   if (!slug) {
     throw createError({
@@ -88,10 +76,4 @@ export default cachedEventHandler(
       statusMessage: 'Failed to fetch post',
     })
   }
-  },
-  {
-    maxAge: 600,
-    swr: true,
-    getKey: (event) => `blog:post:${resolveSlug(event)}`
-  }
-)
+})

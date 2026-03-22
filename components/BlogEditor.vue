@@ -175,7 +175,7 @@ const htmlSanitizeConfig: DOMPurifyConfig = {
   ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|data:image\/(?:png|jpe?g|gif|webp|svg\+xml);)/i
 }
 
-const toolbars = [
+const toolbarPreset = [
   'bold',
   'underline',
   'italic',
@@ -201,6 +201,7 @@ const toolbars = [
   'htmlPreview',
   'catalog'
 ] as const
+const toolbars = [...toolbarPreset]
 
 const localTitle = computed({
   get: () => props.title,

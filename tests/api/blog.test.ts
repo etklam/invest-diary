@@ -213,6 +213,18 @@ describe('Blog API', () => {
         })
       )
     })
+
+    it('should preserve 400 validation errors for invalid date filters', async () => {
+      mockGetQuery.mockReturnValue({ dateFrom: 'not-a-date' })
+
+      const { default: handler } = await import('~/server/api/blog/index.get')
+      const mockEvent = { context: {} } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 400,
+        statusMessage: 'Invalid dateFrom',
+      })
+    })
   })
 
   describe('GET /api/blog/[slug]', () => {
@@ -256,6 +268,22 @@ describe('Blog API', () => {
 
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 404,
+      })
+    })
+
+    it('should return 400 when slug is missing', async () => {
+      mockGetRouterParam.mockReturnValue(undefined)
+
+      const { default: handler } = await import('~/server/api/blog/[slug].get')
+      const mockEvent = {
+        context: {
+          params: {},
+        },
+      } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 400,
+        statusMessage: 'Slug is required',
       })
     })
   })

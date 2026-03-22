@@ -13,7 +13,7 @@ export default defineEventHandler(async () => {
       }
     })
 
-    return posts.map(post => ({
+    return posts.map((post: { slug: string; updatedAt: Date }) => ({
       loc: `/articles/${post.slug}`,
       changefreq: 'weekly',
       priority: 0.8,

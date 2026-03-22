@@ -1,5 +1,5 @@
+import type { H3Event } from 'h3'
 import prisma from '~/lib/prisma'
-import { cachedEventHandler } from '#imports'
 
 const LEGACY_CATEGORY_ALIASES: Record<string, string[]> = {
   fundamental: ['基本面分析', 'Fundamental Analysis'],
@@ -38,8 +38,7 @@ const parseDateParam = (value: unknown, label: string) => {
   return parsed
 }
 
-export default cachedEventHandler(
-  async (event) => {
+export default defineEventHandler(async (event: H3Event) => {
   console.log('[Blog] Fetching public blog posts...')
   try {
     const query = getQuery(event)
@@ -137,26 +136,16 @@ export default cachedEventHandler(
         totalPages: Math.ceil(total / limit),
       },
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Blog] Error fetching posts:', error)
+
+    if (error?.statusCode) {
+      throw error
+    }
+
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to fetch posts'
     })
   }
-  },
-  {
-    maxAge: 300,
-    swr: true,
-    varies: ['cookie'],
-    getKey: (event) => {
-      const query = getQuery(event)
-      const page = parsePage(query.page, 1)
-      const limit = parseLimit(query.limit, 9, 50)
-      const category = normalizeQueryValue(query.category)
-      const search = normalizeQueryValue(query.search)
-      const tag = normalizeQueryValue(query.tag)
-      return `blog:list:${page}:${category}:${search}:${tag}:${limit}`
-    }
-  }
-)
+})
