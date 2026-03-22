@@ -63,7 +63,6 @@ async function main() {
   })
 
   console.log('創建測試用戶:')
-  console.log('- admin@example.com / password123 (ADMIN)')
   console.log('- test@example.com / password123 (USER)')
   console.log('- user2@example.com / password123 (USER)')
 
