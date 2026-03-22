@@ -80,20 +80,6 @@
 
     <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-gray-500 dark:text-gray-400" for="quick-note-save-mode">儲存模式</label>
-          <select
-            id="quick-note-save-mode"
-            :value="saveMode"
-            class="rounded-md border border-gray-200 bg-white p-2 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-            aria-label="儲存模式"
-            @change="handleSaveModeInput"
-          >
-            <option value="create">建立新日記</option>
-            <option value="append">追加到今天</option>
-          </select>
-        </div>
-
         <label class="text-xs text-gray-500 dark:text-gray-400" for="quick-note-date">日期</label>
         <input
           id="quick-note-date"
@@ -132,7 +118,6 @@ import type {
   QuickNoteQuickReminderPreset,
   QuickNoteReminderKey,
   QuickNoteReminders,
-  QuickNoteSaveMode,
 } from '~/types/quicknote'
 
 defineProps<{
@@ -140,7 +125,6 @@ defineProps<{
   content: string
   tags: string[]
   date: string
-  saveMode: QuickNoteSaveMode
   saving: boolean
   draftHint: string
   saveLabel?: string
@@ -159,7 +143,6 @@ const emit = defineEmits<{
   (e: 'update:content', value: string): void
   (e: 'update:tags', value: string[]): void
   (e: 'update:date', value: string): void
-  (e: 'update:saveMode', value: QuickNoteSaveMode): void
   (e: 'append-text', value: string): void
   (e: 'apply-template', value: string): void
   (e: 'save'): void
@@ -182,9 +165,5 @@ function handleTitleInput(event: Event) {
 
 function handleDateInput(event: Event) {
   emit('update:date', (event.target as HTMLInputElement).value)
-}
-
-function handleSaveModeInput(event: Event) {
-  emit('update:saveMode', (event.target as HTMLSelectElement).value as QuickNoteSaveMode)
 }
 </script>

@@ -1,3 +1,8 @@
+import {
+  getQuickNoteObservationTypeLabel,
+  getQuickNoteReflectionMarketConditionLabel,
+  resolveQuickNoteLocaleVariant,
+} from '~/lib/quicknote/template-localization'
 import type { QuickNoteTemplateData, QuickNoteTemplateKind } from '~/types/quicknote'
 
 interface GenerateTemplateDraftInput {
@@ -10,10 +15,6 @@ interface GenerateTemplateDraftInput {
 interface TemplateDraft {
   title: string
   content: string
-}
-
-function isZhLocale(locale: string): boolean {
-  return locale.toLowerCase().startsWith('zh')
 }
 
 function formatDate(date: string): string {
@@ -30,48 +31,140 @@ function normalizeSymbols(symbols: string | undefined): string {
 }
 
 export function generateTemplateDraft(input: GenerateTemplateDraftInput): TemplateDraft {
-  const isZh = isZhLocale(input.locale)
+  const localeVariant = resolveQuickNoteLocaleVariant(input.locale)
   const formattedDate = formatDate(input.date)
-  const diaryLabel = isZh ? '日記' : 'Diary'
-  const reflectionLabel = isZh ? '盤後反思' : 'Post-market Reflection'
-  const observationLabel = isZh ? '市場觀察' : 'Market Observation'
+  const copy = localeVariant === 'zh-CN'
+    ? {
+        diaryLabel: '日记',
+        reflectionLabel: '盘后反思',
+        observationLabel: '市场观察',
+        trading: {
+          title: '今日操作',
+          operation: '操作',
+          symbols: '标的',
+          marketFeeling: '今日市场感觉',
+          quickNotes: '快速备注',
+          buy: '买入',
+          sell: '卖出',
+          both: '买卖都做',
+          bullish: '多头',
+          bearish: '空头',
+          neutral: '盘整',
+        },
+        reflection: {
+          marketCondition: '今日市场状况',
+          rating: '今日操作评价',
+          goodPoints: '做得好的地方',
+          noRashTrading: '- 没有胡乱操作',
+          improvePoints: '需要改进的地方',
+        },
+        observation: {
+          topic: '观察主题',
+          type: '观察类型',
+          content: '观察内容',
+          action: '后续行动',
+        },
+      }
+    : localeVariant === 'zh-TW'
+      ? {
+          diaryLabel: '日記',
+          reflectionLabel: '盤後反思',
+          observationLabel: '市場觀察',
+          trading: {
+            title: '今日操作',
+            operation: '操作',
+            symbols: '標的',
+            marketFeeling: '今日市場感覺',
+            quickNotes: '快速備註',
+            buy: '買入',
+            sell: '賣出',
+            both: '買賣都做',
+            bullish: '多頭',
+            bearish: '空頭',
+            neutral: '盤整',
+          },
+          reflection: {
+            marketCondition: '今日市場狀況',
+            rating: '今日操作評價',
+            goodPoints: '做得好的地方',
+            noRashTrading: '- 沒有胡亂操作',
+            improvePoints: '需要改進的地方',
+          },
+          observation: {
+            topic: '觀察主題',
+            type: '觀察類型',
+            content: '觀察內容',
+            action: '後續行動',
+          },
+        }
+      : {
+          diaryLabel: 'Diary',
+          reflectionLabel: 'Post-market Reflection',
+          observationLabel: 'Market Observation',
+          trading: {
+            title: "Today's Operation",
+            operation: 'Operation',
+            symbols: 'Symbols',
+            marketFeeling: 'Market feeling',
+            quickNotes: 'Quick notes',
+            buy: 'Buy',
+            sell: 'Sell',
+            both: 'Both',
+            bullish: 'Bullish',
+            bearish: 'Bearish',
+            neutral: 'Neutral',
+          },
+          reflection: {
+            marketCondition: 'Market condition',
+            rating: "Today's rating",
+            goodPoints: 'What went well',
+            noRashTrading: '- No rash trading',
+            improvePoints: 'Areas for improvement',
+          },
+          observation: {
+            topic: 'Topic',
+            type: 'Observation type',
+            content: 'Observation content',
+            action: 'Follow-up action',
+          },
+        }
 
   if (input.templateKind === 'blank') {
     return {
-      title: `${formattedDate} ${diaryLabel}`,
+      title: `${formattedDate} ${copy.diaryLabel}`,
       content: '',
     }
   }
 
   if (input.templateKind === 'trading') {
     const typeLabelMap = {
-      buy: isZh ? '買入' : 'Buy',
-      sell: isZh ? '賣出' : 'Sell',
-      both: isZh ? '買賣都做' : 'Both',
+      buy: copy.trading.buy,
+      sell: copy.trading.sell,
+      both: copy.trading.both,
     }
     const type = input.templateData.tradingType as 'buy' | 'sell' | 'both' | undefined
     const typeLabel = typeLabelMap[type || 'both']
     const symbols = normalizeSymbols(input.templateData.symbols)
-    let content = `## ${isZh ? '今日操作' : "Today's Operation"}\n\n`
-    content += `- ${isZh ? '操作' : 'Operation'}: ${typeLabel}\n`
+    let content = `## ${copy.trading.title}\n\n`
+    content += `- ${copy.trading.operation}: ${typeLabel}\n`
     if (symbols) {
-      content += `- ${isZh ? '標的' : 'Symbols'}: ${symbols}\n`
+      content += `- ${copy.trading.symbols}: ${symbols}\n`
     }
     const moodLabelMap = {
-      bullish: isZh ? '多頭' : 'Bullish',
-      bearish: isZh ? '空頭' : 'Bearish',
-      neutral: isZh ? '盤整' : 'Neutral',
+      bullish: copy.trading.bullish,
+      bearish: copy.trading.bearish,
+      neutral: copy.trading.neutral,
     }
     if (input.templateData.marketMood) {
       const mood = moodLabelMap[input.templateData.marketMood as 'bullish' | 'bearish' | 'neutral'] || input.templateData.marketMood
-      content += `- ${isZh ? '今日市場感覺' : 'Market feeling'}: ${mood}\n`
+      content += `- ${copy.trading.marketFeeling}: ${mood}\n`
     }
     if (input.templateData.note) {
-      content += `\n## ${isZh ? '快速備註' : 'Quick notes'}\n\n${input.templateData.note}\n`
+      content += `\n## ${copy.trading.quickNotes}\n\n${input.templateData.note}\n`
     }
 
     return {
-      title: `${formattedDate} ${typeLabel} ${diaryLabel}${symbols ? ` - ${symbols}` : ''}`,
+      title: `${formattedDate} ${typeLabel} ${copy.diaryLabel}${symbols ? ` - ${symbols}` : ''}`,
       content,
     }
   }
@@ -80,39 +173,41 @@ export function generateTemplateDraft(input: GenerateTemplateDraftInput): Templa
     const stars = '⭐'.repeat(input.templateData.rating || 0)
     const goodPoints: string[] = []
     if (input.templateData.noRashTrading) {
-      goodPoints.push(isZh ? '- 沒有胡亂操作' : '- No rash trading')
+      goodPoints.push(copy.reflection.noRashTrading)
     }
     if (input.templateData.goodPoints) {
       goodPoints.push(input.templateData.goodPoints)
     }
+    const marketConditionLabel = getQuickNoteReflectionMarketConditionLabel(input.templateData.marketCondition, input.locale) || '-'
 
-    let content = `## ${isZh ? '今日市場狀況' : 'Market condition'}\n\n${input.templateData.marketCondition || '-'}\n\n`
-    content += `## ${isZh ? '今日操作評價' : "Today's rating"}\n\n${stars}${stars ? ` (${input.templateData.rating}/5)` : ''}\n\n`
+    let content = `## ${copy.reflection.marketCondition}\n\n${marketConditionLabel}\n\n`
+    content += `## ${copy.reflection.rating}\n\n${stars}${stars ? ` (${input.templateData.rating}/5)` : ''}\n\n`
     if (goodPoints.length > 0) {
-      content += `## ${isZh ? '做得好的地方' : 'What went well'}\n\n${goodPoints.join('\n')}\n\n`
+      content += `## ${copy.reflection.goodPoints}\n\n${goodPoints.join('\n')}\n\n`
     }
     if (input.templateData.improvePoints) {
-      content += `## ${isZh ? '需要改進的地方' : 'Areas for improvement'}\n\n${input.templateData.improvePoints}\n`
+      content += `## ${copy.reflection.improvePoints}\n\n${input.templateData.improvePoints}\n`
     }
 
     return {
-      title: `${formattedDate} ${reflectionLabel}`,
+      title: `${formattedDate} ${copy.reflectionLabel}`,
       content,
     }
   }
 
   const topic = input.templateData.topic?.trim()
-  let content = `## ${isZh ? '觀察主題' : 'Topic'}: ${topic || '-'}\n\n`
-  content += `**${isZh ? '觀察類型' : 'Observation type'}:** ${input.templateData.observationType || '-'}\n\n`
+  const observationTypeLabel = getQuickNoteObservationTypeLabel(input.templateData.observationType, input.locale) || '-'
+  let content = `## ${copy.observation.topic}: ${topic || '-'}\n\n`
+  content += `**${copy.observation.type}:** ${observationTypeLabel}\n\n`
   if (input.templateData.observationContent) {
-    content += `## ${isZh ? '觀察內容' : 'Observation content'}\n\n${input.templateData.observationContent}\n\n`
+    content += `## ${copy.observation.content}\n\n${input.templateData.observationContent}\n\n`
   }
   if (input.templateData.action) {
-    content += `## ${isZh ? '後續行動' : 'Follow-up action'}\n\n${input.templateData.action}\n`
+    content += `## ${copy.observation.action}\n\n${input.templateData.action}\n`
   }
 
   return {
-    title: topic || `${formattedDate} ${observationLabel}`,
+    title: topic || `${formattedDate} ${copy.observationLabel}`,
     content,
   }
 }

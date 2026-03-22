@@ -2,8 +2,8 @@
   <div v-if="templateKind !== 'blank'" class="space-y-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
     <div class="flex items-start justify-between gap-3">
       <div>
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200">模板助手</h3>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">模板欄位會更新建議標題與內容，仍可自由編輯。</p>
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ t('quickDiary.templateAssistant.title') }}</h3>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('quickDiary.templateAssistant.description') }}</p>
       </div>
       <div v-if="hasTemplateChangesPending" class="flex flex-wrap gap-2">
         <button
@@ -11,14 +11,14 @@
           class="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 hover:border-indigo-300 hover:text-indigo-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
           @click="emit('apply-template-changes')"
         >
-          套用模板變更
+          {{ t('quickDiary.templateAssistant.applyChanges') }}
         </button>
         <button
           type="button"
           class="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200"
           @click="emit('regenerate-template')"
         >
-          重新產生模板內容
+          {{ t('quickDiary.templateAssistant.regenerate') }}
         </button>
       </div>
     </div>
@@ -97,31 +97,23 @@
           {{ t('quickDiary.reflection.marketCondition') }}
         </label>
         <select
-          :value="templateData.marketCondition || ''"
+          :value="selectedReflectionMarketCondition"
           class="w-full rounded-xl border border-gray-300/60 bg-white/70 px-4 py-3 text-sm text-gray-700 transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-gray-600/60 dark:bg-gray-800/60 dark:text-white"
           @change="updateField('marketCondition', ($event.target as HTMLSelectElement).value)"
         >
           <option value="">{{ t('quickDiary.reflection.selectCondition') }}</option>
-          <optgroup :label="isZhLocale ? '漲跌' : 'Price Change'">
-            <option value="大漲">大漲</option>
-            <option value="小漲">小漲</option>
-            <option value="盤整">盤整</option>
-            <option value="小跌">小跌</option>
-            <option value="大跌">大跌</option>
-          </optgroup>
-          <optgroup :label="isZhLocale ? '走勢型態' : 'Trend Pattern'">
-            <option value="高開高走">高開高走</option>
-            <option value="高開低走">高開低走</option>
-            <option value="低開高走">低開高走</option>
-            <option value="低開低走">低開低走</option>
-            <option value="震盪">震盪</option>
-          </optgroup>
-          <optgroup :label="isZhLocale ? '市場結構' : 'Market Structure'">
-            <option value="個股分化">個股分化</option>
-            <option value="齊漲">齊漲</option>
-            <option value="齊跌">齊跌</option>
-            <option value="指數穩個股弱">指數穩、個股弱</option>
-            <option value="指數弱個股強">指數弱、個股強</option>
+          <optgroup
+            v-for="group in reflectionMarketConditionGroups"
+            :key="group.label"
+            :label="group.label"
+          >
+            <option
+              v-for="option in group.options"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
           </optgroup>
         </select>
       </div>
@@ -202,16 +194,16 @@
         </label>
         <div class="flex flex-wrap gap-2">
           <button
-            v-for="type in observationTypes"
-            :key="type"
+            v-for="type in observationTypeOptions"
+            :key="type.value"
             type="button"
             class="rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200"
-            :class="templateData.observationType === type
+            :class="selectedObservationType === type.value
               ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
               : 'border border-gray-300/60 bg-white/70 text-gray-700 hover:bg-white dark:border-gray-600/60 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-800/80'"
-            @click="updateField('observationType', type)"
+            @click="updateField('observationType', type.value)"
           >
-            {{ type }}
+            {{ type.label }}
           </button>
         </div>
       </div>
@@ -247,6 +239,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import {
+  getQuickNoteObservationTypeOptions,
+  getQuickNoteReflectionMarketConditionGroups,
+  normalizeQuickNoteObservationType,
+  normalizeQuickNoteReflectionMarketCondition,
+} from '~/lib/quicknote/template-localization'
 import type { QuickNoteTemplateData, QuickNoteTemplateKind } from '~/types/quicknote'
 
 const props = defineProps<{
@@ -263,13 +261,11 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n()
 
-const isZhLocale = computed(() => locale.value === 'zh-TW' || locale.value === 'zh-CN')
-
-const observationTypes = computed(() => (
-  isZhLocale.value
-    ? ['板塊熱點', '個股走勢', '市場消息', '技術分析', '其他']
-    : ['Sector momentum', 'Individual stock trend', 'Market news', 'Technical analysis', 'Other']
-))
+const currentLocale = computed(() => locale.value || 'en')
+const reflectionMarketConditionGroups = computed(() => getQuickNoteReflectionMarketConditionGroups(currentLocale.value))
+const selectedReflectionMarketCondition = computed(() => normalizeQuickNoteReflectionMarketCondition(props.templateData.marketCondition))
+const observationTypeOptions = computed(() => getQuickNoteObservationTypeOptions(currentLocale.value))
+const selectedObservationType = computed(() => normalizeQuickNoteObservationType(props.templateData.observationType))
 
 function updateField<K extends keyof QuickNoteTemplateData>(key: K, value: QuickNoteTemplateData[K]) {
   emit('update:templateData', { [key]: value })

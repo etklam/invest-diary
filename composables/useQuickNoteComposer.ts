@@ -10,13 +10,11 @@ import {
   type QuickNoteComposerState,
   type QuickNoteQuickReminderPreset,
   type QuickNoteReminderKey,
-  type QuickNoteSaveMode,
   type QuickNoteTemplateData,
   type QuickNoteTemplateKind,
 } from '~/types/quicknote'
 
 interface UseQuickNoteComposerOptions {
-  defaultSaveMode?: QuickNoteSaveMode
   defaultTemplateKind?: QuickNoteTemplateKind
 }
 
@@ -49,11 +47,9 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   const { templates } = useQuickNoteTemplates()
   const { submitQuickNote } = useQuickNoteSubmit()
 
-  const defaultSaveMode = options.defaultSaveMode ?? 'create'
   const defaultTemplateKind = options.defaultTemplateKind ?? 'blank'
 
   const state = reactive<QuickNoteComposerState>({
-    saveMode: defaultSaveMode,
     date: getTodayDateString(),
     templateKind: defaultTemplateKind,
     title: '',
@@ -68,6 +64,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   const readyForAutosave = ref(false)
   const restoredThisSession = ref(false)
   const nowTick = ref(Date.now())
+  const appliedTemplateContent = ref('')
   let reminderTimer: ReturnType<typeof setInterval> | null = null
 
   const suggestedDraft = computed(() => generateTemplateDraft({
@@ -84,7 +81,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   const activeReminders = computed(() => {
     const now = nowTick.value
-    return (['reminder1', 'reminder2', 'reminder3'] as QuickNoteReminderKey[])
+    return (['reminder1'] as QuickNoteReminderKey[])
       .map((key, index) => {
         const time = reminders.value[key]
         if (!time) return null
@@ -99,7 +96,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
         return {
           key,
-          label: `提醒 ${index + 1}`,
+          label: index === 0 ? '提醒' : `提醒 ${index + 1}`,
           remaining,
         }
       })
@@ -108,8 +105,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   const hasTemplateChangesPending = computed(() => {
     if (state.templateKind === 'blank') return false
-    if (state.titleTouched && state.title !== suggestedDraft.value.title) return true
-    if (state.contentTouched && state.content !== suggestedDraft.value.content) return true
+    if (state.contentTouched && appliedTemplateContent.value !== suggestedDraft.value.content) return true
     return false
   })
 
@@ -119,6 +115,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     }
     if (force || !state.contentTouched) {
       state.content = suggestedDraft.value.content
+      appliedTemplateContent.value = suggestedDraft.value.content
     }
   }
 
@@ -129,7 +126,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   )
 
   watch(
-    () => [state.title, state.content, state.tags, state.date, state.saveMode, state.templateKind, state.templateData],
+    () => [state.title, state.content, state.tags, state.date, state.templateKind, state.templateData],
     () => {
       if (!readyForAutosave.value) return
       saveDraft({
@@ -137,7 +134,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
         content: state.content,
         tags: state.tags,
         date: state.date,
-        saveMode: state.saveMode,
         templateKind: state.templateKind,
         templateData: { ...state.templateData },
       })
@@ -181,10 +177,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     syncSuggestedDraft()
   }
 
-  function setSaveMode(saveMode: QuickNoteSaveMode) {
-    state.saveMode = saveMode
-  }
-
   function appendVoiceTranscript(text: string) {
     const next = [state.content, text].filter(Boolean).join(' ')
     setContent(next.trim())
@@ -199,11 +191,29 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     setContent([state.content, templateContent].filter(Boolean).join('\n\n').trim())
   }
 
+  function mergeTemplateContent(currentContent: string, nextTemplateContent: string): string {
+    const current = currentContent.trim()
+    const nextTemplate = nextTemplateContent.trim()
+    const previousTemplate = appliedTemplateContent.value.trim()
+
+    if (!current) return nextTemplate
+
+    if (previousTemplate && current.includes(previousTemplate)) {
+      const updated = current.replace(previousTemplate, nextTemplate).trim()
+      return updated || current
+    }
+
+    if (!nextTemplate || current === nextTemplate) {
+      return current
+    }
+
+    return [current, nextTemplate].join('\n\n').trim()
+  }
+
   function applyTemplateChanges() {
-    state.title = suggestedDraft.value.title
-    state.content = suggestedDraft.value.content
-    state.titleTouched = false
-    state.contentTouched = false
+    state.content = mergeTemplateContent(state.content, suggestedDraft.value.content)
+    state.contentTouched = true
+    appliedTemplateContent.value = suggestedDraft.value.content
   }
 
   function regenerateFromTemplate() {
@@ -212,9 +222,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   function setQuickReminder(preset: QuickNoteQuickReminderPreset) {
     const target = resolveQuickReminderTime(preset)
-    const keys: QuickNoteReminderKey[] = ['reminder1', 'reminder2', 'reminder3']
-    const emptyKey = keys.find(key => !reminders.value[key]) || 'reminder3'
-    setReminder(emptyKey, target)
+    setReminder('reminder1', target)
   }
 
   function handleReminderSet(payload: { key: QuickNoteReminderKey; time: string }) {
@@ -226,11 +234,10 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   }
 
   function clearAllReminders() {
-    ;(['reminder1', 'reminder2', 'reminder3'] as QuickNoteReminderKey[]).forEach(key => clearReminder(key))
+    clearReminder('reminder1')
   }
 
   function resetState() {
-    state.saveMode = defaultSaveMode
     state.date = getTodayDateString()
     state.templateKind = defaultTemplateKind
     state.tags = []
@@ -252,7 +259,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     }
 
     const result = await submitQuickNote({
-      saveMode: state.saveMode,
       title,
       content,
       date: state.date,
@@ -281,11 +287,11 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     state.content = draft.value.content || ''
     state.tags = draft.value.tags || []
     state.date = draft.value.date || getTodayDateString()
-    state.saveMode = draft.value.saveMode || defaultSaveMode
     state.templateKind = draft.value.templateKind || defaultTemplateKind
     Object.assign(state.templateData, cloneTemplateData(draft.value.templateData))
     state.titleTouched = Boolean(state.title)
     state.contentTouched = Boolean(state.content)
+    appliedTemplateContent.value = state.templateKind === 'blank' ? '' : suggestedDraft.value.content
     return true
   }
 
@@ -317,7 +323,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     content: toRef(state, 'content'),
     tags: toRef(state, 'tags'),
     date: toRef(state, 'date'),
-    saveMode: toRef(state, 'saveMode'),
     templateKind: toRef(state, 'templateKind'),
     templates,
     reminders,
@@ -331,7 +336,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     setContent,
     setTags,
     setDate,
-    setSaveMode,
     appendVoiceTranscript,
     applySnippet,
     applyTemplateChanges,

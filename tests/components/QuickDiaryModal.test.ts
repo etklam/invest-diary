@@ -61,7 +61,7 @@ describe('QuickDiaryModal', () => {
     vi.clearAllMocks()
   })
 
-  it('submits trading template content through the shared diary API with append mode', async () => {
+  it('submits trading template content through the shared smart-save diary API', async () => {
     const wrapper = mountModal()
 
     await clickByText(wrapper, 'quickDiary.templates.trading')
@@ -72,7 +72,6 @@ describe('QuickDiaryModal', () => {
     await flushPromises()
 
     expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({
-      saveMode: 'append',
       date: '2026-03-22',
       title: expect.stringContaining('TSLA, NVDA'),
       content: expect.stringContaining('Watch setup'),
@@ -94,7 +93,6 @@ describe('QuickDiaryModal', () => {
     await flushPromises()
 
     expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({
-      saveMode: 'append',
       title: 'Semiconductor breadth',
       content: expect.stringContaining('Breadth improved into the close.'),
       date: '2026-03-22',

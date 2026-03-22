@@ -100,7 +100,6 @@
                       :content="state.content"
                       :tags="state.tags"
                       :date="state.date"
-                      :save-mode="state.saveMode"
                       :saving="saving"
                       :draft-hint="draftHint"
                       :save-label="t('quickDiary.createDiary')"
@@ -112,7 +111,6 @@
                       @update:content="setContent"
                       @update:tags="setTags"
                       @update:date="setDate"
-                      @update:saveMode="setSaveMode"
                       @append-text="appendVoiceTranscript"
                       @apply-template="handleApplyTemplate"
                       @set-quick-reminder="handleSetQuickReminder"
@@ -185,7 +183,6 @@ const {
   setContent,
   setTags,
   setDate,
-  setSaveMode,
   appendVoiceTranscript,
   applySnippet,
   applyTemplateChanges,
@@ -198,7 +195,6 @@ const {
   dispose,
   resetState,
 } = useQuickNoteComposer({
-  defaultSaveMode: 'append',
   defaultTemplateKind: 'trading',
 })
 
@@ -242,12 +238,12 @@ function handleSetQuickReminder(preset: QuickNoteQuickReminderPreset) {
   toast.info(`已設定${getQuickReminderLabel(preset)}提醒`)
 }
 
-function handleSetReminder(payload: { key: 'reminder1' | 'reminder2' | 'reminder3'; time: string }) {
+function handleSetReminder(payload: { key: 'reminder1'; time: string }) {
   handleReminderSet(payload)
   toast.info('提醒已設定')
 }
 
-function handleClearReminder(payload: { key: 'reminder1' | 'reminder2' | 'reminder3' }) {
+function handleClearReminder(payload: { key: 'reminder1' }) {
   handleReminderClear(payload)
   toast.info('提醒已清除')
 }

@@ -36,8 +36,6 @@ vi.mock('~/composables/useQuickNoteReminders', () => ({
   useQuickNoteReminders: () => ({
     reminders: ref({
       reminder1: null,
-      reminder2: null,
-      reminder3: null,
     }),
     setReminder: setReminderMock,
     clearReminder: clearReminderMock,
@@ -94,7 +92,7 @@ describe('QuickDiaryOneLiner', () => {
     vi.clearAllMocks()
   })
 
-  it('submits the quick note through useQuickNoteSubmit with create mode', async () => {
+  it('submits the quick note through useQuickNoteSubmit with smart-save behavior', async () => {
     const wrapper = mountOneLiner()
 
     await wrapper.get('textarea[aria-label="快速筆記內容"]').setValue('Need to journal this trade')
@@ -103,7 +101,6 @@ describe('QuickDiaryOneLiner', () => {
     await flushPromises()
 
     expect(submitQuickNoteMock).toHaveBeenCalledWith({
-      saveMode: 'create',
       title: '2026/03/22 Diary',
       content: 'Need to journal this trade',
       date: '2026-03-22',

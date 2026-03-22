@@ -13,7 +13,6 @@ function mountEditorCore() {
       content: 'Initial note',
       tags: ['watch'],
       date: '2026-03-22',
-      saveMode: 'create',
       saving: false,
       draftHint: '草稿已儲存',
       templates: [
@@ -21,8 +20,6 @@ function mountEditorCore() {
       ],
       reminders: {
         reminder1: null,
-        reminder2: null,
-        reminder3: null,
       },
       activeReminders: [
         { key: 'reminder1', label: '提醒 1', remaining: '59 分鐘' },
@@ -66,13 +63,11 @@ describe('QuickNoteEditorCore', () => {
     await wrapper.get('textarea[aria-label="快速筆記內容"]').setValue('Updated note')
     await wrapper.get('[data-test="tags"]').trigger('click')
     await wrapper.get('#quick-note-date').setValue('2026-03-23')
-    await wrapper.get('select[aria-label="儲存模式"]').setValue('append')
 
     expect(wrapper.emitted('update:title')).toEqual([['Manual title']])
     expect(wrapper.emitted('update:content')).toEqual([['Updated note']])
     expect(wrapper.emitted('update:tags')).toEqual([[['watch', 'profit']]])
     expect(wrapper.emitted('update:date')).toEqual([['2026-03-23']])
-    expect(wrapper.emitted('update:saveMode')).toEqual([['append']])
   })
 
   it('emits editor actions for voice, template, reminders, and save', async () => {

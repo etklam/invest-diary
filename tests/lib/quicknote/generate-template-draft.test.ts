@@ -51,4 +51,52 @@ describe('generateTemplateDraft', () => {
     expect(result.content).toContain('板塊熱點')
     expect(result.content).toContain('尾盤資金明顯回流。')
   })
+
+  it('localizes structured reflection and observation values from semantic keys', () => {
+    const reflection = generateTemplateDraft({
+      templateKind: 'reflection',
+      date: '2026-03-22',
+      locale: 'en',
+      templateData: {
+        marketCondition: 'gapUpAndGo',
+        rating: 4,
+      },
+    })
+
+    const observation = generateTemplateDraft({
+      templateKind: 'observation',
+      date: '2026-03-22',
+      locale: 'en',
+      templateData: {
+        observationType: 'sectorMomentum',
+        observationContent: 'Breadth improved into the close.',
+      },
+    })
+
+    expect(reflection.content).toContain('Gap up and go')
+    expect(observation.content).toContain('Sector momentum')
+  })
+
+  it('translates legacy localized template values when the locale changes', () => {
+    const reflection = generateTemplateDraft({
+      templateKind: 'reflection',
+      date: '2026-03-22',
+      locale: 'en',
+      templateData: {
+        marketCondition: '大漲',
+      },
+    })
+
+    const observation = generateTemplateDraft({
+      templateKind: 'observation',
+      date: '2026-03-22',
+      locale: 'en',
+      templateData: {
+        observationType: '板塊熱點',
+      },
+    })
+
+    expect(reflection.content).toContain('Strong rally')
+    expect(observation.content).toContain('Sector momentum')
+  })
 })

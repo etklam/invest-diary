@@ -7,8 +7,6 @@ const REMINDER_KEY = 'quick-note-reminders'
 export function useQuickNoteReminders() {
   const reminders = useLocalStorage<QuickNoteReminders>(REMINDER_KEY, {
     reminder1: null,
-    reminder2: null,
-    reminder3: null
   })
 
   const setReminder = (key: QuickNoteReminderKey, time: string | null) => {
@@ -36,19 +34,17 @@ export function useQuickNoteReminders() {
   const checkReminders = () => {
     if (!process.client) return
     const now = Date.now()
-    ;(['reminder1', 'reminder2', 'reminder3'] as QuickNoteReminderKey[]).forEach(key => {
-      const time = reminders.value[key]
-      if (!time) return
-      const target = new Date(time).getTime()
-      if (!Number.isFinite(target)) {
-        clearReminder(key)
-        return
-      }
-      if (now >= target) {
-        showToast('快速筆記提醒：該記錄一下了')
-        clearReminder(key)
-      }
-    })
+    const time = reminders.value.reminder1
+    if (!time) return
+    const target = new Date(time).getTime()
+    if (!Number.isFinite(target)) {
+      clearReminder('reminder1')
+      return
+    }
+    if (now >= target) {
+      showToast('快速筆記提醒：該記錄一下了')
+      clearReminder('reminder1')
+    }
   }
 
   return {

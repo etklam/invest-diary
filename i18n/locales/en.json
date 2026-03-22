@@ -96,6 +96,12 @@
       "observation": "Market Observation",
       "observationDesc": "Record market observations"
     },
+    "templateAssistant": {
+      "title": "Template Assistant",
+      "description": "Template fields update the suggested title and content, but you can still edit freely before saving.",
+      "applyChanges": "Apply template changes",
+      "regenerate": "Regenerate template content"
+    },
     "trading": {
       "operation": "Today's Operation",
       "buy": "Buy",
@@ -252,11 +258,11 @@
     "serverError": "Server error"
   },
   "home": {
-    "badge": "Trade Basics Co-Learning",
+    "badge": "Trading Review Companion",
     "hero": {
       "title": "Start with trade basics and build sustainable discipline",
-      "subtitle": "Use co-learning plus structured journaling and review to move toward long-term goals like financial freedom and passive income, without hype.",
-      "getStarted": "Start Learning",
+      "subtitle": "Trading is inherently lonely, so your past experience needs to be preserved. Let every review become a companion for the next decision.",
+      "getStarted": "Start Recording",
       "learnMore": "See Learning Path"
     },
     "progress": {
@@ -274,15 +280,15 @@
       "focusValue": "Trade Basics",
       "methodLabel": "Method",
       "methodValue": "Record -> Review -> Improve",
-      "communityLabel": "Co-Learning Mode",
-      "communityValue": "Peer feedback",
+      "communityLabel": "Companion Mode",
+      "communityValue": "Dialogue with your past self",
       "description": "Keep each thesis, execution, and review in one timeline to reduce repeated mistakes over time."
     },
     "promise": {
       "title": "Learning Promise",
       "basics": "Basics first",
       "risk": "Risk first",
-      "community": "Learn together",
+      "community": "Past self as companion",
       "longTerm": "Long-term compounding",
       "noGuarantee": "No return guarantees"
     },
@@ -303,19 +309,19 @@
       }
     },
     "community": {
-      "title": "Learn with others, not in isolation",
-      "subtitle": "Discussion and peer review help blind spots surface earlier.",
+      "title": "Walk with your past self",
+      "subtitle": "Trading is lonely, but your past experience can become the best company. Let it become your strongest companion.",
       "share": {
-        "title": "Share your rules",
-        "description": "Publish discipline checklists and principles so your process can be challenged."
+        "title": "Leave your rules behind",
+        "description": "Write down your principles, checklists, and triggers so your future self has something reliable to return to."
       },
       "feedback": {
-        "title": "Get useful feedback",
-        "description": "Receive concrete comments on your logs and reviews, not emotional reactions."
+        "title": "Review your own experience",
+        "description": "Keep every note and review on one timeline so patterns and blind spots surface on their own."
       },
       "accountability": {
-        "title": "Mutual accountability",
-        "description": "Keep a steady practice and review cadence to reduce impulse trades."
+        "title": "Stay self-accompanied",
+        "description": "Use records and reviews to keep a steady cadence instead of leaving growth to emotion or luck."
       }
     },
     "turnaround": {
@@ -368,7 +374,7 @@
     },
     "cta": {
       "title": "Ready to start your learning loop?",
-      "description": "Start logging today, run weekly reviews, and calibrate with peers. Financial freedom and passive income are long-term directions, not guaranteed outcomes.",
+      "description": "Start logging today, review weekly, and let past experience keep shaping the next decision. Financial freedom and passive income are long-term directions, not guaranteed outcomes.",
       "register": "Join Now",
       "login": "Log In",
       "step1": {
@@ -386,7 +392,7 @@
         "title": "Refine",
         "description": "Convert feedback into clearer rules for the next cycle."
       },
-      "disclaimer": "This platform is for education and shared learning only, not investment advice. All investing carries risk, and outcomes vary by strategy and execution."
+      "disclaimer": "This platform is for education and review only, not investment advice. All investing carries risk, and outcomes vary by strategy and execution."
     },
     "footer": {
       "rights": "All rights reserved"
@@ -395,11 +401,11 @@
   "about": {
     "hero": {
       "title": "About Me",
-      "subtitle": "Builder notes behind a trade-basics co-learning project"
+      "subtitle": "Builder notes from a trader learning to walk with past experience"
     },
     "intro": {
       "title": "Who I Am",
-      "content": "I am the developer of this site and a trader still learning every day. This project started as my own journal and evolved into a structured workflow for recording, reviewing, and improving decisions with others."
+      "content": "I am the developer of this site and a trader still learning every day. This project started as my own journal and evolved into a structured workflow for recording, reviewing, and improving decisions, so past experience can stay close to every future trade."
     },
     "motivation": {
       "title": "Why I Built This",
@@ -408,7 +414,7 @@
     },
     "features": {
       "title": "Main Features",
-      "subtitle": "Tools I use in practice and share with the community",
+      "subtitle": "Tools I use in practice and hope can help you too",
       "diary": {
         "title": "Trade Basic",
         "description": "Write detailed investment diaries using Markdown syntax, documenting trading reasons, market analysis, and personal reflections to build a complete record of investment decisions."
@@ -444,10 +450,10 @@
     },
     "personal": {
       "title": "My Principles",
-      "content": "I keep this project simple, transparent, and sustainable: no overpromising, no hype language, and strong focus on verifiable process improvements. All content is for education and shared learning only, not investment advice."
+      "content": "I keep this project simple, transparent, and sustainable: no overpromising, no hype language, and strong focus on verifiable process improvements. All content is for education and review only, not investment advice."
     },
     "footer": {
-      "rights": "Personal co-learning project, all rights reserved"
+      "rights": "Personal trading review project, all rights reserved"
     }
   },
   "howToUse": {
