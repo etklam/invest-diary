@@ -83,10 +83,13 @@ function mountOneLiner() {
 describe('QuickDiaryOneLiner', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-22T08:30:00.000Z'))
     submitQuickNoteMock.mockResolvedValue({ id: '10' })
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
     vi.clearAllMocks()
   })
@@ -109,5 +112,18 @@ describe('QuickDiaryOneLiner', () => {
     expect(clearDraftMock).toHaveBeenCalled()
     expect(mockToast.success).toHaveBeenCalledWith('已儲存快速筆記')
     expect(wrapper.emitted('saved')).toBeTruthy()
+  })
+
+  it('sets semantic quick reminders and announces the selected preset', async () => {
+    const wrapper = mountOneLiner()
+
+    const tomorrowButton = wrapper.findAll('button').find(button => button.text() === '明天')
+
+    expect(tomorrowButton).toBeTruthy()
+
+    await tomorrowButton!.trigger('click')
+
+    expect(setReminderMock).toHaveBeenCalledWith('reminder1', '2026-03-23T08:30:00.000Z')
+    expect(mockToast.info).toHaveBeenCalledWith('已設定明天提醒')
   })
 })

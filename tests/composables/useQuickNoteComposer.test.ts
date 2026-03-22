@@ -111,4 +111,15 @@ describe('useQuickNoteComposer', () => {
     expect(clearDraftMock).toHaveBeenCalled()
     expect(result).toEqual({ id: '11' })
   })
+
+  it('sets semantic quick reminder presets using the first empty reminder slot', async () => {
+    vi.setSystemTime(new Date('2026-03-22T08:30:00.000Z'))
+
+    const { useQuickNoteComposer } = await import('~/composables/useQuickNoteComposer')
+    const composer = useQuickNoteComposer({ defaultSaveMode: 'create' })
+
+    composer.setQuickReminder('nextWeek')
+
+    expect(setReminderMock).toHaveBeenCalledWith('reminder1', '2026-03-29T08:30:00.000Z')
+  })
 })

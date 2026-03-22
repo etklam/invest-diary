@@ -1,5 +1,6 @@
 import { computed, getCurrentInstance, onUnmounted, reactive, ref, toRef, watch } from 'vue'
 import { generateTemplateDraft } from '~/lib/quicknote/generate-template-draft'
+import { resolveQuickReminderTime } from '~/lib/quicknote/quick-reminders'
 import { useQuickNoteDraft } from '~/composables/useQuickNoteDraft'
 import { useQuickNoteReminders } from '~/composables/useQuickNoteReminders'
 import { useQuickNoteSubmit } from '~/composables/useQuickNoteSubmit'
@@ -7,6 +8,7 @@ import { useQuickNoteTemplates } from '~/composables/useQuickNoteTemplates'
 import {
   createEmptyQuickNoteTemplateData,
   type QuickNoteComposerState,
+  type QuickNoteQuickReminderPreset,
   type QuickNoteReminderKey,
   type QuickNoteSaveMode,
   type QuickNoteTemplateData,
@@ -208,8 +210,8 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     applyTemplateChanges()
   }
 
-  function setQuickReminder(hours: number) {
-    const target = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
+  function setQuickReminder(preset: QuickNoteQuickReminderPreset) {
+    const target = resolveQuickReminderTime(preset)
     const keys: QuickNoteReminderKey[] = ['reminder1', 'reminder2', 'reminder3']
     const emptyKey = keys.find(key => !reminders.value[key]) || 'reminder3'
     setReminder(emptyKey, target)

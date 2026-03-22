@@ -64,7 +64,8 @@ import { onMounted, ref } from 'vue'
 import QuickNoteEditorCore from '~/components/quicknote/QuickNoteEditorCore.vue'
 import QuickNoteTemplateAssistant from '~/components/quicknote/QuickNoteTemplateAssistant.vue'
 import { useQuickNoteComposer } from '~/composables/useQuickNoteComposer'
-import type { QuickNoteSaveMode, QuickNoteTemplateKind } from '~/types/quicknote'
+import { getQuickReminderLabel } from '~/lib/quicknote/quick-reminders'
+import type { QuickNoteQuickReminderPreset, QuickNoteTemplateKind } from '~/types/quicknote'
 
 const emit = defineEmits<{
   (e: 'saved'): void
@@ -125,9 +126,9 @@ function handleApplyTemplate(templateContent: string) {
   applySnippet(templateContent)
 }
 
-function handleSetQuickReminder(hours: number) {
-  setQuickReminder(hours)
-  toast.info(`已設定 ${hours} 小時後提醒`)
+function handleSetQuickReminder(preset: QuickNoteQuickReminderPreset) {
+  setQuickReminder(preset)
+  toast.info(`已設定${getQuickReminderLabel(preset)}提醒`)
 }
 
 function handleSetReminder(payload: { key: 'reminder1' | 'reminder2' | 'reminder3'; time: string }) {

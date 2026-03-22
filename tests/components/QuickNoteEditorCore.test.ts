@@ -90,4 +90,26 @@ describe('QuickNoteEditorCore', () => {
     expect(wrapper.emitted('reminder-clear')).toEqual([[{ key: 'reminder1' }]])
     expect(wrapper.emitted('save')).toBeTruthy()
   })
+
+  it('renders semantic quick reminder buttons and emits reminder presets', async () => {
+    const wrapper = mountEditorCore()
+
+    const tomorrowButton = wrapper.findAll('button').find(button => button.text() === '明天')
+    const nextWeekButton = wrapper.findAll('button').find(button => button.text() === '下周')
+    const nextMonthButton = wrapper.findAll('button').find(button => button.text() === '下個月')
+
+    expect(tomorrowButton).toBeTruthy()
+    expect(nextWeekButton).toBeTruthy()
+    expect(nextMonthButton).toBeTruthy()
+
+    await tomorrowButton!.trigger('click')
+    await nextWeekButton!.trigger('click')
+    await nextMonthButton!.trigger('click')
+
+    expect(wrapper.emitted('set-quick-reminder')).toEqual([
+      ['tomorrow'],
+      ['nextWeek'],
+      ['nextMonth'],
+    ])
+  })
 })

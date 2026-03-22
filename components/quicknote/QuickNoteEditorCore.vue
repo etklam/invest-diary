@@ -58,10 +58,10 @@
         <span class="text-xs text-gray-500 dark:text-gray-400">快速提醒</span>
         <button
           v-for="option in quickReminderOptions"
-          :key="option.hours"
+          :key="option.preset"
           type="button"
           class="rounded-md border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 hover:border-indigo-300 hover:text-indigo-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-          @click="emit('set-quick-reminder', option.hours)"
+          @click="emit('set-quick-reminder', option.preset)"
         >
           {{ option.label }}
         </button>
@@ -127,7 +127,13 @@ import VoiceInput from '~/components/VoiceInput.vue'
 import TemplateManager from '~/components/TemplateManager.vue'
 import QuickReminder from '~/components/QuickReminder.vue'
 import type { QuickNoteTemplate } from '~/composables/useQuickNoteTemplates'
-import type { QuickNoteReminderKey, QuickNoteReminders, QuickNoteSaveMode } from '~/types/quicknote'
+import { quickReminderOptions } from '~/lib/quicknote/quick-reminders'
+import type {
+  QuickNoteQuickReminderPreset,
+  QuickNoteReminderKey,
+  QuickNoteReminders,
+  QuickNoteSaveMode,
+} from '~/types/quicknote'
 
 defineProps<{
   title: string
@@ -157,7 +163,7 @@ const emit = defineEmits<{
   (e: 'append-text', value: string): void
   (e: 'apply-template', value: string): void
   (e: 'save'): void
-  (e: 'set-quick-reminder', value: number): void
+  (e: 'set-quick-reminder', value: QuickNoteQuickReminderPreset): void
   (e: 'reminder-set', payload: { key: QuickNoteReminderKey; time: string }): void
   (e: 'reminder-clear', payload: { key: QuickNoteReminderKey }): void
 }>()
@@ -165,12 +171,6 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const showTemplateManager = ref(false)
-
-const quickReminderOptions = [
-  { hours: 1, label: '1 小時' },
-  { hours: 2, label: '2 小時' },
-  { hours: 4, label: '4 小時' }
-]
 
 function handleContentInput(event: Event) {
   emit('update:content', (event.target as HTMLTextAreaElement).value)

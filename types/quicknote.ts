@@ -1,6 +1,7 @@
 export type QuickNoteTemplateKind = 'blank' | 'trading' | 'reflection' | 'observation'
 export type QuickNoteSaveMode = 'create' | 'append'
 export type QuickNoteReminderKey = 'reminder1' | 'reminder2' | 'reminder3'
+export type QuickNoteQuickReminderPreset = 'tomorrow' | 'nextWeek' | 'nextMonth'
 
 export interface QuickNoteReminders {
   reminder1: string | null
