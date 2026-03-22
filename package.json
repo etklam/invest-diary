@@ -60,6 +60,7 @@
   "devDependencies": {
     "@nuxt/test-utils": "^4.0.0",
     "@nuxtjs/color-mode": "^4.0.0",
+    "@playwright/test": "^1.58.2",
     "@types/jsonwebtoken": "^9.0.10",
     "@vite-pwa/assets-generator": "^1.0.2",
     "@vite-pwa/nuxt": "^1.1.1",

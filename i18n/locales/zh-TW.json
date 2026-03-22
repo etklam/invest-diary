@@ -1192,6 +1192,7 @@
       "freedomDate": "預計達成日期",
       "now": "現在",
       "withdrawalCapacity": "達成後每年可提領",
+      "recommendation": "建議",
       "monthly": "每月",
       "weekly": "每週",
       "daily": "每日",
@@ -1223,6 +1224,7 @@
           "aggressive": "您選擇積極型提領率，注意市場波動風險，建議保留更多緩衝。"
         }
       },
+      "copyToClipboard": "複製為 Markdown",
       "copySuccess": "已複製到剪貼簿",
       "copyFailed": "複製失敗"
     }

@@ -258,7 +258,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
     <!-- Header -->
     <div class="text-center mb-8">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -274,9 +274,9 @@ definePageMeta({
 
     <!-- Symbol Search & Quick Actions -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
-      <div class="flex flex-wrap gap-4 items-center">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
         <!-- Symbol Search -->
-        <div class="flex-1 min-w-[200px]">
+        <div class="w-full lg:min-w-0 lg:flex-1">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             {{ t('tools.etf.symbol') }}
           </label>
@@ -290,11 +290,11 @@ definePageMeta({
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex gap-2 items-end">
+        <div class="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:items-end">
           <button
             @click="fetchEtfAnalysis(selectedSymbol)"
             :disabled="analysisLoading || !selectedSymbol"
-            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
+            class="w-full rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition hover:bg-indigo-700 disabled:bg-gray-400 lg:w-auto"
           >
             {{ analysisLoading ? t('common.loading') : t('tools.etf.analyze') }}
           </button>
@@ -302,7 +302,7 @@ definePageMeta({
           <button
             v-if="selectedSymbol && !isInWatchlist(selectedSymbol)"
             @click="addToWatchlist(selectedSymbol)"
-            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition"
+            class="w-full rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition hover:bg-green-700 lg:w-auto"
           >
             {{ t('tools.etf.watchlist.add') }}
           </button>
@@ -310,7 +310,7 @@ definePageMeta({
           <button
             @click="fetchAllEtfs"
             :disabled="allEtfsLoading"
-            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition"
+            class="w-full rounded-lg bg-gray-600 px-4 py-2 font-medium text-white transition hover:bg-gray-700 lg:w-auto"
           >
             {{ allEtfsLoading ? t('common.loading') : t('tools.etf.refresh') }}
           </button>
@@ -323,14 +323,14 @@ definePageMeta({
       v-if="liveQuote"
       class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg p-6 mb-6 text-white"
     >
-      <div class="flex items-center justify-between mb-4">
+      <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 class="text-2xl font-bold">{{ liveQuote.symbol }}</h2>
           <p class="text-sm opacity-80">
             {{ t('tools.etf.marketState') }}: {{ liveQuote.marketState }}
           </p>
         </div>
-        <div class="text-right">
+        <div class="w-full text-left sm:w-auto sm:text-right">
           <p class="text-3xl font-bold">${{ formatNumber(liveQuote.regularMarketPrice) }}</p>
           <p
             class="text-lg"
@@ -341,12 +341,12 @@ definePageMeta({
           </p>
         </div>
       </div>
-      <div class="flex items-center justify-between text-sm opacity-80">
-        <span>{{ t('tools.etf.lastUpdate') }}: {{ new Date(liveQuote.lastUpdateTime).toLocaleString() }}</span>
+      <div class="flex flex-col gap-3 text-sm opacity-80 sm:flex-row sm:items-center sm:justify-between">
+        <span class="break-all">{{ t('tools.etf.lastUpdate') }}: {{ new Date(liveQuote.lastUpdateTime).toLocaleString() }}</span>
         <button
           @click="fetchLiveQuote(selectedSymbol)"
           :disabled="quoteLoading"
-          class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded transition"
+          class="w-full rounded bg-white/20 px-3 py-1 transition hover:bg-white/30 sm:w-auto"
         >
           {{ quoteLoading ? t('common.loading') : t('tools.etf.refresh') }}
         </button>
@@ -354,14 +354,14 @@ definePageMeta({
     </div>
 
     <!-- Tabs -->
-    <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
-      <nav class="flex gap-4">
+    <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+      <nav class="-mb-px flex gap-2 overflow-x-auto pb-1">
         <button
           v-for="tab in tabs"
           :key="tab"
           @click="activeTab = tab"
           :class="[
-            'px-4 py-2 font-medium transition',
+            'shrink-0 whitespace-nowrap rounded-t-lg px-3 py-2 font-medium transition sm:px-4',
             activeTab === tab
               ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
@@ -375,7 +375,7 @@ definePageMeta({
     <!-- All ETFs Tab -->
     <div v-if="activeTab === 'all'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full">
+        <table class="min-w-[900px] w-full">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
               <th
@@ -660,7 +660,7 @@ definePageMeta({
 
     <!-- Watchlist Section -->
     <div class="mt-8">
-      <div class="flex items-center justify-between mb-4">
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
           {{ t('tools.etf.watchlist.title') }}
         </h2>
@@ -676,7 +676,7 @@ definePageMeta({
           :key="item.id"
           class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4"
         >
-          <div class="flex items-center justify-between mb-2">
+          <div class="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ item.symbol }}</h3>
             <button
               @click="removeFromWatchlist(item.id)"
@@ -686,13 +686,13 @@ definePageMeta({
             </button>
           </div>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ item.name }}</p>
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span class="text-2xl font-bold text-gray-900 dark:text-white">
               ${{ formatNumber(item.latestPrice || 0) }}
             </span>
             <button
               @click="fetchEtfAnalysis(item.symbol)"
-              class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm"
+              class="w-full rounded bg-indigo-600 px-3 py-1 text-sm text-white hover:bg-indigo-700 sm:w-auto"
             >
               {{ t('tools.etf.analyze') }}
             </button>

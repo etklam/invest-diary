@@ -1192,6 +1192,7 @@
       "freedomDate": "Target Date",
       "now": "Now",
       "withdrawalCapacity": "Annual Withdrawal Capacity",
+      "recommendation": "Recommendation",
       "monthly": "Monthly",
       "weekly": "Weekly",
       "daily": "Daily",
@@ -1223,6 +1224,7 @@
           "aggressive": "You chose an aggressive withdrawal rate. Be mindful of market volatility, consider maintaining a larger buffer."
         }
       },
+      "copyToClipboard": "Copy as Markdown",
       "copySuccess": "Copied to clipboard",
       "copyFailed": "Copy failed"
     }

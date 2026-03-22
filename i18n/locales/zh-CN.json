@@ -999,6 +999,7 @@
       "freedomDate": "预计达成日期",
       "now": "现在",
       "withdrawalCapacity": "达成后每年可提领",
+      "recommendation": "建议",
       "monthly": "每月",
       "weekly": "每周",
       "daily": "每日",
@@ -1030,6 +1031,7 @@
           "aggressive": "您选择积极型提领率，注意市场波动风险，建议保留更多缓冲。"
         }
       },
+      "copyToClipboard": "复制为 Markdown",
       "copySuccess": "已复制到剪贴板",
       "copyFailed": "复制失败"
     },

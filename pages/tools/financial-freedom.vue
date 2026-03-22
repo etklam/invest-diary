@@ -304,7 +304,7 @@ definePageMeta({
     <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8">
       <div class="space-y-6">
         <div class="panel p-6 sm:p-7">
-          <div class="mb-6 flex items-start justify-between gap-4">
+          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p class="kicker mb-2">{{ t('tools.financialFreedom.inputParams') }}</p>
               <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -353,7 +353,7 @@ definePageMeta({
           </div>
 
           <div class="subpanel mt-6">
-            <div class="mb-4 flex items-center justify-between gap-4">
+            <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-300">
                 {{ t('tools.financialFreedom.expectedReturn') }} {{ t('common.range') }}
               </h3>
@@ -428,7 +428,7 @@ definePageMeta({
 
         <div v-if="isValidInput && result" class="panel overflow-hidden">
           <div class="result-banner p-6 sm:p-7">
-            <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/80">
                   {{ t('tools.financialFreedom.fireNumber') }}
@@ -437,7 +437,7 @@ definePageMeta({
                   {{ formatCompactValue(result.fireNumber) }}
                 </div>
               </div>
-              <button type="button" class="action-btn cursor-pointer" @click="copyToClipboard">
+              <button type="button" class="action-btn w-full cursor-pointer sm:w-auto" @click="copyToClipboard">
                 <Icon :name="copySuccess ? 'heroicons:check' : 'heroicons:clipboard-document'" class="mr-2 h-4 w-4" />
                 {{ copySuccess ? t('tools.financialFreedom.copied') : t('tools.financialFreedom.copyToClipboard') }}
               </button>
@@ -491,7 +491,7 @@ definePageMeta({
         </div>
 
         <div v-if="isValidInput && result" class="panel p-6 sm:p-7">
-          <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+          <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <div>
               <p class="kicker mb-2">{{ t('tools.financialFreedom.withdrawalCapacity') }}</p>
               <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -535,7 +535,7 @@ definePageMeta({
         </div>
 
         <div v-if="isValidInput && result" class="panel p-6 sm:p-7">
-          <div class="mb-5 flex items-center justify-between gap-4">
+          <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="kicker mb-2">{{ t('tools.financialFreedom.yearlyProjection') }}</p>
               <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -554,7 +554,7 @@ definePageMeta({
               class="projection-row"
               :class="year.isFreed ? 'projection-row-active' : ''"
             >
-              <div class="flex items-center justify-between gap-4">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {{ t('tools.financialFreedom.yearN', { n: year.year }) }}
@@ -810,6 +810,12 @@ definePageMeta({
 .projection-row-active {
   border-color: rgb(16 185 129 / 45%);
   background: rgb(236 253 245 / 70%);
+}
+
+@media (max-width: 639px) {
+  .recommendation-card {
+    flex-direction: column;
+  }
 }
 
 :global(.dark .freedom-page),

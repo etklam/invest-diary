@@ -244,14 +244,14 @@ definePageMeta({
     <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
       <div class="space-y-6">
         <div class="panel p-6 sm:p-7">
-          <div class="mb-6 flex items-start justify-between gap-4">
+          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p class="kicker mb-2">{{ t('tools.positionSizing.inputParams') }}</p>
               <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
                 {{ t('tools.positionSizing.inputParams') }}
               </h2>
             </div>
-            <button type="button" class="action-btn-muted cursor-pointer" @click="usePercentageMode = !usePercentageMode">
+            <button type="button" class="action-btn-muted w-full cursor-pointer sm:w-auto" @click="usePercentageMode = !usePercentageMode">
               {{ usePercentageMode ? t('tools.positionSizing.switchToDirect') : t('tools.positionSizing.switchToPercentage') }}
             </button>
           </div>
@@ -313,9 +313,9 @@ definePageMeta({
             <div>
               <label class="field-label">{{ t('tools.positionSizing.reserveCash') }}</label>
               <div class="subpanel mt-2">
-                <div class="flex items-center gap-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                   <input v-model.number="reserveCashPercent" type="range" min="0" max="20" step="1" class="w-full cursor-pointer accent-blue-600">
-                  <span class="min-w-12 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">{{ reserveCashPercent }}%</span>
+                  <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 sm:min-w-12 sm:text-right">{{ reserveCashPercent }}%</span>
                 </div>
                 <p class="field-hint">{{ t('tools.positionSizing.reserveCashHint') }}</p>
               </div>
@@ -323,7 +323,7 @@ definePageMeta({
 
             <div>
               <label class="field-label">{{ t('tools.positionSizing.roundingMode') }}</label>
-              <div class="mt-2 grid grid-cols-3 gap-2">
+              <div class="mt-2 grid gap-2 sm:grid-cols-3">
                 <button type="button" class="choice-card cursor-pointer text-center" :class="roundingMode === 'down' ? 'choice-card-active' : ''" @click="roundingMode = 'down'">
                   {{ t('tools.positionSizing.roundDown') }}
                 </button>
@@ -340,7 +340,7 @@ definePageMeta({
 
         <div v-if="isValidInput && summary" class="panel overflow-hidden">
           <div class="result-banner p-6 sm:p-7">
-            <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/80">
                   {{ t('tools.positionSizing.totalInvested') }}
@@ -349,7 +349,7 @@ definePageMeta({
                   {{ formatCurrency(summary.totalInvested) }}
                 </div>
               </div>
-              <button type="button" class="action-btn cursor-pointer" @click="copyToClipboard">
+              <button type="button" class="action-btn w-full cursor-pointer sm:w-auto" @click="copyToClipboard">
                 <Icon :name="copySuccess ? 'heroicons:check' : 'heroicons:clipboard-document'" class="mr-2 h-4 w-4" />
                 {{ copySuccess ? t('tools.positionSizing.copied') : t('tools.positionSizing.copyToClipboard') }}
               </button>
@@ -375,7 +375,7 @@ definePageMeta({
 
       <div class="space-y-6">
         <div class="panel p-6 sm:p-7">
-          <div class="mb-5 flex items-center justify-between gap-4">
+          <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="kicker mb-2">{{ t('tools.positionSizing.strategy') }}</p>
               <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -455,7 +455,7 @@ definePageMeta({
 
     <section v-if="isValidInput && calculationResults.length" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
       <div class="panel p-6 sm:p-7">
-        <div class="mb-6 flex items-center justify-between gap-4">
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p class="kicker mb-2">{{ t('tools.positionSizing.detailTable') }}</p>
             <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -557,6 +557,7 @@ definePageMeta({
 .summary-card,
 .projection-stat,
 .batch-card {
+  min-width: 0;
   border: 1px solid rgb(226 232 240);
   border-radius: 0.95rem;
   background: rgb(255 255 255 / 70%);
@@ -581,6 +582,10 @@ definePageMeta({
 .spotlight-stat-value {
   margin-top: 0.5rem;
   display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.2;
   font-size: 1.35rem;
   font-weight: 600;
   color: rgb(15 23 42);
@@ -605,12 +610,16 @@ definePageMeta({
 
 .hero-spotlight-value {
   margin-top: 0.5rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.15;
   font-size: 1.85rem;
   font-weight: 600;
   color: white;
 }
 
 .spotlight-stat {
+  min-width: 0;
   border: 1px solid rgb(148 163 184 / 18%);
   border-radius: 0.9rem;
   padding: 0.9rem 1rem;
@@ -619,6 +628,7 @@ definePageMeta({
 
 .subpanel,
 .result-chip {
+  min-width: 0;
   border: 1px solid rgb(226 232 240);
   border-radius: 1rem;
   background: rgb(248 250 252 / 78%);
@@ -629,6 +639,7 @@ definePageMeta({
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
 }
 
 .result-chip-label {
@@ -683,6 +694,7 @@ definePageMeta({
 }
 
 .choice-card {
+  min-width: 0;
   border: 1px solid rgb(226 232 240);
   border-radius: 0.95rem;
   background: rgb(255 255 255 / 70%);
@@ -751,6 +763,13 @@ definePageMeta({
 .warning-card-danger {
   border-color: rgb(254 205 211);
   background: rgb(255 241 242);
+}
+
+@media (max-width: 639px) {
+  .result-chip {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 :global(.dark .position-page),

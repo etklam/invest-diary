@@ -160,7 +160,7 @@ definePageMeta({
       <div class="space-y-6">
         <div class="grid gap-6 xl:grid-cols-2">
           <div class="month-highlight month-highlight-current">
-            <div class="flex items-center justify-between gap-4">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/80">{{ t('tools.seasonality.currentMonth') }}</p>
                 <h2 class="mt-2 text-3xl font-semibold text-white">{{ getLocalizedName(currentMonth) }}</h2>
@@ -179,7 +179,7 @@ definePageMeta({
           </div>
 
           <div class="month-highlight month-highlight-next">
-            <div class="flex items-center justify-between gap-4">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100/80">{{ t('tools.seasonality.nextMonth') }}</p>
                 <h2 class="mt-2 text-3xl font-semibold text-white">{{ getLocalizedName(nextMonth) }}</h2>
@@ -199,12 +199,12 @@ definePageMeta({
         </div>
 
         <div class="panel p-6 sm:p-7">
-          <div class="mb-5 flex items-center justify-between gap-4">
+          <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="kicker mb-2">{{ t('tools.seasonality.mapTitle') }}</p>
               <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ t('tools.seasonality.mapTitle') }}</h3>
             </div>
-            <button type="button" class="action-btn cursor-pointer" @click="copyToClipboard">
+            <button type="button" class="action-btn w-full cursor-pointer sm:w-auto" @click="copyToClipboard">
               <Icon :name="copySuccess ? 'heroicons:check' : 'heroicons:clipboard-document'" class="mr-2 h-4 w-4" />
               {{ copySuccess ? t('common.copied') : t('common.copy') }}
             </button>
@@ -242,7 +242,7 @@ definePageMeta({
         </div>
 
         <div class="panel p-6 sm:p-7">
-          <div class="mb-5 flex items-center justify-between gap-4">
+          <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="kicker mb-2">{{ t('tools.seasonality.allMonthsTable') }}</p>
               <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -299,7 +299,7 @@ definePageMeta({
 
       <div class="space-y-6">
         <div class="panel p-6 sm:p-7">
-          <div class="mb-5 flex items-center justify-between gap-4">
+          <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="kicker mb-2">{{ t('tools.seasonality.bestMonths') }}</p>
               <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -324,7 +324,7 @@ definePageMeta({
         </div>
 
         <div class="panel p-6 sm:p-7">
-          <div class="mb-5 flex items-center justify-between gap-4">
+          <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="kicker mb-2">{{ t('tools.seasonality.worstMonths') }}</p>
               <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -435,6 +435,7 @@ definePageMeta({
 .metric-card,
 .summary-card,
 .month-card {
+  min-width: 0;
   border: 1px solid rgb(226 232 240);
   border-radius: 0.95rem;
   background: rgb(255 255 255 / 70%);
@@ -455,6 +456,10 @@ definePageMeta({
 .summary-value {
   margin-top: 0.5rem;
   display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.2;
   font-size: 1.35rem;
   font-weight: 600;
   color: rgb(15 23 42);
@@ -462,6 +467,7 @@ definePageMeta({
 
 .hero-spotlight,
 .month-highlight {
+  min-width: 0;
   border-radius: 1rem;
   padding: 1.5rem;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
@@ -494,6 +500,9 @@ definePageMeta({
 
 .hero-spotlight-value {
   margin-top: 0.5rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.15;
   font-size: 2.5rem;
   font-weight: 600;
   color: white;
@@ -580,6 +589,13 @@ definePageMeta({
   border-radius: 1rem;
   background: rgb(254 252 232);
   padding: 1rem;
+}
+
+@media (max-width: 639px) {
+  .leader-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 :global(.dark .seasonality-page),
