@@ -179,21 +179,26 @@
           </p>
         </div>
 
-        <div class="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div class="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           <article class="surface-card reveal">
+            <p class="surface-kicker">{{ $t('quickDiary.title') }}</p>
+            <h3 class="surface-title">{{ $t('howToUse.surfaces.quickNotes.title') }}</h3>
+            <p class="surface-copy">{{ $t('howToUse.surfaces.quickNotes.description') }}</p>
+          </article>
+          <article class="surface-card reveal reveal-2">
             <p class="surface-kicker">{{ $t('nav.diaries') }}</p>
             <h3 class="surface-title">{{ $t('howToUse.surfaces.diaries.title') }}</h3>
             <p class="surface-copy">{{ $t('howToUse.surfaces.diaries.description') }}</p>
           </article>
-          <article class="surface-card reveal reveal-2">
-            <p class="surface-kicker">{{ $t('nav.calendar') }}</p>
-            <h3 class="surface-title">{{ $t('howToUse.surfaces.calendar.title') }}</h3>
-            <p class="surface-copy">{{ $t('howToUse.surfaces.calendar.description') }}</p>
-          </article>
           <article class="surface-card reveal reveal-3">
-            <p class="surface-kicker">{{ $t('nav.discipline') }}</p>
-            <h3 class="surface-title">{{ $t('howToUse.surfaces.discipline.title') }}</h3>
-            <p class="surface-copy">{{ $t('howToUse.surfaces.discipline.description') }}</p>
+            <p class="surface-kicker">{{ $t('nav.timeline') }}</p>
+            <h3 class="surface-title">{{ $t('howToUse.surfaces.timeline.title') }}</h3>
+            <p class="surface-copy">{{ $t('howToUse.surfaces.timeline.description') }}</p>
+          </article>
+          <article class="surface-card reveal reveal-4">
+            <p class="surface-kicker">{{ $t('nav.alerts') }}</p>
+            <h3 class="surface-title">{{ $t('howToUse.surfaces.alerts.title') }}</h3>
+            <p class="surface-copy">{{ $t('howToUse.surfaces.alerts.description') }}</p>
           </article>
         </div>
       </div>

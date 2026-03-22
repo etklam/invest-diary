@@ -453,74 +453,78 @@
   "howToUse": {
     "badge": "Workflow Guide",
     "hero": {
-      "title": "How to use Trade Basic without turning it into another noisy dashboard",
-      "subtitle": "Keep the loop simple: capture the reason behind each trade, revisit the result, and turn repeated mistakes into process improvements."
+      "title": "How to use Trade Basic as one workflow for ideas, trades, reminders, and review",
+      "subtitle": "Capture the thought quickly, turn important actions into full diary entries, then use timeline and alerts to close the review loop."
     },
     "gettingStarted": {
-      "title": "Start with one operating routine",
-      "subtitle": "You do not need every feature on day one. Start with the core loop, then add tools only when they solve a real gap.",
+      "title": "Start with one small but complete operating loop",
+      "subtitle": "You do not need every feature on day one. Run one full cycle through Quick Notes, full diaries, timeline, and alerts first.",
       "step1": {
         "eyebrow": "Step 1",
-        "title": "Set up your base record",
-        "description": "Create an account and decide where your trading notes will live. A consistent place to write matters more than perfect formatting.",
+        "title": "Sign in so every record lands in one workspace",
+        "description": "Quick Notes, diaries, alerts, and timeline all depend on the same authenticated workspace. Start there before you record anything.",
         "cta": "Create account"
       },
       "step2": {
         "eyebrow": "Step 2",
-        "title": "Write the first diary before you optimize",
-        "description": "Use the diary to record thesis, risk, position plan, and emotional state. The goal is to make later review possible.",
-        "cta": "Open diaries"
+        "title": "Use Quick Notes first, then promote important items into full diaries",
+        "description": "Quick Notes are for one-line observations, tags, and reminders. Full diaries are for trade records, deeper analysis, and structured follow-up.",
+        "cta": "Open workspace"
       },
       "step3": {
         "eyebrow": "Step 3",
-        "title": "Review patterns, not isolated wins",
-        "description": "Move to the timeline, alerts, and discipline pages after you already have real entries. Those views become useful when there is history to inspect.",
+        "title": "Use timeline and alerts to turn records into review",
+        "description": "Once you have real entries, stop judging isolated wins and losses. Use timeline to find patterns and alerts to keep future check-points visible.",
         "cta": "View timeline"
       }
     },
     "workflow": {
-      "title": "A practical weekly loop",
-      "subtitle": "This product works best when the pages support one sequence instead of competing for attention.",
+      "title": "A practical daily loop",
+      "subtitle": "Trade Basic works best when each page supports one decision-recording sequence instead of competing for attention.",
       "step1": {
-        "label": "Observe",
-        "title": "Watch the market with a question in mind",
-        "description": "Use watchlists, ETF analysis, or seasonal context to decide what deserves attention."
+        "label": "Capture",
+        "title": "Use Quick Notes to save the thought while it is fresh",
+        "description": "When you notice a setup, urge, mistake, or question, capture it immediately instead of trusting memory later."
       },
       "step2": {
-        "label": "Record",
-        "title": "Write down the why before or right after the trade",
-        "description": "Capture setup, invalidation level, risk, and execution notes while the context is still fresh."
+        "label": "Structure",
+        "title": "Turn important actions into full diary entries",
+        "description": "Record trade details, reasoning, risk, execution notes, and reminders so the later review has full context."
       },
       "step3": {
         "label": "Review",
-        "title": "Use calendar and timeline to revisit clusters",
-        "description": "Look for repetition across days or market regimes instead of judging one trade in isolation."
+        "title": "Use timeline to review repeated patterns",
+        "description": "Look across periods and market conditions instead of judging one trade by itself."
       },
       "step4": {
-        "label": "Refine",
-        "title": "Convert findings into rules and reminders",
-        "description": "Promote repeated lessons into discipline rules or alerts so the next decision starts from a better baseline."
+        "label": "Track",
+        "title": "Use alerts to keep future check-points alive",
+        "description": "Move important follow-ups into alerts so your notes continue to influence the next decision."
       }
     },
     "surfaces": {
       "title": "What each page is for",
-      "subtitle": "Treat each surface as a specific job, not another inbox.",
+      "subtitle": "Treat each surface as a work station with one clear job.",
+      "quickNotes": {
+        "title": "Quick Notes",
+        "description": "The fastest capture point for one-line observations, tags, reminders, and raw trading context."
+      },
       "diaries": {
-        "title": "Diaries",
-        "description": "Your source record for trade reasoning, market context, and post-trade reflection."
+        "title": "Full Diaries",
+        "description": "The formal record for trade entries, analysis, risk, and reminders. Important actions should end up here."
       },
-      "calendar": {
-        "title": "Calendar",
-        "description": "Best for checking rhythm, frequency, and what happened around specific dates."
+      "timeline": {
+        "title": "Timeline",
+        "description": "The review surface for seeing how entries and reminders accumulate over time."
       },
-      "discipline": {
-        "title": "Trading Discipline",
-        "description": "Where repeated review findings become operating rules you can actually follow."
+      "alerts": {
+        "title": "Alerts",
+        "description": "The follow-up layer that keeps important review points from disappearing after you write them down."
       }
     },
     "cta": {
-      "title": "Use fewer pages, but use them repeatedly",
-      "description": "Trade Basic is most effective when it supports a calm routine instead of constant tool-switching.",
+      "title": "Get the core loop working before you expand the toolset",
+      "description": "If you can repeatedly move through Quick Notes, full diaries, timeline, and alerts, Trade Basic is already doing its job.",
       "primaryGuest": "Start with an account",
       "primaryAuth": "Go to diaries",
       "secondary": "Read builder notes"
