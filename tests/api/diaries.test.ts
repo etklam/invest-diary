@@ -10,6 +10,15 @@ const mockDiaryDelete = vi.fn()
 const mockTransaction = vi.fn()
 const mockTxTransactionDeleteMany = vi.fn()
 const mockTxAlertDeleteMany = vi.fn()
+const mockDiaryLogInfo = vi.fn()
+const mockDiaryLogWarn = vi.fn()
+const mockDiaryLogError = vi.fn()
+const mockDiaryLog = {
+  info: mockDiaryLogInfo,
+  warn: mockDiaryLogWarn,
+  error: mockDiaryLogError,
+}
+const mockDiaryWithRequestId = vi.fn(() => mockDiaryLog)
 
 vi.mock('~/lib/prisma', () => ({
   default: {
@@ -22,6 +31,13 @@ vi.mock('~/lib/prisma', () => ({
       delete: mockDiaryDelete,
     },
     $transaction: mockTransaction,
+  },
+}))
+vi.mock('~/lib/logger', () => ({
+  logger: {
+    diary: {
+      withRequestId: mockDiaryWithRequestId,
+    },
   },
 }))
 
@@ -39,6 +55,7 @@ describe('Diary API Routes', () => {
       }
       return callback(tx)
     })
+    mockDiaryWithRequestId.mockReturnValue(mockDiaryLog)
   })
 
   describe('GET /api/diaries', () => {
@@ -96,8 +113,9 @@ describe('Diary API Routes', () => {
       })
 
       const { default: handler } = await import('~/server/api/diaries.post')
+      const mockEvent = { context: { user: { id: '1' }, requestId: 'req-create' } } as any
 
-      const result = await handler({ context: { user: { id: '1' } } } as any)
+      const result = await handler(mockEvent)
 
       expect(mockDiaryCreate).toHaveBeenCalledWith(expect.objectContaining({
         data: expect.objectContaining({
@@ -106,6 +124,14 @@ describe('Diary API Routes', () => {
       }))
       expect(result.id).toBe(100n)
       expect(result.tags).toEqual(['profit', 'watch'])
+      expect(mockDiaryWithRequestId).toHaveBeenCalledWith('req-create')
+      expect(mockDiaryLogInfo).toHaveBeenCalledWith(
+        'Diary created',
+        expect.objectContaining({
+          diaryId: '100',
+          userId: '1',
+        })
+      )
     })
 
     it('should return 400 when title is missing', async () => {
@@ -158,9 +184,36 @@ describe('Diary API Routes', () => {
 
       const { default: handler } = await import('~/server/api/diaries.post')
 
-      await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
+      const mockEvent = { context: { user: { id: '1' }, requestId: 'req-exists' } } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 409,
       })
+    })
+
+    it('should log unexpected errors through the shared logger', async () => {
+      mockReadBody.mockResolvedValue({
+        title: 'New Diary',
+        content: 'New content',
+      })
+      mockDiaryFindFirst.mockResolvedValue(null)
+      mockDiaryCreate.mockRejectedValue(new Error('DB failure'))
+
+      const { default: handler } = await import('~/server/api/diaries.post')
+      const mockEvent = { context: { user: { id: '1' }, requestId: 'req-error' } } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 500,
+      })
+
+      expect(mockDiaryWithRequestId).toHaveBeenCalledWith('req-error')
+      expect(mockDiaryLogError).toHaveBeenCalledWith(
+        'Error creating diary',
+        expect.objectContaining({
+          userId: '1',
+          error: expect.stringContaining('DB failure'),
+        })
+      )
     })
   })
 

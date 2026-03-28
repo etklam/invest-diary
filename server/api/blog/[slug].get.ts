@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3'
 import prisma from '~/lib/prisma'
 import { PostStatus } from '@prisma/client'
+import { logger } from '~/lib/logger'
 
 const resolveSlug = (event: H3Event) => {
   const rawFromParams = event.context.params?.slug
@@ -12,6 +13,7 @@ const resolveSlug = (event: H3Event) => {
 }
 
 export default defineEventHandler(async (event: H3Event) => {
+  const log = logger.blog.withRequestId(event.context.requestId)
   const slug = resolveSlug(event)
 
   if (!slug) {
@@ -24,6 +26,7 @@ export default defineEventHandler(async (event: H3Event) => {
   try {
     const query = getQuery(event)
     const view = (query.view as string) ?? 'full'
+    log.info('Fetching blog post', { slug, view })
 
     const baseWhere = {
       slug,
@@ -65,11 +68,11 @@ export default defineEventHandler(async (event: H3Event) => {
 
     return post
   } catch (error: any) {
-    console.error('[Blog] Error fetching post:', error)
-
     if (error?.statusCode) {
       throw error
     }
+
+    log.error('Error fetching post', { slug, error: String(error) })
 
     throw createError({
       statusCode: 500,

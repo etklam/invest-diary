@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
 
 const LEGACY_CATEGORY_ALIASES: Record<string, string[]> = {
   fundamental: ['基本面分析', 'Fundamental Analysis'],
@@ -39,7 +40,7 @@ const parseDateParam = (value: unknown, label: string) => {
 }
 
 export default defineEventHandler(async (event: H3Event) => {
-  console.log('[Blog] Fetching public blog posts...')
+  const log = logger.blog.withRequestId(event.context.requestId)
   try {
     const query = getQuery(event)
     const page = parsePage(query.page, 1)
@@ -50,6 +51,8 @@ export default defineEventHandler(async (event: H3Event) => {
     const search = normalizeQueryValue(query.search) || undefined
     const dateFrom = parseDateParam(query.dateFrom, 'dateFrom')
     const dateTo = parseDateParam(query.dateTo, 'dateTo')
+
+    log.info('Fetching public blog posts', { page, limit, category, tag, search })
 
     // Build where clause for published posts only
     // 效能優化：使用型別安全的 where 條件
@@ -137,11 +140,11 @@ export default defineEventHandler(async (event: H3Event) => {
       },
     }
   } catch (error: any) {
-    console.error('[Blog] Error fetching posts:', error)
-
     if (error?.statusCode) {
       throw error
     }
+
+    log.error('Error fetching posts', { error: String(error) })
 
     throw createError({
       statusCode: 500,

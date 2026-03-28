@@ -9,6 +9,13 @@ const mockPostFindFirst = vi.fn()
 const mockPostCreate = vi.fn()
 const mockPostUpdate = vi.fn()
 const mockPostDelete = vi.fn()
+const mockBlogLogError = vi.fn()
+const mockBlogLog = {
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: mockBlogLogError,
+}
+const mockBlogWithRequestId = vi.fn(() => mockBlogLog)
 
 // Mock modules
 vi.mock('~/lib/prisma', () => ({
@@ -24,6 +31,13 @@ vi.mock('~/lib/prisma', () => ({
     },
     $connect: vi.fn(),
     $disconnect: vi.fn(),
+  },
+}))
+vi.mock('~/lib/logger', () => ({
+  logger: {
+    blog: {
+      withRequestId: mockBlogWithRequestId,
+    },
   },
 }))
 
@@ -47,6 +61,7 @@ vi.mock('h3', () => ({
 describe('Blog API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockBlogWithRequestId.mockReturnValue(mockBlogLog)
   })
 
   afterEach(() => {
@@ -82,7 +97,7 @@ describe('Blog API', () => {
       mockGetQuery.mockReturnValue({ page: 1, limit: 9 })
 
       const { default: handler } = await import('~/server/api/blog/index.get')
-      const mockEvent = { context: {} } as any
+      const mockEvent = { context: { requestId: 'req-blog-index' } } as any
 
       const result = await handler(mockEvent)
 
@@ -95,6 +110,7 @@ describe('Blog API', () => {
         total: 2,
         totalPages: 1,
       })
+      expect(mockBlogWithRequestId).toHaveBeenCalledWith('req-blog-index')
     })
 
     it('should filter by category', async () => {
@@ -247,6 +263,7 @@ describe('Blog API', () => {
       const mockEvent = {
         context: {
           params: { slug: 'test-post' },
+          requestId: 'req-blog-slug',
         },
       } as any
 
@@ -254,6 +271,7 @@ describe('Blog API', () => {
 
       expect(result).toHaveProperty('id')
       expect(mockPostFindFirst).toHaveBeenCalled()
+      expect(mockBlogWithRequestId).toHaveBeenCalledWith('req-blog-slug')
     })
 
     it('should return 404 for non-existent post', async () => {
@@ -263,12 +281,38 @@ describe('Blog API', () => {
       const mockEvent = {
         context: {
           params: { slug: 'non-existent' },
+          requestId: 'req-blog-404',
         },
       } as any
 
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 404,
       })
+      expect(mockBlogWithRequestId).toHaveBeenCalledWith('req-blog-404')
+    })
+    it('should log unexpected failures when fetching by slug', async () => {
+      mockPostFindFirst.mockRejectedValue(new Error('database failure'))
+
+      const { default: handler } = await import('~/server/api/blog/[slug].get')
+      const mockEvent = {
+        context: {
+          params: { slug: 'error-post' },
+          requestId: 'req-blog-error',
+        },
+      } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 500,
+      })
+
+      expect(mockBlogWithRequestId).toHaveBeenCalledWith('req-blog-error')
+      expect(mockBlogLogError).toHaveBeenCalledWith(
+        'Error fetching post',
+        expect.objectContaining({
+          slug: 'error-post',
+          error: expect.stringContaining('database failure'),
+        })
+      )
     })
 
     it('should return 400 when slug is missing', async () => {

@@ -1,7 +1,9 @@
 import { clearAuthCookies } from '~/server/utils/auth'
 import { deleteStoredRefreshToken } from '~/server/utils/auth-session'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.auth.withRequestId(event.context.requestId)
   // Get the refresh token from cookie
   const refreshToken = getCookie(event, 'refresh-token')
 
@@ -11,7 +13,10 @@ export default defineEventHandler(async (event) => {
       await deleteStoredRefreshToken(refreshToken, BigInt(event.context.user.id))
     } catch (error) {
       // Log but don't throw - logout should succeed even if db cleanup fails
-      console.error('Error deleting refresh token:', error)
+      log.error('Error deleting refresh token', {
+        userId: event.context.user.id,
+        error: String(error),
+      })
     }
   }
 

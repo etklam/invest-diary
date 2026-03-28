@@ -117,17 +117,7 @@ runCheck(
 runCheck(
   'TypeScript Compilation',
   () => {
-    try {
-      exec('npx nuxi typecheck 2>&1 | grep -E "(error|warning)" || true', { silent: true })
-    } catch (error) {
-      // Nuxt typecheck might not be available in all setups, so we'll do a basic check
-      try {
-        exec('npx tsc --noEmit --skipLibCheck', { silent: true })
-      } catch (tsError) {
-        // TypeScript check failed, but we'll note it
-        throw new Error('TypeScript compilation has errors (run `npx nuxi typecheck` for details)')
-      }
-    }
+    exec('npm run typecheck')
   },
   !existsSync(resolve('tsconfig.json'))
 )

@@ -3,10 +3,12 @@ import type { DiaryInput, Diary } from '~/types/diary'
 import { getUtcDayRange, toUtcNoonDate } from '~/lib/diary-date'
 import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/diary-tags'
 import { Errors, AppError } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
 import { validateTransactions } from '~/lib/transactions/validate'
 import { attachDiaryTags } from '~/server/utils/diary-response'
 
 export default defineEventHandler(async (event): Promise<Diary> => {
+  const log = logger.diary.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
   if (!userId) {
@@ -98,16 +100,17 @@ export default defineEventHandler(async (event): Promise<Diary> => {
       },
     })
 
-    console.log('[API] Diary created:', diary.id, 'for user:', userId)
+    log.info('Diary created', { diaryId: diary.id.toString(), userId })
     return attachDiaryTags(diary as Diary)
   } catch (error) {
     if (error instanceof AppError) {
+      log.warn(error.message, { code: error.code, userId })
       throw error.toH3Error()
     }
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
-    console.error('Error creating diary:', error)
+    log.error('Error creating diary', { userId, error: String(error) })
     throw Errors.internalError(error).toH3Error()
   }
 })

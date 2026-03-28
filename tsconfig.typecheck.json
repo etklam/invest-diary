@@ -1,11 +1,41 @@
 {
-  "extends": "./.nuxt/tsconfig.app.json",
-  "exclude": [
-    "tests/**/*",
-    "test/**/*",
+  "extends": "./.nuxt/tsconfig.shared.json",
+  "compilerOptions": {
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable",
+      "WebWorker"
+    ],
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "types": []
+  },
+  "include": [
+    ".nuxt/nuxt.d.ts",
+    ".nuxt/types/**/*.d.ts",
+    "app.vue",
+    "components/**/*",
+    "composables/**/*",
+    "layouts/**/*",
+    "lib/**/*",
+    "middleware/**/*",
+    "pages/**/*",
+    "plugins/**/*",
+    "scripts/health-check.ts",
     "server/**/*",
-    "nuxt.config.ts",
-    "scripts/**/*",
-    "docs/**/*"
-  ]
+    "stores/**/*",
+    "types/**/*.ts",
+    "utils/**/*"
+  ],
+  "exclude": [
+    "coverage/**/*",
+    "docs/**/*",
+    "node_modules/**/*",
+    "tests/**/*",
+    "test/**/*"
+  ],
+  "vueCompilerOptions": {
+    "plugins": []
+  }
 }

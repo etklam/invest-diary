@@ -13,6 +13,16 @@ const mockRefreshTokenDeleteMany = vi.fn()
 const mockRefreshTokenFindUnique = vi.fn()
 const mockRefreshTokenDelete = vi.fn()
 const mockRefreshTokenUpdate = vi.fn()
+const mockDeleteStoredRefreshToken = vi.fn()
+const mockAuthLogInfo = vi.fn()
+const mockAuthLogWarn = vi.fn()
+const mockAuthLogError = vi.fn()
+const mockAuthLog = {
+  info: mockAuthLogInfo,
+  warn: mockAuthLogWarn,
+  error: mockAuthLogError,
+}
+const mockAuthWithRequestId = vi.fn(() => mockAuthLog)
 
 // Mock modules
 vi.mock('~/lib/prisma', () => ({
@@ -69,10 +79,25 @@ vi.mock('h3', () => ({
   },
   defineEventHandler: (handler: Function) => handler,
 }))
+vi.mock('~/lib/logger', () => ({
+  logger: {
+    auth: {
+      withRequestId: mockAuthWithRequestId,
+    },
+  },
+}))
+vi.mock('~/server/utils/auth-session', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('~/server/utils/auth-session')>()
+  return {
+    ...actual,
+    deleteStoredRefreshToken: mockDeleteStoredRefreshToken,
+  }
+})
 
 describe('Auth API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockAuthWithRequestId.mockReturnValue(mockAuthLog)
     mockSignToken.mockResolvedValue('mock-jwt-token')
     mockSignAccessToken.mockResolvedValue('mock-access-token')
     mockSignRefreshToken.mockResolvedValue('mock-refresh-token')
@@ -290,6 +315,30 @@ describe('Auth API', () => {
       expect(mockDeleteCookie).toHaveBeenCalledWith(mockEvent, 'auth-token')
       expect(mockDeleteCookie).toHaveBeenCalledWith(mockEvent, 'auth-token', { path: '/' })
       expect(result).toEqual({ ok: true })
+    })
+    it('should log refresh token delete failures', async () => {
+      mockGetCookie.mockReturnValue('refresh-token')
+      mockDeleteStoredRefreshToken.mockRejectedValue(new Error('database unavailable'))
+
+      const { default: handler } = await import('~/server/api/auth/logout.post')
+      const mockEvent = {
+        context: {
+          user: { id: '1' },
+          requestId: 'req-logout-error',
+        },
+      } as any
+
+      const result = await handler(mockEvent)
+
+      expect(result).toEqual({ ok: true })
+      expect(mockAuthWithRequestId).toHaveBeenCalledWith('req-logout-error')
+      expect(mockAuthLogError).toHaveBeenCalledWith(
+        'Error deleting refresh token',
+        expect.objectContaining({
+          userId: '1',
+          error: expect.stringContaining('database unavailable'),
+        })
+      )
     })
   })
 

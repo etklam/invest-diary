@@ -22,6 +22,10 @@ declare module 'nitropack' {
   interface NitroApp {
     socketIo?: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
   }
+
+  interface NitroRuntimeHooks {
+    rendered: () => void | Promise<void>
+  }
 }
 
 // 擴充 h3 App 類型
@@ -32,8 +36,8 @@ declare module 'h3' {
 }
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {
-  // 使用 Nitro 的 rendered hook 確保 HTTP server 已準備好
-  // 這比 setImmediate 更可靠，因為它保證在 server 完全初始化後執行
+  // Wait until Nitro finishes rendering setup so the underlying HTTP server
+  // is attached before Socket.IO binds listeners.
   nitroApp.hooks.hook('rendered', () => {
     // 只初始化一次
     if (nitroApp.socketIo) {
