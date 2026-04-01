@@ -8,6 +8,7 @@ import {
   type CalculationResult,
   type PricePoint
 } from '~/lib/relativeValue'
+import { getYahooSymbolAliasSuggestion } from '~/lib/market-data/yahoo'
 import type { QuoteResponse } from '~/lib/yahoo-finance'
 
 const { t, locale } = useI18n()
@@ -21,8 +22,8 @@ interface RelativeValuePreset {
 }
 
 const presets: RelativeValuePreset[] = [
-  { primarySymbol: 'SPX', relativeSymbol: 'SPY', name: 'S&P 500', description: 'Index vs ETF' },
-  { primarySymbol: 'SPY', relativeSymbol: 'SPYM', name: 'SPY vs SPYM', description: 'Standard vs Mini' },
+  { primarySymbol: '^GSPC', relativeSymbol: 'SPY', name: 'S&P 500', description: 'Index vs ETF' },
+  { primarySymbol: 'SPY', relativeSymbol: 'SPLG', name: 'SPY vs SPLG', description: 'Standard vs low-cost' },
   { primarySymbol: 'QQQ', relativeSymbol: 'QQQM', name: 'QQQ vs QQQM', description: 'NASDAQ variants' },
   { primarySymbol: 'GLD', relativeSymbol: 'GLDM', name: 'GLD vs GLDM', description: 'Gold variants' }
 ]
@@ -32,12 +33,14 @@ const primarySymbol = ref<string>('')
 const primaryPrice = ref<number | null>(null)
 const primaryLoading = ref(false)
 const primaryQuote = ref<QuoteResponse | null>(null)
+const primaryError = ref('')
 
 // Relative stock (相對股票)
 const relativeSymbol = ref<string>('')
 const relativePrice = ref<number | null>(null)
 const relativeLoading = ref(false)
 const relativeQuote = ref<QuoteResponse | null>(null)
+const relativeError = ref('')
 
 // Target prices
 const targetPricesInput = ref<string>('')
@@ -91,33 +94,69 @@ const sortedPriceTable = computed((): PricePoint[] => {
   return [...calculationResult.value.priceTable].sort((a, b) => b.targetPrice - a.targetPrice)
 })
 
+const primarySymbolSuggestion = computed(() => getYahooSymbolAliasSuggestion(primarySymbol.value))
+const relativeSymbolSuggestion = computed(() => getYahooSymbolAliasSuggestion(relativeSymbol.value))
+const symbolsMatch = computed(() =>
+  primarySymbol.value.trim().toUpperCase() !== '' &&
+  primarySymbol.value.trim().toUpperCase() === relativeSymbol.value.trim().toUpperCase()
+)
+
 // Watch symbol changes to auto-uppercase
 watch(primarySymbol, (newValue) => {
   if (newValue && newValue !== newValue.toUpperCase()) {
     primarySymbol.value = newValue.toUpperCase()
+    return
   }
+
+  primaryError.value = ''
+  primaryQuote.value = null
 })
 
 watch(relativeSymbol, (newValue) => {
   if (newValue && newValue !== newValue.toUpperCase()) {
     relativeSymbol.value = newValue.toUpperCase()
+    return
   }
+
+  relativeError.value = ''
+  relativeQuote.value = null
 })
+
+function buildQuoteErrorMessage(symbol: string, suggestion: string | null, error: any): string {
+  const statusMessage = error?.data?.statusMessage || error?.statusMessage || error?.message || ''
+
+  if (typeof statusMessage === 'string' && statusMessage.includes('Too many requests')) {
+    return t('tools.relativeValue.rateLimited')
+  }
+
+  if (suggestion) {
+    return `${t('tools.relativeValue.fetchFailedFor')} ${symbol}. ${t('tools.relativeValue.tryYahooSymbol')} ${suggestion}. ${t('tools.relativeValue.manualPriceHint')}`
+  }
+
+  return `${t('tools.relativeValue.fetchFailedFor')} ${symbol}. ${t('tools.relativeValue.manualPriceHint')}`
+}
 
 // Fetch quote functions
 async function fetchPrimaryQuote() {
   if (!primarySymbol.value.trim()) {
+    primaryError.value = t('tools.relativeValue.symbolRequired')
     toast.error(t('tools.relativeValue.symbolRequired'))
     return
   }
 
   primaryLoading.value = true
+  primaryError.value = ''
   try {
     const response = await $fetch<QuoteResponse>(`/api/market/quote/${primarySymbol.value}`)
     primaryQuote.value = response
     primaryPrice.value = response.regularMarketPrice
-  } catch {
-    toast.error(t('tools.relativeValue.fetchFailed'))
+  } catch (error: any) {
+    primaryError.value = buildQuoteErrorMessage(
+      primarySymbol.value,
+      primarySymbolSuggestion.value,
+      error
+    )
+    toast.error(primaryError.value, 5000)
   } finally {
     primaryLoading.value = false
   }
@@ -125,17 +164,24 @@ async function fetchPrimaryQuote() {
 
 async function fetchRelativeQuote() {
   if (!relativeSymbol.value.trim()) {
+    relativeError.value = t('tools.relativeValue.symbolRequired')
     toast.error(t('tools.relativeValue.symbolRequired'))
     return
   }
 
   relativeLoading.value = true
+  relativeError.value = ''
   try {
     const response = await $fetch<QuoteResponse>(`/api/market/quote/${relativeSymbol.value}`)
     relativeQuote.value = response
     relativePrice.value = response.regularMarketPrice
-  } catch {
-    toast.error(t('tools.relativeValue.fetchFailed'))
+  } catch (error: any) {
+    relativeError.value = buildQuoteErrorMessage(
+      relativeSymbol.value,
+      relativeSymbolSuggestion.value,
+      error
+    )
+    toast.error(relativeError.value, 5000)
   } finally {
     relativeLoading.value = false
   }
@@ -149,7 +195,7 @@ async function fetchAllQuotes() {
 }
 
 function loadExample() {
-  primarySymbol.value = 'SPX'
+  primarySymbol.value = '^GSPC'
   relativeSymbol.value = 'SPY'
   void fetchAllQuotes()
 }
@@ -345,6 +391,12 @@ definePageMeta({
                         <Icon :name="primaryLoading ? 'heroicons:arrow-path' : 'heroicons:arrow-down-tray'" class="h-4 w-4" :class="{ 'animate-spin': primaryLoading }" />
                       </button>
                     </div>
+                    <p v-if="primarySymbolSuggestion" class="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                      {{ t('tools.relativeValue.aliasSuggestion') }} <span class="font-mono font-semibold">{{ primarySymbolSuggestion }}</span>
+                    </p>
+                    <p v-if="primaryError" class="mt-2 text-xs text-rose-600 dark:text-rose-400">
+                      {{ primaryError }}
+                    </p>
                   </div>
                   <div>
                     <label for="primary-price" class="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -422,6 +474,12 @@ definePageMeta({
                         <Icon :name="relativeLoading ? 'heroicons:arrow-path' : 'heroicons:arrow-down-tray'" class="h-4 w-4" :class="{ 'animate-spin': relativeLoading }" />
                       </button>
                     </div>
+                    <p v-if="relativeSymbolSuggestion" class="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                      {{ t('tools.relativeValue.aliasSuggestion') }} <span class="font-mono font-semibold">{{ relativeSymbolSuggestion }}</span>
+                    </p>
+                    <p v-if="relativeError" class="mt-2 text-xs text-rose-600 dark:text-rose-400">
+                      {{ relativeError }}
+                    </p>
                   </div>
                   <div>
                     <label for="relative-price" class="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -471,6 +529,10 @@ definePageMeta({
               <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
                 {{ t('tools.relativeValue.targetPrices') }}
               </h2>
+            </div>
+
+            <div v-if="symbolsMatch" class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-200">
+              {{ t('tools.relativeValue.sameSymbolWarning') }}
             </div>
 
             <div class="grid gap-6 lg:grid-cols-2">
@@ -579,7 +641,7 @@ definePageMeta({
                   @click="loadExample"
                 >
                   <Icon name="heroicons:lightning-bolt" class="h-4 w-4" />
-                  {{ t('tools.relativeValue.loadExample') }}: SPX / SPY
+                  {{ t('tools.relativeValue.loadExample') }}: ^GSPC / SPY
                 </button>
               </div>
             </div>

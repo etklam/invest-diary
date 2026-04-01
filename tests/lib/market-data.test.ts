@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { buildYahooChartUrl, parseYahooMonthlyQuotes, parseYahooRegularMarketPrice } from '~/lib/market-data/yahoo'
+import {
+  buildYahooChartUrl,
+  getYahooSymbolAliasSuggestion,
+  normalizeYahooSymbol,
+  parseYahooMonthlyQuotes,
+  parseYahooRegularMarketPrice,
+} from '~/lib/market-data/yahoo'
 import { fetchMarketPrice } from '~/lib/market-data/quotes'
 import { buildTwseQuoteUrl, normalizeTwseSymbol, parseTwseQuotePrice } from '~/lib/market-data/twse'
 
@@ -9,6 +15,16 @@ describe('market data providers', () => {
       .toBe('https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=1d')
     expect(buildTwseQuoteUrl('2330.TW'))
       .toBe('https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_2330.tw')
+  })
+
+  it('normalizes common yahoo index aliases', () => {
+    expect(normalizeYahooSymbol('spx')).toBe('^GSPC')
+    expect(normalizeYahooSymbol(' dji ')).toBe('^DJI')
+    expect(getYahooSymbolAliasSuggestion('spx')).toBe('^GSPC')
+    expect(getYahooSymbolAliasSuggestion('QQQ')).toBeNull()
+    expect(normalizeYahooSymbol('QQQ')).toBe('QQQ')
+    expect(buildYahooChartUrl('SPX', { interval: '1d', range: '1d' }))
+      .toBe('https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=1d')
   })
 
   it('normalizes TWSE symbols and parses realtime text payloads', () => {

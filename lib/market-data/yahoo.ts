@@ -61,8 +61,33 @@ const YAHOO_HEADERS = {
   'User-Agent': 'Mozilla/5.0',
 }
 
+const YAHOO_SYMBOL_ALIASES: Record<string, string> = {
+  SPX: '^GSPC',
+  DJI: '^DJI',
+  IXIC: '^IXIC',
+  NDX: '^NDX',
+  RUT: '^RUT',
+}
+
+export function normalizeYahooSymbol(symbol: string): string {
+  const normalized = symbol.trim().toUpperCase()
+  return YAHOO_SYMBOL_ALIASES[normalized] ?? normalized
+}
+
+export function getYahooSymbolAliasSuggestion(symbol: string): string | null {
+  const trimmed = symbol.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  const uppercase = trimmed.toUpperCase()
+  const normalized = normalizeYahooSymbol(trimmed)
+
+  return normalized !== uppercase ? normalized : null
+}
+
 export function buildYahooChartUrl(symbol: string, options: YahooChartUrlOptions): string {
-  const encodedSymbol = encodeURIComponent(symbol)
+  const encodedSymbol = encodeURIComponent(normalizeYahooSymbol(symbol))
   return `https://query1.finance.yahoo.com/v8/finance/chart/${encodedSymbol}?interval=${options.interval}&range=${options.range}`
 }
 
