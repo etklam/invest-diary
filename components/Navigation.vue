@@ -56,7 +56,8 @@ const secondaryNavItems = computed(() => {
       { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
       { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
       { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
-      { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' }
+      { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' },
+      { label: t('nav.relativeValue'), to: '/tools/relative-value', icon: 'chart-bar' }
     ]
   }
 
@@ -67,7 +68,8 @@ const secondaryNavItems = computed(() => {
     { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
     { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
     { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
-    { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' }
+    { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' },
+    { label: t('nav.relativeValue'), to: '/tools/relative-value', icon: 'chart-bar' }
   ]
 })
 
