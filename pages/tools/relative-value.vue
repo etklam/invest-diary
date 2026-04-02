@@ -9,24 +9,26 @@ import {
   type PricePoint
 } from '~/lib/relativeValue'
 import { getYahooSymbolAliasSuggestion } from '~/lib/market-data/yahoo'
-import type { QuoteResponse } from '~/lib/yahoo-finance'
+import type { QuoteResponse, HistoricalQuote } from '~/lib/yahoo-finance'
+import StockInput from '~/components/StockInput.vue'
+import { Line } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  type ChartData,
+  type ChartOptions,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  LinearScale,
+  CategoryScale,
+  PointElement
+} from 'chart.js'
+
+ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, CategoryScale, PointElement)
 
 const { t, locale } = useI18n()
 const toast = useToast()
-
-interface RelativeValuePreset {
-  primarySymbol: string
-  relativeSymbol: string
-  name: string
-  description: string
-}
-
-const presets: RelativeValuePreset[] = [
-  { primarySymbol: '^GSPC', relativeSymbol: 'SPY', name: 'S&P 500', description: 'Index vs ETF' },
-  { primarySymbol: 'SPY', relativeSymbol: 'SPLG', name: 'SPY vs SPLG', description: 'Standard vs low-cost' },
-  { primarySymbol: 'QQQ', relativeSymbol: 'QQQM', name: 'QQQ vs QQQM', description: 'NASDAQ variants' },
-  { primarySymbol: 'GLD', relativeSymbol: 'GLDM', name: 'GLD vs GLDM', description: 'Gold variants' }
-]
 
 // Primary stock (主股票)
 const primarySymbol = ref<string>('')
@@ -42,8 +44,148 @@ const relativeLoading = ref(false)
 const relativeQuote = ref<QuoteResponse | null>(null)
 const relativeError = ref('')
 
+// Historical Data
+const historicalRange = ref<'1mo' | '3mo' | '6mo' | '1y' | '5y' | 'max'>('1y')
+const primaryHistoricalData = ref<HistoricalQuote[]>([])
+const relativeHistoricalData = ref<HistoricalQuote[]>([])
+const historicalLoading = ref(false)
+
+function formatHistoricalLabel(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString(locale.value, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+const historicalRatioData = computed<ChartData<'line'>>(() => {
+  if (primaryHistoricalData.value.length === 0 || relativeHistoricalData.value.length === 0) {
+    return {
+      labels: [],
+      datasets: []
+    }
+  }
+
+  const relativeMap = new Map(relativeHistoricalData.value.map(d => [d.timestamp, d.close]))
+
+  const labels: string[] = []
+  const ratios: number[] = []
+
+  // Iterate through primary data and find corresponding relative data by timestamp
+  for (const primaryQuote of primaryHistoricalData.value) {
+    const relativeClose = relativeMap.get(primaryQuote.timestamp)
+
+    if (primaryQuote.close !== null && typeof relativeClose === 'number' && relativeClose !== 0) {
+      labels.push(formatHistoricalLabel(primaryQuote.timestamp))
+      ratios.push(primaryQuote.close / relativeClose)
+    }
+  }
+
+  return {
+    labels,
+    datasets: [
+      {
+        label: `${primarySymbol.value} / ${relativeSymbol.value} Ratio`,
+        backgroundColor: '#f6ad55', // amber-400
+        borderColor: '#f6ad55',
+        data: ratios,
+        tension: 0.3,
+        pointRadius: 0
+      }
+    ]
+  }
+})
+
+const hasHistoricalRatioData = computed(() => (historicalRatioData.value.labels?.length ?? 0) > 0)
+
+const chartOptions: ChartOptions<'line'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: 'Date'
+      }
+    },
+    y: {
+      title: {
+        display: true,
+        text: 'Ratio'
+      }
+    }
+  },
+  plugins: {
+    tooltip: {
+      callbacks: {
+        label(context) {
+          let label = context.dataset.label || ''
+          if (label) {
+            label += ': '
+          }
+          if (context.parsed.y !== null) {
+            label += formatRatio(context.parsed.y)
+          }
+          return label
+        }
+      }
+    }
+  }
+}
+
+async function fetchHistoricalDataForSymbols() {
+  if (!primarySymbol.value.trim() || !relativeSymbol.value.trim()) {
+    primaryHistoricalData.value = []
+    relativeHistoricalData.value = []
+    return
+  }
+
+  historicalLoading.value = true
+  try {
+    const buildHistoricalUrl = (symbol: string) => {
+      const params = new URLSearchParams({
+        symbol,
+        range: historicalRange.value,
+      })
+
+      return `/api/market/historical?${params.toString()}`
+    }
+
+    const [primaryData, relativeData] = await Promise.all([
+      $fetch<HistoricalQuote[]>(buildHistoricalUrl(primarySymbol.value)),
+      $fetch<HistoricalQuote[]>(buildHistoricalUrl(relativeSymbol.value))
+    ])
+    primaryHistoricalData.value = primaryData
+    relativeHistoricalData.value = relativeData
+  } catch (error) {
+    console.error('Failed to fetch historical data:', error)
+    toast.error(t('tools.relativeValue.historicalDataFetchFailed'))
+    primaryHistoricalData.value = []
+    relativeHistoricalData.value = []
+  } finally {
+    historicalLoading.value = false
+  }
+}
+
+watch([primarySymbol, relativeSymbol, historicalRange], fetchHistoricalDataForSymbols, { immediate: true })
+
+interface RelativeValuePreset {
+  primarySymbol: string
+  relativeSymbol: string
+  name: string
+  description: string
+}
+
+const presets: RelativeValuePreset[] = [
+  { primarySymbol: '^GSPC', relativeSymbol: 'SPY', name: 'S&P 500', description: 'Index vs ETF' },
+  { primarySymbol: 'SPY', relativeSymbol: 'SPLG', name: 'SPY vs SPLG', description: 'Standard vs low-cost' },
+  { primarySymbol: 'QQQ', relativeSymbol: 'QQQM', name: 'QQQ vs QQQM', description: 'NASDAQ variants' },
+  { primarySymbol: 'GLD', relativeSymbol: 'GLDM', name: 'GLD vs GLDM', description: 'Gold variants' }
+]
+
 // Target prices
 const targetPricesInput = ref<string>('')
+const targetPriceInputMode = ref<'manual' | 'auto'>('auto')
 const pricePointCount = ref<number>(5)
 const pricePointStep = ref<number>(50)
 const pricePointDirection = ref<'up' | 'down' | 'both'>('both')
@@ -57,11 +199,11 @@ const isValidInput = computed(() =>
 )
 
 const targetPrices = computed(() => {
-  if (targetPricesInput.value.trim()) {
+  if (targetPriceInputMode.value === 'manual' && targetPricesInput.value.trim()) {
     return parseTargetPrices(targetPricesInput.value)
   }
   // Auto-generate price points
-  if (primaryPrice.value) {
+  if (targetPriceInputMode.value === 'auto' && primaryPrice.value) {
     return generatePricePoints(
       primaryPrice.value,
       pricePointCount.value,
@@ -102,25 +244,7 @@ const symbolsMatch = computed(() =>
 )
 
 // Watch symbol changes to auto-uppercase
-watch(primarySymbol, (newValue) => {
-  if (newValue && newValue !== newValue.toUpperCase()) {
-    primarySymbol.value = newValue.toUpperCase()
-    return
-  }
-
-  primaryError.value = ''
-  primaryQuote.value = null
-})
-
-watch(relativeSymbol, (newValue) => {
-  if (newValue && newValue !== newValue.toUpperCase()) {
-    relativeSymbol.value = newValue.toUpperCase()
-    return
-  }
-
-  relativeError.value = ''
-  relativeQuote.value = null
-})
+// Logic moved to StockInput component
 
 function buildQuoteErrorMessage(symbol: string, suggestion: string | null, error: any): string {
   const statusMessage = error?.data?.statusMessage || error?.statusMessage || error?.message || ''
@@ -136,6 +260,10 @@ function buildQuoteErrorMessage(symbol: string, suggestion: string | null, error
   return `${t('tools.relativeValue.fetchFailedFor')} ${symbol}. ${t('tools.relativeValue.manualPriceHint')}`
 }
 
+function buildQuoteUrl(symbol: string): string {
+  return `/api/market/quote/${encodeURIComponent(symbol.trim())}`
+}
+
 // Fetch quote functions
 async function fetchPrimaryQuote() {
   if (!primarySymbol.value.trim()) {
@@ -147,7 +275,7 @@ async function fetchPrimaryQuote() {
   primaryLoading.value = true
   primaryError.value = ''
   try {
-    const response = await $fetch<QuoteResponse>(`/api/market/quote/${primarySymbol.value}`)
+    const response = await $fetch<QuoteResponse>(buildQuoteUrl(primarySymbol.value))
     primaryQuote.value = response
     primaryPrice.value = response.regularMarketPrice
   } catch (error: any) {
@@ -172,7 +300,7 @@ async function fetchRelativeQuote() {
   relativeLoading.value = true
   relativeError.value = ''
   try {
-    const response = await $fetch<QuoteResponse>(`/api/market/quote/${relativeSymbol.value}`)
+    const response = await $fetch<QuoteResponse>(buildQuoteUrl(relativeSymbol.value))
     relativeQuote.value = response
     relativePrice.value = response.regularMarketPrice
   } catch (error: any) {
@@ -204,6 +332,13 @@ function applyPreset(preset: RelativeValuePreset) {
   primarySymbol.value = preset.primarySymbol
   relativeSymbol.value = preset.relativeSymbol
   void fetchAllQuotes()
+}
+
+function selectPriceTableRow(targetPrice: number, correspondingPrice: number) {
+  primaryPrice.value = targetPrice
+  relativePrice.value = correspondingPrice
+  // Optionally, set the targetPriceInputMode to manual if coming from auto-generated table
+  targetPriceInputMode.value = 'manual'
 }
 
 // Copy to clipboard
@@ -334,6 +469,7 @@ definePageMeta({
                 v-for="preset in presets"
                 :key="`${preset.primarySymbol}-${preset.relativeSymbol}`"
                 type="button"
+                :data-testid="`preset-${preset.primarySymbol.replace(/[^A-Z0-9]/gi, '_')}-${preset.relativeSymbol.replace(/[^A-Z0-9]/gi, '_')}`"
                 class="group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200/60 bg-white/80 p-4 backdrop-blur-sm transition-all duration-200 hover:border-amber-500/50 hover:bg-amber-50/50 hover:shadow-lg hover:shadow-amber-500/10 dark:border-slate-700/60 dark:bg-slate-800/60 dark:hover:border-amber-500/30 dark:hover:bg-slate-700/40"
                 @click="applyPreset(preset)"
               >
@@ -356,170 +492,30 @@ definePageMeta({
           <!-- Stock Input Cards -->
           <div class="mb-6 grid gap-6 sm:grid-cols-2">
             <!-- Primary Stock -->
-            <div class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/80 p-6 backdrop-blur-sm transition-all duration-200 hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/5 dark:border-slate-700/60 dark:bg-slate-800/60 dark:hover:border-amber-500/20">
-              <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-amber-500/5 blur-2xl group-hover:bg-amber-500/10 transition-colors duration-300" />
-              <div class="relative">
-                <div class="mb-4 flex items-center justify-between">
-                  <label for="primary-symbol" class="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    <Icon name="heroicons:chart-bar-square" class="h-4 w-4 text-amber-500" />
-                    {{ t('tools.relativeValue.primaryStock') }}
-                  </label>
-                  <span class="rounded-full bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
-                    Primary
-                  </span>
-                </div>
-                <div class="space-y-4">
-                  <div>
-                    <label for="primary-symbol" class="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                      {{ t('tools.relativeValue.symbol') }}
-                    </label>
-                    <div class="relative">
-                      <input
-                        id="primary-symbol"
-                        v-model="primarySymbol"
-                        type="text"
-                        :placeholder="t('tools.relativeValue.symbolPlaceholder')"
-                        class="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 pr-24 text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-amber-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:focus:border-amber-500 dark:focus:ring-amber-500/20"
-                        @keyup.enter="fetchPrimaryQuote"
-                      >
-                      <button
-                        type="button"
-                        :disabled="!primarySymbol.trim() || primaryLoading"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-slate-900"
-                        @click="fetchPrimaryQuote"
-                      >
-                        <Icon :name="primaryLoading ? 'heroicons:arrow-path' : 'heroicons:arrow-down-tray'" class="h-4 w-4" :class="{ 'animate-spin': primaryLoading }" />
-                      </button>
-                    </div>
-                    <p v-if="primarySymbolSuggestion" class="mt-2 text-xs text-amber-600 dark:text-amber-400">
-                      {{ t('tools.relativeValue.aliasSuggestion') }} <span class="font-mono font-semibold">{{ primarySymbolSuggestion }}</span>
-                    </p>
-                    <p v-if="primaryError" class="mt-2 text-xs text-rose-600 dark:text-rose-400">
-                      {{ primaryError }}
-                    </p>
-                  </div>
-                  <div>
-                    <label for="primary-price" class="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                      {{ t('tools.relativeValue.price') }}
-                    </label>
-                    <div class="relative">
-                      <input
-                        id="primary-price"
-                        v-model.number="primaryPrice"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :placeholder="t('tools.relativeValue.pricePlaceholder')"
-                        class="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 pl-10 text-sm font-mono font-medium text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-amber-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:focus:border-amber-500 dark:focus:ring-amber-500/20"
-                      >
-                      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">$</span>
-                    </div>
-                  </div>
-                </div>
-                <!-- Live Quote Display -->
-                <div v-if="primaryQuote" class="mt-4 flex items-center gap-3 rounded-xl bg-slate-50/80 p-3 dark:bg-slate-900/60">
-                  <div class="flex-1">
-                    <div class="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      {{ t('tools.relativeValue.currentPrice') }}
-                    </div>
-                    <div class="text-lg font-mono font-bold text-slate-900 dark:text-white">
-                      ${{ formatPrice(primaryQuote.regularMarketPrice) }}
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-sm font-mono font-semibold" :class="primaryQuote.change >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
-                      {{ primaryQuote.change >= 0 ? '+' : '' }}{{ primaryQuote.change.toFixed(2) }}
-                    </div>
-                    <div class="text-xs font-medium" :class="primaryQuote.changePercent >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
-                      {{ primaryQuote.changePercent >= 0 ? '+' : '' }}{{ primaryQuote.changePercent.toFixed(2) }}%
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <StockInput
+              v-model="primarySymbol"
+              :price="primaryPrice"
+              :loading="primaryLoading"
+              :error="primaryError"
+              :quote="primaryQuote"
+              :symbol-suggestion="primarySymbolSuggestion"
+              :is-primary="true"
+              @update:price="primaryPrice = $event"
+              @fetch-quote="fetchPrimaryQuote"
+            />
 
             <!-- Relative Stock -->
-            <div class="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/80 p-6 backdrop-blur-sm transition-all duration-200 hover:border-violet-500/30 hover:shadow-xl hover:shadow-violet-500/5 dark:border-slate-700/60 dark:bg-slate-800/60 dark:hover:border-violet-500/20">
-              <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-violet-500/5 blur-2xl group-hover:bg-violet-500/10 transition-colors duration-300" />
-              <div class="relative">
-                <div class="mb-4 flex items-center justify-between">
-                  <label for="relative-symbol" class="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    <Icon name="heroicons:scale" class="h-4 w-4 text-violet-500" />
-                    {{ t('tools.relativeValue.relativeStock') }}
-                  </label>
-                  <span class="rounded-full bg-violet-500/10 px-2 py-1 text-xs font-medium text-violet-600 dark:text-violet-400">
-                    Relative
-                  </span>
-                </div>
-                <div class="space-y-4">
-                  <div>
-                    <label for="relative-symbol" class="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                      {{ t('tools.relativeValue.symbol') }}
-                    </label>
-                    <div class="relative">
-                      <input
-                        id="relative-symbol"
-                        v-model="relativeSymbol"
-                        type="text"
-                        :placeholder="t('tools.relativeValue.symbolPlaceholder')"
-                        class="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 pr-24 text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:focus:border-violet-500 dark:focus:ring-violet-500/20"
-                        @keyup.enter="fetchRelativeQuote"
-                      >
-                      <button
-                        type="button"
-                        :disabled="!relativeSymbol.trim() || relativeLoading"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:bg-violet-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-slate-900"
-                        @click="fetchRelativeQuote"
-                      >
-                        <Icon :name="relativeLoading ? 'heroicons:arrow-path' : 'heroicons:arrow-down-tray'" class="h-4 w-4" :class="{ 'animate-spin': relativeLoading }" />
-                      </button>
-                    </div>
-                    <p v-if="relativeSymbolSuggestion" class="mt-2 text-xs text-amber-600 dark:text-amber-400">
-                      {{ t('tools.relativeValue.aliasSuggestion') }} <span class="font-mono font-semibold">{{ relativeSymbolSuggestion }}</span>
-                    </p>
-                    <p v-if="relativeError" class="mt-2 text-xs text-rose-600 dark:text-rose-400">
-                      {{ relativeError }}
-                    </p>
-                  </div>
-                  <div>
-                    <label for="relative-price" class="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                      {{ t('tools.relativeValue.price') }}
-                    </label>
-                    <div class="relative">
-                      <input
-                        id="relative-price"
-                        v-model.number="relativePrice"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :placeholder="t('tools.relativeValue.pricePlaceholder')"
-                        class="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 pl-10 text-sm font-mono font-medium text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:focus:border-violet-500 dark:focus:ring-violet-500/20"
-                      >
-                      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">$</span>
-                    </div>
-                  </div>
-                </div>
-                <!-- Live Quote Display -->
-                <div v-if="relativeQuote" class="mt-4 flex items-center gap-3 rounded-xl bg-slate-50/80 p-3 dark:bg-slate-900/60">
-                  <div class="flex-1">
-                    <div class="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      {{ t('tools.relativeValue.currentPrice') }}
-                    </div>
-                    <div class="text-lg font-mono font-bold text-slate-900 dark:text-white">
-                      ${{ formatPrice(relativeQuote.regularMarketPrice) }}
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-sm font-mono font-semibold" :class="relativeQuote.change >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
-                      {{ relativeQuote.change >= 0 ? '+' : '' }}{{ relativeQuote.change.toFixed(2) }}
-                    </div>
-                    <div class="text-xs font-medium" :class="relativeQuote.changePercent >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
-                      {{ relativeQuote.changePercent >= 0 ? '+' : '' }}{{ relativeQuote.changePercent.toFixed(2) }}%
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <StockInput
+              v-model="relativeSymbol"
+              :price="relativePrice"
+              :loading="relativeLoading"
+              :error="relativeError"
+              :quote="relativeQuote"
+              :symbol-suggestion="relativeSymbolSuggestion"
+              :is-primary="false"
+              @update:price="relativePrice = $event"
+              @fetch-quote="fetchRelativeQuote"
+            />
           </div>
 
           <!-- Target Prices -->
@@ -535,9 +531,29 @@ definePageMeta({
               {{ t('tools.relativeValue.sameSymbolWarning') }}
             </div>
 
+            <!-- Tab Buttons -->
+            <div class="mb-6 flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
+              <button
+                type="button"
+                class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                :class="targetPriceInputMode === 'manual' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
+                @click="targetPriceInputMode = 'manual'"
+              >
+                {{ t('tools.relativeValue.manualInput') }}
+              </button>
+              <button
+                type="button"
+                class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                :class="targetPriceInputMode === 'auto' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
+                @click="targetPriceInputMode = 'auto'"
+              >
+                {{ t('tools.relativeValue.autoGenerate') }}
+              </button>
+            </div>
+
             <div class="grid gap-6 lg:grid-cols-2">
-              <!-- Manual Input -->
-              <div>
+              <!-- Manual Input Content -->
+              <div v-if="targetPriceInputMode === 'manual'">
                 <label for="target-prices" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {{ t('tools.relativeValue.targetPricesInput') }}
                 </label>
@@ -563,15 +579,15 @@ definePageMeta({
                 </p>
               </div>
 
-              <!-- Auto Generate -->
-              <div class="space-y-4">
+              <!-- Auto Generate Content -->
+              <div v-if="targetPriceInputMode === 'auto'" class="space-y-4">
                 <div class="rounded-xl bg-slate-50/80 p-4 dark:bg-slate-900/60">
                   <div class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
                     <Icon name="heroicons:sparkles" class="h-4 w-4 text-sky-500" />
-                    Auto-generate price points
+                    {{ t('tools.relativeValue.autoGeneratePricePoints') }}
                   </div>
                   <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Based on {{ primarySymbol || 'primary' }} current price
+                    {{ t('tools.relativeValue.basedOnPrimaryPrice', { symbol: primarySymbol || t('tools.relativeValue.primary') }) }}
                   </p>
                 </div>
 
@@ -613,7 +629,7 @@ definePageMeta({
                         :class="pricePointDirection === 'up' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
                         @click="pricePointDirection = 'up'"
                       >
-                        Up
+                        {{ t('tools.relativeValue.directionUp') }}
                       </button>
                       <button
                         type="button"
@@ -621,7 +637,7 @@ definePageMeta({
                         :class="pricePointDirection === 'down' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
                         @click="pricePointDirection = 'down'"
                       >
-                        Down
+                        {{ t('tools.relativeValue.directionDown') }}
                       </button>
                       <button
                         type="button"
@@ -629,7 +645,7 @@ definePageMeta({
                         :class="pricePointDirection === 'both' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
                         @click="pricePointDirection = 'both'"
                       >
-                        Both
+                        {{ t('tools.relativeValue.directionBoth') }}
                       </button>
                     </div>
                   </div>
@@ -637,6 +653,7 @@ definePageMeta({
 
                 <button
                   type="button"
+                  data-testid="load-example-button"
                   class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-medium text-slate-600 transition-all duration-200 hover:border-sky-500 hover:bg-sky-50/50 hover:text-sky-600 dark:border-slate-700 dark:text-slate-400 dark:hover:border-sky-500 dark:hover:bg-sky-950/30 dark:hover:text-sky-400"
                   @click="loadExample"
                 >
@@ -651,6 +668,49 @@ definePageMeta({
         <!-- Right Column: Results -->
         <div class="lg:col-span-5">
           <div class="sticky top-6 space-y-6">
+            <!-- Historical Ratio Chart -->
+            <section
+              v-if="primarySymbol.trim() && relativeSymbol.trim()"
+              class="overflow-hidden rounded-3xl border border-slate-200/60 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-sm dark:border-slate-700/60 dark:from-slate-800/90 dark:to-slate-800/60"
+            >
+              <div class="relative h-2 bg-gradient-to-r from-sky-500 via-violet-500 to-amber-500" />
+              <div class="p-6">
+                <div class="mb-5 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <Icon name="heroicons:chart-line" class="h-5 w-5 text-sky-500" />
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
+                      {{ t('tools.relativeValue.historicalRatio') }}
+                    </h3>
+                  </div>
+                  <div class="flex gap-2">
+                    <button
+                      v-for="rangeOption in ['1mo', '3mo', '6mo', '1y', '5y', 'max']"
+                      :key="rangeOption"
+                      type="button"
+                      class="rounded-full px-3 py-1 text-xs font-medium"
+                      :class="historicalRange === rangeOption ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'"
+                      @click="historicalRange = rangeOption as '1mo' | '3mo' | '6mo' | '1y' | '5y' | 'max'"
+                    >
+                      {{ rangeOption.toUpperCase() }}
+                    </button>
+                  </div>
+                </div>
+
+                <div v-if="historicalLoading" class="flex items-center justify-center h-48">
+                  <Icon name="heroicons:arrow-path" class="h-8 w-8 animate-spin text-sky-500" />
+                </div>
+                <div v-else-if="hasHistoricalRatioData">
+                  <Line
+                    :data="historicalRatioData"
+                    :options="chartOptions"
+                    class="h-72"
+                  />
+                </div>
+                <div v-else class="text-center text-sm text-slate-500 dark:text-slate-400 h-48 flex items-center justify-center">
+                  {{ t('tools.relativeValue.noHistoricalData') }}
+                </div>
+              </div>
+            </section>
             <!-- Ratio Display -->
             <div v-if="calculationResult" class="overflow-hidden rounded-3xl border border-slate-200/60 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-sm dark:border-slate-700/60 dark:from-slate-800/90 dark:to-slate-800/60">
               <!-- Decorative gradient header -->
@@ -734,8 +794,9 @@ definePageMeta({
                     <tr
                       v-for="(row, index) in sortedPriceTable"
                       :key="index"
-                      class="border-b border-slate-100/60 last:border-0 transition-colors duration-150 hover:bg-slate-50/50 dark:border-slate-800/60 dark:hover:bg-slate-700/30"
+                      class="group cursor-pointer border-b border-slate-100/60 last:border-0 transition-colors duration-150 hover:bg-slate-50/50 dark:border-slate-800/60 dark:hover:bg-slate-700/30"
                       :class="{ 'bg-amber-50/50 dark:bg-amber-950/20': row.targetPrice === primaryPrice }"
+                      @click="selectPriceTableRow(row.targetPrice, row.correspondingPrice)"
                     >
                       <td class="px-6 py-3 font-mono font-medium text-slate-900 dark:text-white">
                         {{ formatPrice(row.targetPrice) }}
