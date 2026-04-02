@@ -36,6 +36,18 @@ describe('market quote api', () => {
     expect(result).toEqual({ symbol: 'SPY', regularMarketPrice: 600 })
   })
 
+  it('decodes encoded router symbols before fetching the quote', async () => {
+    mockGetRouterParam.mockReturnValue('%5EGSPC')
+    mockFetchQuote.mockResolvedValue({ symbol: '^GSPC', regularMarketPrice: 5100 })
+
+    const { default: handler } = await import('~/server/api/market/quote/[symbol].get')
+
+    const result = await handler({ context: {} } as any)
+
+    expect(mockFetchQuote).toHaveBeenCalledWith('^GSPC')
+    expect(result).toEqual({ symbol: '^GSPC', regularMarketPrice: 5100 })
+  })
+
   it('returns 400 when symbol is missing', async () => {
     mockGetRouterParam.mockReturnValue(undefined)
     const { default: handler } = await import('~/server/api/market/quote/[symbol].get')

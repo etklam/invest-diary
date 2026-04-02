@@ -4,11 +4,26 @@
  * Rate limited to 60 requests per minute per IP
  */
 
+import type { H3Event } from 'h3'
 import { fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 
+function resolveSymbol(event: H3Event): string | undefined {
+  const rawSymbol = getRouterParam(event, 'symbol')
+
+  if (!rawSymbol) {
+    return undefined
+  }
+
+  try {
+    return decodeURIComponent(String(rawSymbol))
+  } catch {
+    return String(rawSymbol)
+  }
+}
+
 export default defineEventHandler(async (event) => {
-  const symbol = getRouterParam(event, 'symbol')
+  const symbol = resolveSymbol(event)
   if (!symbol) {
     throw createError({
       statusCode: 400,

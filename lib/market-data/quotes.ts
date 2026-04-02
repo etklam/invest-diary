@@ -1,5 +1,5 @@
 import { fetchTwseRegularMarketPrice, isTwseEquitySymbol } from '~/lib/market-data/twse'
-import { fetchYahooRegularMarketPrice } from '~/lib/market-data/yahoo'
+import { fetchQuote } from '~/lib/yahoo-finance'
 
 interface FetchMarketPriceOptions {
   fetchYahooPrice?: (symbol: string) => Promise<number | null>
@@ -14,5 +14,14 @@ export async function fetchMarketPrice(
     return (options.fetchTwsePrice ?? fetchTwseRegularMarketPrice)(symbol)
   }
 
-  return (options.fetchYahooPrice ?? fetchYahooRegularMarketPrice)(symbol)
+  if (options.fetchYahooPrice) {
+    return options.fetchYahooPrice(symbol)
+  }
+
+  try {
+    const quote = await fetchQuote(symbol)
+    return quote.regularMarketPrice
+  } catch {
+    return null
+  }
 }

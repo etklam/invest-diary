@@ -3,6 +3,9 @@ import {
   buildYahooChartUrl,
   getYahooSymbolAliasSuggestion,
   normalizeYahooSymbol,
+  parseYahooLibraryDailyQuotes,
+  parseYahooLibraryMonthlyQuotes,
+  parseYahooLibraryQuote,
   parseYahooMonthlyQuotes,
   parseYahooRegularMarketPrice,
 } from '~/lib/market-data/yahoo'
@@ -82,6 +85,75 @@ describe('market data providers', () => {
       },
       {
         timestamp: 1702600000,
+        open: 110,
+        high: 130,
+        low: 100,
+        close: 125,
+        volume: 2000,
+        adjClose: 124,
+      },
+    ])
+  })
+
+  it('maps yahoo-finance2 quote data into app quote shape', () => {
+    expect(parseYahooLibraryQuote({
+      symbol: '^GSPC',
+      regularMarketPrice: 5100,
+      regularMarketPreviousClose: 5000,
+      currency: 'USD',
+      marketState: 'REGULAR',
+      regularMarketTime: new Date('2026-04-02T00:00:00.000Z'),
+    })).toEqual({
+      symbol: '^GSPC',
+      regularMarketPrice: 5100,
+      previousClose: 5000,
+      change: 100,
+      changePercent: 2,
+      currency: 'USD',
+      marketState: 'REGULAR',
+      lastUpdateTime: '2026-04-02T00:00:00.000Z',
+    })
+  })
+
+  it('maps yahoo-finance2 chart quotes into daily and monthly app shapes', () => {
+    const quotes = [
+      {
+        date: new Date('2026-01-01T00:00:00.000Z'),
+        open: 100,
+        high: 120,
+        low: 90,
+        close: 115,
+        volume: 1000,
+        adjclose: 114,
+      },
+      {
+        date: new Date('2026-02-01T00:00:00.000Z'),
+        open: 110,
+        high: 130,
+        low: 100,
+        close: 125,
+        volume: 2000,
+        adjclose: 124,
+      },
+    ]
+
+    expect(parseYahooLibraryDailyQuotes(quotes)).toEqual([
+      { timestamp: 1767225600, close: 115 },
+      { timestamp: 1769904000, close: 125 },
+    ])
+
+    expect(parseYahooLibraryMonthlyQuotes(quotes)).toEqual([
+      {
+        timestamp: 1767225600,
+        open: 100,
+        high: 120,
+        low: 90,
+        close: 115,
+        volume: 1000,
+        adjClose: 114,
+      },
+      {
+        timestamp: 1769904000,
         open: 110,
         high: 130,
         low: 100,

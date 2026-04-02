@@ -41,6 +41,11 @@ export interface YahooMonthlyQuote {
   adjClose: number | null
 }
 
+export interface HistoricalQuote {
+  timestamp: number
+  close: number | null
+}
+
 export interface QuoteResponse {
   symbol: string
   regularMarketPrice: number
@@ -55,10 +60,6 @@ export interface QuoteResponse {
 interface YahooChartUrlOptions {
   interval: string
   range: string
-}
-
-const YAHOO_HEADERS = {
-  'User-Agent': 'Mozilla/5.0',
 }
 
 const YAHOO_SYMBOL_ALIASES: Record<string, string> = {
@@ -118,6 +119,102 @@ export function parseYahooQuoteResponse(response: YahooChartResponse): QuoteResp
   }
 }
 
+interface YahooLibraryQuoteLike {
+  symbol?: string
+  regularMarketPrice?: number
+  regularMarketPreviousClose?: number
+  currency?: string
+  marketState?: string
+  regularMarketTime?: Date
+}
+
+interface YahooLibraryChartQuoteLike {
+  date?: Date
+  open?: number | null
+  high?: number | null
+  low?: number | null
+  close?: number | null
+  volume?: number | null
+  adjclose?: number | null
+}
+
+export function resolveYahooRangeStart(range: string, now: Date = new Date()): Date {
+  const start = new Date(now)
+
+  switch (range) {
+    case '1mo':
+      start.setMonth(start.getMonth() - 1)
+      return start
+    case '3mo':
+      start.setMonth(start.getMonth() - 3)
+      return start
+    case '6mo':
+      start.setMonth(start.getMonth() - 6)
+      return start
+    case '1y':
+      start.setFullYear(start.getFullYear() - 1)
+      return start
+    case '5y':
+      start.setFullYear(start.getFullYear() - 5)
+      return start
+    case 'max':
+      return new Date('1970-01-01T00:00:00.000Z')
+    default:
+      start.setFullYear(start.getFullYear() - 1)
+      return start
+  }
+}
+
+export function parseYahooLibraryQuote(quote: YahooLibraryQuoteLike | null | undefined): QuoteResponse | null {
+  if (!quote || typeof quote.symbol !== 'string' || typeof quote.regularMarketPrice !== 'number') {
+    return null
+  }
+
+  const previousClose = typeof quote.regularMarketPreviousClose === 'number'
+    ? quote.regularMarketPreviousClose
+    : quote.regularMarketPrice
+  const change = quote.regularMarketPrice - previousClose
+  const changePercent = previousClose === 0 ? 0 : (change / previousClose) * 100
+
+  return {
+    symbol: quote.symbol,
+    regularMarketPrice: quote.regularMarketPrice,
+    previousClose,
+    change,
+    changePercent,
+    currency: quote.currency ?? 'USD',
+    marketState: quote.marketState ?? 'REGULAR',
+    lastUpdateTime: (quote.regularMarketTime ?? new Date()).toISOString(),
+  }
+}
+
+export function parseYahooLibraryDailyQuotes(quotes: YahooLibraryChartQuoteLike[]): HistoricalQuote[] {
+  return quotes
+    .filter((quote): quote is YahooLibraryChartQuoteLike & { date: Date; close: number } =>
+      quote.date instanceof Date && typeof quote.close === 'number'
+    )
+    .map(quote => ({
+      timestamp: Math.floor(quote.date.getTime() / 1000),
+      close: quote.close,
+    }))
+}
+
+export function parseYahooLibraryMonthlyQuotes(quotes: YahooLibraryChartQuoteLike[]): YahooMonthlyQuote[] {
+  return quotes
+    .filter((quote): quote is YahooLibraryChartQuoteLike & { date: Date; close: number } =>
+      quote.date instanceof Date && typeof quote.close === 'number'
+    )
+    .map(quote => ({
+      timestamp: Math.floor(quote.date.getTime() / 1000),
+      open: quote.open ?? null,
+      high: quote.high ?? null,
+      low: quote.low ?? null,
+      close: quote.close,
+      volume: quote.volume ?? null,
+      adjClose: quote.adjclose ?? quote.close,
+    }))
+}
+
 export function parseYahooMonthlyQuotes(response: YahooChartResponse): YahooMonthlyQuote[] {
   const result = response?.chart?.result?.[0]
 
@@ -142,25 +239,31 @@ export function parseYahooMonthlyQuotes(response: YahooChartResponse): YahooMont
     .filter(quote => quote.close !== null)
 }
 
-async function defaultFetchYahooJson(url: string): Promise<YahooChartResponse> {
-  const response = await fetch(url, {
-    headers: YAHOO_HEADERS,
-  })
+export function parseYahooDailyQuotes(response: YahooChartResponse): HistoricalQuote[] {
+  const result = response?.chart?.result?.[0]
 
-  if (!response.ok) {
-    throw new Error(`Yahoo request failed: ${response.status}`)
+  if (!result) {
+    return []
   }
 
-  return response.json() as Promise<YahooChartResponse>
+  const quotes = result.indicators?.quote?.[0]
+  const timestamps = result.timestamp || []
+
+  return timestamps
+    .map((timestamp, index): HistoricalQuote => ({
+      timestamp,
+      close: quotes?.close?.[index] ?? null,
+    }))
+    .filter(quote => quote.close !== null)
 }
 
 export async function fetchYahooRegularMarketPrice(
-  symbol: string,
-  fetchJson: (url: string) => Promise<YahooChartResponse> = defaultFetchYahooJson
+  symbol: string
 ): Promise<number | null> {
   try {
-    const response = await fetchJson(buildYahooChartUrl(symbol, { interval: '1d', range: '1d' }))
-    return parseYahooRegularMarketPrice(response)
+    const { fetchQuote } = await import('~/lib/yahoo-finance')
+    const quote = await fetchQuote(symbol)
+    return quote.regularMarketPrice
   } catch {
     return null
   }

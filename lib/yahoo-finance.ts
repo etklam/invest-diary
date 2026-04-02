@@ -1,17 +1,26 @@
+import YahooFinance from 'yahoo-finance2'
 import {
-  buildYahooChartUrl,
-  parseYahooMonthlyQuotes,
-  parseYahooQuoteResponse,
+  normalizeYahooSymbol,
+  parseYahooLibraryDailyQuotes,
+  parseYahooLibraryMonthlyQuotes,
+  parseYahooLibraryQuote,
+  resolveYahooRangeStart,
   type QuoteResponse,
   type YahooChartResponse,
   type YahooMonthlyQuote,
   type YahooQuoteMeta,
   type YahooQuoteResult,
+  type HistoricalQuote,
 } from '~/lib/market-data/yahoo'
+
+type YahooChartInterval = '1m' | '2m' | '5m' | '15m' | '30m' | '60m' | '90m' | '1h' | '1d' | '5d' | '1wk' | '1mo' | '3mo'
+
+const yahooFinance = new YahooFinance()
 
 export type {
   QuoteResponse,
   YahooChartResponse,
+  HistoricalQuote,
   YahooMonthlyQuote,
   YahooQuoteMeta,
   YahooQuoteResult,
@@ -22,15 +31,29 @@ export type {
  * @param symbol ETF symbol (e.g., "SPY", "QQQ", "0050.TW")
  */
 export async function fetchQuote(symbol: string): Promise<QuoteResponse> {
-  const url = buildYahooChartUrl(symbol, { interval: '1d', range: '1d' })
+  const quote = await yahooFinance.quote(normalizeYahooSymbol(symbol))
+  const parsed = parseYahooLibraryQuote(quote)
 
-  const response = await $fetch<YahooChartResponse>(url)
-
-  const quote = parseYahooQuoteResponse(response)
-  if (!quote) {
+  if (!parsed) {
     throw new Error('Yahoo quote unavailable')
   }
-  return quote
+
+  return parsed
+}
+
+export async function fetchHistoricalData(
+  symbol: string,
+  range: string = '1y',
+  interval: string = '1d'
+): Promise<HistoricalQuote[]> {
+  const quotes = await yahooFinance.chart(normalizeYahooSymbol(symbol), {
+    period1: resolveYahooRangeStart(range),
+    period2: new Date(),
+    interval: interval as YahooChartInterval,
+    return: 'array',
+  })
+
+  return parseYahooLibraryDailyQuotes(quotes.quotes)
 }
 
 /**
@@ -39,15 +62,21 @@ export async function fetchQuote(symbol: string): Promise<QuoteResponse> {
  * @param years Number of years of history to fetch (default: 5)
  */
 export async function fetchMonthlyData(symbol: string, years = 5): Promise<YahooMonthlyQuote[]> {
-  const url = buildYahooChartUrl(symbol, { interval: '1mo', range: `${years}y` })
+  const start = new Date()
+  start.setFullYear(start.getFullYear() - years)
 
-  const response = await $fetch<YahooChartResponse>(url)
+  const quotes = await yahooFinance.chart(normalizeYahooSymbol(symbol), {
+    period1: start,
+    period2: new Date(),
+    interval: '1mo',
+    return: 'array',
+  })
 
-  const quotes = parseYahooMonthlyQuotes(response)
-  if (quotes.length === 0) {
+  const parsed = parseYahooLibraryMonthlyQuotes(quotes.quotes)
+  if (parsed.length === 0) {
     throw new Error('Yahoo historical data unavailable')
   }
-  return quotes
+  return parsed
 }
 
 /**
