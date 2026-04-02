@@ -1,482 +1,295 @@
 <template>
-  <div class="stocks-page min-h-screen">
+  <div class="stocks-page min-h-screen pb-20">
     <!-- Header -->
-    <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <div class="panel px-4 py-5 sm:px-6">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p class="kicker mb-1">Portfolio Console</p>
-            <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">股票管理</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">查看所有持股資訊 (FIFO 計算)</p>
+    <header class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+            <Icon name="heroicons:presentation-chart-line" class="text-blue-600 dark:text-blue-400" />
+            {{ t('stock.dashboard.title') }}
+          </h1>
+          <div class="flex items-center gap-3 mt-1">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+              {{ t('stock.dashboard.manageDescription') }}
+            </p>
+            <span v-if="marketState" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+              <span class="w-1.5 h-1.5 rounded-full" :class="marketState === 'REGULAR' ? 'bg-green-500 animate-pulse' : 'bg-amber-500'"></span>
+              {{ t('stock.dashboard.marketState') }}: {{ marketState }}
+            </span>
           </div>
-          <NuxtLink
-            to="/"
-            class="action-btn-muted mt-1 cursor-pointer sm:mt-0"
+        </div>
+        <div class="flex items-center gap-3">
+          <button
+            @click="fetchStockPrices"
+            :disabled="isFetchingPrices || cooldownRemaining > 0 || pending"
+            class="action-btn-dashboard group"
           >
-            <Icon name="heroicons:home" class="mr-2 h-4 w-4" />
-            回首頁
+            <Icon :name="(isFetchingPrices || pending) ? 'svg-spinners:180-ring-with-bg' : 'heroicons:arrow-path'" class="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
+            {{ (isFetchingPrices || pending) ? t('stock.fetching') : cooldownRemaining > 0 ? `${cooldownRemaining}s` : t('stock.dashboard.refresh') }}
+          </button>
+          <NuxtLink to="/" class="action-btn-muted-dashboard">
+            <Icon name="heroicons:home" class="w-4 h-4 mr-2" />
+            {{ t('stock.dashboard.home') }}
           </NuxtLink>
         </div>
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Summary Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Total Holdings Value -->
-        <div class="panel">
-          <div class="px-4 py-5 sm:p-6">
-            <dt class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
-              總持股數量
-            </dt>
-            <dd class="mt-1 text-3xl font-semibold text-slate-900 dark:text-slate-100">
-              {{ totalHoldings }}
-            </dd>
+    <!-- Main Content Grid -->
+    <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Top Stats Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Portfolio Value -->
+        <div class="stats-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ t('stock.dashboard.netLiquidity') }}</span>
+            <Icon name="heroicons:banknotes" class="w-5 h-5 text-blue-500 opacity-50" />
+          </div>
+          <div class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+            {{ formatCurrency(currentMarketValue || totalCost) }}
+          </div>
+          <div class="flex items-center gap-1.5 mt-1">
+            <span class="text-xs font-medium" :class="(unrealizedAmount || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+              {{ (unrealizedAmount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(unrealizedAmount || 0) }}
+            </span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('stock.dashboard.totalPL') }}</span>
           </div>
         </div>
 
-        <!-- Total Cost -->
-        <div class="panel">
-          <div class="px-4 py-5 sm:p-6">
-            <dt class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
-              總成本
-            </dt>
-            <dd class="mt-1 text-3xl font-semibold text-slate-900 dark:text-slate-100">
-              {{ formatCurrency(totalCost) }}
-            </dd>
+        <!-- Day Change -->
+        <div class="stats-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ t('stock.dashboard.dayChange') }}</span>
+            <Icon name="heroicons:bolt" class="w-5 h-5 text-amber-500 opacity-50" />
+          </div>
+          <div class="text-2xl font-bold tabular-nums" :class="totalDayChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+            {{ totalDayChange >= 0 ? '+' : '' }}{{ formatCurrency(totalDayChange) }}
+          </div>
+          <div class="flex items-center gap-1.5 mt-1">
+            <span class="text-xs font-medium" :class="totalDayChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+              {{ totalDayChange >= 0 ? '+' : '' }}{{ totalDayChangePercent.toFixed(2) }}%
+            </span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('stock.dashboard.today') }}</span>
           </div>
         </div>
 
-        <!-- Unique Stocks -->
-        <div class="panel">
-          <div class="px-4 py-5 sm:p-6">
-            <dt class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
-              持股種類
-            </dt>
-            <dd class="mt-1 text-3xl font-semibold text-slate-900 dark:text-slate-100">
-              {{ holdings?.length ?? 0 }}
-            </dd>
+        <!-- Margin/Equity Ratio or Total Cost -->
+        <div class="stats-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ t('stock.dashboard.totalInvested') }}</span>
+            <Icon name="heroicons:credit-card" class="w-5 h-5 text-indigo-500 opacity-50" />
+          </div>
+          <div class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+            {{ formatCurrency(totalCost) }}
+          </div>
+          <div class="flex items-center gap-1.5 mt-1">
+            <span class="text-xs font-medium text-slate-600 dark:text-slate-300">
+              {{ totalHoldings }} {{ t('stock.dashboard.positions') }}
+            </span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('stock.dashboard.active') }}</span>
+          </div>
+        </div>
+
+        <!-- Unrealized P/L % -->
+        <div class="stats-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ t('stock.dashboard.unrealizedPLPercent') }}</span>
+            <Icon name="heroicons:arrow-trending-up" class="w-5 h-5 text-emerald-500 opacity-50" />
+          </div>
+          <div class="text-2xl font-bold tabular-nums" :class="totalUnrealizedPct >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+            {{ totalUnrealizedPct >= 0 ? '+' : '' }}{{ totalUnrealizedPct.toFixed(2) }}%
+          </div>
+          <div class="flex items-center gap-1.5 mt-1">
+            <div class="w-full bg-slate-200 dark:bg-slate-700 h-1 rounded-full overflow-hidden">
+              <div 
+                class="h-full" 
+                :class="totalUnrealizedPct >= 0 ? 'bg-green-500' : 'bg-red-500'"
+                :style="{ width: Math.min(Math.abs(totalUnrealizedPct) * 2, 100) + '%' }"
+              ></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Controls -->
-      <section class="panel mb-8 p-4 sm:p-6">
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-4">
-          <div class="lg:col-span-2">
-            <label for="stocks-search" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
-              搜尋代碼
-            </label>
-            <input
-              id="stocks-search"
-              v-model="searchQuery"
-              type="text"
-              placeholder="例如 AAPL, TSLA"
-              class="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            >
-          </div>
-          <div>
-            <label for="profit-filter" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
-              損益狀態
-            </label>
-            <select
-              id="profit-filter"
-              v-model="profitStatusFilter"
-              class="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            >
-              <option value="all">全部</option>
-              <option value="gain">盈利</option>
-              <option value="loss">虧損</option>
-              <option value="no-quote">無報價</option>
-            </select>
-          </div>
-          <div>
-            <label for="concentration-filter" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
-              成本占比
-            </label>
-            <select
-              id="concentration-filter"
-              v-model="concentrationFilter"
-              class="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            >
-              <option value="all">全部</option>
-              <option value="ge10">>= 10%</option>
-              <option value="ge20">>= 20%</option>
-            </select>
-          </div>
-        </div>
-        <div class="mt-4 flex flex-wrap items-center gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">快速排序</span>
-          <button
-            v-for="option in quickSortOptions"
-            :key="option"
-            type="button"
-            :aria-pressed="quickSortKey === option"
-            @click="toggleQuickSort(option)"
-            class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors"
-            :class="quickSortKey === option
-              ? 'border-blue-500 bg-blue-100 text-blue-900 dark:border-blue-400 dark:bg-blue-950/40 dark:text-blue-100'
-              : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'"
-          >
-            {{ quickSortLabels[option] }}
-            <Icon
-              v-if="quickSortKey === option"
-              :name="quickSortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
-              class="ml-1 h-4 w-4"
-            />
-          </button>
-          <button
-            v-if="hasActiveControls"
-            type="button"
-            @click="resetControls"
-            class="ml-auto inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            清除條件
-          </button>
-        </div>
-      </section>
-
-      <!-- Holdings Donut Chart -->
-      <section v-if="baseHoldings.length > 0" class="py-4 overflow-hidden mb-8">
-        <div class="pt-4 px-6 pb-6 panel">
-            <div class="flex flex-wrap items-center justify-between mb-11 -m-2">
-              <div class="w-auto p-2">
-                <h3 class="font-heading text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  {{ t('stock.analytics') }}
-                </h3>
+      <!-- Main Layout Grid: Holdings Table (Left) + Portfolio Analysis (Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Holdings Table Section -->
+        <div class="lg:col-span-8 space-y-6">
+          <div class="panel-dashboard overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+              <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
+                <Icon name="heroicons:list-bullet" class="text-blue-500" />
+                {{ t('stock.dashboard.activePositions') }}
+              </h3>
+              <div class="flex items-center gap-2">
+                <div class="relative">
+                  <Icon name="heroicons:magnifying-glass" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    :placeholder="t('stock.dashboard.searchPlaceholder')"
+                    class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                </div>
               </div>
-              <div class="w-auto p-2">
-                <svg class="text-slate-300 dark:text-slate-500" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3.75 8C3.19772 8 2.75 8.44772 2.75 9C2.75 9.55228 3.19772 10 3.75 10V8ZM3.7575 10C4.30978 10 4.7575 9.55228 4.7575 9C4.7575 8.44772 4.30978 8 3.7575 8V10ZM9 8C8.44772 8 8 8.44772 8 9C8 9.55228 8.44772 10 9 10V8ZM9.0075 10C9.55978 10 10.0075 9.55228 10.0075 9C10.0075 8.44772 9.55978 8 9.0075 8V10ZM14.25 8C13.6977 8 13.25 8.44772 13.25 9C13.25 9.55228 13.6977 10 14.25 10V8ZM14.2575 10C14.8098 10 15.2575 9.55228 15.2575 9C15.2575 8.44772 14.8098 8 14.2575 8V10ZM3.5 9C3.5 8.86193 3.61193 8.75 3.75 8.75V10.75C4.7165 10.75 5.5 9.9665 5.5 9H3.5ZM3.75 8.75C3.88807 8.75 4 8.86193 4 9H2C2 9.9665 2.7835 10.75 3.75 10.75V8.75ZM4 9C4 9.13807 3.88807 9.25 3.75 9.25V7.25C2.7835 7.25 2 8.0335 2 9H4ZM3.75 9.25C3.61193 9.25 3.5 9.13807 3.5 9H5.5C5.5 8.0335 4.7165 7.25 3.75 7.25V9.25ZM8.75 9C8.75 8.86193 8.86193 8.75 9 8.75V10.75C9.9665 10.75 10.75 9.9665 10.75 9H8.75ZM9 8.75C9.13807 8.75 9.25 8.86193 9.25 9H7.25C7.25 9.9665 8.0335 10.75 9 10.75V8.75ZM9.25 9C9.25 9.13807 9.13807 9.25 9 9.25V7.25C8.0335 7.25 7.25 8.0335 7.25 9H9.25ZM9 9.25C8.86193 9.25 8.75 9.13807 8.75 9H10.75C10.75 8.0335 9.9665 7.25 9 7.25V9.25ZM14 9C14 8.86193 14.1119 8.75 14.25 8.75V10.75C15.2165 10.75 16 9.9665 16 9H14ZM14.25 8.75C14.3881 8.75 14.5 8.86193 14.5 9H12.5C12.5 9.9665 13.2835 10.75 14.25 10.75V8.75ZM14.5 9C14.5 9.13807 14.3881 9.25 14.25 9.25V7.25C13.2835 7.25 12.5 8.0335 12.5 9H14.5ZM14.25 9.25C14.1119 9.25 14 9.13807 14 9H16C16 8.0335 15.2165 7.25 14.25 7.25V9.25ZM3.75 10H3.7575V8H3.75V10ZM9 10H9.0075V8H9V10ZM14.25 10H14.2575V8H14.25V10Z" fill="currentColor"></path>
+            </div>
+
+            <div v-if="pending" class="py-20 flex flex-col items-center justify-center">
+              <div class="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+              <p class="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">{{ t('stock.dashboard.synchronizing') }}</p>
+            </div>
+
+            <div v-else class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                    <th class="px-6 py-3 cursor-pointer hover:text-blue-500 transition-colors" @click="sortBy('symbol')">{{ t('stock.symbol') }}</th>
+                    <th class="px-6 py-3 text-right">{{ t('stock.dashboard.price') }} / Day %</th>
+                    <th class="px-6 py-3 text-right">{{ t('stock.dashboard.marketValue') }}</th>
+                    <th class="px-6 py-3 text-right">{{ t('stock.avgPrice') }}</th>
+                    <th class="px-6 py-3 text-right">{{ t('stock.dashboard.unrealizedPL') }}</th>
+                    <th class="px-6 py-3 text-right">{{ t('stock.dashboard.portfolioPercent') }}</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                  <tr
+                    v-for="holding in sortedHoldings"
+                    :key="holding.symbol"
+                    v-memo="[
+                      holding.symbol,
+                      holding.price,
+                      holding.dayChangePercent,
+                      holding.marketValue,
+                      holding.unrealizedAmount,
+                      holding.unrealizedPct
+                    ]"
+                    class="group hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors"
+                  >
+                    <td class="px-6 py-4">
+                      <div class="flex flex-col">
+                        <span class="text-sm font-bold text-blue-600 dark:text-blue-400">{{ holding.symbol }}</span>
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ formatQuantity(holding.quantity) }} {{ t('stock.dashboard.shares') }}</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <div class="flex flex-col items-end">
+                        <span class="text-sm font-semibold tabular-nums text-slate-900 dark:text-white">
+                          {{ holding.price ? formatCurrency(holding.price) : '—' }}
+                        </span>
+                        <span v-if="holding.dayChangePercent !== undefined" class="text-[10px] font-bold tabular-nums" :class="holding.dayChangePercent >= 0 ? 'text-green-500' : 'text-red-500'">
+                          {{ holding.dayChangePercent >= 0 ? '▲' : '▼' }} {{ Math.abs(holding.dayChangePercent).toFixed(2) }}%
+                        </span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <div class="text-sm font-medium tabular-nums text-slate-900 dark:text-white">
+                        {{ holding.marketValue ? formatCurrency(holding.marketValue) : formatCurrency(holding.totalCost) }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <div class="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+                        {{ formatCurrency(holding.avgCost) }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <div class="flex flex-col items-end">
+                        <span class="text-sm font-bold tabular-nums" :class="(holding.unrealizedAmount || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                          {{ (holding.unrealizedAmount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(holding.unrealizedAmount || 0) }}
+                        </span>
+                        <span v-if="holding.unrealizedPct !== null" class="text-[10px] font-medium opacity-80" :class="holding.unrealizedPct >= 0 ? 'text-green-500' : 'text-red-500'">
+                          {{ holding.unrealizedPct >= 0 ? '+' : '' }}{{ holding.unrealizedPct.toFixed(2) }}%
+                        </span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <div class="flex items-center justify-end gap-3">
+                        <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                          {{ formatPercentage(holding.totalCost) }}
+                        </span>
+                        <div class="w-12 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden hidden sm:block">
+                          <div class="bg-blue-500 h-full" :style="{ width: formatPercentage(holding.totalCost) }"></div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Analysis & Charts -->
+        <div class="lg:col-span-4 space-y-6">
+          <!-- Allocation Card -->
+          <div class="panel-dashboard p-6">
+            <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6 text-base">
+              <Icon name="heroicons:chart-pie" class="text-indigo-500" />
+              {{ t('stock.dashboard.assetAllocation') }}
+            </h3>
+
+            <div class="flex justify-center mb-6">
+              <div class="relative w-48 h-48">
+                <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                  <circle
+                    v-for="(slice, index) in donutSlices"
+                    :key="index"
+                    cx="50"
+                    cy="50"
+                    :r="slice.radius"
+                    fill="transparent"
+                    :stroke="slice.color"
+                    :stroke-width="slice.strokeWidth"
+                    :stroke-dasharray="slice.dashArray"
+                    :stroke-dashoffset="slice.dashOffset"
+                    class="transition-all duration-1000 ease-out"
+                  />
                 </svg>
-              </div>
-            </div>
-            <!-- Donut Chart -->
-            <div class="chart mb-10 flex justify-center">
-              <div class="relative w-64 h-64">
-                <svg
-                  viewBox="0 0 100 100"
-                  class="w-full h-full"
-                >
-                  <g transform="rotate(-90 50 50)">
-                    <circle
-                      v-for="(slice, index) in donutSlices"
-                      :key="index"
-                      cx="50"
-                      cy="50"
-                      :r="slice.radius"
-                      fill="transparent"
-                      :stroke="slice.color"
-                      :stroke-width="slice.strokeWidth"
-                      :stroke-dasharray="slice.dashArray"
-                      :stroke-dashoffset="slice.dashOffset"
-                    />
-                  </g>
-                </svg>
-                <!-- Center text overlay -->
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div class="text-center">
-                    <div class="text-lg font-bold text-slate-800 dark:text-slate-100">
-                      {{ holdings?.length ?? 0 }}
-                    </div>
-                    <div class="text-xs text-slate-500 dark:text-slate-400">
-                      {{ t('stock.holdings') }}
-                    </div>
-                  </div>
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span class="text-2xl font-black text-slate-900 dark:text-white">{{ totalHoldings }}</span>
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ t('stock.dashboard.assets') }}</span>
                 </div>
               </div>
             </div>
-            <!-- Legend -->
-            <div class="flex flex-wrap justify-center -m-5">
-              <div v-for="(slice, index) in pieSlices" :key="index" class="w-auto p-5">
-                <div class="inline-flex items-center">
-                  <span class="mr-3 w-3 h-3 rounded-full" :style="{ backgroundColor: slice.color }"></span>
-                  <span class="font-medium text-slate-900 dark:text-slate-100">{{ slice.label }} ({{ slice.percentage }})</span>
+
+            <div class="space-y-3">
+              <div v-for="(slice, index) in pieSlices.slice(0, 5)" :key="index" class="flex items-center justify-between group">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full" :style="{ backgroundColor: slice.color }"></div>
+                  <span class="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-blue-500 transition-colors">{{ slice.label }}</span>
                 </div>
+                <span class="text-xs font-medium text-slate-500">{{ slice.percentage }}</span>
+              </div>
+              <div v-if="pieSlices.length > 5" class="pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ t('stock.dashboard.moreAssets', { count: pieSlices.length - 5 }) }}</span>
               </div>
             </div>
           </div>
-      </section>
 
-      <!-- Holdings Table -->
-      <div class="panel overflow-hidden">
-        <div class="px-4 py-5 sm:px-6 border-b border-slate-200 dark:border-slate-700">
-          <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-slate-100">
-            當前持股明細
-          </h3>
-          <p class="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-            根據所有交易記錄計算
-          </p>
-        </div>
-
-        <div v-if="pending" class="px-4 py-8 text-center">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">載入中...</p>
-        </div>
-
-        <div v-else-if="error" class="px-4 py-8 text-center">
-          <Icon name="heroicons:exclamation-circle" class="mx-auto h-12 w-12 text-red-500" />
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">載入失敗</p>
-          <button
-            @click="() => refresh()"
-            class="mt-3 action-btn-muted cursor-pointer"
-          >
-            重新載入
-          </button>
-        </div>
-
-        <div v-else>
-          <!-- Desktop Table -->
-          <div class="hidden md:block overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-              <thead class="bg-slate-50 dark:bg-slate-950">
-                <tr>
-                  <th
-                    scope="col"
-                    :aria-sort="getAriaSort('symbol')"
-                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                  >
-                    <button
-                      type="button"
-                      @click="sortBy('symbol')"
-                      class="inline-flex items-center gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      代碼
-                      <Icon v-if="sortColumn === 'symbol'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
-                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </button>
-                  </th>
-                  <th
-                    scope="col"
-                    :aria-sort="getAriaSort('quantity')"
-                    class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                  >
-                    <button
-                      type="button"
-                      @click="sortBy('quantity')"
-                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      數量
-                      <Icon v-if="sortColumn === 'quantity'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
-                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </button>
-                  </th>
-                  <th
-                    scope="col"
-                    :aria-sort="getAriaSort('avgCost')"
-                    class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                  >
-                    <button
-                      type="button"
-                      @click="sortBy('avgCost')"
-                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      平均成本
-                      <Icon v-if="sortColumn === 'avgCost'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
-                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </button>
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                    現價
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                    市值
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                    未實現損益
-                  </th>
-                  <th
-                    scope="col"
-                    :aria-sort="getAriaSort('totalCost')"
-                    class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                  >
-                    <button
-                      type="button"
-                      @click="sortBy('totalCost')"
-                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      總成本
-                      <Icon v-if="sortColumn === 'totalCost'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
-                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </button>
-                  </th>
-                  <th
-                    scope="col"
-                    :aria-sort="getAriaSort('percentage')"
-                    class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                  >
-                    <button
-                      type="button"
-                      @click="sortBy('percentage')"
-                      class="ml-auto inline-flex items-center justify-end gap-1 rounded px-1 py-1 hover:bg-slate-100 dark:hover:bg-slate-900 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      成本占比
-                      <Icon v-if="sortColumn === 'percentage'" :name="sortDirection === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-4 h-4" />
-                      <Icon v-else name="heroicons:chevron-up-down" class="w-4 h-4 opacity-30" />
-                    </button>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-                <tr v-for="holding in sortedHoldings" :key="holding.symbol">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-700 dark:text-blue-400">
-                    {{ holding.symbol }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 text-right">
-                    {{ formatQuantity(holding.quantity) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-300 text-right">
-                    {{ formatCurrency(holding.avgCost) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 text-right">
-                    {{ holding.price ? formatCurrency(holding.price) : '—' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 text-right">
-                    {{ holding.price ? formatCurrency(holding.price * holding.quantity) : '—' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <span
-                      :class="holding.unrealizedAmount === null ? 'text-slate-500 dark:text-slate-400' : holding.unrealizedAmount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
-                    >
-                      {{ holding.unrealizedAmount !== null ? formatCurrency(holding.unrealizedAmount) : '—' }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 text-right">
-                    {{ formatCurrency(holding.totalCost) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <span
-                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      :class="getPercentageClass(holding.totalCost)"
-                    >
-                      {{ formatPercentage(holding.totalCost) }}
-                    </span>
-                  </td>
-                </tr>
-                <tr v-if="baseHoldings.length === 0">
-                  <td colspan="9" class="px-6 py-12 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 text-center">
-                    <div class="flex flex-col items-center">
-                      <Icon name="heroicons:document" class="h-12 w-12 text-slate-400 mb-2" />
-                      <p>目前無持股</p>
-                      <NuxtLink
-                        to="/diaries/new"
-                        class="mt-2 text-blue-700 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-200"
-                      >
-                        建立新日記並新增交易
-                      </NuxtLink>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-else-if="sortedHoldings.length === 0">
-                  <td colspan="9" class="px-6 py-12 text-sm text-slate-500 dark:text-slate-400 text-center">
-                    目前篩選條件下沒有符合的持股
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Mobile Card Layout -->
-          <div class="md:hidden space-y-4 px-4 py-4">
-            <div v-if="baseHoldings.length === 0" class="text-center py-8">
-              <Icon name="heroicons:document" class="h-12 w-12 text-slate-400 mb-2 mx-auto" />
-              <p class="text-sm text-slate-500 dark:text-slate-400">目前無持股</p>
-              <NuxtLink
-                to="/diaries/new"
-                class="mt-2 inline-block text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
-              >
-                建立新日記並新增交易
-              </NuxtLink>
-            </div>
-            <div v-else-if="sortedHoldings.length === 0" class="text-center py-8 text-sm text-slate-500 dark:text-slate-400">
-              目前篩選條件下沒有符合的持股
-            </div>
-
-            <div
-              v-for="holding in sortedHoldings"
-              :key="holding.symbol"
-              class="bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 p-4"
-            >
-              <div class="flex items-center justify-between mb-3">
-                <h4 class="text-lg font-semibold text-blue-700 dark:text-blue-400">
-                  {{ holding.symbol }}
-                </h4>
-                <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                  :class="getPercentageClass(holding.totalCost)"
-                >
-                  {{ formatPercentage(holding.totalCost) }}
-                </span>
-              </div>
-              <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-slate-500 dark:text-slate-400">數量</span>
-                  <span class="font-medium text-slate-900 dark:text-slate-100">
-                    {{ formatQuantity(holding.quantity) }}
-                  </span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-slate-500 dark:text-slate-400">平均成本</span>
-                  <span class="font-medium text-slate-900 dark:text-slate-100">
-                    {{ formatCurrency(holding.avgCost) }}
-                  </span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-slate-500 dark:text-slate-400">總成本</span>
-                  <span class="font-medium text-slate-900 dark:text-slate-100">
-                    {{ formatCurrency(holding.totalCost) }}
-                  </span>
-                </div>
-                <div class="flex justify-between" :class="quickSortKey === 'marketValue' ? 'font-semibold text-blue-700 dark:text-blue-300' : ''">
-                  <span class="text-slate-500 dark:text-slate-400">市值</span>
-                  <span class="font-medium">
-                    {{ holding.marketValue !== null ? formatCurrency(holding.marketValue) : '—' }}
-                  </span>
-                </div>
-                <div class="flex justify-between" :class="quickSortKey === 'unrealizedPct' ? 'font-semibold text-blue-700 dark:text-blue-300' : ''">
-                  <span class="text-slate-500 dark:text-slate-400">未實現損益%</span>
-                  <span
-                    class="font-medium"
-                    :class="holding.unrealizedPct !== null && holding.unrealizedPct >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
-                  >
-                    {{ holding.unrealizedPct !== null ? `${holding.unrealizedPct.toFixed(2)}%` : '—' }}
-                  </span>
-                </div>
-              </div>
-            </div>
+          <!-- Quick Trade Shortcut -->
+          <div class="panel-dashboard p-6 bg-blue-600/5 dark:bg-blue-400/5 border-blue-200 dark:border-blue-900/50">
+            <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4 text-base">
+              <Icon name="heroicons:plus-circle" class="text-blue-500" />
+              {{ t('stock.dashboard.quickTransaction') }}
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">{{ t('stock.dashboard.quickTransactionDesc') }}</p>
+            <NuxtLink to="/diaries/new" class="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+              <Icon name="heroicons:pencil-square" class="w-4 h-4" />
+              {{ t('stock.dashboard.logNewTrade') }}
+            </NuxtLink>
           </div>
         </div>
-      </div>
-
-      <!-- Fetch Stock Price -->
-      <div class="mt-6 text-center">
-        <button
-          @click="fetchStockPrices"
-          :disabled="isFetchingPrices || cooldownRemaining > 0"
-          class="action-btn-muted mr-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Icon :name="isFetchingPrices ? 'svg-spinners:180-ring-with-bg' : 'heroicons:arrow-path'" class="mr-2 h-4 w-4" />
-          {{ buttonText }}
-        </button>
-      </div>
-
-      <!-- Transaction History Link -->
-      <div v-if="baseHoldings.length > 0" class="mt-4 text-center">
-        <NuxtLink
-          to="/diaries"
-          class="action-btn cursor-pointer"
-        >
-          <Icon name="heroicons:document-text" class="mr-2 h-4 w-4" />
-          查看所有交易日記
-        </NuxtLink>
       </div>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue'
 import { formatCurrency } from '~/lib/utils'
+import { watchDebounced } from '@vueuse/core'
+
+// Track cooldown timer for cleanup
+let cooldownTimer: ReturnType<typeof setInterval> | null = null
 import {
   buildHoldingChartSegments,
   formatHoldingQuantity,
@@ -485,6 +298,7 @@ import {
 } from '~/lib/stocks-analytics'
 import {
   applyStocksView,
+  computePortfolioAggregations,
   type ConcentrationFilter,
   type HoldingView,
   type HoldingViewInput,
@@ -499,7 +313,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-// Fetch holdings from API (client-only to avoid auth mismatch on SSR)
+// Fetch holdings from API
 const { data: holdings, pending, error, refresh } = await useLazyFetch<HoldingViewInput[]>(
   '/api/stocks/holdings',
   {
@@ -509,108 +323,62 @@ const { data: holdings, pending, error, refresh } = await useLazyFetch<HoldingVi
 )
 
 const searchQuery = ref('')
+const debouncedSearchQuery = ref('')
 const profitStatusFilter = ref<ProfitStatusFilter>('all')
 const concentrationFilter = ref<ConcentrationFilter>('all')
-const quickSortKey = ref<StocksSortKey | null>(null)
-const quickSortDirection = ref<SortDirection>('desc')
+const sortColumn = ref<StocksSortKey>('totalCost')
+const sortDirection = ref<SortDirection>('desc')
+const marketState = ref<string | null>(null)
 
-// Sorting state
-type SortColumn = 'symbol' | 'quantity' | 'avgCost' | 'totalCost' | 'percentage'
+// Debounce search to avoid excessive re-renders (300ms)
+watchDebounced(
+  searchQuery,
+  (value: string) => {
+    debouncedSearchQuery.value = value
+  },
+  { debounce: 300, maxWait: 1000 }
+)
 
-const sortColumn = ref<SortColumn>('totalCost')
-const sortDirection = ref<'asc' | 'desc'>('desc')
-
-// Sort holdings by selected column
-const sortBy = (column: SortColumn) => {
-  quickSortKey.value = null
-  if (sortColumn.value === column) {
-    // Toggle direction if clicking same column
+// Sorting logic
+const sortBy = (key: StocksSortKey) => {
+  if (sortColumn.value === key) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
-    // New column, default to desc for numbers, asc for symbol
-    sortColumn.value = column
-    sortDirection.value = column === 'symbol' ? 'asc' : 'desc'
+    sortColumn.value = key
+    sortDirection.value = 'desc'
   }
 }
-
-const getAriaSort = (column: SortColumn): 'ascending' | 'descending' | 'none' => {
-  if (sortColumn.value !== column) return 'none'
-  return sortDirection.value === 'asc' ? 'ascending' : 'descending'
-}
-
-const quickSortLabels: Record<StocksSortKey, string> = {
-  symbol: '代碼',
-  quantity: '數量',
-  avgCost: '平均成本',
-  totalCost: '總成本',
-  percentage: '成本占比',
-  marketValue: '市值',
-  unrealizedPct: '未實現損益%'
-}
-
-const quickSortOptions: StocksSortKey[] = ['marketValue', 'unrealizedPct', 'percentage']
-
-const toggleQuickSort = (key: StocksSortKey) => {
-  if (quickSortKey.value === key) {
-    quickSortDirection.value = quickSortDirection.value === 'asc' ? 'desc' : 'asc'
-    return
-  }
-  quickSortKey.value = key
-  quickSortDirection.value = 'desc'
-}
-
-const activeSortKey = computed<StocksSortKey>(() => {
-  if (quickSortKey.value) return quickSortKey.value
-  return sortColumn.value
-})
-
-const activeSortDir = computed<SortDirection>(() => {
-  if (quickSortKey.value) return quickSortDirection.value
-  return sortDirection.value
-})
 
 const baseHoldings = computed(() => holdings.value ?? [])
 
-// Sorted holdings with current sort
 const sortedHoldings = computed<HoldingView[]>(() => {
   return applyStocksView(baseHoldings.value, {
-    search: searchQuery.value,
+    search: debouncedSearchQuery.value,
     profitStatus: profitStatusFilter.value,
     concentration: concentrationFilter.value,
-    sortKey: activeSortKey.value,
-    sortDir: activeSortDir.value
+    sortKey: sortColumn.value,
+    sortDir: sortDirection.value
   })
 })
 
-// Calculate total holdings count
-const totalHoldings = computed(() => {
-  return baseHoldings.value.length
-})
+// Stats calculations - use shared aggregation logic (optimized: single computed)
+const stats = computed(() => computePortfolioAggregations(baseHoldings.value))
+const totalHoldings = computed(() => stats.value.totalHoldings)
+const totalCost = computed(() => stats.value.totalCost)
+const currentMarketValue = computed(() => stats.value.currentMarketValue)
+const unrealizedAmount = computed(() => stats.value.unrealizedAmount)
+const totalUnrealizedPct = computed(() => stats.value.unrealizedPct)
+const totalDayChange = computed(() => stats.value.totalDayChange)
+const totalDayChangePercent = computed(() => stats.value.totalDayChangePercent)
 
-// Calculate total cost
-const totalCost = computed(() => {
-  return baseHoldings.value.reduce((sum, h) => sum + h.totalCost, 0)
-})
+// Formatting
+const formatQuantity = (qty: number) => formatHoldingQuantity(qty)
+const formatPercentage = (cost: number) => formatHoldingShare(cost, totalCost.value)
 
-// Format quantity for display
-const formatQuantity = (qty: number): string => {
-  return formatHoldingQuantity(qty)
-}
-
-// Format percentage
-const formatPercentage = (cost: number): string => {
-  return formatHoldingShare(cost, totalCost.value)
-}
-
-// Get percentage badge class
-const getPercentageClass = (cost: number): string => {
-  if (totalCost.value === 0) return 'bg-gray-100 text-gray-800 dark:bg-slate-900 dark:text-slate-300'
-  return getHoldingConcentrationClass((cost / totalCost.value) * 100)
-}
-
+// Chart data
 const donutSlices = computed(() => buildHoldingChartSegments(baseHoldings.value, {
-  radius: 32.5,
-  strokeWidth: 15,
+  radius: 38,
+  strokeWidth: 12,
 }))
 
 const pieSlices = computed(() => donutSlices.value.map(slice => ({
@@ -619,175 +387,149 @@ const pieSlices = computed(() => donutSlices.value.map(slice => ({
   color: slice.color,
 })))
 
-// Set page meta
-
-// Stock price fetching cooldown state
+// Price fetching
 const isFetchingPrices = ref(false)
 const cooldownRemaining = ref(0)
-const COOLDOWN_SECONDS = 60
+const COOLDOWN_SECONDS = 30
 
-// Computed button text with i18n
-const buttonText = computed(() => {
-  if (isFetchingPrices.value) {
-    return t('stock.fetching')
-  }
-  if (cooldownRemaining.value > 0) {
-    return t('stock.waitForCooldown', { seconds: cooldownRemaining.value })
-  }
-  return t('stock.fetchPrice')
-})
-
-// Fetch stock prices from server with cooldown
 const fetchStockPrices = async () => {
   if (isFetchingPrices.value || cooldownRemaining.value > 0) return
 
   const toast = useToast()
-
   try {
-    if (!baseHoldings.value.length) {
+    // Don't show warning if data is still loading or if truly no holdings
+    if (!baseHoldings.value.length && !pending.value) {
       toast.warning(t('stock.noHoldingsData'))
       return
     }
 
-    isFetchingPrices.value = true
+    // Wait for initial data to load before fetching prices
+    if (pending.value) {
+      toast.info(t('stock.dashboard.synchronizing'))
+      return
+    }
 
+    if (!baseHoldings.value.length) {
+      return
+    }
+
+    isFetchingPrices.value = true
     const symbols = baseHoldings.value.map(h => h.symbol)
 
-    const prices = await $fetch<Record<string, number>>('/api/stocks/prices', {
+    const pricesData = await $fetch<Record<string, any>>('/api/stocks/prices', {
       method: 'POST',
       body: { symbols }
     })
 
-    // attach price to holdings
-    holdings.value = baseHoldings.value.map(h => ({
-      ...h,
-      price: prices[h.symbol]
-    }))
+    // Update holdings with rich data from QuoteResponse
+    holdings.value = baseHoldings.value.map(h => {
+      const quote = pricesData[h.symbol]
+      if (!quote) return h
+      
+      // Update market state from the first quote
+      if (!marketState.value) marketState.value = quote.marketState
 
-    toast.success(t('stock.fetchSuccess'))
+      return {
+        ...h,
+        price: quote.regularMarketPrice,
+        dayChange: quote.change,
+        dayChangePercent: quote.changePercent
+      }
+    })
 
-    // Start cooldown
+    toast.success(t('stock.dashboard.portfolioUpdated'))
+
+    // Cooldown logic with cleanup
     cooldownRemaining.value = COOLDOWN_SECONDS
-    const cooldownInterval = setInterval(() => {
+    cooldownTimer = setInterval(() => {
       cooldownRemaining.value--
-      if (cooldownRemaining.value <= 0) {
-        clearInterval(cooldownInterval)
+      if (cooldownRemaining.value <= 0 && cooldownTimer) {
+        clearInterval(cooldownTimer)
+        cooldownTimer = null
       }
     }, 1000)
   } catch (err) {
-    console.error('Failed to fetch stock prices', err)
-    toast.error(t('stock.fetchFailed'))
+    console.error('Fetch failed', err)
+    toast.error(t('stock.dashboard.couldNotRefresh'))
   } finally {
     isFetchingPrices.value = false
   }
 }
 
-const resetControls = () => {
-  searchQuery.value = ''
-  profitStatusFilter.value = 'all'
-  concentrationFilter.value = 'all'
-  quickSortKey.value = null
-  quickSortDirection.value = 'desc'
-}
+// Initial fetch - wait for data to load before fetching prices
+watch(
+  () => [pending.value, baseHoldings.value.length] as const,
+  ([isPending, holdingsCount]) => {
+    // Only fetch prices when initial data load completes and we have holdings
+    if (!isPending && holdingsCount > 0 && !marketState.value) {
+      fetchStockPrices()
+    }
+  },
+  { immediate: true }
+)
 
-const hasActiveControls = computed(() => {
-  return Boolean(
-    searchQuery.value.trim() ||
-    profitStatusFilter.value !== 'all' ||
-    concentrationFilter.value !== 'all' ||
-    quickSortKey.value
-  )
+// Cleanup cooldown timer on component unmount
+onScopeDispose(() => {
+  if (cooldownTimer) {
+    clearInterval(cooldownTimer)
+    cooldownTimer = null
+  }
 })
 
 useHead({
-  title: '股票管理 - 投資日記'
+  title: `${t('stock.dashboard.title')} - Investment Diary`
 })
 </script>
 
 <style scoped>
 .stocks-page {
-  background:
-    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 11%), transparent 62%),
-    radial-gradient(800px 380px at 96% -12%, rgb(245 158 11 / 8%), transparent 65%),
+  background: 
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.05) 0px, transparent 50%),
     #f8fafc;
 }
 
-.panel {
-  border: 1px solid rgb(191 219 254);
-  border-radius: 0.95rem;
-  background: rgb(255 255 255 / 84%);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 12px 26px rgb(30 64 175 / 8%);
+:global(.dark) .stocks-page,
+:global(.dark-mode) .stocks-page {
+  background: 
+    radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.2) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(76, 29, 149, 0.2) 0px, transparent 50%),
+    #020617;
 }
 
-.kicker {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: rgb(59 130 246);
-  font-weight: 700;
+@media (prefers-color-scheme: dark) {
+  .stocks-page {
+    background:
+      radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.2) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(76, 29, 149, 0.2) 0px, transparent 50%),
+      #020617;
+  }
 }
 
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.75rem;
-  padding: 0.58rem 1rem;
-  color: white;
-  background: #1e40af;
-  transition: background-color 180ms ease;
+.panel-dashboard {
+  @apply bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm backdrop-blur-sm;
 }
 
-.action-btn:hover {
-  background: #1d4ed8;
+.stats-card {
+  @apply bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-3xl shadow-sm hover:shadow-md transition-shadow;
 }
 
-.action-btn-muted {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgb(191 219 254);
-  border-radius: 0.75rem;
-  padding: 0.55rem 0.9rem;
-  color: rgb(30 58 138);
-  background: rgb(239 246 255);
-  transition: background-color 180ms ease;
+.action-btn-dashboard {
+  @apply inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all active:scale-95;
 }
 
-.action-btn-muted:hover {
-  background: rgb(219 234 254);
+.action-btn-muted-dashboard {
+  @apply inline-flex items-center justify-center px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl transition-all;
 }
 
-:global(.dark .stocks-page) , :global(.dark-mode .stocks-page)  {
-  background:
-    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 9%), transparent 62%),
-    radial-gradient(800px 380px at 96% -12%, rgb(15 23 42 / 12%), transparent 65%),
-    rgb(2 6 18);
+/* Custom scrollbar for table */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
 }
-
-:global(.dark .panel) , :global(.dark-mode .panel)  {
-  border-color: rgb(71 85 105);
-  background: rgb(3 10 24 / 92%);
-  box-shadow: 0 12px 26px rgb(2 6 23 / 45%);
+.overflow-x-auto::-webkit-scrollbar-track {
+  @apply bg-transparent;
 }
-
-:global(.dark .action-btn-muted) , :global(.dark-mode .action-btn-muted)  {
-  border-color: rgb(100 116 139);
-  color: rgb(186 230 253);
-  background: rgb(12 19 35);
-}
-
-:global(.dark .action-btn-muted):hover , :global(.dark-mode .action-btn-muted):hover  {
-  background: rgb(20 30 48);
-}
-
-:global(.dark .action-btn), :global(.dark-mode .action-btn) {
-  background: #1e3a8a;
-  color: rgb(226 232 240);
-}
-
-:global(.dark .action-btn):hover, :global(.dark-mode .action-btn):hover {
-  background: #1d4ed8;
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full;
 }
 </style>

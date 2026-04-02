@@ -6,6 +6,11 @@ interface FetchMarketPriceOptions {
   fetchTwsePrice?: (symbol: string) => Promise<number | null>
 }
 
+/**
+ * @deprecated Use `fetchQuote` from `~/lib/yahoo-finance` instead.
+ * This function is kept for backward compatibility and testing purposes only.
+ * Will be removed in v2.0.0.
+ */
 export async function fetchMarketPrice(
   symbol: string,
   options: FetchMarketPriceOptions = {}

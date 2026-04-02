@@ -4,6 +4,8 @@ export interface HoldingViewInput {
   avgCost: number
   totalCost: number
   price?: number
+  dayChange?: number
+  dayChangePercent?: number
 }
 
 export interface HoldingView extends HoldingViewInput {
@@ -11,6 +13,20 @@ export interface HoldingView extends HoldingViewInput {
   unrealizedAmount: number | null
   unrealizedPct: number | null
   concentrationPct: number
+  dayChangeAmount: number | null
+}
+
+/**
+ * Portfolio-level aggregations computed from holdings
+ */
+export interface PortfolioAggregations {
+  totalHoldings: number
+  totalCost: number
+  currentMarketValue: number
+  unrealizedAmount: number
+  unrealizedPct: number
+  totalDayChange: number
+  totalDayChangePercent: number
 }
 
 export type ProfitStatusFilter = 'all' | 'gain' | 'loss' | 'no-quote'
@@ -48,13 +64,17 @@ export function applyStocksView(
       ? (unrealizedAmount! / holding.totalCost) * 100
       : null
     const concentrationPct = totalCostAll > 0 ? (holding.totalCost / totalCostAll) * 100 : 0
+    const dayChangeAmount = (holding.dayChange !== undefined && holding.quantity) 
+      ? holding.dayChange * holding.quantity 
+      : null
 
     return {
       ...holding,
       marketValue,
       unrealizedAmount,
       unrealizedPct,
-      concentrationPct
+      concentrationPct,
+      dayChangeAmount
     }
   })
 
@@ -107,4 +127,39 @@ export function applyStocksView(
   })
 
   return filtered
+}
+
+/**
+ * Compute portfolio-level aggregations from holdings
+ * @param holdings - Array of holdings with optional price data
+ * @returns Portfolio-level statistics
+ */
+export function computePortfolioAggregations(
+  holdings: HoldingViewInput[]
+): PortfolioAggregations {
+  const totalHoldings = holdings.length
+  const totalCost = holdings.reduce((sum, h) => sum + h.totalCost, 0)
+  const currentMarketValue = holdings.reduce(
+    (sum, h) => sum + (h.price ? h.price * h.quantity : h.totalCost),
+    0
+  )
+  const unrealizedAmount = currentMarketValue - totalCost
+  const unrealizedPct = totalCost > 0 ? (unrealizedAmount / totalCost) * 100 : 0
+
+  const totalDayChange = holdings.reduce(
+    (sum, h) => sum + (h.dayChange ? h.dayChange * h.quantity : 0),
+    0
+  )
+  const prevMarketValue = currentMarketValue - totalDayChange
+  const totalDayChangePercent = prevMarketValue > 0 ? (totalDayChange / prevMarketValue) * 100 : 0
+
+  return {
+    totalHoldings,
+    totalCost,
+    currentMarketValue,
+    unrealizedAmount,
+    unrealizedPct,
+    totalDayChange,
+    totalDayChangePercent,
+  }
 }

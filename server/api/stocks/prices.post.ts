@@ -1,5 +1,5 @@
 import { logger } from '~/lib/logger'
-import { fetchMarketPrice } from '~/lib/market-data/quotes'
+import { fetchQuote, type QuoteResponse } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import { requireUser } from '~/server/utils/auth'
 
@@ -36,17 +36,17 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const result: Record<string, number> = {}
+  const result: Record<string, QuoteResponse> = {}
   const errors: string[] = []
 
   // Process symbols in parallel
   await Promise.all(
     body.symbols.map(async (symbol) => {
       try {
-        const price = await fetchMarketPrice(symbol)
+        const quote = await fetchQuote(symbol)
 
-        if (price !== null && price > 0) {
-          result[symbol] = price
+        if (quote) {
+          result[symbol] = quote
         } else {
           errors.push(symbol)
         }
