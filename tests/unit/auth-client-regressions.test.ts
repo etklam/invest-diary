@@ -32,7 +32,6 @@ describe('auth client regressions', () => {
   it('protected diary and alert pages should use shared auth recovery instead of inline 401 cleanup', () => {
     const files = [
       'pages/alerts/index.vue',
-      'pages/calendar.vue',
       'pages/diaries/new.vue',
       'pages/diaries/[id]/edit.vue',
       'pages/diaries/[id]/index.vue',
@@ -45,5 +44,13 @@ describe('auth client regressions', () => {
       expect(source).not.toContain('user.value = null')
       expect(source).not.toContain("navigateTo('/')")
     }
+  })
+
+  it('calendar page should use useCalendar composable which handles auth recovery internally', () => {
+    const source = readFileSync(resolve(process.cwd(), 'pages/calendar.vue'), 'utf-8')
+    expect(source).toContain('useCalendar')
+    expect(source).not.toContain('statusCode === 401')
+    expect(source).not.toContain('user.value = null')
+    expect(source).not.toContain("navigateTo('/')")
   })
 })

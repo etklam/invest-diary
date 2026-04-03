@@ -42,7 +42,7 @@
                   <div class="text-sm font-medium text-indigo-600 dark:text-indigo-400 truncate">
                     {{ alert.message }}
                   </div>
-                  <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                  <div v-if="alert.diary" class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                     <Icon name="heroicons:document-text" class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
                     <NuxtLink :to="`/diaries/${alert.diary.id}`" class="hover:underline">
                       {{ t('alert.viewRelatedDiary') }}
@@ -95,14 +95,26 @@ definePageMeta({
 })
 
 // Use lazy fetch to avoid calling API during SSR before auth check
-const { data: alerts, pending, error, refresh } = await useLazyFetch<any[]>('/api/alerts')
+const { data: alerts, pending, error, refresh } = await useLazyFetch<Array<{
+  id: string | bigint
+  message: string
+  triggerAt: Date | string
+  isDismissed: boolean
+  recurringMode?: string | null
+  instanceNumber?: number | null
+  createdAt: Date | string
+  diary?: {
+    id: string | bigint
+    title: string
+  }
+}>>('/api/alerts')
 
 const toast = useToast()
 
 // Get user's timezone
 const userTimezone = computed(() => user.value?.timezone || 'Asia/Taipei')
 
-const dismissAlert = async (id: number) => {
+const dismissAlert = async (id: string | bigint) => {
   try {
     await runWithAuthRecovery(async (): Promise<void> => {
       await $fetch(`/api/alerts/${id}/dismiss` as string, {
@@ -111,7 +123,7 @@ const dismissAlert = async (id: number) => {
     })
     toast.success(t('alert.markedAsRead'))
     refresh()
-  } catch (e: any) {
+  } catch (e: Error | unknown) {
     if (isAuthSessionError(e)) return
     console.error(e)
     toast.error(t('error.unknown'))

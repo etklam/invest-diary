@@ -7,7 +7,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   let hasAttemptedRefresh = false
 
   // Handle app errors globally
-  nuxtApp.hook('app:error', async (error: any) => {
+  nuxtApp.hook('app:error', async (error: Error | unknown) => {
     // Handle 401 Unauthorized errors
     if (isUnauthorizedStatus(error)) {
       if (!isAuthSessionError(error)) {

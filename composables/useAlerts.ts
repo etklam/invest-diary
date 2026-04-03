@@ -1,5 +1,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { AlertPayload } from '../types/websocket'
+import { POLLING } from '~/lib/constants'
 
 export interface AlertItem {
   id: string | number
@@ -13,9 +14,9 @@ export interface AlertItem {
 }
 
 // Polling 設定（作為 WebSocket 的 fallback）
-const BASE_POLL_INTERVAL = 60000 // 增加到 60 秒，因為主要依賴 WebSocket
-const MAX_POLL_INTERVAL = 300000
-const BACKOFF_MULTIPLIER = 1.5
+const BASE_POLL_INTERVAL = POLLING.BASE_INTERVAL
+const MAX_POLL_INTERVAL = POLLING.MAX_INTERVAL
+const BACKOFF_MULTIPLIER = POLLING.BACKOFF_MULTIPLIER
 
 export const useAlerts = () => {
   const alertQueue = ref<AlertItem[]>([])

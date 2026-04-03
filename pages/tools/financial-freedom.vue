@@ -1,88 +1,34 @@
 <script setup lang="ts">
 import {
-  calculateFinancialFreedom,
   withdrawalRatePresets,
   formatCurrency,
   formatPercent,
   formatDate
 } from '~/lib/financialFreedom'
-import type { WithdrawalRatePreset } from '~/lib/financialFreedom'
+import { useFinancialFreedomCalculator } from '~/composables/useFinancialFreedomCalculator'
 
 const { t, locale } = useI18n()
 const toast = useToast()
 
-const annualExpenses = ref<number | null>(600000)
-const currentAssets = ref<number | null>(1000000)
-const monthlyContribution = ref<number | null>(20000)
-const expectedReturn = ref<number>(8)
-const withdrawalRatePreset = ref<WithdrawalRatePreset>('moderate')
-const customWithdrawalRate = ref<number>(4)
-const inflationRate = ref<number>(2)
+// Use composable for state management
+const {
+  annualExpenses,
+  currentAssets,
+  monthlyContribution,
+  expectedReturn,
+  withdrawalRatePreset,
+  customWithdrawalRate,
+  inflationRate,
+  copySuccess,
+  returnRateLevel,
+  returnRateIndicator,
+  withdrawalRate,
+  isValidInput,
+  result,
+  progressColor
+} = useFinancialFreedomCalculator()
 
-const returnRateLevel = computed(() => {
-  const rate = expectedReturn.value
-  if (rate <= 4) return 'conservative'
-  if (rate <= 10) return 'target'
-  return 'expert'
-})
-
-const returnRateIndicator = computed(() => {
-  const levels = ['conservative', 'target', 'expert'] as const
-  const currentIndex = levels.indexOf(returnRateLevel.value)
-
-  return levels.map((level, index) => {
-    const isActive = index === currentIndex
-    const isPast = index < currentIndex
-
-    let colorClass = ''
-    if (isActive) {
-      colorClass = level === 'conservative' ? 'bg-gray-500' : level === 'target' ? 'bg-green-500' : 'bg-violet-500'
-    } else if (isPast) {
-      colorClass = level === 'conservative' ? 'bg-gray-400' : 'bg-green-400'
-    } else {
-      colorClass = 'bg-gray-200 dark:bg-gray-700'
-    }
-
-    return { level, colorClass }
-  })
-})
-
-const withdrawalRate = computed(() => {
-  const preset = withdrawalRatePresets.find(p => p.id === withdrawalRatePreset.value)
-  return preset?.rate ?? customWithdrawalRate.value
-})
-
-const isValidInput = computed(() =>
-  annualExpenses.value !== null &&
-  annualExpenses.value > 0 &&
-  currentAssets.value !== null &&
-  currentAssets.value >= 0 &&
-  monthlyContribution.value !== null &&
-  monthlyContribution.value >= 0
-)
-
-const result = computed(() => {
-  if (!isValidInput.value) return null
-
-  return calculateFinancialFreedom({
-    annualExpenses: annualExpenses.value!,
-    currentAssets: currentAssets.value!,
-    monthlyContribution: monthlyContribution.value!,
-    expectedReturn: expectedReturn.value,
-    withdrawalRate: withdrawalRate.value,
-    inflationRate: inflationRate.value,
-    yearsToRetirement: null
-  })
-})
-
-const progressColor = computed(() => {
-  const progress = result.value?.currentProgress ?? 0
-  if (progress >= 75) return 'bg-green-500'
-  if (progress >= 50) return 'bg-blue-500'
-  if (progress >= 25) return 'bg-amber-500'
-  return 'bg-gray-400'
-})
-
+// UI-specific computed
 const localizedRecommendation = computed(() => {
   if (!result.value) return ''
 
@@ -111,6 +57,7 @@ const localizedRecommendation = computed(() => {
   return lines.join('\n\n')
 })
 
+// Utility functions
 const getPresetName = (preset: typeof withdrawalRatePresets[0]) => {
   return t(`tools.financialFreedom.withdrawalPresets.${preset.id}.name`)
 }
@@ -141,8 +88,7 @@ const formatCompactValue = (value: number) => {
   return formatCurrencyLocal(value)
 }
 
-const copySuccess = ref(false)
-
+// Actions
 const copyToClipboard = async () => {
   if (!result.value) return
 

@@ -202,7 +202,8 @@ describe('Authentication Flow Integration', () => {
       } as any)
 
       expect(mockRefreshTokenDeleteMany).toHaveBeenCalled()
-      expect(mockDeleteCookie).toHaveBeenCalledTimes(2)
+      // clearAuthCookies deletes: access-token, refresh-token, and legacy auth-token (2x)
+      expect(mockDeleteCookie).toHaveBeenCalledTimes(4)
       expect(result).toEqual({ ok: true })
     })
   })

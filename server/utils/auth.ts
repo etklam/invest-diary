@@ -56,28 +56,6 @@ export function clearAuthCookies(event: H3Event) {
   deleteCookie(event, 'auth-token', { path: '/' })
 }
 
-/**
- * Legacy: Set auth token cookie (for backward compatibility)
- * @deprecated Use setAuthCookies instead
- */
-export function setAuthCookie(event: H3Event, token: string) {
-  setCookie(event, 'auth-token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 60 * 60 * 24 * 7
-  })
-}
-
-/**
- * Legacy: Clear auth token cookie (for backward compatibility)
- * @deprecated Use clearAuthCookies instead
- */
-export function clearAuthCookie(event: H3Event) {
-  deleteCookie(event, 'auth-token')
-  deleteCookie(event, 'auth-token', { path: '/' })
-}
-
 export function requireUser(event: H3Event) {
   const user = event.context.user
   if (!user) {

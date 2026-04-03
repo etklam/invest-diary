@@ -10,6 +10,7 @@ import {
   toDateKeyInTimezone,
   type NagerHoliday
 } from '~/lib/holiday-heatmap'
+import { CALENDAR } from '~/lib/constants'
 
 export const useCalendar = () => {
   const { isAuthenticated, user } = useAuth()
@@ -169,8 +170,8 @@ export const useCalendar = () => {
   }
 
   const previousMonth = () => {
-    if (currentMonth.value === 0) {
-      currentMonth.value = 11
+    if (currentMonth.value === CALENDAR.JANUARY) {
+      currentMonth.value = CALENDAR.DECEMBER
       currentYear.value--
     } else {
       currentMonth.value--
@@ -178,8 +179,8 @@ export const useCalendar = () => {
   }
 
   const nextMonth = () => {
-    if (currentMonth.value === 11) {
-      currentMonth.value = 0
+    if (currentMonth.value === CALENDAR.DECEMBER) {
+      currentMonth.value = CALENDAR.JANUARY
       currentYear.value++
     } else {
       currentMonth.value++

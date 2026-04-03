@@ -72,11 +72,14 @@ describe('Diary Workflow Integration', () => {
       const userId = 1n
       const mockDiary = {
         id: 1n,
+        title: 'Test Diary',
         content: 'Test diary entry',
-        mood: 'HAPPY',
+        tagsString: null,
+        date: new Date(),
         userId,
         createdAt: new Date(),
         updatedAt: new Date(),
+        alerts: [],
         transactions: [],
       }
 
