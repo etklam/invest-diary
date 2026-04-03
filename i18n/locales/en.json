@@ -16,8 +16,11 @@
     "reset": "Reset",
     "clear": "Clear",
     "all": "All",
-    "noData": "No data",
-    "switchLanguage": "Switch language",
+    "noData": "No Data",
+    "previous": "Previous",
+    "next": "Next",
+    "switchLanguage": "Switch Language",
+
     "or": "or",
     "and": "and",
     "optional": "optional",
@@ -263,17 +266,33 @@
   },
   "timeline": {
     "title": "Timeline",
-    "noEntries": "No timeline entries yet",
-    "loadFailed": "Failed to load",
+    "noEntries": "No entries yet",
+    "loadFailed": "Load failed",
     "entriesCount": "{count} entries",
     "reminders": "Reminders",
-    "moreReminders": "{count} more...",
+    "moreReminders": "{count} more reminders...",
     "noContent": "No content",
     "transactionsCount": "{count} transactions",
     "alertsCount": "{count} alerts",
-    "viewDetails": "View details →",
-    "periodLabel": "{year}-{month}"
+    "viewDetails": "View Details →",
+    "periodLabel": "{year} {month}"
   },
+  "calendar": {
+    "title": "{month} {year}",
+    "intelligence": "Calendar Intelligence",
+    "daysInMonth": "Days in Month",
+    "diaryCount": "Diary Entries",
+    "coverage": "Coverage",
+    "excludeHolidays": "Excluding Holidays",
+    "activityHeatmap": "Activity Heatmap",
+    "recorded": "Recorded",
+    "notRecorded": "No Record",
+    "holiday": "Holiday",
+    "today": "Today",
+    "backToToday": "Back to Today",
+    "quickDiary": "Quick Diary"
+  },
+
   "theme": {
     "toggleDarkMode": "Toggle dark mode",
     "openMenu": "Open menu",

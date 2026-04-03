@@ -17,6 +17,8 @@
     "clear": "清除",
     "all": "全部",
     "noData": "無資料",
+    "previous": "上一個",
+    "next": "下一個",
     "switchLanguage": "切換語言",
     "or": "或",
     "and": "與",
@@ -273,6 +275,21 @@
     "alertsCount": "{count} 個提醒",
     "viewDetails": "查看詳情 →",
     "periodLabel": "{year}年 {month}月"
+  },
+  "calendar": {
+    "title": "{year}年 {month}月",
+    "intelligence": "日曆分析",
+    "daysInMonth": "本月天數",
+    "diaryCount": "有日記日期",
+    "coverage": "記錄率",
+    "excludeHolidays": "已排除假期",
+    "activityHeatmap": "活動 Heatmap",
+    "recorded": "有記錄",
+    "notRecorded": "未記錄",
+    "holiday": "假期",
+    "today": "今天",
+    "backToToday": "回到今天",
+    "quickDiary": "快速日記"
   },
   "theme": {
     "toggleDarkMode": "切換深色模式",

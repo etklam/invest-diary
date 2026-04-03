@@ -17,6 +17,8 @@
     "clear": "清除",
     "all": "全部",
     "noData": "无数据",
+    "previous": "上一个",
+    "next": "下一个",
     "switchLanguage": "切换语言",
     "or": "或",
     "and": "与",
@@ -342,7 +344,7 @@
   },
   "timeline": {
     "title": "时间轴",
-    "noEntries": "尚无时间轴记录",
+    "noEntries": "暂无时间轴纪录",
     "loadFailed": "加载失败",
     "entriesCount": "{count} 篇日记",
     "reminders": "提醒事项",
@@ -353,6 +355,22 @@
     "viewDetails": "查看详情 →",
     "periodLabel": "{year}年 {month}月"
   },
+  "calendar": {
+    "title": "{year}年 {month}月",
+    "intelligence": "日历分析",
+    "daysInMonth": "本月天数",
+    "diaryCount": "有日记日期",
+    "coverage": "记录率",
+    "excludeHolidays": "已排除假期",
+    "activityHeatmap": "活动 Heatmap",
+    "recorded": "有记录",
+    "notRecorded": "未记录",
+    "holiday": "假期",
+    "today": "今天",
+    "backToToday": "回到今天",
+    "quickDiary": "快速日记"
+  },
+
   "theme": {
     "toggleDarkMode": "切换深色模式",
     "openMenu": "开启菜单",

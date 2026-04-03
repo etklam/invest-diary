@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './ui.css';
+@import './design-tokens.css';
+
 @layer base {
   html,
   body,

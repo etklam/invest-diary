@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { refreshNuxtData, useAuth, useI18n, useToast } from '#imports'
 import { calculateReadingTime, parseTags } from '~/lib/blog'
 import { normalizeCategory } from '~/types/blog'
