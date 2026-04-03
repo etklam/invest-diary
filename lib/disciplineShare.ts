@@ -115,7 +115,7 @@ export function parseShareData(json: string): DisciplineImportPreview {
       count: validDisciplines.length,
       isValid: validDisciplines.length > 0
     }
-  } catch (error) {
+  } catch {
     return {
       title: 'Import Error',
       disciplines: [],
