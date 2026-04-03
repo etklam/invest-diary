@@ -1,120 +1,119 @@
 <script setup lang="ts">
-const { user, logout, isAdmin } = useAuth()
 const { t } = useI18n()
+const { isAuthenticated, user, logout } = useAuth()
+const { getTimezoneInfo } = useTimezone()
 
-const isOpen = ref(false)
+// User dropdown state
+const userMenuOpen = ref(false)
 
-// Close dropdown when clicking outside
-const closeDropdown = () => {
-  isOpen.value = false
-}
+// Get current timezone info
+const currentTimezone = computed(() => {
+  return getTimezoneInfo(user.value?.timezone)
+})
 
 const handleLogout = async () => {
-  isOpen.value = false
+  userMenuOpen.value = false
   await logout()
 }
 
-// Display name or email
-const displayName = computed(() => {
-  return user.value?.name || user.value?.email?.split('@')[0] || 'User'
-})
+// Close when clicking outside
+const menuRef = ref<HTMLElement | null>(null)
+if (process.client) {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (menuRef.value && !menuRef.value.contains(event.target as Node)) {
+      userMenuOpen.value = false
+    }
+  }
+
+  onMounted(() => {
+    document.addEventListener('mousedown', handleClickOutside)
+  })
+
+  onUnmounted(() => {
+    document.removeEventListener('mousedown', handleClickOutside)
+  })
+}
 </script>
 
 <template>
-  <div class="relative" v-if="user">
-    <!-- User menu button -->
+  <div v-if="isAuthenticated" class="relative z-40" ref="menuRef">
     <button
-      @click="isOpen = !isOpen"
-      class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
-      :aria-label="$t('auth.loggedInAs')"
+      @click="userMenuOpen = !userMenuOpen"
+      class="flex cursor-pointer items-center rounded-xl border border-cyan-100/80 bg-white/70 py-1.5 pl-3 pr-2 transition-colors duration-200 hover:border-cyan-200 hover:bg-cyan-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
     >
-      <!-- User avatar icon -->
-      <div class="h-10 w-10 sm:h-8 sm:w-8 rounded-full bg-indigo-600 flex items-center justify-center relative">
-        <Icon name="heroicons:user" class="h-5 w-5 text-white" />
-        <!-- Admin badge -->
-        <div
-          v-if="isAdmin"
-          class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center"
-          :title="$t('nav.admin')"
-        >
-          <Icon name="heroicons:shield-check" class="h-3 w-3 text-white" />
+      <div class="mr-3 text-right">
+        <p class="max-w-[180px] truncate text-sm text-slate-900 dark:text-slate-100">{{ user?.name || user?.email }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-300">{{ user?.role === 'ADMIN' ? t('nav.admin') : t('nav.users') }}</p>
+        <p class="text-xs text-slate-400 dark:text-slate-400">{{ currentTimezone.label }}</p>
+      </div>
+      <div class="mr-2">
+        <div class="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-600 dark:bg-cyan-500">
+          <span class="text-white font-medium">
+            {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
+          </span>
         </div>
       </div>
-      <!-- User name (hidden on mobile) -->
-      <span class="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-200">
-        {{ displayName }}
-      </span>
-      <!-- Dropdown arrow -->
       <Icon
         name="heroicons:chevron-down"
-        class="h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform"
-        :class="{ 'rotate-180': isOpen }"
+        class="h-3 w-3 text-slate-500 dark:text-slate-300"
       />
     </button>
 
-    <!-- Dropdown menu -->
-    <Transition
-      enter-active-class="transition ease-out duration-100"
-      enter-from-class="transform opacity-0 scale-95"
-      enter-to-class="transform opacity-100 scale-100"
-      leave-active-class="transition ease-in duration-75"
-      leave-from-class="transform opacity-100 scale-100"
-      leave-to-class="transform opacity-0 scale-95"
+    <!-- User Dropdown Menu -->
+    <transition
+      enter-active-class="transition duration-100 ease-out"
+      enter-from-class="transform scale-95 opacity-0"
+      enter-to-class="transform scale-100 opacity-100"
+      leave-active-class="transition duration-75 ease-in"
+      leave-from-class="transform scale-100 opacity-100"
+      leave-to-class="transform scale-95 opacity-0"
     >
       <div
-        v-if="isOpen"
-        class="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
-        @click.outside="closeDropdown"
+        v-if="userMenuOpen"
+        class="absolute right-0 z-[80] mt-2 w-52 rounded-xl border border-cyan-100 bg-white/95 py-1 shadow-lg shadow-cyan-100/50 backdrop-blur dark:border-slate-700 dark:bg-slate-800/95"
       >
-        <!-- User info header -->
-        <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('auth.loggedInAs') }}</p>
-          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-            {{ user.email }}
-          </p>
-        </div>
+        <NuxtLink
+          to="/settings"
+          class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
+          @click="userMenuOpen = false"
+        >
+          <Icon name="heroicons:cog-6-tooth" class="h-4 w-4" />
+          <span>{{ t('nav.settings') }}</span>
+        </NuxtLink>
 
-        <!-- Menu items -->
-        <div class="py-1">
+        <!-- Admin Section -->
+        <template v-if="user?.role === 'ADMIN'">
+          <div class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+            Admin
+          </div>
           <NuxtLink
-            to="/diaries/new"
-            @click="closeDropdown"
-            class="group flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
-          >
-            <Icon name="heroicons:pencil-square" class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-            {{ $t('diary.writeDiary') }}
-          </NuxtLink>
-
-          <NuxtLink
-            to="/settings"
-            @click="closeDropdown"
-            class="group flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
-          >
-            <Icon name="heroicons:cog-6-tooth" class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-            {{ $t('settings.title') }}
-          </NuxtLink>
-
-          <NuxtLink
-            v-if="isAdmin"
             to="/admin"
-            @click="closeDropdown"
-            class="group flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+            class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
+            @click="userMenuOpen = false"
           >
-            <Icon name="heroicons:shield-check" class="mr-3 h-5 w-5" />
-            {{ $t('nav.admin') }}
+            <Icon name="heroicons:cog" class="h-4 w-4" />
+            <span>{{ t('nav.admin') }}</span>
           </NuxtLink>
-
-          <hr class="my-1 border-gray-200 dark:border-gray-700" />
-
-          <button
-            @click="handleLogout"
-            class="group flex w-full items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+          <NuxtLink
+            to="/admin/blog"
+            class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
+            @click="userMenuOpen = false"
           >
-            <Icon name="heroicons:arrow-left-on-rectangle" class="mr-3 h-5 w-5" />
-            {{ $t('auth.logout') }}
-          </button>
-        </div>
+            <Icon name="heroicons:pencil" class="h-4 w-4" />
+            <span>{{ t('nav.manageBlog') }}</span>
+          </NuxtLink>
+        </template>
+
+        <div class="my-1 border-t border-slate-200 dark:border-slate-700"></div>
+
+        <button
+          @click="handleLogout"
+          class="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-700"
+        >
+          <Icon name="heroicons:arrow-left-on-rectangle" class="h-4 w-4" />
+          <span>{{ t('nav.logout') }}</span>
+        </button>
       </div>
-    </Transition>
+    </transition>
   </div>
 </template>
