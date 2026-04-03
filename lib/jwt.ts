@@ -15,18 +15,27 @@ export interface TokenPayload {
 
 function getSecret() {
   // Try multiple sources for JWT_SECRET to support different Nitro environments
-  const secret = process.env.JWT_SECRET || globalThis.process?.env?.JWT_SECRET
+  // 1. process.env (standard Node.js)
+  // 2. globalThis.process.env (some Nitro presets)
+  // 3. runtimeConfig (Nuxt's official way — also handles Docker runtime overrides)
+  let secret = process.env.JWT_SECRET
+    || globalThis.process?.env?.JWT_SECRET
+
+  // Fallback to runtimeConfig when available (inside Nitro request context)
+  if (!secret && process.server) {
+    try {
+      const config = useRuntimeConfig()
+      secret = config.jwtSecret as string | undefined
+    } catch {
+      // useRuntimeConfig() not available outside request context — ignore
+    }
+  }
 
   if (!secret) {
-    // Log for debugging
-    if (process.server) {
-      console.error('[JWT] JWT_SECRET is not defined in process.env')
-      console.error('[JWT] Available env vars:', Object.keys(process.env).filter(k => k.includes('JWT') || k.includes('NUXT')))
-    }
+    console.error('[JWT] JWT_SECRET is not defined — checked process.env, globalThis, and runtimeConfig')
     throw new Error('JWT_SECRET is not defined')
   }
 
-  // Log secret length for debugging (don't log the actual secret)
   if (process.server && secret === 'CHANGE_THIS_RANDOM_SECRET') {
     console.error('[JWT] WARNING: JWT_SECRET is still using the placeholder value!')
   }

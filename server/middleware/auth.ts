@@ -1,6 +1,7 @@
 import { signAccessToken } from '~/lib/jwt'
 import { setAccessTokenCookie } from '~/server/utils/auth'
 import { authenticateAccessToken, authenticateRefreshToken } from '~/server/utils/auth-session'
+import { logger } from '~/lib/logger'
 
 /**
  * Global API authentication middleware
@@ -9,6 +10,7 @@ import { authenticateAccessToken, authenticateRefreshToken } from '~/server/util
  */
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
+  const log = logger.auth
 
   // Only parse auth for API routes
   if (!url.pathname.startsWith('/api/')) return
@@ -27,15 +29,20 @@ export default defineEventHandler(async (event) => {
   if (token) {
     try {
       const user = await authenticateAccessToken(token)
-      if (!user) {
-        event.context.user = undefined
+      if (user) {
+        event.context.user = user
         return
       }
-
-      event.context.user = user
-      return
-    } catch {
-      // Fall through to refresh-token recovery path.
+      // access token parsed but validation returned null (tokenVersion mismatch)
+      log.warn('Access token validation returned null, falling back to refresh token', {
+        path: url.pathname,
+      })
+    } catch (error) {
+      // access token expired or invalid — fall through to refresh-token recovery
+      log.debug('Access token verification failed, falling back to refresh token', {
+        path: url.pathname,
+        error: String(error),
+      })
     }
   }
 
@@ -47,6 +54,7 @@ export default defineEventHandler(async (event) => {
   try {
     const refreshSession = await authenticateRefreshToken(refreshToken)
     if (!refreshSession) {
+      log.warn('Refresh token validation returned null', { path: url.pathname })
       event.context.user = undefined
       return
     }
@@ -62,7 +70,11 @@ export default defineEventHandler(async (event) => {
     setAccessTokenCookie(event, newAccessToken)
 
     event.context.user = refreshSession.sessionUser
-  } catch {
+  } catch (error) {
+    log.error('Refresh token recovery failed', {
+      path: url.pathname,
+      error: String(error),
+    })
     event.context.user = undefined
   }
 })
