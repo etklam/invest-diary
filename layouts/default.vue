@@ -128,7 +128,8 @@ watch(
   ([authenticated, publicRoute]) => {
     if (authenticated && !publicRoute) {
       // Authenticated user on protected route - start polling
-      startPolling()
+      // Add small delay to ensure cookies are properly set after login
+      nextTick(() => startPolling())
     } else {
       // Public route or not authenticated - stop polling
       stopPolling()

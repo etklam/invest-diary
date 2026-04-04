@@ -93,6 +93,7 @@ export const useAuth = () => {
       if (response.ok && response.data) {
         user.value = response.data
         syncTimezone(response.data.timezone)
+        isInitialized.value = true  // Mark as initialized to prevent redundant fetchMe call
         toast.success('登入成功')
         await navigateTo('/')
       }
