@@ -265,6 +265,8 @@
   },
   "timeline": {
     "title": "時間軸",
+    "kicker": "事件時間軸",
+    "subtitle": "依時間順序回顧您的投資歷程",
     "noEntries": "尚無時間軸紀錄",
     "loadFailed": "載入失敗",
     "entriesCount": "{count} 篇日記",

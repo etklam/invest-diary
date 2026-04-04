@@ -344,6 +344,8 @@
   },
   "timeline": {
     "title": "时间轴",
+    "kicker": "事件时间轴",
+    "subtitle": "以时间顺序回顾您的投资历程",
     "noEntries": "暂无时间轴纪录",
     "loadFailed": "加载失败",
     "entriesCount": "{count} 篇日记",

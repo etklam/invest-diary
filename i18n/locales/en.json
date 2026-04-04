@@ -266,6 +266,8 @@
   },
   "timeline": {
     "title": "Timeline",
+    "kicker": "Event Timeline",
+    "subtitle": "A chronological view of your investment journey",
     "noEntries": "No entries yet",
     "loadFailed": "Load failed",
     "entriesCount": "{count} entries",
