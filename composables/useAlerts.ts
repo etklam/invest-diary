@@ -13,10 +13,27 @@ export interface AlertItem {
   }
 }
 
+interface AlertApiResponse {
+  id: string | number | bigint
+  message: string
+  triggerAt: string
+  isDismissed: boolean
+  diary?: {
+    id: string | number | bigint
+    title: string
+  }
+}
+
 // Polling 設定（作為 WebSocket 的 fallback）
 const BASE_POLL_INTERVAL = POLLING.BASE_INTERVAL
 const MAX_POLL_INTERVAL = POLLING.MAX_INTERVAL
 const BACKOFF_MULTIPLIER = POLLING.BACKOFF_MULTIPLIER
+
+const devLog = (...args: unknown[]) => {
+  if (import.meta.dev) {
+    console.log(...args)
+  }
+}
 
 export const useAlerts = () => {
   const alertQueue = ref<AlertItem[]>([])
@@ -65,7 +82,7 @@ export const useAlerts = () => {
 
   const fetchAlertsViaHttp = async (): Promise<AlertItem[]> => {
     try {
-      const response = await $fetch<any[]>('/api/alerts')
+      const response = await $fetch<AlertApiResponse[]>('/api/alerts')
       return response.map(alert => ({
         id: alert.id.toString(),
         message: alert.message,
@@ -76,8 +93,7 @@ export const useAlerts = () => {
           title: alert.diary.title
         } : undefined
       }))
-    } catch (error) {
-      console.error('[Alerts] Failed to fetch alerts via HTTP:', error)
+    } catch {
       return []
     }
   }
@@ -159,7 +175,7 @@ export const useAlerts = () => {
     }
 
     if (cleanedCount > 0) {
-      console.log(`[Alerts] Cleaned up ${cleanedCount} old processed alerts`)
+      devLog(`[Alerts] Cleaned up ${cleanedCount} old processed alerts`)
     }
   }
 
@@ -188,8 +204,7 @@ export const useAlerts = () => {
         // WebSocket 未連線，使用 HTTP
         await $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' })
       }
-    } catch (e) {
-      console.error('[Alerts] Failed to dismiss alert:', e)
+    } catch {
       toast.error(t('alert.dismissFailed'))
     }
 
@@ -205,7 +220,7 @@ export const useAlerts = () => {
   onMounted(async () => {
     // 先註冊 WebSocket Alert 監聽器（避免 race condition）
     unsubscribeAlert = onAlert((alert: AlertPayload) => {
-      console.log('[Alerts] Received alert via WebSocket:', alert)
+      devLog('[Alerts] Received alert via WebSocket:', alert)
       enqueueSingleAlert(alert)
     })
 
@@ -216,17 +231,17 @@ export const useAlerts = () => {
 
     // 如果 WebSocket 未連線，啟動 polling
     if (!isConnected.value) {
-      console.log('[Alerts] WebSocket not connected, starting HTTP polling')
+      devLog('[Alerts] WebSocket not connected, starting HTTP polling')
       scheduleNextPoll(startPolling)
     }
 
     // 監聽 WebSocket 連線狀態變化
     watch(isConnected, (connected) => {
       if (connected) {
-        console.log('[Alerts] WebSocket connected, stopping HTTP polling')
+        devLog('[Alerts] WebSocket connected, stopping HTTP polling')
         stopPolling()
       } else {
-        console.log('[Alerts] WebSocket disconnected, starting HTTP polling')
+        devLog('[Alerts] WebSocket disconnected, starting HTTP polling')
         scheduleNextPoll(startPolling)
       }
     })

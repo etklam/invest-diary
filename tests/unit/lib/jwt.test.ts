@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { signToken, verifyToken, type TokenPayload } from '~/lib/jwt'
+import { signAccessToken, verifyToken } from '~/lib/jwt'
 
 describe('JWT Utils', () => {
   const testSecret = 'test-secret-key'
@@ -18,9 +18,9 @@ describe('JWT Utils', () => {
     vi.unstubAllEnvs()
   })
 
-  describe('signToken', () => {
+  describe('signAccessToken', () => {
     it('should generate a valid JWT token', async () => {
-      const token = await signToken(testUserId, testEmail, testRole, testTokenVersion)
+      const token = await signAccessToken(testUserId, testEmail, testRole, testTokenVersion)
       
       expect(token).toBeDefined()
       expect(typeof token).toBe('string')
@@ -28,7 +28,7 @@ describe('JWT Utils', () => {
     })
 
     it('should include all required fields in token payload', async () => {
-      const token = await signToken(testUserId, testEmail, testRole, testTokenVersion)
+      const token = await signAccessToken(testUserId, testEmail, testRole, testTokenVersion)
       const decoded = await verifyToken(token)
       
       expect(decoded.userId).toBe(testUserId)
@@ -38,7 +38,7 @@ describe('JWT Utils', () => {
     })
 
     it('should set expiration time', async () => {
-      const token = await signToken(testUserId, testEmail, testRole, testTokenVersion)
+      const token = await signAccessToken(testUserId, testEmail, testRole, testTokenVersion)
       const decoded = await verifyToken(token)
       
       expect(decoded).toBeDefined()
@@ -50,14 +50,14 @@ describe('JWT Utils', () => {
     it('should throw error when JWT_SECRET is not defined', async () => {
       vi.stubEnv('JWT_SECRET', '')
       
-      await expect(signToken(testUserId, testEmail, testRole, testTokenVersion))
+      await expect(signAccessToken(testUserId, testEmail, testRole, testTokenVersion))
         .rejects.toThrow('JWT_SECRET is not defined')
     })
   })
 
   describe('verifyToken', () => {
     it('should verify a valid token', async () => {
-      const token = await signToken(testUserId, testEmail, testRole, testTokenVersion)
+      const token = await signAccessToken(testUserId, testEmail, testRole, testTokenVersion)
       
       const result = await verifyToken(token)
       
@@ -76,7 +76,7 @@ describe('JWT Utils', () => {
     })
 
     it('should throw error for token with wrong secret', async () => {
-      const token = await signToken(testUserId, testEmail, testRole, testTokenVersion)
+      const token = await signAccessToken(testUserId, testEmail, testRole, testTokenVersion)
       
       // 修改環境變數為錯誤的 secret
       vi.stubEnv('JWT_SECRET', 'wrong-secret')
@@ -93,7 +93,7 @@ describe('JWT Utils', () => {
       const role = 'ADMIN'
       const tokenVersion = 2
       
-      const token = await signToken(userId, email, role, tokenVersion)
+      const token = await signAccessToken(userId, email, role, tokenVersion)
       const verified = await verifyToken(token)
       
       expect(verified.userId).toBe(userId)
@@ -111,7 +111,7 @@ describe('JWT Utils', () => {
       ]
 
       for (const testCase of testCases) {
-        const token = await signToken(testCase.userId, testCase.email, testCase.role, testTokenVersion)
+        const token = await signAccessToken(testCase.userId, testCase.email, testCase.role, testTokenVersion)
         const result = await verifyToken(token)
         
         expect(result.userId).toBe(testCase.userId)
@@ -125,7 +125,7 @@ describe('JWT Utils', () => {
       const versions = [0, 1, 2, 10, 100]
 
       for (const version of versions) {
-        const token = await signToken(testUserId, testEmail, testRole, version)
+        const token = await signAccessToken(testUserId, testEmail, testRole, version)
         const result = await verifyToken(token)
         
         expect(result.tokenVersion).toBe(version)
@@ -135,7 +135,7 @@ describe('JWT Utils', () => {
 
   describe('Error Handling', () => {
     it('should throw error when JWT_SECRET is not defined during verification', async () => {
-      const token = await signToken(testUserId, testEmail, testRole, testTokenVersion)
+      const token = await signAccessToken(testUserId, testEmail, testRole, testTokenVersion)
       
       vi.stubEnv('JWT_SECRET', '')
       
@@ -172,7 +172,7 @@ describe('JWT Utils', () => {
 
   describe('Token Structure', () => {
     it('should create tokens with correct structure', async () => {
-      const token = await signToken(testUserId, testEmail, testRole, testTokenVersion)
+      const token = await signAccessToken(testUserId, testEmail, testRole, testTokenVersion)
       
       // JWT 應該有三個部分
       const parts = token.split('.')
@@ -193,7 +193,7 @@ describe('JWT Utils', () => {
         tokenVersion: testTokenVersion
       }
 
-      const token = await signToken(
+      const token = await signAccessToken(
         originalData.userId,
         originalData.email,
         originalData.role,

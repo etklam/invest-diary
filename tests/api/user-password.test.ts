@@ -1,6 +1,34 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mockReadBody, mockDeleteCookie } from '../vi-setup'
 
+const mockAuthLogInfo = vi.fn()
+const mockAuthLogWarn = vi.fn()
+const mockAuthLogError = vi.fn()
+const mockAuthLog = {
+  info: mockAuthLogInfo,
+  warn: mockAuthLogWarn,
+  error: mockAuthLogError,
+}
+const mockAuthWithRequestId = vi.fn(() => mockAuthLog)
+const mockRateLimitersAuthPasswordIp = vi.fn()
+const mockRateLimitersAuthPasswordIdentity = vi.fn()
+
+vi.mock('~/lib/logger', () => ({
+  logger: {
+    auth: {
+      withRequestId: mockAuthWithRequestId,
+    },
+  },
+}))
+
+vi.mock('~/lib/rate-limiter', () => ({
+  rateLimiters: {
+    authPasswordIp: mockRateLimitersAuthPasswordIp,
+    authPasswordIdentity: mockRateLimitersAuthPasswordIdentity,
+  },
+  getRateLimitIdentifier: vi.fn(() => '127.0.0.1'),
+}))
+
 const mockUserFindUnique = vi.fn()
 const mockUserUpdate = vi.fn()
 const mockRefreshTokenDeleteMany = vi.fn()
@@ -74,6 +102,40 @@ describe('User Password API', () => {
       success: true,
       message: 'Password changed successfully. Please login again.',
     })
+    expect(mockRateLimitersAuthPasswordIp).toHaveBeenCalledWith('127.0.0.1')
+    expect(mockRateLimitersAuthPasswordIdentity).toHaveBeenCalledWith('1')
+  })
+
+  it('rate limits password change by IP', async () => {
+    mockRateLimitersAuthPasswordIp.mockRejectedValueOnce(new Error('rate limited'))
+
+    const { default: handler } = await import('~/server/api/user/password.put')
+    await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
+      statusCode: 429,
+    })
+    expect(mockRateLimitersAuthPasswordIdentity).not.toHaveBeenCalled()
+    expect(mockAuthLogWarn).toHaveBeenCalledWith(
+      'Password change rate limited',
+      expect.objectContaining({ ip: '127.0.0.1' })
+    )
+  })
+
+  it('rate limits password change by identity', async () => {
+    mockReadBody.mockResolvedValue({
+      currentPassword: 'old-password',
+      newPassword: 'new-password-123',
+    })
+    mockRateLimitersAuthPasswordIdentity.mockRejectedValueOnce(new Error('rate limited'))
+
+    const { default: handler } = await import('~/server/api/user/password.put')
+    await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
+      statusCode: 429,
+    })
+    expect(mockRateLimitersAuthPasswordIp).toHaveBeenCalledWith('127.0.0.1')
+    expect(mockAuthLogWarn).toHaveBeenCalledWith(
+      'Password change rate limited',
+      expect.objectContaining({ userId: '1' })
+    )
   })
 
   it('should reject invalid current password', async () => {

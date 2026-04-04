@@ -1,5 +1,19 @@
 import { vi } from 'vitest'
 
+const nuxtComposableMocks = new Map<string, () => unknown>()
+
+vi.mock('#app', async () => {
+  const actual = await vi.importActual<typeof import('#app')>('#app')
+  return new Proxy(actual, {
+    get(target, prop, receiver) {
+      if (typeof prop === 'string' && nuxtComposableMocks.has(prop)) {
+        return nuxtComposableMocks.get(prop)
+      }
+      return Reflect.get(target, prop, receiver)
+    },
+  }) as typeof actual
+})
+
 /**
  * Mock Prisma Client
  */
@@ -62,10 +76,8 @@ export function mockPrisma() {
  * Mock Nuxt Composables
  */
 export function mockNuxtComposable(name: string, returnValue: any = {}) {
-  vi.mock('#app', () => ({
-    [name]: () => returnValue,
-  }))
-
+  const factory = () => returnValue
+  nuxtComposableMocks.set(name, factory)
   return returnValue
 }
 
@@ -237,6 +249,7 @@ export function mockTimer() {
 export function clearAllMocks() {
   vi.clearAllMocks()
   vi.restoreAllMocks()
+  nuxtComposableMocks.clear()
 }
 
 /**

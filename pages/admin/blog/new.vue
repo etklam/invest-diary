@@ -92,7 +92,6 @@
 <script setup lang="ts">
 import { useDebounceFn, useLocalStorage } from '@vueuse/core'
 
-const { t } = useI18n()
 const toast = useToast()
 const router = useRouter()
 
@@ -166,7 +165,7 @@ const createPost = async () => {
   try {
     loading.value = true
 
-    const response = await $fetch('/api/blog', {
+    await $fetch('/api/blog', {
       method: 'POST',
       body: {
         title: form.value.title,
@@ -177,7 +176,7 @@ const createPost = async () => {
         tags: form.value.tags || undefined,
         status: form.value.status
       }
-    }) as any
+    })
 
     toast.success(form.value.status === 'PUBLISHED' ? '文章已發布' : '文章已儲存為草稿')
 

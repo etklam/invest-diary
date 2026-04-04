@@ -1,4 +1,3 @@
-import type { H3Event } from 'h3'
 import { createApp, toNodeListener } from 'h3'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'

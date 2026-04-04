@@ -97,7 +97,7 @@ class ConnectionManager {
   ): number {
     let recipientCount = 0
     
-    this.connections.forEach((sockets, userId) => {
+    this.connections.forEach((sockets) => {
       sockets.forEach(socket => {
         socket.emit(event, data)
         recipientCount++

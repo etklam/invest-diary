@@ -56,13 +56,11 @@ vi.mock('bcryptjs', () => ({
   },
 }))
 
-const mockSignToken = vi.fn()
 const mockSignAccessToken = vi.fn()
 const mockSignRefreshToken = vi.fn()
 const mockVerifyToken = vi.fn()
 
 vi.mock('~/lib/jwt', () => ({
-  signToken: mockSignToken,
   signAccessToken: mockSignAccessToken,
   signRefreshToken: mockSignRefreshToken,
   verifyToken: mockVerifyToken,
@@ -86,6 +84,21 @@ vi.mock('~/lib/logger', () => ({
     },
   },
 }))
+
+const mockRateLimitersAuthLoginIp = vi.fn()
+const mockRateLimitersAuthLoginIdentity = vi.fn()
+const mockRateLimitersAuthRegisterIp = vi.fn()
+const mockRateLimitersAuthRegisterIdentity = vi.fn()
+
+vi.mock('~/lib/rate-limiter', () => ({
+  rateLimiters: {
+    authLoginIp: mockRateLimitersAuthLoginIp,
+    authLoginIdentity: mockRateLimitersAuthLoginIdentity,
+    authRegisterIp: mockRateLimitersAuthRegisterIp,
+    authRegisterIdentity: mockRateLimitersAuthRegisterIdentity,
+  },
+  getRateLimitIdentifier: vi.fn(() => '127.0.0.1'),
+}))
 vi.mock('~/server/utils/auth-session', async (importOriginal) => {
   const actual = await importOriginal<typeof import('~/server/utils/auth-session')>()
   return {
@@ -98,7 +111,6 @@ describe('Auth API', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuthWithRequestId.mockReturnValue(mockAuthLog)
-    mockSignToken.mockResolvedValue('mock-jwt-token')
     mockSignAccessToken.mockResolvedValue('mock-access-token')
     mockSignRefreshToken.mockResolvedValue('mock-refresh-token')
     mockRefreshTokenCreate.mockResolvedValue({ id: 1n })
@@ -155,6 +167,8 @@ describe('Auth API', () => {
           token: createHash('sha256').update('mock-refresh-token').digest('hex'),
         }),
       })
+      expect(mockRateLimitersAuthLoginIp).toHaveBeenCalledWith('127.0.0.1')
+      expect(mockRateLimitersAuthLoginIdentity).toHaveBeenCalledWith('test@example.com')
     })
 
     it('should reject invalid email format', async () => {
@@ -221,6 +235,38 @@ describe('Auth API', () => {
         statusCode: 401,
       })
     })
+
+    it('rate limits login by IP', async () => {
+      mockRateLimitersAuthLoginIp.mockRejectedValueOnce(new Error('rate limited'))
+
+      const { default: handler } = await import('~/server/api/auth/login.post')
+      const mockEvent = { context: {} } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 429 })
+      expect(mockRateLimitersAuthLoginIdentity).not.toHaveBeenCalled()
+      expect(mockAuthLogWarn).toHaveBeenCalledWith(
+        'Login rate limited',
+        expect.objectContaining({ ip: '127.0.0.1' })
+      )
+    })
+
+    it('rate limits login by identity', async () => {
+      mockReadBody.mockResolvedValue({
+        email: 'test@example.com',
+        password: 'password123',
+      })
+      mockRateLimitersAuthLoginIdentity.mockRejectedValueOnce(new Error('rate limited'))
+
+      const { default: handler } = await import('~/server/api/auth/login.post')
+      const mockEvent = { context: {} } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 429 })
+      expect(mockRateLimitersAuthLoginIp).toHaveBeenCalledWith('127.0.0.1')
+      expect(mockAuthLogWarn).toHaveBeenCalledWith(
+        'Login rate limited',
+        expect.objectContaining({ identity: 'test@example.com' })
+      )
+    })
   })
 
   describe('POST /api/auth/register', () => {
@@ -251,6 +297,41 @@ describe('Auth API', () => {
         success: true,
         user: mockUser,
       })
+      expect(mockRateLimitersAuthRegisterIp).toHaveBeenCalledWith('127.0.0.1')
+      expect(mockRateLimitersAuthRegisterIdentity).toHaveBeenCalledWith('newuser@example.com')
+    })
+
+    it('rate limits registration by IP', async () => {
+      mockRateLimitersAuthRegisterIp.mockRejectedValueOnce(new Error('rate limited'))
+
+      const { default: handler } = await import('~/server/api/auth/register.post')
+      const mockEvent = { context: {} } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 429 })
+      expect(mockRateLimitersAuthRegisterIdentity).not.toHaveBeenCalled()
+      expect(mockAuthLogWarn).toHaveBeenCalledWith(
+        'Registration rate limited',
+        expect.objectContaining({ ip: '127.0.0.1' })
+      )
+    })
+
+    it('rate limits registration by identity', async () => {
+      mockReadBody.mockResolvedValue({
+        email: 'newuser@example.com',
+        password: 'password123',
+        name: 'New User',
+      })
+      mockRateLimitersAuthRegisterIdentity.mockRejectedValueOnce(new Error('rate limited'))
+
+      const { default: handler } = await import('~/server/api/auth/register.post')
+      const mockEvent = { context: {} } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 429 })
+      expect(mockRateLimitersAuthRegisterIp).toHaveBeenCalledWith('127.0.0.1')
+      expect(mockAuthLogWarn).toHaveBeenCalledWith(
+        'Registration rate limited',
+        expect.objectContaining({ identity: 'newuser@example.com' })
+      )
     })
 
     it('should reject duplicate email', async () => {

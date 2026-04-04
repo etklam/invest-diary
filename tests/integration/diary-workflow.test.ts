@@ -92,7 +92,7 @@ describe('Diary Workflow Integration', () => {
       })
 
       const { default: createHandler } = await import('~/server/api/diaries.post')
-      const createResult = await createHandler({
+      await createHandler({
         context: { user: mockUser },
       } as any)
 
@@ -179,7 +179,7 @@ describe('Diary Workflow Integration', () => {
       })
 
       const { default: handler } = await import('~/server/api/diaries.post')
-      const result = await handler({
+      await handler({
         context: { user: mockUser },
       } as any)
 

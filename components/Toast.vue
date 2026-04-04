@@ -55,10 +55,9 @@
 <script setup lang="ts">
 import type { Toast } from '~/composables/useToast'
 
-const props = defineProps<{
+defineProps<{
   toasts: readonly Toast[]
 }>()
-
 const emit = defineEmits<{
   (e: 'remove', id: string): void
 }>()

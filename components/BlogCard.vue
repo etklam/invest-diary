@@ -1,87 +1,83 @@
 <template>
   <article
-    class="blog-card group relative flex h-full flex-col overflow-hidden rounded-2xl border p-0 transition-all duration-200"
+    class="blog-card group flex h-full flex-col"
     @mouseenter="prefetchDetail"
   >
-    <div v-if="isAdmin" class="absolute right-3 top-3 z-20 flex gap-2">
+    <div v-if="isAdmin" class="absolute right-3 top-3 z-30 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
       <NuxtLink
         :to="`/admin/blog/${post.id}/edit`"
-        class="admin-btn cursor-pointer rounded-md p-2"
+        class="admin-btn h-9 w-9 flex items-center justify-center rounded-xl bg-white/90 shadow-sm backdrop-blur-sm dark:bg-slate-900/90"
         title="編輯"
       >
-        <Icon name="heroicons:pencil-20-solid" class="h-4 w-4 text-sky-700 dark:text-sky-300" />
+        <Icon name="heroicons:pencil" class="h-4 w-4 text-sky-600 dark:text-sky-400" />
       </NuxtLink>
       <button
-        class="admin-btn cursor-pointer rounded-md p-2"
+        class="admin-btn h-9 w-9 flex items-center justify-center rounded-xl bg-white/90 shadow-sm backdrop-blur-sm dark:bg-slate-900/90"
         title="刪除"
         @click="handleDelete"
       >
-        <Icon name="heroicons:trash-20-solid" class="h-4 w-4 text-red-600 dark:text-red-400" />
+        <Icon name="heroicons:trash" class="h-4 w-4 text-red-600 dark:text-red-400" />
       </button>
     </div>
 
-    <div v-if="post.coverImage" class="aspect-video overflow-hidden bg-slate-100 dark:bg-slate-800">
+    <NuxtLink :to="`/articles/${post.slug}`" class="relative block aspect-[16/10] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
       <NuxtImg
+        v-if="post.coverImage"
         :src="post.coverImage"
         :alt="post.title"
-        width="800"
-        height="450"
+        width="600"
+        height="375"
         loading="lazy"
-        sizes="sm:400px md:350px lg:400px"
-        quality="80"
-        preset="blogCover"
-        class="h-full w-full object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.03]"
+        class="h-full w-full object-cover transition-transform duration-700 cubic-bezier(0.16, 1, 0.3, 1) group-hover:scale-110"
       />
-    </div>
+      <div v-else class="flex h-full w-full items-center justify-center">
+        <Icon name="heroicons:photo" class="h-12 w-12 text-slate-300 dark:text-slate-700" />
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-    <div class="flex flex-1 flex-col p-6">
-      <div class="mb-3">
+      <div class="absolute left-4 top-4">
         <span
-          class="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-100/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-amber-700 dark:border-amber-400/35 dark:bg-amber-400/15 dark:text-amber-300"
+          class="inline-flex items-center rounded-lg border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md"
         >
           {{ $t(`blog.categories.${categoryKey}`) || post.category }}
         </span>
       </div>
+    </NuxtLink>
 
-      <h3 class="mb-2 line-clamp-2 text-xl font-semibold text-slate-950 dark:text-slate-100">
-        <NuxtLink
-          :to="`/articles/${post.slug}`"
-          prefetch
-          class="cursor-pointer transition-colors duration-200 hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 dark:hover:text-sky-300"
-        >
+    <div class="flex flex-1 flex-col pt-5">
+      <div class="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+        <Icon name="heroicons:calendar" class="h-3 w-3" />
+        {{ publishedAtLabel }}
+        <span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+        <Icon name="heroicons:clock" class="h-3 w-3" />
+        {{ readingTime }} 分鐘閱讀
+      </div>
+
+      <h3 class="mb-3 text-xl font-bold leading-tight text-slate-950 transition-colors group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">
+        <NuxtLink :to="`/articles/${post.slug}`" class="line-clamp-2 focus:outline-none">
           {{ post.title }}
         </NuxtLink>
       </h3>
 
-      <p v-if="post.excerpt" class="mb-4 line-clamp-3 flex-1 leading-relaxed text-slate-700 dark:text-slate-300">
+      <p v-if="post.excerpt" class="mb-6 line-clamp-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
         {{ post.excerpt }}
       </p>
 
-      <div v-if="parsedTags.length > 0" class="mb-4 flex flex-wrap gap-2">
-        <span
-          v-for="tag in parsedTags.slice(0, 3)"
-          :key="tag"
-          class="inline-flex items-center rounded-md border border-sky-200/70 bg-sky-50/60 px-2 py-1 text-xs text-sky-700 dark:border-slate-700/70 dark:bg-slate-800/80 dark:text-slate-300"
-        >
-          #{{ tag }}
-        </span>
-      </div>
+      <div class="flex items-center justify-between mt-auto">
+        <div class="flex items-center gap-2.5">
+          <div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
+            <Icon name="heroicons:user" class="h-4 w-4 text-slate-400 dark:text-slate-500" />
+          </div>
+          <span class="text-xs font-bold text-slate-700 dark:text-slate-300">
+            {{ post.author?.name || post.author?.email?.split('@')[0] }}
+          </span>
+        </div>
 
-      <PostMeta
-        v-if="post.author"
-        :author="post.author.name || post.author.email"
-        :date="post.publishedAt!"
-        :reading-time="readingTime"
-      />
-
-      <div class="mt-4 border-t border-slate-200/70 pt-4 dark:border-slate-700/60">
         <NuxtLink
           :to="`/articles/${post.slug}`"
-          prefetch
-          class="inline-flex cursor-pointer items-center font-semibold text-sky-700 transition-colors duration-200 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200"
+          class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 transition-all hover:bg-slate-950 hover:text-white dark:border-slate-800 dark:hover:bg-white dark:hover:text-slate-950"
         >
-          {{ $t('blog.readMore') }}
-          <Icon name="heroicons:arrow-right-20-solid" class="ml-2 h-4 w-4 transition-transform duration-200 motion-safe:group-hover:translate-x-1" />
+          <Icon name="heroicons:arrow-up-right" class="h-5 w-5" />
         </NuxtLink>
       </div>
     </div>
@@ -91,7 +87,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { refreshNuxtData, useAuth, useI18n, useToast } from '#imports'
-import { calculateReadingTime, parseTags } from '~/lib/blog'
+import { calculateReadingTime } from '~/lib/blog'
 import { normalizeCategory } from '~/types/blog'
 
 interface Author {
@@ -118,14 +114,22 @@ const props = defineProps<{
 }>()
 
 const { isAdmin } = useAuth()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const toast = useToast()
 
-const parsedTags = computed(() => parseTags(props.post.tags))
 const readingTime = computed(() =>
-  props.post.content ? calculateReadingTime(props.post.content) : undefined
+  props.post.content ? calculateReadingTime(props.post.content) : 3
 )
 const hasPrefetched = ref(false)
+
+const publishedAtLabel = computed(() => {
+  if (!props.post.publishedAt) return ''
+  return new Intl.DateTimeFormat(locale.value === 'zh-TW' ? 'zh-TW' : 'en', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  }).format(new Date(props.post.publishedAt))
+})
 
 const handleDelete = async () => {
   if (!confirm(t('blog.confirmDelete', { title: props.post.title }))) return
@@ -156,50 +160,10 @@ const prefetchDetail = async () => {
 
 <style scoped>
 .blog-card {
-  border-color: rgb(186 230 253 / 82%);
-  background: rgb(255 255 255 / 84%);
-  backdrop-filter: blur(8px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.blog-card:hover {
-  transform: translateY(-3px);
-  border-color: rgb(14 165 233 / 45%);
-  box-shadow: 0 14px 30px rgb(14 165 233 / 14%);
-}
-
-:global(.dark .blog-card),
-:global(.dark-mode .blog-card) {
-  border-color: rgb(71 85 105);
-  background: rgb(10 16 30 / 88%);
-}
-
-:global(.dark .blog-card:hover),
-:global(.dark-mode .blog-card:hover) {
-  border-color: rgb(56 189 248 / 70%);
-  box-shadow: 0 14px 30px rgb(2 6 23 / 45%);
-}
-
-.admin-btn {
-  border: 1px solid rgb(186 230 253 / 70%);
-  background: rgb(255 255 255 / 82%);
-  backdrop-filter: blur(6px);
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.admin-btn:hover {
-  border-color: rgb(125 211 252 / 80%);
-  background: rgb(240 249 255 / 95%);
-}
-
-:global(.dark .admin-btn),
-:global(.dark-mode .admin-btn) {
-  border-color: rgb(71 85 105);
-  background: rgb(15 23 42 / 88%);
-}
-
-:global(.dark .admin-btn:hover),
-:global(.dark-mode .admin-btn:hover) {
-  border-color: rgb(56 189 248 / 70%);
-  background: rgb(30 41 59);
+.cubic-bezier {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 </style>

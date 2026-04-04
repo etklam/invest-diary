@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import type { EtfAnalysis } from '~/lib/etf-analyzer'
 import type { EtfProfileResponse } from '~/lib/etf-profile/types'
+import type { QuoteResponse } from '~/lib/market-data/yahoo'
+
+interface EtfWatchlistItem {
+  id: string
+  symbol: string
+  name: string
+  sortOrder: number
+  latestPrice: number | null
+  latestDate: string | null
+}
 
 type TabKey = 'all' | 'overview' | 'comparison' | 'technical' | 'risk' | 'valuation' | 'rs'
 type SortField =
@@ -45,7 +55,7 @@ const allEtfs = ref<EtfAnalysis[]>([])
 const selectedAnalysis = ref<EtfAnalysis | null>(null)
 
 // Real-time quote for selected ETF
-const liveQuote = ref<any>(null)
+const liveQuote = ref<QuoteResponse | null>(null)
 const etfProfile = ref<EtfProfileResponse | null>(null)
 
 // Auto-refresh quote
@@ -55,7 +65,7 @@ const quoteRefreshInterval = ref<NodeJS.Timeout | null>(null)
 const fetchAllEtfs = async () => {
   allEtfsLoading.value = true
   try {
-    const response = await $fetch<any>('/api/etf/all', {
+    const response = await $fetch<EtfAnalysis[]>('/api/etf/all', {
       params: {
         sort: sortBy.value,
         order: sortOrder.value,
@@ -63,7 +73,7 @@ const fetchAllEtfs = async () => {
       timeout: 10000,
     })
     allEtfs.value = response || []
-  } catch (error) {
+  } catch {
     toast.error(t('tools.etf.fetchFailed'))
   } finally {
     allEtfsLoading.value = false
@@ -81,7 +91,7 @@ const fetchEtfAnalysis = async (symbol: string) => {
     selectedSymbol.value = symbol
     await fetchLiveQuote(symbol)
     await fetchEtfProfile(symbol)
-  } catch (error) {
+  } catch {
     toast.error(t('tools.etf.fetchFailed'))
   } finally {
     analysisLoading.value = false
@@ -106,9 +116,9 @@ const fetchEtfProfile = async (symbol: string) => {
 const fetchLiveQuote = async (symbol: string) => {
   quoteLoading.value = true
   try {
-    const response = await $fetch<any>(`/api/etf/${encodeURIComponent(symbol)}/quote`)
+    const response = await $fetch<QuoteResponse>(`/api/etf/${encodeURIComponent(symbol)}/quote`)
     liveQuote.value = response
-  } catch (error) {
+  } catch {
     // Silently fail for quote updates
   } finally {
     quoteLoading.value = false
@@ -181,13 +191,13 @@ const getTrendIcon = (trend: string) => {
 }
 
 // Watchlist management
-const watchlist = ref<any[]>([])
+const watchlist = ref<EtfWatchlistItem[]>([])
 
 const fetchWatchlist = async () => {
   try {
-    const response = await $fetch<any>('/api/etf/watchlist')
+    const response = await $fetch<EtfWatchlistItem[]>('/api/etf/watchlist')
     watchlist.value = response || []
-  } catch (error) {
+  } catch {
     // Silently fail if not authenticated
   }
 }
@@ -200,8 +210,9 @@ const addToWatchlist = async (symbol: string) => {
     })
     toast.success(t('tools.etf.watchlist.addSuccess'))
     await fetchWatchlist()
-  } catch (error: any) {
-    toast.error(error.data?.message || t('tools.etf.watchlist.addFailed'))
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : ''
+    toast.error(msg || t('tools.etf.watchlist.addFailed'))
   }
 }
 
@@ -210,7 +221,7 @@ const removeFromWatchlist = async (id: string) => {
     await $fetch(`/api/etf/watchlist/${id}`, { method: 'DELETE' })
     toast.success(t('tools.etf.watchlist.removeSuccess'))
     await fetchWatchlist()
-  } catch (error) {
+  } catch {
     toast.error(t('tools.etf.watchlist.removeFailed'))
   }
 }

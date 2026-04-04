@@ -22,6 +22,23 @@ interface HealthCheckResult {
   duration?: number
 }
 
+const describeError = (error?: unknown) => {
+  if (!error) return ''
+  if (error instanceof Error) return error.message
+  if (typeof error === 'string') return error
+  try {
+    const serialized = JSON.stringify(error)
+    return serialized || String(error)
+  } catch {
+    return String(error)
+  }
+}
+
+const appendErrorMessage = (error?: unknown) => {
+  const description = describeError(error)
+  return description ? `: ${description}` : ''
+}
+
 const results: HealthCheckResult[] = []
 
 function runCheck(
@@ -86,7 +103,7 @@ runCheck(
     const envExamplePath = resolve('.env.example')
 
     if (!existsSync(envPath)) {
-      throw new Error('.env file not found. Copy .env.example to .env and configure.')
+      throw new Error(`.env file not found. Copy ${envExamplePath} to .env and configure.`)
     }
 
     // Check DATABASE_URL
@@ -108,7 +125,7 @@ runCheck(
     try {
       exec('npx prisma validate', { silent: true })
     } catch (error) {
-      throw new Error('Prisma schema validation failed')
+      throw new Error(`Prisma schema validation failed${appendErrorMessage(error)}`)
     }
   }
 )
@@ -129,7 +146,7 @@ runCheck(
     try {
       exec('npm test -- --run', { silent: true })
     } catch (error) {
-      throw new Error('Unit tests failed')
+      throw new Error(`Unit tests failed${appendErrorMessage(error)}`)
     }
   }
 )
@@ -141,7 +158,7 @@ runCheck(
     try {
       // Try to fetch a single record to verify connection
       exec('npx prisma db execute --stdin <<< "SELECT 1;"', { silent: true })
-    } catch (error) {
+    } catch {
       // If direct execute fails, try through Prisma Client
       try {
         const { PrismaClient } = require('@prisma/client')
@@ -152,7 +169,7 @@ runCheck(
         })
         prisma.$disconnect()
       } catch (prismaError) {
-        throw new Error('Cannot connect to database. Check DATABASE_URL and ensure MySQL is running.')
+        throw new Error(`Cannot connect to database. Check DATABASE_URL and ensure MySQL is running.${appendErrorMessage(prismaError)}`)
       }
     }
   }

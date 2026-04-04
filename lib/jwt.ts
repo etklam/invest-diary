@@ -76,19 +76,6 @@ export async function signRefreshToken(
 }
 
 /**
- * Legacy: Generate a JWT token for a user (defaults to access token)
- * @deprecated Use signAccessToken or signRefreshToken instead
- */
-export async function signToken(
-  userId: string,
-  email: string,
-  role: string,
-  tokenVersion: number
-): Promise<string> {
-  return await signAccessToken(userId, email, role, tokenVersion)
-}
-
-/**
  * Verify and decode a JWT token
  */
 export async function verifyToken(token: string): Promise<TokenPayload> {

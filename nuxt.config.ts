@@ -5,12 +5,6 @@ export default defineNuxtConfig({
       external: ['@prisma/client', 'canvas']
     },
     nodeModulesDirs: [process.cwd() + '/node_modules'],
-    // Allow all environment variables (not just NUXT_ prefixed)
-    experimental: {
-      vars: true
-    },
-    // Ensure non-NUXT_ prefixed env vars are available at runtime
-    envPrefix: '',
     routeRules: {
       '/api/blog': {
         cors: true,
@@ -24,7 +18,7 @@ export default defineNuxtConfig({
           'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=900'
         }
       },
-      '/api/**': { cors: true, headers: { 'Cache-Control': 'no-store' } },
+      '/api/**': { headers: { 'Cache-Control': 'no-store' } },
       '/articles': {
         headers: {
           'Cache-Control': 'public, max-age=120',
@@ -132,18 +126,18 @@ export default defineNuxtConfig({
       'rehype-pretty-code': {
         theme: 'github-dark',
         keepBackground: false,
-        onVisitLine(node: any) {
+        onVisitLine(node: { children: Array<{ type: string; value?: string }> }) {
           // Prevent empty lines from collapsing in preview
           if (node.children.length === 0) {
             node.children = [{ type: 'text', value: ' ' }]
           }
         },
-        onVisitHighlightedLine(node: any) {
+        onVisitHighlightedLine(node: { properties: { className?: string[] } }) {
           // Add class to highlighted lines
           node.properties.className ??= []
           node.properties.className.push('highlighted')
         },
-        onVisitHighlightedChars(node: any) {
+        onVisitHighlightedChars(node: { properties: { className?: string[] } }) {
           // Add class to highlighted chars
           node.properties.className = ['highlighted']
         }

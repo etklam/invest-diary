@@ -14,6 +14,16 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+interface NavigatorStandalone extends Navigator {
+  standalone?: boolean
+}
+
+const devLog = (...args: unknown[]) => {
+  if (import.meta.dev) {
+    console.log(...args)
+  }
+}
+
 // 全域狀態（跨元件共享）
 const deferredPrompt = ref<BeforeInstallPromptEvent | null>(null)
 const isInstalled = ref(false)
@@ -45,7 +55,7 @@ export const useAppPWA = () => {
   const checkIfInstalled = () => {
     // 檢查是否在 standalone 模式下運行
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true
+      (window.navigator as NavigatorStandalone).standalone === true
     
     isInstalled.value = isStandalone
   }
@@ -78,14 +88,14 @@ export const useAppPWA = () => {
       const { outcome } = await deferredPrompt.value.userChoice
 
       if (outcome === 'accepted') {
-        console.log('[PWA] User accepted the install prompt')
+        devLog('[PWA] User accepted the install prompt')
         return true
       } else {
-        console.log('[PWA] User dismissed the install prompt')
+        devLog('[PWA] User dismissed the install prompt')
         return false
       }
     } catch (error) {
-      console.error('[PWA] Install error:', error)
+      devLog('[PWA] Install error:', error)
       return false
     } finally {
       deferredPrompt.value = null

@@ -86,6 +86,13 @@ export const Errors = {
     message: 'Token has been revoked',
   }),
 
+  rateLimited: (retryAfter?: number) => new AppError({
+    statusCode: 429,
+    code: ErrorCodes.AUTH_RATE_LIMITED,
+    message: 'Too many requests. Please try again later.',
+    details: retryAfter ? [{ message: `Retry after ${retryAfter} seconds` }] : undefined,
+  }),
+
   // Diary
   diaryNotFound: (id: string) => new AppError({
     statusCode: 404,

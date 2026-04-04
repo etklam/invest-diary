@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import prisma from '../../../lib/prisma'
 import type { DiaryInput, Diary } from '~/types/diary'
 import { logger } from '~/lib/logger'
@@ -7,6 +8,10 @@ import { stringifyDiaryTags } from '~/lib/diary-tags'
 import { validateTransactions } from '~/lib/transactions/validate'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { attachDiaryTags } from '~/server/utils/diary-response'
+
+function toInputDate(value: string | Date): Date {
+  return value instanceof Date ? value : new Date(value)
+}
 
 export default defineEventHandler(async (event): Promise<Diary> => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -48,7 +53,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
 
     // Update diary and handle transactions and alerts
     // For transactions/alerts, we'll delete existing ones and create new ones for simplicity
-    const diary = await prisma.$transaction(async (tx: any) => {
+    const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Delete existing transactions and alerts
       await tx.transaction.deleteMany({
         where: {
@@ -77,13 +82,13 @@ export default defineEventHandler(async (event): Promise<Diary> => {
               type: tx.type,
               quantity: tx.quantity,
               price: tx.price,
-              tradeDate: new Date((tx.trade_date ?? tx.tradeDate) as any),
+              tradeDate: toInputDate(tx.trade_date ?? tx.tradeDate ?? new Date()),
             })),
           },
           alerts: {
             create: alerts?.map((a) => ({
               message: a.message,
-              triggerAt: toUtcNoonDate((a.trigger_at ?? a.triggerAt) as any),
+              triggerAt: toUtcNoonDate(a.trigger_at ?? a.triggerAt ?? new Date()),
             })),
           },
         },

@@ -56,7 +56,6 @@ export default defineEventHandler(async (event: H3Event) => {
 
     // Build where clause for published posts only
     // 效能優化：使用型別安全的 where 條件
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       status: 'PUBLISHED',
       publishedAt: {

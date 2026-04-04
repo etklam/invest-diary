@@ -1,5 +1,6 @@
 import { Server } from 'socket.io'
 import type { NitroApp } from 'nitropack'
+import { logger } from '~/lib/logger'
 import { connectionManager } from '../websocket/connectionManager'
 import { setupAlertHandlers } from '../websocket/alertHandler'
 import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
@@ -48,19 +49,28 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     const httpServer = nitroApp.h3App?.server || nitroApp.h3App?.node?.server
 
     if (!httpServer) {
-      console.warn('[WS] HTTP server not available, WebSocket will not be initialized')
+      logger.ws.warn('HTTP server not available, WebSocket will not be initialized')
       return
     }
 
     // 建立 Socket.io Server
     const siteUrl = process.env.NUXT_PUBLIC_SITE_URL
+    // Fail closed: production requires explicit siteUrl, dev defaults to localhost
+    const allowedOrigin = siteUrl
+      || (process.env.NODE_ENV === 'production'
+        ? undefined
+        : 'http://localhost:3000')
+
+    if (!allowedOrigin) {
+      logger.ws.error('NUXT_PUBLIC_SITE_URL not set in production — WebSocket connections will be rejected')
+    }
 
     const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
       httpServer,
       {
         cors: {
-          origin: siteUrl || '*',
-          credentials: !!siteUrl, // 只有在明確設定 origin 時才使用 credentials
+          origin: allowedOrigin ?? '',
+          credentials: !!allowedOrigin,
           methods: ['GET', 'POST']
         },
         path: '/socket.io/',
@@ -80,14 +90,14 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       const token = authToken || cookieToken
 
       if (!token) {
-        console.warn(`[WS] Connection rejected: No token provided (socket: ${socket.id})`)
+        logger.ws.warn('Connection rejected: No token provided', { socketId: socket.id })
         return next(new Error('Authentication required'))
       }
 
       try {
         const user = await authenticateAccessToken(token)
         if (!user) {
-          console.warn(`[WS] Connection rejected: user not found or token revoked (socket: ${socket.id})`)
+          logger.ws.warn('Connection rejected: user not found or token revoked', { socketId: socket.id })
           return next(new Error('Invalid token'))
         }
 
@@ -97,10 +107,10 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
           connectedAt: new Date()
         }
 
-        console.log(`[WS] User ${user.id} authenticated (socket: ${socket.id})`)
+        logger.ws.info('User authenticated', { userId: user.id, socketId: socket.id })
         next()
       } catch (err: any) {
-        console.warn(`[WS] Token verification failed: ${err.message} (socket: ${socket.id})`)
+        logger.ws.warn('Token verification failed', { error: err.message, socketId: socket.id })
         next(new Error('Invalid token'))
       }
     })
@@ -109,7 +119,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     io.on('connection', (socket) => {
       const { userId } = socket.data
 
-      console.log(`[WS] Client connected: ${socket.id} (user: ${userId})`)
+      logger.ws.info('Client connected', { socketId: socket.id, userId })
 
       // 註冊連線
       connectionManager.register(userId, socket)
@@ -133,20 +143,20 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
       // 處理斷線
       socket.on('disconnect', (reason) => {
-        console.log(`[WS] Client disconnected: ${socket.id} (user: ${userId}, reason: ${reason})`)
+        logger.ws.info('Client disconnected', { socketId: socket.id, userId, reason })
         connectionManager.unregister(socket.id)
         socket.leave(`user:${userId}`)
       })
 
       // 處理錯誤
       socket.on('error', (err) => {
-        console.error(`[WS] Socket error: ${socket.id} (user: ${userId})`, err)
+        logger.ws.error('Socket error', { socketId: socket.id, userId, error: err })
       })
     })
 
     // 將 io 實例掛載到 nitroApp 供其他模組使用
     nitroApp.socketIo = io
 
-    console.log('[WS] Socket.io server initialized')
+    logger.ws.info('Socket.io server initialized')
   })
 })

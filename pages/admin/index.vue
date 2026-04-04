@@ -3,7 +3,7 @@ import { formatDate } from '~/lib/utils'
 import { buildAdminUsersQueryString, resolveReloadPageAfterDelete } from '~/lib/admin/user-management'
 
 const { t } = useI18n()
-const { user: currentUser, isAuthenticated, isAdmin } = useAuth()
+const { user: currentUser } = useAuth()
 const toast = useToast()
 
 definePageMeta({

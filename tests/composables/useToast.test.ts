@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ref, readonly } from 'vue'
 
+vi.unmock('~/composables/useToast')
+
 const createUseState = () => {
   const store = new Map<string, ReturnType<typeof ref>>()
   return (key: string, init: () => any) => {
@@ -15,7 +17,6 @@ describe('useToast composable', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.resetModules()
-    vi.unmock('~/composables/useToast')
     vi.stubGlobal('useState', createUseState())
     vi.stubGlobal('readonly', readonly)
   })

@@ -16,10 +16,6 @@ const availableLocales = computed(() =>
   (locales.value as { code: LocaleCode; name: string }[]).filter(l => l.code !== locale.value)
 )
 
-const currentLocale = computed(() =>
-  (locales.value as { code: string; name: string }[]).find(l => l.code === locale.value)
-)
-
 const selectLocale = async (code: LocaleCode) => {
   await setLocale(code)
   isOpen.value = false

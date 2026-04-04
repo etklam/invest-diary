@@ -17,7 +17,7 @@ interface HealthCheckResponse {
   }
 }
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
   const startTime = Date.now()
   const checks: HealthCheckResponse['checks'] = {
     database: {
@@ -38,10 +38,12 @@ export default defineEventHandler(async (event) => {
       status: 'ok',
       responseTime
     }
-  } catch (error: any) {
+  } catch (error: { message?: string } | unknown) {
     checks.database = {
       status: 'error',
-      message: error.message || 'Database connection failed'
+      message: typeof error === 'object' && error && 'message' in error
+        ? String(error.message)
+        : 'Database connection failed'
     }
 
     return {

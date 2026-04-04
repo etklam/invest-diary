@@ -284,7 +284,8 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
+import type { QuoteResponse } from '~/lib/yahoo-finance'
 import { formatCurrency } from '~/lib/utils'
 import { watchDebounced } from '@vueuse/core'
 
@@ -294,7 +295,6 @@ import {
   buildHoldingChartSegments,
   formatHoldingQuantity,
   formatHoldingShare,
-  getHoldingConcentrationClass,
 } from '~/lib/stocks-analytics'
 import {
   applyStocksView,
@@ -314,7 +314,7 @@ definePageMeta({
 })
 
 // Fetch holdings from API
-const { data: holdings, pending, error, refresh } = await useLazyFetch<HoldingViewInput[]>(
+const { data: holdings, pending } = await useLazyFetch<HoldingViewInput[]>(
   '/api/stocks/holdings',
   {
     server: false,
@@ -416,7 +416,7 @@ const fetchStockPrices = async () => {
     isFetchingPrices.value = true
     const symbols = baseHoldings.value.map(h => h.symbol)
 
-    const pricesData = await $fetch<Record<string, any>>('/api/stocks/prices', {
+    const pricesData = await $fetch<Record<string, QuoteResponse>>('/api/stocks/prices', {
       method: 'POST',
       body: { symbols }
     })
@@ -448,8 +448,7 @@ const fetchStockPrices = async () => {
         cooldownTimer = null
       }
     }, 1000)
-  } catch (err) {
-    console.error('Fetch failed', err)
+  } catch {
     toast.error(t('stock.dashboard.couldNotRefresh'))
   } finally {
     isFetchingPrices.value = false

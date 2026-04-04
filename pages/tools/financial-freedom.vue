@@ -17,8 +17,6 @@ const {
   monthlyContribution,
   expectedReturn,
   withdrawalRatePreset,
-  customWithdrawalRate,
-  inflationRate,
   copySuccess,
   returnRateLevel,
   returnRateIndicator,

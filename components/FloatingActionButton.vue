@@ -45,9 +45,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { ref, h } from 'vue'
 import { useRouter } from 'vue-router'
-import { useMobileDetection } from '~/composables/useMobileDetection'
 
 // 操作項目接口
 interface ActionItem {
@@ -106,7 +105,6 @@ const AlertIcon = () => h('svg', {
 
 // 路由和響應式偵測
 const router = useRouter()
-const { isMobile, isTablet } = useMobileDetection()
 
 // 展開狀態
 const isExpanded = ref(false)
@@ -169,14 +167,6 @@ const closeExpanded = () => {
 const handleActionClick = (item: ActionItem) => {
   item.action()
 }
-
-// 計算樣式
-const fabStyle = computed(() => {
-  return {
-    '--fab-size': isMobile.value ? '56px' : '64px',
-    '--fab-icon-size': isMobile.value ? '24px' : '28px'
-  }
-})
 
 // 監聽 ESC 鍵關閉
 const handleKeydown = (e: KeyboardEvent) => {

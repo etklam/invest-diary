@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
   const ip = getRequestIP(event) || 'unknown'
   try {
     await rateLimiters.yahooFinance(ip)
-  } catch (rateLimiterRes) {
+  } catch {
     throw createError({
       statusCode: 429,
       statusMessage: 'Too many requests. Please try again later.',
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   try {
     const quote = await fetchQuote(symbol)
     return quote
-  } catch (error) {
+  } catch {
     throw createError({
       statusCode: 502,
       statusMessage: 'Yahoo quote unavailable. Please try again later.',

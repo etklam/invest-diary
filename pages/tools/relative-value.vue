@@ -157,8 +157,7 @@ async function fetchHistoricalDataForSymbols() {
     ])
     primaryHistoricalData.value = primaryData
     relativeHistoricalData.value = relativeData
-  } catch (error) {
-    console.error('Failed to fetch historical data:', error)
+  } catch {
     toast.error(t('tools.relativeValue.historicalDataFetchFailed'))
     primaryHistoricalData.value = []
     relativeHistoricalData.value = []
@@ -174,6 +173,14 @@ interface RelativeValuePreset {
   relativeSymbol: string
   name: string
   description: string
+}
+
+interface ApiErrorLike {
+  statusMessage?: string
+  message?: string
+  data?: {
+    statusMessage?: string
+  }
 }
 
 const presets: RelativeValuePreset[] = [
@@ -246,7 +253,7 @@ const symbolsMatch = computed(() =>
 // Watch symbol changes to auto-uppercase
 // Logic moved to StockInput component
 
-function buildQuoteErrorMessage(symbol: string, suggestion: string | null, error: any): string {
+function buildQuoteErrorMessage(symbol: string, suggestion: string | null, error: ApiErrorLike | null | undefined): string {
   const statusMessage = error?.data?.statusMessage || error?.statusMessage || error?.message || ''
 
   if (typeof statusMessage === 'string' && statusMessage.includes('Too many requests')) {
@@ -278,11 +285,11 @@ async function fetchPrimaryQuote() {
     const response = await $fetch<QuoteResponse>(buildQuoteUrl(primarySymbol.value))
     primaryQuote.value = response
     primaryPrice.value = response.regularMarketPrice
-  } catch (error: any) {
+  } catch (error: unknown) {
     primaryError.value = buildQuoteErrorMessage(
       primarySymbol.value,
       primarySymbolSuggestion.value,
-      error
+      error as ApiErrorLike
     )
     toast.error(primaryError.value, 5000)
   } finally {
@@ -303,11 +310,11 @@ async function fetchRelativeQuote() {
     const response = await $fetch<QuoteResponse>(buildQuoteUrl(relativeSymbol.value))
     relativeQuote.value = response
     relativePrice.value = response.regularMarketPrice
-  } catch (error: any) {
+  } catch (error: unknown) {
     relativeError.value = buildQuoteErrorMessage(
       relativeSymbol.value,
       relativeSymbolSuggestion.value,
-      error
+      error as ApiErrorLike
     )
     toast.error(relativeError.value, 5000)
   } finally {

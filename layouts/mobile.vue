@@ -23,7 +23,7 @@ import BottomNavigation from '~/components/BottomNavigation.vue'
 import FloatingActionButton from '~/components/FloatingActionButton.vue'
 
 // 響應式偵測
-const { isMobile, isTablet, screenWidth, screenHeight, orientation } = useMobileDetection()
+const { isMobile, isTablet } = useMobileDetection()
 
 // 鍵盤狀態
 const keyboardVisible = ref(false)

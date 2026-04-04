@@ -125,7 +125,6 @@ const dismissAlert = async (id: string | bigint) => {
     refresh()
   } catch (e: Error | unknown) {
     if (isAuthSessionError(e)) return
-    console.error(e)
     toast.error(t('error.unknown'))
   }
 }

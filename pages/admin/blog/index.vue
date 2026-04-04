@@ -12,7 +12,6 @@ import { CATEGORY_OPTIONS } from '~/types/blog'
 
 const { t } = useI18n()
 const toast = useToast()
-const router = useRouter()
 
 definePageMeta({
   middleware: 'admin',

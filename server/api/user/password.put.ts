@@ -2,22 +2,59 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import prisma from '../../../lib/prisma'
 import { clearAuthCookies } from '~/server/utils/auth'
+import { AppError, Errors } from '~/lib/errors/factory'
+import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
+import { logger } from '~/lib/logger'
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
   newPassword: z.string().min(8, 'New password must be at least 8 characters')
 })
 
+type RateLimitLogger = {
+  warn: (message: string, meta?: Record<string, unknown>) => void
+}
+
+async function enforceRateLimit(
+  limitFn: (identifier: string) => Promise<void>,
+  identifier: string,
+  log: RateLimitLogger,
+  message: string,
+  meta: Record<string, unknown>
+): Promise<void> {
+  try {
+    await limitFn(identifier)
+  } catch {
+    log.warn(message, meta)
+    throw Errors.rateLimited(60)
+  }
+}
+
 export default defineEventHandler(async (event) => {
+  const log = logger.auth.withRequestId(event.context.requestId)
   try {
     const userId = event.context.user?.id
 
     if (!userId) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Unauthorized'
-      })
+      throw Errors.unauthorized()
     }
+
+    const ipIdentifier = getRateLimitIdentifier(event)
+    await enforceRateLimit(
+      rateLimiters.authPasswordIp,
+      ipIdentifier,
+      log,
+      'Password change rate limited',
+      { ip: ipIdentifier }
+    )
+
+    await enforceRateLimit(
+      rateLimiters.authPasswordIdentity,
+      String(userId),
+      log,
+      'Password change rate limited',
+      { ip: ipIdentifier, userId: String(userId) }
+    )
 
     const body = await readBody(event)
 
@@ -34,20 +71,15 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!user) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'User not found'
-      })
+      throw Errors.userNotFound()
     }
 
     // Verify current password
     const isValidPassword = await bcrypt.compare(validatedData.currentPassword, user.password)
 
     if (!isValidPassword) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Current password is incorrect'
-      })
+      log.warn('Password change failed: incorrect current password', { userId: String(userId) })
+      throw Errors.invalidCredentials()
     }
 
     // Hash new password
@@ -72,7 +104,7 @@ export default defineEventHandler(async (event) => {
     // Clear current session cookies as well
     clearAuthCookies(event)
 
-    console.log('[API] User password changed:', userId)
+    log.info('Password changed', { userId: String(userId) })
 
     return {
       success: true,
@@ -80,11 +112,17 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: error.issues[0]?.message ?? 'Invalid input'
-      })
+      throw Errors.validationError(
+        error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        }))
+      ).toH3Error()
     }
-    throw error
+    if (error instanceof AppError) {
+      throw error.toH3Error()
+    }
+    log.error('Password change unexpected error', { error: String(error) })
+    throw Errors.internalError(error).toH3Error()
   }
 })

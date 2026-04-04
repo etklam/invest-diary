@@ -39,6 +39,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 
 const { toasts, removeToast } = useToast()

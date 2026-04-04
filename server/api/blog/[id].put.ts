@@ -1,5 +1,6 @@
 import { ZodError } from 'zod'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
 import { generateSlug } from '~/lib/blog'
 import adminMiddleware from '~/server/middleware/admin'
 import { AppError, Errors } from '~/lib/errors/factory'
@@ -76,7 +77,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    console.log('[Blog] Post updated:', post.id)
+    logger.blog.info('Post updated', { postId: post.id.toString() })
     return post
   } catch (error) {
     if (error instanceof AppError) {
@@ -90,7 +91,7 @@ export default defineEventHandler(async (event) => {
         }))
       ).toH3Error()
     }
-    console.error('[Blog] Error updating post:', error)
+    logger.blog.error('Error updating post', { error })
     throw Errors.internalError(error).toH3Error()
   }
 })

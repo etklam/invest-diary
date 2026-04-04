@@ -1,22 +1,60 @@
 import { ref } from 'vue'
 
+interface SpeechRecognitionAlternativeLike {
+  transcript: string
+}
+
+interface SpeechRecognitionResultLike {
+  isFinal: boolean
+  0: SpeechRecognitionAlternativeLike
+}
+
+interface SpeechRecognitionEventLike extends Event {
+  results: Iterable<SpeechRecognitionResultLike>
+}
+
+interface SpeechRecognitionErrorEventLike extends Event {
+  error?: string
+}
+
+interface SpeechRecognitionLike {
+  lang: string
+  continuous: boolean
+  interimResults: boolean
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null
+  onend: (() => void) | null
+  start: () => void
+  stop: () => void
+}
+
+interface SpeechRecognitionConstructorLike {
+  new (): SpeechRecognitionLike
+}
+
+interface SpeechRecognitionWindowLike extends Window {
+  SpeechRecognition?: SpeechRecognitionConstructorLike
+  webkitSpeechRecognition?: SpeechRecognitionConstructorLike
+}
+
 export function useSpeechRecognition() {
-  const isSupported = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+  const speechWindow = typeof window !== 'undefined' ? window as SpeechRecognitionWindowLike : null
+  const isSupported = Boolean(speechWindow && (speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition))
   const isListening = ref(false)
   const transcript = ref('')
   const interimTranscript = ref('')
   const error = ref<string | null>(null)
 
-  let recognition: any = null
+  let recognition: SpeechRecognitionLike | null = null
 
-  if (isSupported) {
-    const Ctor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+  const Ctor = speechWindow?.SpeechRecognition || speechWindow?.webkitSpeechRecognition
+  if (Ctor) {
     recognition = new Ctor()
     recognition.lang = 'zh-TW'
     recognition.continuous = true
     recognition.interimResults = true
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event) => {
       let finalText = ''
       let interimText = ''
       for (const res of event.results) {
@@ -32,7 +70,7 @@ export function useSpeechRecognition() {
       interimTranscript.value = interimText.trim()
     }
 
-    recognition.onerror = (e: any) => {
+    recognition.onerror = (e) => {
       error.value = e.error || 'speech_error'
       isListening.value = false
     }

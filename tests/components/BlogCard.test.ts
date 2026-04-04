@@ -63,6 +63,7 @@ describe('BlogCard Component', () => {
     })
     mockUseI18n.mockReturnValue({
       t: (key: string) => key,
+      locale: ref('zh-TW'),
     })
     mockUseToast.mockReturnValue({
       success: vi.fn(),

@@ -1,42 +1,57 @@
 <template>
   <main class="fintech-blog min-h-screen text-slate-900 dark:text-slate-100">
-    <section class="relative overflow-hidden px-4 pb-12 pt-10 sm:px-6 sm:pt-14">
-      <div class="bg-grid absolute inset-0 opacity-35" aria-hidden="true" />
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden px-4 pb-16 pt-12 sm:px-6 sm:pt-20 lg:pb-24 lg:pt-24">
+      <div class="bg-grid absolute inset-0 opacity-[0.15]" aria-hidden="true" />
       <div class="orb orb-cyan" aria-hidden="true" />
       <div class="orb orb-amber" aria-hidden="true" />
 
       <div class="relative mx-auto max-w-7xl">
-        <header class="hero-shell reveal rounded-3xl p-6 sm:p-8 lg:p-10">
-          <div class="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-end">
-            <div>
-              <p class="inline-flex items-center gap-2 rounded-full border border-sky-300/50 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 backdrop-blur dark:border-sky-600/60 dark:bg-slate-900/80 dark:text-sky-200">
-                <Icon name="heroicons:newspaper-20-solid" class="h-4 w-4" />
-                Fintech Editorial Desk
-              </p>
-              <h1 class="mt-4 text-3xl font-semibold leading-tight text-slate-950 dark:text-slate-100 sm:text-4xl lg:text-5xl">
+        <header class="reveal rounded-3xl">
+          <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div class="max-w-3xl">
+              <div class="mb-6 flex items-center gap-3">
+                <span class="inline-flex items-center gap-2 rounded-full border border-sky-200/50 bg-sky-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-sky-700 backdrop-blur-sm dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300">
+                  <Icon name="heroicons:sparkles-20-solid" class="h-4 w-4" />
+                  Insight & Analysis
+                </span>
+                <span class="h-px w-12 bg-slate-200 dark:bg-slate-700"></span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Editorial Desk</span>
+              </div>
+              <h1 class="text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">
                 {{ $t('blog.pageTitle') }}
               </h1>
-              <p class="mt-4 max-w-3xl text-base leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg">
+              <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                 {{ $t('blog.description') }}
               </p>
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              <div class="metric-card reveal reveal-2">
-                <p class="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                  {{ $t('blog.categoriesLabel') }}
-                </p>
-                <p class="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                  {{ categories.length - 1 }}
-                </p>
+            <div class="flex flex-wrap items-center gap-4 lg:flex-nowrap">
+              <div class="stats-card reveal-2 group">
+                <div class="flex flex-col">
+                  <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-sky-500 dark:text-slate-500 transition-colors">
+                    {{ $t('blog.categoriesLabel') }}
+                  </span>
+                  <span class="mt-1 text-3xl font-bold tabular-nums text-slate-900 dark:text-white">
+                    {{ categories.length - 1 }}
+                  </span>
+                </div>
+                <div class="h-10 w-10 rounded-xl bg-sky-50 flex items-center justify-center dark:bg-sky-500/10">
+                  <Icon name="heroicons:tag" class="h-5 w-5 text-sky-600 dark:text-sky-400" />
+                </div>
               </div>
-              <div class="metric-card reveal reveal-3">
-                <p class="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                  {{ $t('admin.pagination.showing') }}
-                </p>
-                <p class="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                  {{ posts.length }}
-                </p>
+              <div class="stats-card reveal-3 group">
+                <div class="flex flex-col">
+                  <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-amber-500 dark:text-slate-500 transition-colors">
+                    {{ $t('admin.pagination.showing') }}
+                  </span>
+                  <span class="mt-1 text-3xl font-bold tabular-nums text-slate-900 dark:text-white">
+                    {{ posts.length }}
+                  </span>
+                </div>
+                <div class="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center dark:bg-amber-500/10">
+                  <Icon name="heroicons:document-text" class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                </div>
               </div>
             </div>
           </div>
@@ -44,181 +59,240 @@
       </div>
     </section>
 
-    <section class="px-4 pb-20 sm:px-6">
-      <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-12">
-        <aside v-if="!isMobile" class="lg:col-span-3">
-          <div class="sidebar-shell sticky top-4 rounded-2xl p-5">
-            <div class="mb-6">
-              <label for="search" class="mb-2 block text-sm font-semibold tracking-wide text-slate-700 dark:text-slate-300">
-                {{ $t('common.search') }}
-              </label>
-              <div class="relative">
-                <input
-                  id="search"
-                  v-model="searchQuery"
-                  type="text"
-                  @input="handleSearchInput"
-                  @keyup.enter="performSearch"
-                  class="search-input w-full rounded-xl border border-slate-200/80 bg-white/85 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500"
-                  :placeholder="$t('blog.searchPlaceholder')"
-                />
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Icon name="heroicons:magnifying-glass-20-solid" class="h-5 w-5 text-slate-400 dark:text-slate-500" />
+    <!-- Main Content -->
+    <section class="px-4 pb-24 sm:px-6">
+      <div class="mx-auto max-w-7xl">
+        <div class="grid grid-cols-1 gap-10 lg:grid-cols-12">
+          <!-- Sidebar -->
+          <aside v-if="!isMobile" class="lg:col-span-3">
+            <div class="sticky top-24 space-y-8">
+              <div class="group">
+                <label for="search" class="mb-3 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  {{ $t('common.search') }}
+                </label>
+                <div class="relative">
+                  <input
+                    id="search"
+                    v-model="searchQuery"
+                    type="text"
+                    @input="handleSearchInput"
+                    @keyup.enter="performSearch"
+                    class="search-input w-full rounded-2xl border border-slate-200 bg-white/50 py-3.5 pl-11 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-900"
+                    :placeholder="$t('blog.searchPlaceholder')"
+                  />
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                    <Icon name="heroicons:magnifying-glass-20-solid" class="h-5 w-5 text-slate-400 group-focus-within:text-sky-500 transition-colors" />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <CategoryFilter :categories="categories" />
-          </div>
-        </aside>
-
-        <div class="lg:col-span-9">
-          <div v-if="pending" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            <div
-              v-for="i in 6"
-              :key="i"
-              class="skeleton-card animate-pulse rounded-2xl p-6"
-            >
-              <div class="mb-4 aspect-video rounded-xl bg-slate-200/70 dark:bg-slate-800/70" />
-              <div class="mb-2 h-4 w-3/4 rounded bg-slate-200/70 dark:bg-slate-800/70" />
-              <div class="mb-4 h-4 w-1/2 rounded bg-slate-200/70 dark:bg-slate-800/70" />
-              <div class="mb-2 h-3 w-full rounded bg-slate-200/70 dark:bg-slate-800/70" />
-              <div class="h-3 w-5/6 rounded bg-slate-200/70 dark:bg-slate-800/70" />
-            </div>
-          </div>
-
-          <div v-else-if="error" class="rounded-2xl border border-red-300/70 bg-red-50/90 p-4 text-red-900 dark:border-red-800/50 dark:bg-red-900/20 dark:text-red-300">
-            <div class="flex items-start gap-3">
-              <Icon name="heroicons:x-circle-20-solid" class="h-5 w-5" />
-              <div>
-                <h3 class="text-sm font-medium">
-                  {{ $t('blog.loadFailed') }}
+              <div class="rounded-3xl border border-slate-100 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900/30">
+                <h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  {{ $t('blog.categoriesLabel') }}
                 </h3>
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <button class="pager-btn cursor-pointer rounded-lg px-4 py-2 text-sm font-medium" type="button" @click="refresh()">
-                    {{ $t('blog.retryLoad') }}
-                  </button>
+                <CategoryFilter :categories="categories" />
+              </div>
+            </div>
+          </aside>
+
+          <!-- Article Grid -->
+          <div class="lg:col-span-9">
+            <div v-if="pending" class="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+              <div
+                v-for="i in 6"
+                :key="i"
+                class="skeleton-card animate-pulse rounded-3xl bg-white/40 p-5 dark:bg-slate-900/40"
+              >
+                <div class="mb-4 aspect-[16/10] rounded-2xl bg-slate-200/60 dark:bg-slate-800/60" />
+                <div class="mb-3 h-4 w-3/4 rounded-lg bg-slate-200/60 dark:bg-slate-800/60" />
+                <div class="mb-6 h-4 w-1/2 rounded-lg bg-slate-200/60 dark:bg-slate-800/60" />
+                <div class="flex items-center gap-3">
+                  <div class="h-10 w-10 rounded-full bg-slate-200/60 dark:bg-slate-800/60" />
+                  <div class="space-y-2">
+                    <div class="h-3 w-24 rounded bg-slate-200/60 dark:bg-slate-800/60" />
+                    <div class="h-3 w-16 rounded bg-slate-200/60 dark:bg-slate-800/60" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div v-else-if="posts.length === 0" class="empty-shell rounded-2xl py-16 text-center">
-            <div class="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full border border-slate-200/80 bg-white/85 dark:border-slate-700/80 dark:bg-slate-900/80">
-              <Icon name="heroicons:document-text-20-solid" class="h-8 w-8 text-slate-400 dark:text-slate-500" />
-            </div>
-            <h3 class="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">
-              {{ $t('blog.noPosts') }}
-            </h3>
-            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              {{ $t('blog.noPostsDescription') }}
-            </p>
-          </div>
-
-          <div v-else class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            <BlogCard
-              v-for="post in posts"
-              :key="post.id"
-              :post="post"
-            />
-          </div>
-
-          <div
-            v-if="enableInfiniteScroll"
-            class="mt-10 flex flex-col items-center gap-4"
-          >
-            <div ref="loadMoreTrigger" class="h-4 w-full" aria-hidden="true" />
-            <div v-if="loadingMore" class="flex items-center gap-3 rounded-full border border-sky-200/70 bg-white/80 px-4 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-200">
-              <span class="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></span>
-              {{ $t('common.loading') }}
-            </div>
-            <p v-else-if="!hasMore" class="text-sm text-slate-500 dark:text-slate-400">
-              已載入全部文章
-            </p>
-          </div>
-
-          <div v-if="pagination && pagination.totalPages > 1 && !enableInfiniteScroll" class="mt-10 flex justify-center">
-            <nav class="pager-shell flex items-center gap-2 rounded-xl px-3 py-2">
+            <div v-else-if="error" class="rounded-3xl border border-red-100 bg-red-50/50 p-8 text-center dark:border-red-900/30 dark:bg-red-900/10">
+              <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100/50 dark:bg-red-900/30">
+                <Icon name="heroicons:exclamation-triangle-20-solid" class="h-8 w-8 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 class="text-lg font-bold text-slate-950 dark:text-white">
+                {{ $t('blog.loadFailed') }}
+              </h3>
+              <p class="mt-2 text-slate-600 dark:text-slate-400">
+                我們在載入文章時遇到了一些問題，請稍後再試。
+              </p>
               <button
-                :disabled="pagination.page <= 1"
-                class="pager-btn cursor-pointer rounded-lg px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
-                :aria-label="$t('blog.previousPage')"
-                @click="goToPage(pagination.page - 1)"
+                class="mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                type="button"
+                @click="refresh()"
               >
-                {{ $t('admin.pagination.previous') }}
+                <Icon name="heroicons:arrow-path" class="h-4 w-4" />
+                {{ $t('blog.retryLoad') }}
               </button>
+            </div>
 
-              <span class="px-2 text-sm text-slate-700 dark:text-slate-300">
-                {{ $t('blog.pageIndicator', { page: pagination.page, totalPages: pagination.totalPages }) }}
-              </span>
-
+            <div v-else-if="posts.length === 0" class="flex min-h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-16 text-center dark:border-slate-800 dark:bg-slate-900/30">
+              <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-sm dark:bg-slate-800">
+                <Icon name="heroicons:document-magnifying-glass" class="h-10 w-10 text-slate-300 dark:text-slate-600" />
+              </div>
+              <h3 class="text-xl font-bold text-slate-950 dark:text-white">
+                {{ $t('blog.noPosts') }}
+              </h3>
+              <p class="mt-2 max-w-xs text-slate-600 dark:text-slate-400">
+                {{ $t('blog.noPostsDescription') }}
+              </p>
               <button
-                :disabled="pagination.page >= pagination.totalPages"
-                class="pager-btn cursor-pointer rounded-lg px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
-                :aria-label="$t('blog.nextPage')"
-                @click="goToPage(pagination.page + 1)"
+                v-if="searchQuery"
+                @click="searchQuery = ''; performSearch()"
+                class="mt-6 text-sm font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400"
               >
-                {{ $t('admin.pagination.next') }}
+                清除搜尋條件
               </button>
-            </nav>
+            </div>
+
+            <div v-else class="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+              <BlogCard
+                v-for="(post, index) in posts"
+                :key="post.id"
+                :post="post"
+                class="reveal"
+                :style="{ animationDelay: `${index * 50}ms` }"
+              />
+            </div>
+
+            <!-- Loading More -->
+            <div
+              v-if="enableInfiniteScroll"
+              class="mt-16 flex flex-col items-center gap-6"
+            >
+              <div ref="loadMoreTrigger" class="h-4 w-full" aria-hidden="true" />
+              <div v-if="loadingMore" class="flex items-center gap-3 rounded-2xl bg-white px-6 py-3 text-sm font-bold shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:shadow-none">
+                <span class="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-sky-500 border-t-transparent"></span>
+                <span class="text-slate-700 dark:text-slate-200">正在探索更多內容...</span>
+              </div>
+              <div v-else-if="!hasMore && posts.length > 0" class="flex items-center gap-3 text-slate-400 dark:text-slate-600">
+                <span class="h-px w-8 bg-slate-200 dark:bg-slate-800"></span>
+                <p class="text-xs font-bold uppercase tracking-widest">
+                  已經看完了
+                </p>
+                <span class="h-px w-8 bg-slate-200 dark:bg-slate-800"></span>
+              </div>
+            </div>
+
+            <!-- Pagination (Fallback) -->
+            <div v-if="pagination && pagination.totalPages > 1 && !enableInfiniteScroll" class="mt-16 flex justify-center">
+              <nav class="flex items-center gap-2 rounded-2xl bg-white p-2 shadow-sm dark:bg-slate-900">
+                <button
+                  :disabled="pagination.page <= 1"
+                  class="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-slate-800"
+                  @click="goToPage(pagination.page - 1)"
+                >
+                  <Icon name="heroicons:chevron-left" class="h-5 w-5" />
+                </button>
+
+                <div class="flex items-center gap-1 px-4 text-sm font-bold">
+                  <span class="text-slate-900 dark:text-white">{{ pagination.page }}</span>
+                  <span class="text-slate-400">/</span>
+                  <span class="text-slate-400">{{ pagination.totalPages }}</span>
+                </div>
+
+                <button
+                  :disabled="pagination.page >= pagination.totalPages"
+                  class="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-slate-800"
+                  @click="goToPage(pagination.page + 1)"
+                >
+                  <Icon name="heroicons:chevron-right" class="h-5 w-5" />
+                </button>
+              </nav>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <div v-if="isMobile" class="fixed bottom-6 right-4 z-40 flex flex-col gap-3 sm:right-6">
+    <!-- Mobile Controls -->
+    <div v-if="isMobile" class="fixed bottom-8 right-6 z-40 flex flex-col gap-4">
       <button
         type="button"
-        class="fab-btn"
+        class="mobile-fab group"
         aria-label="回到頂部"
         @click="scrollToTop"
       >
-        <Icon name="heroicons:arrow-up-20-solid" class="h-5 w-5" />
+        <Icon name="heroicons:chevron-up" class="h-6 w-6 transition-transform group-hover:-translate-y-1" />
       </button>
       <button
         type="button"
-        class="fab-btn"
+        class="mobile-fab bg-sky-600 !text-white group"
         aria-label="切換篩選"
         @click="toggleMobileFilters"
       >
-        <Icon name="heroicons:adjustments-horizontal-20-solid" class="h-5 w-5" />
+        <Icon name="heroicons:adjustments-horizontal" class="h-6 w-6 transition-transform group-hover:scale-110" />
       </button>
     </div>
 
-    <div
-      v-if="isMobile && showMobileFilters"
-      class="fixed inset-x-4 bottom-24 z-40 rounded-2xl border border-sky-200/70 bg-white/95 p-4 shadow-xl backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/95"
-    >
-      <div class="mb-3 flex items-center justify-between">
-        <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          篩選
-        </h3>
-        <button type="button" class="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200" @click="toggleMobileFilters">
-          關閉
-        </button>
+    <!-- Mobile Filter Modal -->
+    <Transition name="fade">
+      <div
+        v-if="isMobile && showMobileFilters"
+        class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 backdrop-blur-sm lg:hidden"
+        @click.self="toggleMobileFilters"
+      >
+        <Transition name="slide-up">
+          <div class="w-full rounded-t-[2.5rem] bg-white p-8 shadow-2xl dark:bg-slate-900">
+            <div class="mb-8 flex items-center justify-between">
+              <div>
+                <h3 class="text-xl font-bold text-slate-950 dark:text-white">篩選與搜尋</h3>
+                <p class="mt-1 text-sm text-slate-500">尋找感興趣的主題</p>
+              </div>
+              <button
+                type="button"
+                class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800"
+                @click="toggleMobileFilters"
+              >
+                <Icon name="heroicons:x-mark" class="h-6 w-6" />
+              </button>
+            </div>
+
+            <div class="space-y-8">
+              <div class="space-y-3">
+                <label for="mobile-search" class="text-xs font-bold uppercase tracking-widest text-slate-400">
+                  {{ $t('common.search') }}
+                </label>
+                <div class="relative">
+                  <input
+                    id="mobile-search"
+                    v-model="searchQuery"
+                    type="text"
+                    @input="handleSearchInput"
+                    @keyup.enter="performSearch"
+                    class="w-full rounded-2xl border-none bg-slate-100 py-4 pl-12 pr-4 text-slate-900 focus:ring-2 focus:ring-sky-500/20 dark:bg-slate-800 dark:text-white"
+                    :placeholder="$t('blog.searchPlaceholder')"
+                  />
+                  <Icon name="heroicons:magnifying-glass" class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                </div>
+              </div>
+
+              <div class="space-y-3 pb-8">
+                <label class="text-xs font-bold uppercase tracking-widest text-slate-400">
+                  {{ $t('blog.categoriesLabel') }}
+                </label>
+                <CategoryFilter :categories="categories" />
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
-      <div class="space-y-4">
-        <div>
-          <label for="mobile-search" class="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-            {{ $t('common.search') }}
-          </label>
-          <input
-            id="mobile-search"
-            v-model="searchQuery"
-            type="text"
-            @input="handleSearchInput"
-            @keyup.enter="performSearch"
-            class="search-input w-full rounded-xl border border-slate-200/80 bg-white/85 py-3 px-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500"
-            :placeholder="$t('blog.searchPlaceholder')"
-          />
-        </div>
-        <CategoryFilter :categories="categories" />
-      </div>
-    </div>
+    </Transition>
   </main>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useInfiniteScroll, useMediaQuery } from '@vueuse/core'
 import { CATEGORY_OPTIONS } from '~/types/blog'
 import type { LocationQueryValue } from 'vue-router'
@@ -378,7 +452,7 @@ const handleSearchInput = () => {
   if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
   searchDebounceTimer = setTimeout(() => {
     performSearch()
-  }, 300)
+  }, 400)
 }
 
 onBeforeUnmount(() => {
@@ -466,7 +540,7 @@ if (process.client) {
   useInfiniteScroll(
     loadMoreTrigger,
     () => loadMore(),
-    { distance: 280 }
+    { distance: 400 }
   )
 }
 
@@ -490,179 +564,115 @@ await loadInitial()
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 .fintech-blog {
-  font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
-  background:
-    radial-gradient(1200px 700px at 12% -10%, rgb(56 189 248 / 18%), transparent 58%),
-    radial-gradient(1100px 620px at 95% -5%, rgb(245 158 11 / 14%), transparent 62%),
-    rgb(240 249 255);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #f8fafc;
 }
 
-:global(.dark .fintech-blog),
-:global(.dark-mode .fintech-blog) {
-  background:
-    radial-gradient(1100px 640px at 10% -10%, rgb(56 189 248 / 10%), transparent 58%),
-    radial-gradient(900px 520px at 95% -8%, rgb(245 158 11 / 7%), transparent 62%),
-    rgb(2 8 23);
+:global(.dark .fintech-blog) {
+  background-color: #020617;
 }
 
 .bg-grid {
-  background-image:
-    linear-gradient(to right, rgb(12 74 110 / 6%) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(12 74 110 / 6%) 1px, transparent 1px);
-  background-size: 36px 36px;
+  background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0);
+  background-size: 40px 40px;
+  color: rgb(15 23 42 / 0.05);
 }
 
-:global(.dark .bg-grid),
-:global(.dark-mode .bg-grid) {
-  opacity: 0.14;
-  background-image:
-    linear-gradient(to right, rgb(148 163 184 / 10%) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(148 163 184 / 10%) 1px, transparent 1px);
+:global(.dark .bg-grid) {
+  color: rgb(255 255 255 / 0.03);
 }
 
 .orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(58px);
+  filter: blur(80px);
   pointer-events: none;
+  opacity: 0.5;
 }
 
 .orb-cyan {
-  width: 280px;
-  height: 280px;
-  background: rgb(56 189 248 / 28%);
-  top: 26px;
-  right: 12%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.3) 0%, transparent 70%);
+  top: -100px;
+  right: -50px;
 }
 
 .orb-amber {
-  width: 230px;
-  height: 230px;
-  background: rgb(245 158 11 / 24%);
-  bottom: 20px;
-  left: 10%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%);
+  bottom: 10%;
+  left: -50px;
 }
 
-.hero-shell,
-.sidebar-shell,
-.empty-shell,
-.pager-shell,
-.metric-card,
-.skeleton-card {
-  border: 1px solid rgb(186 230 253 / 80%);
-  background: rgb(255 255 255 / 82%);
-  backdrop-filter: blur(9px);
+.stats-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  background: white;
+  border: 1px solid #f1f5f9;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.02), 0 2px 4px -2px rgb(0 0 0 / 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.metric-card {
-  padding: 1rem;
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.04), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  border-color: #e2e8f0;
 }
 
-:global(.dark .hero-shell),
-:global(.dark .sidebar-shell),
-:global(.dark .empty-shell),
-:global(.dark .pager-shell),
-:global(.dark .metric-card),
-:global(.dark .skeleton-card),
-:global(.dark-mode .hero-shell),
-:global(.dark-mode .sidebar-shell),
-:global(.dark-mode .empty-shell),
-:global(.dark-mode .pager-shell),
-:global(.dark-mode .metric-card),
-:global(.dark-mode .skeleton-card) {
-  border-color: rgb(71 85 105);
-  background: rgb(10 16 30 / 86%);
-}
-
-.pager-btn {
-  border: 1px solid rgb(14 165 233 / 30%);
-  color: rgb(12 74 110);
-  background: rgb(224 242 254 / 60%);
-  transition: all 200ms ease;
-  outline: none;
-}
-
-.pager-btn:focus-visible {
-  box-shadow: 0 0 0 2px rgb(14 165 233 / 35%);
-}
-
-.pager-btn:hover {
-  border-color: rgb(14 165 233 / 55%);
-  background: rgb(224 242 254 / 85%);
-}
-
-:global(.dark .pager-btn),
-:global(.dark-mode .pager-btn) {
-  border-color: rgb(71 85 105);
-  color: rgb(186 230 253);
-  background: rgb(22 32 50 / 85%);
-}
-
-:global(.dark .pager-btn:hover),
-:global(.dark-mode .pager-btn:hover) {
-  border-color: rgb(56 189 248 / 70%);
-  background: rgb(30 41 59);
+:global(.dark .stats-card) {
+  background: #0f172a;
+  border-color: #1e293b;
+  box-shadow: none;
 }
 
 .reveal {
-  animation: reveal-up 700ms ease both;
+  animation: reveal-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.reveal-2 {
-  animation-delay: 120ms;
-}
-
-.reveal-3 {
-  animation-delay: 220ms;
-}
-
-.fab-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 3rem;
-  width: 3rem;
-  border-radius: 9999px;
-  border: 1px solid rgb(14 165 233 / 25%);
-  background: rgb(224 242 254 / 85%);
-  color: rgb(12 74 110);
-  box-shadow: 0 12px 30px rgb(14 165 233 / 20%);
-  transition: transform 200ms ease, box-shadow 200ms ease;
-}
-
-.fab-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 34px rgb(14 165 233 / 28%);
-}
-
-:global(.dark .fab-btn),
-:global(.dark-mode .fab-btn) {
-  border-color: rgb(56 189 248 / 45%);
-  background: rgb(15 23 42 / 90%);
-  color: rgb(186 230 253);
-  box-shadow: 0 12px 30px rgb(2 6 23 / 45%);
-}
+.reveal-2 { animation-delay: 0.1s; }
+.reveal-3 { animation-delay: 0.2s; }
 
 @keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal,
-  .pager-btn {
-    animation: none;
-    transition: none;
-  }
+.mobile-fab {
+  display: flex;
+  height: 3.5rem;
+  width: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+:global(.dark .mobile-fab) {
+  background: #1e293b;
+  color: #f8fafc;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.slide-up-enter-active, .slide-up-leave-active { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.slide-up-enter-from, .slide-up-leave-to { transform: translateY(100%); }
 </style>

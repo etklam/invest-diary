@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
       success: true,
       data
     }
-  } catch (error) {
+  } catch {
     throw createError({
       statusCode: 502,
       statusMessage: 'Failed to fetch holiday data'

@@ -261,8 +261,7 @@ export function calculateFinancialFreedom(input: FinancialFreedomInput): Financi
     currentAssets,
     monthlyContribution,
     expectedReturn,
-    withdrawalRate,
-    inflationRate
+    withdrawalRate
   } = input
 
   // 計算 FIRE Number

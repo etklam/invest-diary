@@ -36,6 +36,9 @@ vi.mock('~/lib/prisma', () => ({
 vi.mock('~/lib/logger', () => ({
   logger: {
     blog: {
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
       withRequestId: mockBlogWithRequestId,
     },
   },
@@ -134,7 +137,7 @@ describe('Blog API', () => {
       const { default: handler } = await import('~/server/api/blog/index.get')
       const mockEvent = { context: {} } as any
 
-      const result = await handler(mockEvent)
+      await handler(mockEvent)
 
       expect(mockPostFindMany).toHaveBeenCalledWith(
         expect.objectContaining({

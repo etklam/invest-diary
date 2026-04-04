@@ -245,7 +245,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const { user, fetchMe, updateSettings, changePassword, isLoading } = useAuth()
-const { commonTimezones, detectLocalTimezone, getTimezone } = useTimezone()
+const { commonTimezones, detectLocalTimezone } = useTimezone()
 
 // Settings form
 const settingsForm = ref({

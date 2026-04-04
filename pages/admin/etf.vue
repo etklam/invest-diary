@@ -1,10 +1,34 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
+interface AdminEtfListItem {
+  id: string
+  symbol: string
+  name: string | null
+  priceCount: number
+  alertCount: number
+  createdAt: string
+}
+
+interface AdminEtfMutationResponse {
+  symbol: string
+  added?: number
+  total?: number
+}
+
+interface ApiErrorLike {
+  statusCode?: number
+  data?: {
+    message?: string
+  }
+}
+
 const { t } = useI18n()
 const toast = useToast()
 
 // State
 const loading = ref(false)
-const etfs = ref<any[]>([])
+const etfs = ref<AdminEtfListItem[]>([])
 const showAddForm = ref(false)
 const newSymbol = ref('')
 const newName = ref('')
@@ -17,10 +41,11 @@ const seeding = ref(false)
 const fetchEtfs = async () => {
   loading.value = true
   try {
-    const response = await $fetch<any>('/api/admin/etf')
+    const response = await $fetch<AdminEtfListItem[]>('/api/admin/etf')
     etfs.value = response || []
-  } catch (error: any) {
-    if (error.statusCode === 403) {
+  } catch (error: unknown) {
+    const apiError = error as ApiErrorLike
+    if (apiError.statusCode === 403) {
       toast.error(t('tools.etf.admin.adminOnly'))
     } else {
       toast.error(t('tools.etf.admin.fetchFailed'))
@@ -39,7 +64,7 @@ const addEtf = async () => {
 
   adding.value = true
   try {
-    const response = await $fetch<any>('/api/admin/etf', {
+    const response = await $fetch<AdminEtfMutationResponse>('/api/admin/etf', {
       method: 'POST',
       body: {
         symbol: newSymbol.value.trim(),
@@ -54,15 +79,16 @@ const addEtf = async () => {
     skipValidation.value = false
     showAddForm.value = false
     await fetchEtfs()
-  } catch (error: any) {
-    if (error.statusCode === 429) {
+  } catch (error: unknown) {
+    const apiError = error as ApiErrorLike
+    if (apiError.statusCode === 429) {
       toast.error(t('tools.etf.admin.rateLimitExceeded'))
       // Show skip validation option after rate limit error
       skipValidation.value = true
-    } else if (error.statusCode === 403) {
+    } else if (apiError.statusCode === 403) {
       toast.error(t('tools.etf.admin.adminOnly'))
     } else {
-      toast.error(error.data?.message || t('tools.etf.admin.addFailed'))
+      toast.error(apiError.data?.message || t('tools.etf.admin.addFailed'))
     }
   } finally {
     adding.value = false
@@ -79,7 +105,7 @@ const deleteEtf = async (id: string, symbol: string) => {
     await $fetch(`/api/admin/etf/${id}`, { method: 'DELETE' })
     toast.success(t('tools.etf.admin.deleteSuccess'))
     await fetchEtfs()
-  } catch (error) {
+  } catch {
     toast.error(t('tools.etf.admin.deleteFailed'))
   }
 }
@@ -92,7 +118,7 @@ const initializeHistoricalData = async (id: string, symbol: string) => {
 
   initializing.value = id
   try {
-    const response = await $fetch<any>(`/api/admin/etf/${id}/initialize`, {
+    const response = await $fetch<AdminEtfMutationResponse>(`/api/admin/etf/${id}/initialize`, {
       method: 'POST',
     })
 
@@ -103,8 +129,9 @@ const initializeHistoricalData = async (id: string, symbol: string) => {
       })
     )
     await fetchEtfs()
-  } catch (error: any) {
-    toast.error(error.data?.message || t('tools.etf.admin.initializeFailed'))
+  } catch (error: unknown) {
+    const apiError = error as ApiErrorLike
+    toast.error(apiError.data?.message || t('tools.etf.admin.initializeFailed'))
   } finally {
     initializing.value = null
   }
@@ -118,7 +145,7 @@ const seedCommonEtfs = async () => {
 
   seeding.value = true
   try {
-    const response = await $fetch<any>('/api/admin/etf/seed', {
+    const response = await $fetch<AdminEtfMutationResponse>('/api/admin/etf/seed', {
       method: 'POST',
     })
 
@@ -129,11 +156,12 @@ const seedCommonEtfs = async () => {
       })
     )
     await fetchEtfs()
-  } catch (error: any) {
-    if (error.statusCode === 403) {
+  } catch (error: unknown) {
+    const apiError = error as ApiErrorLike
+    if (apiError.statusCode === 403) {
       toast.error(t('tools.etf.admin.adminOnly'))
     } else {
-      toast.error(error.data?.message || t('tools.etf.admin.seedFailed'))
+      toast.error(apiError.data?.message || t('tools.etf.admin.seedFailed'))
     }
   } finally {
     seeding.value = false

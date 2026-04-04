@@ -1,4 +1,5 @@
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
 import adminMiddleware from '~/server/middleware/admin'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
       throw error
     }
 
-    console.error('[Blog] Admin: Error fetching post:', error)
+    logger.blog.error('Admin: Error fetching post', { error })
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to fetch post',

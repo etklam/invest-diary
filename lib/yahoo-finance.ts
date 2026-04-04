@@ -6,16 +6,15 @@ import {
   parseYahooLibraryQuote,
   resolveYahooRangeStart,
   type QuoteResponse,
-  type YahooChartResponse,
   type YahooMonthlyQuote,
-  type YahooQuoteMeta,
-  type YahooQuoteResult,
   type HistoricalQuote,
 } from '~/lib/market-data/yahoo'
 
 type YahooChartInterval = '1m' | '2m' | '5m' | '15m' | '30m' | '60m' | '90m' | '1h' | '1d' | '5d' | '1wk' | '1mo' | '3mo'
 
 const yahooFinance = new YahooFinance()
+
+type YahooLibraryQuoteInput = Parameters<typeof parseYahooLibraryQuote>[0]
 
 export type {
   QuoteResponse,
@@ -32,7 +31,7 @@ export type {
  */
 export async function fetchQuote(symbol: string): Promise<QuoteResponse> {
   const quote = await yahooFinance.quote(normalizeYahooSymbol(symbol))
-  const parsed = parseYahooLibraryQuote(quote)
+  const parsed = parseYahooLibraryQuote(quote as YahooLibraryQuoteInput)
 
   if (!parsed) {
     throw new Error('Yahoo quote unavailable')

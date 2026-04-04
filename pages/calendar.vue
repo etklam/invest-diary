@@ -170,7 +170,6 @@ const { t } = useI18n()
 const {
   currentYear,
   currentMonth,
-  pending,
   weekDays,
   daysInMonth,
   firstDayOfWeek,

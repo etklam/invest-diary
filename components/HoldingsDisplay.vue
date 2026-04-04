@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { calculateHoldings, type Holding, type TransactionForHolding } from '~/lib/utils'
+import { calculateHoldings, type TransactionForHolding } from '~/lib/utils'
 
 const props = defineProps<{
   transactions: TransactionForHolding[]

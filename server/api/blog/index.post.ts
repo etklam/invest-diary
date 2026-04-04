@@ -1,4 +1,5 @@
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
 import { generateSlug } from '~/lib/blog'
 import { ZodError } from 'zod'
 import adminMiddleware from '~/server/middleware/admin'
@@ -53,7 +54,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    console.log('[Blog] Post created:', post.id, 'by user:', userId)
+    logger.blog.info('Post created', { postId: post.id.toString(), userId: userId.toString() })
     return post
   } catch (error) {
     if (error instanceof AppError) {
@@ -67,7 +68,7 @@ export default defineEventHandler(async (event) => {
         }))
       ).toH3Error()
     }
-    console.error('[Blog] Error creating post:', error)
+    logger.blog.error('Error creating post', { error })
     throw Errors.internalError(error).toH3Error()
   }
 })

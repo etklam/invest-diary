@@ -130,7 +130,7 @@
 import { ref } from 'vue'
 import { useQuickNoteTemplates, type QuickNoteTemplate } from '~/composables/useQuickNoteTemplates'
 
-const props = defineProps<{
+defineProps<{
   modelValue: boolean
 }>()
 

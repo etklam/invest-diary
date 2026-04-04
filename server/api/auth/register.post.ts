@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
 import { AppError, Errors } from '~/lib/errors/factory'
+import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
+import { logger } from '~/lib/logger'
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -9,12 +11,49 @@ const registerSchema = z.object({
   name: z.string().optional()
 })
 
-export default defineEventHandler(async (event) => {
+type RateLimitLogger = {
+  warn: (message: string, meta?: Record<string, unknown>) => void
+}
+
+async function enforceRateLimit(
+  limitFn: (identifier: string) => Promise<void>,
+  identifier: string,
+  log: RateLimitLogger,
+  message: string,
+  meta: Record<string, unknown>
+): Promise<void> {
   try {
+    await limitFn(identifier)
+  } catch {
+    log.warn(message, meta)
+    throw Errors.rateLimited(60)
+  }
+}
+
+export default defineEventHandler(async (event) => {
+  const log = logger.auth.withRequestId(event.context.requestId)
+  try {
+    const ipIdentifier = getRateLimitIdentifier(event)
+    await enforceRateLimit(
+      rateLimiters.authRegisterIp,
+      ipIdentifier,
+      log,
+      'Registration rate limited',
+      { ip: ipIdentifier }
+    )
     const body = await readBody(event)
 
     // Validate input
     const validatedData = registerSchema.parse(body)
+
+    const emailIdentity = validatedData.email.trim().toLowerCase()
+    await enforceRateLimit(
+      rateLimiters.authRegisterIdentity,
+      emailIdentity,
+      log,
+      'Registration rate limited',
+      { ip: ipIdentifier, identity: validatedData.email }
+    )
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -48,7 +87,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    console.log('[API] User registered:', user.id)
+    log.info('User registered', { userId: user.id.toString() })
 
     return {
       success: true,

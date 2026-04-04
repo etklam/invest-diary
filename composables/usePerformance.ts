@@ -10,8 +10,8 @@
  * ```
  */
 
-import { computed, onMounted, onUnmounted, readonly, ref } from 'vue'
-import type { Metric, ReportCallback } from 'web-vitals'
+import { computed, onMounted, readonly, ref } from 'vue'
+import type { Metric } from 'web-vitals'
 
 // Types for Web Vitals metrics
 export interface PerformanceMetrics {
@@ -32,8 +32,6 @@ function getRating(value: number, thresholds: { good: number; needsImprovement: 
 
 export const usePerformance = () => {
   const metrics = ref<PerformanceMetrics>({})
-  let vitals: any = null
-
   /**
    * Log metric to console in development
    */
@@ -57,8 +55,6 @@ export const usePerformance = () => {
    * Implement your analytics tracking here (Google Analytics, Plausible, etc.)
    */
   const sendToAnalytics = (metric: Metric) => {
-    const threshold = thresholdsByMetric[metric.name]
-    const rating = threshold ? getRating(metric.value, threshold) : 'good'
 
     // Example: Send to your analytics endpoint
     // $fetch('/api/analytics/web-vitals', {
@@ -117,7 +113,6 @@ export const usePerformance = () => {
       onINP(sendToAnalytics)
       onTTFB(sendToAnalytics)
 
-      vitals = { onCLS, onFCP, onLCP, onTTFB, onINP }
     } catch (error) {
       console.error('[Performance] Failed to load web-vitals:', error)
     }
@@ -168,4 +163,3 @@ export const usePerformance = () => {
     INP: { good: 200, needsImprovement: 500 },
     TTFB: { good: 800, needsImprovement: 1800 }
   }
-

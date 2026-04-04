@@ -18,7 +18,6 @@ export const useCalendar = () => {
   const { runWithAuthRecovery } = useAuthRecovery()
 
   // State
-  const now = new Date()
   const userTimezone = computed(() => user.value?.timezone || getTimezone() || 'Asia/Taipei')
   
   // Get current date in user timezone
@@ -55,18 +54,8 @@ export const useCalendar = () => {
   })
 
   const firstDayOfWeek = computed(() => {
-    // We need to know which weekday the 1st of the month is in the USER'S timezone.
-    // This is tricky because JS Date is always local.
-    // Let's use the year/month and create a date, then check its weekday.
-    const firstDay = new Date(currentYear.value, currentMonth.value, 1)
-    // To be precise, we should check what day it is in that timezone.
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: userTimezone.value,
-      weekday: 'narrow'
-    })
-    // But weekday: 'narrow' returns 'S', 'M', etc. 
-    // Let's use weekday: 'long' or just calculate offset.
-    // Actually, creating a date at noon on the 1st in that timezone is safest for getting the day.
+    // We only need the weekday index for the first of the month,
+    // so just instantiate the date in the current locale.
     return new Date(currentYear.value, currentMonth.value, 1).getDay()
   })
 

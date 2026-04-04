@@ -37,6 +37,16 @@ export async function consumeRateLimit(
   await limiter.consume(identifier)
 }
 
+const authRateLimits = {
+  login: { points: 5, duration: 60 },
+  register: { points: 3, duration: 60 },
+  password: { points: 3, duration: 60 },
+}
+
+const makeLimiter = (key: string, config: { points: number; duration: number }) => {
+  return (identifier: string) => consumeRateLimit(key, identifier, config.points, config.duration)
+}
+
 /**
  * Rate limiters for different use cases
  */
@@ -48,4 +58,32 @@ export const rateLimiters = {
   // General API: 100 requests per minute
   generalApi: (identifier: string) =>
     consumeRateLimit('general-api', identifier, 100, 60),
+
+  // Auth: login — 5 attempts per minute per IP
+  authLoginIp: makeLimiter('auth-login-ip', authRateLimits.login),
+  // Auth: login identity (email)
+  authLoginIdentity: makeLimiter('auth-login-email', authRateLimits.login),
+
+  // Auth: register — 3 attempts per minute per IP
+  authRegisterIp: makeLimiter('auth-register-ip', authRateLimits.register),
+  // Auth: register identity (email)
+  authRegisterIdentity: makeLimiter('auth-register-email', authRateLimits.register),
+
+  // Auth: password change — 3 attempts per minute per IP
+  authPasswordIp: makeLimiter('auth-password-ip', authRateLimits.password),
+  // Auth: password change identity (user)
+  authPasswordIdentity: makeLimiter('auth-password-user', authRateLimits.password),
+}
+
+/**
+ * Get client IP from H3 event for rate limiting
+ */
+export function getRateLimitIdentifier(event: { node?: { req?: { headers?: Record<string, string | string[] | undefined>, socket?: { remoteAddress?: string } } } }): string {
+  const req = event.node?.req
+  const forwarded = req?.headers?.['x-forwarded-for']
+  if (typeof forwarded === 'string') {
+    const first = forwarded.split(',')[0]
+    return first ? first.trim() : 'unknown'
+  }
+  return req?.socket?.remoteAddress ?? 'unknown'
 }
