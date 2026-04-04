@@ -77,7 +77,13 @@
       "mcp__chrome-devtools__fill",
       "mcp__chrome-devtools__get_network_request",
       "Bash(npx vue-tsc --noEmit lib/stocks-view.ts server/api/stocks/prices.post.ts pages/stocks/index.vue 2>&1)",
-      "Bash(npx vue-tsc --noEmit -p tsconfig.typecheck.json 2>&1 | grep -E \"\\(stocks-view|stocks/index|prices\\\\.post\\)\" | head -20)"
+      "Bash(npx vue-tsc --noEmit -p tsconfig.typecheck.json 2>&1 | grep -E \"\\(stocks-view|stocks/index|prices\\\\.post\\)\" | head -20)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(npx prisma:*)",
+      "Bash(wc -l /Users/klam/Desktop/project/diary-vue/components/*.vue)",
+      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\" && head -30 {}')",
+      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\" && grep -A 5 \"try {\" {}')"
     ]
   }
 }

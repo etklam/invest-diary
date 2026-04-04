@@ -145,8 +145,12 @@ watch(canInstall, (value) => {
 // Fetch current user on mount only if not already initialized
 onMounted(async () => {
   const { isInitialized } = useAuth()
+  console.log('[Layout] onMounted, checking fetchMe', { isInitialized: isInitialized.value })
   if (!isInitialized.value) {
+    console.log('[Layout] Calling fetchMe from onMounted')
     await fetchMe()
+  } else {
+    console.log('[Layout] Skipping fetchMe, already initialized')
   }
 })
 

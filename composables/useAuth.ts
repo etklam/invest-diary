@@ -47,15 +47,19 @@ function isAuthError(error: AuthErrorShape): boolean {
 }
 
 async function runRefreshPipeline(): Promise<boolean> {
+  console.log('[Auth] runRefreshPipeline started')
   try {
     const response = await $fetch<AuthApiResponse<never>>('/api/auth/refresh', {
       method: 'POST',
     })
 
+    console.log('[Auth] runRefreshPipeline result', { ok: response.ok })
     return response.ok === true
-  } catch {
+  } catch (error) {
+    console.log('[Auth] runRefreshPipeline failed', { error })
     return false
   } finally {
+    console.log('[Auth] runRefreshPipeline clearing pipeline')
     refreshPipeline = null
   }
 }
@@ -75,8 +79,12 @@ export const useAuth = () => {
   }
 
   const refreshAccessToken = async (): Promise<boolean> => {
+    console.log('[Auth] refreshAccessToken called', { hasPipeline: !!refreshPipeline })
     if (!refreshPipeline) {
+      console.log('[Auth] Creating new refresh pipeline')
       refreshPipeline = runRefreshPipeline()
+    } else {
+      console.log('[Auth] Reusing existing refresh pipeline')
     }
 
     return refreshPipeline
@@ -84,6 +92,7 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string) => {
     isLoading.value = true
+    console.log('[Auth] Login started', { email })
     try {
       const response = await $fetch<AuthApiResponse<AuthUser>>('/api/auth/login', {
         method: 'POST',
@@ -91,14 +100,20 @@ export const useAuth = () => {
       })
 
       if (response.ok && response.data) {
+        console.log('[Auth] Login successful, setting user state', {
+          userId: response.data.id,
+          isInitializedBefore: isInitialized.value
+        })
         user.value = response.data
         syncTimezone(response.data.timezone)
         isInitialized.value = true  // Mark as initialized to prevent redundant fetchMe call
+        console.log('[Auth] User state set, navigating to home')
         toast.success('登入成功')
         await navigateTo('/')
       }
     } catch (error) {
       const authError = error as AuthErrorShape
+      console.error('[Auth] Login failed', { email, error: authError })
       toast.error(authError.data?.statusMessage || '登入失敗')
       throw error
     } finally {
@@ -128,42 +143,64 @@ export const useAuth = () => {
   }
 
   const logout = async () => {
-    await $fetch<AuthApiResponse<never>>('/api/auth/logout', { method: 'POST' })
+    console.log('[Auth] logout called', { hasUser: !!user.value, userId: user.value?.id })
+    try {
+      await $fetch<AuthApiResponse<never>>('/api/auth/logout', { method: 'POST' })
+      console.log('[Auth] logout API call successful')
+    } catch (error) {
+      console.log('[Auth] logout API call failed', { error })
+    }
     user.value = null
+    console.log('[Auth] user cleared, navigating to login')
     await navigateTo('/auth/login')
   }
 
   const fetchMe = async () => {
+    console.log('[Auth] fetchMe called', {
+      isInitialized: isInitialized.value,
+      hasUser: !!user.value,
+      userId: user.value?.id
+    })
     try {
       isLoading.value = true
       const response = await $fetch<AuthApiResponse<AuthUser>>('/api/auth/me')
+      console.log('[Auth] fetchMe response', { ok: response.ok, hasData: !!response.data })
       if (response.ok && response.data) {
         user.value = response.data
         syncTimezone(response.data.timezone)
+        console.log('[Auth] fetchMe success, user set')
       }
     } catch (error) {
       const authError = error as AuthErrorShape
+      console.log('[Auth] fetchMe error', { isAuthError: isAuthError(authError), statusCode: authError.statusCode })
 
       if (isAuthError(authError)) {
+        console.log('[Auth] Attempting token refresh...')
         const refreshed = await refreshAccessToken()
+        console.log('[Auth] Token refresh result', { refreshed })
         if (refreshed) {
           try {
             const retryResponse = await $fetch<AuthApiResponse<AuthUser>>('/api/auth/me')
+            console.log('[Auth] Retry fetchMe after refresh', { ok: retryResponse.ok })
             if (retryResponse.ok && retryResponse.data) {
               user.value = retryResponse.data
               syncTimezone(retryResponse.data.timezone)
+              console.log('[Auth] Retry success, user set')
               return
             }
           } catch {
+            console.log('[Auth] Retry failed, clearing user')
             // fall through to unauthenticated state
           }
         }
       }
 
+      console.log('[Auth] Setting user to null')
       user.value = null
     } finally {
       isLoading.value = false
       isInitialized.value = true
+      console.log('[Auth] fetchMe completed, isInitialized set to true')
     }
   }
 
