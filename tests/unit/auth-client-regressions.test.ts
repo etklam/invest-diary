@@ -16,8 +16,17 @@ describe('auth client regressions', () => {
     expect(source).toContain("nuxtApp.hook('page:finish', syncConnection)")
   })
 
+  it('auth bootstrap should skip fetchMe on public routes without auth cookies', () => {
+    const source = readFileSync(resolve(process.cwd(), 'plugins/auth.ts'), 'utf-8')
+    expect(source).toContain("const publicRoutes = new Set(['/auth/login', '/auth/register'])")
+    expect(source).toContain("useRequestHeaders(['cookie']).cookie ?? ''")
+    expect(source).toContain('isInitialized.value = true')
+  })
+
   it('fetchMe should attempt token refresh on 401 before clearing user', () => {
     const source = readFileSync(resolve(process.cwd(), 'composables/useAuth.ts'), 'utf-8')
+    expect(source).toContain("const getServerFetch = useRequestFetch as unknown as () =>")
+    expect(source).toContain('return requestFetch<T>(url, options)')
     expect(source).toContain('const refreshed = await refreshAccessToken()')
     expect(source).toContain("'/api/auth/me'")
   })

@@ -47,6 +47,16 @@ const devLog = (...args: unknown[]) => {
 
 let refreshPipeline: Promise<boolean> | null = null
 
+function authFetch<T>(url: string, options?: Record<string, unknown>): Promise<T> {
+  const getServerFetch = useRequestFetch as unknown as () =>
+    (<R>(requestUrl: string, requestOptions?: Record<string, unknown>) => Promise<R>)
+
+  const requestFetch = process.server ? getServerFetch() : (($fetch as unknown) as
+    (<R>(requestUrl: string, requestOptions?: Record<string, unknown>) => Promise<R>))
+
+  return requestFetch<T>(url, options)
+}
+
 function isAuthError(error: AuthErrorShape): boolean {
   return error.statusCode === 401 || error.response?.status === 401
 }
@@ -54,7 +64,7 @@ function isAuthError(error: AuthErrorShape): boolean {
 async function runRefreshPipeline(): Promise<boolean> {
   devLog('[Auth] runRefreshPipeline started')
   try {
-    const response = await $fetch<AuthApiResponse<never>>('/api/auth/refresh', {
+    const response = await authFetch<AuthApiResponse<never>>('/api/auth/refresh', {
       method: 'POST',
     })
 
@@ -110,12 +120,6 @@ export const useAuth = () => {
         syncTimezone(response.data.timezone)
         isInitialized.value = true
         toast.success('登入成功')
-
-        if (process.client) {
-          window.location.assign('/diaries')
-          return
-        }
-
         await navigateTo('/diaries')
       }
     } catch (error) {
@@ -168,7 +172,7 @@ export const useAuth = () => {
     })
     try {
       isLoading.value = true
-      const response = await $fetch<AuthApiResponse<AuthUser>>('/api/auth/me')
+      const response = await authFetch<AuthApiResponse<AuthUser>>('/api/auth/me')
       devLog('[Auth] fetchMe response', { ok: response.ok, hasData: !!response.data })
       if (response.ok && response.data) {
         user.value = response.data
@@ -184,7 +188,7 @@ export const useAuth = () => {
         devLog('[Auth] Token refresh result', { refreshed })
         if (refreshed) {
           try {
-            const retryResponse = await $fetch<AuthApiResponse<AuthUser>>('/api/auth/me')
+            const retryResponse = await authFetch<AuthApiResponse<AuthUser>>('/api/auth/me')
             devLog('[Auth] Retry fetchMe after refresh', { ok: retryResponse.ok })
             if (retryResponse.ok && retryResponse.data) {
               user.value = retryResponse.data

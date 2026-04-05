@@ -26,8 +26,10 @@ describe('useAuth composable', () => {
     }))
     vi.stubGlobal('navigateTo', vi.fn())
     vi.stubGlobal('$fetch', vi.fn())
+    vi.stubGlobal('useRequestFetch', () => globalThis.$fetch)
 
     ;(process as any).client = true
+    ;(process as any).server = false
   })
 
   afterEach(() => {
@@ -49,7 +51,7 @@ describe('useAuth composable', () => {
 
     expect(auth.user.value?.email).toBe('test@example.com')
     expect(auth.isAuthenticated.value).toBe(true)
-    expect(globalThis.navigateTo).toHaveBeenCalledWith('/')
+    expect(globalThis.navigateTo).toHaveBeenCalledWith('/diaries')
     expect(window.localStorage.setItem).toHaveBeenCalledWith('user_timezone', 'Asia/Taipei')
   })
 
