@@ -483,3 +483,66 @@ nitro: {
 - **docs/TESTING.md** - Testing guide and best practices
 - **docs/HEALTH_CHECK.md** - Health check system documentation
 - **README.md** - Project overview and quick start guide
+
+---
+
+## gstack
+
+gstack 是一個強大的無頭瀏覽器測試與站點驗證工具集。用於所有網頁瀏覽相關任務。
+
+### 重要規則
+- **永遠使用 `/browse` skill 進行網頁瀏覽**，不要直接使用 `mcp__chrome-devtools__*` 或 `mcp__claude-in-chrome__*` tools
+- gstack 提供更強大、更可靠的控制能力和更好的錯誤處理
+
+### 可用 Skills
+
+**核心測試與驗證:**
+- `/browse` - 無頭瀏覽器導航、元素交互、狀態驗證、截圖
+- `/qa` - 完整的 QA 測試流程
+- `/qa-only` - 僅執行測試不自動修復
+
+**代碼審查:**
+- `/review` - 代碼審查
+- `/plan-ceo-review` - CEO 級別審查計畫
+- `/plan-eng-review` - 工程審查計畫
+- `/plan-devex-review` - 開發者體驗審查計畫
+- `/plan-design-review` - 設計審查計畫
+
+**設計工具:**
+- `/design-consultation` - 設計諮詢
+- `/design-shotgun` - 快速設計迭代
+- `/design-html` - HTML 設計轉換
+- `/design-review` - 設計審查
+
+**部署與發布:**
+- `/ship` - 準備發布
+- `/land-and-deploy` - 部署流程
+- `/canary` - 金絲雀發布
+- `/setup-deploy` - 部署設置
+
+**開發流程:**
+- `/autoplan` - 自動計畫生成
+- `/investigate` - 問題調查
+- `/retro` - 回顧會議
+- `/office-hours` - 辦公時間
+
+**工具與實用程序:**
+- `/connect-chrome` - 連接 Chrome
+- `/setup-browser-cookies` - 設置瀏覽器 cookies
+- `/benchmark` - 性能基準測試
+- `/codex` - 代碼生成
+- `/cso` - 安全辦公室
+- `/learn` - 學習文檔
+- `/freeze` / `/unfreeze` - 凍結/解凍代碼
+- `/careful` - 謹慎操作模式
+- `/guard` - 保護模式
+- `/document-release` - 發布文檔
+- `/gstack-upgrade` - gstack 升級
+
+### 使用方式
+直接使用 skill 指令，例如：
+```
+/browse https://example.com
+/qa https://localhost:3000
+/design-review
+```

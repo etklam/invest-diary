@@ -50,7 +50,7 @@
         {{ publishedAtLabel }}
         <span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
         <Icon name="heroicons:clock" class="h-3 w-3" />
-        {{ readingTime }} 分鐘閱讀
+        {{ readingTime }} {{ $t('blog.minute') }}
       </div>
 
       <h3 class="mb-3 text-xl font-bold leading-tight text-slate-950 transition-colors group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">

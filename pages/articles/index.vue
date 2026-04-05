@@ -13,10 +13,10 @@
               <div class="mb-6 flex items-center gap-3">
                 <span class="inline-flex items-center gap-2 rounded-full border border-sky-200/50 bg-sky-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-sky-700 backdrop-blur-sm dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300">
                   <Icon name="heroicons:sparkles-20-solid" class="h-4 w-4" />
-                  Insight & Analysis
+                  {{ $t('blog.insightAndAnalysis') }}
                 </span>
                 <span class="h-px w-12 bg-slate-200 dark:bg-slate-700"></span>
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Editorial Desk</span>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('blog.editorialDesk') }}</span>
               </div>
               <h1 class="text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">
                 {{ $t('blog.pageTitle') }}
@@ -173,12 +173,12 @@
               <div ref="loadMoreTrigger" class="h-4 w-full" aria-hidden="true" />
               <div v-if="loadingMore" class="flex items-center gap-3 rounded-2xl bg-white px-6 py-3 text-sm font-bold shadow-xl shadow-slate-200/50 dark:bg-slate-900 dark:shadow-none">
                 <span class="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-sky-500 border-t-transparent"></span>
-                <span class="text-slate-700 dark:text-slate-200">正在探索更多內容...</span>
+                <span class="text-slate-700 dark:text-slate-200">{{ $t('blog.exploringMore') }}</span>
               </div>
               <div v-else-if="!hasMore && posts.length > 0" class="flex items-center gap-3 text-slate-400 dark:text-slate-600">
                 <span class="h-px w-8 bg-slate-200 dark:bg-slate-800"></span>
                 <p class="text-xs font-bold uppercase tracking-widest">
-                  已經看完了
+                  {{ $t('blog.reachedEnd') }}
                 </p>
                 <span class="h-px w-8 bg-slate-200 dark:bg-slate-800"></span>
               </div>
@@ -246,8 +246,8 @@
           <div class="w-full rounded-t-[2.5rem] bg-white p-8 shadow-2xl dark:bg-slate-900">
             <div class="mb-8 flex items-center justify-between">
               <div>
-                <h3 class="text-xl font-bold text-slate-950 dark:text-white">篩選與搜尋</h3>
-                <p class="mt-1 text-sm text-slate-500">尋找感興趣的主題</p>
+                <h3 class="text-xl font-bold text-slate-950 dark:text-white">{{ $t('blog.filterAndSearch') }}</h3>
+                <p class="mt-1 text-sm text-slate-500">{{ $t('blog.findTopics') }}</p>
               </div>
               <button
                 type="button"

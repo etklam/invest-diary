@@ -788,7 +788,17 @@
     "confirmDelete": "確定要刪除文章「{title}」嗎？此操作無法復原。",
     "deleteSuccess": "文章已刪除",
     "deleteFailed": "刪除失敗",
-    "translate": "翻譯"
+    "translate": "翻譯",
+    "insightAndAnalysis": "洞察與分析",
+    "editorialDesk": "編輯台",
+    "exploringMore": "正在探索更多內容...",
+    "reachedEnd": "已經看完了",
+    "filterAndSearch": "篩選與搜尋",
+    "findTopics": "尋找感興趣的主題",
+    "likeThisPost": "喜歡這篇文章嗎？",
+    "shareWithOthers": "分享給更多人，讓大家一起成長。",
+    "publishedDate": "發佈日期",
+    "minute": "分鐘"
   },
   "tools": {
     "positionSizing": {

@@ -788,7 +788,20 @@
     "confirmDelete": "确定要删除文章「{title}」吗？此操作无法复原。",
     "deleteSuccess": "文章已删除",
     "deleteFailed": "删除失败",
-    "translate": "翻译"
+    "translate": "翻译",
+    "insightAndAnalysis": "洞察与分析",
+    "editorialDesk": "编辑部",
+    "exploringMore": "正在探索更多内容...",
+    "reachedEnd": "已经看完了",
+    "filterAndSearch": "筛选与搜索",
+    "findTopics": "寻找感兴趣的主题",
+    "likeThisPost": "喜欢这篇文章吗？",
+    "shareWithOthers": "分享给更多人，让大家一起成长。",
+    "publishedDate": "发布日期",
+    "minute": "分钟",
+    "author": "作者",
+    "copyLink": "复制文章链接",
+    "backToList": "回到文章列表"
   },
   "tools": {
     "positionSizing": {

@@ -790,7 +790,17 @@
     "confirmDelete": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
     "deleteSuccess": "Post deleted",
     "deleteFailed": "Failed to delete",
-    "translate": "Translate"
+    "translate": "Translate",
+    "insightAndAnalysis": "Insight & Analysis",
+    "editorialDesk": "Editorial Desk",
+    "exploringMore": "Exploring more content...",
+    "reachedEnd": "You've reached the end",
+    "filterAndSearch": "Filter & Search",
+    "findTopics": "Find topics you're interested in",
+    "likeThisPost": "Like this post?",
+    "shareWithOthers": "Share with others and grow together.",
+    "publishedDate": "Published date",
+    "minute": "min"
   },
   "tools": {
     "positionSizing": {

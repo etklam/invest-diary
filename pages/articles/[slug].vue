@@ -70,7 +70,7 @@
                 <Icon name="heroicons:user" class="h-6 w-6 text-slate-400 dark:text-slate-500" />
               </div>
               <div class="text-left">
-                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">作者</p>
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.author') }}</p>
                 <p class="text-sm font-bold text-slate-900 dark:text-white">{{ post.author.name || post.author.email }}</p>
               </div>
             </div>
@@ -78,15 +78,15 @@
             <div class="hidden h-8 w-px bg-slate-100 dark:bg-slate-800 sm:block" />
 
             <div class="text-left">
-              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">發佈日期</p>
+              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.publishedDate') }}</p>
               <p class="text-sm font-bold text-slate-900 dark:text-white">{{ publishedDateLabel }}</p>
             </div>
 
             <div class="hidden h-8 w-px bg-slate-100 dark:bg-slate-800 sm:block" />
 
             <div class="text-left">
-              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">閱讀時間</p>
-              <p class="text-sm font-bold text-slate-900 dark:text-white">{{ readingTime }} 分鐘</p>
+              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.readingTimeLabel') || $t('blog.readingTime', { min: '' }).replace(':min', '').trim() }}</p>
+              <p class="text-sm font-bold text-slate-900 dark:text-white">{{ readingTime }} {{ $t('blog.minute') }}</p>
             </div>
           </div>
         </div>
@@ -154,8 +154,8 @@
         <footer class="mt-20 rounded-[2.5rem] bg-slate-900 p-10 text-white dark:bg-slate-800/50">
           <div class="flex flex-col gap-10 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 class="text-2xl font-bold">喜歡這篇文章嗎？</h3>
-              <p class="mt-2 text-slate-400">分享給更多人，讓大家一起成長。</p>
+              <h3 class="text-2xl font-bold">{{ $t('blog.likeThisPost') }}</h3>
+              <p class="mt-2 text-slate-400">{{ $t('blog.shareWithOthers') }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-4">
               <button
@@ -163,7 +163,7 @@
                 class="flex h-14 items-center gap-3 rounded-2xl bg-white/10 px-8 text-sm font-bold transition-all hover:bg-white hover:text-slate-950"
               >
                 <Icon :name="copied ? 'heroicons:check-circle' : 'heroicons:link'" class="h-5 w-5" />
-                {{ copied ? '連結已複製' : '複製文章連結' }}
+                {{ copied ? $t('common.copied') : $t('blog.copyLink') }}
               </button>
             </div>
           </div>
@@ -172,7 +172,7 @@
         <div class="mt-16 flex justify-center">
           <NuxtLink to="/articles" class="group flex items-center gap-3 text-sm font-bold text-slate-500 transition-colors hover:text-slate-950 dark:hover:text-white">
             <Icon name="heroicons:arrow-left" class="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-            回到文章列表
+            {{ $t('blog.backToList') }}
           </NuxtLink>
         </div>
       </div>

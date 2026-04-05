@@ -83,7 +83,21 @@
       "Bash(npx prisma:*)",
       "Bash(wc -l /Users/klam/Desktop/project/diary-vue/components/*.vue)",
       "Bash(xargs -I {} sh -c 'echo \"=== {} ===\" && head -30 {}')",
-      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\" && grep -A 5 \"try {\" {}')"
+      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\" && grep -A 5 \"try {\" {}')",
+      "Bash(grep -n \"const.*ref\\(\" pages/discipline/index.vue pages/calendar.vue pages/stocks/index.vue layouts/default.vue layouts/mobile.vue pages/admin/etf.vue pages/articles/[slug].vue pages/articles/index.vue)",
+      "Bash(grep -E \"\\\\.\\(ts|js|vue\\)$\")",
+      "Bash(npx tsc:*)",
+      "Bash(npm list:*)",
+      "Bash(npx vitest:*)",
+      "Read(//Users/klam/.claude/skills/gstack/**)",
+      "Bash(./setup)",
+      "Bash(~/.bun/bin/bun:*)",
+      "Bash(bash ./setup)",
+      "Bash(export PATH=\"$HOME/.bun/bin:$PATH\")",
+      "Bash(open:*)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-learnings-search --limit 10)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-review-log {\"skill\":\"plan-eng-review\",\"timestamp\":\"2026-04-05T09:26:00Z\",\"status\":\"issues_open\",\"unresolved\":1,\"critical_gaps\":0,\"issues_found\":1,\"mode\":\"FULL_REVIEW\",\"commit\":\"b5996c3\"}:*)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-review-read:*)"
     ]
   }
 }
