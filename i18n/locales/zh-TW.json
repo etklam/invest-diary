@@ -798,7 +798,8 @@
     "likeThisPost": "喜歡這篇文章嗎？",
     "shareWithOthers": "分享給更多人，讓大家一起成長。",
     "publishedDate": "發佈日期",
-    "minute": "分鐘"
+    "minute": "分鐘",
+    "readingTimeLabel": "閱讀時間"
   },
   "tools": {
     "positionSizing": {

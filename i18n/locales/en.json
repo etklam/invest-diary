@@ -800,7 +800,8 @@
     "likeThisPost": "Like this post?",
     "shareWithOthers": "Share with others and grow together.",
     "publishedDate": "Published date",
-    "minute": "min"
+    "minute": "min",
+    "readingTimeLabel": "Reading time"
   },
   "tools": {
     "positionSizing": {
