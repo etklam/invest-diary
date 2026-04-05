@@ -4,7 +4,7 @@ This file tracks deferred work and future improvements for the Diary Vue project
 
 ## Font & Typography
 
-- [ ] **Add Plus Jakarta Sans font import to app.vue**
+- [x] **Add Plus Jakarta Sans font import to app.vue** ✅ Completed 2026-04-05
   - **Why**: CategoryFilter.vue and PostMeta.vue reference `font-family: 'Plus Jakarta Sans'`, but the font is not imported
   - **Details**: Add Google Fonts import for Plus Jakarta Sans with all weights (300-800) to app.vue
   - **Priority**: Medium — Currently falls back to default sans-serif, which may cause inconsistent visual appearance
