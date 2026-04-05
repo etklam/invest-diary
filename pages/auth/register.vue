@@ -44,101 +44,107 @@
       </div>
 
       <form class="space-y-4" @submit.prevent="handleRegister" @keydown.enter.prevent="handleRegister" onsubmit="return false" novalidate>
-        <div>
-          <label for="name" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-            {{ $t('auth.nameOptional') }}
-          </label>
-          <div class="relative">
-            <Icon name="heroicons:user" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <input
-              id="name"
-              v-model="form.name"
-              type="text"
-              autocomplete="name"
-              class="block w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              :placeholder="$t('auth.namePlaceholder')"
-            />
+        <fieldset :disabled="!isHydrated || isLoading" :aria-busy="!isHydrated || isLoading" class="space-y-4">
+          <div>
+            <label for="name" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              {{ $t('auth.nameOptional') }}
+            </label>
+            <div class="relative">
+              <Icon name="heroicons:user" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <input
+                id="name"
+                v-model="form.name"
+                type="text"
+                autocomplete="name"
+                class="block w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                :placeholder="$t('auth.namePlaceholder')"
+              />
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label for="email" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-            {{ $t('auth.email') }}
-          </label>
-          <div class="relative">
-            <Icon name="heroicons:envelope" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-              autocomplete="email"
-              class="block w-full rounded-xl border bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:bg-slate-950 dark:text-white"
-              :class="emailError ? 'border-red-500 dark:border-red-500' : 'border-slate-200 dark:border-slate-700'"
-              :placeholder="$t('auth.emailPlaceholder')"
-              @blur="validateEmail"
-            />
+          <div>
+            <label for="email" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              {{ $t('auth.email') }}
+            </label>
+            <div class="relative">
+              <Icon name="heroicons:envelope" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <input
+                id="email"
+                v-model="form.email"
+                type="email"
+                required
+                autocomplete="email"
+                class="block w-full rounded-xl border bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:bg-slate-950 dark:text-white"
+                :class="emailError ? 'border-red-500 dark:border-red-500' : 'border-slate-200 dark:border-slate-700'"
+                :placeholder="$t('auth.emailPlaceholder')"
+                @blur="validateEmail"
+              />
+            </div>
+            <p v-if="emailError" class="mt-1 text-xs text-red-600 dark:text-red-400">
+              {{ emailError }}
+            </p>
           </div>
-          <p v-if="emailError" class="mt-1 text-xs text-red-600 dark:text-red-400">
-            {{ emailError }}
-          </p>
-        </div>
 
-        <div>
-          <label for="password" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-            {{ $t('auth.password') }}
-          </label>
-          <div class="relative">
-            <Icon name="heroicons:lock-closed" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              required
-              minlength="8"
-              autocomplete="new-password"
-              class="block w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              :placeholder="$t('auth.passwordMinLength')"
-            />
+          <div>
+            <label for="password" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              {{ $t('auth.password') }}
+            </label>
+            <div class="relative">
+              <Icon name="heroicons:lock-closed" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <input
+                id="password"
+                v-model="form.password"
+                type="password"
+                required
+                minlength="8"
+                autocomplete="new-password"
+                class="block w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                :placeholder="$t('auth.passwordMinLength')"
+              />
+            </div>
+            <p v-if="form.password && form.password.length < 8" class="mt-1 text-xs text-red-600 dark:text-red-400">
+              {{ $t('auth.passwordLengthError') }}
+            </p>
           </div>
-          <p v-if="form.password && form.password.length < 8" class="mt-1 text-xs text-red-600 dark:text-red-400">
-            {{ $t('auth.passwordLengthError') }}
-          </p>
-        </div>
 
-        <div>
-          <label for="confirmPassword" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-            {{ $t('auth.confirmPassword') }}
-          </label>
-          <div class="relative">
-            <Icon name="heroicons:shield-check" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <input
-              id="confirmPassword"
-              v-model="form.confirmPassword"
-              type="password"
-              required
-              autocomplete="new-password"
-              class="block w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              :placeholder="$t('auth.confirmPasswordPlaceholder')"
-            />
+          <div>
+            <label for="confirmPassword" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              {{ $t('auth.confirmPassword') }}
+            </label>
+            <div class="relative">
+              <Icon name="heroicons:shield-check" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <input
+                id="confirmPassword"
+                v-model="form.confirmPassword"
+                type="password"
+                required
+                autocomplete="new-password"
+                class="block w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                :placeholder="$t('auth.confirmPasswordPlaceholder')"
+              />
+            </div>
+            <p v-if="form.confirmPassword && form.password !== form.confirmPassword" class="mt-1 text-xs text-red-600 dark:text-red-400">
+              {{ $t('auth.passwordMismatchError') }}
+            </p>
           </div>
-          <p v-if="form.confirmPassword && form.password !== form.confirmPassword" class="mt-1 text-xs text-red-600 dark:text-red-400">
-            {{ $t('auth.passwordMismatchError') }}
-          </p>
-        </div>
 
-        <button
-          type="button"
-          :disabled="isLoading || !isFormValid"
-          @click="handleRegister"
-          class="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#f97316] px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#ea580c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <svg v-if="isLoading" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          <span>{{ isLoading ? $t('auth.registering') : $t('auth.register') }}</span>
-        </button>
+          <button
+            type="button"
+            :disabled="!isHydrated || isLoading || !isFormValid"
+            @click="handleRegister"
+            class="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#f97316] px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#ea580c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <svg v-if="isLoading || !isHydrated" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span>{{ !isHydrated ? $t('common.loading') : isLoading ? $t('auth.registering') : $t('auth.register') }}</span>
+          </button>
+        </fieldset>
+
+        <p v-if="!isHydrated" class="text-xs font-medium text-slate-500 dark:text-slate-400">
+          正在準備註冊表單，載入完成後即可提交。
+        </p>
       </form>
     </section>
   </div>
@@ -159,7 +165,12 @@ const form = ref({
   confirmPassword: ''
 })
 
+const isHydrated = ref(false)
 const emailError = ref('')
+
+onMounted(() => {
+  isHydrated.value = true
+})
 
 const validateEmail = () => {
   if (!form.value.email) {
