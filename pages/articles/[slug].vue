@@ -28,9 +28,18 @@
           <Icon name="heroicons:exclamation-circle" class="h-10 w-10" />
         </div>
       </div>
-      <h1 class="text-2xl font-bold text-slate-950 dark:text-white">{{ $t('blog.postNotFound') }}</h1>
-      <p class="mt-3 text-slate-600 dark:text-slate-400">這篇文章可能已被移除或移動到其他網址。</p>
+      <h1 class="text-2xl font-bold text-slate-950 dark:text-white">{{ articleErrorTitle }}</h1>
+      <p class="mt-3 text-slate-600 dark:text-slate-400">{{ articleErrorDescription }}</p>
       <div class="mt-8 flex justify-center gap-4">
+        <button
+          v-if="!isNotFoundError"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-6 py-3 text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          @click="refresh()"
+        >
+          <Icon name="heroicons:arrow-path" class="h-4 w-4" />
+          {{ $t('blog.retryLoad') }}
+        </button>
         <NuxtLink to="/articles" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 dark:bg-white dark:text-slate-950">
           <Icon name="heroicons:arrow-left" class="h-4 w-4" />
           {{ $t('blog.backToList') }}
@@ -71,7 +80,7 @@
               </div>
               <div class="text-left">
                 <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.author') }}</p>
-                <p class="text-sm font-bold text-slate-900 dark:text-white">{{ post.author.name || post.author.email }}</p>
+                <p class="text-sm font-bold text-slate-900 dark:text-white">{{ articleAuthorLabel }}</p>
               </div>
             </div>
 
@@ -201,7 +210,7 @@ const toast = useToast()
 const router = useRouter()
 const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').replace(/\/+$/, '')
 
-const { data: post, pending, error } = await useAsyncData(`blog-${route.params.slug}`, () =>
+const { data: post, pending, error, refresh } = await useAsyncData(`blog-${route.params.slug}`, () =>
   $fetch<any>(`/api/blog/${route.params.slug}`)
 )
 
@@ -227,6 +236,27 @@ onUnmounted(() => {
 
 const readingTime = computed(() => (post.value ? calculateReadingTime(post.value.content) : 0))
 const parsedTags = computed(() => (post.value ? parseTags(post.value.tags) : []))
+const getErrorStatusCode = (value: unknown): number | null => {
+  if (!value || typeof value !== 'object') return null
+  const candidate = value as {
+    statusCode?: number
+    status?: number
+    data?: { statusCode?: number }
+    cause?: { statusCode?: number }
+  }
+  return candidate.statusCode ?? candidate.status ?? candidate.data?.statusCode ?? candidate.cause?.statusCode ?? null
+}
+const isNotFoundError = computed(() => getErrorStatusCode(error.value) === 404)
+const articleErrorTitle = computed(() =>
+  isNotFoundError.value ? t('blog.postNotFound') : t('blog.loadFailed')
+)
+const articleErrorDescription = computed(() =>
+  isNotFoundError.value ? t('blog.postMissingDescription') : t('blog.loadFailedDescription')
+)
+const articleAuthorLabel = computed(() => {
+  const name = post.value?.author?.name?.trim()
+  return name || t('blog.author')
+})
 const publishedDateLabel = computed(() => {
   if (!post.value?.publishedAt) return ''
   return new Intl.DateTimeFormat(locale.value === 'zh-TW' ? 'zh-TW' : 'en', {

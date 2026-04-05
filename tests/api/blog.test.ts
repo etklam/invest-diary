@@ -244,6 +244,31 @@ describe('Blog API', () => {
         statusMessage: 'Invalid dateFrom',
       })
     })
+
+    it('should keep list payload lean while still returning author name', async () => {
+      mockPostFindMany.mockResolvedValue([])
+      mockPostCount.mockResolvedValue(0)
+      mockGetQuery.mockReturnValue({})
+
+      const { default: handler } = await import('~/server/api/blog/index.get')
+      const mockEvent = { context: {} } as any
+
+      await handler(mockEvent)
+
+      const findManyArgs = mockPostFindMany.mock.calls[0]?.[0]
+
+      expect(findManyArgs?.select).toMatchObject({
+        title: true,
+        excerpt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      })
+      expect(findManyArgs?.select).not.toHaveProperty('content')
+    })
   })
 
   describe('GET /api/blog/[slug]', () => {

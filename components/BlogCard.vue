@@ -48,9 +48,11 @@
       <div class="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
         <Icon name="heroicons:calendar" class="h-3 w-3" />
         {{ publishedAtLabel }}
-        <span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-        <Icon name="heroicons:clock" class="h-3 w-3" />
-        {{ readingTime }} {{ $t('blog.minute') }}
+        <template v-if="readingTime">
+          <span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+          <Icon name="heroicons:clock" class="h-3 w-3" />
+          {{ readingTime }} {{ $t('blog.minute') }}
+        </template>
       </div>
 
       <h3 class="mb-3 text-xl font-bold leading-tight text-slate-950 transition-colors group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">
@@ -69,7 +71,7 @@
             <Icon name="heroicons:user" class="h-4 w-4 text-slate-400 dark:text-slate-500" />
           </div>
           <span class="text-xs font-bold text-slate-700 dark:text-slate-300">
-            {{ post.author?.name || post.author?.email?.split('@')[0] }}
+            {{ authorLabel }}
           </span>
         </div>
 
@@ -93,7 +95,6 @@ import { normalizeCategory } from '~/types/blog'
 interface Author {
   id: number | string
   name: string | null
-  email: string
 }
 
 interface Post {
@@ -118,9 +119,14 @@ const { t, locale } = useI18n()
 const toast = useToast()
 
 const readingTime = computed(() =>
-  props.post.content ? calculateReadingTime(props.post.content) : 3
+  props.post.content ? calculateReadingTime(props.post.content) : null
 )
 const hasPrefetched = ref(false)
+
+const authorLabel = computed(() => {
+  const name = props.post.author?.name?.trim()
+  return name || t('blog.author')
+})
 
 const publishedAtLabel = computed(() => {
   if (!props.post.publishedAt) return ''

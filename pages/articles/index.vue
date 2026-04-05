@@ -124,7 +124,7 @@
                 {{ $t('blog.loadFailed') }}
               </h3>
               <p class="mt-2 text-slate-600 dark:text-slate-400">
-                我們在載入文章時遇到了一些問題，請稍後再試。
+                {{ $t('blog.loadFailedDescription') }}
               </p>
               <button
                 class="mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
@@ -151,7 +151,7 @@
                 @click="searchQuery = ''; performSearch()"
                 class="mt-6 text-sm font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400"
               >
-                清除搜尋條件
+                {{ $t('blog.clearSearch') }}
               </button>
             </div>
 
@@ -335,7 +335,6 @@ interface Post {
   author: {
     id: string | number
     name: string | null
-    email: string
   }
 }
 

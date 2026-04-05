@@ -110,4 +110,55 @@ describe('BlogCard Component', () => {
 
     expect((wrapper.vm as any).categoryKey).toBe(normalizeCategory(postBase.category))
   })
+
+  it('hides reading time when list data does not include content', () => {
+    const wrapper = mount(BlogCard, {
+      props: {
+        post: {
+          ...postBase,
+          content: undefined,
+        },
+      },
+      global: {
+        stubs,
+        config: {
+          globalProperties: {
+            $t: (key: string) => key,
+          },
+        },
+      },
+    })
+
+    expect((wrapper.vm as any).readingTime).toBeNull()
+    expect(wrapper.text()).not.toContain('blog.minute')
+  })
+
+  it('falls back to localized author label when author name is missing', () => {
+    mockUseI18n.mockReturnValue({
+      t: (key: string) => (key === 'blog.author' ? '作者' : key),
+      locale: ref('zh-TW'),
+    })
+
+    const wrapper = mount(BlogCard, {
+      props: {
+        post: {
+          ...postBase,
+          author: {
+            id: 1,
+            name: null,
+          },
+        },
+      },
+      global: {
+        stubs,
+        config: {
+          globalProperties: {
+            $t: (key: string) => (key === 'blog.author' ? '作者' : key),
+          },
+        },
+      },
+    })
+
+    expect(wrapper.text()).toContain('作者')
+  })
 })
