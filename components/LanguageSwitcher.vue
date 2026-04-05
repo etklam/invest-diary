@@ -19,6 +19,11 @@ const availableLocales = computed(() =>
 const selectLocale = async (code: LocaleCode) => {
   await setLocale(code)
   isOpen.value = false
+  // With lazy loading and no_prefix strategy, we need to refresh to apply translations
+  await nextTick()
+  if (import.meta.client) {
+    window.location.reload()
+  }
 }
 
 // Close dropdown when clicking outside
