@@ -26,7 +26,7 @@ describe('useAuth composable', () => {
     }))
     vi.stubGlobal('navigateTo', vi.fn())
     vi.stubGlobal('$fetch', vi.fn())
-    vi.stubGlobal('useRequestFetch', () => globalThis.$fetch)
+    vi.stubGlobal('useRequestHeaders', () => ({ cookie: '' }))
 
     ;(process as any).client = true
     ;(process as any).server = false
@@ -96,6 +96,29 @@ describe('useAuth composable', () => {
 
     await expect(refreshA).resolves.toBe(true)
     await expect(refreshB).resolves.toBe(true)
+  })
+
+  it('forwards SSR cookies when refreshing access token on server', async () => {
+    ;(process as any).client = false
+    ;(process as any).server = true
+    vi.stubGlobal('useRequestHeaders', () => ({
+      cookie: 'access-token=abc; refresh-token=def',
+    }))
+
+    const { useAuth } = await import('~/composables/useAuth')
+    const auth = useAuth()
+
+    const mockFetch = globalThis.$fetch as ReturnType<typeof vi.fn>
+    mockFetch.mockResolvedValueOnce({ ok: true })
+
+    await expect(auth.refreshAccessToken()).resolves.toBe(true)
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        cookie: 'access-token=abc; refresh-token=def',
+      },
+    })
   })
 
   it('logs out and clears user state', async () => {

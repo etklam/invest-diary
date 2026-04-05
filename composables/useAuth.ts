@@ -47,36 +47,8 @@ const devLog = (...args: unknown[]) => {
 
 let refreshPipeline: Promise<boolean> | null = null
 
-function authFetch<T>(url: string, options?: Record<string, unknown>): Promise<T> {
-  const getServerFetch = useRequestFetch as unknown as () =>
-    (<R>(requestUrl: string, requestOptions?: Record<string, unknown>) => Promise<R>)
-
-  const requestFetch = process.server ? getServerFetch() : (($fetch as unknown) as
-    (<R>(requestUrl: string, requestOptions?: Record<string, unknown>) => Promise<R>))
-
-  return requestFetch<T>(url, options)
-}
-
 function isAuthError(error: AuthErrorShape): boolean {
   return error.statusCode === 401 || error.response?.status === 401
-}
-
-async function runRefreshPipeline(): Promise<boolean> {
-  devLog('[Auth] runRefreshPipeline started')
-  try {
-    const response = await authFetch<AuthApiResponse<never>>('/api/auth/refresh', {
-      method: 'POST',
-    })
-
-    devLog('[Auth] runRefreshPipeline result', { ok: response.ok })
-    return response.ok === true
-  } catch (error) {
-    devLog('[Auth] runRefreshPipeline failed', { error })
-    return false
-  } finally {
-    devLog('[Auth] runRefreshPipeline clearing pipeline')
-    refreshPipeline = null
-  }
 }
 
 export const useAuth = () => {
@@ -86,10 +58,45 @@ export const useAuth = () => {
   const isLoading = useState<boolean>('auth:loading', () => false)
   const isInitialized = useState<boolean>('auth:initialized', () => false)
   const toast = useToast()
+  const serverCookieHeader = process.server
+    ? (useRequestHeaders(['cookie']).cookie ?? '')
+    : ''
+
+  const authFetch = <T>(url: string, options?: Record<string, unknown>) => {
+    const headers = (options?.headers as Record<string, string> | undefined) ?? {}
+
+    return $fetch<T>(url, {
+      ...options,
+      headers: process.server && serverCookieHeader
+        ? {
+            ...headers,
+            cookie: headers.cookie ?? serverCookieHeader
+          }
+        : headers
+    })
+  }
 
   const syncTimezone = (timezone?: string) => {
     if (timezone && process.client) {
       localStorage.setItem('user_timezone', timezone)
+    }
+  }
+
+  const runRefreshPipeline = async (): Promise<boolean> => {
+    devLog('[Auth] runRefreshPipeline started')
+    try {
+      const response = await authFetch<AuthApiResponse<never>>('/api/auth/refresh', {
+        method: 'POST',
+      })
+
+      devLog('[Auth] runRefreshPipeline result', { ok: response.ok })
+      return response.ok === true
+    } catch (error) {
+      devLog('[Auth] runRefreshPipeline failed', { error })
+      return false
+    } finally {
+      devLog('[Auth] runRefreshPipeline clearing pipeline')
+      refreshPipeline = null
     }
   }
 

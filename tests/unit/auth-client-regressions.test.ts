@@ -25,8 +25,8 @@ describe('auth client regressions', () => {
 
   it('fetchMe should attempt token refresh on 401 before clearing user', () => {
     const source = readFileSync(resolve(process.cwd(), 'composables/useAuth.ts'), 'utf-8')
-    expect(source).toContain("const getServerFetch = useRequestFetch as unknown as () =>")
-    expect(source).toContain('return requestFetch<T>(url, options)')
+    expect(source).toContain("useRequestHeaders(['cookie']).cookie ?? ''")
+    expect(source).toContain('cookie: headers.cookie ?? serverCookieHeader')
     expect(source).toContain('const refreshed = await refreshAccessToken()')
     expect(source).toContain("'/api/auth/me'")
   })

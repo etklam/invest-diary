@@ -5,10 +5,12 @@ import path from 'node:path'
 const websocketPluginPath = path.resolve('server/plugins/websocket.ts')
 
 describe('websocket Nitro plugin bootstrap', () => {
-  it('binds Socket.IO after Nitro rendered setup instead of on the first request', () => {
+  it('patches the Node server listen lifecycle instead of waiting for Nitro rendered hooks', () => {
     const content = fs.readFileSync(websocketPluginPath, 'utf8')
 
-    expect(content).toContain("nitroApp.hooks.hook('rendered'")
+    expect(content).toContain('patchServerPrototype(nitroApp, HttpServer.prototype)')
+    expect(content).toContain('prototype.listen = function patchedListen')
     expect(content).not.toContain("nitroApp.hooks.hook('request'")
+    expect(content).not.toContain("nitroApp.hooks.hook('rendered'")
   })
 })
