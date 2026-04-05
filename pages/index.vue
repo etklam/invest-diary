@@ -1,17 +1,17 @@
 <template>
   <main class="fintech-home min-h-screen text-slate-900 dark:text-slate-100">
+    <!-- Hero Section -->
     <section class="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
       <div class="bg-grid absolute inset-0 opacity-35" aria-hidden="true" />
-      <div class="orb orb-cyan" aria-hidden="true" />
-      <div class="orb orb-orange" aria-hidden="true" />
+      <LandingOrb color="cyan" size="lg" position="top-10 right-[12%]" />
+      <LandingOrb color="orange" size="md" position="bottom-8 left-[10%]" />
 
       <div class="relative mx-auto max-w-7xl">
         <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div class="reveal">
-            <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-300/60 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 backdrop-blur dark:border-sky-700/60 dark:bg-slate-900/80 dark:text-sky-200">
-              <Icon name="heroicons:shield-check-20-solid" class="h-4 w-4 text-sky-600 dark:text-sky-300" />
+            <LandingBadge icon="heroicons:shield-check-20-solid">
               {{ $t('home.badge') }}
-            </p>
+            </LandingBadge>
             <h1 class="text-4xl font-semibold leading-tight text-slate-950 dark:text-slate-100 sm:text-5xl lg:text-6xl">
               {{ $t('home.hero.title') }}
             </h1>
@@ -20,34 +20,28 @@
             </p>
 
             <div class="mt-8 flex flex-col gap-4 sm:flex-row">
-              <NuxtLink
-                to="/auth/register"
-                class="action-btn action-btn-primary cursor-pointer"
-              >
+              <NuxtLink to="/auth/register" class="action-btn action-btn-primary cursor-pointer">
                 {{ $t('home.hero.getStarted') }}
                 <Icon name="heroicons:arrow-up-right-20-solid" class="h-5 w-5" />
               </NuxtLink>
-              <NuxtLink
-                to="/about"
-                class="action-btn action-btn-secondary cursor-pointer"
-              >
+              <NuxtLink to="/about" class="action-btn action-btn-secondary cursor-pointer">
                 {{ $t('home.hero.learnMore') }}
               </NuxtLink>
             </div>
 
             <dl class="mt-10 grid gap-4 sm:grid-cols-3">
-              <div class="metric-card reveal reveal-2">
+              <LandingCard variant="metric" :reveal="true" :reveal-delay="2">
                 <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.progress.journalLabel') }}</dt>
                 <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('home.progress.journalValue') }}</dd>
-              </div>
-              <div class="metric-card reveal reveal-3">
+              </LandingCard>
+              <LandingCard variant="metric" :reveal="true" :reveal-delay="3">
                 <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.progress.reviewLabel') }}</dt>
                 <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('home.progress.reviewValue') }}</dd>
-              </div>
-              <div class="metric-card reveal reveal-4">
+              </LandingCard>
+              <LandingCard variant="metric" :reveal="true" :reveal-delay="4">
                 <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.progress.rulesLabel') }}</dt>
                 <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('home.progress.rulesValue') }}</dd>
-              </div>
+              </LandingCard>
             </dl>
           </div>
 
@@ -83,161 +77,121 @@
       </div>
     </section>
 
+    <!-- Trust Section -->
     <section class="px-4 pb-20 sm:px-6">
       <div class="mx-auto max-w-7xl">
         <div class="trust-strip reveal">
           <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.promise.title') }}</p>
           <div class="mt-4 flex flex-wrap gap-3">
-            <span class="trust-pill">{{ $t('home.promise.basics') }}</span>
-            <span class="trust-pill">{{ $t('home.promise.risk') }}</span>
-            <span class="trust-pill">{{ $t('home.promise.community') }}</span>
-            <span class="trust-pill">{{ $t('home.promise.longTerm') }}</span>
-            <span class="trust-pill">{{ $t('home.promise.noGuarantee') }}</span>
+            <span v-for="pill in ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']" :key="pill" class="trust-pill">
+              {{ $t(`home.promise.${pill}`) }}
+            </span>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="px-4 pb-20 sm:px-6">
-      <div class="section-panel editorial-panel mx-auto max-w-7xl">
-        <div class="mb-10 reveal">
-          <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
-            {{ $t('home.learning.title') }}
-          </h2>
-          <p class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
-            {{ $t('home.learning.subtitle') }}
-          </p>
+    <!-- Learning Section -->
+    <LandingSection
+      :title="$t('home.learning.title')"
+      :subtitle="$t('home.learning.subtitle')"
+      class="editorial-panel-wrapper"
+    >
+      <div class="split-grid">
+        <div class="space-y-5">
+          <LandingCard
+            v-for="(key, idx) in ['basics', 'risk', 'review']"
+            :key="key"
+            :title="$t(`home.learning.${key}.title`)"
+            :description="$t(`home.learning.${key}.description`)"
+            :icon="key === 'basics' ? 'heroicons:academic-cap-20-solid' : key === 'risk' ? 'heroicons:shield-exclamation-20-solid' : 'heroicons:arrow-path-20-solid'"
+            :icon-color="key === 'basics' ? 'text-sky-700' : key === 'risk' ? 'text-amber-700' : 'text-emerald-700'"
+            :reveal="true"
+            :reveal-delay="idx + 1"
+          />
         </div>
 
-        <div class="split-grid">
-          <div class="space-y-5">
-            <article class="feature-card feature-card-soft reveal">
-              <Icon name="heroicons:academic-cap-20-solid" class="feature-icon text-sky-700" />
-              <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.basics.title') }}</h3>
-              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.basics.description') }}</p>
-            </article>
-            <article class="feature-card feature-card-soft reveal reveal-2">
-              <Icon name="heroicons:shield-exclamation-20-solid" class="feature-icon text-amber-700" />
-              <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.risk.title') }}</h3>
-              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.risk.description') }}</p>
-            </article>
-            <article class="feature-card feature-card-soft reveal reveal-3">
-              <Icon name="heroicons:arrow-path-20-solid" class="feature-icon text-emerald-700" />
-              <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.learning.review.title') }}</h3>
-              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.learning.review.description') }}</p>
-            </article>
+        <div class="subpanel reveal reveal-2">
+          <div class="mb-8">
+            <p class="subpanel-kicker">{{ $t('home.community.title') }}</p>
+            <h3 class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+              {{ $t('home.community.subtitle') }}
+            </h3>
           </div>
-
-          <div class="subpanel reveal reveal-2">
-            <div class="mb-8">
-              <p class="subpanel-kicker">{{ $t('home.community.title') }}</p>
-              <h3 class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
-                {{ $t('home.community.subtitle') }}
-              </h3>
-            </div>
-            <div class="space-y-4">
-              <article class="feature-card feature-card-quiet">
-                <Icon name="heroicons:chat-bubble-left-right-20-solid" class="feature-icon text-cyan-700" />
-                <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.share.title') }}</h4>
-                <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.share.description') }}</p>
-              </article>
-              <article class="feature-card feature-card-quiet">
-                <Icon name="heroicons:hand-thumb-up-20-solid" class="feature-icon text-indigo-700" />
-                <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.feedback.title') }}</h4>
-                <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.feedback.description') }}</p>
-              </article>
-              <article class="feature-card feature-card-quiet">
-                <Icon name="heroicons:user-group-20-solid" class="feature-icon text-rose-700" />
-                <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.community.accountability.title') }}</h4>
-                <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.community.accountability.description') }}</p>
-              </article>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-12 reveal">
-          <p class="subpanel-kicker">{{ $t('home.turnaround.title') }}</p>
-          <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-3xl">
-            {{ $t('home.turnaround.subtitle') }}
-          </h3>
-          <div class="sequence-grid mt-8">
-            <article class="number-card reveal">
-              <span class="number-chip">01</span>
-              <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step1.title') }}</h4>
-              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step1.description') }}</p>
-            </article>
-            <article class="number-card reveal reveal-2">
-              <span class="number-chip">02</span>
-              <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step2.title') }}</h4>
-              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step2.description') }}</p>
-            </article>
-            <article class="number-card reveal reveal-3">
-              <span class="number-chip">03</span>
-              <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step3.title') }}</h4>
-              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step3.description') }}</p>
-            </article>
-            <article class="number-card reveal reveal-4">
-              <span class="number-chip">04</span>
-              <h4 class="mt-4 text-lg font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.turnaround.step4.title') }}</h4>
-              <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.turnaround.step4.description') }}</p>
-            </article>
+          <div class="space-y-4">
+            <LandingCard
+              v-for="key in ['share', 'feedback', 'accountability']"
+              :key="key"
+              variant="quiet"
+              :title="$t(`home.community.${key}.title`)"
+              :description="$t(`home.community.${key}.description`)"
+              :icon="key === 'share' ? 'heroicons:chat-bubble-left-right-20-solid' : key === 'feedback' ? 'heroicons:hand-thumb-up-20-solid' : 'heroicons:user-group-20-solid'"
+              :icon-color="key === 'share' ? 'text-cyan-700' : key === 'feedback' ? 'text-indigo-700' : 'text-rose-700'"
+            />
           </div>
         </div>
       </div>
-    </section>
 
-    <section class="px-4 pb-20 sm:px-6">
-      <div class="section-panel mx-auto max-w-7xl">
-        <div class="mb-10 reveal">
-          <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
-            {{ $t('home.features.title') }}
-          </h2>
-          <p class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
-            {{ $t('home.features.subtitle') }}
-          </p>
-        </div>
-
-        <div class="feature-grid">
-          <article class="feature-card feature-card-featured reveal">
-            <Icon name="heroicons:book-open-20-solid" class="feature-icon text-sky-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.diary.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.diary.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-2">
-            <Icon name="heroicons:chart-bar-square-20-solid" class="feature-icon text-emerald-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.stocks.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.stocks.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-3">
-            <Icon name="heroicons:bell-alert-20-solid" class="feature-icon text-orange-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.alerts.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.alerts.description') }}</p>
-          </article>
-          <article class="feature-card reveal">
-            <Icon name="heroicons:clock-20-solid" class="feature-icon text-indigo-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.timeline.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.timeline.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-2">
-            <Icon name="heroicons:lock-closed-20-solid" class="feature-icon text-rose-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.security.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.security.description') }}</p>
-          </article>
-          <article class="feature-card reveal reveal-3">
-            <Icon name="heroicons:moon-20-solid" class="feature-icon text-cyan-700" />
-            <h3 class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-100">{{ $t('home.features.themes.title') }}</h3>
-            <p class="mt-2 text-slate-600 dark:text-slate-300">{{ $t('home.features.themes.description') }}</p>
-          </article>
+      <div class="mt-12 reveal">
+        <p class="subpanel-kicker">{{ $t('home.turnaround.title') }}</p>
+        <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-3xl">
+          {{ $t('home.turnaround.subtitle') }}
+        </h3>
+        <div class="sequence-grid mt-8">
+          <LandingCard
+            v-for="n in 4"
+            :key="n"
+            variant="number"
+            :number="`0${n}`"
+            :title="$t(`home.turnaround.step${n}.title`)"
+            :description="$t(`home.turnaround.step${n}.description`)"
+            :reveal="true"
+            :reveal-delay="n"
+          />
         </div>
       </div>
-    </section>
+    </LandingSection>
 
+    <!-- Features Section -->
+    <LandingSection
+      :title="$t('home.features.title')"
+      :subtitle="$t('home.features.subtitle')"
+    >
+      <div class="feature-grid">
+        <LandingCard
+          variant="featured"
+          :title="$t('home.features.diary.title')"
+          :description="$t('home.features.diary.description')"
+          icon="heroicons:book-open-20-solid"
+          icon-color="text-sky-700"
+          :reveal="true"
+        />
+        <LandingCard
+          v-for="(feat, idx) in [
+            { key: 'stocks', icon: 'heroicons:chart-bar-square-20-solid', color: 'text-emerald-700' },
+            { key: 'alerts', icon: 'heroicons:bell-alert-20-solid', color: 'text-orange-700' },
+            { key: 'timeline', icon: 'heroicons:clock-20-solid', color: 'text-indigo-700' },
+            { key: 'security', icon: 'heroicons:lock-closed-20-solid', color: 'text-rose-700' },
+            { key: 'themes', icon: 'heroicons:moon-20-solid', color: 'text-cyan-700' }
+          ]"
+          :key="feat.key"
+          :title="$t(`home.features.${feat.key}.title`)"
+          :description="$t(`home.features.${feat.key}.description`)"
+          :icon="feat.icon"
+          :icon-color="feat.color"
+          :reveal="true"
+          :reveal-delay="(idx % 3) + 1"
+        />
+      </div>
+    </LandingSection>
+
+    <!-- CTA Section -->
     <section class="px-4 pb-24 sm:px-6">
       <div class="mx-auto max-w-7xl">
         <div class="story-panel reveal">
           <div class="flex flex-wrap items-center justify-between gap-4">
             <h2 class="text-2xl font-semibold text-slate-50 sm:text-3xl">{{ $t('home.cta.title') }}</h2>
-            <NuxtLink to="/auth/login" class="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors duration-200 hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 cursor-pointer">
+            <NuxtLink to="/auth/login" class="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors duration-200 hover:text-cyan-100 cursor-pointer">
               {{ $t('home.cta.login') }}
               <Icon name="heroicons:arrow-right-20-solid" class="h-4 w-4" />
             </NuxtLink>
@@ -246,29 +200,16 @@
             {{ $t('home.cta.description') }}
           </p>
           <div class="mt-8 grid gap-4 md:grid-cols-3">
-            <article class="chapter-card">
-              <p class="chapter-label">{{ $t('home.cta.step1.label') }}</p>
-              <h3 class="mt-2 text-lg font-semibold text-white">{{ $t('home.cta.step1.title') }}</h3>
-              <p class="mt-2 text-sm text-slate-300">{{ $t('home.cta.step1.description') }}</p>
-            </article>
-            <article class="chapter-card">
-              <p class="chapter-label">{{ $t('home.cta.step2.label') }}</p>
-              <h3 class="mt-2 text-lg font-semibold text-white">{{ $t('home.cta.step2.title') }}</h3>
-              <p class="mt-2 text-sm text-slate-300">{{ $t('home.cta.step2.description') }}</p>
-            </article>
-            <article class="chapter-card">
-              <p class="chapter-label">{{ $t('home.cta.step3.label') }}</p>
-              <h3 class="mt-2 text-lg font-semibold text-white">{{ $t('home.cta.step3.title') }}</h3>
-              <p class="mt-2 text-sm text-slate-300">{{ $t('home.cta.step3.description') }}</p>
+            <article v-for="n in 3" :key="n" class="chapter-card">
+              <p class="chapter-label">{{ $t(`home.cta.step${n}.label`) }}</p>
+              <h3 class="mt-2 text-lg font-semibold text-white">{{ $t(`home.cta.step${n}.title`) }}</h3>
+              <p class="mt-2 text-sm text-slate-300">{{ $t(`home.cta.step${n}.description`) }}</p>
             </article>
           </div>
           <p class="mt-6 text-sm leading-6 text-slate-300">
             {{ $t('home.cta.disclaimer') }}
           </p>
-          <NuxtLink
-            to="/auth/register"
-            class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-orange-500 px-7 py-3 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 cursor-pointer"
-          >
+          <NuxtLink to="/auth/register" class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-orange-500 px-7 py-3 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-400 cursor-pointer">
             {{ $t('home.cta.register') }}
             <Icon name="heroicons:arrow-up-right-20-solid" class="h-5 w-5" />
           </NuxtLink>
@@ -280,7 +221,7 @@
       <div class="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:justify-between">
         <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $t('common.appName') }}</p>
         <div class="flex items-center gap-6">
-          <NuxtLink to="/about" class="transition-colors duration-200 hover:text-slate-900 dark:hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 cursor-pointer">
+          <NuxtLink to="/about" class="transition-colors duration-200 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer">
             {{ $t('nav.about') }}
           </NuxtLink>
           <p>&copy; {{ currentYear }} {{ $t('home.footer.rights') }}</p>
@@ -339,88 +280,19 @@ const currentYear = new Date().getFullYear()
     var(--home-bg);
 }
 
-.section-panel {
-  border: 1px solid rgb(186 230 253 / 70%);
-  border-radius: 1.25rem;
-  padding: 1.5rem;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 72%), rgb(255 255 255 / 56%));
-  box-shadow: 0 16px 35px rgb(15 23 42 / 8%);
-}
-
-.editorial-panel {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 82%), rgb(248 250 252 / 74%));
-}
-
-:global(.dark .section-panel),
-:global(.dark-mode .section-panel) {
-  border-color: rgb(51 65 85 / 88%);
-  background:
-    linear-gradient(180deg, rgb(10 16 30 / 86%), rgb(10 16 30 / 76%));
-  box-shadow: 0 16px 35px rgb(2 6 23 / 32%);
-}
-
-:global(.dark .editorial-panel),
-:global(.dark-mode .editorial-panel) {
-  background:
-    linear-gradient(180deg, rgb(10 16 30 / 88%), rgb(8 15 28 / 80%));
-}
-
-:global(.dark .subpanel),
-:global(.dark-mode .subpanel) {
-  border-color: rgb(51 65 85);
-  background:
-    linear-gradient(180deg, rgb(7 14 27 / 92%), rgb(10 16 30 / 78%));
-}
-
-.section-title {
-  position: relative;
-  padding-left: 0.85rem;
-}
-
-.section-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.2em;
-  width: 4px;
-  height: 1.2em;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgb(14 165 233), rgb(249 115 22));
-}
-
-.section-subtitle {
-  line-height: 1.75;
-}
-
-.split-grid {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.subpanel {
-  border: 1px solid rgb(186 230 253 / 80%);
-  border-radius: 1.15rem;
-  padding: 1.5rem;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 92%), rgb(240 249 255 / 72%));
-}
-
-.subpanel-kicker {
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgb(14 116 144);
-}
-
 :global(.dark .fintech-home),
 :global(.dark-mode .fintech-home) {
   background:
     radial-gradient(1100px 640px at 10% -10%, rgb(56 189 248 / 10%), transparent 58%),
     radial-gradient(900px 520px at 95% -8%, rgb(249 115 22 / 7%), transparent 62%),
     rgb(2 8 23);
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(12 74 110 / 6%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(12 74 110 / 6%) 1px, transparent 1px);
+  background-size: 36px 36px;
 }
 
 :global(.dark .bg-grid),
@@ -431,34 +303,13 @@ const currentYear = new Date().getFullYear()
     linear-gradient(to bottom, rgb(148 163 184 / 10%) 1px, transparent 1px);
 }
 
-.bg-grid {
-  background-image:
-    linear-gradient(to right, rgb(12 74 110 / 6%) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(12 74 110 / 6%) 1px, transparent 1px);
-  background-size: 36px 36px;
+.editorial-panel-wrapper :deep(.section-panel) {
+  background: linear-gradient(180deg, rgb(255 255 255 / 82%), rgb(248 250 252 / 74%));
 }
 
-.orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(58px);
-  pointer-events: none;
-}
-
-.orb-cyan {
-  width: 280px;
-  height: 280px;
-  background: rgb(56 189 248 / 32%);
-  top: 40px;
-  right: 12%;
-}
-
-.orb-orange {
-  width: 240px;
-  height: 240px;
-  background: rgb(249 115 22 / 22%);
-  bottom: 8%;
-  left: 10%;
+:global(.dark .editorial-panel-wrapper :deep(.section-panel)),
+:global(.dark-mode .editorial-panel-wrapper :deep(.section-panel)) {
+  background: linear-gradient(180deg, rgb(10 16 30 / 88%), rgb(8 15 28 / 80%));
 }
 
 .action-btn {
@@ -472,11 +323,6 @@ const currentYear = new Date().getFullYear()
   font-size: 1rem;
   font-weight: 600;
   transition: all 200ms ease;
-}
-
-.action-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgb(125 211 252 / 70%);
 }
 
 .action-btn-primary {
@@ -497,11 +343,6 @@ const currentYear = new Date().getFullYear()
   backdrop-filter: blur(6px);
 }
 
-.action-btn-secondary:hover {
-  border-color: rgb(14 165 233 / 60%);
-  background: rgb(255 255 255 / 88%);
-}
-
 :global(.dark .action-btn-secondary),
 :global(.dark-mode .action-btn-secondary) {
   border-color: rgb(71 85 105);
@@ -509,33 +350,11 @@ const currentYear = new Date().getFullYear()
   background: rgb(15 23 42 / 82%);
 }
 
-:global(.dark .action-btn-secondary:hover),
-:global(.dark-mode .action-btn-secondary:hover) {
-  background: rgb(30 41 59);
-  border-color: rgb(100 116 139);
-}
-
-.metric-card {
-  border: 1px solid rgb(186 230 253 / 95%);
-  border-radius: 0.95rem;
-  background: rgb(255 255 255 / 82%);
-  backdrop-filter: blur(8px);
-  padding: 1rem;
-  box-shadow: 0 10px 20px rgb(14 165 233 / 10%);
-}
-
-:global(.dark .metric-card),
-:global(.dark-mode .metric-card) {
-  border-color: rgb(71 85 105);
-  background: rgb(10 16 30 / 86%);
-}
-
 .terminal-panel {
   border: 1px solid rgb(30 41 59 / 32%);
   border-radius: 1.1rem;
   overflow: hidden;
-  background:
-    linear-gradient(145deg, rgb(15 23 42 / 98%), rgb(30 41 59 / 94%));
+  background: linear-gradient(145deg, rgb(15 23 42 / 98%), rgb(30 41 59 / 94%));
   box-shadow: 0 20px 45px rgb(15 23 42 / 28%);
 }
 
@@ -557,8 +376,7 @@ const currentYear = new Date().getFullYear()
 .trust-strip {
   border: 1px solid rgb(186 230 253 / 80%);
   border-radius: 1rem;
-  background:
-    linear-gradient(120deg, rgb(255 255 255 / 82%), rgb(224 242 254 / 72%));
+  background: linear-gradient(120deg, rgb(255 255 255 / 82%), rgb(224 242 254 / 72%));
   backdrop-filter: blur(8px);
   padding: 1.25rem;
   box-shadow: 0 12px 28px rgb(14 165 233 / 10%);
@@ -589,120 +407,30 @@ const currentYear = new Date().getFullYear()
   color: rgb(186 230 253);
 }
 
-.feature-card {
-  border: 1px solid rgb(186 230 253 / 82%);
-  border-radius: 1rem;
-  background: rgb(255 255 255 / 84%);
-  backdrop-filter: blur(8px);
-  padding: 1.35rem;
-  position: relative;
-  overflow: hidden;
-  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+.subpanel {
+  border: 1px solid rgb(186 230 253 / 80%);
+  border-radius: 1.15rem;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, rgb(255 255 255 / 92%), rgb(240 249 255 / 72%));
 }
 
-.feature-card::after {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 3px;
-  background: linear-gradient(90deg, rgb(14 165 233 / 95%), rgb(56 189 248 / 25%));
+:global(.dark .subpanel),
+:global(.dark-mode .subpanel) {
+  border-color: rgb(51 65 85);
+  background: linear-gradient(180deg, rgb(7 14 27 / 92%), rgb(10 16 30 / 78%));
 }
 
-.feature-card-soft::after {
-  background: linear-gradient(90deg, rgb(14 165 233 / 75%), rgb(56 189 248 / 18%));
-}
-
-.feature-card-quiet {
-  background: rgb(255 255 255 / 78%);
-  box-shadow: none;
-}
-
-.feature-card-quiet::after {
-  background: linear-gradient(90deg, rgb(148 163 184 / 55%), transparent);
-}
-
-.feature-card-featured {
-  grid-column: span 1;
-  background:
-    linear-gradient(145deg, rgb(255 255 255 / 92%), rgb(224 242 254 / 78%));
-}
-
-:global(.dark .feature-card),
-:global(.dark-mode .feature-card) {
-  border-color: rgb(71 85 105);
-  background: rgb(10 16 30 / 88%);
-}
-
-:global(.dark .feature-card-quiet),
-:global(.dark-mode .feature-card-quiet) {
-  background: rgb(10 16 30 / 72%);
-}
-
-:global(.dark .feature-card-featured),
-:global(.dark-mode .feature-card-featured) {
-  background:
-    linear-gradient(145deg, rgb(10 16 30 / 92%), rgb(12 74 110 / 26%));
-}
-
-.feature-card:hover {
-  transform: translateY(-3px);
-  border-color: rgb(14 165 233 / 45%);
-  box-shadow: 0 16px 34px rgb(14 165 233 / 18%);
-}
-
-:global(.dark .feature-card:hover),
-:global(.dark-mode .feature-card:hover) {
-  border-color: rgb(56 189 248 / 70%);
-  box-shadow: 0 14px 30px rgb(2 6 23 / 45%);
-}
-
-.feature-icon {
-  width: 2rem;
-  height: 2rem;
-}
-
-.sequence-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.number-card {
-  border: 1px solid rgb(186 230 253 / 82%);
-  border-radius: 1rem;
-  background: rgb(255 255 255 / 82%);
-  padding: 1.35rem;
-}
-
-.number-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.8rem;
-  height: 2rem;
-  border-radius: 999px;
-  background: rgb(14 165 233 / 12%);
-  color: rgb(3 105 161);
-  font-size: 0.8rem;
+.subpanel-kicker {
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(14 116 144);
 }
 
-.feature-grid {
-  display: grid;
-  gap: 1.25rem;
-}
-
-:global(.dark .number-card),
-:global(.dark-mode .number-card) {
-  border-color: rgb(71 85 105);
-  background: rgb(10 16 30 / 88%);
-}
-
-:global(.dark .number-chip),
-:global(.dark-mode .number-chip) {
-  background: rgb(56 189 248 / 18%);
-  color: rgb(186 230 253);
-}
+.split-grid { display: grid; gap: 1.5rem; }
+.sequence-grid { display: grid; gap: 1rem; }
+.feature-grid { display: grid; gap: 1.25rem; }
 
 .story-panel {
   border: 1px solid rgb(30 41 59 / 70%);
@@ -729,88 +457,25 @@ const currentYear = new Date().getFullYear()
   letter-spacing: 0.16em;
 }
 
-.reveal {
-  animation: reveal-up 700ms ease both;
-}
-
-.reveal-2 {
-  animation-delay: 120ms;
-}
-
-.reveal-3 {
-  animation-delay: 220ms;
-}
-
-.reveal-4 {
-  animation-delay: 300ms;
-}
+.reveal { animation: reveal-up 700ms ease both; }
+.reveal-2 { animation-delay: 120ms; }
 
 @keyframes reveal-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    animation: none;
-  }
-
-  .action-btn,
-  .feature-card,
-  .action-btn-primary {
-    transition: none;
-  }
-
-  .feature-card:hover,
-  .action-btn-primary:hover {
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (min-width: 768px) {
-  .section-panel {
-    padding: 2rem;
-  }
-
-  .story-panel {
-    padding: 2rem;
-  }
-
-  .sequence-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .feature-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .feature-card-featured {
-    grid-column: span 2;
-  }
+  .story-panel { padding: 2rem; }
+  .sequence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :deep(.feature-card-featured) { grid-column: span 2; }
 }
 
 @media (min-width: 1024px) {
-  .split-grid {
-    grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-  }
-
-  .feature-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .feature-card-featured {
-    grid-column: span 1;
-    grid-row: span 2;
-  }
-
-  .sequence-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+  .split-grid { grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr); }
+  .feature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  :deep(.feature-card-featured) { grid-column: span 1; grid-row: span 2; }
+  .sequence-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 </style>
