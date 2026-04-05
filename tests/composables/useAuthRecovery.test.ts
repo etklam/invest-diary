@@ -8,6 +8,7 @@ describe('useAuthRecovery', () => {
 
   beforeEach(() => {
     vi.resetModules()
+    const push = vi.fn()
     vi.stubGlobal('useAuth', () => ({
       user,
       refreshAccessToken,
@@ -17,6 +18,7 @@ describe('useAuthRecovery', () => {
         requiresAuth: true,
       },
     }))
+    vi.stubGlobal('useRouter', () => ({ push }))
     vi.stubGlobal('navigateTo', vi.fn())
 
     user.value = { id: '1' }
@@ -65,7 +67,7 @@ describe('useAuthRecovery', () => {
 
     await expect(runWithAuthRecovery(operation)).rejects.toBe(error)
     expect(user.value).toBeNull()
-    expect(globalThis.navigateTo).toHaveBeenCalledWith('/auth/login')
+    expect(globalThis.useRouter().push).toHaveBeenCalledWith('/auth/login')
   })
 
   it('does not hijack unrelated 401 responses without the shared auth code', async () => {
@@ -83,5 +85,31 @@ describe('useAuthRecovery', () => {
     expect(refreshAccessToken).not.toHaveBeenCalled()
     expect(user.value).toEqual({ id: '1' })
     expect(globalThis.navigateTo).not.toHaveBeenCalled()
+  })
+
+  it('captures route state during setup instead of calling useRoute inside async recovery paths', async () => {
+    const route = {
+      meta: {
+        requiresAuth: true,
+      },
+    }
+    const useRouteMock = vi.fn(() => route)
+    refreshAccessToken.mockResolvedValue(false)
+
+    vi.stubGlobal('useRoute', useRouteMock)
+
+    const { useAuthRecovery } = await import('~/composables/useAuthRecovery')
+    const { runWithAuthRecovery } = useAuthRecovery()
+
+    const error = {
+      statusCode: 401,
+      data: {
+        code: ErrorCodes.AUTH_UNAUTHORIZED,
+      },
+    }
+
+    await expect(runWithAuthRecovery(() => Promise.reject(error))).rejects.toBe(error)
+    expect(useRouteMock).toHaveBeenCalledTimes(1)
+    expect(globalThis.useRouter().push).toHaveBeenCalledWith('/auth/login')
   })
 })

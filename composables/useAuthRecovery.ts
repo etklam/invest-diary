@@ -2,11 +2,12 @@ import { isAuthSessionError } from '~/lib/auth/session-error'
 
 export const useAuthRecovery = () => {
   const { user, refreshAccessToken } = useAuth()
+  const route = useRoute()
+  const router = useRouter()
 
   const redirectToLogin = async () => {
-    const route = useRoute()
     if (route.meta?.requiresAuth === false) return
-    await navigateTo('/auth/login')
+    await router.push('/auth/login')
   }
 
   const runWithAuthRecovery = async <T>(

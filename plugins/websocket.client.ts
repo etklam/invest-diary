@@ -22,7 +22,9 @@ const connectionStatus = ref<ConnectionStatus>('disconnected')
 const lastError = ref<string | null>(null)
 let isConnecting = false
 let refreshTried = false
+let isManualDisconnect = false
 const publicRoutes = new Set(['/auth/login', '/auth/register'])
+const alertSubscribers = new Set<(alert: AlertPayload) => void>()
 
 const isAuthConnectError = (message: string) => {
   const normalized = message.toLowerCase()
@@ -34,37 +36,85 @@ const isPublicRoute = (path: string, requiresAuth: unknown) => {
   return publicRoutes.has(path) || path.startsWith('/articles')
 }
 
-// ===== Core Connect / Disconnect =====
-const connect = async () => {
-  if (socket?.connected || isConnecting) return
+const destroySocket = (
+  options: {
+    clearError?: boolean
+    nextStatus?: ConnectionStatus
+  } = {}
+) => {
+  const {
+    clearError = true,
+    nextStatus = 'disconnected'
+  } = options
 
-  isConnecting = true
-  connectionStatus.value = 'connecting'
-  refreshTried = false
+  isManualDisconnect = true
 
-  socket = io(window.location.origin, {
-    path: '/socket.io/',
-    withCredentials: true,
-    transports: ['websocket', 'polling'],
-    reconnection: true,
-    reconnectionAttempts: 10,
-    timeout: 20000
-  })
+  if (socket) {
+    socket.removeAllListeners()
+    socket.io.removeAllListeners()
+    socket.disconnect()
+    socket = null
+  }
 
-  socket.on('connect', () => {
+  isConnected.value = false
+  isConnecting = false
+  connectionStatus.value = nextStatus
+
+  if (clearError) {
+    lastError.value = null
+  }
+}
+
+const attachAlertSubscribers = (currentSocket: Socket<ServerToClientEvents, ClientToServerEvents>) => {
+  for (const subscriber of alertSubscribers) {
+    currentSocket.on('alert:triggered', subscriber)
+  }
+}
+
+const attachSocketListeners = (currentSocket: Socket<ServerToClientEvents, ClientToServerEvents>) => {
+  attachAlertSubscribers(currentSocket)
+
+  currentSocket.on('connect', () => {
+    isManualDisconnect = false
     isConnecting = false
     isConnected.value = true
     connectionStatus.value = 'connected'
     lastError.value = null
+    refreshTried = false
   })
 
-  socket.on('disconnect', () => {
+  currentSocket.on('disconnect', (reason) => {
     isConnected.value = false
+    isConnecting = false
+
+    if (!isManualDisconnect && currentSocket.active && reason !== 'io client disconnect') {
+      connectionStatus.value = 'reconnecting'
+      return
+    }
+
     connectionStatus.value = 'disconnected'
   })
 
-  socket.on('connect_error', async (err) => {
+  currentSocket.io.on('reconnect_attempt', () => {
+    isConnected.value = false
+    isConnecting = false
+    connectionStatus.value = 'reconnecting'
+  })
+
+  currentSocket.io.on('reconnect_error', (err) => {
     lastError.value = err.message
+    connectionStatus.value = 'reconnecting'
+  })
+
+  currentSocket.io.on('reconnect_failed', () => {
+    isConnecting = false
+    connectionStatus.value = 'error'
+  })
+
+  currentSocket.on('connect_error', async (err) => {
+    lastError.value = err.message
+    isConnected.value = false
+    isConnecting = false
 
     if (!refreshTried && isAuthConnectError(err.message)) {
       refreshTried = true
@@ -73,35 +123,74 @@ const connect = async () => {
         const ok = await refreshAccessToken()
 
         // access-token is httpOnly; reconnect after refresh to resend cookies.
-        if (ok && socket) {
-          socket.connect()
+        if (ok && currentSocket === socket) {
+          connectionStatus.value = 'reconnecting'
+          currentSocket.connect()
           return
         }
       } catch (e) {
         console.error('[WS] Token refresh threw exception', e)
       }
+
+      destroySocket({ clearError: false, nextStatus: 'error' })
+      return
+    }
+
+    if (currentSocket.active) {
+      connectionStatus.value = 'reconnecting'
+      return
     }
 
     connectionStatus.value = 'error'
-    disconnect()
   })
 }
 
+// ===== Core Connect / Disconnect =====
+const connect = async () => {
+  if (socket?.connected || isConnecting) return
+
+  if (socket) {
+    isManualDisconnect = false
+
+    if (socket.active) {
+      connectionStatus.value = 'reconnecting'
+      socket.connect()
+      return
+    }
+  }
+
+  isConnecting = true
+  isManualDisconnect = false
+  connectionStatus.value = 'connecting'
+  refreshTried = false
+
+  const currentSocket = io(window.location.origin, {
+    path: '/socket.io/',
+    withCredentials: true,
+    transports: ['websocket', 'polling'],
+    reconnection: true,
+    reconnectionAttempts: 10,
+    autoConnect: false,
+    timeout: 20000
+  })
+
+  socket = currentSocket
+  attachSocketListeners(currentSocket)
+  currentSocket.connect()
+}
+
 const disconnect = () => {
-  if (!socket) return
-  socket.removeAllListeners()
-  socket.disconnect()
-  socket = null
-  isConnected.value = false
-  isConnecting = false
-  connectionStatus.value = 'disconnected'
-  lastError.value = null
+  destroySocket()
 }
 
 // ===== Public Alert API =====
 const subscribeAlert = (cb: (alert: AlertPayload) => void) => {
+  alertSubscribers.add(cb)
   socket?.on('alert:triggered', cb)
-  return () => socket?.off('alert:triggered', cb)
+  return () => {
+    alertSubscribers.delete(cb)
+    socket?.off('alert:triggered', cb)
+  }
 }
 
 const dismissAlert = (alertId: string): Promise<boolean> => {

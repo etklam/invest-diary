@@ -31,11 +31,19 @@ describe('auth client regressions', () => {
     expect(source).toContain("'/api/auth/me'")
   })
 
-  it('alerts polling should try refresh on 401 before forcing logout', () => {
+  it('default layout should delegate alert polling to useAlerts instead of owning a duplicate auth recovery loop', () => {
     const source = readFileSync(resolve(process.cwd(), 'layouts/default.vue'), 'utf-8')
-    expect(source).toContain('runWithAuthRecovery')
-    expect(source).toContain("$fetch<any[]>('/api/alerts')")
-    expect(source).not.toContain('[Layout] Calling fetchMe from onMounted')
+    expect(source).toContain("import { useAlerts } from '~/composables/useAlerts'")
+    expect(source).not.toContain('runWithAuthRecovery')
+    expect(source).not.toContain("$fetch<any[]>('/api/alerts')")
+    expect(source).not.toContain('checkForDueAlerts')
+  })
+
+  it('useAlerts should own alert HTTP recovery so layout polling does not race websocket reconnects', () => {
+    const source = readFileSync(resolve(process.cwd(), 'composables/useAlerts.ts'), 'utf-8')
+    expect(source).toContain('const { runWithAuthRecovery } = useAuthRecovery()')
+    expect(source).toContain("runWithAuthRecovery(() => $fetch<AlertApiResponse[]>('/api/alerts'))")
+    expect(source).toContain("runWithAuthRecovery(() => $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' }))")
   })
 
   it('global 401 handler should only auto-logout on auth session errors', () => {

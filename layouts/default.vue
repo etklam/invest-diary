@@ -41,104 +41,20 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useAuthRecovery } from '~/composables/useAuthRecovery'
 
 const { toasts, removeToast } = useToast()
 const { isInitialized, isAuthenticated } = useAuth()
-const { runWithAuthRecovery } = useAuthRecovery()
 const { canInstall } = useAppPWA()
 const showInstallPrompt = ref(false)
 const showQuickDiaryModal = ref(false)
-const route = useRoute()
 
 import { useAlerts } from '~/composables/useAlerts'
 
 const {
   currentAlert,
   showAlert,
-  enqueueAlerts,
   dismissCurrentAlert,
-  applyBackoff,
-  scheduleNextPoll,
-  checkDailyReset,
-  setBaseInterval
 } = useAlerts()
-
-// Polling is handled by useAlerts composable
-
-// Check if route requires authentication using route meta
-// Falls back to path-based detection for pages without meta
-const isPublicRoute = computed(() => {
-  // First check route meta
-  const meta = route.meta
-  if (meta?.requiresAuth === false) {
-    return true
-  }
-  if (meta?.requiresAuth === true) {
-    return false
-  }
-
-  // Fallback: path-based detection for backward compatibility
-  const publicPaths = ['/', '/articles', '/about', '/auth/login', '/auth/register', '/tools']
-  const path = route.path
-  return publicPaths.some(r => path === r || path.startsWith(r + '/'))
-})
-
-// daily reset handled by composable
-
-
-
-
-// Check for due alerts (queue-based)
-const checkForDueAlerts = async () => {
-  if (!isAuthenticated.value || isPublicRoute.value) return
-
-  checkDailyReset()
-
-  try {
-    const alerts = await runWithAuthRecovery(() => $fetch<any[]>('/api/alerts'))
-
-    if (!alerts || alerts.length === 0) {
-      applyBackoff(() => checkForDueAlerts())
-      return
-    }
-
-    enqueueAlerts(alerts)
-    setBaseInterval()
-    scheduleNextPoll(() => checkForDueAlerts())
-  } catch (error: any) {
-    console.error('Error checking for alerts:', error)
-    applyBackoff(() => checkForDueAlerts())
-  }
-}
-
-// dismiss handled by composable
-
-// Start polling
-const startPolling = () => {
-  checkForDueAlerts()
-}
-
-// Stop polling
-const stopPolling = () => {
-  // handled by composable
-}
-
-// Smart polling: start/stop based on auth state and route changes
-watch(
-  [isAuthenticated, isPublicRoute],
-  ([authenticated, publicRoute]) => {
-    if (authenticated && !publicRoute) {
-      // Authenticated user on protected route - start polling
-      // Add small delay to ensure cookies are properly set after login
-      nextTick(() => startPolling())
-    } else {
-      // Public route or not authenticated - stop polling
-      stopPolling()
-    }
-  },
-  { immediate: true }
-)
 
 watch(canInstall, (value) => {
   showInstallPrompt.value = value

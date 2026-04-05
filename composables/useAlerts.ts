@@ -1,6 +1,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { AlertPayload } from '../types/websocket'
 import { POLLING } from '~/lib/constants'
+import { useAuthRecovery } from '~/composables/useAuthRecovery'
 
 export interface AlertItem {
   id: string | number
@@ -54,6 +55,7 @@ export const useAlerts = () => {
   const { t } = useI18n()
   const toast = useToast()
   const { isConnected, onAlert, dismissAlert: wsDismissAlert } = useWebSocket()
+  const { runWithAuthRecovery } = useAuthRecovery()
 
   const hasNextAlert = computed(() => alertQueue.value.length > 0)
 
@@ -82,7 +84,7 @@ export const useAlerts = () => {
 
   const fetchAlertsViaHttp = async (): Promise<AlertItem[]> => {
     try {
-      const response = await $fetch<AlertApiResponse[]>('/api/alerts')
+      const response = await runWithAuthRecovery(() => $fetch<AlertApiResponse[]>('/api/alerts'))
       return response.map(alert => ({
         id: alert.id.toString(),
         message: alert.message,
@@ -198,11 +200,11 @@ export const useAlerts = () => {
         const success = await wsDismissAlert(alert.id.toString())
         if (!success) {
           // WebSocket 失敗，使用 HTTP fallback
-          await $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' })
+          await runWithAuthRecovery(() => $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' }))
         }
       } else {
         // WebSocket 未連線，使用 HTTP
-        await $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' })
+        await runWithAuthRecovery(() => $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' }))
       }
     } catch {
       toast.error(t('alert.dismissFailed'))
