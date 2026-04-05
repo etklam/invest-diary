@@ -24,8 +24,8 @@ export default defineNuxtRouteMiddleware((to) => {
     return navigateTo('/auth/login')
   }
 
-  // If authenticated user tries to access auth pages, redirect to calendar
+  // If authenticated user tries to access auth pages, redirect to diary workspace
   if (isAuthenticated.value && publicRoutes.includes(to.path)) {
-    return navigateTo('/calendar')
+    return navigateTo('/diaries')
   }
 })

@@ -9,6 +9,13 @@ describe('auth client regressions', () => {
     expect(source).toContain('withCredentials: true')
   })
 
+  it('websocket plugin should wait for protected routes before connecting', () => {
+    const source = readFileSync(resolve(process.cwd(), 'plugins/websocket.client.ts'), 'utf-8')
+    expect(source).toContain("const publicRoutes = new Set(['/auth/login', '/auth/register'])")
+    expect(source).toContain("route.meta?.requiresAuth")
+    expect(source).toContain("nuxtApp.hook('page:finish', syncConnection)")
+  })
+
   it('fetchMe should attempt token refresh on 401 before clearing user', () => {
     const source = readFileSync(resolve(process.cwd(), 'composables/useAuth.ts'), 'utf-8')
     expect(source).toContain('const refreshed = await refreshAccessToken()')
@@ -19,6 +26,7 @@ describe('auth client regressions', () => {
     const source = readFileSync(resolve(process.cwd(), 'layouts/default.vue'), 'utf-8')
     expect(source).toContain('runWithAuthRecovery')
     expect(source).toContain("$fetch<any[]>('/api/alerts')")
+    expect(source).not.toContain('[Layout] Calling fetchMe from onMounted')
   })
 
   it('global 401 handler should only auto-logout on auth session errors', () => {

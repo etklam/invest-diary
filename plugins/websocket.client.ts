@@ -22,6 +22,17 @@ const connectionStatus = ref<ConnectionStatus>('disconnected')
 const lastError = ref<string | null>(null)
 let isConnecting = false
 let refreshTried = false
+const publicRoutes = new Set(['/auth/login', '/auth/register'])
+
+const isAuthConnectError = (message: string) => {
+  const normalized = message.toLowerCase()
+  return normalized.includes('authentication') || normalized.includes('invalid token')
+}
+
+const isPublicRoute = (path: string, requiresAuth: unknown) => {
+  if (requiresAuth === false) return true
+  return publicRoutes.has(path) || path.startsWith('/articles')
+}
 
 // ===== Core Connect / Disconnect =====
 const connect = async () => {
@@ -55,7 +66,7 @@ const connect = async () => {
   socket.on('connect_error', async (err) => {
     lastError.value = err.message
 
-    if (!refreshTried) {
+    if (!refreshTried && isAuthConnectError(err.message)) {
       refreshTried = true
       try {
         const { refreshAccessToken } = useAuth()
@@ -123,11 +134,27 @@ const dismissAlert = (alertId: string): Promise<boolean> => {
 // ===== Plugin =====
 export default defineNuxtPlugin(() => {
   const user = useState<any>('auth:user')
+  const route = useRoute()
+  const syncConnection = () => {
+    const shouldConnect = Boolean(user.value)
+      && !isPublicRoute(route.path, route.meta?.requiresAuth)
 
-  watch(user, (newUser, oldUser) => {
-    if (newUser && !oldUser) connect()
-    if (!newUser && oldUser) disconnect()
-  }, { immediate: true })
+    if (shouldConnect) {
+      void connect()
+      return
+    }
+
+    disconnect()
+  }
+
+  watch(
+    [user, () => route.path, () => route.meta?.requiresAuth],
+    syncConnection,
+    { immediate: true }
+  )
+
+  const nuxtApp = useNuxtApp()
+  nuxtApp.hook('page:finish', syncConnection)
 
   window.addEventListener('beforeunload', disconnect)
 

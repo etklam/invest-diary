@@ -1,79 +1,174 @@
 <template>
   <div class="diary-page space-y-6">
-    <div class="panel flex flex-wrap justify-between items-center gap-3">
-      <div>
+    <section class="ledger-hero">
+      <div class="hero-copy">
         <p class="kicker">Diary Ledger</p>
-        <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">日記列表</h1>
+        <h1 class="hero-title">日記工作台</h1>
+        <p class="hero-summary">
+          先看節奏，再做紀錄。提醒、交易、最新複盤都放在第一視線，唔使再喺卡片海裡面兜圈。
+        </p>
       </div>
-      <div class="flex gap-2">
+
+      <div class="hero-actions">
         <button
           @click="showQuickModal = true"
           class="action-btn-success cursor-pointer"
         >
-          <Icon name="heroicons:bolt" class="mr-2 h-5 w-5" />
+          <Icon name="heroicons:bolt" class="h-5 w-5" />
           快速日記
         </button>
         <NuxtLink
           to="/diaries/new"
           class="action-btn cursor-pointer"
         >
-          <Icon name="heroicons:plus" class="mr-2 h-5 w-5" />
+          <Icon name="heroicons:plus" class="h-5 w-5" />
           新增日記
         </NuxtLink>
       </div>
-    </div>
+    </section>
 
-    <!-- Quicknote Modal -->
     <QuickDiaryModal
       :show="showQuickModal"
       @close="showQuickModal = false"
       @created="handleDiaryCreated"
     />
 
-    <!-- Filters and Sorting -->
-    <div class="panel">
+    <div class="workspace-grid">
+      <section class="workspace-panel workspace-panel-primary">
+        <div class="workspace-head">
+          <div>
+            <p class="workspace-label">Next Move</p>
+            <h2 class="workspace-title">{{ focusHeadline }}</h2>
+          </div>
+          <span class="workspace-stamp">{{ focusStamp }}</span>
+        </div>
+
+        <p class="workspace-text">
+          {{ focusDescription }}
+        </p>
+
+        <div class="task-grid">
+          <article class="task-card">
+            <p class="task-label">最近一篇</p>
+            <template v-if="latestDiary">
+              <h3 class="task-title">{{ latestDiary.title || '未命名紀錄' }}</h3>
+              <p class="task-meta">{{ formatDiaryDate(latestDiary.date || latestDiary.createdAt) }}</p>
+              <p class="task-text">{{ getDiaryExcerpt(latestDiary) }}</p>
+            </template>
+            <template v-else>
+              <h3 class="task-title">還未開始</h3>
+              <p class="task-text">先用一篇快速日記，把今天的判斷和情緒落地。</p>
+            </template>
+          </article>
+
+          <article class="task-card">
+            <p class="task-label">提醒盤點</p>
+            <h3 class="task-title">{{ totalOpenAlerts }} 個待留意提醒</h3>
+            <p class="task-meta">有提醒的日記 {{ diariesWithAlerts }} 篇</p>
+            <p class="task-text">
+              {{ totalOpenAlerts > 0 ? '先處理帶提醒的條目，別讓風險提示變成背景音。' : '目前沒有待處理提醒，節奏算穩。' }}
+            </p>
+          </article>
+
+          <article class="task-card">
+            <p class="task-label">交易覆盤</p>
+            <h3 class="task-title">{{ totalTransactions }} 筆交易掛在日記裡</h3>
+            <p class="task-meta">涉及交易的日記 {{ diariesWithTransactions }} 篇</p>
+            <p class="task-text">
+              {{ totalTransactions > 0 ? '有交易就該有理由，從有交易的條目開始回看。' : '還沒有交易紀錄，先把觀察和規則寫出來。' }}
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <aside class="workspace-sidebar">
+        <section class="workspace-panel workspace-panel-secondary">
+          <p class="workspace-label">Ledger Snapshot</p>
+          <div class="stat-list">
+            <article class="stat-card">
+              <span class="stat-value">{{ diaryItems.length }}</span>
+              <span class="stat-label">總日記數</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-value">{{ diariesThisWeek }}</span>
+              <span class="stat-label">近 7 天紀錄</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-value">{{ filteredAndSortedDiaries.length }}</span>
+              <span class="stat-label">目前篩選結果</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="workspace-panel workspace-panel-secondary">
+          <p class="workspace-label">Desk Rules</p>
+          <ul class="desk-rules">
+            <li>先記理由，再記結果，最後才看情緒。</li>
+            <li>日期、提醒、交易三條線要對得上，唔好留糊塗帳。</li>
+            <li>篩選器用來縮短決策時間，不是拿來把自己搞迷路。</li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+
+    <section class="filters-panel">
+      <div class="filters-head">
+        <div>
+          <p class="workspace-label">Filter Desk</p>
+          <h2 class="filters-title">先縮窄範圍，再讀條目</h2>
+        </div>
+        <button
+          @click="resetFilters"
+          class="action-btn-muted cursor-pointer"
+          :disabled="!hasActiveFilters"
+        >
+          <Icon name="heroicons:x-mark" class="h-4 w-4" />
+          清除篩選
+        </button>
+      </div>
+
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <div class="sm:col-span-4">
-          <label for="search" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <label for="search" class="field-label">
             搜尋日記
           </label>
-          <div class="mt-1 relative rounded-xl">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon name="heroicons:magnifying-glass" class="h-5 w-5 text-slate-400" />
+          <div class="search-field">
+            <div class="search-icon">
+              <Icon name="heroicons:magnifying-glass" class="h-5 w-5 text-[color:var(--color-text-soft)]" />
             </div>
             <input
-              type="text"
               id="search"
               v-model="filters.search"
+              type="text"
               placeholder="搜尋標題或內容..."
-              class="field pl-10"
+              class="field field-search"
             />
           </div>
         </div>
         <div>
-          <label for="date-from" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <label for="date-from" class="field-label">
             開始日期
           </label>
           <input
-            type="date"
             id="date-from"
             v-model="filters.dateFrom"
+            type="date"
             class="field"
           />
         </div>
         <div>
-          <label for="date-to" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <label for="date-to" class="field-label">
             結束日期
           </label>
           <input
-            type="date"
             id="date-to"
             v-model="filters.dateTo"
+            type="date"
             class="field"
           />
         </div>
         <div>
-          <label for="sort-by" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <label for="sort-by" class="field-label">
             排序方式
           </label>
           <select
@@ -88,91 +183,94 @@
           </select>
         </div>
       </div>
-      <div class="mt-3 flex justify-between items-center">
-        <span v-if="filters.search" class="text-sm text-slate-500 dark:text-slate-400">
-          找到 {{ filteredAndSortedDiaries.length }} 筆結果
-        </span>
-        <button
-          @click="resetFilters"
-          class="action-btn-muted cursor-pointer"
-        >
-          <Icon name="heroicons:x-mark" class="mr-2 h-4 w-4" />
-          清除篩選
-        </button>
+
+      <p class="filters-summary">{{ filterSummary }}</p>
+    </section>
+
+    <section v-if="pending" class="state-panel">
+      <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-[color:var(--color-primary)]" />
+      <p>正在整理你的日記桌面...</p>
+    </section>
+
+    <section v-else-if="error" class="state-panel state-panel-error">
+      <Icon name="heroicons:x-circle" class="h-5 w-5" />
+      <div>
+        <h3 class="state-title">載入失敗</h3>
+        <p class="state-text">{{ error.message }}</p>
       </div>
-    </div>
+    </section>
 
-    <div v-if="pending" class="panel text-center py-12">
-      <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-blue-700" />
-      <p class="mt-2 text-slate-500">載入中...</p>
-    </div>
+    <section v-else-if="diaryItems.length === 0" class="state-panel">
+      <Icon name="heroicons:document-text" class="h-10 w-10 text-[color:var(--color-text-soft)]" />
+      <div>
+        <h3 class="state-title">尚無日記</h3>
+        <p class="state-text">先記下第一篇投資日記，之後提醒、交易和複盤節奏才有地方可落。</p>
+      </div>
+      <NuxtLink
+        to="/diaries/new"
+        class="action-btn cursor-pointer"
+      >
+        <Icon name="heroicons:plus" class="h-5 w-5" />
+        新增日記
+      </NuxtLink>
+    </section>
 
-    <div v-else-if="error" class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/80 dark:bg-red-950/30">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <Icon name="heroicons:x-circle" class="h-5 w-5 text-red-400" />
+    <section v-else-if="filteredAndSortedDiaries.length === 0" class="state-panel">
+      <Icon name="heroicons:funnel" class="h-10 w-10 text-[color:var(--color-text-soft)]" />
+      <div>
+        <h3 class="state-title">沒有符合條件的日記</h3>
+        <p class="state-text">篩選收太窄了，放寬日期或關鍵字，別把自己困在空結果裡。</p>
+      </div>
+    </section>
+
+    <section v-else class="ledger-list">
+      <header class="ledger-list-head">
+        <div>
+          <p class="workspace-label">Entries</p>
+          <h2 class="filters-title">依時間線讀你的判斷痕跡</h2>
         </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-semibold text-red-800 dark:text-red-200">載入失敗</h3>
-          <div class="mt-2 text-sm text-red-700 dark:text-red-200/90">
-            {{ error.message }}
-          </div>
-        </div>
-      </div>
-    </div>
+        <p class="ledger-list-note">點進條目繼續寫、補交易、處理提醒。</p>
+      </header>
 
-    <div v-else-if="diaries.length === 0" class="panel text-center py-12">
-      <Icon name="heroicons:document-text" class="mx-auto h-12 w-12 text-slate-400" />
-      <h3 class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">尚無日記</h3>
-      <p class="mt-1 text-sm text-slate-500">開始記錄您的第一篇投資日記吧！</p>
-      <div class="mt-6">
-        <NuxtLink
-          to="/diaries/new"
-          class="action-btn cursor-pointer"
-        >
-          <Icon name="heroicons:plus" class="mr-2 h-5 w-5" />
-          新增日記
-        </NuxtLink>
-      </div>
-    </div>
-
-    <div v-else class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
       <NuxtLink
         v-for="diary in filteredAndSortedDiaries"
         :key="diary.id"
         :to="`/diaries/${diary.id}`"
-        class="card group block cursor-pointer"
+        class="ledger-row group cursor-pointer"
       >
-        <div class="p-6">
-          <div class="flex justify-between items-start">
-            <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-200 truncate group-hover:text-blue-700 dark:group-hover:text-sky-300 transition-colors">
-              {{ diary.title }}
-            </h2>
-            <span class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap ml-2">
-              {{ formatDiaryDate(diary.date || diary.createdAt) }}
-            </span>
+        <div class="ledger-row-main">
+          <div class="ledger-row-head">
+            <p class="ledger-date">{{ formatDiaryDate(diary.date || diary.createdAt) }}</p>
+            <h3 class="ledger-title">
+              {{ diary.title || '未命名紀錄' }}
+            </h3>
           </div>
-          <p class="mt-2 text-slate-600 dark:text-slate-300 line-clamp-3 text-sm">
-            {{ diary.content.replace(/[#*`]/g, '') }}
+          <p class="ledger-excerpt">
+            {{ getDiaryExcerpt(diary) }}
           </p>
-          <div class="mt-4 flex items-center justify-between">
-            <div class="flex items-center space-x-2 text-xs text-slate-500">
-              <span v-if="diary.transactions?.length" class="flex items-center">
-                <Icon name="heroicons:currency-dollar" class="mr-1 h-4 w-4" />
-                {{ diary.transactions.length }} 筆交易
-              </span>
-              <span v-if="diary.alerts?.length" class="flex items-center">
-                <Icon name="heroicons:bell" class="mr-1 h-4 w-4" />
-                {{ diary.alerts.length }} 個提醒
-              </span>
-            </div>
-            <span class="text-blue-700 dark:text-sky-300 text-sm font-semibold">
-              閱讀更多 &rarr;
+        </div>
+
+        <div class="ledger-row-side">
+          <div class="ledger-badges">
+            <span v-if="diary.transactions?.length" class="ledger-badge ledger-badge-positive">
+              <Icon name="heroicons:currency-dollar" class="h-4 w-4" />
+              {{ diary.transactions.length }} 筆交易
+            </span>
+            <span v-if="diary.alerts?.length" class="ledger-badge ledger-badge-warning">
+              <Icon name="heroicons:bell" class="h-4 w-4" />
+              {{ diary.alerts.length }} 個提醒
+            </span>
+            <span v-if="!diary.transactions?.length && !diary.alerts?.length" class="ledger-badge">
+              純文字複盤
             </span>
           </div>
+          <span class="ledger-link">
+            打開條目
+            <Icon name="heroicons:arrow-right-20-solid" class="h-4 w-4" />
+          </span>
         </div>
       </NuxtLink>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -202,6 +300,86 @@ const filters = reactive({
   dateFrom: '',
   dateTo: '',
   sortBy: 'date-desc'
+})
+
+const diaryItems = computed<any[]>(() => diaries.value ?? [])
+
+const latestDiary = computed<any | null>(() => diaryItems.value[0] ?? null)
+
+const totalOpenAlerts = computed(() =>
+  diaryItems.value.reduce((sum, diary) => sum + (diary.alerts?.length ?? 0), 0)
+)
+
+const totalTransactions = computed(() =>
+  diaryItems.value.reduce((sum, diary) => sum + (diary.transactions?.length ?? 0), 0)
+)
+
+const diariesWithAlerts = computed(() =>
+  diaryItems.value.filter(diary => (diary.alerts?.length ?? 0) > 0).length
+)
+
+const diariesWithTransactions = computed(() =>
+  diaryItems.value.filter(diary => (diary.transactions?.length ?? 0) > 0).length
+)
+
+const diariesThisWeek = computed(() => {
+  const now = Date.now()
+  const sevenDays = 7 * 24 * 60 * 60 * 1000
+
+  return diaryItems.value.filter((diary) => {
+    const diaryTime = new Date(diary.date || diary.createdAt).getTime()
+    return Number.isFinite(diaryTime) && now - diaryTime <= sevenDays
+  }).length
+})
+
+const hasActiveFilters = computed(() =>
+  Boolean(filters.search || filters.dateFrom || filters.dateTo || filters.sortBy !== 'date-desc')
+)
+
+const focusHeadline = computed(() => {
+  if (!diaryItems.value.length) {
+    return '今天先寫下第一篇判斷紀錄'
+  }
+
+  if (totalOpenAlerts.value > 0) {
+    return `先處理 ${totalOpenAlerts.value} 個提醒，別讓風險訊號失焦`
+  }
+
+  if (latestDiary.value) {
+    return `從 ${formatDiaryDate(latestDiary.value.date || latestDiary.value.createdAt)} 的最近一篇開始複盤`
+  }
+
+  return '先把今天的交易節奏寫清楚'
+})
+
+const focusStamp = computed(() => {
+  if (!diaryItems.value.length) return 'Start'
+  if (totalOpenAlerts.value > 0) return 'Risk Check'
+  if (totalTransactions.value > 0) return 'Review'
+  return 'Writing'
+})
+
+const focusDescription = computed(() => {
+  if (!diaryItems.value.length) {
+    return '這個頁面現在不是展示牆，是工作桌。第一步很簡單，先把今天的理由記下來。'
+  }
+
+  if (totalOpenAlerts.value > 0) {
+    return '你的工作桌上還有未消化的提醒。先進相關條目檢查條件、更新判斷，再決定下一步。'
+  }
+
+  if (totalTransactions.value > 0) {
+    return '交易和文字已經開始累積，接下來要做的不是再開更多卡片，而是把理由、結果、修正對齊。'
+  }
+
+  return '目前節奏偏輕，適合補全條目細節，讓之後的複盤有完整上下文。'
+})
+
+const filterSummary = computed(() => {
+  if (pending.value) return '正在讀取條目...'
+  if (!diaryItems.value.length) return '還沒有資料可供篩選。'
+  if (hasActiveFilters.value) return `目前保留 ${filteredAndSortedDiaries.value.length} 篇條目。`
+  return `共 ${diaryItems.value.length} 篇日記，按時間由新到舊排列。`
 })
 
 // Reset filters
@@ -285,160 +463,524 @@ const formatDiaryDate = (date: string | Date) => {
     day: '2-digit'
   })
 }
+
+const getDiaryExcerpt = (diary: { content?: string }) => {
+  const plainText = (diary.content || '').replace(/[#*`>\-\n]/g, ' ').replace(/\s+/g, ' ').trim()
+  return plainText || '這篇條目還沒有摘要內容，打開把判斷補完整。'
+}
 </script>
 
 <style scoped>
 .diary-page {
-  max-width: 1080px;
+  max-width: 1160px;
   margin: 0 auto;
-}
-
-.panel {
-  border: 1px solid rgb(191 219 254);
-  border-radius: 0.95rem;
-  background: rgb(255 255 255 / 84%);
-  backdrop-filter: blur(8px);
-  padding: 1rem;
-  box-shadow: 0 12px 26px rgb(30 64 175 / 8%);
 }
 
 .kicker {
   font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: rgb(59 130 246);
+  letter-spacing: 0.18em;
+  color: var(--color-secondary);
   font-weight: 700;
 }
 
-.field {
+.ledger-hero,
+.workspace-panel,
+.filters-panel,
+.ledger-list,
+.state-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 10%, transparent), transparent 34%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 82%, transparent));
+  box-shadow: var(--shadow-md);
+}
+
+.ledger-hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.hero-copy {
+  max-width: 42rem;
+}
+
+.hero-title,
+.workspace-title,
+.filters-title,
+.state-title,
+.ledger-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+  color: var(--color-text);
+}
+
+.hero-title {
+  margin-top: 0.45rem;
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  line-height: 1.03;
+}
+
+.hero-summary,
+.workspace-text,
+.task-text,
+.state-text,
+.ledger-excerpt,
+.desk-rules {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.hero-summary {
+  margin-top: 0.85rem;
+  max-width: 38rem;
+  font-size: 1.02rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.workspace-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.workspace-panel {
+  padding: 1.35rem;
+}
+
+.workspace-panel-primary {
+  min-width: 0;
+}
+
+.workspace-sidebar {
+  display: grid;
+  gap: 1rem;
+}
+
+.workspace-head,
+.filters-head,
+.ledger-list-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.workspace-label,
+.field-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.workspace-title {
   margin-top: 0.35rem;
+  font-size: 1.8rem;
+  line-height: 1.1;
+}
+
+.workspace-stamp {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-family: var(--font-data);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-surface-strong) 72%, transparent);
+}
+
+.workspace-text {
+  margin-top: 0.85rem;
+}
+
+.task-grid,
+.stat-list {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.25rem;
+}
+
+.task-card,
+.stat-card {
+  border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+}
+
+.task-card {
+  padding: 1rem;
+}
+
+.task-label,
+.task-meta,
+.ledger-date,
+.stat-label,
+.ledger-list-note {
+  font-family: var(--font-data);
+}
+
+.task-label,
+.stat-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.task-title {
+  margin-top: 0.45rem;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.task-meta {
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  color: var(--color-secondary);
+}
+
+.task-text {
+  margin-top: 0.65rem;
+  font-size: 0.95rem;
+}
+
+.stat-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.95rem 0.9rem;
+}
+
+.stat-value {
+  font-size: 1.45rem;
+  font-weight: 700;
+  font-family: var(--font-data);
+  color: var(--color-text);
+}
+
+.desk-rules {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.85rem;
+  padding-left: 1rem;
+}
+
+.filters-panel,
+.ledger-list,
+.state-panel {
+  padding: 1.35rem;
+}
+
+.filters-title {
+  margin-top: 0.3rem;
+  font-size: 1.45rem;
+}
+
+.filters-summary {
+  margin-top: 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.search-field {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  inset: 0 auto 0 0.95rem;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.field {
   display: block;
   width: 100%;
-  border: 1px solid rgb(191 219 254);
-  border-radius: 0.7rem;
-  background: rgb(248 250 252);
-  color: rgb(15 23 42);
-  font-size: 0.9rem;
-  padding: 0.55rem 0.65rem;
+  margin-top: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-surface-strong) 72%, transparent);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  padding: 0.75rem 0.8rem;
 }
 
 .field:focus-visible {
   outline: none;
-  border-color: rgb(59 130 246);
-  box-shadow: 0 0 0 3px rgb(147 197 253 / 55%);
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 18%, transparent);
 }
 
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.58rem 1rem;
-  border-radius: 0.75rem;
-  color: white;
-  background: #1e40af;
-  transition: background-color 180ms ease;
+.field-search {
+  padding-left: 2.8rem;
 }
 
-.action-btn:hover {
-  background: #1d4ed8;
-}
-
-.action-btn-success {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.58rem 1rem;
-  border-radius: 0.75rem;
-  color: white;
-  background: #059669;
-  transition: background-color 180ms ease;
-}
-
-.action-btn-success:hover {
-  background: #047857;
-}
-
+.action-btn,
+.action-btn-success,
 .action-btn-muted {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgb(191 219 254);
-  border-radius: 0.7rem;
-  padding: 0.55rem 0.8rem;
-  color: rgb(30 58 138);
-  background: rgb(239 246 255);
-  transition: background-color 180ms ease;
+  gap: 0.45rem;
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 0.7rem 1.05rem;
+  font-weight: 700;
+  transition: transform var(--motion-fast) ease, background-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, border-color var(--motion-fast) ease;
+}
+
+.action-btn {
+  color: white;
+  background: var(--color-primary);
+  box-shadow: 0 16px 28px color-mix(in srgb, var(--color-primary) 24%, transparent);
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  background: var(--color-primary-active);
+}
+
+.action-btn-success {
+  color: white;
+  background: var(--color-accent);
+  box-shadow: 0 16px 28px color-mix(in srgb, var(--color-accent) 24%, transparent);
+}
+
+.action-btn-success:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--color-accent) 84%, black);
+}
+
+.action-btn-muted {
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface-strong) 72%, transparent);
 }
 
 .action-btn-muted:hover {
-  background: rgb(219 234 254);
+  transform: translateY(-1px);
+  border-color: var(--color-border-strong);
+  background: color-mix(in srgb, var(--color-surface-strong) 90%, transparent);
 }
 
-.card {
-  border: 1px solid rgb(191 219 254);
-  border-radius: 0.95rem;
-  background: rgb(255 255 255 / 90%);
-  box-shadow: 0 8px 22px rgb(30 64 175 / 8%);
-  transition: all 180ms ease;
+.action-btn-muted:disabled {
+  opacity: 0.55;
+  transform: none;
+  cursor: not-allowed;
 }
 
-.card:hover {
-  border-color: rgb(96 165 250);
-  box-shadow: 0 14px 28px rgb(30 64 175 / 14%);
-  transform: translateY(-2px);
+.state-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  text-align: center;
+  min-height: 220px;
 }
 
-:global(.dark .panel) , :global(.dark-mode .panel)  {
-  border-color: rgb(71 85 105);
-  background: rgb(3 10 24 / 92%);
-  box-shadow: 0 12px 26px rgb(2 6 23 / 45%);
+.state-panel-error {
+  border-color: color-mix(in srgb, var(--color-danger) 36%, var(--color-border));
+  color: var(--color-danger);
 }
 
-:global(.dark .field) , :global(.dark-mode .field)  {
-  border-color: rgb(100 116 139);
-  background: rgb(12 19 35);
-  color: rgb(226 232 240);
+.state-title {
+  font-size: 1.35rem;
 }
 
-:global(.dark .field):focus-visible , :global(.dark-mode .field):focus-visible  {
-  border-color: rgb(56 189 248);
+.ledger-list-head {
+  margin-bottom: 1rem;
 }
 
-:global(.dark .action-btn-muted) , :global(.dark-mode .action-btn-muted)  {
-  border-color: rgb(100 116 139);
-  color: rgb(186 230 253);
-  background: rgb(12 19 35);
+.ledger-list-note {
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
-:global(.dark .action-btn-muted):hover , :global(.dark-mode .action-btn-muted):hover  {
-  background: rgb(20 30 48);
+.ledger-row {
+  display: grid;
+  gap: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
+  padding: 1.15rem 0;
+  transition: transform var(--motion-fast) ease;
 }
 
-:global(.dark .card) , :global(.dark-mode .card)  {
-  border-color: rgb(71 85 105);
-  background: rgb(3 10 24 / 94%);
-  box-shadow: 0 8px 22px rgb(2 6 23 / 45%);
+.ledger-row:first-of-type {
+  border-top: none;
+  padding-top: 0;
 }
 
-:global(.dark .card):hover , :global(.dark-mode .card):hover  {
-  border-color: rgb(56 189 248);
+.ledger-row:last-of-type {
+  padding-bottom: 0;
 }
 
-:global(.dark .action-btn), :global(.dark-mode .action-btn) {
-  background: #1e3a8a;
-  color: rgb(226 232 240);
+.ledger-row:hover {
+  transform: translateX(2px);
 }
 
-:global(.dark .action-btn):hover, :global(.dark-mode .action-btn):hover {
-  background: #1d4ed8;
+.ledger-row-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
-:global(.dark .action-btn-success), :global(.dark-mode .action-btn-success) {
-  background: #065f46;
-  color: rgb(226 232 240);
+.ledger-date {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
 }
 
-:global(.dark .action-btn-success):hover, :global(.dark-mode .action-btn-success):hover {
-  background: #047857;
+.ledger-title {
+  font-size: 1.28rem;
+  transition: color var(--motion-fast) ease;
+}
+
+.group:hover .ledger-title {
+  color: var(--color-primary);
+}
+
+.ledger-excerpt {
+  margin-top: 0.6rem;
+  font-size: 0.98rem;
+}
+
+.ledger-row-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ledger-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.ledger-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-surface-strong) 70%, transparent);
+}
+
+.ledger-badge-positive {
+  color: var(--color-accent);
+  border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-border));
+}
+
+.ledger-badge-warning {
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 34%, var(--color-border));
+}
+
+.ledger-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+:global(.dark .ledger-hero),
+:global(.dark .workspace-panel),
+:global(.dark .filters-panel),
+:global(.dark .ledger-list),
+:global(.dark .state-panel),
+:global(.dark-mode .ledger-hero),
+:global(.dark-mode .workspace-panel),
+:global(.dark-mode .filters-panel),
+:global(.dark-mode .ledger-list),
+:global(.dark-mode .state-panel) {
+  border-color: var(--color-border);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 12%, transparent), transparent 32%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface-strong) 100%, transparent));
+}
+
+:global(.dark .field),
+:global(.dark .task-card),
+:global(.dark .stat-card),
+:global(.dark .ledger-badge),
+:global(.dark-mode .field),
+:global(.dark-mode .task-card),
+:global(.dark-mode .stat-card),
+:global(.dark-mode .ledger-badge) {
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-strong) 92%, transparent);
+  color: var(--color-text);
+}
+
+:global(.dark .field):focus-visible,
+:global(.dark-mode .field):focus-visible {
+  border-color: var(--color-secondary);
+}
+
+:global(.dark .workspace-stamp),
+:global(.dark-mode .workspace-stamp) {
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-strong) 96%, transparent);
+  color: var(--color-text);
+}
+
+:global(.dark .action-btn-muted),
+:global(.dark-mode .action-btn-muted) {
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-strong) 94%, transparent);
+  color: var(--color-text);
+}
+
+:global(.dark .group:hover .ledger-title),
+:global(.dark-mode .group:hover .ledger-title) {
+  color: color-mix(in srgb, white 82%, var(--color-secondary));
+}
+
+@media (min-width: 768px) {
+  .task-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ledger-row {
+    grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.9fr);
+    align-items: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .workspace-grid {
+    grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.8fr);
+  }
 }
 </style>

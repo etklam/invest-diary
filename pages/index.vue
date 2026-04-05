@@ -3,8 +3,6 @@
     <!-- Hero Section -->
     <section class="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
       <div class="bg-grid absolute inset-0 opacity-35" aria-hidden="true" />
-      <LandingOrb color="cyan" size="lg" position="top-10 right-[12%]" />
-      <LandingOrb color="orange" size="md" position="bottom-8 left-[10%]" />
 
       <div class="relative mx-auto max-w-7xl">
         <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
@@ -157,31 +155,50 @@
       :title="$t('home.features.title')"
       :subtitle="$t('home.features.subtitle')"
     >
-      <div class="feature-grid">
-        <LandingCard
-          variant="featured"
-          :title="$t('home.features.diary.title')"
-          :description="$t('home.features.diary.description')"
-          icon="heroicons:book-open-20-solid"
-          icon-color="text-sky-700"
-          :reveal="true"
-        />
-        <LandingCard
-          v-for="(feat, idx) in [
-            { key: 'stocks', icon: 'heroicons:chart-bar-square-20-solid', color: 'text-emerald-700' },
-            { key: 'alerts', icon: 'heroicons:bell-alert-20-solid', color: 'text-orange-700' },
-            { key: 'timeline', icon: 'heroicons:clock-20-solid', color: 'text-indigo-700' },
-            { key: 'security', icon: 'heroicons:lock-closed-20-solid', color: 'text-rose-700' },
-            { key: 'themes', icon: 'heroicons:moon-20-solid', color: 'text-cyan-700' }
-          ]"
-          :key="feat.key"
-          :title="$t(`home.features.${feat.key}.title`)"
-          :description="$t(`home.features.${feat.key}.description`)"
-          :icon="feat.icon"
-          :icon-color="feat.color"
-          :reveal="true"
-          :reveal-delay="(idx % 3) + 1"
-        />
+      <div class="workflow-grid">
+        <article class="workflow-lead reveal">
+          <p class="subpanel-kicker">{{ $t('home.features.diary.title') }}</p>
+          <h3 class="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+            {{ $t('home.features.diary.description') }}
+          </h3>
+          <p class="mt-4 max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">
+            {{ $t('home.snapshot.description') }}
+          </p>
+
+          <div class="workflow-sequence">
+            <article v-for="n in 4" :key="n" class="workflow-step">
+              <p class="workflow-step-number">{{ `0${n}` }}</p>
+              <h4 class="workflow-step-title">{{ $t(`home.turnaround.step${n}.title`) }}</h4>
+              <p class="workflow-step-text">{{ $t(`home.turnaround.step${n}.description`) }}</p>
+            </article>
+          </div>
+        </article>
+
+        <div class="workflow-sidebar">
+          <article
+            v-for="(feat, idx) in workflowFeatures"
+            :key="feat.key"
+            class="workflow-tool reveal"
+            :class="idx % 2 === 1 ? 'reveal-2' : ''"
+          >
+            <div class="workflow-tool-icon">
+              <Icon :name="feat.icon" class="h-5 w-5" />
+            </div>
+            <div>
+              <p class="workflow-tool-title">{{ $t(`home.features.${feat.key}.title`) }}</p>
+              <p class="workflow-tool-text">{{ $t(`home.features.${feat.key}.description`) }}</p>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="workflow-footnote reveal">
+        <p class="subpanel-kicker">{{ $t('home.promise.title') }}</p>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <span v-for="pill in promisePills" :key="pill" class="trust-pill">
+            {{ $t(`home.promise.${pill}`) }}
+          </span>
+        </div>
       </div>
     </LandingSection>
 
@@ -262,54 +279,59 @@ useHead(() => {
 })
 
 const currentYear = new Date().getFullYear()
+
+const workflowFeatures = [
+  { key: 'stocks', icon: 'heroicons:chart-bar-square-20-solid' },
+  { key: 'alerts', icon: 'heroicons:bell-alert-20-solid' },
+  { key: 'timeline', icon: 'heroicons:clock-20-solid' },
+  { key: 'security', icon: 'heroicons:lock-closed-20-solid' },
+  { key: 'themes', icon: 'heroicons:moon-20-solid' }
+]
+
+const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
-
 .fintech-home {
-  --home-primary: #0ea5e9;
-  --home-secondary: #38bdf8;
-  --home-cta: #f97316;
-  --home-bg: #f0f9ff;
-  --home-text: #0c4a6e;
-  font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+  --home-primary: var(--color-primary);
+  --home-secondary: var(--color-secondary);
+  --home-cta: var(--color-secondary);
+  --home-bg: var(--color-background);
+  --home-text: var(--color-text);
+  font-family: var(--font-body);
   background:
-    radial-gradient(1200px 700px at 12% -10%, rgb(56 189 248 / 18%), transparent 58%),
-    radial-gradient(1100px 620px at 95% -5%, rgb(249 115 22 / 12%), transparent 62%),
+    radial-gradient(1200px 700px at 12% -10%, color-mix(in srgb, var(--color-secondary) 12%, transparent), transparent 58%),
+    radial-gradient(1100px 620px at 95% -5%, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 62%),
     var(--home-bg);
 }
 
 :global(.dark .fintech-home),
 :global(.dark-mode .fintech-home) {
   background:
-    radial-gradient(1100px 640px at 10% -10%, rgb(56 189 248 / 10%), transparent 58%),
-    radial-gradient(900px 520px at 95% -8%, rgb(249 115 22 / 7%), transparent 62%),
-    rgb(2 8 23);
+    radial-gradient(1100px 640px at 10% -10%, color-mix(in srgb, var(--color-secondary) 10%, transparent), transparent 58%),
+    radial-gradient(900px 520px at 95% -8%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 62%),
+    var(--color-background);
 }
 
 .bg-grid {
-  background-image:
-    linear-gradient(to right, rgb(12 74 110 / 6%) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(12 74 110 / 6%) 1px, transparent 1px);
-  background-size: 36px 36px;
+  background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--color-primary) 10%, transparent) 1px, transparent 0);
+  background-size: 34px 34px;
 }
 
 :global(.dark .bg-grid),
 :global(.dark-mode .bg-grid) {
-  opacity: 0.14;
-  background-image:
-    linear-gradient(to right, rgb(148 163 184 / 10%) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(148 163 184 / 10%) 1px, transparent 1px);
+  opacity: 0.22;
 }
 
 .editorial-panel-wrapper :deep(.section-panel) {
-  background: linear-gradient(180deg, rgb(255 255 255 / 82%), rgb(248 250 252 / 74%));
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 12%, transparent), transparent 34%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 88%, transparent), color-mix(in srgb, var(--color-surface-strong) 84%, transparent));
 }
 
-:global(.dark .editorial-panel-wrapper :deep(.section-panel)),
-:global(.dark-mode .editorial-panel-wrapper :deep(.section-panel)) {
-  background: linear-gradient(180deg, rgb(10 16 30 / 88%), rgb(8 15 28 / 80%));
+.fintech-home :is(h1, h2, h3) {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
 }
 
 .action-btn {
@@ -318,7 +340,7 @@ const currentYear = new Date().getFullYear()
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 0.9rem;
+  border-radius: 999px;
   padding: 0.8rem 1.4rem;
   font-size: 1rem;
   font-weight: 600;
@@ -327,35 +349,38 @@ const currentYear = new Date().getFullYear()
 
 .action-btn-primary {
   color: #fff;
-  background: linear-gradient(135deg, var(--home-primary), var(--home-secondary));
-  box-shadow: 0 14px 30px rgb(14 165 233 / 22%);
+  background: var(--home-primary);
+  box-shadow: 0 16px 28px color-mix(in srgb, var(--home-primary) 26%, transparent);
 }
 
 .action-btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 34px rgb(14 165 233 / 30%);
+  background: var(--color-primary-active);
+  box-shadow: 0 22px 36px color-mix(in srgb, var(--home-primary) 34%, transparent);
 }
 
 .action-btn-secondary {
-  border: 1px solid rgb(14 165 233 / 35%);
-  color: #0f172a;
-  background: rgb(255 255 255 / 72%);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
   backdrop-filter: blur(6px);
 }
 
 :global(.dark .action-btn-secondary),
 :global(.dark-mode .action-btn-secondary) {
-  border-color: rgb(71 85 105);
-  color: rgb(186 230 253);
-  background: rgb(15 23 42 / 82%);
+  border-color: var(--color-border);
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
 }
 
 .terminal-panel {
-  border: 1px solid rgb(30 41 59 / 32%);
-  border-radius: 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 36%, transparent);
+  border-radius: 1.35rem;
   overflow: hidden;
-  background: linear-gradient(145deg, rgb(15 23 42 / 98%), rgb(30 41 59 / 94%));
-  box-shadow: 0 20px 45px rgb(15 23 42 / 28%);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 30%),
+    linear-gradient(145deg, #132739, #1e3445 58%, #213847);
+  box-shadow: 0 20px 45px rgba(12, 18, 24, 0.24);
 }
 
 .terminal-head {
@@ -374,50 +399,61 @@ const currentYear = new Date().getFullYear()
 }
 
 .trust-strip {
-  border: 1px solid rgb(186 230 253 / 80%);
-  border-radius: 1rem;
-  background: linear-gradient(120deg, rgb(255 255 255 / 82%), rgb(224 242 254 / 72%));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--color-surface) 82%, transparent), color-mix(in srgb, var(--color-surface-strong) 76%, transparent));
   backdrop-filter: blur(8px);
   padding: 1.25rem;
-  box-shadow: 0 12px 28px rgb(14 165 233 / 10%);
+  box-shadow: var(--shadow-sm);
 }
 
 :global(.dark .trust-strip),
 :global(.dark-mode .trust-strip) {
-  border-color: rgb(71 85 105);
-  background: rgb(10 16 30 / 86%);
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
 }
 
 .trust-pill {
-  border: 1px solid rgb(14 165 233 / 30%);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
   border-radius: 999px;
-  background: rgb(224 242 254 / 64%);
+  background: color-mix(in srgb, var(--color-surface-strong) 68%, transparent);
   padding: 0.5rem 0.85rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--home-text);
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 :global(.dark .trust-pill),
 :global(.dark-mode .trust-pill) {
-  border-color: rgb(71 85 105);
-  background: rgb(22 32 50 / 84%);
-  color: rgb(186 230 253);
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-strong) 88%, transparent);
+  color: var(--color-text);
 }
 
 .subpanel {
-  border: 1px solid rgb(186 230 253 / 80%);
-  border-radius: 1.15rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
-  background: linear-gradient(180deg, rgb(255 255 255 / 92%), rgb(240 249 255 / 72%));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 90%, transparent), color-mix(in srgb, var(--color-surface-strong) 82%, transparent));
 }
 
 :global(.dark .subpanel),
 :global(.dark-mode .subpanel) {
-  border-color: rgb(51 65 85);
-  background: linear-gradient(180deg, rgb(7 14 27 / 92%), rgb(10 16 30 / 78%));
+  border-color: var(--color-border);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface-strong) 100%, transparent));
+}
+
+:global(.dark .workflow-lead),
+:global(.dark .workflow-tool),
+:global(.dark .workflow-footnote),
+:global(.dark-mode .workflow-lead),
+:global(.dark-mode .workflow-tool),
+:global(.dark-mode .workflow-footnote) {
+  border-color: var(--color-border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface-strong) 100%, transparent));
 }
 
 .subpanel-kicker {
@@ -425,32 +461,123 @@ const currentYear = new Date().getFullYear()
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgb(14 116 144);
+  color: var(--color-secondary);
 }
 
 .split-grid { display: grid; gap: 1.5rem; }
 .sequence-grid { display: grid; gap: 1rem; }
-.feature-grid { display: grid; gap: 1.25rem; }
+.workflow-grid { display: grid; gap: 1.25rem; }
+
+.workflow-lead,
+.workflow-tool,
+.workflow-footnote {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 90%, transparent), color-mix(in srgb, var(--color-surface-strong) 84%, transparent));
+}
+
+.workflow-lead {
+  padding: 1.5rem;
+}
+
+.workflow-sequence {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+}
+
+.workflow-step {
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
+  padding-top: 0.9rem;
+}
+
+.workflow-step:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.workflow-step-number,
+.workflow-tool-title {
+  font-family: var(--font-data);
+}
+
+.workflow-step-number {
+  color: var(--color-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.workflow-step-title {
+  margin-top: 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.workflow-step-text,
+.workflow-tool-text {
+  margin-top: 0.35rem;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+}
+
+.workflow-sidebar {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.workflow-tool {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: flex-start;
+  padding: 1rem;
+}
+
+.workflow-tool-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-secondary) 14%, transparent);
+}
+
+.workflow-tool-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-secondary);
+}
+
+.workflow-footnote {
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+}
 
 .story-panel {
-  border: 1px solid rgb(30 41 59 / 70%);
-  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 28%, transparent);
+  border-radius: var(--radius-lg);
   padding: 1.6rem;
   background:
-    radial-gradient(900px 200px at 0% 0%, rgb(56 189 248 / 18%), transparent 60%),
-    linear-gradient(145deg, rgb(2 6 23), rgb(15 23 42));
-  box-shadow: 0 22px 46px rgb(2 6 23 / 38%);
+    radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 60%),
+    linear-gradient(145deg, #111720, #17212a);
+  box-shadow: 0 22px 46px rgba(2, 6, 23, 0.28);
 }
 
 .chapter-card {
-  border: 1px solid rgb(56 189 248 / 30%);
-  border-radius: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
   padding: 1rem;
-  background: rgb(15 23 42 / 65%);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .chapter-label {
-  color: rgb(125 211 252);
+  color: color-mix(in srgb, white 72%, var(--color-secondary));
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -468,14 +595,12 @@ const currentYear = new Date().getFullYear()
 @media (min-width: 768px) {
   .story-panel { padding: 2rem; }
   .sequence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  :deep(.feature-card-featured) { grid-column: span 2; }
+  .workflow-sequence { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 1024px) {
   .split-grid { grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr); }
-  .feature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  :deep(.feature-card-featured) { grid-column: span 1; grid-row: span 2; }
+  .workflow-grid { grid-template-columns: minmax(0, 1.18fr) minmax(280px, 0.82fr); }
   .sequence-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 </style>

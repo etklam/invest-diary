@@ -1,49 +1,52 @@
 <template>
-  <div class="mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-teal-100 bg-white/85 shadow-2xl shadow-teal-900/10 backdrop-blur md:grid-cols-2 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
-    <section class="hidden bg-gradient-to-br from-teal-700 via-teal-600 to-cyan-600 p-8 text-white md:flex md:flex-col md:justify-between lg:p-10">
+  <div class="login-shell mx-auto w-full max-w-5xl self-start overflow-hidden rounded-[28px] border shadow-2xl backdrop-blur md:grid md:grid-cols-2">
+    <section class="login-aside hidden p-8 md:flex md:flex-col md:justify-between lg:p-10">
       <div class="space-y-6">
-        <p class="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide">
+        <p class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.16em] uppercase">
           {{ $t('common.appName') }}
         </p>
-        <h1 class="text-3xl font-extrabold leading-tight lg:text-4xl">
+        <h1 class="text-3xl font-semibold leading-tight lg:text-4xl">
           {{ $t('auth.loginTitle') }}
         </h1>
-        <p class="text-sm text-teal-50/90">
+        <p class="text-sm leading-7 text-amber-50/90">
           {{ $t('home.hero.subtitle') }}
         </p>
       </div>
-      <ul class="space-y-4 text-sm">
-        <li class="flex items-center gap-3">
-          <Icon name="heroicons:check-badge" class="h-5 w-5 text-orange-300" />
-          {{ $t('home.features.diary.title') }}
-        </li>
-        <li class="flex items-center gap-3">
-          <Icon name="heroicons:check-badge" class="h-5 w-5 text-orange-300" />
-          {{ $t('home.features.stocks.title') }}
-        </li>
-        <li class="flex items-center gap-3">
-          <Icon name="heroicons:check-badge" class="h-5 w-5 text-orange-300" />
-          {{ $t('home.features.alerts.title') }}
-        </li>
-      </ul>
+      <div class="aside-note space-y-4 text-sm">
+        <div class="aside-row">
+          <span>Desk</span>
+          <strong>Journal first</strong>
+        </div>
+        <div class="aside-row">
+          <span>Focus</span>
+          <strong>{{ $t('home.features.diary.title') }}</strong>
+        </div>
+        <div class="aside-row">
+          <span>Loop</span>
+          <strong>{{ $t('home.features.alerts.title') }}</strong>
+        </div>
+        <p class="text-sm leading-7 text-stone-300">
+          寫下理由、回看決策、修正節奏。登入不是進入一個後台，是回到你自己的交易工作桌。
+        </p>
+      </div>
     </section>
 
-    <section class="p-6 sm:p-8 lg:p-10" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+    <section class="login-form-panel p-6 sm:p-8 lg:p-10">
       <div class="mb-8 space-y-2">
-        <p class="text-sm font-medium text-teal-700 dark:text-teal-300">{{ $t('common.appName') }}</p>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{{ $t('auth.loginTitle') }}</h2>
-        <p class="text-sm text-slate-600 dark:text-slate-300">
+        <p class="text-sm font-semibold tracking-[0.14em] uppercase text-[color:var(--color-secondary)]">{{ $t('common.appName') }}</p>
+        <h2 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">{{ $t('auth.loginTitle') }}</h2>
+        <p class="text-sm leading-7 text-slate-600 dark:text-slate-300">
           {{ $t('auth.orCreateAccount') }}
           <NuxtLink
             to="/auth/register"
-            class="cursor-pointer font-semibold text-orange-600 transition-colors duration-200 hover:text-orange-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+            class="cursor-pointer font-semibold text-[color:var(--color-secondary)] transition-colors duration-200 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-secondary)]"
           >
             {{ $t('auth.createAccount') }}
           </NuxtLink>
         </p>
       </div>
 
-      <form class="space-y-5" @submit.prevent="handleLogin" novalidate>
+      <form class="space-y-5" @submit.prevent="handleLogin" @keydown.enter.prevent="handleLogin" onsubmit="return false" novalidate>
         <div>
           <label for="email" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
             {{ $t('auth.email') }}
@@ -56,8 +59,8 @@
               type="email"
               required
               autocomplete="email"
-              class="block w-full rounded-xl border bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:bg-slate-950 dark:text-white"
-              :class="emailError ? 'border-red-500 dark:border-red-500' : 'border-slate-200 dark:border-slate-700'"
+              class="login-input block w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none transition-colors duration-200"
+              :class="emailError ? 'border-red-500 dark:border-red-500' : ''"
               :placeholder="$t('auth.emailPlaceholder')"
               @blur="validateEmail"
             />
@@ -79,16 +82,17 @@
               type="password"
               required
               autocomplete="current-password"
-              class="block w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-900 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              class="login-input block w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none transition-colors duration-200"
               :placeholder="$t('auth.passwordPlaceholder')"
             />
           </div>
         </div>
 
         <button
-          type="submit"
+          type="button"
           :disabled="isLoading"
-          class="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#f97316] px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#ea580c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          @click="handleLogin"
+          class="login-submit mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <svg v-if="isLoading" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
@@ -133,3 +137,79 @@ const handleLogin = async () => {
   await login(form.value.email, form.value.password)
 }
 </script>
+
+<style scoped>
+.login-shell {
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  box-shadow: var(--shadow-lg);
+}
+
+.login-aside {
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 20%, transparent), transparent 32%),
+    linear-gradient(160deg, #11263a, #1c3145 52%, #233948);
+  color: #f3eee6;
+}
+
+.login-aside > div:first-child p {
+  border-color: color-mix(in srgb, white 22%, transparent);
+  color: color-mix(in srgb, white 84%, var(--color-secondary));
+}
+
+.login-aside h1 {
+  color: #fff7ee;
+}
+
+.aside-note {
+  border: 1px solid rgba(243, 238, 230, 0.14);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1.1rem 1.2rem;
+}
+
+.aside-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(243, 238, 230, 0.1);
+  font-family: var(--font-data);
+}
+
+.aside-row:last-of-type {
+  margin-bottom: 0.8rem;
+}
+
+.login-form-panel {
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+}
+
+.login-form-panel h2 {
+  font-family: var(--font-display);
+}
+
+.login-input {
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-strong) 66%, transparent);
+  color: var(--color-text);
+}
+
+.login-input::placeholder {
+  color: var(--color-text-soft);
+}
+
+.login-input:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 18%, transparent);
+}
+
+.login-submit {
+  background: var(--color-primary);
+  box-shadow: 0 16px 28px color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+.login-submit:hover {
+  background: var(--color-primary-active);
+}
+</style>

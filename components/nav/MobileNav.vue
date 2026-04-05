@@ -44,12 +44,13 @@ watch(() => route.path, () => {
     <nav
       class="relative flex h-full w-full flex-col overflow-y-auto border-r pb-8 pt-5 shadow-2xl backdrop-blur-xl sm:pt-6"
       :class="isHomeRoute
-        ? 'border-sky-100 bg-sky-50/95 shadow-sky-200/30 dark:border-slate-700 dark:bg-slate-900/95'
-        : 'border-cyan-100 bg-white/95 shadow-cyan-200/30 dark:border-slate-700 dark:bg-slate-900/95'"
+        ? ''
+        : ''"
+      style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-background) 90%, transparent);"
     >
       <div
         class="mb-5 flex w-full items-center border-b px-5 pb-5 sm:px-6 sm:pb-6"
-        :class="isHomeRoute ? 'border-sky-100 dark:border-slate-700' : 'border-cyan-100 dark:border-slate-700'"
+        style="border-color: var(--color-border);"
       >
         <NavLogo is-mobile @click="emit('close')" />
       </div>
@@ -66,9 +67,10 @@ watch(() => route.path, () => {
               :class="[
                 isHomeRoute ? 'hover:bg-sky-100/80' : 'hover:bg-cyan-50',
                 isActive(item.to)
-                  ? (isHomeRoute ? 'bg-sky-600 text-white dark:bg-sky-700 dark:text-slate-100' : 'bg-cyan-600 text-white dark:bg-cyan-700 dark:text-slate-100')
+                  ? 'text-white dark:text-slate-100'
                   : ''
               ]"
+              :style="isActive(item.to) ? 'background: var(--color-primary);' : ''"
               @click="emit('close')"
             >
               <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
@@ -88,9 +90,10 @@ watch(() => route.path, () => {
               :class="[
                 isHomeRoute ? 'hover:bg-sky-100/80' : 'hover:bg-cyan-50',
                 isActive(item.to)
-                  ? (isHomeRoute ? 'bg-sky-600 text-white dark:bg-sky-700 dark:text-slate-100' : 'bg-cyan-600 text-white dark:bg-cyan-700 dark:text-slate-100')
+                  ? 'text-white dark:text-slate-100'
                   : ''
               ]"
+              :style="isActive(item.to) ? 'background: var(--color-primary);' : ''"
               @click="emit('close')"
             >
               <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
@@ -147,8 +150,9 @@ watch(() => route.path, () => {
               to="/auth/register"
               class="flex items-center rounded-xl px-3 py-3 pr-2 text-white transition-colors dark:text-slate-950 font-semibold"
               :class="isHomeRoute
-                ? 'bg-orange-500 hover:bg-orange-400 dark:bg-orange-600 dark:hover:bg-orange-500'
-                : 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500'"
+                ? ''
+                : ''"
+              style="background: var(--color-secondary);"
               @click="emit('close')"
             >
               <Icon name="heroicons:user-plus" class="mr-3 h-5 w-5" />

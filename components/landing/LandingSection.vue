@@ -46,11 +46,12 @@ const revealDelayClass = computed(() => {
 
 <style scoped>
 .section-panel {
-  border: 1px solid rgb(186 230 253 / 70%);
-  border-radius: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
-  background: linear-gradient(180deg, rgb(255 255 255 / 72%), rgb(255 255 255 / 56%));
-  box-shadow: 0 16px 35px rgb(15 23 42 / 8%);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 76%, transparent), color-mix(in srgb, var(--color-surface-strong) 82%, transparent));
+  box-shadow: var(--shadow-md);
 }
 
 @media (min-width: 768px) {
@@ -61,14 +62,17 @@ const revealDelayClass = computed(() => {
 
 :global(.dark .section-panel),
 :global(.dark-mode .section-panel) {
-  border-color: rgb(51 65 85 / 88%);
-  background: linear-gradient(180deg, rgb(10 16 30 / 86%), rgb(10 16 30 / 76%));
-  box-shadow: 0 16px 35px rgb(2 6 23 / 32%);
+  border-color: var(--color-border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface-strong) 100%, transparent));
+  box-shadow: var(--shadow-md);
 }
 
 .section-title {
   position: relative;
   padding-left: 0.85rem;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 .section-title::before {
@@ -79,7 +83,7 @@ const revealDelayClass = computed(() => {
   width: 4px;
   height: 1.2em;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgb(14 165 233), rgb(249 115 22));
+  background: linear-gradient(180deg, var(--color-primary), var(--color-secondary));
 }
 
 .section-subtitle {

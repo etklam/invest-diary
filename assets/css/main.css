@@ -10,18 +10,34 @@
   body,
   #__nuxt {
     background-color: var(--color-background);
-    color: #0f172a;
+    color: var(--color-text);
+    font-family: var(--font-body);
   }
 
-  :root.dark body,
-  :root.dark-mode body,
-  .dark body,
-  .dark-mode body,
-  :root.dark #__nuxt,
-  :root.dark-mode #__nuxt,
-  .dark #__nuxt,
-  .dark-mode #__nuxt {
-    background-color: #020617;
-    color: #e2e8f0;
+  body {
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+  }
+
+  code,
+  pre,
+  .font-data {
+    font-family: var(--font-data);
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-secondary) 24%, transparent);
+  }
+
+  a {
+    transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease, border-color var(--motion-fast) ease;
   }
 }

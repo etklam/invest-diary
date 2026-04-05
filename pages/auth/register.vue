@@ -43,7 +43,7 @@
         </p>
       </div>
 
-      <form class="space-y-4" @submit.prevent="handleRegister" novalidate>
+      <form class="space-y-4" @submit.prevent="handleRegister" @keydown.enter.prevent="handleRegister" onsubmit="return false" novalidate>
         <div>
           <label for="name" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
             {{ $t('auth.nameOptional') }}
@@ -128,8 +128,9 @@
         </div>
 
         <button
-          type="submit"
+          type="button"
           :disabled="isLoading || !isFormValid"
+          @click="handleRegister"
           class="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#f97316] px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#ea580c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <svg v-if="isLoading" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

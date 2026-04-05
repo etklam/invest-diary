@@ -110,10 +110,17 @@ export const useAuth = () => {
         syncTimezone(response.data.timezone)
         isInitialized.value = true
         toast.success('登入成功')
-        await navigateTo('/')
+
+        if (process.client) {
+          window.location.assign('/diaries')
+          return
+        }
+
+        await navigateTo('/diaries')
       }
     } catch (error) {
       const authError = error as AuthErrorShape
+      devLog('[Auth] Login failed raw', error)
       devLog('[Auth] Login failed', { statusCode: authError.statusCode })
       toast.error(authError.data?.statusMessage || '登入失敗')
       throw error

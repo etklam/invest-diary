@@ -1,59 +1,88 @@
-/* 行動優先設計令牌系統 */
+/* Editorial Ledger design tokens */
 :root {
-  /* 顏色 tokens */
-  --color-background: #ffffff;
-  --color-surface: #f9fafb;
-  --color-primary: #2563eb;
-  --color-primary-active: #1d4ed8;
-  --color-secondary: #64748b;
-  --color-success: #16a34a;
-  --color-danger: #dc2626;
-  --color-warning: #f59e0b;
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Source Sans 3', sans-serif;
+  --font-data: 'IBM Plex Mono', monospace;
 
-  /* 文字 tokens */
+  --color-background: #f6f1e8;
+  --color-surface: rgba(255, 252, 247, 0.82);
+  --color-surface-strong: #ece3d6;
+  --color-surface-muted: #f1e8dc;
+  --color-panel-ink: #17324d;
+  --color-primary: #17324d;
+  --color-primary-active: #244764;
+  --color-secondary: #b85c38;
+  --color-secondary-active: #9d4828;
+  --color-accent: #1c6b5c;
+  --color-success: #1c6b5c;
+  --color-danger: #b33a2f;
+  --color-warning: #a56a18;
+  --color-info: #2f5e88;
+  --color-border: #d7ccbc;
+  --color-border-strong: #b6a893;
+  --color-text: #191714;
+  --color-text-muted: #4e463e;
+  --color-text-soft: #8d8376;
+
   --font-size-xs: 12px;
   --font-size-sm: 14px;
   --font-size-base: 16px;
   --font-size-lg: 18px;
   --font-size-xl: 20px;
+  --font-size-2xl: 32px;
+  --font-size-3xl: 44px;
 
-  /* 間距 tokens（行動優先） */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+  --space-9: 64px;
 
-  /* 觸控目標 */
   --touch-target-min: 44px;
 
-  /* 圓角 */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
 
-  /* 陰影 */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-sm: 0 10px 25px rgba(40, 29, 14, 0.06);
+  --shadow-md: 0 18px 40px rgba(40, 29, 14, 0.08);
+  --shadow-lg: 0 28px 60px rgba(40, 29, 14, 0.1);
 
-  /* 動畫 */
   --motion-fast: 150ms;
-  --motion-base: 250ms;
-  --motion-slow: 400ms;
+  --motion-base: 280ms;
+  --motion-slow: 420ms;
+  --easing-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Global dark tokens */
 :root.dark,
 :root.dark-mode,
 .dark,
 .dark-mode {
-  --color-background: #020617;
-  --color-surface: #0b1220;
-  --color-primary: #1d4ed8;
-  --color-primary-active: #1e40af;
-  --color-secondary: #94a3b8;
-  --color-success: #059669;
-  --color-danger: #dc2626;
-  --color-warning: #d97706;
+  --color-background: #0f1316;
+  --color-surface: rgba(22, 28, 32, 0.9);
+  --color-surface-strong: #1c2328;
+  --color-surface-muted: #161c20;
+  --color-panel-ink: #243748;
+  --color-primary: #30506f;
+  --color-primary-active: #3f6588;
+  --color-secondary: #b06b4d;
+  --color-secondary-active: #c98565;
+  --color-accent: #2f7b6d;
+  --color-success: #2f7b6d;
+  --color-danger: #c45e55;
+  --color-warning: #be873c;
+  --color-info: #5b7ea4;
+  --color-border: #2a343b;
+  --color-border-strong: #42505a;
+  --color-text: #f3eee6;
+  --color-text-muted: #b7aea2;
+  --color-text-soft: #8f877e;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
 }

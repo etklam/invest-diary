@@ -29,6 +29,17 @@ declare module 'nitropack' {
   }
 }
 
+function isAllowedDevOrigin(origin: string | undefined): boolean {
+  if (!origin) return true
+
+  try {
+    const { hostname } = new URL(origin)
+    return hostname === 'localhost' || hostname === '127.0.0.1'
+  } catch {
+    return false
+  }
+}
+
 // 擴充 h3 App 類型
 declare module 'h3' {
   interface App {
@@ -55,13 +66,10 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
     // 建立 Socket.io Server
     const siteUrl = process.env.NUXT_PUBLIC_SITE_URL
-    // Fail closed: production requires explicit siteUrl, dev defaults to localhost
-    const allowedOrigin = siteUrl
-      || (process.env.NODE_ENV === 'production'
-        ? undefined
-        : 'http://localhost:3000')
+    const isProduction = process.env.NODE_ENV === 'production'
+    const allowedOrigin = siteUrl || undefined
 
-    if (!allowedOrigin) {
+    if (isProduction && !allowedOrigin) {
       logger.ws.error('NUXT_PUBLIC_SITE_URL not set in production — WebSocket connections will be rejected')
     }
 
@@ -69,8 +77,20 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       httpServer,
       {
         cors: {
-          origin: allowedOrigin ?? '',
-          credentials: !!allowedOrigin,
+          origin: (origin, callback) => {
+            if (!isProduction && isAllowedDevOrigin(origin)) {
+              callback(null, true)
+              return
+            }
+
+            if (allowedOrigin && origin === allowedOrigin) {
+              callback(null, true)
+              return
+            }
+
+            callback(new Error('Origin not allowed'), false)
+          },
+          credentials: true,
           methods: ['GET', 'POST']
         },
         path: '/socket.io/',

@@ -9,7 +9,7 @@
   >
     <div v-if="number" class="number-chip mb-4">{{ number }}</div>
     <Icon v-if="icon" :name="icon" :class="['feature-icon', iconColorClass]" />
-    <h3 v-if="title" :class="['mt-4 font-semibold text-slate-950 dark:text-slate-100', titleSizeClass]">
+    <h3 v-if="title" :class="['mt-4 font-semibold text-slate-950 dark:text-slate-100 landing-card-title', titleSizeClass]">
       {{ title }}
     </h3>
     <p v-if="description" class="mt-2 text-slate-600 dark:text-slate-300">
@@ -65,20 +65,23 @@ const revealDelayClass = computed(() => {
 
 <style scoped>
 .landing-card {
-  border: 1px solid rgb(186 230 253 / 82%);
-  border-radius: 1rem;
-  background: rgb(255 255 255 / 84%);
-  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 88%, transparent), color-mix(in srgb, var(--color-surface-strong) 82%, transparent));
+  backdrop-filter: blur(10px);
   padding: 1.35rem;
   position: relative;
   overflow: hidden;
-  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
 }
 
 :global(.dark .landing-card),
 :global(.dark-mode .landing-card) {
-  border-color: rgb(71 85 105);
-  background: rgb(10 16 30 / 88%);
+  border-color: var(--color-border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 95%, transparent));
 }
 
 .feature-card::after {
@@ -86,36 +89,42 @@ const revealDelayClass = computed(() => {
   position: absolute;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, rgb(14 165 233 / 95%), rgb(56 189 248 / 25%));
+  background: linear-gradient(90deg, var(--color-secondary), color-mix(in srgb, var(--color-primary) 38%, transparent));
 }
 
 .feature-card:hover {
-  transform: translateY(-3px);
-  border-color: rgb(14 165 233 / 45%);
-  box-shadow: 0 16px 34px rgb(14 165 233 / 18%);
+  transform: translateY(-2px);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
 }
 
 .feature-card-featured {
-  background: linear-gradient(145deg, rgb(255 255 255 / 92%), rgb(224 242 254 / 78%));
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 32%),
+    linear-gradient(145deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 85%, transparent));
 }
 
 :global(.dark .feature-card-featured),
 :global(.dark-mode .feature-card-featured) {
-  background: linear-gradient(145deg, rgb(10 16 30 / 92%), rgb(12 74 110 / 26%));
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 20%, transparent), transparent 30%),
+    linear-gradient(145deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 100%, transparent));
 }
 
 .feature-card-quiet {
-  background: rgb(255 255 255 / 78%);
+  background: color-mix(in srgb, var(--color-surface) 78%, transparent);
   box-shadow: none;
 }
 
 .feature-card-quiet::after {
-  background: linear-gradient(90deg, rgb(148 163 184 / 55%), transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 36%, transparent), transparent);
 }
 
 .metric-card {
   padding: 1rem;
-  box-shadow: 0 10px 20px rgb(14 165 233 / 10%);
+  box-shadow: none;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 82%, transparent), color-mix(in srgb, var(--color-surface-strong) 78%, transparent));
 }
 
 .number-chip {
@@ -125,8 +134,8 @@ const revealDelayClass = computed(() => {
   min-width: 2.8rem;
   height: 2rem;
   border-radius: 999px;
-  background: rgb(14 165 233 / 12%);
-  color: rgb(3 105 161);
+  background: color-mix(in srgb, var(--color-secondary) 14%, transparent);
+  color: var(--color-secondary);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -134,13 +143,18 @@ const revealDelayClass = computed(() => {
 
 :global(.dark .number-chip),
 :global(.dark-mode .number-chip) {
-  background: rgb(56 189 248 / 18%);
-  color: rgb(186 230 253);
+  background: color-mix(in srgb, var(--color-secondary) 22%, transparent);
+  color: color-mix(in srgb, white 82%, var(--color-secondary));
 }
 
 .feature-icon {
   width: 2rem;
   height: 2rem;
+}
+
+.landing-card-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 .reveal {
