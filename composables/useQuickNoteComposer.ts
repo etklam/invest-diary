@@ -10,12 +10,14 @@ import {
   type QuickNoteComposerState,
   type QuickNoteQuickReminderPreset,
   type QuickNoteReminderKey,
+  type QuickNoteSaveMode,
   type QuickNoteTemplateData,
   type QuickNoteTemplateKind,
 } from '~/types/quicknote'
 
 interface UseQuickNoteComposerOptions {
   defaultTemplateKind?: QuickNoteTemplateKind
+  defaultSaveMode?: QuickNoteSaveMode
 }
 
 function cloneTemplateData(data: QuickNoteTemplateData | undefined): QuickNoteTemplateData {
@@ -36,21 +38,24 @@ function normalizeSymbols(symbols: string | undefined): string {
 
 export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) {
   const { getTodayDateString } = useTimezone()
-  const i18n = useI18n() as { locale?: string | { value?: string } }
+  const i18n = useI18n() as { locale?: string | { value?: string }; t: (key: string, params?: Record<string, unknown>) => string }
   const locale = computed(() => {
     const rawLocale = i18n.locale
     if (typeof rawLocale === 'string') return rawLocale
     return rawLocale?.value || 'en'
   })
+  const t = (key: string, params?: Record<string, unknown>) => i18n.t(key, params)
   const { draft, hasDraft, lastSavedAt, saveDraft, clearDraft } = useQuickNoteDraft()
   const { reminders, setReminder, clearReminder, checkReminders } = useQuickNoteReminders()
   const { templates } = useQuickNoteTemplates()
   const { submitQuickNote } = useQuickNoteSubmit()
 
   const defaultTemplateKind = options.defaultTemplateKind ?? 'blank'
+  const defaultSaveMode = options.defaultSaveMode ?? 'create'
 
   const state = reactive<QuickNoteComposerState>({
     date: getTodayDateString(),
+    saveMode: defaultSaveMode,
     templateKind: defaultTemplateKind,
     title: '',
     content: '',
@@ -76,7 +81,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   const draftHint = computed(() => {
     if (!lastSavedAt.value) return ''
-    return '草稿已儲存'
+    return t('quickDiary.draft.saved')
   })
 
   const activeReminders = computed(() => {
@@ -89,14 +94,21 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
         if (!Number.isFinite(target) || target <= now) return null
         const totalMinutes = Math.max(0, Math.floor((target - now) / 60000))
         const remaining = totalMinutes < 1
-          ? '不到 1 分鐘'
+          ? t('quickDiary.reminders.remaining.lessThanMinute')
           : totalMinutes < 60
-            ? `${totalMinutes} 分鐘`
-            : `${Math.floor(totalMinutes / 60)} 小時${totalMinutes % 60 ? ` ${totalMinutes % 60} 分鐘` : ''}`
+            ? t('quickDiary.reminders.remaining.minutes', { count: totalMinutes })
+            : totalMinutes % 60
+              ? t('quickDiary.reminders.remaining.hoursMinutes', {
+                  hours: Math.floor(totalMinutes / 60),
+                  minutes: totalMinutes % 60,
+                })
+              : t('quickDiary.reminders.remaining.hours', { count: Math.floor(totalMinutes / 60) })
 
         return {
           key,
-          label: index === 0 ? '提醒' : `提醒 ${index + 1}`,
+          label: index === 0
+            ? t('quickDiary.reminders.label')
+            : t('quickDiary.reminders.labelIndexed', { index: index + 1 }),
           remaining,
         }
       })
@@ -126,7 +138,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   )
 
   watch(
-    () => [state.title, state.content, state.tags, state.date, state.templateKind, state.templateData],
+    () => [state.title, state.content, state.tags, state.date, state.saveMode, state.templateKind, state.templateData],
     () => {
       if (!readyForAutosave.value) return
       saveDraft({
@@ -134,6 +146,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
         content: state.content,
         tags: state.tags,
         date: state.date,
+        saveMode: state.saveMode,
         templateKind: state.templateKind,
         templateData: { ...state.templateData },
       })
@@ -175,6 +188,10 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   function setDate(date: string) {
     state.date = date
     syncSuggestedDraft()
+  }
+
+  function setSaveMode(saveMode: QuickNoteSaveMode) {
+    state.saveMode = saveMode
   }
 
   function appendVoiceTranscript(text: string) {
@@ -239,6 +256,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   function resetState() {
     state.date = getTodayDateString()
+    state.saveMode = defaultSaveMode
     state.templateKind = defaultTemplateKind
     state.tags = []
     Object.assign(state.templateData, createEmptyQuickNoteTemplateData())
@@ -262,6 +280,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       title,
       content,
       date: state.date,
+      saveMode: state.saveMode,
       tags: state.tags,
     })
 
@@ -275,7 +294,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   function restoreDraftIfAvailable(confirmRestore?: (message: string) => boolean) {
     if (restoredThisSession.value || !hasDraft.value) return false
 
-    const shouldRestore = confirmRestore ? confirmRestore('偵測到 24 小時內草稿，是否恢復？') : true
+    const shouldRestore = confirmRestore ? confirmRestore(t('quickDiary.draft.restorePrompt')) : true
     restoredThisSession.value = true
 
     if (!shouldRestore) {
@@ -287,6 +306,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     state.content = draft.value.content || ''
     state.tags = draft.value.tags || []
     state.date = draft.value.date || getTodayDateString()
+    state.saveMode = draft.value.saveMode || defaultSaveMode
     state.templateKind = draft.value.templateKind || defaultTemplateKind
     Object.assign(state.templateData, cloneTemplateData(draft.value.templateData))
     state.titleTouched = Boolean(state.title)
@@ -319,6 +339,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   return {
     state,
+    saveMode: toRef(state, 'saveMode'),
     title: toRef(state, 'title'),
     content: toRef(state, 'content'),
     tags: toRef(state, 'tags'),
@@ -336,6 +357,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     setContent,
     setTags,
     setDate,
+    setSaveMode,
     appendVoiceTranscript,
     applySnippet,
     applyTemplateChanges,

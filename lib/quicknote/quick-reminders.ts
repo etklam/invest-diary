@@ -1,16 +1,20 @@
 import type { QuickNoteQuickReminderPreset } from '~/types/quicknote'
 
-export const quickReminderOptions: Array<{
+type Translate = (key: string) => string
+
+export function createQuickReminderOptions(t: Translate): Array<{
   preset: QuickNoteQuickReminderPreset
   label: string
-}> = [
-  { preset: 'tomorrow', label: '明天' },
-  { preset: 'nextWeek', label: '下周' },
-  { preset: 'nextMonth', label: '下個月' },
-]
+}> {
+  return [
+    { preset: 'tomorrow', label: t('quickDiary.reminders.presets.tomorrow') },
+    { preset: 'nextWeek', label: t('quickDiary.reminders.presets.nextWeek') },
+    { preset: 'nextMonth', label: t('quickDiary.reminders.presets.nextMonth') },
+  ]
+}
 
-export function getQuickReminderLabel(preset: QuickNoteQuickReminderPreset): string {
-  return quickReminderOptions.find(option => option.preset === preset)?.label || ''
+export function getQuickReminderLabel(preset: QuickNoteQuickReminderPreset, t: Translate): string {
+  return createQuickReminderOptions(t).find(option => option.preset === preset)?.label || ''
 }
 
 export function resolveQuickReminderTime(

@@ -91,8 +91,100 @@
     "date": "Date",
     "selectDate": "Select date",
     "createDiary": "Create Diary",
+    "appendDiary": "Append To Today",
     "creating": "Creating...",
+    "appending": "Appending...",
+    "draft": {
+      "saved": "Draft saved",
+      "restorePrompt": "A draft from the last 24 hours was found. Restore it?",
+      "restoreSuccess": "Draft restored"
+    },
+    "confirm": {
+      "templateOverwrite": "There is already content here. Replace it with the template?"
+    },
+    "oneLiner": {
+      "placeholder": "Write down today's judgment, emotion, risk, or next move."
+    },
+    "entry": {
+      "eyebrow": "Entry Mode",
+      "title": "Quicknote Flow",
+      "intro": "Start with free writing, or use a template to build a draft first."
+    },
+    "modal": {
+      "eyebrow": "Quicknote Overlay",
+      "step2Hint": "Templates create a draft suggestion. You can still edit freely before saving.",
+      "templateSubcopy": "Start from a template, get a structure first, then fill in the real judgment."
+    },
+    "page": {
+      "eyebrow": "Quicknote Studio",
+      "intro": "This page is not just for jotting down a quick sentence. It helps you turn live judgment, observations, and next actions into a complete record. Templates help you get started, and you still decide how it should be saved.",
+      "rhythmTitle": "Working Rhythm",
+      "rhythm": {
+        "template": "Templates help you start, they do not think for you.",
+        "saveMode": "Use a new diary for a full judgment, append only when you are adding one more note to today.",
+        "tags": "Adding reminders and tags now will make things easier to review later."
+      }
+    },
+    "editor": {
+      "eyebrow": "Quicknote Desk",
+      "intro": "Choose the save mode first, then organize the content. It makes the whole record clearer.",
+      "saveModeLabel": "Save Mode",
+      "titleAria": "Quick note title",
+      "contentAria": "Quick note content",
+      "snippets": "Snippets",
+      "manageTemplates": "Manage Templates",
+      "reminders": "Quick Reminders",
+      "checklistTitle": "Before You Save",
+      "checklist": {
+        "title": "The title should make sense at a glance tomorrow.",
+        "append": "If you are only adding one more thought, choose append to today.",
+        "create": "If this is a standalone judgment, creating a new diary will keep things easier to organize."
+      }
+    },
+    "saveModes": {
+      "create": {
+        "label": "Create New Diary",
+        "description": "Save this as a standalone entry with its own record.",
+        "summary": "This will create a separate diary entry, best for a complete new idea."
+      },
+      "append": {
+        "label": "Append To Today",
+        "description": "Add one more judgment to the diary you already opened today.",
+        "summary": "This will append the content to today's existing diary, best for follow-up notes."
+      }
+    },
+    "reminders": {
+      "label": "Reminder",
+      "labelIndexed": "Reminder {index}",
+      "set": "Reminder set",
+      "cleared": "Reminder cleared",
+      "presetSet": "{label} reminder set",
+      "presets": {
+        "tomorrow": "Tomorrow",
+        "nextWeek": "Next Week",
+        "nextMonth": "Next Month"
+      },
+      "remaining": {
+        "lessThanMinute": "Less than 1 min",
+        "minutes": "{count} min",
+        "hours": "{count} hr",
+        "hoursMinutes": "{hours} hr {minutes} min"
+      }
+    },
+    "toasts": {
+      "saved": "Quick diary saved"
+    },
+    "validation": {
+      "contentRequired": "Please enter content first",
+      "titleRequired": "Please enter a title first"
+    },
+    "errors": {
+      "diaryExists": "A diary already exists for that date. If this is just an extra note, switch to append to today.",
+      "createFailedPrefix": "Create failed: "
+    },
     "templates": {
+      "blank": "Free Writing",
+      "blankDesc": "Skip the template and capture the thought directly",
       "trading": "Trading Diary",
       "tradingDesc": "Record buy/sell operations",
       "reflection": "Post-market Reflection",
@@ -171,6 +263,7 @@
     "saveFailed": "Failed to save",
     "titleRequired": "Title is required",
     "contentRequired": "Content is required",
+    "quickDiary": "Quick Diary",
     "backToList": "Back to diaries",
     "createdAt": "Created at",
     "updatedAt": "Updated at"
@@ -309,6 +402,14 @@
     "networkError": "Network connection error",
     "notFound": "Page not found",
     "serverError": "Server error"
+  },
+  "tags": {
+    "profit": "Profit",
+    "loss": "Loss",
+    "watch": "Watch",
+    "hold": "Hold",
+    "learning": "Learning",
+    "mistake": "Mistake"
   },
   "home": {
     "badge": "Trading Review Companion",

@@ -13,25 +13,32 @@ export interface QuickNoteModalTemplateOption {
 export function createQuickNoteModalTemplates(t: Translate): QuickNoteModalTemplateOption[] {
   return [
     {
+      kind: 'blank',
+      label: t('quickDiary.templates.blank'),
+      description: t('quickDiary.templates.blankDesc'),
+      icon: 'heroicons:pencil-square-solid',
+      iconClass: 'bg-[color:var(--color-primary-active)]',
+    },
+    {
       kind: 'trading',
       label: t('quickDiary.templates.trading'),
       description: t('quickDiary.templates.tradingDesc'),
       icon: 'heroicons:currency-dollar-solid',
-      iconClass: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
+      iconClass: 'bg-[color:var(--color-accent)]',
     },
     {
       kind: 'reflection',
       label: t('quickDiary.templates.reflection'),
       description: t('quickDiary.templates.reflectionDesc'),
       icon: 'heroicons:light-bulb-solid',
-      iconClass: 'bg-gradient-to-br from-purple-400 to-purple-600',
+      iconClass: 'bg-[color:var(--color-secondary)]',
     },
     {
       kind: 'observation',
       label: t('quickDiary.templates.observation'),
       description: t('quickDiary.templates.observationDesc'),
       icon: 'heroicons:eye-solid',
-      iconClass: 'bg-gradient-to-br from-blue-400 to-blue-600',
+      iconClass: 'bg-[color:var(--color-primary)]',
     },
   ]
 }
@@ -41,5 +48,9 @@ export function resolveQuickNoteSaveErrorMessage(error: any, t: Translate): stri
     return t('quickDiary.fillRequired')
   }
 
-  return '建立失敗：' + (error?.data?.statusMessage || error?.message || 'Unknown error')
+  if (error?.statusCode === 409 || error?.data?.code === 'DIARY_ALREADY_EXISTS') {
+    return t('quickDiary.errors.diaryExists')
+  }
+
+  return t('quickDiary.errors.createFailedPrefix') + (error?.data?.statusMessage || error?.message || 'Unknown error')
 }

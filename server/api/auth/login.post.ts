@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { signAccessToken, signRefreshToken, REFRESH_TOKEN_MAX_AGE_SECONDS } from '~/lib/jwt'
@@ -75,13 +76,32 @@ export default defineEventHandler(async (event) => {
     const accessToken = await signAccessToken(user.id.toString(), user.email, role, tokenVersion)
     const refreshToken = await signRefreshToken(user.id.toString(), user.email, role, tokenVersion)
 
-    await prisma.refreshToken.create({
-      data: {
-        token: hashToken(refreshToken),
-        userId: user.id,
-        expiresAt: new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_SECONDS * 1000)
+    const hashedRefreshToken = hashToken(refreshToken)
+    const refreshExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_SECONDS * 1000)
+
+    try {
+      await prisma.refreshToken.create({
+        data: {
+          token: hashedRefreshToken,
+          userId: user.id,
+          expiresAt: refreshExpiresAt,
+        }
+      })
+    } catch (error) {
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') {
+        throw error
       }
-    })
+
+      await prisma.refreshToken.update({
+        where: {
+          token: hashedRefreshToken,
+        },
+        data: {
+          userId: user.id,
+          expiresAt: refreshExpiresAt,
+        }
+      })
+    }
 
     setAuthCookies(event, accessToken, refreshToken)
 

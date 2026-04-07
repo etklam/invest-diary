@@ -1,9 +1,11 @@
 import { toUtcNoonDate } from '~/lib/diary-date'
+import type { QuickNoteSaveMode } from '~/types/quicknote'
 
 export interface QuickNoteSubmitInput {
   title: string
   content: string
   date: string | Date
+  saveMode?: QuickNoteSaveMode
   tags?: string[]
 }
 
@@ -18,7 +20,7 @@ export function useQuickNoteSubmit() {
       content: input.content,
       date: normalizeQuickNoteDate(input.date),
       tags: input.tags ?? [],
-      appendToToday: true,
+      appendToToday: input.saveMode === 'append',
     }
 
     return await $fetch<{ id?: string | bigint | { toString: () => string } }>('/api/diaries', {

@@ -16,6 +16,7 @@ vi.mock('~/composables/useQuickNoteDraft', () => ({
       content: '',
       tags: [],
       date: '',
+      saveMode: 'create',
       templateKind: 'blank',
       templateData: {},
       savedAt: '',
@@ -61,6 +62,10 @@ describe('useQuickNoteComposer', () => {
     }))
     vi.stubGlobal('useI18n', () => ({
       locale: localeRef,
+      t: (key: string, params?: Record<string, unknown>) => {
+        if (!params) return key
+        return `${key}:${JSON.stringify(params)}`
+      },
     }))
   })
 
@@ -125,6 +130,7 @@ describe('useQuickNoteComposer', () => {
       title: '2026/03/22 Diary',
       content: 'A blank quicknote body',
       date: '2026-03-22',
+      saveMode: 'create',
       tags: ['watch', 'profit'],
     })
     expect(clearDraftMock).toHaveBeenCalled()
@@ -160,5 +166,19 @@ describe('useQuickNoteComposer', () => {
     await nextTick()
 
     expect(composer.content.value).toContain('板塊熱點')
+  })
+
+  it('persists and restores explicit save mode choices', async () => {
+    const { useQuickNoteComposer } = await import('~/composables/useQuickNoteComposer')
+    const composer = useQuickNoteComposer({ defaultSaveMode: 'append' })
+
+    composer.initialize()
+    composer.setSaveMode('create')
+    composer.setContent('Need a standalone entry')
+    await nextTick()
+
+    expect(saveDraftMock).toHaveBeenCalledWith(expect.objectContaining({
+      saveMode: 'create',
+    }))
   })
 })

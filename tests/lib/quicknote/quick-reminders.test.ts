@@ -1,13 +1,19 @@
 import { describe, it, expect } from 'vitest'
 import {
+  createQuickReminderOptions,
   getQuickReminderLabel,
-  quickReminderOptions,
   resolveQuickReminderTime,
 } from '~/lib/quicknote/quick-reminders'
 
+const t = (key: string) => ({
+  'quickDiary.reminders.presets.tomorrow': '明天',
+  'quickDiary.reminders.presets.nextWeek': '下周',
+  'quickDiary.reminders.presets.nextMonth': '下個月',
+}[key] || key)
+
 describe('quick-reminders', () => {
   it('exposes the semantic quick reminder presets in UI order', () => {
-    expect(quickReminderOptions).toEqual([
+    expect(createQuickReminderOptions(t)).toEqual([
       { preset: 'tomorrow', label: '明天' },
       { preset: 'nextWeek', label: '下周' },
       { preset: 'nextMonth', label: '下個月' },
@@ -15,9 +21,9 @@ describe('quick-reminders', () => {
   })
 
   it('resolves labels by preset', () => {
-    expect(getQuickReminderLabel('tomorrow')).toBe('明天')
-    expect(getQuickReminderLabel('nextWeek')).toBe('下周')
-    expect(getQuickReminderLabel('nextMonth')).toBe('下個月')
+    expect(getQuickReminderLabel('tomorrow', t)).toBe('明天')
+    expect(getQuickReminderLabel('nextWeek', t)).toBe('下周')
+    expect(getQuickReminderLabel('nextMonth', t)).toBe('下個月')
   })
 
   it('resolves quick reminder times relative to now', () => {

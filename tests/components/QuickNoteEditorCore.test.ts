@@ -2,9 +2,37 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import QuickNoteEditorCore from '~/components/quicknote/QuickNoteEditorCore.vue'
 
+const messages: Record<string, string> = {
+  'common.save': '儲存',
+  'quickDiary.title': '快速筆記',
+  'quickDiary.date': '日期',
+  'quickDiary.editor.eyebrow': 'Quicknote Desk',
+  'quickDiary.editor.intro': '先選好儲存方式，再整理內容。',
+  'quickDiary.editor.saveModeLabel': '儲存方式',
+  'quickDiary.editor.titleAria': '快速筆記標題',
+  'quickDiary.editor.contentAria': '快速筆記內容',
+  'quickDiary.editor.snippets': 'Snippets',
+  'quickDiary.editor.manageTemplates': '管理模板',
+  'quickDiary.editor.reminders': '快速提醒',
+  'quickDiary.editor.checklistTitle': '落地前確認',
+  'quickDiary.editor.checklist.title': '標題要能一眼看懂',
+  'quickDiary.editor.checklist.append': '補一句就追加',
+  'quickDiary.editor.checklist.create': '獨立想法就新建',
+  'quickDiary.saveModes.create.label': '建立新日記',
+  'quickDiary.saveModes.create.description': '建立獨立條目',
+  'quickDiary.saveModes.create.summary': '建立獨立日記',
+  'quickDiary.saveModes.append.label': '追加到當日',
+  'quickDiary.saveModes.append.description': '附加到今日日記',
+  'quickDiary.saveModes.append.summary': '追加到當日日記',
+  'quickDiary.oneLiner.placeholder': '請輸入內容',
+  'quickDiary.reminders.presets.tomorrow': '明天',
+  'quickDiary.reminders.presets.nextWeek': '下周',
+  'quickDiary.reminders.presets.nextMonth': '下個月',
+}
+
 function mountEditorCore() {
   vi.stubGlobal('useI18n', () => ({
-    t: (key: string) => key,
+    t: (key: string) => messages[key] || key,
   }))
 
   return mount(QuickNoteEditorCore, {
@@ -13,6 +41,7 @@ function mountEditorCore() {
       content: 'Initial note',
       tags: ['watch'],
       date: '2026-03-22',
+      saveMode: 'create',
       saving: false,
       draftHint: '草稿已儲存',
       templates: [
@@ -42,6 +71,7 @@ function mountEditorCore() {
           template: '<button type="button" data-test="tags" @click="$emit(\'update:modelValue\', [\'watch\', \'profit\'])">tags</button>',
           props: ['modelValue'],
         },
+        Icon: true,
       },
     },
   })
@@ -70,19 +100,21 @@ describe('QuickNoteEditorCore', () => {
     expect(wrapper.emitted('update:date')).toEqual([['2026-03-23']])
   })
 
-  it('emits editor actions for voice, template, reminders, and save', async () => {
+  it('emits editor actions for voice, template, reminders, save mode, and save', async () => {
     const wrapper = mountEditorCore()
 
     await wrapper.get('[data-test="voice"]').trigger('click')
     await wrapper.get('[data-test="template-apply"]').trigger('click')
     await wrapper.get('[data-test="reminder-set"]').trigger('click')
     await wrapper.get('[data-test="reminder-clear"]').trigger('click')
-    await wrapper.get('button.rounded-md.bg-indigo-600').trigger('click')
+    await wrapper.findAll('button').find(button => button.text().includes('追加到當日'))!.trigger('click')
+    await wrapper.findAll('button').find(button => button.text().includes('儲存'))!.trigger('click')
 
     expect(wrapper.emitted('append-text')).toEqual([['voice text']])
     expect(wrapper.emitted('apply-template')).toEqual([['模板內容']])
     expect(wrapper.emitted('reminder-set')).toEqual([[{ key: 'reminder1', time: '2026-03-22T12:00:00.000Z' }]])
     expect(wrapper.emitted('reminder-clear')).toEqual([[{ key: 'reminder1' }]])
+    expect(wrapper.emitted('update:save-mode')).toEqual([['append']])
     expect(wrapper.emitted('save')).toBeTruthy()
   })
 

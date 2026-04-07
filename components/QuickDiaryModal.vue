@@ -26,7 +26,8 @@
           >
             <div
               v-if="show"
-              class="fixed inset-0 bg-gradient-to-br from-gray-900/60 via-gray-800/60 to-indigo-900/40 backdrop-blur-md transition-all"
+              class="fixed inset-0 transition-all"
+              style="background: color-mix(in srgb, var(--color-panel-ink) 68%, transparent); backdrop-filter: blur(12px);"
               @click="close"
             />
           </Transition>
@@ -41,20 +42,25 @@
           >
             <div
               v-if="show"
-              class="relative inline-block w-full transform overflow-hidden text-left align-bottom transition-all sm:mx-auto sm:max-w-3xl sm:align-middle"
+              class="relative inline-block w-full transform overflow-hidden text-left align-bottom transition-all sm:mx-auto sm:max-w-4xl sm:align-middle"
             >
-              <div class="flex h-screen flex-col backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-3xl sm:border sm:border-white/10 sm:shadow-2xl sm:shadow-gray-900/20">
-                <div class="flex items-center justify-between border-b border-gray-200/50 px-4 py-4 sm:px-6 sm:py-5 dark:border-gray-700/50">
+              <div
+                class="flex h-screen flex-col sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-[28px] sm:border"
+                style="backdrop-filter: blur(20px); background: color-mix(in srgb, var(--color-surface) 92%, white); border-color: color-mix(in srgb, var(--color-border) 70%, white); box-shadow: var(--shadow-lg);"
+              >
+                <div class="flex items-center justify-between border-b px-4 py-4 sm:px-6 sm:py-5" style="border-color: var(--color-border);">
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl" id="modal-title">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" style="color: var(--color-secondary);">{{ t('quickDiary.modal.eyebrow') }}</p>
+                    <h3 class="text-lg font-semibold sm:text-xl" id="modal-title" style="color: var(--color-text); font-family: var(--font-display);">
                       {{ t('quickDiary.title') }}
                     </h3>
-                    <p v-if="step === 2" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      模板建立的是草稿建議，送出前仍可自由編輯。
+                    <p v-if="step === 2" class="mt-1 text-xs" style="color: var(--color-text-muted);">
+                      {{ t('quickDiary.modal.step2Hint') }}
                     </p>
                   </div>
                   <button
-                    class="flex h-10 w-10 items-center justify-center rounded-xl text-gray-400 transition-all duration-200 hover:bg-gray-100/50 hover:text-gray-600 dark:hover:bg-gray-700/50 dark:hover:text-gray-300"
+                    class="flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200"
+                    style="color: var(--color-text-soft);"
                     :aria-label="t('common.close')"
                     @click="close"
                   >
@@ -63,24 +69,32 @@
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-                  <div v-if="step === 1" class="space-y-4">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('quickDiary.selectTemplate') }}</p>
-                    <div class="grid gap-4 sm:grid-cols-3">
+                  <div v-if="step === 1" class="space-y-6">
+                    <div class="space-y-2 text-center sm:text-left">
+                      <p class="text-sm font-medium" style="color: var(--color-text-muted);">{{ t('quickDiary.selectTemplate') }}</p>
+                      <p class="text-xs" style="color: var(--color-text-soft);">{{ t('quickDiary.modal.templateSubcopy') }}</p>
+                    </div>
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                       <button
                         v-for="template in templates"
                         :key="template.kind"
                         type="button"
-                        class="group rounded-2xl border border-gray-200/60 bg-white/60 p-5 text-left transition-all duration-200 hover:border-indigo-400/60 hover:bg-white/80 hover:shadow-lg hover:shadow-indigo-500/10 dark:border-gray-700/60 dark:bg-gray-800/60 dark:hover:bg-gray-800/80"
+                        class="group relative flex flex-col items-center rounded-3xl border p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:items-start sm:text-left"
+                        style="border-color: var(--color-border); background: white;"
                         @click="selectTemplate(template.kind)"
                       >
                         <div
-                          class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl text-white transition-transform duration-200 group-hover:scale-110"
+                          class="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm"
                           :class="template.iconClass"
                         >
-                          <Icon :name="template.icon" class="h-6 w-6" />
+                          <Icon :name="template.icon" class="h-7 w-7" />
                         </div>
-                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ template.label }}</h4>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ template.description }}</p>
+                        <h4 class="text-sm font-bold tracking-tight" style="color: var(--color-text)">{{ template.label }}</h4>
+                        <p class="mt-2 text-[11px] leading-relaxed" style="color: var(--color-text-muted)">{{ template.description }}</p>
+                        
+                        <div class="absolute bottom-4 right-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                          <Icon name="heroicons:arrow-right" class="h-4 w-4" style="color: var(--color-primary);" />
+                        </div>
                       </button>
                     </div>
                   </div>
@@ -96,14 +110,15 @@
                     />
 
                     <QuickNoteEditorCore
+                      :save-mode="state.saveMode"
                       :title="state.title"
                       :content="state.content"
                       :tags="state.tags"
                       :date="state.date"
                       :saving="saving"
                       :draft-hint="draftHint"
-                      :save-label="t('quickDiary.createDiary')"
-                      :saving-label="t('quickDiary.creating')"
+                      :save-label="state.saveMode === 'append' ? t('quickDiary.appendDiary') : t('quickDiary.createDiary')"
+                      :saving-label="state.saveMode === 'append' ? t('quickDiary.appending') : t('quickDiary.creating')"
                       :templates="templatesFromStorage"
                       :reminders="reminders"
                       :active-reminders="activeReminders"
@@ -111,6 +126,7 @@
                       @update:content="setContent"
                       @update:tags="setTags"
                       @update:date="setDate"
+                      @update:save-mode="setSaveMode"
                       @append-text="appendVoiceTranscript"
                       @apply-template="handleApplyTemplate"
                       @set-quick-reminder="handleSetQuickReminder"
@@ -121,18 +137,20 @@
                   </div>
                 </div>
 
-                <div class="flex gap-3 border-t border-gray-200/50 px-4 py-4 sm:justify-end sm:px-6 dark:border-gray-700/50">
+                <div class="flex gap-3 border-t px-4 py-4 sm:justify-end sm:px-6" style="border-color: var(--color-border);">
                   <button
                     v-if="step === 2"
                     type="button"
-                    class="flex-1 rounded-xl border border-gray-300/60 bg-white/60 px-4 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50/80 sm:flex-none sm:px-5 sm:py-2.5 dark:border-gray-600/60 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/60"
+                    class="flex-1 rounded-xl border px-4 py-3 font-medium transition-all duration-200 sm:flex-none sm:px-5 sm:py-2.5"
+                    style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 85%, white); color: var(--color-text);"
                     @click="step = 1"
                   >
                     {{ t('common.back') }}
                   </button>
                   <button
                     type="button"
-                    class="flex-1 rounded-xl border border-gray-300/60 bg-white/60 px-4 py-3 font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50/80 sm:flex-none sm:px-5 sm:py-2.5 dark:border-gray-600/60 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:bg-gray-700/60"
+                    class="flex-1 rounded-xl border px-4 py-3 font-medium transition-all duration-200 sm:flex-none sm:px-5 sm:py-2.5"
+                    style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 85%, white); color: var(--color-text);"
                     @click="close"
                   >
                     {{ t('common.cancel') }}
@@ -183,6 +201,7 @@ const {
   setContent,
   setTags,
   setDate,
+  setSaveMode,
   appendVoiceTranscript,
   applySnippet,
   applyTemplateChanges,
@@ -196,6 +215,7 @@ const {
   resetState,
 } = useQuickNoteComposer({
   defaultTemplateKind: 'trading',
+  defaultSaveMode: 'append',
 })
 
 const templates = computed(() => createQuickNoteModalTemplates(t))
@@ -226,7 +246,7 @@ function close() {
 function handleApplyTemplate(templateContent: string) {
   if (!templateContent) return
   if (state.content.trim()) {
-    const replace = confirm('已有內容，是否用模板覆蓋？')
+    const replace = confirm(t('quickDiary.confirm.templateOverwrite'))
     applySnippet(templateContent, replace)
     return
   }
@@ -235,17 +255,17 @@ function handleApplyTemplate(templateContent: string) {
 
 function handleSetQuickReminder(preset: QuickNoteQuickReminderPreset) {
   setQuickReminder(preset)
-  toast.info(`已設定${getQuickReminderLabel(preset)}提醒`)
+  toast.info(t('quickDiary.reminders.presetSet', { label: getQuickReminderLabel(preset, t) }))
 }
 
 function handleSetReminder(payload: { key: 'reminder1'; time: string }) {
   handleReminderSet(payload)
-  toast.info('提醒已設定')
+  toast.info(t('quickDiary.reminders.set'))
 }
 
 function handleClearReminder(payload: { key: 'reminder1' }) {
   handleReminderClear(payload)
-  toast.info('提醒已清除')
+  toast.info(t('quickDiary.reminders.cleared'))
 }
 
 async function handleSave() {

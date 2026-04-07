@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { useDebounceFn, useLocalStorage } from '@vueuse/core'
 import {
   createEmptyQuickNoteTemplateData,
+  type QuickNoteSaveMode,
   type QuickNoteTemplateData,
   type QuickNoteTemplateKind,
 } from '~/types/quicknote'
@@ -11,6 +12,7 @@ export interface QuickNoteDraft {
   content: string
   tags: string[]
   date: string
+  saveMode: QuickNoteSaveMode
   templateKind: QuickNoteTemplateKind
   templateData: QuickNoteTemplateData
   savedAt: string
@@ -25,6 +27,7 @@ export function useQuickNoteDraft() {
     content: '',
     tags: [],
     date: '',
+    saveMode: 'create',
     templateKind: 'blank',
     templateData: createEmptyQuickNoteTemplateData(),
     savedAt: ''
@@ -42,6 +45,7 @@ export function useQuickNoteDraft() {
       draft.value.content?.trim() ||
       draft.value.tags?.length ||
       draft.value.date ||
+      draft.value.saveMode !== 'create' ||
       draft.value.templateKind !== 'blank'
     )
   })
@@ -61,6 +65,7 @@ export function useQuickNoteDraft() {
       content: '',
       tags: [],
       date: '',
+      saveMode: 'create',
       templateKind: 'blank',
       templateData: createEmptyQuickNoteTemplateData(),
       savedAt: ''
