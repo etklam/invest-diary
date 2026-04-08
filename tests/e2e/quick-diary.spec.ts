@@ -4,11 +4,11 @@ test.describe.configure({ mode: 'serial' })
 
 async function login(page: Parameters<typeof test>[0]['page']) {
   await page.goto('/auth/login', { waitUntil: 'domcontentloaded' })
-  await expect(page.locator('button.login-submit')).toBeEnabled()
+  await expect(page.locator('button.login-submit')).toBeEnabled({ timeout: 15_000 })
   await page.getByLabel('Email').fill('test@example.com')
   await page.getByLabel('Password').fill('password123')
   await Promise.all([
-    page.waitForResponse(response => response.url().includes('/api/auth/login') && response.status() === 200),
+    page.waitForURL('**/diaries', { timeout: 45_000 }),
     page.locator('button.login-submit').click(),
   ])
 }

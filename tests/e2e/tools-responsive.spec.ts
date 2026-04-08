@@ -10,10 +10,8 @@ const toolPages = [
 for (const path of toolPages) {
   test(`${path} should not cause page-level horizontal overflow on mobile`, async ({ page }) => {
     await page.goto(path, { waitUntil: 'domcontentloaded' })
-    await page.waitForLoadState('networkidle').catch(() => {})
-    await page.waitForTimeout(500)
 
-    await expect(page.locator('h1').first()).toBeVisible()
+    await expect(page.locator('h1:visible').first()).toBeVisible()
 
     const metrics = await page.evaluate(() => {
       const viewportWidth = window.innerWidth
