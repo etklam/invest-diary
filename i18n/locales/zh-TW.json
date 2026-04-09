@@ -354,7 +354,50 @@
     "saveSuccess": "設定已儲存",
     "saveFailed": "儲存失敗",
     "passwordMismatch": "兩次輸入的密碼不一致",
-    "passwordTooShort": "密碼至少需要 6 個字元"
+    "passwordTooShort": "密碼至少需要 6 個字元",
+    "partnerSectionTitle": "Partner 管理",
+    "partnerSectionDesc": "把 AI 或真人帳號接成 partner，並控制這個帳號是否要把 diary 分享給對方。",
+    "openCompare": "開啟對照頁",
+    "partnerEmailPlaceholder": "輸入 partner 帳號 email",
+    "addPartner": "新增 partner",
+    "noPartners": "目前還沒有 partner 連結。",
+    "shareStatus": "我方分享：{mine} · 對方分享：{theirs}",
+    "shareOn": "開啟",
+    "shareOff": "關閉",
+    "compareWithPartner": "對照 diary",
+    "acceptPartner": "接受邀請",
+    "removePartner": "移除",
+    "shareMyDiaries": "把這個帳號的 diary 分享給這位 partner",
+    "shareMyDiariesHint": "開啟後會分享這個帳號的歷史與未來 diary，但不會公開持倉資料。",
+    "partnerLoadFailed": "載入 partner 失敗",
+    "partnerPendingIncoming": "等待你確認",
+    "partnerPendingOutgoing": "等待對方確認",
+    "partnerConnected": "已連結",
+    "partnerRequestSent": "已建立 partner 邀請",
+    "partnerCreateFailed": "建立 partner 邀請失敗",
+    "partnerAccepted": "已接受 partner 邀請",
+    "partnerAcceptFailed": "接受 partner 邀請失敗",
+    "shareEnabled": "已開啟 diary 分享",
+    "shareDisabled": "已關閉 diary 分享",
+    "partnerShareFailed": "更新分享設定失敗",
+    "partnerRemoved": "已移除 partner",
+    "partnerRemoveFailed": "移除 partner 失敗",
+    "apiKeysTitle": "API Key",
+    "apiKeysDesc": "建立給外部 agent 用的限權 key。目前 scope 只允許替這個帳號新增 diary。",
+    "apiKeyLabelPlaceholder": "Key 名稱，例如 OpenClaw market diary",
+    "createApiKey": "建立 API key",
+    "apiKeyCreatedTitle": "現在就把這把 key 收好",
+    "apiKeyCreatedHint": "這串只會顯示一次。弄丟了就直接 revoke 再重建，別硬找。",
+    "noApiKeys": "目前還沒有 API key。",
+    "apiKeyRevoked": "已停用",
+    "apiKeyLastUsed": "上次使用：{value}",
+    "apiKeyNeverUsed": "尚未使用",
+    "revokeApiKey": "停用",
+    "apiKeyLoadFailed": "載入 API key 失敗",
+    "apiKeyCreateSuccess": "API key 已建立",
+    "apiKeyCreateFailed": "建立 API key 失敗",
+    "apiKeyRevokedSuccess": "API key 已停用",
+    "apiKeyRevokeFailed": "停用 API key 失敗"
   },
   "timeline": {
     "title": "時間軸",
@@ -370,6 +413,28 @@
     "alertsCount": "{count} 個提醒",
     "viewDetails": "查看詳情 →",
     "periodLabel": "{year}年 {month}月"
+  },
+  "compareDiary": {
+    "kicker": "Partner 對照",
+    "title": "對照 Diary",
+    "subtitle": "把你的市場判斷和 partner 帳號放在同一天左右對照，看看到底是你抓到重點，還是對方講得更像回事。",
+    "selectPartner": "選擇 partner",
+    "managePartners": "管理 partner",
+    "loadFailed": "載入對照頁失敗",
+    "noPartnerTitle": "還沒有可用的 partner",
+    "noPartnerDesc": "先去設定頁新增 partner，讓對方接受連結，再開啟 diary 分享，這頁才會真的有東西可比。",
+    "openSettings": "前往設定",
+    "yourSide": "你的紀錄",
+    "partnerSide": "Partner 紀錄",
+    "partnerUnavailable": "Partner 不可用",
+    "partnerNotSharing": "這個 partner 已連上，但對方還沒開啟這段關係的 diary 分享。",
+    "noEntriesTitle": "目前還沒有可對照的內容",
+    "noEntriesDesc": "只要任一方在共享日寫了 diary，這裡就會長出同日對照。",
+    "sameDay": "同一天",
+    "emptyDiaryContent": "沒有文字內容",
+    "noDiaryForDay": "這一天沒有 diary",
+    "webSource": "網頁",
+    "apiSource": "API"
   },
   "calendar": {
     "title": "{year}年 {month}月",
@@ -413,7 +478,7 @@
     "badge": "交易復盤同行平台",
     "hero": {
       "title": "從交易基礎開始，建立可持續的投資紀律",
-      "subtitle": "交易注定是孤獨的，所以更需要把過去的經驗留下來，讓每一次復盤都成為陪你走下去的伙伴。",
+      "subtitle": "交易注定是孤獨的，所以更需要把市場判斷留下來。先自己寫清楚，之後再和 partner 或 AI 帳號做同日對照，復盤才更有依據。",
       "getStarted": "開始記錄",
       "learnMore": "了解學習路徑"
     },
@@ -433,14 +498,14 @@
       "methodLabel": "方法",
       "methodValue": "記錄 -> 復盤 -> 修正",
       "communityLabel": "同行模式",
-      "communityValue": "與過去的自己對話",
-      "description": "把每次交易想法、執行與檢討留在同一條時間線，逐步降低重複犯錯。"
+      "communityValue": "Partner / AI 對照",
+      "description": "把每次市場判斷留在同一條時間線，之後再和 partner 左右對照，逐步降低重複犯錯。"
     },
     "promise": {
       "title": "學習承諾",
       "basics": "基礎先行",
       "risk": "風險優先",
-      "community": "與自己同行",
+      "community": "可對照復盤",
       "longTerm": "長期累積",
       "noGuarantee": "不保證獲利"
     },
@@ -461,19 +526,19 @@
       }
     },
     "community": {
-      "title": "與過去的自己同行",
-      "subtitle": "交易注定是孤獨的，可是過去的經驗就是最好的陪伴，成為自己最好的伙伴吧。",
+      "title": "和 partner 一起復盤",
+      "subtitle": "你可以自己記，但更有殺傷力的是讓真人或 AI partner 也針對同一天市場寫下判斷，然後把兩份 diary 擺在一起看。",
       "share": {
-        "title": "留下紀律",
-        "description": "把交易原則、檢查清單與觸發條件寫下來，讓未來的自己接得住。"
+        "title": "帳號級分享",
+        "description": "對某段 partner 關係開啟 diary 分享後，雙方就能對照歷史與未來紀錄，但 stock 持倉不會被帶出去。"
       },
       "feedback": {
-        "title": "回看經驗",
-        "description": "把每次紀錄與復盤留在同一條時間線，讓模式與盲點自己浮出來。"
+        "title": "同日左右對照",
+        "description": "把你和 partner 同一天的 diary 掛在一起，比誰抓到重點，不再只跟模糊印象打架。"
       },
       "accountability": {
-        "title": "自我陪伴",
-        "description": "靠記錄與檢討維持固定節奏，不把成長交給情緒與運氣。"
+        "title": "AI 也能入場",
+        "description": "幫 partner 帳號開一把限權 API key，讓外部 agent 可以寫 diary，但拿不到整套網頁登入權限。"
       }
     },
     "turnaround": {
@@ -498,7 +563,7 @@
     },
     "features": {
       "title": "強大功能",
-      "subtitle": "以紀錄、分析與提醒支持你的學習節奏",
+      "subtitle": "以紀錄、對照、分析與提醒支持你的學習節奏",
       "diary": {
         "title": "交易基礎",
         "description": "使用 Markdown 撰寫豐富的投資日記，記錄交易理由與市場洞察。"
@@ -513,7 +578,11 @@
       },
       "timeline": {
         "title": "時間軸視圖",
-        "description": "以時間軸方式瀏覽所有日記，輕鬆回顧投資歷程。"
+        "description": "先回看自己的長期紀錄，需要更銳利的檢查時，再切去同日 partner 對照。"
+      },
+      "partnerCompare": {
+        "title": "Partner 對照",
+        "description": "真人或 AI 都能成為 partner，在同一天左右對照 diary，同時保住 stock 持倉隱私。"
       },
       "security": {
         "title": "安全可靠",
@@ -526,7 +595,7 @@
     },
     "cta": {
       "title": "準備開始你的學習循環？",
-      "description": "從今天開始記錄、每週復盤，讓過去的經驗持續影響下一次決策。以財富自由與被動收入為長期方向，但不對任何報酬做保證。",
+      "description": "從今天開始記錄、每週復盤，準備好時再接上 partner 壓測你的市場判斷。以財富自由與被動收入為長期方向，但不對任何報酬做保證。",
       "register": "立即加入",
       "login": "已有帳戶登入",
       "step1": {
@@ -612,79 +681,83 @@
     "badge": "使用流程",
     "hero": {
       "title": "如何使用 Trade Basic，把想法、交易、提醒與復盤串成一套流程",
-      "subtitle": "先快速記下當下想法，再把重要操作寫成正式日記，最後用時間軸與提醒把回顧做完整。"
+      "subtitle": "先把自己的市場判斷寫下來，再接上真人或 AI partner，做同一天的左右對照。"
     },
     "gettingStarted": {
-      "title": "先跑通一套最小但完整的記錄循環",
-      "subtitle": "第一天不需要把每個功能都摸熟。先用 Quick Notes、完整日記、時間軸、提醒管理跑完一次核心流程。",
+      "title": "先跑通一套帶 partner 的最小完整循環",
+      "subtitle": "第一天不用把每個功能都摸熟。先登入、寫一篇 diary、接上一個 partner，再打開 compare。",
       "step1": {
         "eyebrow": "步驟 1",
-        "title": "先登入，確保所有紀錄都回到同一個帳號",
-        "description": "Quick Notes、完整日記、提醒與時間軸都依賴同一個登入狀態。先進入你的工作區，再開始留下第一筆紀錄。",
+        "title": "先登入，確保 diary、partner 與 API key 都掛在正確帳號下面",
+        "description": "partner 分享、對照頁與 API key 管理都依賴同一個登入狀態。先進入正確工作區，別把資料記到錯的人身上。",
         "cta": "建立帳號"
       },
       "step2": {
         "eyebrow": "步驟 2",
-        "title": "先用 Quick Notes 捕捉當下，再把重要內容寫成正式日記",
-        "description": "Quick Notes 適合記下一句觀察、錯誤提醒或臨時想法；完整日記則用來保存交易記錄、分析內容與提醒設定。",
-        "cta": "打開工作區"
+        "title": "先寫一篇自己的 diary，留下一個值得被對照的基準",
+        "description": "Quick Notes 可以先抓念頭，但真正拿來比較的市場判斷，最好整理成正式 diary，把日期、標籤與上下文都寫清楚。",
+        "cta": "打開日記"
       },
       "step3": {
         "eyebrow": "步驟 3",
-        "title": "用時間軸與提醒管理把資料轉成可復盤的流程",
-        "description": "當你累積了一些紀錄，就不要只看單筆輸贏。改去時間軸找模式，並在提醒管理裡追蹤那些需要回頭確認的決策點。",
-        "cta": "查看時間軸"
+        "title": "去設定頁加 partner；真人可手寫，AI 之後可補 API key",
+        "description": "對方接受邀請後，雙方各自決定要不要分享這段關係的 account-level diary。歷史與未來 diary 都能被對照，但 stock 持倉會維持私密。",
+        "cta": "打開設定"
       }
     },
     "workflow": {
       "title": "一個務實的日常循環",
-      "subtitle": "Trade Basic 最有價值的地方，不是頁面很多，而是每個頁面都支援同一套決策紀錄流程。",
+      "subtitle": "Trade Basic 現在最有價值的地方，不只是記錄，而是把你和 partner 的判斷放進同一套復盤節奏。",
       "step1": {
-        "label": "捕捉",
-        "title": "先用 Quick Notes 記下當下想法",
-        "description": "當你看到一個市場訊號、操作衝動或值得追蹤的問題，先快速留下來，不要依賴之後還記得。"
+        "label": "記錄",
+        "title": "先把你自己的市場判斷寫下來",
+        "description": "把 setup、風險與理由記在市場還活著的時候，不然回頭看時記憶已經替你亂改稿了。"
       },
       "step2": {
-        "label": "整理",
-        "title": "把重要操作升級成完整日記",
-        "description": "在完整日記裡記錄交易理由、部位、風險、執行備註與提醒，讓未來回看時有完整上下文。"
+        "label": "連結",
+        "title": "建立 partner 關係，並決定這段關係要不要共享 diary",
+        "description": "partner 可以 many-to-many，但分享仍是逐段關係各自決定。你想分享才開，不想裸奔就別亂開。"
       },
       "step3": {
-        "label": "復盤",
-        "title": "用時間軸看一段時間內重複出現的模式",
-        "description": "不要只判斷一筆交易成敗，而是看某段時間、某種情境下，自己是否反覆做出相同決策。"
+        "label": "自動化",
+        "title": "如果 partner 是 AI，就替它建立只會 create diary 的 API key",
+        "description": "這把 key 屬於 partner 帳號，只顯示一次，該交給外部 agent 保管。它不是拿來取代正常網頁登入的。"
       },
       "step4": {
-        "label": "追蹤",
-        "title": "用提醒管理把重要檢查點留到未來",
-        "description": "把需要回頭確認的部位、條件與復盤時間點交給提醒管理，避免只記錄卻沒有後續動作。"
+        "label": "對照",
+        "title": "打開 compare，把同一天的兩份 diary 左右掛著看",
+        "description": "用同日 diary 配對去找觀點落差，不要把 stock 部位也一起裸奔出去。"
       }
     },
     "surfaces": {
       "title": "每一頁各自負責什麼",
-      "subtitle": "把每個頁面當成一個明確工作站，而不是另一個資訊面板。",
+      "subtitle": "每個頁面都該只負責一件事，別把整個產品當成一堆漂亮面板。",
       "quickNotes": {
         "title": "Quick Notes",
         "description": "最快的入口。用來記一句市場觀察、操作衝動、臨時提醒與標籤，先把脈絡留下來。"
       },
       "diaries": {
         "title": "完整日記",
-        "description": "正式保存交易記錄、分析內容、風險與提醒設定。重要操作應該回到這裡留下完整上下文。"
+        "description": "你的正式版本。之後真要和 partner 對照，應該拿這裡的內容出來比，而不是拿零碎筆記硬湊。"
       },
       "timeline": {
         "title": "時間軸",
-        "description": "把日記與提醒放回時間順序裡，看自己在一段時間內如何反覆做出類似決策。"
+        "description": "先看自己的長期節奏；要更直接的衝擊，再切去 compare 做同日對照。"
       },
       "alerts": {
         "title": "提醒管理",
         "description": "集中追蹤所有需要回頭檢查的提醒，確保紀錄真的能進入下一次決策，而不是留在筆記裡。"
+      },
+      "compare": {
+        "title": "Partner Compare",
+        "description": "選一個已接受的 partner，把同一天的兩份 diary 左右排開來看。這裡看得到 diary 與標籤，但看不到 stock 持倉。"
       }
     },
     "cta": {
-      "title": "先把核心循環用順，再談更多工具",
-      "description": "如果你已經能穩定地用 Quick Notes、完整日記、時間軸與提醒管理跑完一輪復盤，這個產品就已經開始發揮價值。",
+      "title": "先把自己寫清楚，再拿 partner 來對照",
+      "description": "當你能穩定寫 diary、接上 partner，再用 compare 頁回看觀點差異，這工具才真的開始幫你打工。",
       "primaryGuest": "從帳號開始",
-      "primaryAuth": "前往日記",
+      "primaryAuth": "前往設定",
       "secondary": "閱讀建立者筆記"
     }
   },

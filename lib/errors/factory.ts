@@ -93,6 +93,24 @@ export const Errors = {
     details: retryAfter ? [{ message: `Retry after ${retryAfter} seconds` }] : undefined,
   }),
 
+  apiKeyInvalid: () => new AppError({
+    statusCode: 401,
+    code: ErrorCodes.AUTH_API_KEY_INVALID,
+    message: 'Invalid API key',
+  }),
+
+  apiKeyRevoked: () => new AppError({
+    statusCode: 401,
+    code: ErrorCodes.AUTH_API_KEY_REVOKED,
+    message: 'API key has been revoked',
+  }),
+
+  apiKeyScopeDenied: () => new AppError({
+    statusCode: 403,
+    code: ErrorCodes.AUTH_API_KEY_SCOPE_DENIED,
+    message: 'API key scope denied',
+  }),
+
   // Diary
   diaryNotFound: (id: string) => new AppError({
     statusCode: 404,
@@ -110,6 +128,30 @@ export const Errors = {
     statusCode: 409,
     code: ErrorCodes.DIARY_ALREADY_EXISTS,
     message: `Diary already exists for ${date}`,
+  }),
+
+  partnerLinkNotFound: () => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.PARTNER_LINK_NOT_FOUND,
+    message: 'Partner link not found',
+  }),
+
+  partnerLinkAccessDenied: () => new AppError({
+    statusCode: 403,
+    code: ErrorCodes.PARTNER_LINK_ACCESS_DENIED,
+    message: 'Partner link access denied',
+  }),
+
+  partnerLinkAlreadyExists: () => new AppError({
+    statusCode: 409,
+    code: ErrorCodes.PARTNER_LINK_ALREADY_EXISTS,
+    message: 'Partner link already exists',
+  }),
+
+  partnerLinkPending: () => new AppError({
+    statusCode: 409,
+    code: ErrorCodes.PARTNER_LINK_PENDING,
+    message: 'Partner link is still pending acceptance',
   }),
 
   // Alert

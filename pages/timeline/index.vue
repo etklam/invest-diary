@@ -17,6 +17,13 @@
       
       <div class="flex items-center gap-3">
         <NuxtLink
+          to="/timeline/compare"
+          class="inline-flex items-center justify-center px-5 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/80 text-slate-700 dark:text-slate-100 font-bold shadow-sm hover:border-indigo-300 hover:text-indigo-600 dark:hover:border-indigo-500 dark:hover:text-indigo-300 transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
+        >
+          <Icon name="heroicons:rectangle-group" class="mr-2 h-5 w-5" />
+          {{ t('compareDiary.title') }}
+        </NuxtLink>
+        <NuxtLink
           to="/diaries/new"
           class="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold shadow-xl shadow-slate-200 dark:shadow-none hover:scale-105 transition-all active:scale-95 group focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
         >

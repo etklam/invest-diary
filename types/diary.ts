@@ -47,6 +47,8 @@ export interface Diary {
   content: string | null
   tags?: string[]
   tagsString?: string | null
+  createdVia?: 'WEB' | 'API_KEY'
+  createdByLabel?: string | null
   date: Date
   createdAt: Date
   updatedAt: Date

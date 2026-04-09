@@ -39,9 +39,12 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
+          userId: true,
           title: true,
           content: true,
           tagsString: true,
+          createdVia: true,
+          createdByLabel: true,
           date: true,
           createdAt: true,
           updatedAt: true,
@@ -75,6 +78,7 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const safeDiaries = diaries.map((d: DiaryListItem) => ({
       ...d,
       id: d.id.toString(),
+      userId: d.userId.toString(),
       tags: parseDiaryTags(d.tagsString),
       alerts: d.alerts.map((a: DiaryAlertItem) => ({ ...a, id: a.id.toString() })),
       transactions: d.transactions.map((t: DiaryTransactionItem) => ({

@@ -86,6 +86,8 @@ This application addresses the critical need for **investment discipline** by pr
 ## Features
 
 - **Investment Journaling**: Daily diary entries with markdown support
+- **Partner Compare**: Pair with a human or AI partner account, share diary timelines at the account level, and compare same-day entries side by side without exposing stock holdings
+- **Agent Diary Ingestion**: Create scoped API keys for partner accounts so external agents can create diaries through a write-only diary endpoint
 - **Portfolio Tracking**: Stock transaction management (BUY/SELL) with holdings calculation
 - **Position Sizing Calculator**: Advanced tool for calculating staged position entries with multiple strategies (pyramid, inverted pyramid, rectangular)
 - **Stock Seasonality Analyzer**: US stock market seasonal patterns based on historical data from 1950-present, with monthly performance analysis
@@ -104,6 +106,45 @@ This application addresses the critical need for **investment discipline** by pr
 ## Screenshots
 
 > TODO: Add application screenshots
+
+## Partner Compare & Agent Diaries
+
+Diary Vue now supports side-by-side diary comparison between your account and a partner account. A partner can be another human user or an AI-operated account. Sharing is configured at the partner-link level for the whole account timeline, while stock holdings remain private.
+
+### Typical Flow
+
+1. Sign in with both accounts.
+2. Open `Settings` and add the partner by email.
+3. Accept the partner link from the other account, then let each side decide whether to share diaries.
+4. Open `/timeline/compare` to review same-day diary entries side by side.
+5. If the partner is an AI agent, create an API key under `Settings` for that partner account.
+
+### Agent Diary API
+
+`POST /api/agent/diaries`
+
+Headers:
+
+- `x-api-key: <raw key>`
+- `Authorization: Bearer <raw key>`
+
+Body example:
+
+```json
+{
+  "title": "AI market review 2026-04-09",
+  "content": "Semiconductor leadership broadened while breadth stayed mixed.",
+  "date": "2026-04-09",
+  "tags": ["market", "ai"]
+}
+```
+
+Notes:
+
+- API keys are currently scoped to `DIARY_CREATE`
+- The raw key is shown only once when you create it
+- API key writes cannot use `appendToToday`
+- Compare view shows diary content and tags, but not stock holdings
 
 ## Quick Start
 

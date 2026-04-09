@@ -22,7 +22,7 @@
 
               <div class="mt-8 flex flex-col gap-4 sm:flex-row">
                 <NuxtLink
-                  :to="isAuthenticated ? '/diaries' : '/auth/register'"
+                  :to="primaryLink"
                   class="action-btn action-btn-primary cursor-pointer"
                 >
                   {{ isAuthenticated ? $t('howToUse.cta.primaryAuth') : $t('howToUse.cta.primaryGuest') }}
@@ -123,7 +123,7 @@
             <p class="mt-3 text-slate-600 dark:text-slate-300">
               {{ $t('howToUse.gettingStarted.step3.description') }}
             </p>
-            <NuxtLink :to="reviewLink" class="guide-link cursor-pointer">
+            <NuxtLink :to="settingsLink" class="guide-link cursor-pointer">
               {{ $t('howToUse.gettingStarted.step3.cta') }}
               <Icon name="heroicons:arrow-right-20-solid" class="h-4 w-4" />
             </NuxtLink>
@@ -179,7 +179,7 @@
           </p>
         </div>
 
-        <div class="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <article class="surface-card reveal">
             <p class="surface-kicker">{{ $t('quickDiary.title') }}</p>
             <h3 class="surface-title">{{ $t('howToUse.surfaces.quickNotes.title') }}</h3>
@@ -200,6 +200,11 @@
             <h3 class="surface-title">{{ $t('howToUse.surfaces.alerts.title') }}</h3>
             <p class="surface-copy">{{ $t('howToUse.surfaces.alerts.description') }}</p>
           </article>
+          <article class="surface-card reveal">
+            <p class="surface-kicker">{{ $t('compareDiary.kicker') }}</p>
+            <h3 class="surface-title">{{ $t('howToUse.surfaces.compare.title') }}</h3>
+            <p class="surface-copy">{{ $t('howToUse.surfaces.compare.description') }}</p>
+          </article>
         </div>
       </div>
     </section>
@@ -217,7 +222,7 @@
           </div>
           <div class="mt-8 flex flex-col gap-4 sm:flex-row">
             <NuxtLink
-              :to="isAuthenticated ? '/diaries' : '/auth/register'"
+              :to="primaryLink"
               class="action-btn cta-primary cursor-pointer"
             >
               {{ isAuthenticated ? $t('howToUse.cta.primaryAuth') : $t('howToUse.cta.primaryGuest') }}
@@ -243,8 +248,9 @@ const { isAuthenticated } = useAuth()
 const config = useRuntimeConfig()
 const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').replace(/\/+$/, '')
 const canonicalUrl = `${siteUrl}/how-to-use`
+const primaryLink = computed(() => (isAuthenticated.value ? '/settings' : '/auth/register'))
 const workspaceLink = computed(() => (isAuthenticated.value ? '/diaries' : '/auth/register'))
-const reviewLink = computed(() => (isAuthenticated.value ? '/timeline' : '/auth/register'))
+const settingsLink = computed(() => (isAuthenticated.value ? '/settings' : '/auth/register'))
 
 useHead(() => ({
   title: `${t('nav.howToUse')} - ${t('common.appName')}`,

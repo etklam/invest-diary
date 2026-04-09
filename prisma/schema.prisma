@@ -12,6 +12,15 @@ enum UserRole {
   ADMIN
 }
 
+enum DiaryCreatedVia {
+  WEB
+  API_KEY
+}
+
+enum ApiKeyScope {
+  DIARY_CREATE
+}
+
 enum PostStatus {
   DRAFT
   PUBLISHED
@@ -44,6 +53,10 @@ model User {
   refreshTokens         RefreshToken[]
   etfAlerts             EtfAlert[]
   etfWatchlist          EtfWatchlist[]
+  apiKeys               ApiKeyCredential[]
+  partnerLinksA         PartnerLink[]   @relation("PartnerLinkUserA")
+  partnerLinksB         PartnerLink[]   @relation("PartnerLinkUserB")
+  initiatedPartnerLinks PartnerLink[]   @relation("PartnerLinkInitiatedBy")
 
   @@map("users")
 }
@@ -68,6 +81,8 @@ model Diary {
   title        String        @db.VarChar(255)
   content      String?       @db.Text
   tagsString   String?       @map("tags") @db.VarChar(500)
+  createdVia   DiaryCreatedVia @default(WEB) @map("created_via")
+  createdByLabel String?     @map("created_by_label") @db.VarChar(100)
   date         DateTime      @default(now()) @map("date")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
@@ -79,6 +94,46 @@ model Diary {
   // 複合索引：優化使用者日記列表查詢（按建立時間排序）
   @@index([userId, createdAt(sort: Desc)], map: "diaries_user_created_idx")
   @@map("diaries")
+}
+
+model PartnerLink {
+  id                 BigInt   @id @default(autoincrement())
+  userAId            BigInt   @map("user_a_id")
+  userBId            BigInt   @map("user_b_id")
+  initiatedByUserId  BigInt   @map("initiated_by_user_id")
+  acceptedAt         DateTime? @map("accepted_at")
+  userASharesDiaries Boolean  @default(false) @map("user_a_shares_diaries")
+  userBSharesDiaries Boolean  @default(false) @map("user_b_shares_diaries")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  userA             User     @relation("PartnerLinkUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB             User     @relation("PartnerLinkUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  initiatedByUser   User     @relation("PartnerLinkInitiatedBy", fields: [initiatedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId], map: "partner_links_user_pair_key")
+  @@index([userAId], map: "partner_links_user_a_idx")
+  @@index([userBId], map: "partner_links_user_b_idx")
+  @@index([initiatedByUserId], map: "partner_links_initiated_by_idx")
+  @@map("partner_links")
+}
+
+model ApiKeyCredential {
+  id          BigInt      @id @default(autoincrement())
+  userId      BigInt      @map("user_id")
+  label       String      @db.VarChar(100)
+  keyHash     String      @unique @map("key_hash") @db.VarChar(255)
+  keyPrefix   String      @map("key_prefix") @db.VarChar(24)
+  scope       ApiKeyScope @default(DIARY_CREATE)
+  lastUsedAt  DateTime?   @map("last_used_at")
+  revokedAt   DateTime?   @map("revoked_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt], map: "api_key_credentials_user_revoked_idx")
+  @@index([keyPrefix], map: "api_key_credentials_key_prefix_idx")
+  @@map("api_key_credentials")
 }
 
 model Alert {

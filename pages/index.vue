@@ -22,7 +22,7 @@
                 {{ $t('home.hero.getStarted') }}
                 <Icon name="heroicons:arrow-up-right-20-solid" class="h-5 w-5" />
               </NuxtLink>
-              <NuxtLink to="/about" class="action-btn action-btn-secondary cursor-pointer">
+              <NuxtLink to="/how-to-use" class="action-btn action-btn-secondary cursor-pointer">
                 {{ $t('home.hero.learnMore') }}
               </NuxtLink>
             </div>
@@ -284,6 +284,7 @@ const workflowFeatures = [
   { key: 'stocks', icon: 'heroicons:chart-bar-square-20-solid' },
   { key: 'alerts', icon: 'heroicons:bell-alert-20-solid' },
   { key: 'timeline', icon: 'heroicons:clock-20-solid' },
+  { key: 'partnerCompare', icon: 'heroicons:user-group-20-solid' },
   { key: 'security', icon: 'heroicons:lock-closed-20-solid' },
   { key: 'themes', icon: 'heroicons:moon-20-solid' }
 ]

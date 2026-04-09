@@ -65,6 +65,7 @@ describe('Diary API Routes', () => {
       mockDiaryFindMany.mockResolvedValue([
         {
           id: 1n,
+          userId: 1n,
           title: 'First diary',
           content: 'content',
           tagsString: 'profit, watch',

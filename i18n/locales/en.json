@@ -355,7 +355,50 @@
     "saveSuccess": "Settings saved",
     "saveFailed": "Failed to save",
     "passwordMismatch": "Passwords do not match",
-    "passwordTooShort": "Password must be at least 6 characters"
+    "passwordTooShort": "Password must be at least 6 characters",
+    "partnerSectionTitle": "Partners",
+    "partnerSectionDesc": "Link AI or human partner accounts and control whether this account shares diaries with them.",
+    "openCompare": "Open compare view",
+    "partnerEmailPlaceholder": "Partner account email",
+    "addPartner": "Add partner",
+    "noPartners": "No partner links yet.",
+    "shareStatus": "You share: {mine} · Partner shares: {theirs}",
+    "shareOn": "on",
+    "shareOff": "off",
+    "compareWithPartner": "Compare diaries",
+    "acceptPartner": "Accept request",
+    "removePartner": "Remove",
+    "shareMyDiaries": "Share this account's diaries with this partner",
+    "shareMyDiariesHint": "Turning this on exposes both historical and future diaries from this account. Holdings remain private.",
+    "partnerLoadFailed": "Failed to load partner links",
+    "partnerPendingIncoming": "Needs your approval",
+    "partnerPendingOutgoing": "Waiting for approval",
+    "partnerConnected": "Connected",
+    "partnerRequestSent": "Partner request created",
+    "partnerCreateFailed": "Failed to create partner request",
+    "partnerAccepted": "Partner request accepted",
+    "partnerAcceptFailed": "Failed to accept partner request",
+    "shareEnabled": "Diary sharing enabled",
+    "shareDisabled": "Diary sharing disabled",
+    "partnerShareFailed": "Failed to update sharing",
+    "partnerRemoved": "Partner link removed",
+    "partnerRemoveFailed": "Failed to remove partner link",
+    "apiKeysTitle": "API Keys",
+    "apiKeysDesc": "Create scoped keys for external agents. Current scope only allows diary creation for this account.",
+    "apiKeyLabelPlaceholder": "Key label, for example OpenClaw market diary",
+    "createApiKey": "Create API key",
+    "apiKeyCreatedTitle": "Copy this key now",
+    "apiKeyCreatedHint": "It is shown only once. If you lose it, revoke the key and create a new one.",
+    "noApiKeys": "No API keys yet.",
+    "apiKeyRevoked": "Revoked",
+    "apiKeyLastUsed": "Last used: {value}",
+    "apiKeyNeverUsed": "Never used",
+    "revokeApiKey": "Revoke",
+    "apiKeyLoadFailed": "Failed to load API keys",
+    "apiKeyCreateSuccess": "API key created",
+    "apiKeyCreateFailed": "Failed to create API key",
+    "apiKeyRevokedSuccess": "API key revoked",
+    "apiKeyRevokeFailed": "Failed to revoke API key"
   },
   "timeline": {
     "title": "Timeline",
@@ -371,6 +414,28 @@
     "alertsCount": "{count} alerts",
     "viewDetails": "View Details →",
     "periodLabel": "{year} {month}"
+  },
+  "compareDiary": {
+    "kicker": "Partner Review",
+    "title": "Compare Diaries",
+    "subtitle": "Put your market read next to a partner account and see where your reasoning diverged on the same day.",
+    "selectPartner": "Select a partner",
+    "managePartners": "Manage partners",
+    "loadFailed": "Failed to load compare view",
+    "noPartnerTitle": "No accepted partner yet",
+    "noPartnerDesc": "Add a partner in settings, accept the link from the other account, then turn on diary sharing to start comparing.",
+    "openSettings": "Open settings",
+    "yourSide": "Your side",
+    "partnerSide": "Partner side",
+    "partnerUnavailable": "Partner unavailable",
+    "partnerNotSharing": "This partner is linked, but they have not enabled diary sharing for this relationship yet.",
+    "noEntriesTitle": "Nothing to compare yet",
+    "noEntriesDesc": "Once either side writes a diary for a shared day, it will show up here as a side-by-side comparison.",
+    "sameDay": "Same day",
+    "emptyDiaryContent": "No written content",
+    "noDiaryForDay": "No diary for this day",
+    "webSource": "web",
+    "apiSource": "api"
   },
   "calendar": {
     "title": "{month} {year}",
@@ -415,7 +480,7 @@
     "badge": "Trading Review Companion",
     "hero": {
       "title": "Start with trade basics and build sustainable discipline",
-      "subtitle": "Trading is inherently lonely, so your past experience needs to be preserved. Let every review become a companion for the next decision.",
+      "subtitle": "Trading is lonely, so your market read needs to survive long enough to be reviewed. Journal it yourself first, then compare the same day with a partner or AI account when you need a second read.",
       "getStarted": "Start Recording",
       "learnMore": "See Learning Path"
     },
@@ -435,14 +500,14 @@
       "methodLabel": "Method",
       "methodValue": "Record -> Review -> Improve",
       "communityLabel": "Companion Mode",
-      "communityValue": "Dialogue with your past self",
-      "description": "Keep each thesis, execution, and review in one timeline to reduce repeated mistakes over time."
+      "communityValue": "Partner / AI compare",
+      "description": "Keep each market thesis on one timeline, then compare the same day side by side with a partner to reduce repeated mistakes."
     },
     "promise": {
       "title": "Learning Promise",
       "basics": "Basics first",
       "risk": "Risk first",
-      "community": "Past self as companion",
+      "community": "Partner compare",
       "longTerm": "Long-term compounding",
       "noGuarantee": "No return guarantees"
     },
@@ -463,19 +528,19 @@
       }
     },
     "community": {
-      "title": "Walk with your past self",
-      "subtitle": "Trading is lonely, but your past experience can become the best company. Let it become your strongest companion.",
+      "title": "Review with a partner",
+      "subtitle": "You can journal alone, but the real leverage comes when a human or AI partner writes against the same market day and you compare both takes.",
       "share": {
-        "title": "Leave your rules behind",
-        "description": "Write down your principles, checklists, and triggers so your future self has something reliable to return to."
+        "title": "Account-level sharing",
+        "description": "Turn diary sharing on for a partner link so both sides can compare history and new entries without exposing stock holdings."
       },
       "feedback": {
-        "title": "Review your own experience",
-        "description": "Keep every note and review on one timeline so patterns and blind spots surface on their own."
+        "title": "Same-day side-by-side",
+        "description": "Put both diaries next to each other on the same date and spot what you missed without relying on vague memory."
       },
       "accountability": {
-        "title": "Stay self-accompanied",
-        "description": "Use records and reviews to keep a steady cadence instead of leaving growth to emotion or luck."
+        "title": "AI can write too",
+        "description": "Issue a scoped API key to a partner account so an external agent can create diaries without inheriting full web access."
       }
     },
     "turnaround": {
@@ -500,7 +565,7 @@
     },
     "features": {
       "title": "Powerful Features",
-      "subtitle": "Tools that support your learning rhythm through logs, analytics, and reminders",
+      "subtitle": "Tools that support your learning rhythm through logs, comparison, analytics, and reminders",
       "diary": {
         "title": "Trade Basic",
         "description": "Write rich investment diaries in Markdown, documenting trade reasons and market insights."
@@ -515,7 +580,11 @@
       },
       "timeline": {
         "title": "Timeline View",
-        "description": "Browse all diaries in a timeline format to easily review your investment history."
+        "description": "Review your own entries over time, then switch into same-day partner comparison when you need a sharper read."
+      },
+      "partnerCompare": {
+        "title": "Partner Compare",
+        "description": "Compare diaries side by side with a human or AI partner on the same day while keeping stock holdings private."
       },
       "security": {
         "title": "Secure & Reliable",
@@ -528,7 +597,7 @@
     },
     "cta": {
       "title": "Ready to start your learning loop?",
-      "description": "Start logging today, review weekly, and let past experience keep shaping the next decision. Financial freedom and passive income are long-term directions, not guaranteed outcomes.",
+      "description": "Start logging today, review weekly, and bring in a partner when you are ready to pressure-test your market read. Financial freedom and passive income are long-term directions, not guaranteed outcomes.",
       "register": "Join Now",
       "login": "Log In",
       "step1": {
@@ -614,79 +683,83 @@
     "badge": "Workflow Guide",
     "hero": {
       "title": "How to use Trade Basic as one workflow for ideas, trades, reminders, and review",
-      "subtitle": "Capture the thought quickly, turn important actions into full diary entries, then use timeline and alerts to close the review loop."
+      "subtitle": "Write down your market read first, then connect a human or AI partner and compare the same day side by side."
     },
     "gettingStarted": {
-      "title": "Start with one small but complete operating loop",
-      "subtitle": "You do not need every feature on day one. Run one full cycle through Quick Notes, full diaries, timeline, and alerts first.",
+      "title": "Run the smallest complete loop with a partner",
+      "subtitle": "Do not touch every feature on day one. Sign in, write one diary, connect one partner, and open compare.",
       "step1": {
         "eyebrow": "Step 1",
-        "title": "Sign in so every record lands in one workspace",
-        "description": "Quick Notes, diaries, alerts, and timeline all depend on the same authenticated workspace. Start there before you record anything.",
+        "title": "Sign in so diaries, partner links, and API keys all live under the right account",
+        "description": "Partner sharing, compare view, and API key management all depend on the authenticated workspace. Start there so nothing lands under the wrong user.",
         "cta": "Create account"
       },
       "step2": {
         "eyebrow": "Step 2",
-        "title": "Use Quick Notes first, then promote important items into full diaries",
-        "description": "Quick Notes are for one-line observations, tags, and reminders. Full diaries are for trade records, deeper analysis, and structured follow-up.",
-        "cta": "Open workspace"
+        "title": "Write your own first diary so there is a baseline worth comparing",
+        "description": "Quick Notes are fine for raw thoughts, but same-day compare works best when your market view is saved as a real diary with title, date, tags, and context.",
+        "cta": "Open diaries"
       },
       "step3": {
         "eyebrow": "Step 3",
-        "title": "Use timeline and alerts to turn records into review",
-        "description": "Once you have real entries, stop judging isolated wins and losses. Use timeline to find patterns and alerts to keep future check-points visible.",
-        "cta": "View timeline"
+        "title": "Open settings to add a partner; humans can write manually, AI can get an API key later",
+        "description": "After the other side accepts, each account decides whether to share diaries for this relationship. History and future diaries can be compared, but stock holdings stay private.",
+        "cta": "Open settings"
       }
     },
     "workflow": {
       "title": "A practical daily loop",
-      "subtitle": "Trade Basic works best when each page supports one decision-recording sequence instead of competing for attention.",
+      "subtitle": "Trade Basic gets more useful when your journal and a partner journal live inside the same review loop.",
       "step1": {
-        "label": "Capture",
-        "title": "Use Quick Notes to save the thought while it is fresh",
-        "description": "When you notice a setup, urge, mistake, or question, capture it immediately instead of trusting memory later."
+        "label": "Write",
+        "title": "Record your own market read before memory edits it",
+        "description": "Write the setup, risk, and reasoning down while the market is still live so your later review has a real baseline."
       },
       "step2": {
-        "label": "Structure",
-        "title": "Turn important actions into full diary entries",
-        "description": "Record trade details, reasoning, risk, execution notes, and reminders so the later review has full context."
+        "label": "Link",
+        "title": "Create the partner relationship and decide whether to share diaries",
+        "description": "Partner links are many-to-many, but sharing is still your choice for each relationship. Turn it on only when you want this account timeline visible."
       },
       "step3": {
-        "label": "Review",
-        "title": "Use timeline to review repeated patterns",
-        "description": "Look across periods and market conditions instead of judging one trade by itself."
+        "label": "Automate",
+        "title": "If the partner is AI, create a scoped API key that can only create diaries",
+        "description": "The key belongs to the partner account, is shown once, and should be stored by the external agent. It does not replace normal web login."
       },
       "step4": {
-        "label": "Track",
-        "title": "Use alerts to keep future check-points alive",
-        "description": "Move important follow-ups into alerts so your notes continue to influence the next decision."
+        "label": "Compare",
+        "title": "Open compare view to read both diaries side by side",
+        "description": "Use same-day diary pairs to review reasoning gaps without exposing stock positions."
       }
     },
     "surfaces": {
       "title": "What each page is for",
-      "subtitle": "Treat each surface as a work station with one clear job.",
+      "subtitle": "Each page should do one job. Do not treat the app like a bucket of pretty panels.",
       "quickNotes": {
         "title": "Quick Notes",
         "description": "The fastest capture point for one-line observations, tags, reminders, and raw trading context."
       },
       "diaries": {
         "title": "Full Diaries",
-        "description": "The formal record for trade entries, analysis, risk, and reminders. Important actions should end up here."
+        "description": "Your source of truth. This is the version you want to compare against a partner later."
       },
       "timeline": {
         "title": "Timeline",
-        "description": "The review surface for seeing how entries and reminders accumulate over time."
+        "description": "Review your own long-term sequence here, then jump into compare when you need same-day contrast."
       },
       "alerts": {
         "title": "Alerts",
         "description": "The follow-up layer that keeps important review points from disappearing after you write them down."
+      },
+      "compare": {
+        "title": "Partner Compare",
+        "description": "Choose an accepted partner and line up the same-day diaries side by side. Diary content and tags are visible here; stock holdings are not."
       }
     },
     "cta": {
-      "title": "Get the core loop working before you expand the toolset",
-      "description": "If you can repeatedly move through Quick Notes, full diaries, timeline, and alerts, Trade Basic is already doing its job.",
+      "title": "Write clearly first, then bring in a partner",
+      "description": "Once you can keep a diary rhythm, connect a partner, and use same-day compare, the product stops being a note pile and starts acting like a review system.",
       "primaryGuest": "Start with an account",
-      "primaryAuth": "Go to diaries",
+      "primaryAuth": "Open settings",
       "secondary": "Read builder notes"
     }
   },

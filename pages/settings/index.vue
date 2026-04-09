@@ -238,6 +238,10 @@
           </button>
         </div>
       </div>
+
+      <SettingsPartnerSettingsPanel />
+
+      <SettingsApiKeySettingsPanel />
     </div>
   </div>
 </template>
