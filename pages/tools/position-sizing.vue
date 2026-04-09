@@ -323,14 +323,14 @@ definePageMeta({
 
             <div>
               <label class="field-label">{{ t('tools.positionSizing.roundingMode') }}</label>
-              <div class="mt-2 grid gap-2 sm:grid-cols-3">
-                <button type="button" class="choice-card cursor-pointer text-center" :class="roundingMode === 'down' ? 'choice-card-active' : ''" @click="roundingMode = 'down'">
+              <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                <button type="button" class="choice-card cursor-pointer text-center leading-snug break-words" :class="roundingMode === 'down' ? 'choice-card-active' : ''" @click="roundingMode = 'down'">
                   {{ t('tools.positionSizing.roundDown') }}
                 </button>
-                <button type="button" class="choice-card cursor-pointer text-center" :class="roundingMode === 'nearest' ? 'choice-card-active' : ''" @click="roundingMode = 'nearest'">
+                <button type="button" class="choice-card cursor-pointer text-center leading-snug break-words" :class="roundingMode === 'nearest' ? 'choice-card-active' : ''" @click="roundingMode = 'nearest'">
                   {{ t('tools.positionSizing.roundNearest') }}
                 </button>
-                <button type="button" class="choice-card cursor-pointer text-center" :class="roundingMode === 'up' ? 'choice-card-active' : ''" @click="roundingMode = 'up'">
+                <button type="button" class="choice-card cursor-pointer text-center leading-snug break-words" :class="roundingMode === 'up' ? 'choice-card-active' : ''" @click="roundingMode = 'up'">
                   {{ t('tools.positionSizing.roundUp') }}
                 </button>
               </div>
@@ -569,10 +569,15 @@ definePageMeta({
 .projection-label,
 .spotlight-stat-label,
 .field-label {
+  display: block;
+  min-width: 0;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   color: rgb(100 116 139);
 }
 
@@ -699,6 +704,9 @@ definePageMeta({
   border-radius: 0.95rem;
   background: rgb(255 255 255 / 70%);
   padding: 1rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
 }
 

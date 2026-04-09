@@ -512,7 +512,7 @@ definePageMeta({
                 </div>
               </div>
 
-              <div class="mt-4 grid gap-3 sm:grid-cols-3">
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 <div class="projection-stat">
                   <span class="projection-label">{{ t('tools.financialFreedom.contribution') }}</span>
                   <span class="projection-value">+{{ formatCompactValue(year.contribution) }}</span>
@@ -585,10 +585,15 @@ definePageMeta({
 .projection-label,
 .spotlight-stat-label,
 .field-label {
+  display: block;
+  min-width: 0;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   color: rgb(100 116 139);
 }
 
