@@ -27,4 +27,11 @@ describe('websocket client regressions', () => {
     expect(source).toContain('socket.connect()')
     expect(source).toContain('autoConnect: false')
   })
+
+  it('starts with polling and enables fallback transport probing', () => {
+    const source = readFileSync(resolve(process.cwd(), 'plugins/websocket.client.ts'), 'utf-8')
+
+    expect(source).toContain("transports: ['polling', 'websocket']")
+    expect(source).toContain('tryAllTransports: true')
+  })
 })

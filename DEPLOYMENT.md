@@ -107,6 +107,14 @@ CapRover 是一個簡單的 PaaS 平台，可以輕鬆部署 Docker 應用程式
 
 1. 登錄 CapRover 管理面板
 2. 建立一個新的 App（例如：`diary-vue`）
+3. 在 App Config / HTTP Settings 確認 **WebSocket Support** 已啟用
+
+**WebSocket 注意事項**：
+
+- CapRover 若未啟用 **WebSocket Support**，Nginx 模板中的 `s.websocketSupport` 會是關閉狀態
+- 這會導致 `proxy_set_header Upgrade $http_upgrade` 與 `proxy_set_header Connection "upgrade"` 不會被注入
+- 結果就是 `/socket.io/` 的 WebSocket upgrade 直接失敗，瀏覽器會持續看到 `wss://.../socket.io` 連線錯誤
+- 若你看到這類錯誤，先檢查 CapRover 開關，再檢查自定義 Nginx 是否有覆蓋掉 upgrade headers
 
 ### 2. 配置環境變量
 

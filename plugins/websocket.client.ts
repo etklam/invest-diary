@@ -167,7 +167,10 @@ const connect = async () => {
   const currentSocket = io(window.location.origin, {
     path: '/socket.io/',
     withCredentials: true,
-    transports: ['websocket', 'polling'],
+    // Start with polling so environments without proxy upgrade support
+    // still establish a stable session before attempting WebSocket.
+    transports: ['polling', 'websocket'],
+    tryAllTransports: true,
     reconnection: true,
     reconnectionAttempts: 10,
     autoConnect: false,
