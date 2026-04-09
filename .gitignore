@@ -30,5 +30,6 @@ playwright-report/
 .env.*
 !.env.example
 screenshots
+!public/screenshots
 .worktrees/
 .gstack/

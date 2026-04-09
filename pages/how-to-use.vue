@@ -179,32 +179,153 @@
           </p>
         </div>
 
-        <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           <article class="surface-card reveal">
-            <p class="surface-kicker">{{ $t('quickDiary.title') }}</p>
-            <h3 class="surface-title">{{ $t('howToUse.surfaces.quickNotes.title') }}</h3>
-            <p class="surface-copy">{{ $t('howToUse.surfaces.quickNotes.description') }}</p>
+            <NuxtLink to="/diaries/quick">
+              <img src="/screenshots/how-to-use-features/01-quick-notes.png" :alt="$t('howToUse.surfaces.quickNotes.title')" class="surface-screenshot" loading="lazy" />
+            </NuxtLink>
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('quickDiary.title') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.surfaces.quickNotes.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.surfaces.quickNotes.description') }}</p>
+            </div>
           </article>
           <article class="surface-card reveal reveal-2">
-            <p class="surface-kicker">{{ $t('nav.diaries') }}</p>
-            <h3 class="surface-title">{{ $t('howToUse.surfaces.diaries.title') }}</h3>
-            <p class="surface-copy">{{ $t('howToUse.surfaces.diaries.description') }}</p>
+            <NuxtLink to="/diaries">
+              <img src="/screenshots/how-to-use-features/02-diaries.png" :alt="$t('howToUse.surfaces.diaries.title')" class="surface-screenshot" loading="lazy" />
+            </NuxtLink>
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.diaries') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.surfaces.diaries.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.surfaces.diaries.description') }}</p>
+            </div>
           </article>
           <article class="surface-card reveal reveal-3">
-            <p class="surface-kicker">{{ $t('nav.timeline') }}</p>
-            <h3 class="surface-title">{{ $t('howToUse.surfaces.timeline.title') }}</h3>
-            <p class="surface-copy">{{ $t('howToUse.surfaces.timeline.description') }}</p>
+            <NuxtLink to="/timeline">
+              <img src="/screenshots/how-to-use-features/03-timeline.png" :alt="$t('howToUse.surfaces.timeline.title')" class="surface-screenshot" loading="lazy" />
+            </NuxtLink>
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.timeline') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.surfaces.timeline.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.surfaces.timeline.description') }}</p>
+            </div>
           </article>
           <article class="surface-card reveal reveal-4">
-            <p class="surface-kicker">{{ $t('nav.alerts') }}</p>
-            <h3 class="surface-title">{{ $t('howToUse.surfaces.alerts.title') }}</h3>
-            <p class="surface-copy">{{ $t('howToUse.surfaces.alerts.description') }}</p>
+            <NuxtLink to="/alerts">
+              <img src="/screenshots/how-to-use-features/04-alerts.png" :alt="$t('howToUse.surfaces.alerts.title')" class="surface-screenshot" loading="lazy" />
+            </NuxtLink>
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.alerts') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.surfaces.alerts.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.surfaces.alerts.description') }}</p>
+            </div>
           </article>
           <article class="surface-card reveal">
-            <p class="surface-kicker">{{ $t('compareDiary.kicker') }}</p>
-            <h3 class="surface-title">{{ $t('howToUse.surfaces.compare.title') }}</h3>
-            <p class="surface-copy">{{ $t('howToUse.surfaces.compare.description') }}</p>
+            <NuxtLink to="/timeline/compare">
+              <img src="/screenshots/how-to-use-features/05-partner-compare.png" :alt="$t('howToUse.surfaces.compare.title')" class="surface-screenshot" loading="lazy" />
+            </NuxtLink>
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('compareDiary.kicker') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.surfaces.compare.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.surfaces.compare.description') }}</p>
+            </div>
           </article>
+          <article class="surface-card reveal reveal-2">
+            <NuxtLink to="/calendar">
+              <img src="/screenshots/how-to-use-features/06-calendar.png" :alt="$t('howToUse.surfaces.calendar.title')" class="surface-screenshot" loading="lazy" />
+            </NuxtLink>
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.calendar') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.surfaces.calendar.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.surfaces.calendar.description') }}</p>
+            </div>
+          </article>
+          <article class="surface-card reveal reveal-3">
+            <NuxtLink to="/stocks">
+              <img src="/screenshots/how-to-use-features/07-stocks.png" :alt="$t('howToUse.surfaces.stocks.title')" class="surface-screenshot" loading="lazy" />
+            </NuxtLink>
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.stocks') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.surfaces.stocks.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.surfaces.stocks.description') }}</p>
+            </div>
+          </article>
+          <article class="surface-card reveal reveal-4">
+            <NuxtLink to="/discipline">
+              <img src="/screenshots/how-to-use-features/08-discipline.png" :alt="$t('howToUse.surfaces.discipline.title')" class="surface-screenshot" loading="lazy" />
+            </NuxtLink>
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.discipline') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.surfaces.discipline.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.surfaces.discipline.description') }}</p>
+            </div>
+          </article>
+          <article class="surface-card reveal">
+            <NuxtLink to="/blog">
+              <img src="/screenshots/how-to-use-features/09-blog.png" :alt="$t('howToUse.surfaces.blog.title')" class="surface-screenshot" loading="lazy" />
+            </NuxtLink>
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.blog') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.surfaces.blog.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.surfaces.blog.description') }}</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="px-4 pb-20 sm:px-6">
+      <div class="section-panel mx-auto max-w-7xl">
+        <div class="section-copy reveal">
+          <h2 class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+            {{ $t('howToUse.tools.title') }}
+          </h2>
+          <p class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+            {{ $t('howToUse.tools.subtitle') }}
+          </p>
+        </div>
+
+        <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <NuxtLink to="/tools/position-sizing" class="surface-card reveal cursor-pointer">
+            <img src="/screenshots/how-to-use-features/10-position-sizing.png" :alt="$t('howToUse.tools.positionSizing.title')" class="surface-screenshot" loading="lazy" />
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.positionSizing') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.tools.positionSizing.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.tools.positionSizing.description') }}</p>
+            </div>
+          </NuxtLink>
+          <NuxtLink to="/tools/financial-freedom" class="surface-card reveal reveal-2 cursor-pointer">
+            <img src="/screenshots/how-to-use-features/11-financial-freedom.png" :alt="$t('howToUse.tools.financialFreedom.title')" class="surface-screenshot" loading="lazy" />
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.financialFreedom') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.tools.financialFreedom.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.tools.financialFreedom.description') }}</p>
+            </div>
+          </NuxtLink>
+          <NuxtLink to="/tools/relative-value" class="surface-card reveal reveal-3 cursor-pointer">
+            <img src="/screenshots/how-to-use-features/12-relative-value.png" :alt="$t('howToUse.tools.relativeValue.title')" class="surface-screenshot" loading="lazy" />
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.relativeValue') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.tools.relativeValue.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.tools.relativeValue.description') }}</p>
+            </div>
+          </NuxtLink>
+          <NuxtLink to="/tools/etf" class="surface-card reveal reveal-4 cursor-pointer">
+            <img src="/screenshots/how-to-use-features/13-etf.png" :alt="$t('howToUse.tools.etf.title')" class="surface-screenshot" loading="lazy" />
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.etf') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.tools.etf.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.tools.etf.description') }}</p>
+            </div>
+          </NuxtLink>
+          <NuxtLink to="/tools/seasonality" class="surface-card reveal cursor-pointer">
+            <img src="/screenshots/how-to-use-features/14-seasonality.png" :alt="$t('howToUse.tools.seasonality.title')" class="surface-screenshot" loading="lazy" />
+            <div class="surface-card-body">
+              <p class="surface-kicker">{{ $t('nav.seasonality') }}</p>
+              <h3 class="surface-title">{{ $t('howToUse.tools.seasonality.title') }}</h3>
+              <p class="surface-copy">{{ $t('howToUse.tools.seasonality.description') }}</p>
+            </div>
+          </NuxtLink>
         </div>
       </div>
     </section>
@@ -477,8 +598,21 @@ useHead(() => ({
   border: 1px solid rgb(226 232 240);
   border-radius: 1.15rem;
   background: rgb(255 255 255 / 88%);
-  padding: 1.25rem;
+  padding: 0;
+  overflow: hidden;
   transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+
+.surface-screenshot {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.surface-card-body {
+  padding: 1.25rem;
 }
 
 .guide-card:hover,
@@ -497,6 +631,11 @@ useHead(() => ({
 :global(.dark-mode .surface-card) {
   border-color: rgb(51 65 85);
   background: rgb(7 14 27 / 88%);
+}
+
+:global(.dark .surface-screenshot),
+:global(.dark-mode .surface-screenshot) {
+  border-bottom-color: rgb(51 65 85);
 }
 
 .guide-eyebrow,

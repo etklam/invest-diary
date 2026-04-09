@@ -259,6 +259,46 @@
       "compare": {
         "title": "Partner Compare",
         "description": "选一个已接受的 partner，把同一天的两份 diary 左右排开来看。这里看得到 diary 与标签，但看不到 stock 持仓。"
+      },
+      "calendar": {
+        "title": "月历总览",
+        "description": "用月历视觉化你的记录节奏。哪些天有写日记、哪些天放了提醒，一眼就看出来。"
+      },
+      "stocks": {
+        "title": "持仓管理",
+        "description": "集中看所有持仓的损益与市值变化，用资产配置图追踪资金流向。"
+      },
+      "discipline": {
+        "title": "交易纪律",
+        "description": "把你反复验证过的交易原则存成清单，也能导出分享给其他交易者。"
+      },
+      "blog": {
+        "title": "交易手札",
+        "description": "阅读投资观点与分析文章，公开内容不用登录也能看。"
+      }
+    },
+    "tools": {
+      "title": "投资工具箱",
+      "subtitle": "每一把工具都只做一件事，拿来解决你当下的问题，别想一次全用。",
+      "positionSizing": {
+        "title": "建仓计算器",
+        "description": "输入资金与风险参数，算出合理的进场部位大小。支持金字塔、矩形等分批建仓策略。"
+      },
+      "financialFreedom": {
+        "title": "财务自由计算机",
+        "description": "估算你的 FIRE 数字，看看距离用被动收入覆盖生活费还有多远。"
+      },
+      "relativeValue": {
+        "title": "相对价值计算器",
+        "description": "输入两档标的的价格历史，算出相对强弱，找出被低估的机会。"
+      },
+      "etf": {
+        "title": "ETF 分析",
+        "description": "追踪、比较 ETF 表现与价格走势，用观察清单管理你感兴趣的标的。"
+      },
+      "seasonality": {
+        "title": "季节性分析",
+        "description": "用历史数据看哪些月份的胜率最高、哪些月份该保守。不保证未来，但能帮你建立参考基准。"
       }
     },
     "cta": {

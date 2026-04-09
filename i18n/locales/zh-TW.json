@@ -751,6 +751,46 @@
       "compare": {
         "title": "Partner Compare",
         "description": "選一個已接受的 partner，把同一天的兩份 diary 左右排開來看。這裡看得到 diary 與標籤，但看不到 stock 持倉。"
+      },
+      "calendar": {
+        "title": "月曆總覽",
+        "description": "用月曆視覺化你的紀錄節奏。哪些天有寫日記、哪些天放了提醒，一眼就看出來。"
+      },
+      "stocks": {
+        "title": "持倉管理",
+        "description": "集中看所有持倉的損益與市值變化，用資產配置圖追蹤資金流向。"
+      },
+      "discipline": {
+        "title": "交易紀律",
+        "description": "把你反覆驗證過的交易原則存成清單，也能匯出分享給其他交易者。"
+      },
+      "blog": {
+        "title": "交易手札",
+        "description": "閱讀投資觀點與分析文章，公開內容不用登入也能看。"
+      }
+    },
+    "tools": {
+      "title": "投資工具箱",
+      "subtitle": "每一把工具都只做一件事，拿來解決你當下的問題，別想一次全用。",
+      "positionSizing": {
+        "title": "建倉計算器",
+        "description": "輸入資金與風險參數，算出合理的進場部位大小。支援金字塔、矩形等分批建倉策略。"
+      },
+      "financialFreedom": {
+        "title": "財務自由計算機",
+        "description": "估算你的 FIRE 數字，看看距離用被動收入覆蓋生活費還有多遠。"
+      },
+      "relativeValue": {
+        "title": "相對價值計算器",
+        "description": "輸入兩檔標的的價格歷史，算出相對強弱，找出被低估的機會。"
+      },
+      "etf": {
+        "title": "ETF 分析",
+        "description": "追蹤、比較 ETF 表現與價格走勢，用觀察清單管理你感興趣的標的。"
+      },
+      "seasonality": {
+        "title": "季節性分析",
+        "description": "用歷史數據看哪些月份的勝率最高、哪些月份該保守。不保證未來，但能幫你建立參考基準。"
       }
     },
     "cta": {

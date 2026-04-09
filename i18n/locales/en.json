@@ -753,6 +753,46 @@
       "compare": {
         "title": "Partner Compare",
         "description": "Choose an accepted partner and line up the same-day diaries side by side. Diary content and tags are visible here; stock holdings are not."
+      },
+      "calendar": {
+        "title": "Calendar",
+        "description": "Visualize your journaling rhythm. See which days you wrote, set alerts, or made trades — all at a glance."
+      },
+      "stocks": {
+        "title": "Portfolio",
+        "description": "Track holdings, P/L, and market value changes. Use the allocation chart to watch where your capital flows."
+      },
+      "discipline": {
+        "title": "Trading Discipline",
+        "description": "Store your battle-tested trading rules as a checklist. Export and share with other traders."
+      },
+      "blog": {
+        "title": "Blog",
+        "description": "Read investment insights and analysis articles. Public content — no login required."
+      }
+    },
+    "tools": {
+      "title": "Investment Toolkit",
+      "subtitle": "Each tool does one job. Pick the one that solves your current problem — don't try to use them all at once.",
+      "positionSizing": {
+        "title": "Position Sizing",
+        "description": "Enter capital and risk parameters to calculate a sensible position size. Supports pyramid, rectangular, and other scaling strategies."
+      },
+      "financialFreedom": {
+        "title": "Financial Freedom",
+        "description": "Estimate your FIRE number and see how far you are from covering living expenses with passive income."
+      },
+      "relativeValue": {
+        "title": "Relative Value",
+        "description": "Compare price histories of two tickers to calculate relative strength and spot undervalued opportunities."
+      },
+      "etf": {
+        "title": "ETF Analysis",
+        "description": "Track and compare ETF performance and price trends. Manage your watchlist of interesting candidates."
+      },
+      "seasonality": {
+        "title": "Seasonality",
+        "description": "Use historical data to see which months have the highest win rates and which call for caution. Not a guarantee — just a reference baseline."
       }
     },
     "cta": {
