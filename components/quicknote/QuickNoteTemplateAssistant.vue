@@ -1,5 +1,5 @@
 <template>
-  <div v-if="templateKind !== 'blank'" class="space-y-5 rounded-2xl border p-5 shadow-sm transition-all" style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 96%, white);">
+  <div v-if="templateKind !== 'blank'" class="space-y-5 rounded-2xl border p-5 shadow-sm transition-all" style="border-color: var(--color-border); background: var(--color-surface);">
     <div class="flex items-start justify-between gap-4">
       <div class="space-y-1">
         <h3 class="text-sm font-bold" style="color: var(--color-text);">{{ t('quickDiary.templateAssistant.title') }}</h3>
@@ -8,8 +8,8 @@
       <div v-if="hasTemplateChangesPending" class="flex flex-wrap gap-2">
         <button
           type="button"
-          class="rounded-xl border px-3 py-1.5 text-[11px] font-semibold transition-all hover:bg-white active:scale-95"
-          style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 90%, white); color: var(--color-text-soft);"
+          class="rounded-xl border px-3 py-1.5 text-[11px] font-semibold transition-all hover:opacity-90 active:scale-95"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-soft);"
           @click="emit('apply-template-changes')"
         >
           {{ t('quickDiary.templateAssistant.applyChanges') }}
@@ -30,7 +30,7 @@
         <label class="mb-2.5 block text-[11px] font-bold uppercase tracking-wider" style="color: var(--color-text-soft);">
           {{ t('quickDiary.trading.operation') }}
         </label>
-        <div class="flex gap-2 rounded-xl border p-1" style="border-color: var(--color-border); background: white;">
+        <div class="flex gap-2 rounded-xl border p-1" style="border-color: var(--color-border); background: var(--color-surface-muted);">
           <button
             v-for="type in ['buy', 'sell', 'both']"
             :key="type"
@@ -55,7 +55,7 @@
           type="text"
           :placeholder="t('quickDiary.trading.symbolsPlaceholder')"
           class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
-          style="border-color: var(--color-border); background: white; color: var(--color-text);"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
           @input="updateField('symbols', ($event.target as HTMLInputElement).value)"
         />
       </div>
@@ -64,7 +64,7 @@
         <label class="mb-2.5 block text-[11px] font-bold uppercase tracking-wider" style="color: var(--color-text-soft);">
           {{ t('quickDiary.trading.marketFeeling') }}
         </label>
-        <div class="flex gap-2 rounded-xl border p-1" style="border-color: var(--color-border); background: white;">
+        <div class="flex gap-2 rounded-xl border p-1" style="border-color: var(--color-border); background: var(--color-surface-muted);">
           <button
             v-for="mood in ['bullish', 'bearish', 'neutral']"
             :key="mood"
@@ -89,7 +89,7 @@
           rows="2"
           :placeholder="t('quickDiary.trading.notePlaceholder')"
           class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
-          style="border-color: var(--color-border); background: white; color: var(--color-text);"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
           @input="updateField('note', ($event.target as HTMLTextAreaElement).value)"
         />
       </div>
@@ -103,7 +103,7 @@
         <select
           :value="selectedReflectionMarketCondition"
           class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
-          style="border-color: var(--color-border); background: white; color: var(--color-text);"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
           @change="updateField('marketCondition', ($event.target as HTMLSelectElement).value)"
         >
           <option value="">{{ t('quickDiary.reflection.selectCondition') }}</option>
@@ -127,7 +127,7 @@
         <label class="mb-2.5 block text-[11px] font-bold uppercase tracking-wider" style="color: var(--color-text-soft);">
           {{ t('quickDiary.reflection.rating') }}
         </label>
-        <div class="flex gap-1.5 rounded-xl border p-1" style="border-color: var(--color-border); background: white;">
+        <div class="flex gap-1.5 rounded-xl border p-1" style="border-color: var(--color-border); background: var(--color-surface-muted);">
           <button
             v-for="rating in [1, 2, 3, 4, 5]"
             :key="rating"
@@ -155,7 +155,7 @@
               class="h-4 w-4 rounded border-gray-300 text-primary transition-all focus:ring-primary/20"
               @change="updateField('noRashTrading', ($event.target as HTMLInputElement).checked)"
             />
-            <span class="text-xs font-medium text-gray-600 group-hover:text-primary transition-colors">{{ t('quickDiary.reflection.noRashTrading') }}</span>
+            <span class="text-xs font-medium transition-colors group-hover:text-primary" style="color: var(--color-text-muted);">{{ t('quickDiary.reflection.noRashTrading') }}</span>
           </label>
         </div>
         <textarea
@@ -163,7 +163,7 @@
           rows="2"
           :placeholder="t('quickDiary.reflection.goodPointsPlaceholder')"
           class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
-          style="border-color: var(--color-border); background: white; color: var(--color-text);"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
           @input="updateField('goodPoints', ($event.target as HTMLTextAreaElement).value)"
         />
       </div>
@@ -177,7 +177,7 @@
           rows="2"
           :placeholder="t('quickDiary.reflection.improvePointsPlaceholder')"
           class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
-          style="border-color: var(--color-border); background: white; color: var(--color-text);"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
           @input="updateField('improvePoints', ($event.target as HTMLTextAreaElement).value)"
         />
       </div>
@@ -193,7 +193,7 @@
           type="text"
           :placeholder="t('quickDiary.observation.topicPlaceholder')"
           class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
-          style="border-color: var(--color-border); background: white; color: var(--color-text);"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
           @input="updateField('topic', ($event.target as HTMLInputElement).value)"
         />
       </div>
@@ -210,7 +210,7 @@
             class="rounded-xl border px-4 py-2 text-xs font-semibold transition-all duration-300"
             :style="selectedObservationType === type.value
               ? 'background: var(--color-primary); border-color: var(--color-primary); color: white; box-shadow: var(--shadow-sm);'
-              : 'border-color: var(--color-border); background: white; color: var(--color-text-muted);'"
+              : 'border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-muted);'"
             @click="updateField('observationType', type.value)"
           >
             {{ type.label }}
@@ -227,7 +227,7 @@
           rows="3"
           :placeholder="t('quickDiary.observation.contentPlaceholder')"
           class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
-          style="border-color: var(--color-border); background: white; color: var(--color-text);"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
           @input="updateField('observationContent', ($event.target as HTMLTextAreaElement).value)"
         />
       </div>
@@ -241,7 +241,7 @@
           type="text"
           :placeholder="t('quickDiary.observation.actionPlaceholder')"
           class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
-          style="border-color: var(--color-border); background: white; color: var(--color-text);"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
           @input="updateField('action', ($event.target as HTMLInputElement).value)"
         />
       </div>

@@ -80,7 +80,7 @@
                         :key="template.kind"
                         type="button"
                         class="group relative flex flex-col items-center rounded-3xl border p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:items-start sm:text-left"
-                        style="border-color: var(--color-border); background: white;"
+                        style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-muted) 88%, var(--color-surface));"
                         @click="selectTemplate(template.kind)"
                       >
                         <div
@@ -142,7 +142,7 @@
                     v-if="step === 2"
                     type="button"
                     class="flex-1 rounded-xl border px-4 py-3 font-medium transition-all duration-200 sm:flex-none sm:px-5 sm:py-2.5"
-                    style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 85%, white); color: var(--color-text);"
+                    style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
                     @click="step = 1"
                   >
                     {{ t('common.back') }}
@@ -150,7 +150,7 @@
                   <button
                     type="button"
                     class="flex-1 rounded-xl border px-4 py-3 font-medium transition-all duration-200 sm:flex-none sm:px-5 sm:py-2.5"
-                    style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 85%, white); color: var(--color-text);"
+                    style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
                     @click="close"
                   >
                     {{ t('common.cancel') }}

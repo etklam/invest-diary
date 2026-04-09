@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <section
       class="rounded-3xl border p-6 shadow-sm transition-all md:p-8"
-      style="border-color: var(--color-border); background: white;"
+      style="border-color: var(--color-border); background: var(--color-surface);"
     >
       <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
         <div class="space-y-1">
@@ -18,7 +18,7 @@
             class="rounded-xl border px-4 py-2.5 text-xs font-bold transition-all duration-300 hover:scale-105 active:scale-95"
             :style="state.templateKind === option.kind
               ? 'border-color: var(--color-primary); background: var(--color-primary); color: white; shadow: var(--shadow-sm);'
-              : 'border-color: var(--color-border); background: white; color: var(--color-text-soft);'"
+              : 'border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-soft);'"
             :aria-pressed="state.templateKind === option.kind"
             @click="applyTemplateKind(option.kind)"
           >

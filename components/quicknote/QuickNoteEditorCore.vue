@@ -16,7 +16,7 @@
           <span
             v-if="draftHint"
             class="rounded-full px-3 py-1 text-[11px] font-semibold"
-            style="background: color-mix(in srgb, var(--color-accent) 12%, white); color: var(--color-accent);"
+            style="background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface-muted)); color: var(--color-accent);"
           >
             {{ draftHint }}
           </span>
@@ -32,7 +32,7 @@
         </p>
         <div
           class="grid grid-cols-2 gap-2 rounded-2xl border p-1.5"
-          style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-strong) 40%, white);"
+          style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-strong) 72%, var(--color-background));"
         >
           <button
             v-for="option in saveModeOptions"
@@ -60,7 +60,7 @@
             :value="title"
             type="text"
             class="w-full rounded-2xl border px-5 py-4 text-sm font-medium shadow-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-            style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 94%, white); color: var(--color-text);"
+            style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
             :placeholder="t('diary.diaryTitle')"
             :aria-label="t('quickDiary.editor.titleAria')"
             @input="handleTitleInput"
@@ -69,7 +69,7 @@
           <textarea
             :value="content"
             class="min-h-[260px] w-full rounded-2xl border px-5 py-4 text-sm leading-8 shadow-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-            style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 96%, white); color: var(--color-text);"
+            style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
             :placeholder="t('quickDiary.oneLiner.placeholder')"
             rows="10"
             autofocus
@@ -78,7 +78,7 @@
           />
         </div>
 
-        <div class="space-y-4 rounded-3xl border p-5 shadow-inner-sm" style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-strong) 30%, white);">
+        <div class="space-y-4 rounded-3xl border p-5 shadow-inner-sm" style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-strong) 68%, var(--color-background));">
           <div class="flex flex-wrap items-center gap-3">
             <span class="text-[10px] font-bold uppercase tracking-[0.2em]" style="color: var(--color-text-soft);">{{ t('quickDiary.editor.snippets') }}</span>
             <VoiceInput @result="emit('append-text', $event)" />
@@ -88,7 +88,7 @@
                 :key="template.id"
                 type="button"
                 class="rounded-full border px-4 py-2 text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
-                style="border-color: var(--color-border); background: white; color: var(--color-primary);"
+                style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-primary);"
                 @click="emit('apply-template', template.content)"
               >
                 {{ template.name }}
@@ -96,7 +96,7 @@
               <button
                 type="button"
                 class="rounded-full border px-4 py-2 text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95"
-                style="border-color: color-mix(in srgb, var(--color-secondary) 30%, var(--color-border)); background: color-mix(in srgb, var(--color-secondary) 8%, white); color: var(--color-secondary);"
+                style="border-color: color-mix(in srgb, var(--color-secondary) 30%, var(--color-border)); background: color-mix(in srgb, var(--color-secondary) 10%, var(--color-surface-muted)); color: var(--color-secondary);"
                 @click="showTemplateManager = true"
               >
                 {{ t('quickDiary.editor.manageTemplates') }}
@@ -112,7 +112,7 @@
       </div>
 
       <aside class="space-y-5">
-        <section class="rounded-3xl border p-5 shadow-sm" style="border-color: var(--color-border); background: white;">
+        <section class="rounded-3xl border p-5 shadow-sm" style="border-color: var(--color-border); background: var(--color-surface);">
           <div class="space-y-4">
             <div class="flex flex-col gap-2.5">
               <label class="text-[10px] font-bold uppercase tracking-[0.2em]" style="color: var(--color-text-soft);" for="quick-note-date">
@@ -123,7 +123,7 @@
                 type="date"
                 :value="date"
                 class="rounded-xl border px-4 py-2.5 text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-primary/10"
-                style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 98%, white); color: var(--color-text);"
+                style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
                 @input="handleDateInput"
               />
             </div>
@@ -136,13 +136,13 @@
                   :key="option.preset"
                   type="button"
                   class="rounded-xl border px-4 py-2.5 text-xs font-medium transition-all duration-200 hover:bg-primary/5 active:scale-95"
-                  style="border-color: var(--color-border); background: white; color: var(--color-primary);"
+                  style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-primary);"
                   @click="emit('set-quick-reminder', option.preset)"
                 >
                   {{ option.label }}
                 </button>
               </div>
-              <div v-if="activeReminders.length" class="space-y-1.5 rounded-xl bg-gray-50/80 p-3 text-[11px]" style="color: var(--color-text-muted);">
+              <div v-if="activeReminders.length" class="space-y-1.5 rounded-xl p-3 text-[11px]" style="background: var(--color-surface-muted); color: var(--color-text-muted);">
                 <div v-for="item in activeReminders" :key="item.key" class="flex items-center justify-between">
                   <span class="font-medium">{{ item.label }}</span>
                   <span class="text-xs" style="color: var(--color-secondary);">{{ item.remaining }}</span>
@@ -157,7 +157,7 @@
           </div>
         </section>
 
-        <section class="rounded-3xl border p-5 shadow-sm" style="border-color: color-mix(in srgb, var(--color-primary) 20%, var(--color-border)); background: color-mix(in srgb, var(--color-primary) 4%, white);">
+        <section class="rounded-3xl border p-5 shadow-sm" style="border-color: color-mix(in srgb, var(--color-primary) 20%, var(--color-border)); background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-strong));">
           <div class="flex items-center gap-2 mb-3">
             <Icon name="heroicons:sparkles" class="h-4 w-4" style="color: var(--color-primary);" />
             <p class="text-[10px] font-bold uppercase tracking-[0.2em]" style="color: var(--color-primary);">{{ t('quickDiary.editor.checklistTitle') }}</p>
@@ -277,7 +277,7 @@ const saveModeOptions = computed<Array<{ value: QuickNoteSaveMode; label: string
 ])
 
 const activeModeStyle = 'background: var(--color-primary); color: white; box-shadow: var(--shadow-sm);'
-const inactiveModeStyle = 'background: white; color: var(--color-text-muted);'
+const inactiveModeStyle = 'background: var(--color-surface-muted); color: var(--color-text-muted);'
 
 const saveModeSummary = computed(() => {
   if (props.saveMode === 'append') {
