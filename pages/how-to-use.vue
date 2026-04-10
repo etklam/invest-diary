@@ -154,14 +154,14 @@
     </section>
 
     <!-- Workflow Detail Section -->
-    <section class="bg-slate-950 py-24 text-white overflow-hidden relative">
+    <section class="workflow-detail-section py-24 overflow-hidden relative" style="background: var(--color-panel-ink); color: var(--color-background);">
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-sky-500/10 via-transparent to-transparent opacity-50" />
       <div class="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div class="section-header reveal mb-16 text-center">
-          <h2 class="text-4xl font-bold tracking-tight sm:text-5xl">
+          <h2 class="text-4xl font-bold tracking-tight sm:text-5xl" style="color: var(--color-background);">
             {{ $t('howToUse.workflow.title') }}
           </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400">
+          <p class="mx-auto mt-4 max-w-2xl text-lg" style="color: var(--color-text-muted);">
             {{ $t('howToUse.workflow.subtitle') }}
           </p>
         </div>
@@ -171,8 +171,8 @@
             <div class="sequence-icon-box">
               <Icon :name="['heroicons:pencil-square', 'heroicons:link', 'heroicons:cpu-chip', 'heroicons:arrows-right-left'][i] + '-20-solid'" class="h-8 w-8 text-sky-400" />
             </div>
-            <h3 class="mt-6 text-xl font-bold text-white">{{ $t(`howToUse.workflow.step${i+1}.title`) }}</h3>
-            <p class="mt-4 text-slate-400 leading-relaxed text-sm">
+            <h3 class="mt-6 text-xl font-bold" style="color: var(--color-background);">{{ $t(`howToUse.workflow.step${i+1}.title`) }}</h3>
+            <p class="mt-4 leading-relaxed text-sm" style="color: var(--color-text-muted);">
               {{ $t(`howToUse.workflow.step${i+1}.description`) }}
             </p>
           </div>

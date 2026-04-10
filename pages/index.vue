@@ -46,26 +46,26 @@
           <div class="reveal reveal-2">
             <div class="terminal-panel">
               <header class="terminal-head">
-                <span class="font-medium text-slate-200">{{ $t('home.snapshot.title') }}</span>
+                <span class="font-medium">{{ $t('home.snapshot.title') }}</span>
                 <span class="rounded-full border border-emerald-400/50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-300">
                   {{ $t('home.snapshot.status') }}
                 </span>
               </header>
               <div class="space-y-3 p-5">
                 <div class="row-item">
-                  <span class="text-slate-300">{{ $t('home.snapshot.focusLabel') }}</span>
+                  <span>{{ $t('home.snapshot.focusLabel') }}</span>
                   <span class="font-semibold text-emerald-300">{{ $t('home.snapshot.focusValue') }}</span>
                 </div>
                 <div class="row-item">
-                  <span class="text-slate-300">{{ $t('home.snapshot.methodLabel') }}</span>
+                  <span>{{ $t('home.snapshot.methodLabel') }}</span>
                   <span class="font-semibold text-amber-300">{{ $t('home.snapshot.methodValue') }}</span>
                 </div>
                 <div class="row-item">
-                  <span class="text-slate-300">{{ $t('home.snapshot.communityLabel') }}</span>
+                  <span>{{ $t('home.snapshot.communityLabel') }}</span>
                   <span class="font-semibold text-sky-300">{{ $t('home.snapshot.communityValue') }}</span>
                 </div>
-                <div class="h-px bg-slate-700/60" />
-                <p class="text-sm leading-6 text-slate-400">
+                <div class="h-px" style="background: color-mix(in srgb, var(--color-border) 60%, transparent);" />
+                <p class="text-sm leading-6">
                   {{ $t('home.snapshot.description') }}
                 </p>
               </div>
@@ -207,23 +207,23 @@
       <div class="mx-auto max-w-7xl">
         <div class="story-panel reveal">
           <div class="flex flex-wrap items-center justify-between gap-4">
-            <h2 class="text-2xl font-semibold text-slate-50 sm:text-3xl">{{ $t('home.cta.title') }}</h2>
+            <h2 class="text-2xl font-semibold sm:text-3xl">{{ $t('home.cta.title') }}</h2>
             <NuxtLink to="/auth/login" class="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors duration-200 hover:text-cyan-100 cursor-pointer">
               {{ $t('home.cta.login') }}
               <Icon name="heroicons:arrow-right-20-solid" class="h-4 w-4" />
             </NuxtLink>
           </div>
-          <p class="mt-4 max-w-3xl text-base text-slate-300 sm:text-lg">
+          <p class="mt-4 max-w-3xl text-base sm:text-lg">
             {{ $t('home.cta.description') }}
           </p>
           <div class="mt-8 grid gap-4 md:grid-cols-3">
             <article v-for="n in 3" :key="n" class="chapter-card">
               <p class="chapter-label">{{ $t(`home.cta.step${n}.label`) }}</p>
-              <h3 class="mt-2 text-lg font-semibold text-white">{{ $t(`home.cta.step${n}.title`) }}</h3>
-              <p class="mt-2 text-sm text-slate-300">{{ $t(`home.cta.step${n}.description`) }}</p>
+              <h3 class="mt-2 text-lg font-semibold">{{ $t(`home.cta.step${n}.title`) }}</h3>
+              <p class="mt-2 text-sm">{{ $t(`home.cta.step${n}.description`) }}</p>
             </article>
           </div>
-          <p class="mt-6 text-sm leading-6 text-slate-300">
+          <p class="mt-6 text-sm leading-6">
             {{ $t('home.cta.disclaimer') }}
           </p>
           <NuxtLink to="/auth/register" class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-orange-500 px-7 py-3 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-400 cursor-pointer">
@@ -380,8 +380,17 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   overflow: hidden;
   background:
     radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 30%),
+    var(--color-surface);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+}
+
+:global(.dark .terminal-panel),
+:global(.dark-mode .terminal-panel) {
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 30%),
     linear-gradient(145deg, #132739, #1e3445 58%, #213847);
-  box-shadow: 0 20px 45px rgba(12, 18, 24, 0.24);
+  color: var(--color-background);
 }
 
 .terminal-head {
@@ -389,7 +398,13 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgb(71 85 105 / 45%);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+  color: var(--color-text);
+}
+
+:global(.dark .terminal-head),
+:global(.dark-mode .terminal-head) {
+  color: var(--color-background);
 }
 
 .row-item {
@@ -566,23 +581,53 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   padding: 1.6rem;
   background:
     radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 60%),
+    var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text);
+}
+
+:global(.dark .story-panel),
+:global(.dark-mode .story-panel) {
+  background:
+    radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 60%),
     linear-gradient(145deg, #111720, #17212a);
-  box-shadow: 0 22px 46px rgba(2, 6, 23, 0.28);
+  color: var(--color-background);
 }
 
 .chapter-card {
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid color-mix(in srgb, var(--color-background) 12%, transparent);
   border-radius: var(--radius-md);
   padding: 1rem;
+  background: color-mix(in srgb, var(--color-background) 5%, transparent);
+}
+
+:global(.dark .chapter-card),
+:global(.dark-mode .chapter-card) {
+  border-color: rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
 }
 
+:global(.dark .story-panel h2),
+:global(.dark-mode .story-panel h2) {
+  color: var(--color-background);
+}
+
+:global(.dark .story-panel .chapter-card h3),
+:global(.dark-mode .story-panel .chapter-card h3) {
+  color: var(--color-background);
+}
+
 .chapter-label {
-  color: color-mix(in srgb, white 72%, var(--color-secondary));
+  color: color-mix(in srgb, var(--color-primary) 72%, var(--color-secondary));
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.16em;
+}
+
+:global(.dark .chapter-label),
+:global(.dark-mode .chapter-label) {
+  color: color-mix(in srgb, var(--color-background) 72%, var(--color-secondary));
 }
 
 .reveal { animation: reveal-up 700ms ease both; }
