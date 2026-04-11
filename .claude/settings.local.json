@@ -99,7 +99,8 @@
       "Bash(~/.claude/skills/gstack/bin/gstack-review-log {\"skill\":\"plan-eng-review\",\"timestamp\":\"2026-04-05T09:26:00Z\",\"status\":\"issues_open\",\"unresolved\":1,\"critical_gaps\":0,\"issues_found\":1,\"mode\":\"FULL_REVIEW\",\"commit\":\"b5996c3\"}:*)",
       "Bash(~/.claude/skills/gstack/bin/gstack-review-read:*)",
       "Skill(browse)",
-      "Bash(/Users/klam/.claude/skills/gstack/browse/dist/browse status:*)"
+      "Bash(/Users/klam/.claude/skills/gstack/browse/dist/browse status:*)",
+      "mcp__chrome-devtools__wait_for"
     ]
   }
 }
