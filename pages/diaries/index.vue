@@ -7,6 +7,24 @@
         <p class="hero-summary">
           先看節奏，再做紀錄。提醒、交易、最新複盤都放在第一視線，唔使再喺卡片海裡面兜圈。
         </p>
+
+        <div class="hero-stats">
+          <p class="workspace-label">Ledger Snapshot</p>
+          <div class="stat-list">
+            <article class="stat-card">
+              <span class="stat-value">{{ diaryItems.length }}</span>
+              <span class="stat-label">總日記數</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-value">{{ diariesThisWeek }}</span>
+              <span class="stat-label">近 7 天紀錄</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-value">{{ filteredAndSortedDiaries.length }}</span>
+              <span class="stat-label">目前篩選結果</span>
+            </article>
+          </div>
+        </div>
       </div>
 
       <div class="hero-actions">
@@ -82,31 +100,23 @@
       </section>
 
       <aside class="workspace-sidebar">
-        <section class="workspace-panel workspace-panel-secondary">
-          <p class="workspace-label">Ledger Snapshot</p>
-          <div class="stat-list">
-            <article class="stat-card">
-              <span class="stat-value">{{ diaryItems.length }}</span>
-              <span class="stat-label">總日記數</span>
+        <section class="workspace-panel workspace-panel-secondary workspace-panel-compact">
+          <p class="workspace-label">Desk Rules</p>
+          <h3 class="desk-rules-title">先把帳對清楚，再談判斷。</h3>
+          <div class="desk-rules-list">
+            <article class="desk-rule">
+              <span class="desk-rule-index">01</span>
+              <p class="desk-rule-text">先記理由，再看結果，情緒放最後。</p>
             </article>
-            <article class="stat-card">
-              <span class="stat-value">{{ diariesThisWeek }}</span>
-              <span class="stat-label">近 7 天紀錄</span>
+            <article class="desk-rule">
+              <span class="desk-rule-index">02</span>
+              <p class="desk-rule-text">日期、提醒、交易三條線要對得上。</p>
             </article>
-            <article class="stat-card">
-              <span class="stat-value">{{ filteredAndSortedDiaries.length }}</span>
-              <span class="stat-label">目前篩選結果</span>
+            <article class="desk-rule">
+              <span class="desk-rule-index">03</span>
+              <p class="desk-rule-text">篩選器是拿來縮短決策，不是把自己繞暈。</p>
             </article>
           </div>
-        </section>
-
-        <section class="workspace-panel workspace-panel-secondary">
-          <p class="workspace-label">Desk Rules</p>
-          <ul class="desk-rules">
-            <li>先記理由，再記結果，最後才看情緒。</li>
-            <li>日期、提醒、交易三條線要對得上，唔好留糊塗帳。</li>
-            <li>篩選器用來縮短決策時間，不是拿來把自己搞迷路。</li>
-          </ul>
         </section>
       </aside>
     </div>
@@ -472,7 +482,7 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
 
 <style scoped>
 .diary-page {
-  max-width: 1160px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
@@ -501,11 +511,14 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 1.5rem;
   padding: 1.5rem;
 }
 
 .hero-copy {
+  flex: 1 1 42rem;
+  min-width: 0;
   max-width: 42rem;
 }
 
@@ -541,6 +554,11 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
   font-size: 1.02rem;
 }
 
+.hero-stats {
+  margin-top: 1.25rem;
+  max-width: 46rem;
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -555,6 +573,10 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
 
 .workspace-panel {
   padding: 1.35rem;
+}
+
+.workspace-panel-compact {
+  padding: 1.1rem;
 }
 
 .workspace-panel-primary {
@@ -614,6 +636,10 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
   display: grid;
   gap: 0.9rem;
   margin-top: 1.25rem;
+}
+
+.hero-stats .stat-list {
+  margin-top: 0.8rem;
 }
 
 .task-card,
@@ -679,11 +705,47 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
   color: var(--color-text);
 }
 
-.desk-rules {
-  margin-top: 1rem;
+.desk-rules-title {
+  margin-top: 0.45rem;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.desk-rules-list {
+  margin-top: 0.9rem;
   display: grid;
-  gap: 0.85rem;
-  padding-left: 1rem;
+  gap: 0.7rem;
+}
+
+.desk-rule {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem;
+  align-items: start;
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--color-surface) 84%, transparent);
+  padding: 0.75rem 0.8rem;
+}
+
+.desk-rule-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-family: var(--font-data);
+  color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 12%, transparent);
+}
+
+.desk-rule-text {
+  color: var(--color-text-muted);
+  line-height: 1.6;
 }
 
 .filters-panel,
@@ -874,6 +936,7 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
   flex-direction: column;
   justify-content: space-between;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .ledger-badges {
@@ -969,18 +1032,73 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
 
 @media (min-width: 768px) {
   .task-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .task-card:first-child {
+    grid-column: 1 / -1;
   }
 
   .ledger-row {
-    grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.9fr);
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+    align-items: start;
+  }
+
+  .ledger-row-side {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .ledger-badges {
+    justify-content: flex-end;
   }
 }
 
 @media (min-width: 1024px) {
+  .ledger-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(220px, 240px);
+    align-items: end;
+  }
+
+  .hero-copy {
+    max-width: none;
+  }
+
+  .hero-actions {
+    width: 100%;
+    flex-direction: column;
+    align-self: end;
+    justify-self: end;
+  }
+
+  .hero-actions > * {
+    width: 100%;
+    justify-content: center;
+  }
+
   .workspace-grid {
-    grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.8fr);
+    grid-template-columns: minmax(0, 2fr) minmax(260px, 0.58fr);
+    align-items: start;
+  }
+
+  .task-grid {
+    grid-template-columns: minmax(0, 1.45fr) minmax(260px, 1fr);
+    align-items: stretch;
+  }
+
+  .task-card:first-child {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .ledger-list {
+    padding-right: 1rem;
+  }
+
+  .ledger-row {
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 200px);
+    column-gap: 1.25rem;
   }
 }
 </style>
