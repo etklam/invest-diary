@@ -29,8 +29,7 @@ COPY . .
 # Build application
 RUN npx prisma generate && \
     npm run build && \
-    npm prune --omit=dev --omit=optional --legacy-peer-deps && \
-    npm cache clean --force
+    npm prune --omit=dev --omit=optional --legacy-peer-deps
 
 # Runtime stage
 FROM node:20-bookworm-slim AS runtime
