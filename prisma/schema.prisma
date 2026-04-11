@@ -57,6 +57,8 @@ model User {
   partnerLinksA         PartnerLink[]   @relation("PartnerLinkUserA")
   partnerLinksB         PartnerLink[]   @relation("PartnerLinkUserB")
   initiatedPartnerLinks PartnerLink[]   @relation("PartnerLinkInitiatedBy")
+  disciplineChecks      DisciplineCheck[]
+  portfolioSnapshots    PortfolioSnapshot[]
 
   @@map("users")
 }
@@ -89,6 +91,7 @@ model Diary {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   alerts       Alert[]
   transactions Transaction[]
+  disciplineChecks DisciplineCheck[]
 
   @@index([userId], map: "diaries_user_id_fkey")
   // 複合索引：優化使用者日記列表查詢（按建立時間排序）
@@ -162,26 +165,54 @@ model Discipline {
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checks DisciplineCheck[]
 
   @@index([userId], map: "discipline_user_id_fkey")
   @@index([order], map: "discipline_order_idx")
   @@map("disciplines")
 }
 
+model DisciplineCheck {
+  id           BigInt      @id @default(autoincrement())
+  userId       BigInt      @map("user_id")
+  diaryId      BigInt?     @map("diary_id")
+  disciplineId BigInt?     @map("discipline_id")
+  passed       Boolean
+  note         String?     @db.Text
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  diary      Diary?      @relation(fields: [diaryId], references: [id], onDelete: SetNull)
+  discipline Discipline? @relation(fields: [disciplineId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)], map: "discipline_checks_user_created_idx")
+  @@index([diaryId], map: "discipline_checks_diary_id_idx")
+  @@map("discipline_checks")
+}
+
 model Transaction {
   id        BigInt          @id @default(autoincrement())
   diaryId   BigInt          @map("diary_id")
+  // 去正規化 FK，避免每次都要 JOIN diary 表，優化績效查詢
+  userId    BigInt?         @map("user_id")
   symbol    String          @db.VarChar(20)
   type      TransactionType
   quantity  Decimal         @db.Decimal(15, 4)
   price     Decimal         @db.Decimal(15, 4)
   tradeDate DateTime        @map("trade_date")
+  // 交易後填寫欄位（柔性提示，非強制）
+  notes     String?         @db.Text @map("notes")
+  strategy  String?         @db.VarChar(100) @map("strategy")
+  // 情緒狀態：VARCHAR 而非 ENUM，保留未來擴展彈性
+  emotion   String?         @db.VarChar(20) @map("emotion")
   createdAt DateTime        @default(now()) @map("created_at")
   diary     Diary           @relation(fields: [diaryId], references: [id], onDelete: Cascade)
 
   @@index([diaryId], map: "transactions_diary_id_fkey")
   // 複合索引：優化 holdings 查詢（按交易日期排序）
   @@index([symbol, tradeDate(sort: Asc)], map: "transactions_symbol_date_idx")
+  // 複合索引：優化績效儀表板查詢（直接按 userId 查，不需 JOIN diary）
+  @@index([userId, tradeDate(sort: Asc)], map: "transactions_user_date_idx")
   @@map("transactions")
 }
 
@@ -294,4 +325,35 @@ model EtfWatchlist {
   @@unique([userId, etfId], map: "etf_watchlists_user_id_etf_id_key")
   @@index([userId, sortOrder], map: "etf_watchlists_user_id_sort_order_idx")
   @@map("etf_watchlists")
+}
+
+// ─── Phase 5: 持倉歷史快照 ────────────────────────────────────────────────────
+
+model PortfolioSnapshot {
+  id                 BigInt   @id @default(autoincrement())
+  userId             BigInt   @map("user_id")
+  snapshotDate       DateTime @db.Date @map("snapshot_date")
+
+  /// 各持倉成本總和（持倉 quantity * avgCost 的加總）
+  totalCost          Decimal  @db.Decimal(18, 4) @map("total_cost")
+
+  /// 各持倉市值總和（持倉 quantity * 當日最新報價 的加總）
+  totalMarketValue   Decimal  @db.Decimal(18, 4) @map("total_market_value")
+
+  /// 持倉明細 JSON（{ symbol, quantity, avgCost, latestPrice }[]）
+  holdingsJson       String   @db.Text @map("holdings_json")
+
+  /// 基準指數代號（預設 SPY）
+  benchmarkSymbol    String   @default("SPY") @db.VarChar(20) @map("benchmark_symbol")
+
+  /// 快照當日基準指數收盤價
+  benchmarkPrice     Decimal  @db.Decimal(18, 4) @map("benchmark_price")
+
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, snapshotDate], map: "portfolio_snapshots_user_date_key")
+  @@index([userId, snapshotDate(sort: Desc)], map: "portfolio_snapshots_user_date_idx")
+  @@map("portfolio_snapshots")
 }

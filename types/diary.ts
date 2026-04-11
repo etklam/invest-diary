@@ -16,12 +16,17 @@ export type TagKey = typeof DEFAULT_TAGS[number]['key']
 // ---- API / Domain Types (backward compatible) ----
 
 export interface TransactionInput {
+  id?: bigint | string | number  // 現有 transaction 的 DB ID（更新時用，保持 ID 穩定）
   symbol: string
   type: 'BUY' | 'SELL'
   quantity: Prisma.Decimal | number
   price: Prisma.Decimal | number
   tradeDate?: Date | string
   trade_date?: Date | string
+  // 交易後填寫欄位（Phase 1 新增，柔性提示）
+  notes?: string | null
+  strategy?: string | null
+  emotion?: string | null
 }
 
 export interface AlertInput {

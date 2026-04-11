@@ -5,7 +5,7 @@
         當前持股
       </h3>
       <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-        根據所有交易記錄計算 (FIFO)
+        根據所有交易記錄計算（平均成本法）
       </p>
     </div>
     <div>
@@ -84,7 +84,7 @@ const props = defineProps<{
 }>()
 
 const holdings = computed(() => {
-  // Use the centralized FIFO calculation from lib/utils.ts
+  // Use the centralized average cost calculation from lib/utils.ts
   return calculateHoldings(props.transactions || [])
 })
 </script>

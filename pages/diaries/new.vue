@@ -190,7 +190,10 @@ watch(() => form.date, async (newDate) => {
         type: tx.type,
         quantity: parseFloat(tx.quantity),
         price: parseFloat(tx.price),
-        trade_date: toDateTimeLocalValue(tx.tradeDate)
+        trade_date: toDateTimeLocalValue(tx.tradeDate),
+        notes: tx.notes ?? undefined,
+        strategy: tx.strategy ?? undefined,
+        emotion: tx.emotion ?? undefined,
       })) || []
 
       // Load alerts

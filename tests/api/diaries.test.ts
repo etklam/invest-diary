@@ -9,6 +9,8 @@ const mockDiaryUpdate = vi.fn()
 const mockDiaryDelete = vi.fn()
 const mockTransaction = vi.fn()
 const mockTxTransactionDeleteMany = vi.fn()
+const mockTxTransactionCreate = vi.fn()
+const mockTxTransactionUpdateMany = vi.fn()
 const mockTxAlertDeleteMany = vi.fn()
 const mockDiaryLogInfo = vi.fn()
 const mockDiaryLogWarn = vi.fn()
@@ -49,12 +51,17 @@ describe('Diary API Routes', () => {
     mockGetRouterParam.mockReturnValue(null)
     mockTransaction.mockImplementation(async (callback: (tx: any) => Promise<unknown>) => {
       const tx = {
-        transaction: { deleteMany: mockTxTransactionDeleteMany },
+        transaction: {
+          deleteMany: mockTxTransactionDeleteMany,
+          create: mockTxTransactionCreate,
+          updateMany: mockTxTransactionUpdateMany,
+        },
         alert: { deleteMany: mockTxAlertDeleteMany },
         diary: { update: mockDiaryUpdate },
       }
       return callback(tx)
     })
+    mockTxTransactionUpdateMany.mockResolvedValue({ count: 1 })
     mockDiaryWithRequestId.mockReturnValue(mockDiaryLog)
   })
 
@@ -247,12 +254,13 @@ describe('Diary API Routes', () => {
   })
 
   describe('PUT /api/diaries/:id', () => {
-    it('should update an existing diary, replace relations, and persist tags', async () => {
+    it('should update an existing diary using diff-based upsert and persist tags', async () => {
       mockGetRouterParam.mockReturnValue('12')
       mockReadBody.mockResolvedValue({
         title: 'Updated Title',
         content: 'Updated content',
         tags: ['watch', 'mistake'],
+        // No id on transactions → should be created (not deleted + recreated)
         transactions: [{ symbol: 'TSLA', type: 'BUY', quantity: 2, price: 300, tradeDate: new Date() }],
         alerts: [{ message: 'Alert', triggerAt: new Date() }],
       })
@@ -270,7 +278,15 @@ describe('Diary API Routes', () => {
         context: { user: { id: '1' }, requestId: 'req-1' },
       } as any)
 
+      // deleteMany is still called (to remove orphaned transactions)
       expect(mockTxTransactionDeleteMany).toHaveBeenCalled()
+      // Transactions without id → create path
+      expect(mockTxTransactionCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ symbol: 'TSLA', type: 'BUY' }),
+        })
+      )
+      // Alerts still use deleteMany + recreate
       expect(mockTxAlertDeleteMany).toHaveBeenCalled()
       expect(mockDiaryUpdate).toHaveBeenCalledWith(expect.objectContaining({
         data: expect.objectContaining({
@@ -279,6 +295,63 @@ describe('Diary API Routes', () => {
       }))
       expect(result.title).toBe('Updated Title')
       expect(result.tags).toEqual(['watch', 'mistake'])
+    })
+
+    it('should update existing transactions by id to preserve stable IDs', async () => {
+      mockGetRouterParam.mockReturnValue('12')
+      mockReadBody.mockResolvedValue({
+        title: 'Updated Title',
+        content: 'Updated content',
+        tags: [],
+        // Transaction with existing id → should update, not create
+        transactions: [{ id: '99', symbol: 'AAPL', type: 'BUY', quantity: 5, price: 150, tradeDate: new Date() }],
+        alerts: [],
+      })
+      mockDiaryFindFirst.mockResolvedValue({ id: 12n, userId: '1' })
+      mockDiaryUpdate.mockResolvedValue({
+        id: 12n,
+        title: 'Updated Title',
+        content: 'Updated content',
+        tagsString: '',
+      })
+
+      const { default: handler } = await import('~/server/api/diaries/[id].put')
+
+      await handler({
+        context: { user: { id: '1' }, requestId: 'req-update-tx' },
+      } as any)
+
+      // Transaction with id → update path (preserves stable ID)
+      expect(mockTxTransactionUpdateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 99n, diaryId: 12n },
+          data: expect.objectContaining({ symbol: 'AAPL' }),
+        })
+      )
+      // create should NOT be called (tx had an id)
+      expect(mockTxTransactionCreate).not.toHaveBeenCalled()
+    })
+
+    it('should reject transaction ids that do not belong to the diary', async () => {
+      mockGetRouterParam.mockReturnValue('12')
+      mockReadBody.mockResolvedValue({
+        title: 'Updated Title',
+        content: 'Updated content',
+        tags: [],
+        transactions: [{ id: '999', symbol: 'AAPL', type: 'BUY', quantity: 1, price: 1, tradeDate: new Date() }],
+        alerts: [],
+      })
+      mockDiaryFindFirst.mockResolvedValue({ id: 12n, userId: '1' })
+      mockTxTransactionUpdateMany.mockResolvedValue({ count: 0 })
+
+      const { default: handler } = await import('~/server/api/diaries/[id].put')
+
+      await expect(
+        handler({ context: { user: { id: '1' }, requestId: 'req-bad-tx-id' } } as any)
+      ).rejects.toMatchObject({
+        statusCode: 400,
+      })
+      expect(mockDiaryUpdate).not.toHaveBeenCalled()
     })
   })
 

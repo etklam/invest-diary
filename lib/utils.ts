@@ -45,8 +45,8 @@ export function calculateHoldings(transactions: TransactionForHolding[]): Holdin
       existing.totalQuantity += Number(tx.quantity)
       existing.totalCost += Number(tx.quantity) * Number(tx.price)
     } else if (tx.type === 'SELL') {
-      // 賣出時，按照先進先出（FIFO）計算成本
-      // 簡化計算：賣出總數量 * 平均成本
+      // 賣出時，按照平均成本法計算成本
+      // 賣出成本 = 賣出數量 * 當前平均成本
       const avgCost = existing.totalQuantity > 0 ? existing.totalCost / existing.totalQuantity : 0
       const sellCost = Number(tx.quantity) * avgCost
       existing.totalQuantity -= Number(tx.quantity)

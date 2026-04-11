@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { ref } from 'vue'
 import QuickNoteTemplateAssistant from '~/components/quicknote/QuickNoteTemplateAssistant.vue'
-
 const localeRef = ref('en')
 
 const messages: Record<string, string> = {
@@ -12,6 +11,16 @@ const messages: Record<string, string> = {
   'quickDiary.templateAssistant.regenerate': 'Regenerate template content',
   'quickDiary.reflection.marketCondition': 'Market condition',
   'quickDiary.reflection.selectCondition': 'Select...',
+  'quickDiary.reflection.rating': "Today's rating",
+  'quickDiary.reflection.goodPoints': 'What went well',
+  'quickDiary.reflection.noRashTrading': 'No rash trading',
+  'quickDiary.reflection.improvePoints': 'Areas for improvement',
+  'quickDiary.reflection.goodPointsPlaceholder': 'What did you do well today?',
+  'quickDiary.reflection.improvePointsPlaceholder': 'What can be improved?',
+  'quickDiary.reflection.relatedTrades': 'Related trades (optional)',
+  'quickDiary.reflection.relatedTradesSelected': '{count} selected',
+  'quickDiary.reflection.loadingTrades': 'Loading recent trades...',
+  'quickDiary.reflection.noRecentTrades': 'No closed trades in the last 30 days',
   'quickDiary.observation.type': 'Observation type',
 }
 
@@ -29,6 +38,28 @@ function mountAssistant(props: Record<string, unknown>) {
       ...props,
     },
   })
+}
+
+/** 在 mountAssistant 前設置 useFetch stub，預設回傳空 trades */
+function stubUseFetchEmpty() {
+  vi.stubGlobal('useFetch', vi.fn(() => ({
+    data: ref<{ trades: any[] } | null>({ trades: [] }),
+    pending: ref(false),
+    error: ref(null),
+    execute: vi.fn(),
+    refresh: vi.fn(),
+  })))
+}
+
+/** 在 mountAssistant 前設置 useFetch stub，回傳指定 trades */
+function stubUseFetchWithTrades(trades: any[]) {
+  vi.stubGlobal('useFetch', vi.fn(() => ({
+    data: ref<{ trades: any[] } | null>({ trades }),
+    pending: ref(false),
+    error: ref(null),
+    execute: vi.fn(),
+    refresh: vi.fn(),
+  })))
 }
 
 describe('QuickNoteTemplateAssistant', () => {
@@ -75,5 +106,78 @@ describe('QuickNoteTemplateAssistant', () => {
     expect(wrapper.emitted('update:templateData')).toEqual([
       [{ observationType: 'sectorMomentum' }],
     ])
+  })
+
+  it('reflection template shows empty trades state when no recent trades', () => {
+    const wrapper = mountAssistant({
+      templateKind: 'reflection',
+      templateData: {},
+    })
+
+    expect(wrapper.text()).toContain('Related trades (optional)')
+    expect(wrapper.text()).toContain('No closed trades in the last 30 days')
+  })
+
+  it('reflection template shows trade list and toggles selection', async () => {
+    const mockTrade = {
+      id: '1',
+      symbol: 'AAPL',
+      sellDate: '2024-06-01T00:00:00.000Z',
+      sellQuantity: 10,
+      realizedPnL: 200,
+      realizedPnLPct: 20,
+    }
+
+    vi.stubGlobal('useFetch', vi.fn(() => ({
+      data: ref({ trades: [mockTrade] }),
+      pending: ref(false),
+      error: ref(null),
+      execute: vi.fn(),
+    })))
+
+    const wrapper = mountAssistant({
+      templateKind: 'reflection',
+      templateData: { relatedTrades: [] },
+    })
+
+    // 確認交易行顯示
+    expect(wrapper.text()).toContain('AAPL')
+    expect(wrapper.text()).toContain('×10')
+
+    // 勾選 checkbox
+    const checkbox = wrapper.find('input[type="checkbox"]')
+    await checkbox.setValue(true)
+
+    const emitted = wrapper.emitted('update:templateData') as any[][]
+    expect(emitted).toBeTruthy()
+    expect(emitted[emitted.length - 1][0]).toMatchObject({
+      relatedTrades: [expect.objectContaining({ id: '1', symbol: 'AAPL' })],
+    })
+  })
+
+  it('reflection template shows badge when trades are selected', () => {
+    const mockTrade = {
+      id: '1',
+      symbol: 'AAPL',
+      sellDate: '2024-06-01T00:00:00.000Z',
+      sellQuantity: 10,
+      realizedPnL: 200,
+      realizedPnLPct: 20,
+    }
+
+    vi.stubGlobal('useFetch', vi.fn(() => ({
+      data: ref({ trades: [mockTrade] }),
+      pending: ref(false),
+      error: ref(null),
+      execute: vi.fn(),
+    })))
+
+    const wrapper = mountAssistant({
+      templateKind: 'reflection',
+      templateData: { relatedTrades: [mockTrade] },
+    })
+
+    // 有選中時應顯示 count badge
+    expect(wrapper.text()).toContain('{count} selected')
   })
 })

@@ -143,6 +143,67 @@
         </div>
       </div>
 
+      <!-- 相關交易選擇器 -->
+      <div class="sm:col-span-2">
+        <div class="flex items-center justify-between mb-2.5">
+          <label class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--color-text-soft);">
+            {{ t('quickDiary.reflection.relatedTrades') }}
+          </label>
+          <span v-if="selectedTradeCount > 0" class="text-[10px] font-semibold rounded-full px-2 py-0.5" style="background: var(--color-primary); color: white;">
+            {{ t('quickDiary.reflection.relatedTradesSelected', { count: selectedTradeCount }) }}
+          </span>
+        </div>
+        <div
+          v-if="recentTradesPending"
+          class="flex items-center gap-2 rounded-xl border px-4 py-3 text-xs"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-muted);"
+        >
+          <Icon name="heroicons:arrow-path" class="h-3.5 w-3.5 animate-spin" />
+          {{ t('quickDiary.reflection.loadingTrades') }}
+        </div>
+        <div
+          v-else-if="!recentTrades.length"
+          class="rounded-xl border px-4 py-3 text-xs"
+          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-soft);"
+        >
+          {{ t('quickDiary.reflection.noRecentTrades') }}
+        </div>
+        <div
+          v-else
+          class="rounded-xl border overflow-hidden"
+          style="border-color: var(--color-border);"
+        >
+          <label
+            v-for="trade in recentTrades"
+            :key="trade.id"
+            class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-opacity-60"
+            :style="isTradeSelected(trade.id)
+              ? 'background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-muted));'
+              : 'background: var(--color-surface-muted);'"
+          >
+            <input
+              :checked="isTradeSelected(trade.id)"
+              type="checkbox"
+              class="h-4 w-4 rounded border-gray-300 text-primary flex-shrink-0 focus:ring-primary/20"
+              @change="toggleTrade(trade, ($event.target as HTMLInputElement).checked)"
+            />
+            <div class="flex flex-1 items-center justify-between gap-2 min-w-0">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-xs font-bold tracking-wide flex-shrink-0" style="color: var(--color-text);">{{ trade.symbol }}</span>
+                <span class="text-[10px] flex-shrink-0" style="color: var(--color-text-muted);">{{ formatTradeDate(trade.sellDate) }}</span>
+                <span class="text-[10px] truncate" style="color: var(--color-text-soft);">×{{ trade.sellQuantity }}</span>
+              </div>
+              <span
+                class="text-xs font-semibold flex-shrink-0"
+                :style="trade.realizedPnL >= 0 ? 'color: var(--color-positive);' : 'color: var(--color-negative);'"
+              >
+                {{ trade.realizedPnL >= 0 ? '+' : '' }}{{ trade.realizedPnL.toFixed(0) }}
+              </span>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <div class="sm:col-span-2">
         <div class="flex items-center justify-between mb-2.5">
           <label class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--color-text-soft);">
@@ -250,14 +311,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
+import { useFetch } from '#imports'
 import {
   getQuickNoteObservationTypeOptions,
   getQuickNoteReflectionMarketConditionGroups,
   normalizeQuickNoteObservationType,
   normalizeQuickNoteReflectionMarketCondition,
 } from '~/lib/quicknote/template-localization'
-import type { QuickNoteTemplateData, QuickNoteTemplateKind } from '~/types/quicknote'
+import type { QuickNoteTemplateData, QuickNoteTemplateKind, RecentClosedTrade } from '~/types/quicknote'
 
 const props = defineProps<{
   templateKind: QuickNoteTemplateKind
@@ -278,6 +340,53 @@ const reflectionMarketConditionGroups = computed(() => getQuickNoteReflectionMar
 const selectedReflectionMarketCondition = computed(() => normalizeQuickNoteReflectionMarketCondition(props.templateData.marketCondition))
 const observationTypeOptions = computed(() => getQuickNoteObservationTypeOptions(currentLocale.value))
 const selectedObservationType = computed(() => normalizeQuickNoteObservationType(props.templateData.observationType))
+
+// ── 近期交易（reflection 模板用）────────────────────────────────────────────
+
+// 只有在 reflection 模板時才發請求（lazy: true + 手動 execute）
+const { data: recentTradesData, pending: recentTradesPending, execute: fetchRecentTrades } = useFetch<{ trades: RecentClosedTrade[] }>(
+  '/api/stats/recent-trades',
+  {
+    immediate: false,
+    server: false,
+    default: () => ({ trades: [] }),
+  }
+)
+
+const recentTrades = computed(() => recentTradesData.value?.trades ?? [])
+
+// 當 templateKind 切換到 reflection 時，才去拉資料（避免不必要請求）
+watch(
+  () => props.templateKind,
+  (kind) => {
+    if (kind === 'reflection' && !recentTradesData.value?.trades?.length) {
+      fetchRecentTrades()
+    }
+  },
+  { immediate: true }
+)
+
+const selectedTradeIds = computed(() => new Set((props.templateData.relatedTrades ?? []).map(t => t.id)))
+const selectedTradeCount = computed(() => props.templateData.relatedTrades?.length ?? 0)
+
+function isTradeSelected(id: string): boolean {
+  return selectedTradeIds.value.has(id)
+}
+
+function toggleTrade(trade: RecentClosedTrade, checked: boolean) {
+  const current = props.templateData.relatedTrades ?? []
+  if (checked) {
+    emit('update:templateData', { relatedTrades: [...current, trade] })
+  } else {
+    emit('update:templateData', { relatedTrades: current.filter(t => t.id !== trade.id) })
+  }
+}
+
+function formatTradeDate(iso: string): string {
+  return iso.slice(0, 10)
+}
+
+// ── 通用 ─────────────────────────────────────────────────────────────────────
 
 function updateField<K extends keyof QuickNoteTemplateData>(key: K, value: QuickNoteTemplateData[K]) {
   emit('update:templateData', { [key]: value })

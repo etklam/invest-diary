@@ -279,15 +279,276 @@
           </div>
         </div>
       </div>
+
+      <!-- ── 績效儀表板 ── -->
+      <section class="mt-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Icon name="heroicons:chart-bar-square" class="text-indigo-500" />
+            已實現績效
+          </h2>
+          <div class="flex items-center gap-2">
+            <!-- 匯出按鈕 -->
+            <button
+              v-if="perfData && perfData.summary.totalClosedTrades > 0"
+              @click="exportTrades"
+              :disabled="isExporting"
+              class="action-btn-muted-dashboard text-xs gap-1.5"
+            >
+              <Icon
+                :name="isExporting ? 'heroicons:arrow-path' : 'heroicons:arrow-down-tray'"
+                class="w-4 h-4"
+                :class="{ 'animate-spin': isExporting }"
+              />
+              {{ isExporting ? '匯出中...' : '匯出 CSV' }}
+            </button>
+            <!-- 時間範圍切換 -->
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+              <button
+                v-for="opt in periodOptions"
+                :key="opt.value"
+                @click="selectedPeriod = opt.value"
+                class="px-3 py-1 text-xs font-bold rounded-lg transition-all"
+                :class="selectedPeriod === opt.value
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 績效統計卡片 -->
+        <div v-if="perfPending" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div v-for="i in 4" :key="i" class="stats-card animate-pulse">
+            <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-20 mb-3"></div>
+            <div class="h-7 bg-slate-200 dark:bg-slate-700 rounded w-28"></div>
+          </div>
+        </div>
+
+        <div v-else-if="perfData" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <!-- 勝率 -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">勝率</span>
+              <Icon name="heroicons:trophy" class="w-5 h-5 text-amber-500 opacity-50" />
+            </div>
+            <div class="text-2xl font-bold tabular-nums"
+              :class="perfData.summary.winRate >= 50 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+              {{ perfData.summary.totalClosedTrades > 0 ? perfData.summary.winRate.toFixed(1) + '%' : 'N/A' }}
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1">
+              {{ perfData.summary.wins }}W / {{ perfData.summary.losses }}L
+              · {{ perfData.summary.totalClosedTrades }} 筆
+            </div>
+          </div>
+
+          <!-- 已實現損益 -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">已實現損益</span>
+              <Icon name="heroicons:currency-dollar" class="w-5 h-5 text-emerald-500 opacity-50" />
+            </div>
+            <div class="text-2xl font-bold tabular-nums"
+              :class="perfData.summary.totalRealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+              {{ perfData.summary.totalRealizedPnL >= 0 ? '+' : '' }}{{ formatCurrency(perfData.summary.totalRealizedPnL) }}
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1">累積已關閉部位</div>
+          </div>
+
+          <!-- 最大回撤 -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">最大回撤</span>
+              <Icon name="heroicons:arrow-trending-down" class="w-5 h-5 text-red-500 opacity-50" />
+            </div>
+            <div class="text-2xl font-bold tabular-nums"
+              :class="perfData.summary.maxDrawdownPct > 20 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white'">
+              {{ perfData.summary.totalClosedTrades > 0 ? '-' + perfData.summary.maxDrawdownPct.toFixed(1) + '%' : 'N/A' }}
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1">損益曲線最大跌幅</div>
+          </div>
+
+          <!-- 夏普比率 -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">夏普比率</span>
+              <Icon name="heroicons:scale" class="w-5 h-5 text-purple-500 opacity-50" />
+            </div>
+            <div class="text-2xl font-bold tabular-nums"
+              :class="perfData.summary.sharpe === null ? 'text-slate-400' :
+                perfData.summary.sharpe >= 1 ? 'text-green-600 dark:text-green-400' :
+                perfData.summary.sharpe >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'">
+              {{ perfData.summary.sharpe !== null ? perfData.summary.sharpe.toFixed(2) : 'N/A' }}
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1">月度風險調整後收益</div>
+          </div>
+        </div>
+
+        <!-- 損益趨勢圖 -->
+        <div v-if="perfData && perfData.periodStats.length > 0" class="panel-dashboard p-6 mb-6">
+          <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6 text-sm">
+            <Icon name="heroicons:chart-bar" class="text-indigo-400" />
+            損益走勢（{{ periodLabel }}）
+          </h3>
+          <div class="h-56">
+            <Bar :data="barChartData" :options="barChartOptions" />
+          </div>
+        </div>
+
+        <!-- 空狀態 -->
+        <div v-else-if="!perfPending && (!perfData || perfData.summary.totalClosedTrades === 0)"
+          class="panel-dashboard p-10 text-center">
+          <Icon name="heroicons:chart-bar-square" class="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+          <p class="text-sm font-medium text-slate-500 dark:text-slate-400">尚無已實現交易</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">完成第一筆買入並賣出後，績效指標將會出現</p>
+        </div>
+
+        <!-- 資金曲線（折線圖） -->
+        <div v-if="perfData && perfData.equityCurve && perfData.equityCurve.length > 1" class="panel-dashboard p-6 mb-6">
+          <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6 text-sm">
+            <Icon name="heroicons:chart-bar" class="text-indigo-400" />
+            資金曲線（累積損益）
+          </h3>
+          <div class="h-48">
+            <Line :data="equityCurveData" :options="equityCurveOptions" />
+          </div>
+        </div>
+
+        <!-- 各股票損益分析（橫條圖） -->
+        <div v-if="perfData && perfData.symbolBreakdown && perfData.symbolBreakdown.length > 0" class="panel-dashboard p-6 mb-6">
+          <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6 text-sm">
+            <Icon name="heroicons:chart-bar" class="text-emerald-400" />
+            各股票損益（前 10）
+          </h3>
+          <div :style="{ height: Math.min(perfData.symbolBreakdown.length, 10) * 36 + 24 + 'px' }">
+            <Bar :data="symbolBarData" :options="symbolBarOptions" />
+          </div>
+        </div>
+
+        <!-- 最佳 / 最差交易 -->
+        <div v-if="perfData && (perfData.topWins.length > 0 || perfData.topLosses.length > 0)"
+          class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Top Wins -->
+          <div class="panel-dashboard overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-emerald-50/50 dark:bg-emerald-950/20">
+              <h3 class="text-sm font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+                <Icon name="heroicons:arrow-trending-up" class="w-4 h-4" />
+                最佳交易
+              </h3>
+            </div>
+            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+              <div v-for="t in perfData.topWins" :key="t.id" class="px-5 py-3 flex items-center justify-between">
+                <div>
+                  <span class="text-sm font-bold text-slate-900 dark:text-white">{{ t.symbol }}</span>
+                  <span class="ml-2 text-xs text-slate-400">{{ formatTradeDate(t.sellDate) }}</span>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-bold text-green-600 dark:text-green-400 tabular-nums">
+                    +{{ formatCurrency(t.realizedPnL) }}
+                  </div>
+                  <div class="text-[10px] text-green-500 tabular-nums">+{{ t.realizedPnLPct.toFixed(1) }}%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Losses -->
+          <div class="panel-dashboard overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-red-50/50 dark:bg-red-950/20">
+              <h3 class="text-sm font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
+                <Icon name="heroicons:arrow-trending-down" class="w-4 h-4" />
+                最差交易
+              </h3>
+            </div>
+            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+              <div v-for="t in perfData.topLosses" :key="t.id" class="px-5 py-3 flex items-center justify-between">
+                <div>
+                  <span class="text-sm font-bold text-slate-900 dark:text-white">{{ t.symbol }}</span>
+                  <span class="ml-2 text-xs text-slate-400">{{ formatTradeDate(t.sellDate) }}</span>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-bold text-red-600 dark:text-red-400 tabular-nums">
+                    {{ formatCurrency(t.realizedPnL) }}
+                  </div>
+                  <div class="text-[10px] text-red-500 tabular-nums">{{ t.realizedPnLPct.toFixed(1) }}%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 持倉歷史 + 基準比較 -->
+        <div class="panel-dashboard p-6 mt-6">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm">
+              <Icon name="heroicons:chart-bar-square" class="text-violet-400" />
+              持倉歷史與基準比較
+            </h3>
+            <button
+              @click="createSnapshot"
+              :disabled="isSnapshotting"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-violet-600 hover:bg-violet-700 text-white transition-colors disabled:opacity-50"
+            >
+              <Icon :name="isSnapshotting ? 'svg-spinners:180-ring-with-bg' : 'heroicons:camera'" class="w-3.5 h-3.5" />
+              {{ isSnapshotting ? '快照中…' : '建立快照' }}
+            </button>
+          </div>
+
+          <!-- 有資料時顯示圖表 -->
+          <div v-if="snapshotsData && snapshotsData.snapshots && snapshotsData.snapshots.length >= 2">
+            <div class="flex items-center gap-4 mb-3 text-xs text-slate-500 dark:text-slate-400">
+              <span class="flex items-center gap-1">
+                <span class="inline-block w-3 h-0.5 bg-violet-500 rounded"></span>
+                投資組合
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="inline-block w-3 h-0.5 bg-amber-500 rounded"></span>
+                {{ snapshotsData.benchmarkSymbol ?? 'SPY' }}
+              </span>
+            </div>
+            <div class="h-48">
+              <Line :data="historyChartData" :options="historyChartOptions" />
+            </div>
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-right">
+              報酬率以第一筆快照為基準（%）
+            </p>
+          </div>
+
+          <!-- 快照不足時提示 -->
+          <div v-else class="py-10 text-center">
+            <Icon name="heroicons:camera" class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">尚無歷史快照</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">點擊「建立快照」記錄今日持倉，累積兩筆後即可顯示趨勢圖</p>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { Bar, Line } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  type ChartData,
+  type ChartOptions,
+  BarElement,
+  LinearScale,
+  CategoryScale,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+  Filler,
+} from 'chart.js'
 import type { QuoteResponse } from '~/lib/yahoo-finance'
 import { formatCurrency } from '~/lib/utils'
 import { watchDebounced } from '@vueuse/core'
+
+ChartJS.register(BarElement, LinearScale, CategoryScale, Tooltip, Legend, LineElement, PointElement, Filler)
 
 // Track cooldown timer for cleanup
 let cooldownTimer: ReturnType<typeof setInterval> | null = null
@@ -474,6 +735,367 @@ onScopeDispose(() => {
     cooldownTimer = null
   }
 })
+
+// ─── 績效儀表板 ───────────────────────────────────────────────────────────────
+
+type PerfPeriod = 'month' | 'quarter' | 'year'
+
+interface PerfSummary {
+  totalClosedTrades: number
+  totalRealizedPnL: number
+  winRate: number
+  wins: number
+  losses: number
+  maxDrawdownPct: number
+  sharpe: number | null
+}
+
+interface PerfTrade {
+  id: string
+  symbol: string
+  sellDate: string | Date
+  sellQuantity: number
+  sellPrice: number
+  avgCostBasis: number
+  realizedPnL: number
+  realizedPnLPct: number
+}
+
+interface PerfPeriodStat {
+  period: string
+  realizedPnL: number
+  tradeCount: number
+  winCount: number
+  winRate: number
+}
+
+interface SymbolBreakdown {
+  symbol: string
+  tradeCount: number
+  realizedPnL: number
+  winRate: number
+}
+
+interface PerformanceResult {
+  summary: PerfSummary
+  periodStats: PerfPeriodStat[]
+  equityCurve: { date: string; cumPnL: number }[]
+  topWins: PerfTrade[]
+  topLosses: PerfTrade[]
+  symbolBreakdown: SymbolBreakdown[]
+}
+
+const periodOptions: { value: PerfPeriod; label: string }[] = [
+  { value: 'month', label: '月' },
+  { value: 'quarter', label: '季' },
+  { value: 'year', label: '年' },
+]
+
+const selectedPeriod = ref<PerfPeriod>('month')
+
+const periodLabel = computed(() => {
+  const map: Record<PerfPeriod, string> = { month: '月度', quarter: '季度', year: '年度' }
+  return map[selectedPeriod.value]
+})
+
+const { data: perfData, pending: perfPending, refresh: refreshPerf } = await useLazyFetch<PerformanceResult | null>(
+  () => `/api/stats/performance?period=${selectedPeriod.value}`,
+  { server: false, default: () => null }
+)
+
+// 切換時間段時重新拉資料
+watch(selectedPeriod, () => refreshPerf())
+
+function formatTradeDate(date: string | Date): string {
+  return new Date(date).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })
+}
+
+// Chart.js Bar Chart 資料
+const barChartData = computed<ChartData<'bar'>>(() => {
+  const stats = perfData.value?.periodStats ?? []
+  return {
+    labels: stats.map((s: any) => s.period),
+    datasets: [
+      {
+        label: '已實現損益',
+        data: stats.map((s: any) => s.realizedPnL),
+        backgroundColor: stats.map((s: any) =>
+          s.realizedPnL >= 0 ? 'rgba(22, 163, 74, 0.75)' : 'rgba(220, 38, 38, 0.75)'
+        ),
+        borderColor: stats.map((s: any) =>
+          s.realizedPnL >= 0 ? 'rgba(22, 163, 74, 1)' : 'rgba(220, 38, 38, 1)'
+        ),
+        borderWidth: 1,
+        borderRadius: 4,
+      },
+    ],
+  }
+})
+
+const barChartOptions: ChartOptions<'bar'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (ctx) => {
+          const v = ctx.raw as number
+          return ` ${v >= 0 ? '+' : ''}${v.toFixed(2)}`
+        },
+      },
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: { font: { size: 11 } },
+    },
+    y: {
+      grid: { color: 'rgba(148, 163, 184, 0.1)' },
+      ticks: {
+        font: { size: 11 },
+        callback: (v) => (Number(v) >= 0 ? `+${v}` : String(v)),
+      },
+    },
+  },
+}
+
+// ─── 資金曲線（折線圖） ───────────────────────────────────────────────────────
+
+const equityCurveData = computed<ChartData<'line'>>(() => {
+  const curve = perfData.value?.equityCurve ?? []
+  return {
+    labels: curve.map((p) => p.date),
+    datasets: [
+      {
+        label: '累積損益',
+        data: curve.map((p) => p.cumPnL),
+        borderColor: 'rgba(99, 102, 241, 0.9)',
+        backgroundColor: 'rgba(99, 102, 241, 0.08)',
+        borderWidth: 2,
+        pointRadius: curve.length <= 30 ? 3 : 0,
+        pointHoverRadius: 5,
+        fill: true,
+        tension: 0.3,
+      },
+    ],
+  }
+})
+
+const equityCurveOptions: ChartOptions<'line'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (ctx) => {
+          const v = ctx.raw as number
+          return ` ${v >= 0 ? '+' : ''}${v.toFixed(2)}`
+        },
+      },
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: { font: { size: 10 }, maxTicksLimit: 8 },
+    },
+    y: {
+      grid: { color: 'rgba(148, 163, 184, 0.1)' },
+      ticks: {
+        font: { size: 11 },
+        callback: (v) => (Number(v) >= 0 ? `+${v}` : String(v)),
+      },
+    },
+  },
+}
+
+// ─── 各股票損益橫條圖 ─────────────────────────────────────────────────────────
+
+const symbolBarData = computed<ChartData<'bar'>>(() => {
+  const breakdown = (perfData.value?.symbolBreakdown ?? []).slice(0, 10)
+  return {
+    labels: breakdown.map((s) => s.symbol),
+    datasets: [
+      {
+        label: '已實現損益',
+        data: breakdown.map((s) => Math.round(s.realizedPnL * 100) / 100),
+        backgroundColor: breakdown.map((s) =>
+          s.realizedPnL >= 0 ? 'rgba(22, 163, 74, 0.75)' : 'rgba(220, 38, 38, 0.75)'
+        ),
+        borderColor: breakdown.map((s) =>
+          s.realizedPnL >= 0 ? 'rgba(22, 163, 74, 1)' : 'rgba(220, 38, 38, 1)'
+        ),
+        borderWidth: 1,
+        borderRadius: 4,
+      },
+    ],
+  }
+})
+
+const symbolBarOptions: ChartOptions<'bar'> = {
+  indexAxis: 'y',
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (ctx) => {
+          const v = ctx.raw as number
+          return ` ${v >= 0 ? '+' : ''}${v.toFixed(2)}`
+        },
+      },
+    },
+  },
+  scales: {
+    x: {
+      grid: { color: 'rgba(148, 163, 184, 0.1)' },
+      ticks: {
+        font: { size: 11 },
+        callback: (v) => (Number(v) >= 0 ? `+${v}` : String(v)),
+      },
+    },
+    y: {
+      grid: { display: false },
+      ticks: { font: { size: 12, weight: 'bold' } },
+    },
+  },
+}
+
+// ─── CSV 匯出 ─────────────────────────────────────────────────────────────────
+
+const isExporting = ref(false)
+
+async function exportTrades() {
+  if (isExporting.value) return
+  const toast = useToast()
+  isExporting.value = true
+  try {
+    const response = await $fetch<string>('/api/stats/export-trades', {
+      responseType: 'text',
+    })
+    const blob = new Blob([response], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `trades-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    toast.success('已匯出 CSV')
+  } catch {
+    toast.error('匯出失敗，請稍後再試')
+  } finally {
+    isExporting.value = false
+  }
+}
+
+// ─── 持倉歷史快照 ─────────────────────────────────────────────────────────────
+
+interface SnapshotPoint {
+  id: string
+  snapshotDate: string
+  totalCost: number
+  totalMarketValue: number
+  unrealizedPnL: number
+  portfolioReturnPct: number
+  benchmarkPrice: number
+  benchmarkReturnPct: number
+  holdingsCount: number
+}
+
+interface SnapshotsResult {
+  snapshots: SnapshotPoint[]
+  benchmarkSymbol: string
+}
+
+const { data: snapshotsData, refresh: refreshSnapshots } = await useLazyFetch<SnapshotsResult | null>(
+  '/api/stats/snapshots',
+  { server: false, default: () => null }
+)
+
+const isSnapshotting = ref(false)
+
+async function createSnapshot() {
+  if (isSnapshotting.value) return
+  const toast = useToast()
+  isSnapshotting.value = true
+  try {
+    await $fetch('/api/stats/snapshot', { method: 'POST' })
+    await refreshSnapshots()
+    toast.success('快照已建立')
+  } catch {
+    toast.error('快照建立失敗，請稍後再試')
+  } finally {
+    isSnapshotting.value = false
+  }
+}
+
+const historyChartData = computed<ChartData<'line'>>(() => {
+  const snaps = snapshotsData.value?.snapshots ?? []
+  return {
+    labels: snaps.map((s) => s.snapshotDate),
+    datasets: [
+      {
+        label: '投資組合',
+        data: snaps.map((s) => s.portfolioReturnPct),
+        borderColor: 'rgba(139, 92, 246, 0.9)',
+        backgroundColor: 'rgba(139, 92, 246, 0.08)',
+        borderWidth: 2,
+        pointRadius: snaps.length <= 30 ? 3 : 0,
+        pointHoverRadius: 5,
+        fill: false,
+        tension: 0.3,
+      },
+      {
+        label: snapshotsData.value?.benchmarkSymbol ?? 'SPY',
+        data: snaps.map((s) => s.benchmarkReturnPct),
+        borderColor: 'rgba(245, 158, 11, 0.9)',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderDash: [4, 3],
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        fill: false,
+        tension: 0.3,
+      },
+    ],
+  }
+})
+
+const historyChartOptions: ChartOptions<'line'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (ctx) => {
+          const v = ctx.raw as number
+          return ` ${ctx.dataset.label}: ${v >= 0 ? '+' : ''}${v.toFixed(2)}%`
+        },
+      },
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: { font: { size: 10 }, maxTicksLimit: 8 },
+    },
+    y: {
+      grid: { color: 'rgba(148, 163, 184, 0.1)' },
+      ticks: {
+        font: { size: 11 },
+        callback: (v) => `${Number(v) >= 0 ? '+' : ''}${v}%`,
+      },
+    },
+  },
+}
 
 useHead({
   title: `${t('stock.dashboard.title')} - Investment Diary`

@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
         // 不需要載入 diaryId 和 createdAt
       },
       orderBy: {
-        tradeDate: 'asc'// 按日期排序，方便 FIFO 計算
+        tradeDate: 'asc'// 按日期排序，方便平均成本計算
       }
     })
 

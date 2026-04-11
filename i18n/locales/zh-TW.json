@@ -219,7 +219,11 @@
       "noRashTrading": "沒有胡亂操作",
       "improvePoints": "需要改進的地方",
       "goodPointsPlaceholder": "今日操作中哪些做得好？",
-      "improvePointsPlaceholder": "哪些地方可以做得更好？"
+      "improvePointsPlaceholder": "哪些地方可以做得更好？",
+      "relatedTrades": "相關交易（可選）",
+      "relatedTradesSelected": "已選 {count} 筆",
+      "loadingTrades": "載入近期交易中...",
+      "noRecentTrades": "近 30 天無已關閉交易"
     },
     "observation": {
       "topic": "觀察主題",

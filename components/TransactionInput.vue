@@ -115,6 +115,76 @@
           <Icon name="heroicons:exclamation-triangle" class="h-4 w-4 mr-1" />
           {{ getValidationError(transaction) }}
         </div>
+
+        <!-- 交易筆記（柔性提示，可摺疊） -->
+        <div class="mt-3 border-t border-gray-100 dark:border-gray-700 pt-3">
+          <button
+            type="button"
+            @click="toggleNotes(index)"
+            class="flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            <Icon
+              :name="expandedNotes.has(index) ? 'heroicons:chevron-down' : 'heroicons:chevron-right'"
+              class="h-3 w-3 mr-1"
+            />
+            {{ expandedNotes.has(index) ? '收起筆記' : '+ 交易筆記（選填）' }}
+          </button>
+
+          <div v-if="expandedNotes.has(index)" class="mt-3 space-y-3">
+            <!-- notes -->
+            <div>
+              <label :for="`notes-${index}`" class="block text-xs font-medium text-gray-600 dark:text-gray-400">
+                交易理由 / 心得
+              </label>
+              <textarea
+                :id="`notes-${index}`"
+                :value="transaction.notes ?? ''"
+                @input="updateField(index, 'notes', ($event.target as HTMLTextAreaElement).value)"
+                rows="2"
+                class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 resize-none"
+                placeholder="為什麼做這筆交易？執行心得..."
+              />
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <!-- strategy -->
+              <div>
+                <label :for="`strategy-${index}`" class="block text-xs font-medium text-gray-600 dark:text-gray-400">
+                  策略標籤
+                </label>
+                <input
+                  type="text"
+                  :id="`strategy-${index}`"
+                  :value="transaction.strategy ?? ''"
+                  @input="updateField(index, 'strategy', ($event.target as HTMLInputElement).value)"
+                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[36px] px-3"
+                  placeholder="如：趨勢跟隨、突破買入"
+                />
+              </div>
+
+              <!-- emotion -->
+              <div>
+                <label :for="`emotion-${index}`" class="block text-xs font-medium text-gray-600 dark:text-gray-400">
+                  當下情緒
+                </label>
+                <select
+                  :id="`emotion-${index}`"
+                  :value="transaction.emotion ?? ''"
+                  @change="updateField(index, 'emotion', ($event.target as HTMLSelectElement).value)"
+                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[36px] px-3"
+                >
+                  <option value="">選擇情緒...</option>
+                  <option value="calm">😌 冷靜</option>
+                  <option value="confident">💪 有信心</option>
+                  <option value="uncertain">🤔 不確定</option>
+                  <option value="fomo">😰 追漲（FOMO）</option>
+                  <option value="fear">😨 恐懼</option>
+                  <option value="greed">🤑 貪婪</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -132,12 +202,17 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 interface Transaction {
   symbol: string
   type: 'BUY' | 'SELL'
   quantity: number
   price: number
   trade_date: string
+  // 柔性提示欄位（選填）
+  notes?: string
+  strategy?: string
+  emotion?: string
 }
 
 interface Holding {
@@ -160,6 +235,26 @@ const transactions = computed({
 
 // Validation errors map
 const validationErrors = ref<Map<number, string>>(new Map())
+
+// 展開交易筆記的索引集合
+const expandedNotes = ref<Set<number>>(new Set())
+
+const toggleNotes = (index: number) => {
+  if (expandedNotes.value.has(index)) {
+    expandedNotes.value.delete(index)
+  } else {
+    expandedNotes.value.add(index)
+  }
+  // trigger reactivity
+  expandedNotes.value = new Set(expandedNotes.value)
+}
+
+// 更新指定欄位（通用，用於 notes/strategy/emotion）
+const updateField = (index: number, field: 'notes' | 'strategy' | 'emotion', value: string) => {
+  const tx = transactions.value[index]
+  if (!tx) return
+  ;(tx as any)[field] = value || undefined
+}
 
 // Calculate holdings from current transactions (excluding the one being validated)
 const calculateHoldings = (excludeIndex: number = -1): Holding[] => {
@@ -258,7 +353,7 @@ const addTransaction = () => {
     type: 'BUY',
     quantity: 0,
     price: 0,
-    trade_date: now.toISOString().slice(0, 16)
+    trade_date: now.toISOString().slice(0, 16),
   })
 }
 
@@ -266,6 +361,9 @@ const removeTransaction = (index: number) => {
   transactions.value.splice(index, 1)
   // Clear validation error and revalidate remaining transactions
   validationErrors.value.delete(index)
+  // Clear notes expanded state for this index
+  expandedNotes.value.delete(index)
+  expandedNotes.value = new Set(expandedNotes.value)
   // Revalidate all SELL transactions after removing one
   transactions.value.forEach((_, idx) => {
     const tx = transactions.value[idx]

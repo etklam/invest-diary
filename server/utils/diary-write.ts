@@ -86,11 +86,15 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
       date: diaryDate,
       transactions: {
         create: transactions?.map((tx) => ({
-          symbol: tx.symbol,
+          userId,
+          symbol: tx.symbol?.trim().toUpperCase(),
           type: tx.type,
           quantity: tx.quantity,
           price: tx.price,
           tradeDate: toInputDate(tx.trade_date ?? tx.tradeDate ?? new Date()),
+          notes: tx.notes ?? null,
+          strategy: tx.strategy ?? null,
+          emotion: tx.emotion ?? null,
         })),
       },
       alerts: {

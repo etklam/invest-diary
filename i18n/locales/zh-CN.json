@@ -126,7 +126,11 @@
       "noRashTrading": "没有胡乱操作",
       "improvePoints": "需要改进的地方",
       "goodPointsPlaceholder": "今日操作中哪些做得好？",
-      "improvePointsPlaceholder": "哪些地方可以做得更好？"
+      "improvePointsPlaceholder": "哪些地方可以做得更好？",
+      "relatedTrades": "相关交易（可选）",
+      "relatedTradesSelected": "已选 {count} 笔",
+      "loadingTrades": "加载近期交易中...",
+      "noRecentTrades": "近 30 天无已关闭交易"
     },
     "observation": {
       "topic": "观察主题",

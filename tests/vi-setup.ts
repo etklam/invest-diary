@@ -62,6 +62,26 @@ global.event = {
 // Mock $fetch globally
 global.$fetch = vi.fn()
 
+// Mock useFetch globally（供組件測試使用，預設回傳空資料）
+// 注意：必須回傳 ref() 以讓 Vue 模板正確響應
+import { ref as _ref } from 'vue'
+global.useFetch = vi.fn(() => ({
+  data: _ref(null),
+  pending: _ref(false),
+  error: _ref(null),
+  execute: vi.fn(),
+  refresh: vi.fn(),
+}))
+
+// Mock useLazyFetch globally
+global.useLazyFetch = vi.fn(() => ({
+  data: _ref(null),
+  pending: _ref(false),
+  error: _ref(null),
+  execute: vi.fn(),
+  refresh: vi.fn(),
+}))
+
 // Mock Nuxt composables (auto-imported)
 vi.mock('#app/composables/chrome', () => ({
   useNuxtApp: () => ({

@@ -7,6 +7,19 @@ export interface QuickNoteReminders {
   reminder1: string | null
 }
 
+/**
+ * 用於 reflection 模板選擇器顯示的輕量交易摘要
+ * （從 /api/stats/recent-trades 取得，存在 templateData 側方便生成 markdown）
+ */
+export interface RecentClosedTrade {
+  id: string
+  symbol: string
+  sellDate: string  // ISO string
+  sellQuantity: number
+  realizedPnL: number
+  realizedPnLPct: number
+}
+
 export interface QuickNoteTemplateData {
   tradingType?: string
   symbols?: string
@@ -21,6 +34,8 @@ export interface QuickNoteTemplateData {
   observationType?: string
   observationContent?: string
   action?: string
+  /** reflection 模板：用戶選擇的相關交易（用於在 markdown 中顯示交易回顧） */
+  relatedTrades?: RecentClosedTrade[]
 }
 
 export interface QuickNoteComposerState {
@@ -51,5 +66,6 @@ export function createEmptyQuickNoteTemplateData(): QuickNoteTemplateData {
     observationType: '',
     observationContent: '',
     action: '',
+    relatedTrades: [],
   }
 }

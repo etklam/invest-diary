@@ -3,7 +3,7 @@ import {
   getQuickNoteReflectionMarketConditionLabel,
   resolveQuickNoteLocaleVariant,
 } from '~/lib/quicknote/template-localization'
-import type { QuickNoteTemplateData, QuickNoteTemplateKind } from '~/types/quicknote'
+import type { QuickNoteTemplateData, QuickNoteTemplateKind, RecentClosedTrade } from '~/types/quicknote'
 
 interface GenerateTemplateDraftInput {
   templateKind: QuickNoteTemplateKind
@@ -57,6 +57,8 @@ export function generateTemplateDraft(input: GenerateTemplateDraftInput): Templa
           goodPoints: '做得好的地方',
           noRashTrading: '- 没有胡乱操作',
           improvePoints: '需要改进的地方',
+          relatedTrades: '相关交易回顾',
+          tradePnL: '损益',
         },
         observation: {
           topic: '观察主题',
@@ -89,6 +91,8 @@ export function generateTemplateDraft(input: GenerateTemplateDraftInput): Templa
             goodPoints: '做得好的地方',
             noRashTrading: '- 沒有胡亂操作',
             improvePoints: '需要改進的地方',
+            relatedTrades: '相關交易回顧',
+            tradePnL: '損益',
           },
           observation: {
             topic: '觀察主題',
@@ -120,6 +124,8 @@ export function generateTemplateDraft(input: GenerateTemplateDraftInput): Templa
             goodPoints: 'What went well',
             noRashTrading: '- No rash trading',
             improvePoints: 'Areas for improvement',
+            relatedTrades: 'Related Trade Review',
+            tradePnL: 'P&L',
           },
           observation: {
             topic: 'Topic',
@@ -186,12 +192,27 @@ export function generateTemplateDraft(input: GenerateTemplateDraftInput): Templa
       content += `## ${copy.reflection.goodPoints}\n\n${goodPoints.join('\n')}\n\n`
     }
     if (input.templateData.improvePoints) {
-      content += `## ${copy.reflection.improvePoints}\n\n${input.templateData.improvePoints}\n`
+      content += `## ${copy.reflection.improvePoints}\n\n${input.templateData.improvePoints}\n\n`
+    }
+
+    // 相關交易回顧區塊
+    const relatedTrades = input.templateData.relatedTrades ?? []
+    if (relatedTrades.length > 0) {
+      content += `## ${copy.reflection.relatedTrades}\n\n`
+      for (const trade of relatedTrades) {
+        const dateStr = trade.sellDate.slice(0, 10)
+        const pnlSign = trade.realizedPnL >= 0 ? '+' : ''
+        const pnlStr = `${pnlSign}${trade.realizedPnL.toFixed(0)}`
+        const pctSign = trade.realizedPnLPct >= 0 ? '+' : ''
+        const pctStr = `${pctSign}${trade.realizedPnLPct.toFixed(1)}%`
+        content += `- **${trade.symbol}** × ${trade.sellQuantity} @ ${dateStr}  ${copy.reflection.tradePnL}: ${pnlStr} (${pctStr})\n`
+      }
+      content += '\n'
     }
 
     return {
       title: `${formattedDate} ${copy.reflectionLabel}`,
-      content,
+      content: content.trimEnd(),
     }
   }
 

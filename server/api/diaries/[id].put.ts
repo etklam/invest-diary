@@ -51,22 +51,65 @@ export default defineEventHandler(async (event): Promise<Diary> => {
       throw Errors.diaryAccessDenied()
     }
 
-    // Update diary and handle transactions and alerts
-    // For transactions/alerts, we'll delete existing ones and create new ones for simplicity
+    // Update diary using diff-based upsert for transactions to preserve stable IDs.
+    // This prevents DisciplineCheck / TradeReview references from breaking on each edit.
     const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      // Delete existing transactions and alerts
+      // --- Transactions: diff-based upsert ---
+      // Incoming transactions with a known DB id → update (preserve the ID)
+      // Incoming transactions without id → create (new rows)
+      // Existing DB transactions not in the payload → delete
+      const incomingTxs = transactions ?? []
+      const incomingIds = incomingTxs
+        .filter((t) => t.id != null)
+        .map((t) => BigInt(t.id!))
+
+      // Delete transactions that are no longer in the payload
       await tx.transaction.deleteMany({
         where: {
-          diaryId: diaryId,
-        },
-      })
-      await tx.alert.deleteMany({
-        where: {
-          diaryId: diaryId,
+          diaryId,
+          id: { notIn: incomingIds.length > 0 ? incomingIds : [BigInt(0)] },
         },
       })
 
-      // Update diary and create new transactions and alerts
+      // Update existing and create new transactions
+      for (const t of incomingTxs) {
+        const txData = {
+          symbol: t.symbol?.trim().toUpperCase(),
+          type: t.type,
+          quantity: t.quantity,
+          price: t.price,
+          tradeDate: toInputDate(t.trade_date ?? t.tradeDate ?? new Date()),
+          notes: t.notes ?? null,
+          strategy: t.strategy ?? null,
+          emotion: t.emotion ?? null,
+        }
+        if (t.id != null) {
+          // Guard ownership: only allow updating transactions that belong to this diary.
+          const updated = await tx.transaction.updateMany({
+            where: { id: BigInt(t.id), diaryId },
+            data: txData,
+          })
+          if (updated.count === 0) {
+            throw Errors.validationError([
+              {
+                field: 'transactions',
+                message: `Transaction ${String(t.id)} not found in this diary`,
+              },
+            ])
+          }
+        } else {
+          await tx.transaction.create({
+            data: { ...txData, diaryId, userId: BigInt(userId) },
+          })
+        }
+      }
+
+      // --- Alerts: keep simple deleteMany + recreate (alerts don't need stable IDs yet) ---
+      await tx.alert.deleteMany({
+        where: { diaryId },
+      })
+
+      // Update diary (without nested transaction/alert write, handled above)
       return await tx.diary.update({
         where: {
           id: diaryId,
@@ -76,15 +119,6 @@ export default defineEventHandler(async (event): Promise<Diary> => {
           content,
           tagsString: tags !== undefined ? stringifyDiaryTags(tags) : undefined,
           date: date ? toUtcNoonDate(date) : undefined,
-          transactions: {
-            create: transactions?.map((tx) => ({
-              symbol: tx.symbol?.trim().toUpperCase(),
-              type: tx.type,
-              quantity: tx.quantity,
-              price: tx.price,
-              tradeDate: toInputDate(tx.trade_date ?? tx.tradeDate ?? new Date()),
-            })),
-          },
           alerts: {
             create: alerts?.map((a) => ({
               message: a.message,

@@ -220,7 +220,11 @@
       "noRashTrading": "No rash trading",
       "improvePoints": "Areas for improvement",
       "goodPointsPlaceholder": "What did you do well today?",
-      "improvePointsPlaceholder": "What can be improved?"
+      "improvePointsPlaceholder": "What can be improved?",
+      "relatedTrades": "Related trades (optional)",
+      "relatedTradesSelected": "{count} selected",
+      "loadingTrades": "Loading recent trades...",
+      "noRecentTrades": "No closed trades in the last 30 days"
     },
     "observation": {
       "topic": "Observation topic",
