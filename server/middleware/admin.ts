@@ -17,6 +17,9 @@ export default defineEventHandler(async (event) => {
   const isProtectedRoute = path.startsWith('/api/admin') || isBlogWriteRoute
   if (!isProtectedRoute) return
 
+  // 防止保護路由被誤快取（例如 401/403 被 CDN 或瀏覽器快取）
+  setHeader(event, 'Cache-Control', 'no-store')
+
   const user = event.context.user
   if (!user) {
     throw createError({

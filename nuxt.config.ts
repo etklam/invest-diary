@@ -12,6 +12,18 @@ export default defineNuxtConfig({
           'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=300'
         }
       },
+      '/api/blog/admin': {
+        cors: true,
+        headers: {
+          'Cache-Control': 'no-store'
+        }
+      },
+      '/api/blog/admin/**': {
+        cors: true,
+        headers: {
+          'Cache-Control': 'no-store'
+        }
+      },
       '/api/blog/**': {
         cors: true,
         headers: {
