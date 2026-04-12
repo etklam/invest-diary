@@ -2,6 +2,7 @@ import type { H3Event } from 'h3'
 import prisma from '~/lib/prisma'
 import { PostStatus } from '@prisma/client'
 import { logger } from '~/lib/logger'
+import { serializeBlogPost } from '~/server/utils/blog-response'
 
 const resolveSlug = (event: H3Event) => {
   const rawFromParams = event.context.params?.slug
@@ -66,7 +67,7 @@ export default defineEventHandler(async (event: H3Event) => {
       })
     }
 
-    return post
+    return serializeBlogPost(post)
   } catch (error: any) {
     if (error?.statusCode) {
       throw error

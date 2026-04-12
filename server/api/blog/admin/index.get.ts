@@ -1,5 +1,6 @@
 import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
+import { serializeBlogPosts } from '~/server/utils/blog-response'
 
 const normalizeQueryValue = (value: unknown) => {
   if (value === undefined || value === null) return ''
@@ -134,7 +135,7 @@ export default defineEventHandler(async (event) => {
     ])
 
     return {
-      data: posts,
+      data: serializeBlogPosts(posts),
       pagination: {
         page,
         limit,

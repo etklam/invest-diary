@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { serializeBlogPosts } from '~/server/utils/blog-response'
 
 const LEGACY_CATEGORY_ALIASES: Record<string, string[]> = {
   fundamental: ['基本面分析', 'Fundamental Analysis'],
@@ -130,7 +131,7 @@ export default defineEventHandler(async (event: H3Event) => {
     ])
 
     return {
-      data: posts,
+      data: serializeBlogPosts(posts),
       pagination: {
         page,
         limit,

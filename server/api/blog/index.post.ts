@@ -5,6 +5,7 @@ import { ZodError } from 'zod'
 import adminMiddleware from '~/server/middleware/admin'
 import { AppError, Errors } from '~/lib/errors/factory'
 import { blogPostInputSchema, resolveExcerpt } from '~/server/utils/blog-schemas'
+import { serializeBlogPost } from '~/server/utils/blog-response'
 
 export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
@@ -55,7 +56,7 @@ export default defineEventHandler(async (event) => {
     })
 
     logger.blog.info('Post created', { postId: post.id.toString(), userId: userId.toString() })
-    return post
+    return serializeBlogPost(post)
   } catch (error) {
     if (error instanceof AppError) {
       throw error.toH3Error()

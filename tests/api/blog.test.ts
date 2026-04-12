@@ -116,6 +116,31 @@ describe('Blog API', () => {
       expect(mockBlogWithRequestId).toHaveBeenCalledWith('req-blog-index')
     })
 
+    it('should serialize bigint ids to avoid JSON response errors', async () => {
+      mockPostFindMany.mockResolvedValue([
+        {
+          id: BigInt(101),
+          title: 'BigInt Post',
+          slug: 'bigint-post',
+          excerpt: 'Excerpt',
+          status: 'PUBLISHED',
+          publishedAt: new Date('2024-01-01'),
+          author: { id: BigInt(9), name: 'Author', email: 'author@test.com' },
+        },
+      ])
+      mockPostCount.mockResolvedValue(1)
+      mockGetQuery.mockReturnValue({})
+
+      const { default: handler } = await import('~/server/api/blog/index.get')
+      const mockEvent = { context: {} } as any
+
+      const result = await handler(mockEvent)
+
+      expect(result.data[0]?.id).toBe('101')
+      expect(result.data[0]?.author?.id).toBe('9')
+      expect(() => JSON.stringify(result)).not.toThrow()
+    })
+
     it('should filter by category', async () => {
       const mockPosts = [
         {
@@ -300,6 +325,36 @@ describe('Blog API', () => {
       expect(result).toHaveProperty('id')
       expect(mockPostFindFirst).toHaveBeenCalled()
       expect(mockBlogWithRequestId).toHaveBeenCalledWith('req-blog-slug')
+    })
+
+    it('should serialize bigint ids in slug response', async () => {
+      const mockPost = {
+        id: BigInt(3),
+        title: 'BigInt Slug Post',
+        slug: 'bigint-slug-post',
+        content: 'Full content here',
+        excerpt: 'Excerpt',
+        status: 'PUBLISHED',
+        publishedAt: new Date('2024-01-01'),
+        author: { id: BigInt(11), name: 'Author', email: 'author@test.com' },
+      }
+
+      mockPostFindFirst.mockResolvedValue(mockPost)
+      mockGetQuery.mockReturnValue({})
+
+      const { default: handler } = await import('~/server/api/blog/[slug].get')
+      const mockEvent = {
+        context: {
+          params: { slug: 'bigint-slug-post' },
+          requestId: 'req-blog-bigint-slug',
+        },
+      } as any
+
+      const result = await handler(mockEvent)
+
+      expect(result.id).toBe('3')
+      expect(result.author.id).toBe('11')
+      expect(() => JSON.stringify(result)).not.toThrow()
     })
 
     it('should return 404 for non-existent post', async () => {

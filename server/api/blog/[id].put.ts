@@ -6,6 +6,7 @@ import adminMiddleware from '~/server/middleware/admin'
 import { AppError, Errors } from '~/lib/errors/factory'
 import { blogPostInputSchema, resolveExcerpt } from '~/server/utils/blog-schemas'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { serializeBlogPost } from '~/server/utils/blog-response'
 
 export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
@@ -78,7 +79,7 @@ export default defineEventHandler(async (event) => {
     })
 
     logger.blog.info('Post updated', { postId: post.id.toString() })
-    return post
+    return serializeBlogPost(post)
   } catch (error) {
     if (error instanceof AppError) {
       throw error.toH3Error()

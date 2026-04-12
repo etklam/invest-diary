@@ -2,6 +2,7 @@ import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import adminMiddleware from '~/server/middleware/admin'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { serializeBlogPost } from '~/server/utils/blog-response'
 
 export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    return post
+    return serializeBlogPost(post)
   } catch (error) {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
