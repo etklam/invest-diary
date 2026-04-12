@@ -7,8 +7,14 @@
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
   const path = url.pathname
+  const method = event.method?.toUpperCase() || 'GET'
 
-  const isProtectedRoute = path.startsWith('/api/admin') || path.startsWith('/api/blog')
+  const isBlogWriteRoute = (
+    (path === '/api/blog' && method === 'POST')
+    || (/^\/api\/blog\/[^/]+$/.test(path) && ['PUT', 'PATCH', 'DELETE'].includes(method))
+    || path.startsWith('/api/blog/admin')
+  )
+  const isProtectedRoute = path.startsWith('/api/admin') || isBlogWriteRoute
   if (!isProtectedRoute) return
 
   const user = event.context.user

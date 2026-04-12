@@ -56,4 +56,40 @@ describe('server/middleware/admin', () => {
       statusMessage: 'ADMIN_ONLY',
     })
   })
+
+  it('should allow public GET /api/blog without admin', async () => {
+    const { default: handler } = await import('~/server/middleware/admin')
+    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/blog' })
+
+    await expect(handler({
+      method: 'GET',
+      context: {},
+    } as any)).resolves.toBeUndefined()
+  })
+
+  it('should reject unauthenticated POST /api/blog with 401', async () => {
+    const { default: handler } = await import('~/server/middleware/admin')
+    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/blog' })
+
+    await expect(handler({
+      method: 'POST',
+      context: {},
+    } as any)).rejects.toMatchObject({
+      statusCode: 401,
+      statusMessage: 'UNAUTHORIZED',
+    })
+  })
+
+  it('should reject non-admin PUT /api/blog/:id with 403', async () => {
+    const { default: handler } = await import('~/server/middleware/admin')
+    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/blog/42' })
+
+    await expect(handler({
+      method: 'PUT',
+      context: { user: { id: '1', role: 'USER' } },
+    } as any)).rejects.toMatchObject({
+      statusCode: 403,
+      statusMessage: 'ADMIN_ONLY',
+    })
+  })
 })
