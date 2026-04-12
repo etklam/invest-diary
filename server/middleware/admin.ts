@@ -1,3 +1,5 @@
+import authMiddleware from '~/server/middleware/auth'
+
 /**
  * Backward-compatible admin middleware.
  *
@@ -19,6 +21,12 @@ export default defineEventHandler(async (event) => {
 
   // 防止保護路由被誤快取（例如 401/403 被 CDN 或瀏覽器快取）
   setHeader(event, 'Cache-Control', 'no-store')
+
+  // 此 middleware 同時被作為 Nitro 全域 middleware 與 handler 內部 guard 使用。
+  // 若全域執行順序早於 auth middleware，這裡補跑一次 auth 以取得 user context。
+  if (!event.context.user) {
+    await authMiddleware(event)
+  }
 
   const user = event.context.user
   if (!user) {
