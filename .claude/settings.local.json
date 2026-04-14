@@ -102,7 +102,11 @@
       "Bash(/Users/klam/.claude/skills/gstack/browse/dist/browse status:*)",
       "mcp__chrome-devtools__wait_for",
       "Skill(plan-ceo-review)",
-      "Bash(~/.claude/skills/gstack/bin/gstack-learnings-log:*)"
+      "Bash(~/.claude/skills/gstack/bin/gstack-learnings-log:*)",
+      "mcp__ide__executeCode",
+      "Skill(design-consultation)",
+      "Skill(review)",
+      "mcp__web-reader__webReader"
     ]
   }
 }

@@ -1,26 +1,28 @@
 <template>
   <article
-    class="blog-card group flex h-full flex-col"
+    class="group flex h-full flex-col border border-line bg-surface-alt transition-all duration-fast hover:border-line-hover"
     @mouseenter="prefetchDetail"
   >
+    <!-- Admin Actions -->
     <div v-if="isAdmin" class="absolute right-3 top-3 z-30 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
       <NuxtLink
         :to="`/admin/blog/${post.id}/edit`"
-        class="admin-btn h-9 w-9 flex items-center justify-center rounded-xl bg-white/90 shadow-sm backdrop-blur-sm dark:bg-slate-900/90"
+        class="h-8 w-8 flex items-center justify-center bg-surface border border-line text-copy-muted hover:text-accent transition-colors"
         title="編輯"
       >
-        <Icon name="heroicons:pencil" class="h-4 w-4 text-sky-600 dark:text-sky-400" />
+        <Icon name="lucide:pencil" class="h-3.5 w-3.5" />
       </NuxtLink>
       <button
-        class="admin-btn h-9 w-9 flex items-center justify-center rounded-xl bg-white/90 shadow-sm backdrop-blur-sm dark:bg-slate-900/90"
+        class="h-8 w-8 flex items-center justify-center bg-surface border border-line text-copy-muted hover:text-semantic-error transition-colors"
         title="刪除"
         @click="handleDelete"
       >
-        <Icon name="heroicons:trash" class="h-4 w-4 text-red-600 dark:text-red-400" />
+        <Icon name="lucide:trash-2" class="h-3.5 w-3.5" />
       </button>
     </div>
 
-    <NuxtLink :to="`/articles/${post.slug}`" class="relative block aspect-[16/10] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
+    <!-- Cover Image -->
+    <NuxtLink :to="`/articles/${post.slug}`" class="relative block aspect-[16/10] overflow-hidden bg-surface-alt">
       <NuxtImg
         v-if="post.coverImage"
         :src="post.coverImage"
@@ -28,58 +30,61 @@
         width="600"
         height="375"
         loading="lazy"
-        class="h-full w-full object-cover transition-transform duration-700 cubic-bezier(0.16, 1, 0.3, 1) group-hover:scale-110"
+        class="h-full w-full object-cover transition-transform duration-standard group-hover:scale-105"
       />
       <div v-else class="flex h-full w-full items-center justify-center">
-        <Icon name="heroicons:photo" class="h-12 w-12 text-slate-300 dark:text-slate-700" />
+        <Icon name="lucide:image" class="h-10 w-10 text-copy-muted opacity-30" />
       </div>
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-      <div class="absolute left-4 top-4">
-        <span
-          class="inline-flex items-center rounded-lg border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md"
-        >
+      <div class="absolute left-3 top-3">
+        <BaseBadge variant="info">
           {{ $t(`blog.categories.${categoryKey}`) || post.category }}
-        </span>
+        </BaseBadge>
       </div>
     </NuxtLink>
 
-    <div class="flex flex-1 flex-col pt-5">
-      <div class="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-        <Icon name="heroicons:calendar" class="h-3 w-3" />
+    <!-- Content -->
+    <div class="flex flex-1 flex-col p-5">
+      <!-- Meta -->
+      <div class="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-copy-muted">
+        <Icon name="lucide:calendar" class="h-3 w-3" />
         {{ publishedAtLabel }}
         <template v-if="readingTime">
-          <span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-          <Icon name="heroicons:clock" class="h-3 w-3" />
+          <span class="w-px h-3 bg-line" />
+          <Icon name="lucide:clock" class="h-3 w-3" />
           {{ readingTime }} {{ $t('blog.minute') }}
         </template>
       </div>
 
-      <h3 class="mb-3 text-xl font-bold leading-tight text-slate-950 transition-colors group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">
-        <NuxtLink :to="`/articles/${post.slug}`" class="line-clamp-2 focus:outline-none">
+      <!-- Title -->
+      <h3 class="mb-3 text-lg font-semibold leading-tight text-copy transition-colors group-hover:text-accent">
+        <NuxtLink :to="`/articles/${post.slug}`" class="line-clamp-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
           {{ post.title }}
         </NuxtLink>
       </h3>
 
-      <p v-if="post.excerpt" class="mb-6 line-clamp-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+      <!-- Excerpt -->
+      <p v-if="post.excerpt" class="mb-4 line-clamp-3 flex-1 text-sm leading-relaxed text-copy-secondary">
         {{ post.excerpt }}
       </p>
 
-      <div class="flex items-center justify-between mt-auto">
-        <div class="flex items-center gap-2.5">
-          <div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
-            <Icon name="heroicons:user" class="h-4 w-4 text-slate-400 dark:text-slate-500" />
+      <!-- Footer -->
+      <div class="flex items-center justify-between mt-auto pt-4 border-t border-line">
+        <div class="flex items-center gap-2">
+          <div class="h-7 w-7 bg-surface-alt border border-line flex items-center justify-center rounded-md">
+            <Icon name="lucide:user" class="h-3.5 w-3.5 text-copy-muted" />
           </div>
-          <span class="text-xs font-bold text-slate-700 dark:text-slate-300">
+          <span class="text-xs font-medium text-copy-secondary">
             {{ authorLabel }}
           </span>
         </div>
 
         <NuxtLink
           :to="`/articles/${post.slug}`"
-          class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 transition-all hover:bg-slate-950 hover:text-white dark:border-slate-800 dark:hover:bg-white dark:hover:text-slate-950"
+          class="flex items-center gap-1.5 text-xs font-semibold text-copy-muted hover:text-accent transition-colors"
         >
-          <Icon name="heroicons:arrow-up-right" class="h-5 w-5" />
+          閱讀
+          <Icon name="lucide:arrow-right" class="h-3.5 w-3.5 transform group-hover:translate-x-0.5 transition-transform" />
         </NuxtLink>
       </div>
     </div>
@@ -165,11 +170,16 @@ const prefetchDetail = async () => {
 </script>
 
 <style scoped>
-.blog-card {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-
-.cubic-bezier {
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

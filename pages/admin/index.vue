@@ -301,9 +301,14 @@ const roleBadgeClass = (role: string) => {
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-if="loading.users">
-                <td :colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                  <div class="flex justify-center">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+                <td :colspan="6" class="px-6 py-4">
+                  <div class="space-y-3">
+                    <div v-for="i in 3" :key="i" class="flex gap-4 animate-pulse">
+                      <div class="h-4 bg-surface-alt w-1/4"></div>
+                      <div class="h-4 bg-surface-alt w-1/3"></div>
+                      <div class="h-4 bg-surface-alt w-1/6"></div>
+                      <div class="h-4 bg-surface-alt w-1/6"></div>
+                    </div>
                   </div>
                 </td>
               </tr>

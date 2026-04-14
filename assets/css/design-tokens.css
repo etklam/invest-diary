@@ -1,88 +1,46 @@
-/* Editorial Ledger design tokens */
+/* Design Tokens for Minimalist Diary System */
 :root {
-  --font-display: 'Fraunces', serif;
-  --font-body: 'Source Sans 3', sans-serif;
-  --font-data: 'IBM Plex Mono', monospace;
-
-  --color-background: #f6f1e8;
-  --color-surface: rgba(255, 252, 247, 0.82);
-  --color-surface-strong: #ece3d6;
-  --color-surface-muted: #f1e8dc;
-  --color-panel-ink: #17324d;
-  --color-primary: #17324d;
-  --color-primary-active: #244764;
-  --color-secondary: #b85c38;
-  --color-secondary-active: #9d4828;
-  --color-accent: #1c6b5c;
-  --color-success: #1c6b5c;
-  --color-danger: #b33a2f;
-  --color-warning: #a56a18;
-  --color-info: #2f5e88;
-  --color-border: #d7ccbc;
-  --color-border-strong: #b6a893;
-  --color-text: #191714;
-  --color-text-muted: #4e463e;
-  --color-text-soft: #8d8376;
-
-  --font-size-xs: 12px;
-  --font-size-sm: 14px;
-  --font-size-base: 16px;
-  --font-size-lg: 18px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 32px;
-  --font-size-3xl: 44px;
-
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 32px;
-  --space-8: 48px;
-  --space-9: 64px;
-
-  --touch-target-min: 44px;
-
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 28px;
-  --radius-pill: 999px;
-
-  --shadow-sm: 0 10px 25px rgba(40, 29, 14, 0.06);
-  --shadow-md: 0 18px 40px rgba(40, 29, 14, 0.08);
-  --shadow-lg: 0 28px 60px rgba(40, 29, 14, 0.1);
-
-  --motion-fast: 150ms;
-  --motion-base: 280ms;
-  --motion-slow: 420ms;
-  --easing-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --bg-main: #FFFFFF;
+  --bg-surface: #F8FAFC;
+  --bg-elevated: #F1F5F9;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-inverse: #FFFFFF;
+  --line-default: #E2E8F0;
+  --line-hover: #CBD5E1;
+  --line-focus: #94A3B8;
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --semantic-success: #15803D;
+  --semantic-warning: #854D0E;
+  --semantic-error: #DC2626;
+  --semantic-info: #0284C7;
+  --bg-success: #F0FDF4;
+  --bg-warning: #FEFCE8;
+  --bg-error: #FEF2F2;
+  --bg-info: #F0F9FF;
 }
 
-:root.dark,
-:root.dark-mode,
-.dark,
-.dark-mode {
-  --color-background: #0f1316;
-  --color-surface: rgba(22, 28, 32, 0.9);
-  --color-surface-strong: #1c2328;
-  --color-surface-muted: #161c20;
-  --color-panel-ink: #243748;
-  --color-primary: #30506f;
-  --color-primary-active: #3f6588;
-  --color-secondary: #b06b4d;
-  --color-secondary-active: #c98565;
-  --color-accent: #2f7b6d;
-  --color-success: #2f7b6d;
-  --color-danger: #c45e55;
-  --color-warning: #be873c;
-  --color-info: #5b7ea4;
-  --color-border: #2a343b;
-  --color-border-strong: #42505a;
-  --color-text: #f3eee6;
-  --color-text-muted: #b7aea2;
-  --color-text-soft: #8f877e;
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
+.dark {
+  --bg-main: #0F172A;
+  --bg-surface: #1E293B;
+  --bg-elevated: #334155;
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-inverse: #0F172A;
+  --line-default: #334155;
+  --line-hover: #475569;
+  --line-focus: #64748B;
+  --accent: #60A5FA;
+  --accent-hover: #93C5FD;
+  --semantic-success: #4ADE80;
+  --semantic-warning: #FACC15;
+  --semantic-error: #F87171;
+  --semantic-info: #38BDF8;
+  --bg-success: #052E16;
+  --bg-warning: #422006;
+  --bg-error: #450A0A;
+  --bg-info: #082F49;
 }

@@ -121,7 +121,7 @@ onUnmounted(() => {
 .mobile-layout {
   min-height: 100vh;
   position: relative;
-  background-color: var(--color-background, #020617);
+  background-color: var(--color-surface);
   overflow-x: hidden;
 }
 
@@ -129,7 +129,7 @@ onUnmounted(() => {
   width: 100%;
   min-height: 100vh;
   position: relative;
-  transition: padding-bottom 0.3s ease-out;
+  transition: padding-bottom var(--duration-standard) ease-out;
 }
 
 .keyboard-spacer {
@@ -140,7 +140,7 @@ onUnmounted(() => {
 
 .has-keyboard .main-content {
   /* 鍵盤顯示時的額外調整 */
-  transition: padding-bottom 0.15s ease-out;
+  transition: padding-bottom var(--duration-fast) ease-out;
 }
 
 /* 安全區域支援 */

@@ -1,187 +1,184 @@
 <template>
-  <main class="fintech-article-detail min-h-screen pb-24 text-slate-900 dark:text-slate-100">
-    <div class="bg-grid absolute inset-0 -z-10 opacity-[0.08]" aria-hidden="true" />
-    <div class="orb orb-cyan" aria-hidden="true" />
-    <div class="orb orb-amber" aria-hidden="true" />
-
-    <!-- Progress Bar -->
+  <main class="min-h-screen pb-24">
+    <!-- Reading Progress Bar -->
     <div
-      class="fixed top-0 left-0 z-50 h-1 bg-sky-500 transition-all duration-150"
+      class="fixed top-0 left-0 z-50 h-0.5 bg-accent transition-all duration-fast"
       :style="{ width: `${scrollProgress}%` }"
     />
 
-    <div v-if="pending" class="mx-auto w-full max-w-4xl px-4 pt-20">
-      <div class="mb-8 aspect-[21/9] animate-pulse rounded-3xl bg-slate-200/60 dark:bg-slate-800/60" />
-      <div class="mx-auto max-w-3xl space-y-6">
-        <div class="h-4 w-24 animate-pulse rounded-full bg-slate-200/60 dark:bg-slate-800/60" />
-        <div class="h-12 w-full animate-pulse rounded-xl bg-slate-200/60 dark:bg-slate-800/60" />
-        <div class="h-4 w-2/3 animate-pulse rounded-lg bg-slate-200/60 dark:bg-slate-800/60" />
-      </div>
+    <!-- Loading State -->
+    <div v-if="pending" class="max-w-[800px] mx-auto px-4 pt-16 space-y-6">
+      <BaseSkeleton variant="card" height="320px" />
+      <BaseSkeleton variant="text" :count="3" />
     </div>
 
+    <!-- Error State -->
     <div
       v-else-if="error"
-      class="mx-auto mt-20 w-full max-w-2xl px-4 text-center"
+      class="max-w-[600px] mx-auto mt-20 px-4 text-center"
     >
-      <div class="mb-6 flex justify-center">
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-red-500 dark:bg-red-900/20">
-          <Icon name="heroicons:exclamation-circle" class="h-10 w-10" />
-        </div>
+      <div class="mb-8 flex justify-center">
+        <Icon name="lucide:alert-circle" class="h-12 w-12 text-semantic-error opacity-50" />
       </div>
-      <h1 class="text-2xl font-bold text-slate-950 dark:text-white">{{ articleErrorTitle }}</h1>
-      <p class="mt-3 text-slate-600 dark:text-slate-400">{{ articleErrorDescription }}</p>
-      <div class="mt-8 flex justify-center gap-4">
-        <button
+      <h1 class="text-2xl font-semibold text-copy">{{ articleErrorTitle }}</h1>
+      <p class="mt-3 text-copy-secondary text-sm">{{ articleErrorDescription }}</p>
+      <div class="mt-8 flex justify-center gap-3">
+        <BaseButton
           v-if="!isNotFoundError"
-          type="button"
-          class="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-6 py-3 text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          variant="secondary"
+          size="md"
           @click="refresh()"
         >
-          <Icon name="heroicons:arrow-path" class="h-4 w-4" />
+          <Icon name="lucide:refresh-cw" class="mr-2 h-4 w-4" />
           {{ $t('blog.retryLoad') }}
-        </button>
-        <NuxtLink to="/articles" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 dark:bg-white dark:text-slate-950">
-          <Icon name="heroicons:arrow-left" class="h-4 w-4" />
-          {{ $t('blog.backToList') }}
+        </BaseButton>
+        <NuxtLink to="/articles">
+          <BaseButton variant="primary" size="md">
+            <Icon name="lucide:arrow-left" class="mr-2 h-4 w-4" />
+            {{ $t('blog.backToList') }}
+          </BaseButton>
         </NuxtLink>
       </div>
     </div>
 
+    <!-- Article -->
     <article v-else-if="post" class="relative">
-      <!-- Article Hero -->
-      <header class="relative px-4 pt-16 sm:pt-24 lg:pt-32">
-        <div class="mx-auto max-w-4xl text-center">
-          <NuxtLink
-            to="/articles"
-            class="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
-          >
-            <Icon name="heroicons:arrow-left" class="h-3 w-3" />
-            {{ $t('blog.pageTitle') }}
-          </NuxtLink>
+      <!-- Article Header -->
+      <header class="max-w-[800px] mx-auto px-4 pt-16 text-center">
+        <NuxtLink
+          to="/articles"
+          class="mb-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-copy-muted hover:text-accent transition-colors"
+        >
+          <Icon name="lucide:arrow-left" class="h-3 w-3" />
+          {{ $t('blog.pageTitle') }}
+        </NuxtLink>
 
-          <div class="mb-6 flex justify-center">
-            <span class="inline-flex items-center rounded-full border border-sky-100 bg-sky-50 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
-              {{ $t(`blog.categories.${categoryKey}`) || post.category }}
-            </span>
-          </div>
-
-          <h1 class="text-4xl font-extrabold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl lg:leading-[1.1]">
-            {{ post.title }}
-          </h1>
-
-          <p v-if="post.excerpt" class="mx-auto mt-8 max-w-2xl text-xl leading-relaxed text-slate-600 dark:text-slate-400">
-            {{ post.excerpt }}
-          </p>
-
-          <div class="mt-10 flex flex-wrap items-center justify-center gap-6 border-y border-slate-100 py-8 dark:border-slate-800/50">
-            <div class="flex items-center gap-3">
-              <div class="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
-                <Icon name="heroicons:user" class="h-6 w-6 text-slate-400 dark:text-slate-500" />
-              </div>
-              <div class="text-left">
-                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.author') }}</p>
-                <p class="text-sm font-bold text-slate-900 dark:text-white">{{ articleAuthorLabel }}</p>
-              </div>
-            </div>
-
-            <div class="hidden h-8 w-px bg-slate-100 dark:bg-slate-800 sm:block" />
-
-            <div class="text-left">
-              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.publishedDate') }}</p>
-              <p class="text-sm font-bold text-slate-900 dark:text-white">{{ publishedDateLabel }}</p>
-            </div>
-
-            <div class="hidden h-8 w-px bg-slate-100 dark:bg-slate-800 sm:block" />
-
-            <div class="text-left">
-              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.readingTimeLabel') || $t('blog.readingTime', { min: '' }).replace(':min', '').trim() }}</p>
-              <p class="text-sm font-bold text-slate-900 dark:text-white">{{ readingTime }} {{ $t('blog.minute') }}</p>
-            </div>
-          </div>
+        <div class="mb-6 flex justify-center">
+          <BaseBadge variant="info">
+            {{ $t(`blog.categories.${categoryKey}`) || post.category }}
+          </BaseBadge>
         </div>
 
-        <div v-if="post.coverImage" class="mx-auto mt-16 max-w-6xl px-4 lg:px-8">
-          <div class="relative aspect-[21/9] overflow-hidden rounded-[2.5rem] shadow-2xl shadow-slate-200 dark:shadow-none">
-            <NuxtImg
-              :src="post.coverImage"
-              :alt="post.title"
-              width="1600"
-              height="800"
-              class="h-full w-full object-cover"
-              loading="eager"
-            />
+        <h1 class="text-3xl font-semibold tracking-tight text-copy sm:text-4xl">
+          {{ post.title }}
+        </h1>
+
+        <p v-if="post.excerpt" class="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-copy-secondary">
+          {{ post.excerpt }}
+        </p>
+
+        <!-- Article Meta -->
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-6 border-y border-line py-6">
+          <div class="flex items-center gap-2">
+            <Icon name="lucide:user" class="h-4 w-4 text-copy-muted" />
+            <div class="text-left">
+              <p class="text-[10px] font-semibold uppercase tracking-widest text-copy-muted">{{ $t('blog.author') }}</p>
+              <p class="text-sm font-medium text-copy">{{ articleAuthorLabel }}</p>
+            </div>
+          </div>
+
+          <span class="hidden h-6 w-px bg-line sm:block" />
+
+          <div class="flex items-center gap-2">
+            <Icon name="lucide:calendar" class="h-4 w-4 text-copy-muted" />
+            <div class="text-left">
+              <p class="text-[10px] font-semibold uppercase tracking-widest text-copy-muted">{{ $t('blog.publishedDate') }}</p>
+              <p class="text-sm font-medium text-copy">{{ publishedDateLabel }}</p>
+            </div>
+          </div>
+
+          <span class="hidden h-6 w-px bg-line sm:block" />
+
+          <div class="flex items-center gap-2">
+            <Icon name="lucide:clock" class="h-4 w-4 text-copy-muted" />
+            <div class="text-left">
+              <p class="text-[10px] font-semibold uppercase tracking-widest text-copy-muted">{{ $t('blog.readingTimeLabel') || 'Read' }}</p>
+              <p class="text-sm font-medium text-copy">{{ readingTime }} {{ $t('blog.minute') }}</p>
+            </div>
           </div>
         </div>
       </header>
+
+      <!-- Cover Image -->
+      <div v-if="post.coverImage" class="max-w-[960px] mx-auto mt-12 px-4">
+        <div class="relative overflow-hidden">
+          <NuxtImg
+            :src="post.coverImage"
+            :alt="post.title"
+            width="1600"
+            height="800"
+            class="h-full w-full object-cover"
+            loading="eager"
+          />
+        </div>
+      </div>
 
       <!-- Admin Actions -->
       <div v-if="isAdmin" class="fixed bottom-8 left-8 z-40 hidden flex-col gap-3 lg:flex">
         <NuxtLink
           :to="`/admin/blog/${post.id}/edit`"
-          class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-xl ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:bg-sky-600 hover:text-white dark:bg-slate-900 dark:ring-slate-800"
+          class="flex h-10 w-10 items-center justify-center bg-surface border border-line text-copy-secondary hover:text-accent hover:border-accent transition-all"
         >
-          <Icon name="heroicons:pencil" class="h-6 w-6" />
+          <Icon name="lucide:pencil" class="h-4 w-4" />
         </NuxtLink>
         <button
+          type="button"
           @click="handleDelete"
-          class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-red-600 shadow-xl ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:bg-red-600 hover:text-white dark:bg-slate-900 dark:ring-slate-800"
+          class="flex h-10 w-10 items-center justify-center bg-surface border border-line text-copy-secondary hover:text-semantic-error hover:border-semantic-error transition-all"
         >
-          <Icon name="heroicons:trash" class="h-6 w-6" />
+          <Icon name="lucide:trash-2" class="h-4 w-4" />
         </button>
       </div>
 
       <!-- Article Body -->
-      <div class="mx-auto mt-16 max-w-3xl px-6 lg:mt-24 lg:px-0">
+      <div class="mx-auto mt-12 max-w-[720px] px-4 lg:px-0">
         <div
-          class="prose prose-lg prose-slate dark:prose-invert max-w-none
-          prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-950 dark:prose-headings:text-white
-          prose-h2:text-3xl prose-h2:mt-16 prose-h2:mb-8
-          prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6
-          prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-p:leading-relaxed prose-p:mb-8
-          prose-a:text-sky-600 dark:prose-a:text-sky-400 prose-a:font-bold prose-a:no-underline hover:prose-a:underline
-          prose-blockquote:border-l-4 prose-blockquote:border-sky-500 prose-blockquote:bg-sky-50/50 dark:prose-blockquote:bg-sky-500/5 prose-blockquote:py-4 prose-blockquote:px-8 prose-blockquote:rounded-r-2xl prose-blockquote:italic
-          prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-[''] prose-code:after:content-[''] prose-code:font-semibold
-          prose-img:rounded-3xl prose-img:shadow-lg
-          prose-hr:border-slate-100 dark:prose-hr:border-slate-800"
+          class="prose prose-base prose-slate dark:prose-invert max-w-none
+          prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-copy
+          prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6
+          prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
+          prose-p:text-copy-secondary prose-p:leading-relaxed prose-p:mb-6
+          prose-a:text-accent prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+          prose-blockquote:border-l-2 prose-blockquote:border-accent prose-blockquote:bg-surface-alt prose-blockquote:py-3 prose-blockquote:px-6 prose-blockquote:not-italic
+          prose-code:bg-surface-alt prose-code:px-1.5 prose-code:py-0.5 prose-code:text-copy prose-code:before:content-[''] prose-code:after:content-[''] prose-code:font-medium
+          prose-img:border prose-img:border-line
+          prose-hr:border-line"
         >
           <div v-if="isHtmlContent" v-html="sanitizedContent" />
           <MDC v-else :value="post.content" />
         </div>
 
         <!-- Tags -->
-        <div v-if="parsedTags.length > 0" class="mt-16 flex flex-wrap gap-2 border-t border-slate-100 pt-10 dark:border-slate-800">
+        <div v-if="parsedTags.length > 0" class="mt-12 flex flex-wrap gap-2 border-t border-line pt-8">
           <span
             v-for="tag in parsedTags"
             :key="tag"
-            class="inline-flex items-center rounded-xl bg-slate-50 px-4 py-2 text-sm font-bold text-slate-600 dark:bg-slate-900 dark:text-slate-400"
+            class="text-[10px] text-copy-muted font-medium uppercase"
           >
             #{{ tag }}
           </span>
         </div>
 
-        <!-- Share & Footer -->
-        <footer class="mt-20 rounded-[2.5rem] bg-slate-900 p-10 text-white dark:bg-slate-800/50">
-          <div class="flex flex-col gap-10 sm:flex-row sm:items-center sm:justify-between">
+        <!-- Share Footer -->
+        <footer class="mt-16 p-8 bg-surface-alt border border-line">
+          <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 class="text-2xl font-bold">{{ $t('blog.likeThisPost') }}</h3>
-              <p class="mt-2 text-slate-400">{{ $t('blog.shareWithOthers') }}</p>
+              <h3 class="text-lg font-semibold text-copy">{{ $t('blog.likeThisPost') }}</h3>
+              <p class="mt-1 text-sm text-copy-secondary">{{ $t('blog.shareWithOthers') }}</p>
             </div>
-            <div class="flex flex-wrap items-center gap-4">
-              <button
-                @click="copyLink"
-                class="flex h-14 items-center gap-3 rounded-2xl bg-white/10 px-8 text-sm font-bold transition-all hover:bg-white hover:text-slate-950"
-              >
-                <Icon :name="copied ? 'heroicons:check-circle' : 'heroicons:link'" class="h-5 w-5" />
-                {{ copied ? $t('common.copied') : $t('blog.copyLink') }}
-              </button>
-            </div>
+            <BaseButton variant="secondary" size="md" @click="copyLink">
+              <Icon :name="copied ? 'lucide:check' : 'lucide:link'" class="mr-2 h-4 w-4" />
+              {{ copied ? $t('common.copied') : $t('blog.copyLink') }}
+            </BaseButton>
           </div>
         </footer>
 
-        <div class="mt-16 flex justify-center">
-          <NuxtLink to="/articles" class="group flex items-center gap-3 text-sm font-bold text-slate-500 transition-colors hover:text-slate-950 dark:hover:text-white">
-            <Icon name="heroicons:arrow-left" class="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-            {{ $t('blog.backToList') }}
+        <div class="mt-12 flex justify-start">
+          <NuxtLink to="/articles">
+            <BaseButton variant="ghost" size="md">
+              <Icon name="lucide:arrow-left" class="mr-2 h-4 w-4" />
+              {{ $t('blog.backToList') }}
+            </BaseButton>
           </NuxtLink>
         </div>
       </div>
@@ -354,50 +351,3 @@ const handleDelete = async () => {
   }
 }
 </script>
-
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-.fintech-article-detail {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #fcfcfd;
-}
-
-:global(.dark .fintech-article-detail) {
-  background-color: #020617;
-}
-
-.bg-grid {
-  background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0);
-  background-size: 48px 48px;
-  color: rgb(15 23 42 / 0.1);
-}
-
-:global(.dark .bg-grid) {
-  color: rgb(255 255 255 / 0.05);
-}
-
-.orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(100px);
-  pointer-events: none;
-  opacity: 0.4;
-}
-
-.orb-cyan {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%);
-  top: -100px;
-  right: -50px;
-}
-
-.orb-amber {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
-  bottom: 20%;
-  left: -100px;
-}
-</style>

@@ -1,226 +1,107 @@
 <template>
-  <div class="login-shell mx-auto w-full max-w-5xl self-start overflow-hidden rounded-[28px] border shadow-2xl backdrop-blur md:grid md:grid-cols-2">
-    <section class="login-aside hidden p-8 md:flex md:flex-col md:justify-between lg:p-10">
-      <div class="space-y-6">
-        <p class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.16em] uppercase">
-          {{ $t('common.appName') }}
-        </p>
-        <h1 class="text-3xl font-semibold leading-tight lg:text-4xl">
-          {{ $t('auth.loginTitle') }}
+  <div class="min-h-[80vh] flex flex-col justify-center items-center px-6">
+    <div class="w-full max-w-[400px] space-y-8">
+      <header class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-accent mb-4">
+          <Icon name="lucide:lock" class="text-copy-inverse h-6 w-6" />
+        </div>
+        <h1 class="text-3xl font-semibold tracking-tight text-copy">
+          {{ $t('auth.loginTitle', '歡迎回來') }}
         </h1>
-        <p class="text-sm leading-7 text-amber-50/90">
-          {{ $t('home.hero.subtitle') }}
+        <p class="text-copy-secondary text-sm">
+          {{ $t('auth.loginSubtitle', '請登入以繼續管理您的投資日記') }}
         </p>
-      </div>
-      <div class="aside-note space-y-4 text-sm">
-        <div class="aside-row">
-          <span>Desk</span>
-          <strong>Journal first</strong>
-        </div>
-        <div class="aside-row">
-          <span>Focus</span>
-          <strong>{{ $t('home.features.diary.title') }}</strong>
-        </div>
-        <div class="aside-row">
-          <span>Loop</span>
-          <strong>{{ $t('home.features.alerts.title') }}</strong>
-        </div>
-        <p class="text-sm leading-7 text-stone-300">
-          寫下理由、回看決策、修正節奏。登入不是進入一個後台，是回到你自己的交易工作桌。
-        </p>
-      </div>
-    </section>
+      </header>
 
-    <section class="login-form-panel p-6 sm:p-8 lg:p-10">
-      <div class="mb-8 space-y-2">
-        <p class="text-sm font-semibold tracking-[0.14em] uppercase text-[color:var(--color-secondary)]">{{ $t('common.appName') }}</p>
-        <h2 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">{{ $t('auth.loginTitle') }}</h2>
-        <p class="text-sm leading-7 text-slate-600 dark:text-slate-300">
-          {{ $t('auth.orCreateAccount') }}
-          <NuxtLink
-            to="/auth/register"
-            class="cursor-pointer font-semibold text-[color:var(--color-secondary)] transition-colors duration-200 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-secondary)]"
-          >
-            {{ $t('auth.createAccount') }}
-          </NuxtLink>
-        </p>
-      </div>
-
-      <form class="space-y-5" @submit.prevent="handleLogin" @keydown.enter.prevent="handleLogin" onsubmit="return false" novalidate>
-        <fieldset :disabled="!isHydrated || isLoading" :aria-busy="!isHydrated || isLoading" class="space-y-5">
-          <div>
-            <label for="email" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-              {{ $t('auth.email') }}
-            </label>
-            <div class="relative">
-              <Icon name="heroicons:envelope" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-              <input
-                id="email"
-                v-model="form.email"
-                type="email"
-                required
-                autocomplete="email"
-                class="login-input block w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none transition-colors duration-200"
-                :class="emailError ? 'border-red-500 dark:border-red-500' : ''"
-                :placeholder="$t('auth.emailPlaceholder')"
-                @blur="validateEmail"
-              />
+      <BaseCard class="!p-8">
+        <form @submit.prevent="handleLogin" class="space-y-6">
+          <BaseInput
+            v-model="email"
+            type="email"
+            :label="$t('auth.email')"
+            id="email"
+            placeholder="name@example.com"
+            required
+            autocomplete="email"
+          />
+          
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label for="password" class="text-sm font-medium text-copy-secondary">
+                {{ $t('auth.password') }}
+              </label>
             </div>
-            <p v-if="emailError" class="mt-1 text-xs text-red-600 dark:text-red-400">
-              {{ emailError }}
-            </p>
+            <BaseInput
+              v-model="password"
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            />
           </div>
 
-          <div>
-            <label for="password" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-              {{ $t('auth.password') }}
-            </label>
-            <div class="relative">
-              <Icon name="heroicons:lock-closed" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-              <input
-                id="password"
-                v-model="form.password"
-                type="password"
-                required
-                autocomplete="current-password"
-                class="login-input block w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none transition-colors duration-200"
-                :placeholder="$t('auth.passwordPlaceholder')"
-              />
-            </div>
-          </div>
+          <BaseAlert v-if="error" variant="error">
+            {{ error }}
+          </BaseAlert>
 
-          <button
-            type="button"
-            :disabled="!isHydrated || isLoading"
-            @click="handleLogin"
-            class="login-submit mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          <BaseButton
+            type="submit"
+            variant="primary"
+            class="w-full"
+            :loading="loading"
           >
-            <svg v-if="isLoading || !isHydrated" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-            <span>{{ !isHydrated ? $t('common.loading') : isLoading ? $t('auth.loggingIn') : $t('auth.login') }}</span>
-          </button>
-        </fieldset>
+            {{ $t('auth.login') }}
+          </BaseButton>
+        </form>
 
-        <p v-if="!isHydrated" class="text-xs font-medium text-slate-500 dark:text-slate-400">
-          正在準備登入表單，載入完成後即可提交。
-        </p>
-      </form>
-    </section>
+        <div class="mt-8 pt-8 border-t border-line text-center">
+          <p class="text-sm text-copy-secondary">
+            {{ $t('auth.noAccount') }}
+            <NuxtLink to="/auth/register" class="text-accent font-semibold hover:underline">
+              {{ $t('auth.registerNow') }}
+            </NuxtLink>
+          </p>
+        </div>
+      </BaseCard>
+
+      <footer class="text-center">
+        <NuxtLink to="/" class="text-xs text-copy-muted hover:text-copy transition-colors uppercase tracking-widest font-semibold">
+          ← {{ $t('auth.backToHome') }}
+        </NuxtLink>
+      </footer>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({
-  requiresAuth: false,
-  layout: 'auth'
+  layout: 'auth',
+  middleware: 'auth'
 })
 
-const { login, isLoading } = useAuth()
-
-const form = ref({
-  email: '',
-  password: ''
-})
-
-const isHydrated = ref(false)
-const emailError = ref('')
-
-onMounted(() => {
-  isHydrated.value = true
-})
-
-const validateEmail = () => {
-  if (!form.value.email) {
-    emailError.value = ''
-    return
-  }
-
-  const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
-  emailError.value = emailRegex.test(form.value.email) ? '' : '請輸入有效的電子郵件地址'
-}
+const { login } = useAuth()
+const email = ref('')
+const password = ref('')
+const loading = ref(false)
+const error = ref('')
 
 const handleLogin = async () => {
-  validateEmail()
-  if (emailError.value) return
-
-  await login(form.value.email, form.value.password)
+  if (loading.value) return
+  loading.value = true
+  error.value = ''
+  
+  try {
+    const success = await login(email.value, password.value)
+    if (success) {
+      navigateTo('/diaries')
+    } else {
+      error.value = '登入失敗，請檢查您的帳號密碼。'
+    }
+  } catch (e: any) {
+    error.value = e.message || '發生錯誤，請稍後再試。'
+  } finally {
+    loading.value = false
+  }
 }
 </script>
-
-<style scoped>
-.login-shell {
-  border-color: var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
-  box-shadow: var(--shadow-lg);
-}
-
-.login-aside {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 20%, transparent), transparent 32%),
-    linear-gradient(160deg, #11263a, #1c3145 52%, #233948);
-  color: #f3eee6;
-}
-
-.login-aside > div:first-child p {
-  border-color: color-mix(in srgb, white 22%, transparent);
-  color: color-mix(in srgb, white 84%, var(--color-secondary));
-}
-
-.login-aside h1 {
-  color: #fff7ee;
-}
-
-.aside-note {
-  border: 1px solid rgba(243, 238, 230, 0.14);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.06);
-  padding: 1.1rem 1.2rem;
-}
-
-.aside-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(243, 238, 230, 0.1);
-  font-family: var(--font-data);
-}
-
-.aside-row:last-of-type {
-  margin-bottom: 0.8rem;
-}
-
-.login-form-panel {
-  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
-}
-
-.login-form-panel h2 {
-  font-family: var(--font-display);
-}
-
-.login-input {
-  border-color: var(--color-border);
-  background: color-mix(in srgb, var(--color-surface-strong) 66%, transparent);
-  color: var(--color-text);
-}
-
-.login-input::placeholder {
-  color: var(--color-text-soft);
-}
-
-.login-input:focus {
-  border-color: var(--color-secondary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 18%, transparent);
-}
-
-.login-submit {
-  background: var(--color-primary);
-  box-shadow: 0 16px 28px color-mix(in srgb, var(--color-primary) 28%, transparent);
-}
-
-.login-submit:hover {
-  background: var(--color-primary-active);
-}
-</style>

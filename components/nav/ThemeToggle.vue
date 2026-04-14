@@ -1,24 +1,31 @@
 <script setup lang="ts">
 const colorMode = useColorMode()
 const isMounted = ref(false)
-const route = useRoute()
-const isHomeRoute = computed(() => route.path === '/')
 
 onMounted(() => {
   isMounted.value = true
 })
 
 const themeToggleIcon = computed(() => {
-  if (!isMounted.value) return 'heroicons:moon'
-  return colorMode.value === 'dark' ? 'heroicons:sun' : 'heroicons:moon'
+  if (!isMounted.value) return 'lucide:moon'
+  return colorMode.value === 'dark' ? 'lucide:sun' : 'lucide:moon'
 })
+
+const toggleTheme = () => {
+  // Add transition class for smooth dark mode switch
+  document.documentElement.classList.add('transition-colors')
+  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
+  // Remove after transition completes
+  setTimeout(() => {
+    document.documentElement.classList.remove('transition-colors')
+  }, 300)
+}
 </script>
 
 <template>
   <button
-    @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
-    class="cursor-pointer rounded-xl p-2 text-slate-500 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
-    :class="isHomeRoute ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200' : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:text-cyan-200'"
+    @click="toggleTheme"
+    class="cursor-pointer p-2 text-copy-muted hover:text-accent transition-colors duration-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
     :aria-label="$t('theme.toggleDarkMode')"
   >
     <Icon

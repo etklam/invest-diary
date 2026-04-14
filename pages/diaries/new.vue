@@ -1,137 +1,126 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-        {{ isEditing ? '編輯日記' : '新增日記' }}
-      </h1>
-      <div v-if="isEditing" class="text-sm text-gray-500 dark:text-gray-400">
-        已載入該日期的既有日記
+  <div class="max-w-[800px] mx-auto pb-24">
+    <!-- Header -->
+    <header class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <h1 class="text-2xl font-semibold tracking-tight text-copy">
+          {{ isEditing ? '編輯日記' : '新增日記' }}
+        </h1>
+        <p v-if="isEditing" class="text-sm text-copy-muted">已載入該日期的既有日記</p>
       </div>
-    </div>
+    </header>
 
     <form @submit.prevent="saveDiary" class="space-y-8">
-      <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
+      <!-- Date Picker -->
+      <BaseCard>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label for="diary-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              日期
-              <Icon v-if="checkingDate" name="svg-spinners:180-ring-with-bg" class="inline-block ml-2 h-4 w-4" />
-            </label>
-            <input
-              type="date"
-              id="diary-date"
-              v-model="form.date"
-              :disabled="checkingDate"
-              class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white disabled:opacity-50"
-            />
+          <BaseInput
+            v-model="form.date"
+            type="date"
+            label="日期"
+            id="diary-date"
+            :disabled="checkingDate"
+          />
+          <div v-if="checkingDate" class="flex items-end pb-2">
+            <BaseSkeleton variant="text" width="120px" />
           </div>
         </div>
-      </div>
+      </BaseCard>
 
+      <!-- Diary Editor -->
       <DiaryEditor
         v-model:title="form.title"
         v-model:content="form.content"
       />
 
+      <!-- Transactions -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">交易記錄</h3>
-          <button
-            type="button"
+          <h3 class="text-lg font-medium text-copy">交易記錄</h3>
+          <BaseButton
+            variant="secondary"
+            size="sm"
             @click="copyFromLatest"
             :disabled="loadingLatest"
-            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            :loading="loadingLatest"
           >
-            <Icon v-if="loadingLatest" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4" />
-            <Icon v-else name="heroicons:document-duplicate" class="mr-2 h-4 w-4" />
+            <Icon v-if="!loadingLatest" name="lucide:copy" class="mr-2 h-4 w-4" />
             複製上筆交易
-          </button>
+          </BaseButton>
         </div>
         <TransactionInput v-model="form.transactions" />
       </div>
 
-      <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
+      <!-- Alerts -->
+      <BaseCard>
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">提醒設定</h3>
-          <button
-            type="button"
-            @click="addAlert"
-            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <Icon name="heroicons:plus" class="mr-2 h-4 w-4" />
+          <h3 class="text-lg font-medium text-copy">提醒設定</h3>
+          <BaseButton variant="primary" size="sm" @click="addAlert">
+            <Icon name="lucide:plus" class="mr-2 h-4 w-4" />
             新增提醒
-          </button>
+          </BaseButton>
         </div>
 
-        <div v-if="form.alerts.length === 0" class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
-          尚無提醒
+        <div v-if="form.alerts.length === 0" class="text-center py-6">
+          <p class="text-sm text-copy-muted">尚無提醒</p>
         </div>
 
         <div v-else class="space-y-4">
-          <div v-for="(alert, index) in form.alerts" :key="index" class="flex items-start space-x-4 bg-gray-50 dark:bg-gray-700 p-3 rounded-md relative">
+          <div v-for="(alert, index) in form.alerts" :key="index" class="relative bg-surface-alt border border-line p-4">
             <button
               type="button"
               @click="removeAlert(index)"
-              class="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+              class="absolute top-3 right-3 text-copy-muted hover:text-semantic-error transition-colors"
             >
-              <Icon name="heroicons:x-mark" class="h-5 w-5" />
+              <Icon name="lucide:x" class="h-4 w-4" />
             </button>
             
-            <div class="flex-grow grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div>
-                <label :for="`alert-msg-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">訊息</label>
-                <input
-                  type="text"
-                  :id="`alert-msg-${index}`"
-                  v-model="alert.message"
-                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                  placeholder="提醒內容"
-                />
-              </div>
-              <div>
-                <label :for="`alert-time-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">提醒日期</label>
-                <input
-                  type="date"
-                  :id="`alert-time-${index}`"
-                  v-model="alert.trigger_at"
-                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                />
-              </div>
-              <div>
-                <label :for="`alert-recurring-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">持續提醒</label>
-                <select
-                  :id="`alert-recurring-${index}`"
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 pr-8">
+              <BaseInput
+                v-model="alert.message"
+                :id="`alert-msg-${index}`"
+                label="訊息"
+                placeholder="提醒內容"
+              />
+              <BaseInput
+                v-model="alert.trigger_at"
+                type="date"
+                :id="`alert-time-${index}`"
+                label="提醒日期"
+              />
+              <div class="flex flex-col gap-1.5">
+                <BaseSelect
                   v-model="alert.recurring_mode"
-                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                >
-                  <option value="">不重複</option>
-                  <option value="WEEK">本周（到週五）</option>
-                  <option value="MONTH">本月（到月底）</option>
-                </select>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  :id="`alert-recurring-${index}`"
+                  label="持續提醒"
+                  :options="[
+                    { label: '不重複', value: '' },
+                    { label: '本周（到週五）', value: 'WEEK' },
+                    { label: '本月（到月底）', value: 'MONTH' }
+                  ]"
+                />
+                <p class="text-xs text-copy-muted">
                   {{ getRecurringDescription(alert.recurring_mode) }}
                 </p>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </BaseCard>
 
-      <div class="flex justify-end space-x-3">
-        <NuxtLink
-          to="/diaries"
-          class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
-        >
-          取消
+      <!-- Actions -->
+      <div class="flex justify-end gap-3">
+        <NuxtLink to="/diaries">
+          <BaseButton variant="secondary">取消</BaseButton>
         </NuxtLink>
-        <button
+        <BaseButton
+          variant="primary"
           type="submit"
           :disabled="saving"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+          :loading="saving"
         >
-          <Icon v-if="saving" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4" />
           {{ isEditing ? '更新日記' : '儲存日記' }}
-        </button>
+        </BaseButton>
       </div>
     </form>
   </div>

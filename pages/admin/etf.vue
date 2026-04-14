@@ -189,192 +189,174 @@ definePageMeta({
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 class="text-3xl font-semibold text-copy">
           {{ t('tools.etf.admin.title') }}
         </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">
+        <p class="text-copy-muted mt-1">
           {{ t('tools.etf.admin.subtitle') }}
         </p>
       </div>
       <div class="flex gap-2">
-        <button
+        <BaseButton
+          variant="secondary"
           @click="seedCommonEtfs"
           :disabled="seeding"
-          class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
+          :loading="seeding"
         >
           {{ seeding ? t('common.loading') : t('tools.etf.admin.seed') }}
-        </button>
-        <button
+        </BaseButton>
+        <BaseButton
           @click="showAddForm = !showAddForm"
-          class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition"
         >
           {{ showAddForm ? t('common.cancel') : t('tools.etf.admin.addEtf') }}
-        </button>
+        </BaseButton>
       </div>
     </div>
 
     <!-- Add ETF Form -->
-    <div
-      v-if="showAddForm"
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6"
-    >
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+    <BaseCard v-if="showAddForm" class="mb-6 p-6">
+      <h2 class="text-lg font-semibold text-copy mb-4">
         {{ t('tools.etf.admin.addNewEtf') }}
       </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {{ t('tools.etf.symbol') }}
-            <span class="text-red-500">*</span>
-          </label>
-          <input
-            v-model="newSymbol"
-            type="text"
-            :placeholder="t('tools.etf.admin.symbolPlaceholder')"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            :disabled="adding"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {{ t('tools.etf.name') }}
-          </label>
-          <input
-            v-model="newName"
-            type="text"
-            :placeholder="t('tools.etf.admin.namePlaceholder')"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            :disabled="adding"
-          />
-        </div>
+        <BaseInput
+          v-model="newSymbol"
+          :label="t('tools.etf.symbol')"
+          :placeholder="t('tools.etf.admin.symbolPlaceholder')"
+          :disabled="adding"
+          required
+        />
+        <BaseInput
+          v-model="newName"
+          :label="t('tools.etf.name')"
+          :placeholder="t('tools.etf.admin.namePlaceholder')"
+          :disabled="adding"
+        />
       </div>
 
       <!-- Skip Validation Option -->
       <div class="mt-4">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input
-            v-model="skipValidation"
-            type="checkbox"
-            :disabled="adding"
-            class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-          />
-          <span class="text-sm text-gray-700 dark:text-gray-300">
-            {{ t('tools.etf.admin.skipValidation') }}
-          </span>
-        </label>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
+        <BaseCheckbox
+          v-model="skipValidation"
+          :disabled="adding"
+        >
+          {{ t('tools.etf.admin.skipValidation') }}
+        </BaseCheckbox>
+        <p class="mt-1 text-xs text-copy-muted ml-6">
           {{ t('tools.etf.admin.skipValidationHint') }}
         </p>
       </div>
 
       <div class="mt-4 flex gap-2">
-        <button
+        <BaseButton
           @click="addEtf"
           :disabled="adding || !newSymbol.trim()"
-          class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
+          :loading="adding"
         >
           {{ adding ? t('common.loading') : t('tools.etf.admin.addEtf') }}
-        </button>
-        <button
+        </BaseButton>
+        <BaseButton
+          variant="secondary"
           @click="showAddForm = false; newSymbol = ''; newName = ''; skipValidation = false"
-          class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition"
         >
           {{ t('common.cancel') }}
-        </button>
+        </BaseButton>
       </div>
-      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+      <p class="mt-2 text-sm text-copy-muted">
         {{ t('tools.etf.admin.addHint') }}
       </p>
-    </div>
+    </BaseCard>
 
     <!-- ETF List -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-      <div v-if="loading" class="p-8 text-center text-gray-600 dark:text-gray-400">
+    <BaseCard class="overflow-hidden">
+      <div v-if="loading" class="p-8 text-center text-copy-muted">
         {{ t('common.loading') }}
       </div>
 
-      <div v-else-if="etfs.length === 0" class="p-8 text-center text-gray-600 dark:text-gray-400">
+      <div v-else-if="etfs.length === 0" class="p-8 text-center text-copy-muted">
         {{ t('tools.etf.admin.noEtfs') }}
       </div>
 
       <div v-else class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-gray-50 dark:bg-gray-700">
+          <thead class="bg-surface-alt">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-copy-muted uppercase">
                 {{ t('tools.etf.symbol') }}
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-copy-muted uppercase">
                 {{ t('tools.etf.name') }}
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-copy-muted uppercase">
                 {{ t('tools.etf.admin.priceCount') }}
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-copy-muted uppercase">
                 {{ t('tools.etf.admin.alertCount') }}
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-copy-muted uppercase">
                 {{ t('tools.etf.admin.createdAt') }}
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-copy-muted uppercase">
                 {{ t('tools.etf.fields.actions') }}
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody class="divide-y divide-line">
             <tr
               v-for="etf in etfs"
               :key="etf.id"
-              class="hover:bg-gray-50 dark:hover:bg-gray-700"
+              class="hover:bg-surface-alt transition-colors duration-fast"
             >
-              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
+              <td class="px-4 py-3 font-medium text-copy">
                 {{ etf.symbol }}
               </td>
-              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-copy-secondary">
                 {{ etf.name || '-' }}
               </td>
-              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-copy-secondary font-mono tabular-nums">
                 {{ etf.priceCount }}
               </td>
-              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-copy-secondary font-mono tabular-nums">
                 {{ etf.alertCount }}
               </td>
-              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-copy-secondary">
                 {{ new Date(etf.createdAt).toLocaleDateString() }}
               </td>
               <td class="px-4 py-3">
                 <div class="flex gap-2">
-                  <button
+                  <BaseButton
+                    size="sm"
                     @click="initializeHistoricalData(etf.id, etf.symbol)"
                     :disabled="initializing === etf.id"
-                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded text-sm transition"
+                    :loading="initializing === etf.id"
                   >
                     {{ initializing === etf.id ? t('common.loading') : t('tools.etf.admin.initialize') }}
-                  </button>
-                  <button
+                  </BaseButton>
+                  <BaseButton
+                    size="sm"
+                    variant="danger"
                     @click="deleteEtf(etf.id, etf.symbol)"
-                    class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition"
                   >
                     {{ t('common.delete') }}
-                  </button>
+                  </BaseButton>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </BaseCard>
 
     <!-- Info Box -->
-    <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
+    <BaseAlert variant="info" class="mt-6">
+      <h3 class="text-sm font-semibold mb-2">
         {{ t('tools.etf.admin.infoTitle') }}
       </h3>
-      <ul class="text-sm text-blue-800 dark:text-blue-400 space-y-1">
+      <ul class="text-sm space-y-1">
         <li>• {{ t('tools.etf.admin.infoPoint1') }}</li>
         <li>• {{ t('tools.etf.admin.infoPoint2') }}</li>
         <li>• {{ t('tools.etf.admin.infoPoint3') }}</li>
       </ul>
-    </div>
+    </BaseAlert>
   </div>
 </template>

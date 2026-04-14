@@ -1,40 +1,65 @@
 <script setup lang="ts">
-import DesktopNav from './nav/DesktopNav.vue'
-import MobileNav from './nav/MobileNav.vue'
+const { mainNavItems, toolNavItems, isActive } = useNavigation()
+const { isAuthenticated } = useAuth()
+const runtimeConfig = useRuntimeConfig()
+const publicConfig = runtimeConfig.public
 
-const { t } = useI18n()
-const route = useRoute()
-const isHomeRoute = computed(() => route.path === '/')
-
-// Mobile menu state
-const mobileNavOpen = ref(false)
+const featuredTools = computed(() => toolNavItems.value.slice(0, 3))
 </script>
 
 <template>
-  <nav class="sticky z-40 px-3 sm:px-4 lg:px-6" :class="isHomeRoute ? 'top-3' : 'top-4'">
-    <DesktopNav>
-      <template #mobile-trigger>
-        <div class="ml-auto flex xl:hidden">
-          <button
-            @click="mobileNavOpen = !mobileNavOpen"
-            class="flex cursor-pointer items-center rounded-xl border bg-white/80 p-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
-            :class="isHomeRoute
-              ? 'border-sky-100 text-sky-700 hover:bg-sky-50 dark:text-sky-200'
-              : 'border-cyan-100 text-cyan-700 hover:bg-cyan-50 dark:text-cyan-200'"
-            :aria-label="mobileNavOpen ? t('theme.closeMenu') : t('theme.openMenu')"
-          >
-            <Icon
-              :name="mobileNavOpen ? 'heroicons:x-mark' : 'heroicons:bars-3'"
-              class="block h-6 w-6"
-            />
-          </button>
-        </div>
-      </template>
-    </DesktopNav>
+  <div class="flex items-center gap-12 w-full">
+    <!-- Logo/Home -->
+    <NuxtLink to="/" class="flex items-center gap-2 group">
+      <div class="w-8 h-8 bg-accent flex items-center justify-center transition-transform duration-standard group-hover:scale-105">
+        <Icon name="lucide:book-open" class="text-copy-inverse h-5 w-5" />
+      </div>
+      <span class="text-lg font-bold tracking-tight text-copy">{{ publicConfig.appName }}</span>
+    </NuxtLink>
 
-    <MobileNav
-      :is-open="mobileNavOpen"
-      @close="mobileNavOpen = false"
-    />
-  </nav>
+    <!-- Main Navigation Items -->
+    <nav class="flex items-center gap-1 h-full">
+      <NuxtLink
+        v-for="item in mainNavItems"
+        :key="item.to"
+        :to="item.to"
+        class="px-4 h-full flex items-center text-sm font-medium transition-colors duration-fast border-b-2"
+        :class="[
+          isActive(item.to) 
+            ? 'text-accent border-accent' 
+            : 'text-copy-secondary border-transparent hover:text-copy hover:border-line-hover'
+        ]"
+      >
+        {{ item.label }}
+      </NuxtLink>
+
+      <!-- Featured Tools -->
+      <NuxtLink
+        v-for="item in featuredTools"
+        :key="item.to"
+        :to="item.to"
+        class="px-4 h-full flex items-center text-sm font-medium transition-colors duration-fast border-b-2"
+        :class="[
+          isActive(item.to) 
+            ? 'text-accent border-accent' 
+            : 'text-copy-secondary border-transparent hover:text-copy hover:border-line-hover'
+        ]"
+      >
+        {{ item.label }}
+      </NuxtLink>
+    </nav>
+
+    <!-- Right Side Actions -->
+    <div class="ml-auto flex items-center gap-4">
+      <LanguageSwitcher />
+      <UserMenu v-if="isAuthenticated" />
+      <NuxtLink 
+        v-else 
+        to="/auth/login" 
+        class="text-sm font-medium text-copy-secondary hover:text-accent transition-colors"
+      >
+        {{ $t('auth.login') }}
+      </NuxtLink>
+    </div>
+  </div>
 </template>

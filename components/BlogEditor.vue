@@ -1,35 +1,27 @@
 <template>
   <div class="space-y-6">
-    <div>
-      <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {{ $t('blog.title') }} <span class="text-red-500">*</span>
-      </label>
-      <div class="mt-1">
-        <input
-          id="title"
-          v-model="localTitle"
-          type="text"
-          name="title"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          :placeholder="$t('blog.titlePlaceholder')"
-        />
-      </div>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        {{ $t('blog.slug') }}: {{ slugPreview }}
-      </p>
-    </div>
+    <BaseInput
+      id="title"
+      v-model="localTitle"
+      :label="$t('blog.title')"
+      :placeholder="$t('blog.titlePlaceholder')"
+      required
+    />
+    <p class="mt-1 text-sm text-copy-muted">
+      {{ $t('blog.slug') }}: {{ slugPreview }}
+    </p>
 
-    <div class="editor-shell rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+    <div class="border border-line bg-surface p-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ $t('blog.content') }} <span class="text-red-500">*</span>
+          <label class="block text-sm font-medium text-copy-secondary">
+            {{ $t('blog.content') }} <span class="text-semantic-error">*</span>
           </label>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p class="mt-1 text-xs text-copy-muted">
             Markdown + GFM
           </p>
         </div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">
+        <p class="text-xs text-copy-muted">
           {{ $t('blog.richTextSupported') || '支援富文本格式' }}
         </p>
       </div>
@@ -53,77 +45,46 @@
       </ClientOnly>
     </div>
 
-    <div>
-      <label for="excerpt" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {{ $t('blog.excerpt') }}
-      </label>
-      <div class="mt-1">
-        <textarea
-          id="excerpt"
-          v-model="localExcerpt"
-          name="excerpt"
-          rows="3"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          :placeholder="$t('blog.excerptPlaceholder')"
-        />
-      </div>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        {{ $t('blog.excerptOptional') }}
-      </p>
-    </div>
+    <BaseTextarea
+      id="excerpt"
+      v-model="localExcerpt"
+      :label="$t('blog.excerpt')"
+      :placeholder="$t('blog.excerptPlaceholder')"
+      :rows="3"
+    />
+    <p class="mt-1 text-sm text-copy-muted">
+      {{ $t('blog.excerptOptional') }}
+    </p>
 
-    <div>
-      <label for="coverImage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {{ $t('blog.coverImage') }}
-      </label>
-      <div class="mt-1">
-        <input
-          id="coverImage"
-          v-model="localCoverImage"
-          type="url"
-          name="coverImage"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          :placeholder="$t('blog.coverImagePlaceholder')"
-        />
-      </div>
-    </div>
+    <BaseInput
+      id="coverImage"
+      v-model="localCoverImage"
+      type="url"
+      :label="$t('blog.coverImage')"
+      :placeholder="$t('blog.coverImagePlaceholder')"
+    />
 
-    <div>
-      <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {{ $t('blog.category') }} <span class="text-red-500">*</span>
-      </label>
-      <div class="mt-1">
-        <select
-          id="category"
-          v-model="localCategory"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        >
-          <option value="">{{ $t('blog.selectCategory') }}</option>
-          <option v-for="cat in CATEGORY_OPTIONS" :key="cat" :value="cat">
-            {{ $t(`blog.categories.${cat}`) }}
-          </option>
-        </select>
-      </div>
-    </div>
+    <BaseSelect
+      id="category"
+      v-model="localCategory"
+      :label="$t('blog.category')"
+      required
+    >
+      <option value="">{{ $t('blog.selectCategory') }}</option>
+      <option v-for="cat in CATEGORY_OPTIONS" :key="cat" :value="cat">
+        {{ $t(`blog.categories.${cat}`) }}
+      </option>
+    </BaseSelect>
 
-    <div>
-      <label for="tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {{ $t('blog.tags') }}
-      </label>
-      <div class="mt-1">
-        <input
-          id="tags"
-          v-model="localTags"
-          type="text"
-          name="tags"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          :placeholder="$t('blog.tagsPlaceholder')"
-        />
-      </div>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        {{ $t('blog.tagsHint') }}
-      </p>
-    </div>
+    <BaseInput
+      id="tags"
+      v-model="localTags"
+      :label="$t('blog.tags')"
+      :placeholder="$t('blog.tagsPlaceholder')"
+    />
+    <p class="mt-1 text-sm text-copy-muted">
+      {{ $t('blog.tagsHint') }}
+    </p>
   </div>
 </template>
 

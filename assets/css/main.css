@@ -1,4 +1,3 @@
-@import './ui.css';
 @import './design-tokens.css';
 
 @tailwind base;
@@ -6,38 +5,56 @@
 @tailwind utilities;
 
 @layer base {
-  html,
-  body,
-  #__nuxt {
-    background-color: var(--color-background);
-    color: var(--color-text);
-    font-family: var(--font-body);
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
 
   body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC",
+      "PingFang TC", "Microsoft JhengHei", sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-main);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     line-height: 1.6;
   }
 
-  h1,
-  h2,
-  h3,
-  h4 {
-    font-family: var(--font-display);
-    color: var(--color-text);
-    letter-spacing: -0.02em;
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
   }
 
-  code,
-  pre,
-  .font-data {
-    font-family: var(--font-data);
+  code, pre, .font-mono {
+    font-family: "JetBrains Mono", "SF Mono", "Cascadia Code", "Consolas", monospace;
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-secondary) 24%, transparent);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    color: inherit;
   }
 
-  a {
-    transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease, border-color var(--motion-fast) ease;
+  /* Focus ring for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
+
+  /* Handle system reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0ms !important;
+      animation-duration: 0ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Common utility classes based on the plan */
+  .text-secondary { color: var(--text-secondary); }
+  .text-muted { color: var(--text-muted); }
+  .bg-surface { background-color: var(--bg-surface); }
+  .bg-elevated { background-color: var(--bg-elevated); }
+  .border-line { border-color: var(--line-default); }
 }

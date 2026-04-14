@@ -1,76 +1,79 @@
 <template>
   <div class="space-y-6">
     <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('alert.title') }}</h1>
+      <h1 class="text-2xl font-semibold text-copy">{{ t('alert.title') }}</h1>
     </div>
 
-    <div v-if="pending" class="text-center py-12">
-      <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-indigo-600" />
-      <p class="mt-2 text-gray-500">{{ t('common.loading') }}</p>
-    </div>
-
-    <div v-else-if="error" class="bg-red-50 p-4 rounded-md">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <Icon name="heroicons:x-circle" class="h-5 w-5 text-red-400" />
-        </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">{{ t('alert.loadFailed') }}</h3>
-          <div class="mt-2 text-sm text-red-700">
-            {{ error.message }}
+    <!-- Loading Skeleton -->
+    <div v-if="pending" class="space-y-4">
+      <div v-for="i in 3" :key="i" class="border border-line bg-surface p-4">
+        <div class="flex items-center gap-4">
+          <BaseSkeleton variant="circle" class="h-10 w-10" />
+          <div class="flex-1 space-y-2">
+            <BaseSkeleton variant="text" class="w-3/4" />
+            <BaseSkeleton variant="text" class="w-1/2" />
           </div>
         </div>
       </div>
     </div>
 
-    <div v-else-if="!alerts || alerts.length === 0" class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
-      <Icon name="heroicons:bell-slash" class="mx-auto h-12 w-12 text-gray-400" />
-      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ t('alert.noAlerts') }}</h3>
-      <p class="mt-1 text-sm text-gray-500">{{ t('alert.noAlertsDesc') }}</p>
-    </div>
+    <!-- Error -->
+    <BaseAlert v-else-if="error" variant="error">
+      <p class="font-medium">{{ t('alert.loadFailed') }}</p>
+      <p class="mt-1 text-sm">{{ error.message }}</p>
+    </BaseAlert>
 
-    <div v-else class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-      <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+    <!-- Empty -->
+    <BaseEmpty
+      v-else-if="!alerts || alerts.length === 0"
+      icon="lucide:bell-off"
+      :title="t('alert.noAlerts')"
+      :description="t('alert.noAlertsDesc')"
+    />
+
+    <!-- Alert List -->
+    <div v-else class="border border-line bg-surface overflow-hidden">
+      <ul class="divide-y divide-line">
         <li v-for="alert in alerts" :key="alert.id.toString()">
           <div class="px-4 py-4 sm:px-6">
             <div class="flex items-center justify-between">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <Icon name="heroicons:bell" class="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                  <Icon name="lucide:bell" class="h-5 w-5 text-accent" />
                 </div>
                 <div class="ml-4">
-                  <div class="text-sm font-medium text-indigo-600 dark:text-indigo-400 truncate">
+                  <div class="text-sm font-medium text-accent truncate">
                     {{ alert.message }}
                   </div>
-                  <div v-if="alert.diary" class="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                    <Icon name="heroicons:document-text" class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                    <NuxtLink :to="`/diaries/${alert.diary.id}`" class="hover:underline">
+                  <div v-if="alert.diary" class="flex items-center text-sm text-copy-muted mt-0.5">
+                    <Icon name="lucide:file-text" class="flex-shrink-0 mr-1.5 h-4 w-4" />
+                    <NuxtLink :to="`/diaries/${alert.diary.id}`" class="hover:text-accent transition-colors duration-fast">
                       {{ t('alert.viewRelatedDiary') }}
                     </NuxtLink>
                   </div>
                 </div>
               </div>
-              <div class="ml-2 flex-shrink-0 flex">
-                <button
+              <div class="ml-2 flex-shrink-0">
+                <BaseButton
+                  size="sm"
                   @click="dismissAlert(alert.id)"
-                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   {{ t('alert.markAsRead') }}
-                </button>
+                </BaseButton>
               </div>
             </div>
             <div class="mt-2 sm:flex sm:justify-between">
               <div class="sm:flex">
-                <p class="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <Icon name="heroicons:clock" class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
+                <p class="flex items-center text-sm text-copy-muted">
+                  <Icon name="lucide:clock" class="flex-shrink-0 mr-1.5 h-4 w-4" />
                   {{ t('alert.triggerTime') }}：{{ formatDate(alert.triggerAt, userTimezone) }}
-                  <span v-if="alert.recurringMode" class="ml-2 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-0.5 rounded-full">
+                  <BaseBadge v-if="alert.recurringMode" variant="info" class="ml-2">
                     {{ getRecurringLabel(alert.recurringMode) }} • 第 {{ alert.instanceNumber }} 次
-                  </span>
+                  </BaseBadge>
                 </p>
               </div>
-              <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 dark:text-gray-400">
-                <Icon name="heroicons:calendar" class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
+              <div class="mt-2 flex items-center text-sm text-copy-muted sm:mt-0">
+                <Icon name="lucide:calendar" class="flex-shrink-0 mr-1.5 h-4 w-4" />
                 {{ t('alert.createdAt') }}：{{ formatShortDate(alert.createdAt, userTimezone) }}
               </div>
             </div>
