@@ -64,6 +64,7 @@
     "logout": "Logout",
     "register": "Register",
     "loginTitle": "Login to your account",
+    "loginSubtitle": "Sign in to continue managing your trading journal",
     "registerTitle": "Create a new account",
     "createAccount": "Create a new account",
     "orCreateAccount": "Or",

@@ -88,6 +88,16 @@ export default defineNuxtConfig({
     '@nuxtjs/sitemap'
   ],
 
+  components: [
+    {
+      path: '~/components/ui',
+      pathPrefix: false,
+    },
+    {
+      path: '~/components',
+    },
+  ],
+
   image: {
     provider: 'none',
     format: ['webp'],

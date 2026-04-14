@@ -14,60 +14,60 @@
       </header>
 
       <BaseCard class="!p-8">
-        <form @submit.prevent="handleLogin" class="space-y-6">
-          <BaseInput
-            v-model="email"
-            type="email"
-            :label="$t('auth.email')"
-            id="email"
-            placeholder="name@example.com"
-            required
-            autocomplete="email"
-          />
-          
-          <div class="space-y-1">
-            <div class="flex items-center justify-between">
-              <label for="password" class="text-sm font-medium text-copy-secondary">
-                {{ $t('auth.password') }}
-              </label>
-            </div>
+        <form @submit.prevent="handleLogin" @keydown.enter.prevent="handleLogin" class="space-y-6" onsubmit="return false" novalidate>
+          <fieldset :disabled="!isHydrated || isLoading" :aria-busy="!isHydrated || isLoading" class="space-y-6">
             <BaseInput
-              v-model="password"
+              v-model="form.email"
+              type="email"
+              :label="$t('auth.email')"
+              id="email"
+              :placeholder="$t('auth.emailPlaceholder')"
+              required
+              autocomplete="email"
+              :error="emailError"
+              @blur="validateEmail"
+            />
+
+            <BaseInput
+              v-model="form.password"
               type="password"
+              :label="$t('auth.password')"
               id="password"
-              placeholder="••••••••"
+              :placeholder="$t('auth.passwordPlaceholder')"
               required
               autocomplete="current-password"
             />
-          </div>
 
-          <BaseAlert v-if="error" variant="error">
-            {{ error }}
-          </BaseAlert>
+            <BaseButton
+              type="submit"
+              variant="primary"
+              class="w-full"
+              :loading="isLoading"
+              :disabled="!isHydrated || isLoading"
+            >
+              <span>{{ !isHydrated ? $t('common.loading') : isLoading ? $t('auth.loggingIn') : $t('auth.login') }}</span>
+            </BaseButton>
+          </fieldset>
 
-          <BaseButton
-            type="submit"
-            variant="primary"
-            class="w-full"
-            :loading="loading"
-          >
-            {{ $t('auth.login') }}
-          </BaseButton>
+          <p v-if="!isHydrated" class="text-xs font-medium text-copy-muted">
+            正在準備登入表單，載入完成後即可提交。
+          </p>
         </form>
 
         <div class="mt-8 pt-8 border-t border-line text-center">
           <p class="text-sm text-copy-secondary">
-            {{ $t('auth.noAccount') }}
+            {{ $t('auth.orCreateAccount') }}
             <NuxtLink to="/auth/register" class="text-accent font-semibold hover:underline">
-              {{ $t('auth.registerNow') }}
+              {{ $t('auth.createAccount') }}
             </NuxtLink>
           </p>
         </div>
       </BaseCard>
 
       <footer class="text-center">
-        <NuxtLink to="/" class="text-xs text-copy-muted hover:text-copy transition-colors uppercase tracking-widest font-semibold">
-          ← {{ $t('auth.backToHome') }}
+        <NuxtLink to="/" class="inline-flex items-center gap-1 text-xs text-copy-muted hover:text-copy transition-colors uppercase tracking-widest font-semibold">
+          <Icon name="lucide:arrow-left" class="h-3.5 w-3.5" />
+          {{ $t('common.back') }}
         </NuxtLink>
       </footer>
     </div>
@@ -76,32 +76,44 @@
 
 <script setup lang="ts">
 definePageMeta({
+  requiresAuth: false,
   layout: 'auth',
-  middleware: 'auth'
+  middleware: 'auth',
 })
 
-const { login } = useAuth()
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-const error = ref('')
+const { login, isLoading } = useAuth()
+
+const form = ref({
+  email: '',
+  password: '',
+})
+
+const isHydrated = ref(false)
+const emailError = ref('')
+
+onMounted(() => {
+  isHydrated.value = true
+})
+
+const validateEmail = () => {
+  if (!form.value.email) {
+    emailError.value = ''
+    return
+  }
+
+  const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+  emailError.value = emailRegex.test(form.value.email) ? '' : '請輸入有效的電子郵件地址'
+}
 
 const handleLogin = async () => {
-  if (loading.value) return
-  loading.value = true
-  error.value = ''
-  
+  if (!isHydrated.value || isLoading.value) return
+  validateEmail()
+  if (emailError.value) return
+
   try {
-    const success = await login(email.value, password.value)
-    if (success) {
-      navigateTo('/diaries')
-    } else {
-      error.value = '登入失敗，請檢查您的帳號密碼。'
-    }
-  } catch (e: any) {
-    error.value = e.message || '發生錯誤，請稍後再試。'
-  } finally {
-    loading.value = false
+    await login(form.value.email, form.value.password)
+  } catch {
+    // login() already handles user-facing error feedback via toast
   }
 }
 </script>
