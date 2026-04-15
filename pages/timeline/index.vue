@@ -46,7 +46,7 @@
             class="w-full bg-white dark:bg-slate-900 border-none rounded-xl py-3.5 pl-11 pr-4 text-sm font-bold text-slate-700 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 transition-all appearance-none"
           />
           <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-            <span class="text-[10px] font-black uppercase tracking-tighter text-slate-300 dark:text-slate-600 group-focus-within:opacity-0 transition-opacity" :class="{ 'opacity-0': filters.dateFrom }">{{ t('diary.dateFrom') }}</span>
+            <span class="text-[10px] font-black uppercase tracking-tighter text-slate-300 dark:text-slate-300 group-focus-within:opacity-0 transition-opacity" :class="{ 'opacity-0': filters.dateFrom }">{{ t('diary.dateFrom') }}</span>
           </div>
         </div>
         
@@ -60,7 +60,7 @@
             class="w-full bg-white dark:bg-slate-900 border-none rounded-xl py-3.5 pl-11 pr-4 text-sm font-bold text-slate-700 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 transition-all appearance-none"
           />
           <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-            <span class="text-[10px] font-black uppercase tracking-tighter text-slate-300 dark:text-slate-600 group-focus-within:opacity-0 transition-opacity" :class="{ 'opacity-0': filters.dateTo }">{{ t('diary.dateTo') }}</span>
+            <span class="text-[10px] font-black uppercase tracking-tighter text-slate-300 dark:text-slate-300 group-focus-within:opacity-0 transition-opacity" :class="{ 'opacity-0': filters.dateTo }">{{ t('diary.dateTo') }}</span>
           </div>
         </div>
         
@@ -96,7 +96,7 @@
     <!-- Empty State -->
     <div v-else-if="groupedDiaries.length === 0" class="py-24 text-center">
       <div class="w-24 h-24 bg-slate-100 dark:bg-slate-800/50 rounded-3xl flex items-center justify-center mx-auto mb-8 rotate-12">
-        <Icon name="heroicons:clock" class="h-12 w-12 text-slate-300 dark:text-slate-600" />
+        <Icon name="heroicons:clock" class="h-12 w-12 text-slate-300 dark:text-slate-300" />
       </div>
       <h3 class="text-2xl font-black text-slate-900 dark:text-white">{{ t('timeline.noEntries') }}</h3>
       <p class="mt-3 text-slate-500 dark:text-slate-400 max-w-xs mx-auto font-medium">{{ t('diary.noDiaries') }}</p>
@@ -159,13 +159,13 @@
                       {{ diary.title }}
                     </h3>
                     <div class="flex flex-wrap items-center gap-4">
-                      <time class="text-xs font-bold text-slate-400 dark:text-slate-500 flex items-center bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg">
+                      <time class="text-xs font-bold text-slate-400 dark:text-slate-400 flex items-center bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg">
                         <Icon name="heroicons:calendar" class="mr-2 h-4 w-4 text-blue-500/70" />
                         {{ formatDate(diary.date || diary.createdAt) }}
                       </time>
                       
                       <div v-if="diary.tags?.length" class="flex gap-2">
-                        <span v-for="tag in diary.tags.slice(0, 2)" :key="tag" class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        <span v-for="tag in diary.tags.slice(0, 2)" :key="tag" class="text-[10px] font-black text-slate-400 dark:text-slate-400 uppercase tracking-wider">
                           #{{ tag }}
                         </span>
                       </div>

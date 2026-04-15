@@ -115,7 +115,7 @@ const actionItems = ref<ActionItem[]>([
     name: 'quick-diary',
     label: '快速日記',
     icon: DiaryIcon,
-    color: '#6366f1',
+    color: '#b85c38',
     action: () => {
       router.push('/diaries/quick')
       closeExpanded()
@@ -125,7 +125,7 @@ const actionItems = ref<ActionItem[]>([
     name: 'diary',
     label: '完整日記',
     icon: DiaryIcon,
-    color: '#6366f1',
+    color: '#b85c38',
     action: () => {
       router.push('/diaries/new')
       closeExpanded()
@@ -214,20 +214,20 @@ onUnmounted(() => {
 }
 
 .fab:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid #b85c38;
   outline-offset: 2px;
 }
 
 .fab--main {
   width: var(--fab-size, 56px);
   height: var(--fab-size, 56px);
-  background-color: #6366f1;
+  background-color: #b85c38;
   color: white;
   z-index: 10;
 }
 
 .fab--main:hover {
-  background-color: #4f46e5;
+  background-color: #9d4828;
   transform: scale(1.05);
 }
 
@@ -279,8 +279,8 @@ onUnmounted(() => {
 .fab__label {
   position: absolute;
   right: 56px;
-  background-color: #1f2937;
-  color: white;
+  background-color: var(--color-surface-strong);
+  color: var(--color-text);
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 14px;
@@ -300,7 +300,7 @@ onUnmounted(() => {
   transform: translateY(-50%);
   width: 0;
   height: 0;
-  border-left: 4px solid #1f2937;
+  border-left: 4px solid var(--color-surface-strong);
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
 }
@@ -380,20 +380,30 @@ onUnmounted(() => {
 }
 
 /* 深色模式支援 */
-@media (prefers-color-scheme: dark) {
-  .fab--item {
-    background-color: #374151;
-    color: #f9fafb;
-  }
-  
-  .fab__label {
-    background-color: #f9fafb;
-    color: #1f2937;
-  }
-  
-  .fab__label::after {
-    border-left-color: #f9fafb;
-  }
+.dark .fab:focus-visible {
+  outline-color: #c47d5e;
+}
+
+.dark .fab--main {
+  background-color: #c47d5e;
+}
+
+.dark .fab--main:hover {
+  background-color: #c98565;
+}
+
+.dark .fab--item {
+  background-color: #374151;
+  color: #f9fafb;
+}
+
+.dark .fab__label {
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+
+.dark .fab__label::after {
+  border-left-color: #f9fafb;
 }
 
 /* 減少動畫模式支援 */
@@ -418,7 +428,7 @@ onUnmounted(() => {
   }
   
   .fab--main {
-    border-color: #6366f1;
+    border-color: #b85c38;
   }
   
   .fab--item {

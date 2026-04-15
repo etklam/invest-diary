@@ -152,7 +152,7 @@
                   </span>
                 </div>
               </template>
-              <div v-else class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400 dark:border-slate-700 dark:text-slate-500">
+              <div v-else class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400 dark:border-slate-700 dark:text-slate-400">
                 {{ t('compareDiary.noDiaryForDay') }}
               </div>
             </section>
@@ -180,7 +180,7 @@
                   </span>
                 </div>
               </template>
-              <div v-else class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400 dark:border-slate-700 dark:text-slate-500">
+              <div v-else class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400 dark:border-slate-700 dark:text-slate-400">
                 {{ t('compareDiary.noDiaryForDay') }}
               </div>
             </section>

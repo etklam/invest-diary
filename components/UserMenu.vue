@@ -83,7 +83,7 @@ if (process.client) {
 
         <!-- Admin Section -->
         <template v-if="user?.role === 'ADMIN'">
-          <div class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+          <div class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400">
             Admin
           </div>
           <NuxtLink

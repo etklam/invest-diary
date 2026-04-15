@@ -10,7 +10,7 @@
   transition: transform var(--motion-base) var(--easing-standard), border-color var(--motion-base) ease, background-color var(--motion-base) ease;
 }
 
-.dark .fin-panel, .dark-mode .fin-panel {
+.dark .fin-panel {
   border-color: var(--color-border);
   background: var(--color-surface);
   box-shadow: var(--shadow-md);
@@ -25,7 +25,7 @@
   margin-bottom: 0.25rem;
 }
 
-.dark .fin-kicker, .dark-mode .fin-kicker {
+.dark .fin-kicker {
   color: var(--color-secondary);
 }
 

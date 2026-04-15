@@ -56,12 +56,12 @@
       <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
         <LandingCard
           v-for="feat in [
-            { key: 'diary', icon: 'heroicons:pencil-20-solid', color: 'text-sky-700' },
-            { key: 'calendar', icon: 'heroicons:calendar-days-20-solid', color: 'text-blue-700' },
-            { key: 'timeline', icon: 'heroicons:clock-20-solid', color: 'text-indigo-700' },
-            { key: 'stocks', icon: 'heroicons:chart-bar-square-20-solid', color: 'text-emerald-700' },
-            { key: 'alerts', icon: 'heroicons:bell-alert-20-solid', color: 'text-orange-700' },
-            { key: 'discipline', icon: 'heroicons:flag-20-solid', color: 'text-rose-700' }
+            { key: 'diary', icon: 'heroicons:pencil-20-solid', color: 'text-sky-700 dark:text-sky-400' },
+            { key: 'calendar', icon: 'heroicons:calendar-days-20-solid', color: 'text-blue-700 dark:text-blue-400' },
+            { key: 'timeline', icon: 'heroicons:clock-20-solid', color: 'text-indigo-700 dark:text-indigo-400' },
+            { key: 'stocks', icon: 'heroicons:chart-bar-square-20-solid', color: 'text-emerald-700 dark:text-emerald-400' },
+            { key: 'alerts', icon: 'heroicons:bell-alert-20-solid', color: 'text-orange-700 dark:text-orange-400' },
+            { key: 'discipline', icon: 'heroicons:flag-20-solid', color: 'text-rose-700 dark:text-rose-400' }
           ]"
           :key="feat.key"
           :title="$t(`about.features.${feat.key}.title`)"

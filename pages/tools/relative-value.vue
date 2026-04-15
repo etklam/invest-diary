@@ -821,7 +821,7 @@ definePageMeta({
             <div v-else class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50/50 p-10 text-center dark:border-slate-700 dark:bg-slate-800/30">
               <div class="relative mb-6">
                 <div class="absolute inset-0 animate-pulse rounded-full bg-sky-500/10 blur-xl" />
-                <Icon name="heroicons:chart-bar" class="relative h-20 w-20 text-slate-300 dark:text-slate-600" />
+                <Icon name="heroicons:chart-bar" class="relative h-20 w-20 text-slate-300 dark:text-slate-300" />
               </div>
               <h3 class="mb-2 text-lg font-semibold text-slate-700 dark:text-slate-300">
                 No data yet

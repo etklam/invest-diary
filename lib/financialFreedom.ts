@@ -361,7 +361,7 @@ export function getRiskColorClass(risk: string): string {
     'medium': 'text-amber-600 dark:text-amber-400',
     'high': 'text-red-600 dark:text-red-400'
   }
-  return colorMap[risk] || 'text-gray-600'
+  return colorMap[risk] || 'text-gray-600 dark:text-gray-400'
 }
 
 /**
@@ -373,5 +373,5 @@ export function getRiskBgClass(risk: string): string {
     'medium': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
     'high': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
   }
-  return colorMap[risk] || 'bg-gray-100 dark:bg-gray-700'
+  return colorMap[risk] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
 }

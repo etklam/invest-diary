@@ -20,7 +20,7 @@
         <span
           v-if="cat.count !== undefined"
           class="rounded-lg bg-white px-2 py-0.5 text-[10px] shadow-sm ring-1 ring-slate-100 transition-all dark:bg-slate-800 dark:ring-slate-700 group-hover:ring-slate-200 dark:group-hover:ring-slate-600"
-          :class="isActive(cat.key, cat.value) ? 'text-sky-600 dark:text-sky-400 ring-sky-100 dark:ring-sky-900/50' : 'text-slate-400 dark:text-slate-500'"
+          :class="isActive(cat.key, cat.value) ? 'text-sky-600 dark:text-sky-400 ring-sky-100 dark:ring-sky-900/50' : 'text-slate-400 dark:text-slate-400'"
         >
           {{ cat.count }}
         </span>

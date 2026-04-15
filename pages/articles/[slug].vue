@@ -76,7 +76,7 @@
           <div class="mt-10 flex flex-wrap items-center justify-center gap-6 border-y border-slate-100 py-8 dark:border-slate-800/50">
             <div class="flex items-center gap-3">
               <div class="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
-                <Icon name="heroicons:user" class="h-6 w-6 text-slate-400 dark:text-slate-500" />
+                <Icon name="heroicons:user" class="h-6 w-6 text-slate-400 dark:text-slate-400" />
               </div>
               <div class="text-left">
                 <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.author') }}</p>

@@ -45,7 +45,7 @@
     </NuxtLink>
 
     <div class="flex flex-1 flex-col pt-5">
-      <div class="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+      <div class="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-400">
         <Icon name="heroicons:calendar" class="h-3 w-3" />
         {{ publishedAtLabel }}
         <template v-if="readingTime">
@@ -68,7 +68,7 @@
       <div class="flex items-center justify-between mt-auto">
         <div class="flex items-center gap-2.5">
           <div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
-            <Icon name="heroicons:user" class="h-4 w-4 text-slate-400 dark:text-slate-500" />
+            <Icon name="heroicons:user" class="h-4 w-4 text-slate-400 dark:text-slate-400" />
           </div>
           <span class="text-xs font-bold text-slate-700 dark:text-slate-300">
             {{ authorLabel }}

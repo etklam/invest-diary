@@ -533,7 +533,7 @@ definePageMeta({
         </div>
 
         <div v-else class="panel p-10 text-center">
-          <Icon name="heroicons:banknotes" class="mx-auto h-14 w-14 text-slate-300 dark:text-slate-600" />
+          <Icon name="heroicons:banknotes" class="mx-auto h-14 w-14 text-slate-300 dark:text-slate-300" />
           <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">
             {{ t('tools.financialFreedom.emptyState') }}
           </p>

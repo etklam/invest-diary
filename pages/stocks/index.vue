@@ -52,7 +52,7 @@
             <span class="text-xs font-medium" :class="(unrealizedAmount || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
               {{ (unrealizedAmount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(unrealizedAmount || 0) }}
             </span>
-            <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('stock.dashboard.totalPL') }}</span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ t('stock.dashboard.totalPL') }}</span>
           </div>
         </div>
 
@@ -69,7 +69,7 @@
             <span class="text-xs font-medium" :class="totalDayChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
               {{ totalDayChange >= 0 ? '+' : '' }}{{ totalDayChangePercent.toFixed(2) }}%
             </span>
-            <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('stock.dashboard.today') }}</span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ t('stock.dashboard.today') }}</span>
           </div>
         </div>
 
@@ -86,7 +86,7 @@
             <span class="text-xs font-medium text-slate-600 dark:text-slate-300">
               {{ totalHoldings }} {{ t('stock.dashboard.positions') }}
             </span>
-            <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('stock.dashboard.active') }}</span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ t('stock.dashboard.active') }}</span>
           </div>
         </div>
 
@@ -123,12 +123,12 @@
               </h3>
               <div class="flex items-center gap-2">
                 <div class="relative">
-                  <Icon name="heroicons:magnifying-glass" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                  <Icon name="heroicons:magnifying-glass" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-400" />
                   <input
                     v-model="searchQuery"
                     type="text"
                     :placeholder="t('stock.dashboard.searchPlaceholder')"
-                    class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   >
                 </div>
               </div>
@@ -142,7 +142,7 @@
             <div v-else class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                  <tr class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                     <th class="px-6 py-3 cursor-pointer hover:text-blue-500 transition-colors" @click="sortBy('symbol')">{{ t('stock.symbol') }}</th>
                     <th class="px-6 py-3 text-right">{{ t('stock.dashboard.price') }} / Day %</th>
                     <th class="px-6 py-3 text-right">{{ t('stock.dashboard.marketValue') }}</th>
@@ -168,7 +168,7 @@
                     <td class="px-6 py-4">
                       <div class="flex flex-col">
                         <span class="text-sm font-bold text-blue-600 dark:text-blue-400">{{ holding.symbol }}</span>
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ formatQuantity(holding.quantity) }} {{ t('stock.dashboard.shares') }}</span>
+                        <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ formatQuantity(holding.quantity) }} {{ t('stock.dashboard.shares') }}</span>
                       </div>
                     </td>
                     <td class="px-6 py-4 text-right">
@@ -400,9 +400,9 @@
         <!-- 空狀態 -->
         <div v-else-if="!perfPending && (!perfData || perfData.summary.totalClosedTrades === 0)"
           class="panel-dashboard p-10 text-center">
-          <Icon name="heroicons:chart-bar-square" class="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+          <Icon name="heroicons:chart-bar-square" class="w-12 h-12 text-slate-300 dark:text-slate-300 mx-auto mb-3" />
           <p class="text-sm font-medium text-slate-500 dark:text-slate-400">尚無已實現交易</p>
-          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">完成第一筆買入並賣出後，績效指標將會出現</p>
+          <p class="text-xs text-slate-400 dark:text-slate-400 mt-1">完成第一筆買入並賣出後，績效指標將會出現</p>
         </div>
 
         <!-- 資金曲線（折線圖） -->
@@ -511,16 +511,16 @@
             <div class="h-48">
               <Line :data="historyChartData" :options="historyChartOptions" />
             </div>
-            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-right">
+            <p class="text-[10px] text-slate-400 dark:text-slate-400 mt-2 text-right">
               報酬率以第一筆快照為基準（%）
             </p>
           </div>
 
           <!-- 快照不足時提示 -->
           <div v-else class="py-10 text-center">
-            <Icon name="heroicons:camera" class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <Icon name="heroicons:camera" class="w-10 h-10 text-slate-300 dark:text-slate-300 mx-auto mb-3" />
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">尚無歷史快照</p>
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">點擊「建立快照」記錄今日持倉，累積兩筆後即可顯示趨勢圖</p>
+            <p class="text-xs text-slate-400 dark:text-slate-400 mt-1">點擊「建立快照」記錄今日持倉，累積兩筆後即可顯示趨勢圖</p>
           </div>
         </div>
       </section>
@@ -1110,22 +1110,14 @@ useHead({
     #f8fafc;
 }
 
-:global(.dark) .stocks-page,
-:global(.dark-mode) .stocks-page {
+:global(.dark) .stocks-page {
   background: 
     radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.2) 0px, transparent 50%),
     radial-gradient(at 100% 0%, rgba(76, 29, 149, 0.2) 0px, transparent 50%),
     #020617;
 }
 
-@media (prefers-color-scheme: dark) {
-  .stocks-page {
-    background:
-      radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.2) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(76, 29, 149, 0.2) 0px, transparent 50%),
-      #020617;
-  }
-}
+
 
 .panel-dashboard {
   @apply bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm backdrop-blur-sm;

@@ -29,7 +29,7 @@
             <div class="flex flex-wrap items-center gap-4 lg:flex-nowrap">
               <div class="stats-card reveal-2 group">
                 <div class="flex flex-col">
-                  <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-sky-500 dark:text-slate-500 transition-colors">
+                  <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-sky-500 dark:text-slate-400 transition-colors">
                     {{ $t('blog.categoriesLabel') }}
                   </span>
                   <span class="mt-1 text-3xl font-bold tabular-nums text-slate-900 dark:text-white">
@@ -42,7 +42,7 @@
               </div>
               <div class="stats-card reveal-3 group">
                 <div class="flex flex-col">
-                  <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-amber-500 dark:text-slate-500 transition-colors">
+                  <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-amber-500 dark:text-slate-400 transition-colors">
                     {{ $t('admin.pagination.showing') }}
                   </span>
                   <span class="mt-1 text-3xl font-bold tabular-nums text-slate-900 dark:text-white">
@@ -77,7 +77,7 @@
                     type="text"
                     @input="handleSearchInput"
                     @keyup.enter="performSearch"
-                    class="search-input w-full rounded-2xl border border-slate-200 bg-white/50 py-3.5 pl-11 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-900"
+                    class="search-input w-full rounded-2xl border border-slate-200 bg-white/50 py-3.5 pl-11 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:bg-slate-900"
                     :placeholder="$t('blog.searchPlaceholder')"
                   />
                   <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
@@ -138,7 +138,7 @@
 
             <div v-else-if="posts.length === 0" class="flex min-h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-16 text-center dark:border-slate-800 dark:bg-slate-900/30">
               <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-sm dark:bg-slate-800">
-                <Icon name="heroicons:document-magnifying-glass" class="h-10 w-10 text-slate-300 dark:text-slate-600" />
+                <Icon name="heroicons:document-magnifying-glass" class="h-10 w-10 text-slate-300 dark:text-slate-300" />
               </div>
               <h3 class="text-xl font-bold text-slate-950 dark:text-white">
                 {{ $t('blog.noPosts') }}
@@ -175,7 +175,7 @@
                 <span class="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-sky-500 border-t-transparent"></span>
                 <span class="text-slate-700 dark:text-slate-200">{{ $t('blog.exploringMore') }}</span>
               </div>
-              <div v-else-if="!hasMore && posts.length > 0" class="flex items-center gap-3 text-slate-400 dark:text-slate-600">
+              <div v-else-if="!hasMore && posts.length > 0" class="flex items-center gap-3 text-slate-400 dark:text-slate-300">
                 <span class="h-px w-8 bg-slate-200 dark:bg-slate-800"></span>
                 <p class="text-xs font-bold uppercase tracking-widest">
                   {{ $t('blog.reachedEnd') }}

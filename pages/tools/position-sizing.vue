@@ -517,7 +517,7 @@ definePageMeta({
 
     <section v-else class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
       <div class="panel p-10 text-center">
-        <Icon name="heroicons:calculator" class="mx-auto h-14 w-14 text-slate-300 dark:text-slate-600" />
+        <Icon name="heroicons:calculator" class="mx-auto h-14 w-14 text-slate-300 dark:text-slate-300" />
         <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">
           {{ t('tools.positionSizing.emptyState') }}
         </p>

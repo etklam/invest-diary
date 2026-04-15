@@ -348,7 +348,7 @@ const roleBadgeClass = (role: string) => {
                   >
                     {{ t('admin.users.delete') }}
                   </button>
-                  <span v-else class="text-gray-400 dark:text-gray-600">
+                  <span v-else class="text-gray-400 dark:text-gray-400">
                     {{ t('admin.users.current') }}
                   </span>
                 </td>

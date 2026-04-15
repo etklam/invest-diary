@@ -19,7 +19,7 @@ export interface HoldingChartSegment {
   strokeWidth: number
 }
 
-const DEFAULT_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7']
+const DEFAULT_COLORS = ['#b85c38', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7']
 
 export function formatHoldingQuantity(quantity: number): string {
   return quantity.toFixed(4).replace(/\.?0+$/, '')

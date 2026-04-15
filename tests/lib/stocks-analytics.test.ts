@@ -31,7 +31,7 @@ describe('stocks analytics helpers', () => {
       percentage: '57.1%',
       radius: 32.5,
       strokeWidth: 15,
-      color: '#6366f1',
+      color: '#b85c38',
     })
     expect(segments[1]?.dashOffset).toBeLessThan(0)
   })
