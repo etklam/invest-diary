@@ -591,7 +591,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   background:
     radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 60%),
     linear-gradient(145deg, #111720, #17212a);
-  color: var(--color-background);
+  color: var(--color-text);
 }
 
 .chapter-card {
@@ -609,12 +609,12 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 
 :global(.dark .story-panel h2),
 :global(.dark-mode .story-panel h2) {
-  color: var(--color-background);
+  color: var(--color-text);
 }
 
 :global(.dark .story-panel .chapter-card h3),
 :global(.dark-mode .story-panel .chapter-card h3) {
-  color: var(--color-background);
+  color: var(--color-text);
 }
 
 .chapter-label {

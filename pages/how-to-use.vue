@@ -390,6 +390,7 @@ useHead(() => ({
 }
 
 .gradient-text {
+  color: #0f172a;
   background: linear-gradient(to bottom right, #0f172a, #334155);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -397,7 +398,8 @@ useHead(() => ({
 }
 
 :global(.dark .gradient-text), :global(.dark-mode .gradient-text) {
-  background: linear-gradient(to bottom right, #f8fafc, #94a3b8);
+  color: #f8fafc;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 42%, #dbeafe 100%);
 }
 
 /* Buttons */

@@ -1105,26 +1105,41 @@ useHead({
 <style scoped>
 .stocks-page {
   background: 
-    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.05) 0px, transparent 50%),
-    #f8fafc;
+    radial-gradient(at 0% 0%, color-mix(in srgb, var(--color-primary) 10%, transparent) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, color-mix(in srgb, var(--color-secondary) 10%, transparent) 0px, transparent 50%),
+    var(--color-background);
 }
 
-:global(.dark) .stocks-page {
+:global(.dark .stocks-page),
+:global(.dark-mode .stocks-page) {
   background: 
-    radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.2) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(76, 29, 149, 0.2) 0px, transparent 50%),
-    #020617;
+    radial-gradient(at 0% 0%, color-mix(in srgb, var(--color-primary) 20%, transparent) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, color-mix(in srgb, var(--color-secondary) 16%, transparent) 0px, transparent 50%),
+    var(--color-background);
 }
-
-
 
 .panel-dashboard {
-  @apply bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm backdrop-blur-sm;
+  border: 1px solid var(--color-border);
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 86%, transparent));
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
 }
 
 .stats-card {
-  @apply bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-3xl shadow-sm hover:shadow-md transition-shadow;
+  border: 1px solid var(--color-border);
+  border-radius: 1.5rem;
+  padding: 1.25rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 94%, transparent), color-mix(in srgb, var(--color-surface-strong) 88%, transparent));
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+  transition: box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease, border-color var(--motion-fast) ease;
+}
+
+.stats-card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .action-btn-dashboard {
@@ -1132,7 +1147,23 @@ useHead({
 }
 
 .action-btn-muted-dashboard {
-  @apply inline-flex items-center justify-center px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl transition-all;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-strong) 78%, transparent);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background-color var(--motion-fast) ease, color var(--motion-fast) ease, border-color var(--motion-fast) ease;
+}
+
+.action-btn-muted-dashboard:hover {
+  background: color-mix(in srgb, var(--color-surface-strong) 92%, transparent);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
 }
 
 /* Custom scrollbar for table */
@@ -1140,9 +1171,10 @@ useHead({
   height: 6px;
 }
 .overflow-x-auto::-webkit-scrollbar-track {
-  @apply bg-transparent;
+  background: transparent;
 }
 .overflow-x-auto::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 dark:bg-slate-800 rounded-full;
+  background: color-mix(in srgb, var(--color-border) 88%, transparent);
+  border-radius: 999px;
 }
 </style>

@@ -626,6 +626,7 @@
     }
   },
   "about": {
+    "badge": "Builder Notes",
     "hero": {
       "title": "About Me",
       "subtitle": "Builder notes from a trader learning to walk with past experience"
