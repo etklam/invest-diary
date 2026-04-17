@@ -8,7 +8,325 @@
 /* Design-token bridge — overrides common Tailwind slate/gray/sky/indigo
    utilities with CSS custom properties. Must come AFTER @tailwind utilities
    so it wins in the cascade. */
-@import './token-bridge.css';
+/* "heading-level" slate/gray → --color-text */
+.text-slate-900,
+.text-gray-900,
+.text-slate-800,
+.text-gray-800 {
+  color: var(--color-text);
+}
+
+/* "body" slate/gray → --color-text-muted */
+.text-slate-700,
+.text-gray-700,
+.text-slate-600,
+.text-gray-600 {
+  color: var(--color-text-muted);
+}
+
+/* "caption / label" → --color-text-soft */
+.text-slate-500,
+.text-gray-500,
+.text-slate-400,
+.text-gray-400,
+.text-slate-300,
+.text-gray-300 {
+  color: var(--color-text-soft);
+}
+
+/* dark mode text variants — CSS vars already switched, map to same tokens */
+.dark .dark\:text-white,
+.dark .dark\:text-slate-50,
+.dark .dark\:text-gray-50,
+.dark .dark\:text-slate-100,
+.dark .dark\:text-gray-100,
+.dark .dark\:text-slate-200,
+.dark .dark\:text-gray-200 {
+  color: var(--color-text);
+}
+
+.dark .dark\:text-slate-300,
+.dark .dark\:text-gray-300 {
+  color: var(--color-text-muted);
+}
+
+.dark .dark\:text-slate-400,
+.dark .dark\:text-gray-400 {
+  color: var(--color-text-soft);
+}
+
+/* ── Background colours ────────────────────────────────── */
+
+.bg-white {
+  background-color: var(--color-surface);
+}
+
+.bg-slate-50,
+.bg-gray-50 {
+  background-color: var(--color-background);
+}
+
+.bg-slate-100,
+.bg-gray-100 {
+  background-color: var(--color-surface-strong);
+}
+
+.bg-slate-200,
+.bg-gray-200 {
+  background-color: var(--color-surface-muted);
+}
+
+.dark .dark\:bg-gray-800,
+.dark .dark\:bg-slate-800 {
+  background-color: var(--color-surface);
+}
+
+.dark .dark\:bg-gray-900,
+.dark .dark\:bg-slate-900,
+.dark .dark\:bg-gray-950 {
+  background-color: var(--color-background);
+}
+
+.dark .dark\:bg-gray-700,
+.dark .dark\:bg-slate-700 {
+  background-color: var(--color-surface-strong);
+}
+
+/* ── Border colours ────────────────────────────────────── */
+
+.border-slate-100,
+.border-gray-100,
+.border-slate-200,
+.border-gray-200,
+.border-slate-300,
+.border-gray-300 {
+  border-color: var(--color-border);
+}
+
+.dark .dark\:border-slate-600,
+.dark .dark\:border-gray-600,
+.dark .dark\:border-slate-700,
+.dark .dark\:border-gray-700,
+.dark .dark\:border-slate-800,
+.dark .dark\:border-gray-800 {
+  border-color: var(--color-border);
+}
+
+.divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--color-border);
+}
+
+.dark .dark\:divide-slate-700 > :not([hidden]) ~ :not([hidden]),
+.dark .dark\:divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+.dark .dark\:divide-gray-700 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--color-border);
+}
+
+/* ── Sky / Indigo → design primary/info ────────────────── */
+
+.text-sky-500,
+.text-sky-600,
+.text-sky-700 {
+  color: var(--color-info);
+}
+
+.dark .dark\:text-sky-400,
+.dark .dark\:text-sky-300 {
+  color: var(--color-info);
+}
+
+.bg-sky-500,
+.bg-sky-600 {
+  background-color: var(--color-info);
+}
+
+.bg-sky-50,
+.bg-sky-100 {
+  background-color: color-mix(in srgb, var(--color-info) 10%, var(--color-surface));
+}
+
+.dark .dark\:bg-sky-900,
+.dark .dark\:bg-sky-950,
+.dark .dark\:bg-sky-900\/30 {
+  background-color: color-mix(in srgb, var(--color-info) 15%, var(--color-surface));
+}
+
+.border-sky-500,
+.border-sky-400,
+.border-sky-300 {
+  border-color: var(--color-info);
+}
+
+.dark .dark\:border-sky-500,
+.dark .dark\:border-sky-400 {
+  border-color: var(--color-info);
+}
+
+.text-indigo-500,
+.text-indigo-600,
+.text-indigo-700 {
+  color: var(--color-primary);
+}
+
+.bg-indigo-500,
+.bg-indigo-600 {
+  background-color: var(--color-primary);
+}
+
+.bg-indigo-50,
+.bg-indigo-100 {
+  background-color: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+}
+
+.border-indigo-500 {
+  border-color: var(--color-primary);
+}
+
+/* ── Ring colours (focus outlines) ─────────────────────── */
+
+.ring-sky-500,
+.focus\:ring-sky-500:focus,
+.ring-indigo-500,
+.focus\:ring-indigo-500:focus,
+.ring-sky-300,
+.focus\:ring-sky-300:focus {
+  --tw-ring-color: var(--color-secondary);
+}
+
+.dark .dark\:ring-sky-500,
+.dark .dark\:focus\:ring-sky-500:focus,
+.dark .dark\:ring-indigo-500,
+.dark .dark\:focus\:ring-indigo-500:focus {
+  --tw-ring-color: var(--color-secondary);
+}
+
+/* ── Semantic colours (keep or refine) ─────────────────── */
+
+/* Red/Rose → danger */
+.bg-red-500,
+.bg-red-600 {
+  background-color: var(--color-danger);
+}
+
+.text-red-500,
+.text-red-600,
+.text-red-700 {
+  color: var(--color-danger);
+}
+
+.dark .dark\:text-red-400,
+.dark .dark\:text-red-300 {
+  color: var(--color-danger);
+}
+
+/* Green/Emerald → success/accent */
+.text-green-500,
+.text-green-600,
+.text-green-700 {
+  color: var(--color-success);
+}
+
+.dark .dark\:text-green-400,
+.dark .dark\:text-green-300 {
+  color: var(--color-success);
+}
+
+.bg-green-500,
+.bg-green-600 {
+  background-color: var(--color-success);
+}
+
+.bg-green-50,
+.bg-green-100 {
+  background-color: color-mix(in srgb, var(--color-success) 10%, var(--color-surface));
+}
+
+/* Amber/Yellow → warning */
+.text-amber-600,
+.text-amber-700,
+.text-yellow-600,
+.text-yellow-700 {
+  color: var(--color-warning);
+}
+
+.dark .dark\:text-amber-400,
+.dark .dark\:text-amber-300 {
+  color: var(--color-warning);
+}
+
+.bg-amber-50,
+.bg-amber-100 {
+  background-color: color-mix(in srgb, var(--color-warning) 10%, var(--color-surface));
+}
+
+/* ── Hover overrides (sky/indigo hovers) ───────────────── */
+
+.hover\:bg-sky-50:hover {
+  background-color: color-mix(in srgb, var(--color-info) 8%, var(--color-surface));
+}
+
+.hover\:bg-sky-100:hover,
+.hover\:bg-sky-600:hover {
+  background-color: color-mix(in srgb, var(--color-info) 85%, transparent);
+}
+
+.hover\:text-sky-600:hover,
+.hover\:text-sky-700:hover {
+  color: var(--color-info);
+}
+
+.hover\:border-sky-500:hover {
+  border-color: var(--color-info);
+}
+
+.dark .dark\:hover\:bg-sky-950\/30:hover {
+  background-color: color-mix(in srgb, var(--color-info) 15%, var(--color-surface));
+}
+
+.dark .dark\:hover\:text-sky-400:hover,
+.dark .dark\:hover\:text-sky-300:hover {
+  color: var(--color-info);
+}
+
+.dark .dark\:hover\:border-sky-500:hover {
+  border-color: var(--color-info);
+}
+
+.hover\:bg-indigo-600:hover,
+.hover\:bg-indigo-700:hover {
+  background-color: var(--color-primary-active);
+}
+
+.hover\:bg-slate-50:hover,
+.hover\:bg-gray-50:hover {
+  background-color: var(--color-background);
+}
+
+.hover\:bg-slate-100:hover,
+.hover\:bg-gray-100:hover,
+.hover\:bg-slate-200:hover,
+.hover\:bg-gray-200:hover {
+  background-color: var(--color-surface-strong);
+}
+
+.dark .dark\:hover\:bg-slate-700:hover,
+.dark .dark\:hover\:bg-gray-700:hover,
+.dark .dark\:hover\:bg-slate-600:hover,
+.dark .dark\:hover\:bg-gray-600:hover {
+  background-color: var(--color-surface-strong);
+}
+
+/* ── Placeholder colours ───────────────────────────────── */
+
+.placeholder-slate-400::placeholder,
+.placeholder-gray-400::placeholder,
+.placeholder\:text-slate-400::placeholder,
+.placeholder\:text-gray-400::placeholder {
+  color: var(--color-text-soft);
+}
 
 @layer base {
   html,
