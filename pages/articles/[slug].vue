@@ -1,21 +1,21 @@
 <template>
-  <main class="fintech-article-detail min-h-screen pb-24 text-slate-900 dark:text-slate-100">
+  <main class="fintech-article-detail min-h-screen pb-24" style="color: var(--color-text)">
     <div class="bg-grid absolute inset-0 -z-10 opacity-[0.08]" aria-hidden="true" />
     <div class="orb orb-cyan" aria-hidden="true" />
     <div class="orb orb-amber" aria-hidden="true" />
 
     <!-- Progress Bar -->
     <div
-      class="fixed top-0 left-0 z-50 h-1 bg-sky-500 transition-all duration-150"
-      :style="{ width: `${scrollProgress}%` }"
+      class="fixed top-0 left-0 z-50 h-1 transition-all duration-150"
+      :style="{ width: `${scrollProgress}%`, background: 'var(--color-secondary)' }"
     />
 
     <div v-if="pending" class="mx-auto w-full max-w-4xl px-4 pt-20">
-      <div class="mb-8 aspect-[21/9] animate-pulse rounded-3xl bg-slate-200/60 dark:bg-slate-800/60" />
+      <div class="mb-8 aspect-[21/9] animate-pulse rounded-3xl" style="background: var(--color-surface-strong)" />
       <div class="mx-auto max-w-3xl space-y-6">
-        <div class="h-4 w-24 animate-pulse rounded-full bg-slate-200/60 dark:bg-slate-800/60" />
-        <div class="h-12 w-full animate-pulse rounded-xl bg-slate-200/60 dark:bg-slate-800/60" />
-        <div class="h-4 w-2/3 animate-pulse rounded-lg bg-slate-200/60 dark:bg-slate-800/60" />
+        <div class="h-4 w-24 animate-pulse rounded-full" style="background: var(--color-surface-strong)" />
+        <div class="h-12 w-full animate-pulse rounded-xl" style="background: var(--color-surface-strong)" />
+        <div class="h-4 w-2/3 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
       </div>
     </div>
 
@@ -24,23 +24,24 @@
       class="mx-auto mt-20 w-full max-w-2xl px-4 text-center"
     >
       <div class="mb-6 flex justify-center">
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-red-500 dark:bg-red-900/20">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full" style="background: color-mix(in srgb, var(--color-danger) 10%, transparent); color: var(--color-danger)">
           <Icon name="heroicons:exclamation-circle" class="h-10 w-10" />
         </div>
       </div>
-      <h1 class="text-2xl font-bold text-slate-950 dark:text-white">{{ articleErrorTitle }}</h1>
-      <p class="mt-3 text-slate-600 dark:text-slate-400">{{ articleErrorDescription }}</p>
+      <h1 class="text-2xl font-bold" style="color: var(--color-text)">{{ articleErrorTitle }}</h1>
+      <p class="mt-3" style="color: var(--color-text-muted)">{{ articleErrorDescription }}</p>
       <div class="mt-8 flex justify-center gap-4">
         <button
           v-if="!isNotFoundError"
           type="button"
-          class="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-6 py-3 text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          class="inline-flex items-center gap-2 rounded-xl border px-6 py-3 text-sm font-bold transition-all"
+          style="border-color: var(--color-border); color: var(--color-text)"
           @click="refresh()"
         >
           <Icon name="heroicons:arrow-path" class="h-4 w-4" />
           {{ $t('blog.retryLoad') }}
         </button>
-        <NuxtLink to="/articles" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 dark:bg-white dark:text-slate-950">
+        <NuxtLink to="/articles" class="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all" style="background: var(--color-primary)">
           <Icon name="heroicons:arrow-left" class="h-4 w-4" />
           {{ $t('blog.backToList') }}
         </NuxtLink>
@@ -53,55 +54,56 @@
         <div class="mx-auto max-w-4xl text-center">
           <NuxtLink
             to="/articles"
-            class="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+            class="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest blog-back-link"
+            style="color: var(--color-secondary)"
           >
             <Icon name="heroicons:arrow-left" class="h-3 w-3" />
             {{ $t('blog.pageTitle') }}
           </NuxtLink>
 
           <div class="mb-6 flex justify-center">
-            <span class="inline-flex items-center rounded-full border border-sky-100 bg-sky-50 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+            <span class="inline-flex items-center rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-widest" style="border-color: color-mix(in srgb, var(--color-secondary) 25%, transparent); background: color-mix(in srgb, var(--color-secondary) 8%, transparent); color: var(--color-secondary)">
               {{ $t(`blog.categories.${categoryKey}`) || post.category }}
             </span>
           </div>
 
-          <h1 class="text-4xl font-extrabold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl lg:leading-[1.1]">
+          <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl lg:leading-[1.1]" style="color: var(--color-text)">
             {{ post.title }}
           </h1>
 
-          <p v-if="post.excerpt" class="mx-auto mt-8 max-w-2xl text-xl leading-relaxed text-slate-600 dark:text-slate-400">
+          <p v-if="post.excerpt" class="mx-auto mt-8 max-w-2xl text-xl leading-relaxed" style="color: var(--color-text-muted)">
             {{ post.excerpt }}
           </p>
 
-          <div class="mt-10 flex flex-wrap items-center justify-center gap-6 border-y border-slate-100 py-8 dark:border-slate-800/50">
+          <div class="mt-10 flex flex-wrap items-center justify-center gap-6 border-y py-8" style="border-color: var(--color-border)">
             <div class="flex items-center gap-3">
-              <div class="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
-                <Icon name="heroicons:user" class="h-6 w-6 text-slate-400 dark:text-slate-400" />
+              <div class="h-12 w-12 rounded-full flex items-center justify-center" style="background: var(--color-surface-strong)">
+                <Icon name="heroicons:user" class="h-6 w-6" style="color: var(--color-text-soft)" />
               </div>
               <div class="text-left">
-                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.author') }}</p>
-                <p class="text-sm font-bold text-slate-900 dark:text-white">{{ articleAuthorLabel }}</p>
+                <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-text-soft)">{{ $t('blog.author') }}</p>
+                <p class="text-sm font-bold" style="color: var(--color-text)">{{ articleAuthorLabel }}</p>
               </div>
             </div>
 
-            <div class="hidden h-8 w-px bg-slate-100 dark:bg-slate-800 sm:block" />
+            <div class="hidden h-8 w-px sm:block" style="background: var(--color-border)" />
 
             <div class="text-left">
-              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.publishedDate') }}</p>
-              <p class="text-sm font-bold text-slate-900 dark:text-white">{{ publishedDateLabel }}</p>
+              <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-text-soft)">{{ $t('blog.publishedDate') }}</p>
+              <p class="text-sm font-bold" style="color: var(--color-text)">{{ publishedDateLabel }}</p>
             </div>
 
-            <div class="hidden h-8 w-px bg-slate-100 dark:bg-slate-800 sm:block" />
+            <div class="hidden h-8 w-px sm:block" style="background: var(--color-border)" />
 
             <div class="text-left">
-              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ $t('blog.readingTimeLabel') || $t('blog.readingTime', { min: '' }).replace(':min', '').trim() }}</p>
-              <p class="text-sm font-bold text-slate-900 dark:text-white">{{ readingTime }} {{ $t('blog.minute') }}</p>
+              <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-text-soft)">{{ $t('blog.readingTimeLabel') || $t('blog.readingTime', { min: '' }).replace(':min', '').trim() }}</p>
+              <p class="text-sm font-bold" style="color: var(--color-text)">{{ readingTime }} {{ $t('blog.minute') }}</p>
             </div>
           </div>
         </div>
 
         <div v-if="post.coverImage" class="mx-auto mt-16 max-w-6xl px-4 lg:px-8">
-          <div class="relative aspect-[21/9] overflow-hidden rounded-[2.5rem] shadow-2xl shadow-slate-200 dark:shadow-none">
+          <div class="relative aspect-[21/9] overflow-hidden rounded-[2.5rem]" style="box-shadow: var(--shadow-lg)">
             <NuxtImg
               :src="post.coverImage"
               :alt="post.title"
@@ -118,13 +120,15 @@
       <div v-if="isAdmin" class="fixed bottom-8 left-8 z-40 hidden flex-col gap-3 lg:flex">
         <NuxtLink
           :to="`/admin/blog/${post.id}/edit`"
-          class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-xl ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:bg-sky-600 hover:text-white dark:bg-slate-900 dark:ring-slate-800"
+          class="admin-action-btn flex h-12 w-12 items-center justify-center rounded-2xl shadow-xl ring-1 transition-all hover:-translate-y-1"
+          style="background: var(--color-surface); color: var(--color-secondary); --tw-ring-color: var(--color-border)"
         >
           <Icon name="heroicons:pencil" class="h-6 w-6" />
         </NuxtLink>
         <button
           @click="handleDelete"
-          class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-red-600 shadow-xl ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:bg-red-600 hover:text-white dark:bg-slate-900 dark:ring-slate-800"
+          class="admin-action-btn flex h-12 w-12 items-center justify-center rounded-2xl shadow-xl ring-1 transition-all hover:-translate-y-1"
+          style="background: var(--color-surface); color: var(--color-danger); --tw-ring-color: var(--color-border)"
         >
           <Icon name="heroicons:trash" class="h-6 w-6" />
         </button>
@@ -133,43 +137,43 @@
       <!-- Article Body -->
       <div class="mx-auto mt-16 max-w-3xl px-6 lg:mt-24 lg:px-0">
         <div
-          class="prose prose-lg prose-slate dark:prose-invert max-w-none
-          prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-950 dark:prose-headings:text-white
+          class="article-prose prose prose-lg max-w-none
+          prose-headings:font-bold prose-headings:tracking-tight
           prose-h2:text-3xl prose-h2:mt-16 prose-h2:mb-8
           prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6
-          prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-p:leading-relaxed prose-p:mb-8
-          prose-a:text-sky-600 dark:prose-a:text-sky-400 prose-a:font-bold prose-a:no-underline hover:prose-a:underline
-          prose-blockquote:border-l-4 prose-blockquote:border-sky-500 prose-blockquote:bg-sky-50/50 dark:prose-blockquote:bg-sky-500/5 prose-blockquote:py-4 prose-blockquote:px-8 prose-blockquote:rounded-r-2xl prose-blockquote:italic
-          prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-[''] prose-code:after:content-[''] prose-code:font-semibold
-          prose-img:rounded-3xl prose-img:shadow-lg
-          prose-hr:border-slate-100 dark:prose-hr:border-slate-800"
+          prose-p:leading-relaxed prose-p:mb-8
+          prose-a:font-bold prose-a:no-underline hover:prose-a:underline
+          prose-blockquote:border-l-4 prose-blockquote:py-4 prose-blockquote:px-8 prose-blockquote:rounded-r-2xl prose-blockquote:italic
+          prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-[''] prose-code:after:content-[''] prose-code:font-semibold
+          prose-img:rounded-3xl prose-img:shadow-lg"
         >
           <div v-if="isHtmlContent" v-html="sanitizedContent" />
           <MDC v-else :value="post.content" />
         </div>
 
         <!-- Tags -->
-        <div v-if="parsedTags.length > 0" class="mt-16 flex flex-wrap gap-2 border-t border-slate-100 pt-10 dark:border-slate-800">
+        <div v-if="parsedTags.length > 0" class="mt-16 flex flex-wrap gap-2 border-t pt-10" style="border-color: var(--color-border)">
           <span
             v-for="tag in parsedTags"
             :key="tag"
-            class="inline-flex items-center rounded-xl bg-slate-50 px-4 py-2 text-sm font-bold text-slate-600 dark:bg-slate-900 dark:text-slate-400"
+            class="inline-flex items-center rounded-xl px-4 py-2 text-sm font-bold"
+            style="background: var(--color-surface-strong); color: var(--color-text-muted)"
           >
             #{{ tag }}
           </span>
         </div>
 
         <!-- Share & Footer -->
-        <footer class="mt-20 rounded-[2.5rem] bg-slate-900 p-10 text-white dark:bg-slate-800/50">
+        <footer class="mt-20 rounded-[2.5rem] p-10 text-white" style="background: var(--color-primary)">
           <div class="flex flex-col gap-10 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 class="text-2xl font-bold">{{ $t('blog.likeThisPost') }}</h3>
-              <p class="mt-2 text-slate-400">{{ $t('blog.shareWithOthers') }}</p>
+              <p class="mt-2" style="opacity: 0.7">{{ $t('blog.shareWithOthers') }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-4">
               <button
                 @click="copyLink"
-                class="flex h-14 items-center gap-3 rounded-2xl bg-white/10 px-8 text-sm font-bold transition-all hover:bg-white hover:text-slate-950"
+                class="flex h-14 items-center gap-3 rounded-2xl px-8 text-sm font-bold transition-all" style="background: rgba(255,255,255,0.12)"
               >
                 <Icon :name="copied ? 'heroicons:check-circle' : 'heroicons:link'" class="h-5 w-5" />
                 {{ copied ? $t('common.copied') : $t('blog.copyLink') }}
@@ -179,7 +183,7 @@
         </footer>
 
         <div class="mt-16 flex justify-center">
-          <NuxtLink to="/articles" class="group flex items-center gap-3 text-sm font-bold text-slate-500 transition-colors hover:text-slate-950 dark:hover:text-white">
+          <NuxtLink to="/articles" class="group flex items-center gap-3 text-sm font-bold transition-colors" style="color: var(--color-text-soft)">
             <Icon name="heroicons:arrow-left" class="h-4 w-4 transition-transform group-hover:-translate-x-1" />
             {{ $t('blog.backToList') }}
           </NuxtLink>
@@ -356,25 +360,54 @@ const handleDelete = async () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
 .fintech-article-detail {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #fcfcfd;
+  background-color: var(--color-background);
 }
 
-:global(.dark .fintech-article-detail) {
-  background-color: #020617;
+.article-prose {
+  color: var(--color-text);
+}
+.article-prose :deep(h1),
+.article-prose :deep(h2),
+.article-prose :deep(h3),
+.article-prose :deep(h4),
+.article-prose :deep(h5),
+.article-prose :deep(h6) {
+  color: var(--color-text);
+}
+.article-prose :deep(p) {
+  color: var(--color-text-muted);
+}
+.article-prose :deep(a) {
+  color: var(--color-secondary);
+}
+.article-prose :deep(blockquote) {
+  border-color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 6%, transparent);
+}
+.article-prose :deep(code) {
+  background: var(--color-surface-strong);
+}
+.article-prose :deep(hr) {
+  border-color: var(--color-border);
+}
+.article-prose :deep(strong) {
+  color: var(--color-text);
+}
+
+.admin-action-btn:hover {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+}
+
+.blog-back-link:hover {
+  opacity: 0.75;
 }
 
 .bg-grid {
   background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0);
   background-size: 48px 48px;
-  color: rgb(15 23 42 / 0.1);
-}
-
-:global(.dark .bg-grid) {
-  color: rgb(255 255 255 / 0.05);
+  color: var(--color-border);
 }
 
 .orb {
@@ -382,13 +415,13 @@ const handleDelete = async () => {
   border-radius: 9999px;
   filter: blur(100px);
   pointer-events: none;
-  opacity: 0.4;
+  opacity: 0.25;
 }
 
 .orb-cyan {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-info) 20%, transparent) 0%, transparent 70%);
   top: -100px;
   right: -50px;
 }
@@ -396,7 +429,7 @@ const handleDelete = async () => {
 .orb-amber {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-secondary) 15%, transparent) 0%, transparent 70%);
   bottom: 20%;
   left: -100px;
 }

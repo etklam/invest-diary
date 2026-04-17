@@ -5,6 +5,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design-token bridge — overrides common Tailwind slate/gray/sky/indigo
+   utilities with CSS custom properties. Must come AFTER @tailwind utilities
+   so it wins in the cascade. */
+@import './token-bridge.css';
+
 @layer base {
   html,
   body,

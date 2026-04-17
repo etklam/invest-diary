@@ -435,26 +435,19 @@ definePageMeta({
 
 <template>
   <div class="relative-value-page">
-    <!-- Background gradients -->
-    <div class="fixed inset-0 -z-10 overflow-hidden">
-      <div class="absolute -left-40 top-0 h-[600px] w-[600px] rounded-full bg-amber-500/10 blur-3xl" />
-      <div class="absolute -right-40 top-0 h-[600px] w-[600px] rounded-full bg-violet-500/10 blur-3xl" />
-      <div class="absolute bottom-0 left-1/2 h-[400px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/5 blur-3xl" />
-    </div>
-
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Header -->
       <header class="mb-10 text-center sm:mb-12">
-        <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-4 py-2 backdrop-blur-sm">
-          <Icon name="heroicons:calculator" class="h-4 w-4 text-amber-500" />
-          <span class="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+        <div class="mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2" style="background: color-mix(in srgb, var(--color-secondary) 12%, var(--color-surface))">
+          <Icon name="heroicons:calculator" class="h-4 w-4" style="color: var(--color-secondary)" />
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-secondary)">
             {{ t('tools.relativeValue.heroKicker') }}
           </span>
         </div>
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl lg:text-5xl">
+        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
           {{ t('tools.relativeValue.title') }}
         </h1>
-        <p class="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base">
+        <p class="mx-auto mt-4 max-w-2xl text-sm leading-relaxed sm:text-base" style="color: var(--color-text-muted)">
           {{ t('tools.relativeValue.subtitle') }}
         </p>
       </header>
@@ -466,8 +459,8 @@ definePageMeta({
           <!-- Quick Presets -->
           <section class="mb-6">
             <div class="mb-4 flex items-center gap-2">
-              <Icon name="heroicons:lightning-bolt" class="h-5 w-5 text-amber-500" />
-              <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+              <Icon name="heroicons:lightning-bolt" class="h-5 w-5" style="color: var(--color-secondary)" />
+              <h2 class="text-lg font-semibold">
                 {{ t('tools.relativeValue.commonPresets') }}
               </h2>
             </div>
@@ -477,21 +470,22 @@ definePageMeta({
                 :key="`${preset.primarySymbol}-${preset.relativeSymbol}`"
                 type="button"
                 :data-testid="`preset-${preset.primarySymbol.replace(/[^A-Z0-9]/gi, '_')}-${preset.relativeSymbol.replace(/[^A-Z0-9]/gi, '_')}`"
-                class="group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200/60 bg-white/80 p-4 backdrop-blur-sm transition-all duration-200 hover:border-amber-500/50 hover:bg-amber-50/50 hover:shadow-lg hover:shadow-amber-500/10 dark:border-slate-700/60 dark:bg-slate-800/60 dark:hover:border-amber-500/30 dark:hover:bg-slate-700/40"
+                class="group flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-all duration-200 hover:shadow-lg"
+                style="border-color: var(--color-border); background: var(--color-surface)"
                 @click="applyPreset(preset)"
               >
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25 group-hover:scale-110 transition-transform duration-200">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-lg transition-transform duration-200 group-hover:scale-110" style="background: linear-gradient(to bottom right, var(--color-secondary), color-mix(in srgb, var(--color-secondary) 85%, black))">
                   <Icon name="heroicons:chart-bar" class="h-6 w-6" />
                 </div>
                 <div class="text-left">
-                  <div class="font-semibold text-slate-900 dark:text-white">
+                  <div class="font-semibold" style="color: var(--color-text)">
                     {{ preset.primarySymbol }} / {{ preset.relativeSymbol }}
                   </div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">
+                  <div class="text-sm" style="color: var(--color-text-soft)">
                     {{ preset.description }}
                   </div>
                 </div>
-                <Icon name="heroicons:arrow-right" class="ml-auto h-5 w-5 text-slate-400 group-hover:text-amber-500 group-hover:translate-x-1 transition-all duration-200" />
+                <Icon name="heroicons:arrow-right" class="ml-auto h-5 w-5 group-hover:translate-x-1 transition-all duration-200" style="color: var(--color-text-soft)" />
               </button>
             </div>
           </section>
@@ -526,32 +520,32 @@ definePageMeta({
           </div>
 
           <!-- Target Prices -->
-          <section class="rounded-3xl border border-slate-200/60 bg-white/80 p-6 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-800/60">
+          <section class="rounded-3xl border p-6" style="border-color: var(--color-border); background: var(--color-surface)">
             <div class="mb-4 flex items-center gap-2">
-              <Icon name="heroicons:table-cells" class="h-5 w-5 text-sky-500" />
-              <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+              <Icon name="heroicons:table-cells" class="h-5 w-5" style="color: var(--color-secondary)" />
+              <h2 class="text-lg font-semibold">
                 {{ t('tools.relativeValue.targetPrices') }}
               </h2>
             </div>
 
-            <div v-if="symbolsMatch" class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-200">
+            <div v-if="symbolsMatch" class="mb-4 rounded-2xl px-4 py-3 text-sm" style="border: 1px solid color-mix(in srgb, var(--color-warning) 40%, var(--color-border)); background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface)); color: var(--color-text)">
               {{ t('tools.relativeValue.sameSymbolWarning') }}
             </div>
 
             <!-- Tab Buttons -->
-            <div class="mb-6 flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
+            <div class="mb-6 flex rounded-xl border p-1" style="border-color: var(--color-border); background: var(--color-surface)">
               <button
                 type="button"
-                class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                :class="targetPriceInputMode === 'manual' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
+                class="rv-tab flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                :class="targetPriceInputMode === 'manual' ? 'rv-tab-active' : 'rv-tab-inactive'"
                 @click="targetPriceInputMode = 'manual'"
               >
                 {{ t('tools.relativeValue.manualInput') }}
               </button>
               <button
                 type="button"
-                class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                :class="targetPriceInputMode === 'auto' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
+                class="rv-tab flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                :class="targetPriceInputMode === 'auto' ? 'rv-tab-active' : 'rv-tab-inactive'"
                 @click="targetPriceInputMode = 'auto'"
               >
                 {{ t('tools.relativeValue.autoGenerate') }}
@@ -561,7 +555,7 @@ definePageMeta({
             <div class="grid gap-6 lg:grid-cols-2">
               <!-- Manual Input Content -->
               <div v-if="targetPriceInputMode === 'manual'">
-                <label for="target-prices" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                <label for="target-prices" class="mb-1.5 block text-sm font-medium" style="color: var(--color-text)">
                   {{ t('tools.relativeValue.targetPricesInput') }}
                 </label>
                 <div class="relative">
@@ -570,37 +564,37 @@ definePageMeta({
                     v-model="targetPricesInput"
                     rows="5"
                     :placeholder="t('tools.relativeValue.targetPricesPlaceholder')"
-                    class="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 text-sm font-mono text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:focus:border-sky-500 dark:focus:ring-sky-500/20"
+                    class="rv-input w-full rounded-xl px-4 py-3 text-sm font-mono transition-all duration-200 focus:outline-none"
                   />
                   <button
                     v-if="targetPricesInput"
                     type="button"
-                    class="absolute right-3 top-3 rounded-lg bg-slate-100 p-1.5 text-slate-500 transition-colors hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400 dark:hover:bg-slate-600"
+                    class="absolute right-3 top-3 rounded-lg p-1.5 transition-colors" style="background: var(--color-surface-muted); color: var(--color-text-soft)"
                     @click="targetPricesInput = ''"
                   >
                     <Icon name="heroicons:x-mark" class="h-4 w-4" />
                   </button>
                 </div>
-                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                <p class="mt-2 text-xs" style="color: var(--color-text-soft)">
                   {{ t('tools.relativeValue.targetPricesHint') }}
                 </p>
               </div>
 
               <!-- Auto Generate Content -->
               <div v-if="targetPriceInputMode === 'auto'" class="space-y-4">
-                <div class="rounded-xl bg-slate-50/80 p-4 dark:bg-slate-900/60">
-                  <div class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                    <Icon name="heroicons:sparkles" class="h-4 w-4 text-sky-500" />
+                <div class="rounded-xl p-4" style="background: var(--color-surface-muted)">
+                  <div class="flex items-center gap-2 text-sm font-medium" style="color: var(--color-text)">
+                    <Icon name="heroicons:sparkles" class="h-4 w-4" style="color: var(--color-secondary)" />
                     {{ t('tools.relativeValue.autoGeneratePricePoints') }}
                   </div>
-                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  <p class="mt-1 text-xs" style="color: var(--color-text-soft)">
                     {{ t('tools.relativeValue.basedOnPrimaryPrice', { symbol: primarySymbol || t('tools.relativeValue.primary') }) }}
                   </p>
                 </div>
 
                 <div class="grid grid-cols-3 gap-3">
                   <div>
-                    <label for="price-count" class="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <label for="price-count" class="mb-1.5 block text-xs font-medium" style="color: var(--color-text-soft)">
                       {{ t('tools.relativeValue.pricePointCount') }}
                     </label>
                     <input
@@ -609,11 +603,11 @@ definePageMeta({
                       type="number"
                       min="1"
                       max="20"
-                      class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm font-medium text-slate-900 transition-all duration-200 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-sky-500"
+                      class="rv-input w-full rounded-lg px-3 py-2 text-center text-sm font-medium transition-all duration-200 focus:outline-none"
                     >
                   </div>
                   <div>
-                    <label for="price-step" class="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <label for="price-step" class="mb-1.5 block text-xs font-medium" style="color: var(--color-text-soft)">
                       {{ t('tools.relativeValue.pricePointStep') }}
                     </label>
                     <input
@@ -622,34 +616,34 @@ definePageMeta({
                       type="number"
                       min="1"
                       step="1"
-                      class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-sm font-medium text-slate-900 transition-all duration-200 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-sky-500"
+                      class="rv-input w-full rounded-lg px-3 py-2 text-center text-sm font-medium transition-all duration-200 focus:outline-none"
                     >
                   </div>
                   <div>
-                    <label class="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <label class="mb-1.5 block text-xs font-medium" style="color: var(--color-text-soft)">
                       {{ t('tools.relativeValue.pricePointDirection') }}
                     </label>
-                    <div class="flex rounded-lg border border-slate-200 bg-white overflow-hidden dark:border-slate-700 dark:bg-slate-900">
+                    <div class="flex rounded-lg border overflow-hidden" style="border-color: var(--color-border); background: var(--color-surface)">
                       <button
                         type="button"
-                        class="flex-1 px-2 py-2 text-xs font-medium transition-all duration-200"
-                        :class="pricePointDirection === 'up' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
+                        class="rv-tab flex-1 px-2 py-2 text-xs font-medium transition-all duration-200"
+                        :class="pricePointDirection === 'up' ? 'rv-tab-active' : 'rv-tab-inactive'"
                         @click="pricePointDirection = 'up'"
                       >
                         {{ t('tools.relativeValue.directionUp') }}
                       </button>
                       <button
                         type="button"
-                        class="flex-1 px-2 py-2 text-xs font-medium transition-all duration-200 border-l border-slate-200 dark:border-slate-700"
-                        :class="pricePointDirection === 'down' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
+                        class="rv-tab flex-1 px-2 py-2 text-xs font-medium transition-all duration-200 border-l" style="border-color: var(--color-border)"
+                        :class="pricePointDirection === 'down' ? 'rv-tab-active' : 'rv-tab-inactive'"
                         @click="pricePointDirection = 'down'"
                       >
                         {{ t('tools.relativeValue.directionDown') }}
                       </button>
                       <button
                         type="button"
-                        class="flex-1 px-2 py-2 text-xs font-medium transition-all duration-200 border-l border-slate-200 dark:border-slate-700"
-                        :class="pricePointDirection === 'both' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'"
+                        class="rv-tab flex-1 px-2 py-2 text-xs font-medium transition-all duration-200 border-l" style="border-color: var(--color-border)"
+                        :class="pricePointDirection === 'both' ? 'rv-tab-active' : 'rv-tab-inactive'"
                         @click="pricePointDirection = 'both'"
                       >
                         {{ t('tools.relativeValue.directionBoth') }}
@@ -838,15 +832,29 @@ definePageMeta({
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
 .relative-value-page {
-  font-family: 'Inter', 'Avenir Next', 'Segoe UI', sans-serif;
-  background: linear-gradient(180deg, rgb(248 250 252) 0%, rgb(241 245 249) 100%);
+  font-family: var(--font-body);
+  background: var(--color-background);
   min-height: 100vh;
 }
 
-/* Custom scrollbar for table */
+/* Typography overrides */
+.relative-value-page h1 {
+  font-family: var(--font-display);
+  color: var(--color-text);
+}
+
+.relative-value-page h2,
+.relative-value-page h3 {
+  color: var(--color-text);
+}
+
+/* Mono values */
+.relative-value-page .font-mono {
+  font-family: var(--font-data);
+}
+
+/* Custom scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
 }
@@ -856,25 +864,22 @@ definePageMeta({
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background-color: rgb(203 213 225);
+  background-color: var(--color-border);
   border-radius: 3px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(148 163 184);
+  background-color: var(--color-text-soft);
 }
 
-/* Dark mode scrollbar */
-:global(.dark) .overflow-y-auto::-webkit-scrollbar-thumb {
-  background-color: rgb(71 85 105);
+/* Card overrides — scoped specificity beats Tailwind */
+.relative-value-page :deep(.rounded-3xl),
+.relative-value-page .rounded-3xl {
+  border-radius: var(--radius-md);
 }
 
-:global(.dark) .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(100 116 139);
-}
-
-/* Dark mode background */
-:global(.dark .relative-value-page) {
-  background: linear-gradient(180deg, rgb(2 6 18) 0%, rgb(15 23 42) 100%);
+.relative-value-page :deep(.rounded-2xl),
+.relative-value-page .rounded-2xl {
+  border-radius: var(--radius-sm);
 }
 </style>

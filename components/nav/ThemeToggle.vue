@@ -17,8 +17,9 @@ const themeToggleIcon = computed(() => {
 <template>
   <button
     @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'"
-    class="cursor-pointer rounded-xl p-2 text-slate-500 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
-    :class="isHomeRoute ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200' : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:text-cyan-200'"
+    class="cursor-pointer rounded-xl p-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+    style="color: var(--color-text-muted);"
+    :style="{ '--tw-ring-color': 'var(--color-secondary)' }"
     :aria-label="$t('theme.toggleDarkMode')"
   >
     <Icon

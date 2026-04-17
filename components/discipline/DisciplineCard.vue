@@ -47,7 +47,7 @@ watch(() => props.isEditing, (newVal) => {
 
 <template>
   <div
-    class="group relative bg-white dark:bg-gradient-to-br dark:from-[#1A1F2C] dark:to-[#121722] rounded-lg dark:rounded-sm border border-slate-200 dark:border-[#C9A962]/20 p-6 transition-all duration-300 hover:border-[#C9A962]/30 dark:hover:border-[#C9A962]/40 shadow-sm hover:shadow-md dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] dark:hover:shadow-[0_8px_30px_-4px_rgba(201,169,98,0.15)]"
+    class="discipline-card group relative p-6 transition-all duration-300"
   >
     <!-- Premium序號標記 -->
     <div class="absolute top-4 left-4 flex items-center gap-2">
@@ -61,7 +61,7 @@ watch(() => props.isEditing, (newVal) => {
       <button
         v-if="index > 0"
         @click="emit('move-up', index)"
-        class="p-2 text-slate-400 dark:text-[#B8B4AE] hover:text-[#C9A962] hover:bg-slate-100 dark:hover:bg-[#C9A962]/10 rounded-sm transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center"
+        class="dc-btn dc-btn-move p-2 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
         :title="t('discipline.actions.moveUp')"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@ watch(() => props.isEditing, (newVal) => {
       <button
         v-if="index < total - 1"
         @click="emit('move-down', index)"
-        class="p-2 text-slate-400 dark:text-[#B8B4AE] hover:text-[#C9A962] hover:bg-slate-100 dark:hover:bg-[#C9A962]/10 rounded-sm transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center"
+        class="dc-btn dc-btn-move p-2 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
         :title="t('discipline.actions.moveDown')"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +85,7 @@ watch(() => props.isEditing, (newVal) => {
       <button
         v-if="!isEditing"
         @click="emit('start-edit', item.id)"
-        class="p-2 text-slate-400 dark:text-[#B8B4AE] hover:text-[#60A5FA] hover:bg-blue-50 dark:hover:bg-[#60A5FA]/10 rounded-sm transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center"
+        class="dc-btn dc-btn-edit p-2 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
         :title="t('discipline.actions.edit')"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +96,7 @@ watch(() => props.isEditing, (newVal) => {
       <!-- 刪除按鈕 -->
       <button
         @click="emit('delete', item.id)"
-        class="p-2 text-slate-400 dark:text-[#B8B4AE] hover:text-[#F87171] hover:bg-red-50 dark:hover:bg-[#F87171]/10 rounded-sm transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center"
+        class="dc-btn dc-btn-delete p-2 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
         :title="t('discipline.actions.delete')"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,7 +110,7 @@ watch(() => props.isEditing, (newVal) => {
       <button
         v-if="!isEditing"
         @click="emit('start-edit', item.id)"
-        class="p-2 text-slate-400 dark:text-[#B8B4AE] hover:text-[#60A5FA] hover:bg-blue-50 dark:hover:bg-[#60A5FA]/10 rounded-sm transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center"
+        class="dc-btn dc-btn-edit p-2 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -119,7 +119,7 @@ watch(() => props.isEditing, (newVal) => {
 
       <button
         @click="emit('delete', item.id)"
-        class="p-2 text-slate-400 dark:text-[#B8B4AE] hover:text-[#F87171] hover:bg-red-50 dark:hover:bg-[#F87171]/10 rounded-sm transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center"
+        class="dc-btn dc-btn-delete p-2 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -132,7 +132,7 @@ watch(() => props.isEditing, (newVal) => {
       <button
         v-if="index > 0"
         @click="emit('move-up', index)"
-        class="p-2 text-slate-400 dark:text-[#B8B4AE] hover:text-[#C9A962] hover:bg-slate-100 dark:hover:bg-[#C9A962]/10 rounded-sm transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center"
+        class="dc-btn dc-btn-move p-2 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 15l7-7 7 7"></path>
@@ -142,7 +142,7 @@ watch(() => props.isEditing, (newVal) => {
       <button
         v-if="index < total - 1"
         @click="emit('move-down', index)"
-        class="p-2 text-slate-400 dark:text-[#B8B4AE] hover:text-[#C9A962] hover:bg-slate-100 dark:hover:bg-[#C9A962]/10 rounded-sm transition-all duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center"
+        class="dc-btn dc-btn-move p-2 rounded-md transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path>
@@ -154,20 +154,20 @@ watch(() => props.isEditing, (newVal) => {
     <div class="pt-4 pr-20 sm:pr-0">
       <!-- 檢視模式 -->
       <div v-if="!isEditing" class="flex flex-col items-center justify-center min-h-[120px]">
-        <div class="text-lg font-medium text-slate-800 dark:text-[#F5F1E8] text-center leading-relaxed tracking-wide mb-6">
+        <div class="text-lg font-medium text-center leading-relaxed tracking-wide mb-6" style="color: var(--color-text);">
           {{ item.content }}
         </div>
 
         <!-- 底部資訊 -->
         <div class="flex items-center justify-center gap-6 text-xs">
-          <div class="flex items-center text-slate-500 dark:text-[#6B7280]">
+          <div class="flex items-center" style="color: var(--color-text-soft);">
             <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             {{ formatLocaleDate(item.createdAt) }}
           </div>
           <div class="w-px h-3 bg-[#C9A962]/10 dark:bg-[#C9A962]/20"></div>
-          <div class="flex items-center text-slate-500 dark:text-[#6B7280]">
+          <div class="flex items-center" style="color: var(--color-text-soft);">
             <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
@@ -181,13 +181,13 @@ watch(() => props.isEditing, (newVal) => {
         <textarea
           v-model="editContent"
           rows="4"
-          class="w-full px-4 py-3 bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-[#C9A962]/30 rounded-sm text-slate-900 dark:text-[#F5F1E8] placeholder-slate-400 dark:placeholder-[#6B7280] focus:border-[#C9A962] focus:outline-none focus:ring-1 focus:ring-[#C9A962]/50 transition-all duration-200 resize-none"
+          class="dc-textarea w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-1 transition-all duration-200 resize-none"
         />
         <div class="flex items-center gap-3">
           <button
             @click="handleSave"
             :disabled="saving || !editContent.trim()"
-            class="px-6 py-2.5 bg-gradient-to-r from-[#C9A962] to-[#A68B4B] hover:from-[#B89B56] hover:to-[#937842] disabled:from-slate-300 dark:disabled:from-[#6B7280] disabled:to-slate-400 dark:disabled:to-[#4B5563] text-white dark:text-[#0A1628] rounded-sm font-medium transition-all duration-200 disabled:cursor-not-allowed min-h-[40px]"
+            class="dc-btn-save px-6 py-2.5 text-white rounded-md font-medium transition-all duration-200 disabled:cursor-not-allowed min-h-[44px]"
           >
             <span v-if="saving" class="flex items-center">
               <svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -200,7 +200,7 @@ watch(() => props.isEditing, (newVal) => {
           </button>
           <button
             @click="emit('cancel-edit')"
-            class="px-6 py-2.5 bg-slate-100 dark:bg-[#1A1F2C] hover:bg-slate-200 dark:hover:bg-[#252B38] border border-slate-200 dark:border-[#C9A962]/20 text-slate-700 dark:text-[#B8B4AE] hover:text-slate-900 dark:hover:text-[#F5F1E8] rounded-sm font-medium transition-all duration-200 min-h-[40px]"
+            class="dc-btn-cancel px-6 py-2.5 border rounded-md font-medium transition-all duration-200 min-h-[44px]"
           >
             {{ t('discipline.actions.cancel') }}
           </button>
@@ -209,3 +209,58 @@ watch(() => props.isEditing, (newVal) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.discipline-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.discipline-card:hover {
+  box-shadow: var(--shadow-md);
+}
+.dc-btn {
+  color: var(--color-text-soft);
+}
+.dc-btn-move:hover {
+  color: #C9A962;
+  background: color-mix(in srgb, #C9A962 10%, transparent);
+}
+.dc-btn-edit:hover {
+  color: var(--color-info);
+  background: color-mix(in srgb, var(--color-info) 10%, transparent);
+}
+.dc-btn-delete:hover {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+}
+.dc-textarea {
+  background: color-mix(in srgb, var(--color-surface-strong) 66%, transparent);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+.dc-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 50%, transparent);
+}
+.dc-btn-save {
+  background: var(--color-primary);
+}
+.dc-btn-save:hover {
+  filter: brightness(1.15);
+}
+.dc-btn-save:disabled {
+  background: var(--color-border);
+  filter: none;
+}
+.dc-btn-cancel {
+  background: var(--color-surface-strong);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+.dc-btn-cancel:hover {
+  color: var(--color-text);
+  filter: brightness(0.95);
+}
+</style>

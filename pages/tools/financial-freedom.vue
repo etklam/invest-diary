@@ -544,29 +544,23 @@ definePageMeta({
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
-
 .freedom-page {
-  font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
-  background:
-    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 11%), transparent 62%),
-    radial-gradient(820px 420px at 100% -8%, rgb(16 185 129 / 9%), transparent 62%),
-    #f8fafc;
+  font-family: var(--font-body);
+  background: var(--color-background);
 }
 
 .panel {
-  border: 1px solid rgb(191 219 254);
-  border-radius: 1rem;
-  background: rgb(255 255 255 / 84%);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 12px 26px rgb(30 64 175 / 8%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .kicker {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: rgb(59 130 246);
+  color: var(--color-secondary);
   font-weight: 700;
 }
 
@@ -574,9 +568,9 @@ definePageMeta({
 .summary-card,
 .projection-stat {
   min-width: 0;
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.95rem;
-  background: rgb(255 255 255 / 70%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   padding: 1rem;
 }
 
@@ -594,7 +588,7 @@ definePageMeta({
   line-height: 1.35;
   overflow-wrap: anywhere;
   word-break: break-word;
-  color: rgb(100 116 139);
+  color: var(--color-text-soft);
 }
 
 .metric-value,
@@ -609,15 +603,15 @@ definePageMeta({
   line-height: 1.2;
   font-size: clamp(1rem, 1.3vw + 0.9rem, 1.35rem);
   font-weight: 600;
-  color: rgb(15 23 42);
+  font-family: var(--font-data);
+  color: var(--color-text);
 }
 
 .hero-spotlight {
-  border: 1px solid rgb(30 64 175 / 20%);
-  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
-  background:
-    linear-gradient(160deg, rgb(15 23 42), rgb(15 23 42 / 94%) 48%, rgb(30 41 59) 100%);
+  background: linear-gradient(160deg, var(--color-panel-ink), color-mix(in srgb, var(--color-panel-ink) 94%, transparent) 48%, color-mix(in srgb, var(--color-panel-ink) 80%, var(--color-surface-strong)));
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
 }
 
@@ -626,7 +620,7 @@ definePageMeta({
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgb(148 163 184);
+  color: rgb(255 255 255 / 60%);
 }
 
 .hero-spotlight-value {
@@ -636,13 +630,14 @@ definePageMeta({
   line-height: 1.1;
   font-size: clamp(1.75rem, 4vw, 2.5rem);
   font-weight: 600;
+  font-family: var(--font-data);
   color: white;
 }
 
 .spotlight-stat {
   min-width: 0;
-  border: 1px solid rgb(148 163 184 / 18%);
-  border-radius: 0.9rem;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--radius-sm);
   padding: 0.9rem 1rem;
   background: rgb(255 255 255 / 4%);
 }
@@ -651,9 +646,9 @@ definePageMeta({
 .recommendation-card,
 .projection-row {
   min-width: 0;
-  border: 1px solid rgb(226 232 240);
-  border-radius: 1rem;
-  background: rgb(248 250 252 / 78%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
   padding: 1rem;
 }
 
@@ -664,18 +659,18 @@ definePageMeta({
 
 .field-input {
   width: 100%;
-  border: 1px solid rgb(203 213 225);
-  border-radius: 0.9rem;
-  background: rgb(255 255 255 / 90%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   padding: 0.9rem 3.5rem 0.9rem 1rem;
-  color: rgb(15 23 42);
+  color: var(--color-text);
   transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
 .field-input:focus {
   outline: none;
-  border-color: rgb(59 130 246);
-  box-shadow: 0 0 0 4px rgb(191 219 254);
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-secondary) 15%, transparent);
 }
 
 .field-unit {
@@ -685,20 +680,21 @@ definePageMeta({
   transform: translateY(-50%);
   font-size: 0.8rem;
   font-weight: 600;
-  color: rgb(100 116 139);
+  font-family: var(--font-data);
+  color: var(--color-text-soft);
 }
 
 .field-hint {
   margin-top: 0.45rem;
   font-size: 0.8rem;
-  color: rgb(100 116 139);
+  color: var(--color-text-soft);
 }
 
 .range-card,
 .choice-card {
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.95rem;
-  background: rgb(255 255 255 / 70%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   padding: 1rem;
   text-align: left;
   transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
@@ -710,44 +706,45 @@ definePageMeta({
 }
 
 .choice-card-active {
-  border-color: rgb(59 130 246);
-  background: rgb(239 246 255);
+  border-color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-surface));
 }
 
 .range-card-active-slate {
-  border-color: rgb(100 116 139);
-  background: rgb(248 250 252);
+  border-color: var(--color-text-soft);
+  background: var(--color-surface-muted);
 }
 
 .range-card-active-green {
-  border-color: rgb(16 185 129);
-  background: rgb(236 253 245);
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
 }
 
 .range-card-active-violet {
-  border-color: rgb(139 92 246);
-  background: rgb(245 243 255);
+  border-color: #8b5cf6;
+  background: color-mix(in srgb, #8b5cf6 8%, var(--color-surface));
 }
 
 .result-banner {
   background:
-    radial-gradient(circle at top right, rgb(56 189 248 / 30%), transparent 28%),
-    linear-gradient(145deg, rgb(15 23 42), rgb(30 41 59));
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-info) 35%, transparent), transparent 28%),
+    linear-gradient(145deg, var(--color-panel-ink), color-mix(in srgb, var(--color-panel-ink) 80%, var(--color-surface-strong)));
 }
 
 .action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.8rem;
-  padding: 0.7rem 1rem;
+  border-radius: var(--radius-pill);
+  padding: 0.7rem 1.2rem;
   color: white;
-  background: rgb(30 64 175 / 88%);
-  transition: background-color 180ms ease;
+  background: var(--color-primary);
+  transition: background-color var(--motion-fast) var(--easing-standard), transform var(--motion-fast) var(--easing-standard);
 }
 
 .action-btn:hover {
-  background: rgb(29 78 216);
+  background: var(--color-primary-active);
+  transform: translateY(-1px);
 }
 
 .recommendation-card {
@@ -757,8 +754,19 @@ definePageMeta({
 }
 
 .projection-row-active {
-  border-color: rgb(16 185 129 / 45%);
-  background: rgb(236 253 245 / 70%);
+  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+}
+
+/* Typography & color overrides for Tailwind hardcoded classes */
+.freedom-page h1 {
+  font-family: var(--font-display);
+  color: var(--color-text);
+}
+
+.freedom-page h2,
+.freedom-page h3 {
+  color: var(--color-text);
 }
 
 @media (max-width: 639px) {
@@ -767,112 +775,4 @@ definePageMeta({
   }
 }
 
-:global(.dark .freedom-page),
-:global(.dark-mode .freedom-page) {
-  background:
-    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 9%), transparent 62%),
-    radial-gradient(820px 420px at 100% -8%, rgb(16 185 129 / 7%), transparent 62%),
-    rgb(2 6 18);
-}
-
-:global(.dark .panel),
-:global(.dark-mode .panel) {
-  border-color: rgb(71 85 105);
-  background: rgb(3 10 24 / 92%);
-  box-shadow: 0 12px 26px rgb(2 6 23 / 45%);
-}
-
-:global(.dark .metric-card),
-:global(.dark .summary-card),
-:global(.dark .projection-stat),
-:global(.dark .subpanel),
-:global(.dark .recommendation-card),
-:global(.dark .projection-row),
-:global(.dark .range-card),
-:global(.dark .choice-card),
-:global(.dark-mode .metric-card),
-:global(.dark-mode .summary-card),
-:global(.dark-mode .projection-stat),
-:global(.dark-mode .subpanel),
-:global(.dark-mode .recommendation-card),
-:global(.dark-mode .projection-row),
-:global(.dark-mode .range-card),
-:global(.dark-mode .choice-card) {
-  border-color: rgb(51 65 85);
-  background: rgb(8 15 30 / 78%);
-}
-
-:global(.dark .metric-label),
-:global(.dark .summary-label),
-:global(.dark .projection-label),
-:global(.dark .spotlight-stat-label),
-:global(.dark .field-label),
-:global(.dark .field-hint),
-:global(.dark-mode .metric-label),
-:global(.dark-mode .summary-label),
-:global(.dark-mode .projection-label),
-:global(.dark-mode .spotlight-stat-label),
-:global(.dark-mode .field-label),
-:global(.dark-mode .field-hint) {
-  color: rgb(148 163 184);
-}
-
-:global(.dark .metric-value),
-:global(.dark .summary-value),
-:global(.dark .projection-value),
-:global(.dark .spotlight-stat-value),
-:global(.dark-mode .metric-value),
-:global(.dark-mode .summary-value),
-:global(.dark-mode .projection-value),
-:global(.dark-mode .spotlight-stat-value) {
-  color: rgb(241 245 249);
-}
-
-:global(.dark .field-input),
-:global(.dark-mode .field-input) {
-  border-color: rgb(71 85 105);
-  background: rgb(15 23 42 / 88%);
-  color: rgb(241 245 249);
-}
-
-:global(.dark .field-input:focus),
-:global(.dark-mode .field-input:focus) {
-  border-color: rgb(96 165 250);
-  box-shadow: 0 0 0 4px rgb(30 41 59);
-}
-
-:global(.dark .field-unit),
-:global(.dark-mode .field-unit) {
-  color: rgb(148 163 184);
-}
-
-:global(.dark .choice-card-active),
-:global(.dark-mode .choice-card-active) {
-  border-color: rgb(96 165 250);
-  background: rgb(15 23 42);
-}
-
-:global(.dark .range-card-active-slate),
-:global(.dark-mode .range-card-active-slate) {
-  border-color: rgb(100 116 139);
-  background: rgb(15 23 42);
-}
-
-:global(.dark .range-card-active-green),
-:global(.dark-mode .range-card-active-green) {
-  border-color: rgb(16 185 129);
-  background: rgb(2 44 34);
-}
-
-:global(.dark .range-card-active-violet),
-:global(.dark-mode .range-card-active-violet) {
-  border-color: rgb(139 92 246);
-  background: rgb(30 27 75);
-}
-
-:global(.dark .projection-row-active),
-:global(.dark-mode .projection-row-active) {
-  border-color: rgb(16 185 129 / 45%);
-  background: rgb(2 44 34 / 55%);
-}
 </style>

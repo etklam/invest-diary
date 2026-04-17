@@ -25,14 +25,14 @@ const showSafeAreaPadding = computed(() => Boolean(hasSafeArea.value))
 </script>
 
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95" :class="{ 'pb-safe': showSafeAreaPadding }">
+  <nav class="fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-xl" :class="{ 'pb-safe': showSafeAreaPadding }" style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 95%, transparent);">
     <div class="mx-auto flex h-16 max-w-md items-center justify-around px-2">
       <NuxtLink
         v-for="item in navigationItems"
         :key="item.to"
         :to="item.to"
         class="flex flex-1 flex-col items-center justify-center gap-1 transition-colors duration-200"
-        :class="isActive(item.to) ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'"
+        :style="isActive(item.to) ? 'color: var(--color-primary);' : 'color: var(--color-text-soft);'"
       >
         <div class="relative">
           <Icon :name="getIconName(item.icon)" class="h-6 w-6" />

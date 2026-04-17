@@ -17,7 +17,7 @@ const { t } = useI18n()
       </div>
     </div>
 
-    <h1 class="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-[#F5F1E8] mb-4 tracking-tight" style="font-family: 'Playfair Display', serif;">
+    <h1 class="text-4xl sm:text-5xl font-bold mb-4 tracking-tight" style="color: var(--color-text); font-family: var(--font-display);">
       {{ t('discipline.title') }}
     </h1>
     <div class="flex items-center justify-center gap-4 mb-6">
@@ -25,7 +25,7 @@ const { t } = useI18n()
       <div class="w-2 h-2 bg-[#C9A962] rotate-45 shadow-sm"></div>
       <div class="h-px w-16 bg-gradient-to-l from-transparent to-[#C9A962]/50"></div>
     </div>
-    <p class="text-base sm:text-lg text-slate-600 dark:text-[#B8B4AE] max-w-2xl mx-auto leading-relaxed font-light">
+    <p class="text-base sm:text-lg max-w-2xl mx-auto leading-relaxed font-light" style="color: var(--color-text-muted);">
       {{ t('discipline.subtitle') }}
     </p>
   </div>

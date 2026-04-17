@@ -1,7 +1,8 @@
 <template>
   <div
     class="orb absolute rounded-full pointer-events-none filter blur-[58px]"
-    :class="[colorClass, sizeClass, positionClass]"
+    :class="[sizeClass, positionClass]"
+    :style="colorStyles"
     aria-hidden="true"
   />
 </template>
@@ -19,15 +20,17 @@ const props = withDefaults(defineProps<Props>(), {
   position: ''
 })
 
-const colorClass = computed(() => {
+const colorStyles = computed(() => {
   switch (props.color) {
-    case 'cyan': return 'bg-sky-400/30 dark:bg-sky-400/10'
-    case 'orange': return 'bg-orange-400/20 dark:bg-orange-400/5'
-    case 'blue': return 'bg-blue-400/25 dark:bg-blue-400/10'
-    case 'rose': return 'bg-rose-400/20 dark:bg-rose-400/5'
-    default: return 'bg-sky-400/30'
+    case 'cyan': return 'background: color-mix(in srgb, var(--color-primary) 30%, transparent);'
+    case 'orange': return 'background: color-mix(in srgb, var(--color-secondary) 20%, transparent);'
+    case 'blue': return 'background: color-mix(in srgb, var(--color-info) 25%, transparent);'
+    case 'rose': return 'background: color-mix(in srgb, var(--color-danger) 20%, transparent);'
+    default: return 'background: color-mix(in srgb, var(--color-primary) 30%, transparent);'
   }
 })
+
+const colorClass = computed(() => '')
 
 const sizeClass = computed(() => {
   switch (props.size) {

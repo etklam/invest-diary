@@ -1,57 +1,56 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+  <div class="settings-page max-w-4xl mx-auto px-4 py-8 sm:py-10">
+    <h1 class="settings-h1 text-2xl font-semibold mb-8 sm:text-3xl">
       {{ t('settings.title') }}
     </h1>
 
     <div class="space-y-6">
       <!-- Profile Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+      <div class="settings-card">
+        <h2 class="settings-h2 text-xl font-semibold mb-4">
           {{ t('settings.profile') }}
         </h2>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="settings-label block text-sm font-medium mb-1">
               {{ t('auth.email') }}
             </label>
             <input
               :value="user?.email"
               type="email"
               disabled
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+              class="settings-input settings-input-disabled w-full px-3 py-2 rounded-dt-sm"
             />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.emailCannotChange') }}</p>
+            <p class="settings-hint mt-1 text-xs">{{ t('settings.emailCannotChange') }}</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="settings-label block text-sm font-medium mb-1">
               {{ t('auth.name') }}
             </label>
             <input
               v-model="settingsForm.name"
               type="text"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              class="settings-input w-full px-3 py-2 rounded-dt-sm"
               :placeholder="t('auth.namePlaceholder')"
             />
           </div>
         </div>
       </div>
 
-      <!-- Display Settings Section (NEW) -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+      <!-- Display Settings Section -->
+      <div class="settings-card">
+        <h2 class="settings-h2 text-xl font-semibold mb-4">
           {{ t('settings.displaySettings') }}
         </h2>
         <div class="space-y-4">
-          <!-- Timezone Selector -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="settings-label block text-sm font-medium mb-1">
               {{ t('settings.timezone') }}
             </label>
             <select
               v-model="settingsForm.timezone"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              class="settings-input w-full px-3 py-2 rounded-dt-sm"
             >
               <option value="">{{ t('settings.selectTimezone') }}</option>
               <option value="local">{{ t('settings.localTimezone') }}</option>
@@ -61,20 +60,20 @@
                 </option>
               </optgroup>
             </select>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p class="settings-hint mt-1 text-xs">
               {{ t('settings.timezoneDesc') }}
             </p>
           </div>
           <div>
-            <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="flex items-center gap-2 text-sm font-medium" style="color: var(--color-text-muted);">
               <input
                 v-model="settingsForm.excludeHolidaysInStats"
                 type="checkbox"
-                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                class="settings-checkbox h-4 w-4 rounded"
               >
               <span>統計排除國定假日（依時區）</span>
             </label>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p class="settings-hint mt-1 text-xs">
               以 Nager.Date 自動抓取假日，計算記錄率時不納入分母。
             </p>
           </div>
@@ -82,81 +81,77 @@
       </div>
 
       <!-- Trading Settings Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+      <div class="settings-card">
+        <h2 class="settings-h2 text-xl font-semibold mb-4">
           {{ t('settings.tradingSettings') }}
         </h2>
         <div class="space-y-4">
-          <!-- Expected Monthly Trades -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="settings-label block text-sm font-medium mb-1">
               {{ t('settings.expectedMonthlyTrades') }}
             </label>
             <input
               v-model.number="settingsForm.expectedMonthlyTrades"
               type="number"
               min="0"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              class="settings-input w-full px-3 py-2 rounded-dt-sm"
               placeholder="20"
             />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p class="settings-hint mt-1 text-xs">
               {{ t('settings.expectedMonthlyTradesDesc') }}
             </p>
           </div>
 
-          <!-- Expected Profit -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="settings-label block text-sm font-medium mb-1">
               {{ t('settings.expectedProfit') }}
             </label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span class="text-gray-500 dark:text-gray-400">$</span>
+                <span class="settings-hint text-sm">$</span>
               </div>
               <input
                 v-model.number="settingsForm.expectedProfit"
                 type="number"
                 min="0"
                 step="0.01"
-                class="w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                class="settings-input w-full pl-8 pr-3 py-2 rounded-dt-sm"
                 placeholder="0.00"
               />
             </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p class="settings-hint mt-1 text-xs">
               {{ t('settings.expectedProfitDesc') }}
             </p>
           </div>
 
-          <!-- Expected Average Holding -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="settings-label block text-sm font-medium mb-1">
               {{ t('settings.expectedAvgHolding') }}
             </label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span class="text-gray-500 dark:text-gray-400">$</span>
+                <span class="settings-hint text-sm">$</span>
               </div>
               <input
                 v-model.number="settingsForm.expectedAvgHolding"
                 type="number"
                 min="0"
                 step="0.01"
-                class="w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                class="settings-input w-full pl-8 pr-3 py-2 rounded-dt-sm"
                 placeholder="0.00"
               />
             </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p class="settings-hint mt-1 text-xs">
               {{ t('settings.expectedAvgHoldingDesc') }}
             </p>
           </div>
         </div>
 
-        <!-- Save Settings Button -->
         <div class="mt-6">
           <button
             @click="handleSaveSettings"
             :disabled="isLoading || !hasSettingsChanged"
-            class="w-full sm:w-auto px-6 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="settings-btn-primary w-full sm:w-auto px-6 py-2.5 text-sm font-semibold rounded-dt-pill text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="!isLoading">{{ t('common.save') }}</span>
             <span v-else class="flex items-center justify-center">
@@ -171,61 +166,60 @@
       </div>
 
       <!-- Security Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+      <div class="settings-card">
+        <h2 class="settings-h2 text-xl font-semibold mb-4">
           {{ t('settings.changePassword') }}
         </h2>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="settings-label block text-sm font-medium mb-1">
               {{ t('settings.currentPassword') }}
             </label>
             <input
               v-model="passwordForm.currentPassword"
               type="password"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              class="settings-input w-full px-3 py-2 rounded-dt-sm"
               :placeholder="t('auth.passwordPlaceholder')"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="settings-label block text-sm font-medium mb-1">
               {{ t('settings.newPassword') }}
             </label>
             <input
               v-model="passwordForm.newPassword"
               type="password"
               minlength="8"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              class="settings-input w-full px-3 py-2 rounded-dt-sm"
               :placeholder="t('auth.passwordMinLength')"
             />
-            <p v-if="passwordForm.newPassword && passwordForm.newPassword.length < 8" class="mt-1 text-xs text-red-600 dark:text-red-400">
+            <p v-if="passwordForm.newPassword && passwordForm.newPassword.length < 8" class="mt-1 text-xs" style="color: var(--color-danger);">
               {{ t('settings.passwordTooShort') }}
             </p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="settings-label block text-sm font-medium mb-1">
               {{ t('settings.confirmNewPassword') }}
             </label>
             <input
               v-model="passwordForm.confirmPassword"
               type="password"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              class="settings-input w-full px-3 py-2 rounded-dt-sm"
               :placeholder="t('auth.confirmPasswordPlaceholder')"
             />
-            <p v-if="passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword" class="mt-1 text-xs text-red-600 dark:text-red-400">
+            <p v-if="passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword" class="mt-1 text-xs" style="color: var(--color-danger);">
               {{ t('settings.passwordMismatch') }}
             </p>
           </div>
         </div>
 
-        <!-- Change Password Button -->
         <div class="mt-6">
           <button
             @click="handleChangePassword"
             :disabled="isLoading || !isPasswordFormValid"
-            class="w-full sm:w-auto px-6 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="settings-btn-danger w-full sm:w-auto px-6 py-2.5 text-sm font-semibold rounded-dt-pill text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="!isLoading">{{ t('settings.changePassword') }}</span>
             <span v-else class="flex items-center justify-center">
@@ -387,3 +381,90 @@ definePageMeta({
   layout: 'default'
 })
 </script>
+
+<style scoped>
+.settings-page {
+  color: var(--color-text);
+}
+
+.settings-h1 {
+  font-family: var(--font-display);
+  color: var(--color-text);
+}
+
+.settings-h2 {
+  font-family: var(--font-display);
+  color: var(--color-text);
+}
+
+.settings-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .settings-card {
+    padding: 1.5rem;
+  }
+}
+
+.settings-label {
+  color: var(--color-text-muted);
+}
+
+.settings-hint {
+  color: var(--color-text-soft);
+}
+
+.settings-input {
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-strong) 66%, transparent);
+  color: var(--color-text);
+  transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+}
+
+.settings-input::placeholder {
+  color: var(--color-text-soft);
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 18%, transparent);
+}
+
+.settings-input-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: color-mix(in srgb, var(--color-surface-strong) 90%, transparent);
+}
+
+.settings-checkbox {
+  accent-color: var(--color-primary);
+  border-color: var(--color-border);
+}
+
+.settings-btn-primary {
+  background: var(--color-primary);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--color-primary) 24%, transparent);
+}
+
+.settings-btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-active);
+  transform: translateY(-1px);
+}
+
+.settings-btn-danger {
+  background: var(--color-danger);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--color-danger) 24%, transparent);
+}
+
+.settings-btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger) 84%, black);
+  transform: translateY(-1px);
+}
+</style>

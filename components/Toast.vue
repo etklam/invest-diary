@@ -14,22 +14,22 @@
         class="max-w-sm w-full pointer-events-auto overflow-hidden"
         :class="getToastWrapperClass(toast.type)"
       >
-        <div class="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-xl border border-white/40 dark:border-white/10">
+        <div class="backdrop-blur-xl rounded-2xl shadow-xl border" style="background: color-mix(in srgb, var(--color-surface) 92%, transparent); border-color: color-mix(in srgb, var(--color-border) 40%, transparent);">
           <div class="p-4">
             <div class="flex items-start gap-3">
               <!-- Icon with animated background -->
               <div
                 class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
-                :class="getIconBgClass(toast.type)"
+                :style="getIconBgStyle(toast.type)"
               >
-                <Icon :name="getIcon(toast.type)" class="h-5 w-5" :class="getIconClass(toast.type)" />
+                <Icon :name="getIcon(toast.type)" class="h-5 w-5" :style="getIconStyle(toast.type)" />
               </div>
 
               <!-- Content -->
               <div class="flex-1 min-w-0 pt-0.5">
                 <p
                   class="text-sm font-medium"
-                  :class="getTextClass(toast.type)"
+                  style="color: var(--color-text);"
                 >
                   {{ toast.message }}
                 </p>
@@ -38,7 +38,8 @@
               <!-- Close button -->
               <button
                 @click="removeToast(toast.id)"
-                class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
+                class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer"
+                style="color: var(--color-text-soft);"
                 :aria-label="$t('common.close')"
               >
                 <Icon name="heroicons:x-mark" class="h-4 w-4" />
@@ -75,44 +76,25 @@ const getIcon = (type: string) => {
   }
 }
 
-const getIconBgClass = (type: string) => {
+const getSemanticColor = (type: string) => {
   switch (type) {
-    case 'success': return 'bg-emerald-100 dark:bg-emerald-900/30'
-    case 'error': return 'bg-red-100 dark:bg-red-900/30'
-    case 'warning': return 'bg-amber-100 dark:bg-amber-900/30'
-    default: return 'bg-blue-100 dark:bg-blue-900/30'
+    case 'success': return 'var(--color-success)'
+    case 'error': return 'var(--color-danger)'
+    case 'warning': return 'var(--color-warning)'
+    default: return 'var(--color-info)'
   }
 }
 
-const getIconClass = (type: string) => {
-  switch (type) {
-    case 'success': return 'text-emerald-600 dark:text-emerald-400'
-    case 'error': return 'text-red-600 dark:text-red-400'
-    case 'warning': return 'text-amber-600 dark:text-amber-400'
-    default: return 'text-blue-600 dark:text-blue-400'
-  }
+const getIconBgStyle = (type: string) => {
+  const c = getSemanticColor(type)
+  return `background: color-mix(in srgb, ${c} 14%, transparent);`
 }
 
-const getTextClass = (type: string) => {
-  switch (type) {
-    case 'success': return 'text-gray-900 dark:text-emerald-50'
-    case 'error': return 'text-gray-900 dark:text-red-50'
-    case 'warning': return 'text-gray-900 dark:text-amber-50'
-    default: return 'text-gray-900 dark:text-blue-50'
-  }
+const getIconStyle = (type: string) => {
+  return `color: ${getSemanticColor(type)};`
 }
 
-const getToastWrapperClass = (type: string) => {
-  // Add subtle colored shadow based on type
-  switch (type) {
-    case 'success':
-      return 'shadow-emerald-500/10'
-    case 'error':
-      return 'shadow-red-500/10'
-    case 'warning':
-      return 'shadow-amber-500/10'
-    default:
-      return 'shadow-blue-500/10'
-  }
+const getToastWrapperClass = (_type: string) => {
+  return ''
 }
 </script>

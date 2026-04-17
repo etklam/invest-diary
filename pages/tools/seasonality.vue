@@ -162,17 +162,17 @@ definePageMeta({
           <div class="month-highlight month-highlight-current">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/80">{{ t('tools.seasonality.currentMonth') }}</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">{{ t('tools.seasonality.currentMonth') }}</p>
                 <h2 class="mt-2 text-3xl font-semibold text-white">{{ getLocalizedName(currentMonth) }}</h2>
               </div>
               <span class="highlight-badge">{{ getLocalizedStrength(currentMonthData.avgReturn) }}</span>
             </div>
             <div class="mt-5 text-4xl font-semibold text-white">{{ formatReturn(currentMonthData.avgReturn) }}</div>
-            <p class="mt-3 text-sm leading-6 text-sky-100/85">{{ getCharacteristics(currentMonth) }}</p>
+            <p class="mt-3 text-sm leading-6 text-white/85">{{ getCharacteristics(currentMonth) }}</p>
 
             <div class="mt-5 grid gap-2">
               <div v-for="reason in currentMonthData.possibleReasonsKeys" :key="reason" class="reason-row">
-                <Icon name="heroicons:arrow-trending-up" class="h-4 w-4 text-sky-200" />
+                <Icon name="heroicons:arrow-trending-up" class="h-4 w-4 text-white/70" />
                 <span>{{ t(reason) }}</span>
               </div>
             </div>
@@ -181,17 +181,17 @@ definePageMeta({
           <div class="month-highlight month-highlight-next">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100/80">{{ t('tools.seasonality.nextMonth') }}</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">{{ t('tools.seasonality.nextMonth') }}</p>
                 <h2 class="mt-2 text-3xl font-semibold text-white">{{ getLocalizedName(nextMonth) }}</h2>
               </div>
               <span class="highlight-badge">{{ getLocalizedStrength(nextMonthData.avgReturn) }}</span>
             </div>
             <div class="mt-5 text-4xl font-semibold text-white">{{ formatReturn(nextMonthData.avgReturn) }}</div>
-            <p class="mt-3 text-sm leading-6 text-emerald-100/85">{{ getCharacteristics(nextMonth) }}</p>
+            <p class="mt-3 text-sm leading-6 text-white/85">{{ getCharacteristics(nextMonth) }}</p>
 
             <div class="mt-5 grid gap-2">
               <div v-for="reason in nextMonthData.possibleReasonsKeys" :key="reason" class="reason-row">
-                <Icon name="heroicons:arrow-path-rounded-square" class="h-4 w-4 text-emerald-200" />
+                <Icon name="heroicons:arrow-path-rounded-square" class="h-4 w-4 text-white/70" />
                 <span>{{ t(reason) }}</span>
               </div>
             </div>
@@ -269,12 +269,12 @@ definePageMeta({
                   v-for="month in monthlyData"
                   :key="month.month"
                   class="border-b border-slate-100 transition-colors dark:border-slate-800/70"
-                  :class="month.month === currentMonth ? 'bg-blue-50/70 dark:bg-slate-900/80' : ''"
+                  :class="month.month === currentMonth ? 'table-row-current' : ''"
                 >
                   <td class="py-4 pr-4">
                     <div class="flex items-center gap-2">
                       <span class="font-medium text-slate-900 dark:text-slate-100">{{ getLocalizedShortName(month.month) }}</span>
-                      <span v-if="month.month === currentMonth" class="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                      <span v-if="month.month === currentMonth" class="rounded-full px-2 py-0.5 text-[11px] font-semibold text-white" style="background: var(--color-primary)">
                         {{ t('tools.seasonality.now') }}
                       </span>
                     </div>
@@ -406,29 +406,23 @@ definePageMeta({
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
-
 .seasonality-page {
-  font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
-  background:
-    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 11%), transparent 62%),
-    radial-gradient(820px 420px at 100% -8%, rgb(16 185 129 / 9%), transparent 62%),
-    #f8fafc;
+  font-family: var(--font-body);
+  background: var(--color-background);
 }
 
 .panel {
-  border: 1px solid rgb(191 219 254);
-  border-radius: 1rem;
-  background: rgb(255 255 255 / 84%);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 12px 26px rgb(30 64 175 / 8%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .kicker {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: rgb(59 130 246);
+  color: var(--color-secondary);
   font-weight: 700;
 }
 
@@ -436,9 +430,9 @@ definePageMeta({
 .summary-card,
 .month-card {
   min-width: 0;
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.95rem;
-  background: rgb(255 255 255 / 70%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   padding: 1rem;
 }
 
@@ -449,7 +443,7 @@ definePageMeta({
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgb(100 116 139);
+  color: var(--color-text-soft);
 }
 
 .metric-value,
@@ -462,32 +456,33 @@ definePageMeta({
   line-height: 1.2;
   font-size: 1.35rem;
   font-weight: 600;
-  color: rgb(15 23 42);
+  font-family: var(--font-data);
+  color: var(--color-text);
 }
 
 .hero-spotlight,
 .month-highlight {
   min-width: 0;
-  border-radius: 1rem;
+  border-radius: var(--radius-md);
   padding: 1.5rem;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
 }
 
 .hero-spotlight {
-  border: 1px solid rgb(30 64 175 / 20%);
-  background: linear-gradient(160deg, rgb(15 23 42), rgb(15 23 42 / 94%) 48%, rgb(30 41 59) 100%);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+  background: linear-gradient(160deg, var(--color-panel-ink), color-mix(in srgb, var(--color-panel-ink) 94%, transparent) 48%, color-mix(in srgb, var(--color-panel-ink) 80%, var(--color-surface-strong)));
 }
 
 .month-highlight-current {
   background:
-    radial-gradient(circle at top right, rgb(56 189 248 / 26%), transparent 30%),
-    linear-gradient(145deg, rgb(14 116 144), rgb(15 23 42));
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-info) 30%, transparent), transparent 30%),
+    linear-gradient(145deg, var(--color-info), var(--color-panel-ink));
 }
 
 .month-highlight-next {
   background:
-    radial-gradient(circle at top right, rgb(52 211 153 / 25%), transparent 30%),
-    linear-gradient(145deg, rgb(5 150 105), rgb(15 23 42));
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-accent) 30%, transparent), transparent 30%),
+    linear-gradient(145deg, var(--color-accent), var(--color-panel-ink));
 }
 
 .hero-spotlight-label {
@@ -495,7 +490,7 @@ definePageMeta({
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgb(148 163 184);
+  color: rgb(255 255 255 / 60%);
 }
 
 .hero-spotlight-value {
@@ -505,12 +500,13 @@ definePageMeta({
   line-height: 1.15;
   font-size: 2.5rem;
   font-weight: 600;
+  font-family: var(--font-data);
   color: white;
 }
 
 .month-pill,
 .highlight-badge {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgb(255 255 255 / 12%);
   padding: 0.45rem 0.8rem;
   font-size: 0.75rem;
@@ -535,9 +531,9 @@ definePageMeta({
 .leader-row {
   align-items: center;
   justify-content: space-between;
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.95rem;
-  background: rgb(248 250 252 / 70%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   padding: 0.9rem 1rem;
 }
 
@@ -547,48 +543,77 @@ definePageMeta({
   width: 2rem;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 0.85rem;
   font-weight: 700;
 }
 
 .rank-badge-positive {
-  background: rgb(220 252 231);
-  color: rgb(21 128 61);
+  background: color-mix(in srgb, var(--color-success) 15%, var(--color-surface));
+  color: var(--color-success);
 }
 
 .rank-badge-negative {
-  background: rgb(255 228 230);
-  color: rgb(190 24 93);
+  background: color-mix(in srgb, var(--color-danger) 15%, var(--color-surface));
+  color: var(--color-danger);
 }
 
 .month-card-current {
-  border-color: rgb(59 130 246);
-  background: rgb(239 246 255 / 82%);
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
 }
 
 .action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.8rem;
-  padding: 0.7rem 1rem;
+  border-radius: var(--radius-pill);
+  padding: 0.7rem 1.2rem;
   color: white;
-  background: rgb(30 64 175 / 88%);
-  transition: background-color 180ms ease;
+  background: var(--color-primary);
+  transition: background-color var(--motion-fast) var(--easing-standard), transform var(--motion-fast) var(--easing-standard);
 }
 
 .action-btn:hover {
-  background: rgb(29 78 216);
+  background: var(--color-primary-active);
+  transform: translateY(-1px);
 }
 
 .warning-card {
   display: flex;
   gap: 0.75rem;
-  border: 1px solid rgb(253 230 138);
-  border-radius: 1rem;
-  background: rgb(254 252 232);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 40%, var(--color-border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
   padding: 1rem;
+}
+
+/* Typography & color overrides for Tailwind hardcoded classes */
+.seasonality-page h1 {
+  font-family: var(--font-display);
+  color: var(--color-text);
+}
+
+.seasonality-page h2,
+.seasonality-page h3 {
+  color: var(--color-text);
+}
+
+.seasonality-page table th {
+  color: var(--color-text-soft);
+  border-color: var(--color-border);
+}
+
+.seasonality-page table td {
+  border-color: var(--color-border);
+}
+
+.seasonality-page table tr {
+  border-color: var(--color-border);
+}
+
+.table-row-current {
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
 }
 
 @media (max-width: 639px) {
@@ -598,68 +623,4 @@ definePageMeta({
   }
 }
 
-:global(.dark .seasonality-page),
-:global(.dark-mode .seasonality-page) {
-  background:
-    radial-gradient(900px 420px at 8% -8%, rgb(59 130 246 / 9%), transparent 62%),
-    radial-gradient(820px 420px at 100% -8%, rgb(16 185 129 / 7%), transparent 62%),
-    rgb(2 6 18);
-}
-
-:global(.dark .panel),
-:global(.dark-mode .panel) {
-  border-color: rgb(71 85 105);
-  background: rgb(3 10 24 / 92%);
-  box-shadow: 0 12px 26px rgb(2 6 23 / 45%);
-}
-
-:global(.dark .metric-card),
-:global(.dark .summary-card),
-:global(.dark .month-card),
-:global(.dark .leader-row),
-:global(.dark-mode .metric-card),
-:global(.dark-mode .summary-card),
-:global(.dark-mode .month-card),
-:global(.dark-mode .leader-row) {
-  border-color: rgb(51 65 85);
-  background: rgb(8 15 30 / 78%);
-}
-
-:global(.dark .metric-label),
-:global(.dark .summary-label),
-:global(.dark-mode .metric-label),
-:global(.dark-mode .summary-label) {
-  color: rgb(148 163 184);
-}
-
-:global(.dark .metric-value),
-:global(.dark .summary-value),
-:global(.dark-mode .metric-value),
-:global(.dark-mode .summary-value) {
-  color: rgb(241 245 249);
-}
-
-:global(.dark .month-card-current),
-:global(.dark-mode .month-card-current) {
-  border-color: rgb(96 165 250);
-  background: rgb(15 23 42);
-}
-
-:global(.dark .rank-badge-positive),
-:global(.dark-mode .rank-badge-positive) {
-  background: rgb(20 83 45);
-  color: rgb(187 247 208);
-}
-
-:global(.dark .rank-badge-negative),
-:global(.dark-mode .rank-badge-negative) {
-  background: rgb(76 5 25);
-  color: rgb(251 207 232);
-}
-
-:global(.dark .warning-card),
-:global(.dark-mode .warning-card) {
-  border-color: rgb(120 53 15);
-  background: rgb(69 26 3 / 35%);
-}
 </style>
