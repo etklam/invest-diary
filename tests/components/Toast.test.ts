@@ -34,14 +34,14 @@ describe('Toast Component', () => {
     })
   })
 
-  describe('getIconClass', () => {
-    it('should return correct classes for each type', () => {
+  describe('getIconStyle', () => {
+    it('should return correct semantic color styles for each type', () => {
       const wrapper = mountToast()
 
-      expect((wrapper.vm as any).getIconClass('success')).toBe('text-emerald-600 dark:text-emerald-400')
-      expect((wrapper.vm as any).getIconClass('error')).toBe('text-red-600 dark:text-red-400')
-      expect((wrapper.vm as any).getIconClass('warning')).toBe('text-amber-600 dark:text-amber-400')
-      expect((wrapper.vm as any).getIconClass('info')).toBe('text-blue-600 dark:text-blue-400')
+      expect((wrapper.vm as any).getIconStyle('success')).toBe('color: var(--color-success);')
+      expect((wrapper.vm as any).getIconStyle('error')).toBe('color: var(--color-danger);')
+      expect((wrapper.vm as any).getIconStyle('warning')).toBe('color: var(--color-warning);')
+      expect((wrapper.vm as any).getIconStyle('info')).toBe('color: var(--color-info);')
     })
   })
 })

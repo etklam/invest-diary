@@ -50,7 +50,12 @@
               >
                 <div class="flex items-center justify-between border-b px-4 py-4 sm:px-6 sm:py-5" style="border-color: var(--color-border);">
                   <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" style="color: var(--color-secondary);">{{ t('quickDiary.modal.eyebrow') }}</p>
+                    <div class="flex items-center gap-2">
+                      <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" style="color: var(--color-secondary);">{{ t('quickDiary.modal.eyebrow') }}</p>
+                      <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold" style="background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary);">
+                        {{ step }}/2
+                      </span>
+                    </div>
                     <h3 class="text-lg font-semibold sm:text-xl" id="modal-title" style="color: var(--color-text); font-family: var(--font-display);">
                       {{ t('quickDiary.title') }}
                     </h3>

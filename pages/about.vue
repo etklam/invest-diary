@@ -230,6 +230,14 @@ useHead(() => {
   }
 })
 
+// Structured data
+const { injectOrganizationSchema, injectBreadcrumbSchema } = useStructuredData()
+injectOrganizationSchema()
+injectBreadcrumbSchema([
+  { name: t('nav.home'), url: '/' },
+  { name: t('about.hero.title') },
+])
+
 const currentYear = new Date().getFullYear()
 
 const heroNotes = [

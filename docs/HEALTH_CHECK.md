@@ -69,6 +69,9 @@ Total: 6 checks | ✅ 6 passed | ❌ 0 failed | ⏭️ 0 skipped
 curl http://localhost:3000/api/health
 ```
 
+健康時回傳 HTTP `200`；資料庫檢查失敗時回傳 HTTP `503`，並在
+`checks.database.message` 提供錯誤訊息。
+
 **回應範例：**
 ```json
 {

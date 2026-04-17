@@ -103,7 +103,8 @@
       "mcp__chrome-devtools__wait_for",
       "Skill(plan-ceo-review)",
       "Bash(~/.claude/skills/gstack/bin/gstack-learnings-log:*)",
-      "Bash(echo === 檢查 Compare API 是否排除 holdings ===:*)"
+      "Bash(echo === 檢查 Compare API 是否排除 holdings ===:*)",
+      "Skill(qa)"
     ]
   }
 }

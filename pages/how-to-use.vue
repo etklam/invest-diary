@@ -338,6 +338,27 @@ useHead(() => ({
     { name: 'twitter:description', content: t('howToUse.hero.subtitle') }
   ]
 }))
+
+// Structured data
+const { injectFAQSchema, injectBreadcrumbSchema } = useStructuredData()
+injectBreadcrumbSchema([
+  { name: t('nav.home'), url: '/' },
+  { name: t('nav.howToUse') },
+])
+injectFAQSchema([
+  {
+    question: t('howToUse.gettingStarted.step1.title'),
+    answer: t('howToUse.gettingStarted.step1.description'),
+  },
+  {
+    question: t('howToUse.gettingStarted.step2.title'),
+    answer: t('howToUse.gettingStarted.step2.description'),
+  },
+  {
+    question: t('howToUse.gettingStarted.step3.title'),
+    answer: t('howToUse.gettingStarted.step3.description'),
+  },
+])
 </script>
 
 <style scoped>

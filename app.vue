@@ -1,4 +1,7 @@
 <script setup>
+const { injectWebSiteSchema } = useStructuredData()
+injectWebSiteSchema()
+
 useHead({
   viewport: 'width=device-width, initial-scale=1',
   link: [

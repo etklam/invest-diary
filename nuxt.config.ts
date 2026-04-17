@@ -6,6 +6,15 @@ export default defineNuxtConfig({
     },
     nodeModulesDirs: [process.cwd() + '/node_modules'],
     routeRules: {
+      // Global security headers
+      '/**': {
+        headers: {
+          'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+          'X-Content-Type-Options': 'nosniff',
+          'X-Frame-Options': 'SAMEORIGIN',
+          'Referrer-Policy': 'strict-origin-when-cross-origin'
+        }
+      },
       '/api/blog': {
         cors: true,
         headers: {
@@ -13,13 +22,11 @@ export default defineNuxtConfig({
         }
       },
       '/api/blog/admin': {
-        cors: true,
         headers: {
           'Cache-Control': 'no-store'
         }
       },
       '/api/blog/admin/**': {
-        cors: true,
         headers: {
           'Cache-Control': 'no-store'
         }

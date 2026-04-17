@@ -1,5 +1,14 @@
 <template>
   <div class="default-shell min-h-screen">
+    <!-- Skip to main content (accessibility) -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg"
+      style="background: var(--color-primary); color: var(--color-background);"
+    >
+      {{ $t('common.skipToContent') }}
+    </a>
+
     <!-- Show loader while auth is initializing -->
     <AuthLoader v-if="!isInitialized" />
 
@@ -8,7 +17,7 @@
       <PWAInstallPrompt />
       <!-- Render Navigation only after user info is fully synced -->
       <Navigation v-if="isInitialized" />
-      <main class="mx-auto w-full max-w-[1240px] px-4 py-8 sm:px-6 lg:px-8" :class="{ 'pt-24': showInstallPrompt }">
+      <main id="main-content" class="mx-auto w-full max-w-[1240px] px-4 py-8 sm:px-6 lg:px-8" :class="{ 'pt-24': showInstallPrompt }">
         <slot />
       </main>
       <Toast :toasts="toasts" @remove="removeToast" />
@@ -40,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const { toasts, removeToast } = useToast()
 const { isInitialized, isAuthenticated } = useAuth()
@@ -60,7 +69,36 @@ watch(canInstall, (value) => {
   showInstallPrompt.value = value
 }, { immediate: true })
 
-// cleanup handled by composable
+const isEditableTarget = (target: EventTarget | null) => {
+  if (!(target instanceof HTMLElement)) return false
+
+  if (target.isContentEditable) return true
+
+  const interactiveTags = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
+  if (interactiveTags.has(target.tagName)) return true
+
+  return Boolean(target.closest('[contenteditable="true"], [role="textbox"]'))
+}
+
+// Cmd/Ctrl+K keyboard shortcut to open Quick Diary
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.defaultPrevented || e.isComposing) return
+  if (e.altKey || e.shiftKey) return
+  if (isEditableTarget(e.target)) return
+  if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'k') return
+  if (!isAuthenticated.value) return
+
+  e.preventDefault()
+  showQuickDiaryModal.value = !showQuickDiaryModal.value
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <style scoped>

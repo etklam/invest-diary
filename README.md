@@ -459,6 +459,10 @@ The application provides a runtime health check endpoint:
 curl http://localhost:3000/api/health
 ```
 
+Healthy responses return HTTP `200`. If the database check fails, the endpoint returns
+HTTP `503` with the same payload shape and an error message in
+`checks.database.message`.
+
 Response:
 ```json
 {

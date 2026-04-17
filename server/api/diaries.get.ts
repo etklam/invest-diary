@@ -5,6 +5,7 @@ import { parseDiaryTags } from '~/lib/diary-tags'
 import { logger } from '~/lib/logger'
 import { Errors, AppError } from '~/lib/errors/factory'
 import { requireUser } from '~/server/utils/auth'
+import { parsePagination, parsePositiveInt } from '~/server/utils/query-params'
 
 type DiaryListItem = Awaited<ReturnType<typeof prisma.diary.findMany>>[number]
 type DiaryAlertItem = DiaryListItem['alerts'][number]
@@ -18,13 +19,11 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const userId = BigInt(user.id)
 
     const query = getQuery(event)
-    const page = Number(query.page) || 1
-    const limit = Number(query.limit) || 20
-    const skip = (page - 1) * limit
-    const days = Number(query.days)
+    const { page, limit, skip } = parsePagination(query)
+    const days = parsePositiveInt(query.days)
 
     const where: Prisma.DiaryWhereInput = { userId }
-    if (Number.isFinite(days) && days > 0) {
+    if (days !== undefined && days > 0) {
       const since = new Date()
       since.setDate(since.getDate() - days)
       where.createdAt = { gte: since }

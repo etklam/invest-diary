@@ -324,6 +324,13 @@ useHead(() => ({
   ]
 }))
 
+// Structured data — will be populated after posts are fetched
+const { injectBreadcrumbSchema } = useStructuredData()
+injectBreadcrumbSchema([
+  { name: t('nav.home'), url: '/' },
+  { name: t('blog.pageTitle') },
+])
+
 interface Post {
   id: string | number
   title: string

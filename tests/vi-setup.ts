@@ -26,7 +26,9 @@ export const mockSetCookie = vi.fn()
 export const mockDeleteCookie = vi.fn()
 export const mockGetCookie = vi.fn()
 export const mockGetHeader = vi.fn()
+export const mockSetHeader = vi.fn()
 export const mockSendRedirect = vi.fn()
+export const mockSetResponseStatus = vi.fn()
 
 // Mock Nuxt auto-imported functions for server APIs
 global.defineEventHandler = (handler: Function) => handler
@@ -37,7 +39,9 @@ global.setCookie = mockSetCookie
 global.deleteCookie = mockDeleteCookie
 global.getCookie = mockGetCookie
 global.getHeader = mockGetHeader
+global.setHeader = mockSetHeader
 global.sendRedirect = mockSendRedirect
+global.setResponseStatus = mockSetResponseStatus
 global.getRequestURL = vi.fn(() => ({ pathname: '/api/test' }))
 global.createError = (params: { statusCode: number; statusMessage: string }) => {
   const error = new Error(params.statusMessage)

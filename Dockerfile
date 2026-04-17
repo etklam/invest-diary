@@ -75,5 +75,8 @@ USER nuxt
 
 EXPOSE 3000
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "const http=require('http');const req=http.get('http://localhost:3000/api/health',(res)=>{let body='';res.setEncoding('utf8');res.on('data',(chunk)=>body+=chunk);res.on('end',()=>{try{const payload=JSON.parse(body);process.exit(res.statusCode===200&&payload.status==='healthy'?0:1)}catch{process.exit(1)}})});req.on('error',()=>process.exit(1));req.setTimeout(4000,()=>{req.destroy();process.exit(1)})"
+
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", ".output/server/index.mjs"]

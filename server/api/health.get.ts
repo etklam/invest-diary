@@ -17,7 +17,7 @@ interface HealthCheckResponse {
   }
 }
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
   const startTime = Date.now()
   const checks: HealthCheckResponse['checks'] = {
     database: {
@@ -33,18 +33,18 @@ export default defineEventHandler(async () => {
   // Database health check
   try {
     await prisma.$queryRaw`SELECT 1`
-    const responseTime = Date.now() - startTime
     checks.database = {
       status: 'ok',
-      responseTime
+      responseTime: Date.now() - startTime
     }
-  } catch (error: { message?: string } | unknown) {
+  } catch (error) {
     checks.database = {
       status: 'error',
-      message: typeof error === 'object' && error && 'message' in error
-        ? String(error.message)
+      message: error instanceof Error && error.message
+        ? error.message
         : 'Database connection failed'
     }
+    setResponseStatus(event, 503, 'Service Unavailable')
 
     return {
       status: 'unhealthy',

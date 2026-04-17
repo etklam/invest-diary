@@ -473,6 +473,9 @@ curl http://localhost:3000/api/health
 }
 ```
 
+成功時回傳 HTTP `200`；資料庫檢查失敗時回傳 HTTP `503`，並在
+`checks.database.message` 帶出錯誤訊息。
+
 ---
 
 ## 故障排除 | Troubleshooting

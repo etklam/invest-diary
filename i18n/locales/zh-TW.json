@@ -25,7 +25,9 @@
     "optional": "選填",
     "range": "等級",
     "copy": "複製",
-    "copied": "已複製"
+    "copied": "已複製",
+    "skipToContent": "跳到主要內容",
+    "retry": "重試"
   },
   "nav": {
     "home": "首頁",
@@ -468,7 +470,8 @@
     "unknown": "發生未知錯誤",
     "networkError": "網路連線錯誤",
     "notFound": "找不到頁面",
-    "serverError": "伺服器錯誤"
+    "serverError": "伺服器錯誤",
+    "somethingWrong": "出了點問題"
   },
   "tags": {
     "profit": "獲利",

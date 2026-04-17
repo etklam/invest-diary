@@ -136,7 +136,7 @@ wait_for_app() {
     attempt=0
 
     while [ $attempt -lt $max_attempts ]; do
-        if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+        if curl -fsS http://localhost:3000/api/health | grep -Eq '"status"[[:space:]]*:[[:space:]]*"healthy"'; then
             print_success "應用程式已就緒 | Application is ready"
             return 0
         fi

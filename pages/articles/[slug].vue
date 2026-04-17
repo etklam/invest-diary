@@ -310,6 +310,23 @@ const canonicalUrl = computed(() => {
   return `${siteUrl}/articles/${encodeURIComponent(slug)}`
 })
 
+// Structured data for search engines and AI
+const { injectBlogPostingSchema, injectBreadcrumbSchema } = useStructuredData()
+injectBlogPostingSchema({
+  get title() { return post.value?.title },
+  get excerpt() { return post.value?.excerpt || undefined },
+  get coverImage() { return post.value?.coverImage || undefined },
+  get publishedAt() { return post.value?.publishedAt },
+  get updatedAt() { return post.value?.updatedAt },
+  get slug() { return String(post.value?.slug || route.params.slug || '') },
+  get author() { return post.value?.author },
+})
+injectBreadcrumbSchema([
+  { name: t('nav.home'), url: '/' },
+  { name: t('blog.pageTitle'), url: '/articles' },
+  { name: post.value?.title || '' },
+])
+
 useHead(() => ({
   title: post.value ? `${post.value.title} - ${t('blog.pageTitle')}` : t('blog.loadingTitle'),
   link: [{ rel: 'canonical', href: canonicalUrl.value }],

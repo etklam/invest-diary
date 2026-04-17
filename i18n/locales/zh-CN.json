@@ -25,7 +25,9 @@
     "optional": "选填",
     "range": "等级",
     "copy": "复制",
-    "copied": "已复制"
+    "copied": "已复制",
+    "skipToContent": "跳到主要内容",
+    "retry": "重试"
   },
   "nav": {
     "home": "首页",
@@ -499,7 +501,8 @@
     "unknown": "发生未知错误",
     "networkError": "网络连线错误",
     "notFound": "找不到页面",
-    "serverError": "服务器错误"
+    "serverError": "服务器错误",
+    "somethingWrong": "出了点问题"
   },
   "home": {
     "badge": "交易复盘同行平台",
