@@ -412,7 +412,8 @@ injectFAQSchema([
 
 .gradient-text {
   color: #0f172a;
-  background: linear-gradient(to bottom right, #0f172a, #334155);
+  display: inline-block;
+  background-image: linear-gradient(to bottom right, #0f172a, #334155);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -420,7 +421,10 @@ injectFAQSchema([
 
 :global(.dark .gradient-text), :global(.dark-mode .gradient-text) {
   color: #f8fafc;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 42%, #dbeafe 100%);
+  background-image: linear-gradient(135deg, #ffffff 0%, #f8fafc 42%, #dbeafe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Buttons */
