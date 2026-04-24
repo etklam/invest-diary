@@ -107,6 +107,17 @@
     "oneLiner": {
       "placeholder": "Write down today's judgment, emotion, risk, or next move."
     },
+    "capture": {
+      "title": "Capture the thought first",
+      "placeholder": "Skip formatting. Write what you saw, what you did, or what you need to watch next.",
+      "save": "Save Now",
+      "appendDetected": "A diary already exists today, so this will append by default.",
+      "createDetected": "No diary exists today, so this will create a new entry by default.",
+      "afterSavePrompt": "Saved. Add one more piece so future review is easier?",
+      "followUpTrade": "Add Trade Reason",
+      "followUpReminder": "Set Tomorrow Reminder",
+      "followUpTags": "Add Tags/Details"
+    },
     "entry": {
       "eyebrow": "Entry Mode",
       "title": "Quicknote Flow",
@@ -226,7 +237,13 @@
       "relatedTrades": "Related trades (optional)",
       "relatedTradesSelected": "{count} selected",
       "loadingTrades": "Loading recent trades...",
-      "noRecentTrades": "No closed trades in the last 30 days"
+      "noRecentTrades": "No closed trades in the last 30 days",
+      "spx": {
+        "button": "Estimate with SPX",
+        "loading": "Loading SPX...",
+        "applied": "SPX {change}; suggested condition applied: {condition}. You can still change it.",
+        "error": "SPX session could not be loaded. Pick the condition manually."
+      }
     },
     "observation": {
       "topic": "Observation topic",

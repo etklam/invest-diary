@@ -70,6 +70,9 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   const restoredThisSession = ref(false)
   const nowTick = ref(Date.now())
   const appliedTemplateContent = ref('')
+  const saveModeTouched = ref(false)
+  const existingDiaryForDate = ref(false)
+  const checkingExistingDiaryForDate = ref(false)
   let reminderTimer: ReturnType<typeof setInterval> | null = null
 
   const suggestedDraft = computed(() => generateTemplateDraft({
@@ -187,11 +190,14 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   function setDate(date: string) {
     state.date = date
+    saveModeTouched.value = false
     syncSuggestedDraft()
+    void syncExistingDiaryForDate(date)
   }
 
   function setSaveMode(saveMode: QuickNoteSaveMode) {
     state.saveMode = saveMode
+    saveModeTouched.value = true
   }
 
   function appendVoiceTranscript(text: string) {
@@ -262,7 +268,29 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     Object.assign(state.templateData, createEmptyQuickNoteTemplateData())
     state.titleTouched = false
     state.contentTouched = false
+    saveModeTouched.value = false
     syncSuggestedDraft(true)
+  }
+
+  async function syncExistingDiaryForDate(date = state.date) {
+    if (typeof $fetch !== 'function') return existingDiaryForDate.value
+
+    checkingExistingDiaryForDate.value = true
+    try {
+      const diary = await $fetch('/api/diaries/by-date', {
+        query: { date },
+      })
+      const hasDiary = Boolean(diary)
+      existingDiaryForDate.value = hasDiary
+      if (!saveModeTouched.value) {
+        state.saveMode = hasDiary ? 'append' : defaultSaveMode
+      }
+      return hasDiary
+    } catch {
+      return existingDiaryForDate.value
+    } finally {
+      checkingExistingDiaryForDate.value = false
+    }
   }
 
   async function save() {
@@ -311,6 +339,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     Object.assign(state.templateData, cloneTemplateData(draft.value.templateData))
     state.titleTouched = Boolean(state.title)
     state.contentTouched = Boolean(state.content)
+    saveModeTouched.value = Boolean(draft.value.saveMode)
     appliedTemplateContent.value = state.templateKind === 'blank' ? '' : suggestedDraft.value.content
     return true
   }
@@ -319,6 +348,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     const restored = restoreDraftIfAvailable(confirmRestore)
     readyForAutosave.value = true
     checkReminders()
+    void syncExistingDiaryForDate()
     reminderTimer = setInterval(() => {
       nowTick.value = Date.now()
       checkReminders()
@@ -349,6 +379,8 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     reminders,
     draftHint,
     activeReminders,
+    existingDiaryForDate,
+    checkingExistingDiaryForDate,
     suggestedDraft,
     hasTemplateChangesPending,
     applyTemplateKind,
@@ -365,6 +397,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     setQuickReminder,
     handleReminderSet,
     handleReminderClear,
+    syncExistingDiaryForDate,
     save,
     initialize,
     dispose,

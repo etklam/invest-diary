@@ -91,8 +91,111 @@
     "date": "日期",
     "selectDate": "选择日期",
     "createDiary": "建立日记",
+    "appendDiary": "补充到今日",
     "creating": "建立中...",
+    "appending": "正在更新今日内容...",
+    "draft": {
+      "saved": "草稿已自动保存",
+      "restorePrompt": "我们为您保留了最近的草稿，需要恢复它吗？",
+      "restoreSuccess": "已为您恢复草稿内容"
+    },
+    "confirm": {
+      "templateOverwrite": "目前的内容将被模板覆盖，确定要这么做吗？"
+    },
+    "oneLiner": {
+      "placeholder": "把当下的直觉、市场观察或一点小提醒记下来吧..."
+    },
+    "capture": {
+      "title": "一句话先记下来",
+      "placeholder": "先不用整理格式，直接写：我看到什么、做了什么、接下来要注意什么。",
+      "save": "立即记下",
+      "appendDetected": "今天已有日记，这段会默认补到今日。",
+      "createDetected": "今天还没有日记，这段会默认建立新纪录。",
+      "afterSavePrompt": "已记下来。接着要补一点让未来更好回看吗？",
+      "followUpTrade": "补交易理由",
+      "followUpReminder": "设明天提醒",
+      "followUpTags": "补标签/细节"
+    },
+    "entry": {
+      "eyebrow": "记录模式",
+      "title": "快速捕捉想法",
+      "intro": "您可以直接开始书写，或使用下方的模板来帮助您整理思绪。"
+    },
+    "modal": {
+      "eyebrow": "快速日记",
+      "step2Hint": "模板只是个起点，您可以随时调整内容使其更完整。",
+      "templateSubcopy": "选个骨架，再慢慢填入您的观察与细节。"
+    },
+    "page": {
+      "eyebrow": "笔记空间",
+      "intro": "这不只是记下一句话，而是把当下的临场判断、观察与后续动作转成有价值的记录。",
+      "rhythmTitle": "记录小技巧",
+      "rhythm": {
+        "template": "模板是用来激发灵感的，最真实的还是您的直觉。",
+        "saveMode": "如果是新的思路，建议「建立日记」；若是对今日内容的补充，选「补充到今日」最合适。",
+        "tags": "加上标签和提醒，能让这份记录在未来发挥更大的作用。"
+      }
+    },
+    "editor": {
+      "eyebrow": "编辑工作台",
+      "intro": "先决定保存方式，再整理内容，让记录流程更顺畅。",
+      "saveModeLabel": "保存方式",
+      "titleAria": "笔记标题",
+      "contentAria": "笔记内容",
+      "snippets": "快捷工具",
+      "manageTemplates": "自定义模板",
+      "reminders": "快速提醒",
+      "checklistTitle": "在保存之前...",
+      "checklist": {
+        "title": "标题是否能让未来的您一眼看懂当时的想法？",
+        "append": "如果您只是想补充今日日记，请选择「补充到今日」。",
+        "create": "若是独立的分析或新发现，建议建立新纪录以便日后整理。"
+      }
+    },
+    "saveModes": {
+      "create": {
+        "label": "建立日记",
+        "description": "这是一笔独立的观察，将会存为新的日记。",
+        "summary": "系统将为您建立一则独立日记，适合记录全新的交易思路。"
+      },
+      "append": {
+        "label": "补充到今日",
+        "description": "这是在今日日记上的小补充，内容会接在后面。",
+        "summary": "内容将会自动衔接在今日现有日记之后，适合补充零碎判断。"
+      }
+    },
+    "reminders": {
+      "label": "提醒",
+      "labelIndexed": "提醒 {index}",
+      "set": "提醒已设置",
+      "cleared": "提醒已清除",
+      "presetSet": "已设置 {label} 提醒",
+      "presets": {
+        "tomorrow": "明天",
+        "nextWeek": "下周",
+        "nextMonth": "下个月"
+      },
+      "remaining": {
+        "lessThanMinute": "不到 1 分钟",
+        "minutes": "{count} 分钟",
+        "hours": "{count} 小时",
+        "hoursMinutes": "{hours} 小时 {minutes} 分钟"
+      }
+    },
+    "toasts": {
+      "saved": "已保存快速笔记"
+    },
+    "validation": {
+      "contentRequired": "请先输入内容",
+      "titleRequired": "请先输入标题"
+    },
+    "errors": {
+      "diaryExists": "该日期已有日记，若只是补一段内容，请切到「补充到今日」。",
+      "createFailedPrefix": "建立失败："
+    },
     "templates": {
+      "blank": "自由编辑",
+      "blankDesc": "不套模板，直接记下当下的判断与提醒",
       "trading": "交易日记",
       "tradingDesc": "记录买入/卖出操作",
       "reflection": "盘后反思",
@@ -132,7 +235,13 @@
       "relatedTrades": "相关交易（可选）",
       "relatedTradesSelected": "已选 {count} 笔",
       "loadingTrades": "加载近期交易中...",
-      "noRecentTrades": "近 30 天无已关闭交易"
+      "noRecentTrades": "近 30 天无已关闭交易",
+      "spx": {
+        "button": "用 SPX 估算市况",
+        "loading": "读取 SPX...",
+        "applied": "SPX {change}，已套用建议：{condition}。你仍可自行改选。",
+        "error": "SPX 市况读取失败，先手动选就行，别被行情 API 卡住。"
+      }
     },
     "observation": {
       "topic": "观察主题",

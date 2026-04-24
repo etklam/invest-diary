@@ -173,11 +173,10 @@ async function clickByText(wrapper: ReturnType<typeof mount>, text: string) {
   await target.trigger('click')
 }
 
-async function clickLastButtonByText(wrapper: ReturnType<typeof mount>, text: string) {
-  const matches = wrapper.findAll('button').filter(button => button.text().includes(text))
-  const target = matches.at(-1)
+async function clickSubmitButton(wrapper: ReturnType<typeof mount>) {
+  const target = wrapper.findAll('button').find(button => button.classes().includes('overflow-hidden'))
   if (!target) {
-    throw new Error(`Button not found: ${text}`)
+    throw new Error('Submit button not found')
   }
   await target.trigger('click')
 }
@@ -200,7 +199,8 @@ describe('QuickDiaryModal', () => {
 
     await wrapper.findAll('input[placeholder="例如: 2330, 2317"]')[0].setValue('tsla, nvda')
     await wrapper.findAll('textarea[placeholder="簡單記錄今日操作心得..."]')[0].setValue('Watch setup')
-    await clickLastButtonByText(wrapper, '補充到今日')
+    await clickByText(wrapper, '補充到今日')
+    await clickSubmitButton(wrapper)
     await flushPromises()
 
     expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({
@@ -226,7 +226,8 @@ describe('QuickDiaryModal', () => {
 
     await wrapper.get('input[aria-label="筆記標題"]').setValue('午盤臨場觀察')
     await wrapper.get('textarea[aria-label="筆記內容"]').setValue('量縮但承接還在，尾盤再看是否補充到今日。')
-    await clickLastButtonByText(wrapper, '補充到今日')
+    await clickByText(wrapper, '補充到今日')
+    await clickSubmitButton(wrapper)
     await flushPromises()
 
     expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({

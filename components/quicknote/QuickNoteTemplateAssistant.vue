@@ -100,27 +100,48 @@
         <label class="mb-2.5 block text-[11px] font-bold uppercase tracking-wider" style="color: var(--color-text-soft);">
           {{ t('quickDiary.reflection.marketCondition') }}
         </label>
-        <select
-          :value="selectedReflectionMarketCondition"
-          class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
-          style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
-          @change="updateField('marketCondition', ($event.target as HTMLSelectElement).value)"
-        >
-          <option value="">{{ t('quickDiary.reflection.selectCondition') }}</option>
-          <optgroup
-            v-for="group in reflectionMarketConditionGroups"
-            :key="group.label"
-            :label="group.label"
+        <div class="space-y-2.5">
+          <select
+            :value="selectedReflectionMarketCondition"
+            class="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/10"
+            style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
+            @change="updateField('marketCondition', ($event.target as HTMLSelectElement).value)"
           >
-            <option
-              v-for="option in group.options"
-              :key="option.value"
-              :value="option.value"
+            <option value="">{{ t('quickDiary.reflection.selectCondition') }}</option>
+            <optgroup
+              v-for="group in reflectionMarketConditionGroups"
+              :key="group.label"
+              :label="group.label"
             >
-              {{ option.label }}
-            </option>
-          </optgroup>
-        </select>
+              <option
+                v-for="option in group.options"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </optgroup>
+          </select>
+
+          <button
+            type="button"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+            style="border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border)); background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface-muted)); color: var(--color-primary);"
+            :disabled="spxPending"
+            @click="applySpxMarketCondition"
+          >
+            <Icon v-if="spxPending" name="heroicons:arrow-path" class="h-3.5 w-3.5 animate-spin" />
+            <Icon v-else name="heroicons:chart-bar-square" class="h-3.5 w-3.5" />
+            {{ spxPending ? t('quickDiary.reflection.spx.loading') : t('quickDiary.reflection.spx.button') }}
+          </button>
+
+          <p v-if="spxSummary" class="text-[11px] leading-relaxed" style="color: var(--color-text-muted);">
+            {{ t('quickDiary.reflection.spx.applied', { change: formatSignedPercent(spxSummary.changePercent), condition: spxConditionLabel }) }}
+          </p>
+          <p v-else-if="spxError" class="text-[11px] leading-relaxed" style="color: var(--color-negative);">
+            {{ spxError }}
+          </p>
+        </div>
       </div>
 
       <div>
@@ -311,11 +332,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useFetch } from '#imports'
 import {
   getQuickNoteObservationTypeOptions,
   getQuickNoteReflectionMarketConditionGroups,
+  getQuickNoteReflectionMarketConditionLabel,
   normalizeQuickNoteObservationType,
   normalizeQuickNoteReflectionMarketCondition,
 } from '~/lib/quicknote/template-localization'
@@ -340,6 +362,15 @@ const reflectionMarketConditionGroups = computed(() => getQuickNoteReflectionMar
 const selectedReflectionMarketCondition = computed(() => normalizeQuickNoteReflectionMarketCondition(props.templateData.marketCondition))
 const observationTypeOptions = computed(() => getQuickNoteObservationTypeOptions(currentLocale.value))
 const selectedObservationType = computed(() => normalizeQuickNoteObservationType(props.templateData.observationType))
+const spxPending = ref(false)
+const spxError = ref('')
+const spxSummary = ref<{
+  condition: string
+  changePercent: number
+} | null>(null)
+const spxConditionLabel = computed(() =>
+  getQuickNoteReflectionMarketConditionLabel(spxSummary.value?.condition, currentLocale.value)
+)
 
 // ── 近期交易（reflection 模板用）────────────────────────────────────────────
 
@@ -386,9 +417,31 @@ function formatTradeDate(iso: string): string {
   return iso.slice(0, 10)
 }
 
+function formatSignedPercent(value: number): string {
+  const sign = value > 0 ? '+' : ''
+  return `${sign}${value.toFixed(2)}%`
+}
+
 // ── 通用 ─────────────────────────────────────────────────────────────────────
 
 function updateField<K extends keyof QuickNoteTemplateData>(key: K, value: QuickNoteTemplateData[K]) {
   emit('update:templateData', { [key]: value })
+}
+
+async function applySpxMarketCondition() {
+  spxPending.value = true
+  spxError.value = ''
+  try {
+    const summary = await $fetch<{
+      condition: string
+      changePercent: number
+    }>('/api/market/spx-session')
+    spxSummary.value = summary
+    emit('update:templateData', { marketCondition: summary.condition })
+  } catch {
+    spxError.value = t('quickDiary.reflection.spx.error')
+  } finally {
+    spxPending.value = false
+  }
 }
 </script>

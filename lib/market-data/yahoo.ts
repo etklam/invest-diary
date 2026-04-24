@@ -46,6 +46,15 @@ export interface HistoricalQuote {
   close: number | null
 }
 
+export interface IntradayQuote {
+  timestamp: number
+  open: number | null
+  high: number | null
+  low: number | null
+  close: number | null
+  volume: number | null
+}
+
 export interface QuoteResponse {
   symbol: string
   regularMarketPrice: number
@@ -196,6 +205,21 @@ export function parseYahooLibraryDailyQuotes(quotes: YahooLibraryChartQuoteLike[
     .map(quote => ({
       timestamp: Math.floor(quote.date.getTime() / 1000),
       close: quote.close,
+    }))
+}
+
+export function parseYahooLibraryIntradayQuotes(quotes: YahooLibraryChartQuoteLike[]): IntradayQuote[] {
+  return quotes
+    .filter((quote): quote is YahooLibraryChartQuoteLike & { date: Date; close: number } =>
+      quote.date instanceof Date && typeof quote.close === 'number'
+    )
+    .map(quote => ({
+      timestamp: Math.floor(quote.date.getTime() / 1000),
+      open: quote.open ?? null,
+      high: quote.high ?? null,
+      low: quote.low ?? null,
+      close: quote.close,
+      volume: quote.volume ?? null,
     }))
 }
 

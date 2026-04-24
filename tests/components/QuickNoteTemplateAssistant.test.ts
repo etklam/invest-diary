@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { ref } from 'vue'
 import QuickNoteTemplateAssistant from '~/components/quicknote/QuickNoteTemplateAssistant.vue'
 const localeRef = ref('en')
@@ -21,13 +21,20 @@ const messages: Record<string, string> = {
   'quickDiary.reflection.relatedTradesSelected': '{count} selected',
   'quickDiary.reflection.loadingTrades': 'Loading recent trades...',
   'quickDiary.reflection.noRecentTrades': 'No closed trades in the last 30 days',
+  'quickDiary.reflection.spx.button': 'Estimate with SPX',
+  'quickDiary.reflection.spx.loading': 'Loading SPX...',
+  'quickDiary.reflection.spx.applied': 'SPX {change}; suggested condition applied: {condition}. You can still change it.',
+  'quickDiary.reflection.spx.error': 'SPX session could not be loaded. Pick the condition manually.',
   'quickDiary.observation.type': 'Observation type',
 }
 
 function mountAssistant(props: Record<string, unknown>) {
   vi.stubGlobal('useI18n', () => ({
     locale: localeRef,
-    t: (key: string) => messages[key] || key,
+    t: (key: string, params?: Record<string, unknown>) => {
+      const template = messages[key] || key
+      return template.replace(/\{(\w+)\}/g, (_, name) => params?.[name] ?? `{${name}}`)
+    },
   }))
 
   return mount(QuickNoteTemplateAssistant, {
@@ -38,28 +45,6 @@ function mountAssistant(props: Record<string, unknown>) {
       ...props,
     },
   })
-}
-
-/** 在 mountAssistant 前設置 useFetch stub，預設回傳空 trades */
-function stubUseFetchEmpty() {
-  vi.stubGlobal('useFetch', vi.fn(() => ({
-    data: ref<{ trades: any[] } | null>({ trades: [] }),
-    pending: ref(false),
-    error: ref(null),
-    execute: vi.fn(),
-    refresh: vi.fn(),
-  })))
-}
-
-/** 在 mountAssistant 前設置 useFetch stub，回傳指定 trades */
-function stubUseFetchWithTrades(trades: any[]) {
-  vi.stubGlobal('useFetch', vi.fn(() => ({
-    data: ref<{ trades: any[] } | null>({ trades }),
-    pending: ref(false),
-    error: ref(null),
-    execute: vi.fn(),
-    refresh: vi.fn(),
-  })))
 }
 
 describe('QuickNoteTemplateAssistant', () => {
@@ -178,6 +163,29 @@ describe('QuickNoteTemplateAssistant', () => {
     })
 
     // 有選中時應顯示 count badge
-    expect(wrapper.text()).toContain('{count} selected')
+    expect(wrapper.text()).toContain('1 selected')
+  })
+
+  it('applies SPX market condition suggestions while keeping the selector editable', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      condition: 'slightUp',
+      changePercent: 0.42,
+    })
+    vi.stubGlobal('$fetch', fetchMock)
+
+    const wrapper = mountAssistant({
+      templateKind: 'reflection',
+      templateData: {},
+    })
+
+    await wrapper.findAll('button').find(button => button.text().includes('Estimate with SPX'))!.trigger('click')
+    await flushPromises()
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/market/spx-session')
+    expect(wrapper.emitted('update:templateData')).toContainEqual([
+      { marketCondition: 'slightUp' },
+    ])
+    expect(wrapper.text()).toContain('SPX +0.42%')
+    expect(wrapper.text()).toContain('Modest rise')
   })
 })

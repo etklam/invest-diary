@@ -106,6 +106,17 @@
     "oneLiner": {
       "placeholder": "把當下的直覺、市場觀察或一點小提醒記下來吧..."
     },
+    "capture": {
+      "title": "一句話先記下來",
+      "placeholder": "先不用整理格式，直接寫：我看到什麼、做了什麼、接下來要注意什麼。",
+      "save": "立即記下",
+      "appendDetected": "今天已有日記，這段會預設補到今日。",
+      "createDetected": "今天還沒有日記，這段會預設建立新紀錄。",
+      "afterSavePrompt": "已記下來。接著要補一點讓未來更好回看嗎？",
+      "followUpTrade": "補交易理由",
+      "followUpReminder": "設明天提醒",
+      "followUpTags": "補標籤/細節"
+    },
     "entry": {
       "eyebrow": "記錄模式",
       "title": "快速捕捉想法",
@@ -225,7 +236,13 @@
       "relatedTrades": "相關交易（可選）",
       "relatedTradesSelected": "已選 {count} 筆",
       "loadingTrades": "載入近期交易中...",
-      "noRecentTrades": "近 30 天無已關閉交易"
+      "noRecentTrades": "近 30 天無已關閉交易",
+      "spx": {
+        "button": "用 SPX 估算市況",
+        "loading": "讀取 SPX...",
+        "applied": "SPX {change}，已套用建議：{condition}。你仍可自行改選。",
+        "error": "SPX 市況讀取失敗，先手動選就行，別被行情 API 卡住。"
+      }
     },
     "observation": {
       "topic": "觀察主題",

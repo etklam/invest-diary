@@ -6,7 +6,7 @@ type LocalizedLabel = {
   'zh-CN': string
 }
 
-type ReflectionMarketConditionKey =
+export type ReflectionMarketConditionKey =
   | 'strongUp'
   | 'slightUp'
   | 'rangeBound'
@@ -86,13 +86,13 @@ const reflectionMarketConditionGroups: Array<{
       },
       {
         value: 'gapUpFade',
-        label: { en: 'Gap up and fade', 'zh-TW': '高開低走', 'zh-CN': '高开低走' },
-        legacy: ['高開低走', '高开低走', 'Gap up and fade'],
+        label: { en: 'Rally, then fade', 'zh-TW': '先升後跌', 'zh-CN': '先升后跌' },
+        legacy: ['高開低走', '高开低走', '先升後跌', '先升后跌', 'Gap up and fade', 'Rally, then fade'],
       },
       {
         value: 'gapDownRecovery',
-        label: { en: 'Gap down, then recover', 'zh-TW': '低開高走', 'zh-CN': '低开高走' },
-        legacy: ['低開高走', '低开高走', 'Gap down, then recover'],
+        label: { en: 'Dip, then recover', 'zh-TW': '先跌後升', 'zh-CN': '先跌后升' },
+        legacy: ['低開高走', '低开高走', '先跌後升', '先跌后升', 'Gap down, then recover', 'Dip, then recover'],
       },
       {
         value: 'gapDownAndGo',

@@ -28,6 +28,71 @@
       </div>
     </section>
 
+    <section
+      class="rounded-3xl border p-5 shadow-sm transition-all md:p-6"
+      style="border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border)); background: var(--color-surface);"
+    >
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-start">
+        <div class="min-w-0 flex-1 space-y-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl" style="background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-muted)); color: var(--color-primary);">
+              <Icon name="heroicons:bolt" class="h-4 w-4" />
+            </span>
+            <div>
+              <p class="text-sm font-bold" style="color: var(--color-text);">{{ t('quickDiary.capture.title') }}</p>
+              <p class="text-xs" style="color: var(--color-text-muted);">
+                {{ existingDiaryForDate ? t('quickDiary.capture.appendDetected') : t('quickDiary.capture.createDetected') }}
+              </p>
+            </div>
+          </div>
+          <label class="sr-only" for="quick-capture-input">{{ t('quickDiary.capture.title') }}</label>
+          <textarea
+            id="quick-capture-input"
+            v-model="captureText"
+            data-test="quick-capture-input"
+            rows="3"
+            class="w-full resize-none rounded-2xl border px-4 py-3 text-sm leading-7 outline-none transition-all focus:ring-2 focus:ring-primary/20"
+            style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
+            :placeholder="t('quickDiary.capture.placeholder')"
+            @keydown.meta.enter.prevent="handleCaptureSave"
+            @keydown.ctrl.enter.prevent="handleCaptureSave"
+          />
+        </div>
+
+        <button
+          type="button"
+          data-test="quick-capture-save"
+          class="inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 lg:mt-[52px]"
+          style="background: var(--color-primary); box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 20%, transparent);"
+          :disabled="captureSaving"
+          @click="handleCaptureSave"
+        >
+          <Icon v-if="captureSaving" name="heroicons:arrow-path" class="h-4 w-4 animate-spin" />
+          <Icon v-else name="heroicons:paper-airplane" class="h-4 w-4" />
+          {{ captureSaving ? (state.saveMode === 'append' ? t('quickDiary.appending') : t('quickDiary.creating')) : t('quickDiary.capture.save') }}
+        </button>
+      </div>
+
+      <div
+        v-if="showPostSavePrompt"
+        class="mt-4 flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between"
+        style="border-color: color-mix(in srgb, var(--color-secondary) 22%, var(--color-border)); background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-surface-muted));"
+      >
+        <p class="text-sm font-medium" style="color: var(--color-text);">{{ t('quickDiary.capture.afterSavePrompt') }}</p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-xl border px-3 py-2 text-xs font-semibold transition-all hover:opacity-85" style="border-color: var(--color-border); background: var(--color-surface); color: var(--color-primary);" @click="startTradingFollowUp">
+            {{ t('quickDiary.capture.followUpTrade') }}
+          </button>
+          <button type="button" class="rounded-xl border px-3 py-2 text-xs font-semibold transition-all hover:opacity-85" style="border-color: var(--color-border); background: var(--color-surface); color: var(--color-secondary);" @click="setPostSaveReminder">
+            {{ t('quickDiary.capture.followUpReminder') }}
+          </button>
+          <button type="button" class="rounded-xl border px-3 py-2 text-xs font-semibold transition-all hover:opacity-85" style="border-color: var(--color-border); background: var(--color-surface); color: var(--color-text-muted);" @click="continueWithTags">
+            {{ t('quickDiary.capture.followUpTags') }}
+          </button>
+        </div>
+      </div>
+    </section>
+
     <QuickNoteTemplateAssistant
       :template-kind="state.templateKind"
       :template-data="state.templateData"
@@ -80,6 +145,9 @@ const emit = defineEmits<{
 const toast = useToast()
 const { t } = useI18n()
 const saving = ref(false)
+const captureText = ref('')
+const captureSaving = ref(false)
+const showPostSavePrompt = ref(false)
 
 const {
   state,
@@ -87,6 +155,7 @@ const {
   reminders,
   draftHint,
   activeReminders,
+  existingDiaryForDate,
   hasTemplateChangesPending,
   applyTemplateKind,
   updateTemplateData,
@@ -102,6 +171,7 @@ const {
   setQuickReminder,
   handleReminderSet,
   handleReminderClear,
+  syncExistingDiaryForDate,
   save,
   initialize,
 } = useQuickNoteComposer({
@@ -153,6 +223,8 @@ async function handleSave() {
   try {
     await save()
     toast.success(t('quickDiary.toasts.saved'))
+    showPostSavePrompt.value = true
+    await syncExistingDiaryForDate()
     emit('saved')
   } catch (error: any) {
     if (error?.message === 'CONTENT_REQUIRED') {
@@ -171,5 +243,53 @@ async function handleSave() {
   } finally {
     saving.value = false
   }
+}
+
+async function handleCaptureSave() {
+  const content = captureText.value.trim()
+  if (!content) {
+    toast.warning(t('quickDiary.validation.contentRequired'))
+    return
+  }
+
+  captureSaving.value = true
+  try {
+    setContent(content)
+    await save()
+    captureText.value = ''
+    showPostSavePrompt.value = true
+    toast.success(t('quickDiary.toasts.saved'))
+    await syncExistingDiaryForDate()
+    emit('saved')
+  } catch (error: any) {
+    if (error?.message === 'CONTENT_REQUIRED') {
+      toast.warning(t('quickDiary.validation.contentRequired'))
+      return
+    }
+    if (error?.statusCode === 409 || error?.data?.code === 'DIARY_ALREADY_EXISTS') {
+      toast.warning(t('quickDiary.errors.diaryExists'))
+      return
+    }
+    toast.error(error.data?.statusMessage || t('diary.saveFailed'))
+  } finally {
+    captureSaving.value = false
+  }
+}
+
+function startTradingFollowUp() {
+  showPostSavePrompt.value = false
+  applyTemplateKind('trading')
+  setSaveMode('append')
+}
+
+function setPostSaveReminder() {
+  setQuickReminder('tomorrow')
+  toast.info(t('quickDiary.reminders.presetSet', { label: getQuickReminderLabel('tomorrow', t) }))
+  showPostSavePrompt.value = false
+}
+
+function continueWithTags() {
+  showPostSavePrompt.value = false
+  setSaveMode('append')
 }
 </script>

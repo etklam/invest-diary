@@ -181,4 +181,15 @@ describe('useQuickNoteComposer', () => {
       saveMode: 'create',
     }))
   })
+
+  it('auto-switches to append when the selected date already has a diary', async () => {
+    vi.stubGlobal('$fetch', vi.fn().mockResolvedValue({ id: 'today-diary' }))
+    const { useQuickNoteComposer } = await import('~/composables/useQuickNoteComposer')
+    const composer = useQuickNoteComposer()
+
+    const hasDiary = await composer.syncExistingDiaryForDate()
+
+    expect(hasDiary).toBe(true)
+    expect(composer.saveMode.value).toBe('append')
+  })
 })

@@ -214,13 +214,14 @@ const {
   setQuickReminder,
   handleReminderSet,
   handleReminderClear,
+  syncExistingDiaryForDate,
   save,
   initialize,
   dispose,
   resetState,
 } = useQuickNoteComposer({
   defaultTemplateKind: 'trading',
-  defaultSaveMode: 'append',
+  defaultSaveMode: 'create',
 })
 
 const templates = computed(() => createQuickNoteModalTemplates(t))
@@ -230,6 +231,7 @@ watch(
   (show) => {
     if (show) {
       initialize((message) => confirm(message))
+      void syncExistingDiaryForDate()
       return
     }
     dispose()

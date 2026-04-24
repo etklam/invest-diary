@@ -2,12 +2,14 @@ import YahooFinance from 'yahoo-finance2'
 import {
   normalizeYahooSymbol,
   parseYahooLibraryDailyQuotes,
+  parseYahooLibraryIntradayQuotes,
   parseYahooLibraryMonthlyQuotes,
   parseYahooLibraryQuote,
   resolveYahooRangeStart,
   type QuoteResponse,
   type YahooMonthlyQuote,
   type HistoricalQuote,
+  type IntradayQuote,
 } from '~/lib/market-data/yahoo'
 
 type YahooChartInterval = '1m' | '2m' | '5m' | '15m' | '30m' | '60m' | '90m' | '1h' | '1d' | '5d' | '1wk' | '1mo' | '3mo'
@@ -20,6 +22,7 @@ export type {
   QuoteResponse,
   YahooChartResponse,
   HistoricalQuote,
+  IntradayQuote,
   YahooMonthlyQuote,
   YahooQuoteMeta,
   YahooQuoteResult,
@@ -53,6 +56,24 @@ export async function fetchHistoricalData(
   })
 
   return parseYahooLibraryDailyQuotes(quotes.quotes)
+}
+
+export async function fetchIntradayData(
+  symbol: string,
+  days = 3,
+  interval: string = '5m'
+): Promise<IntradayQuote[]> {
+  const start = new Date()
+  start.setDate(start.getDate() - days)
+
+  const quotes = await yahooFinance.chart(normalizeYahooSymbol(symbol), {
+    period1: start,
+    period2: new Date(),
+    interval: interval as YahooChartInterval,
+    return: 'array',
+  })
+
+  return parseYahooLibraryIntradayQuotes(quotes.quotes)
 }
 
 /**

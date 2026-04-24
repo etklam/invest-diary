@@ -31,6 +31,15 @@ const messages: Record<string, string> = {
   'quickDiary.saveModes.append.label': '補充到今日',
   'quickDiary.saveModes.append.description': '這是在今日日記上的小補充，內容將會連接在後面。',
   'quickDiary.oneLiner.placeholder': '把當下的直覺、市場觀察或一點小提醒記下來吧...',
+  'quickDiary.capture.title': '一句話先記下來',
+  'quickDiary.capture.placeholder': '先不用整理格式',
+  'quickDiary.capture.save': '立即記下',
+  'quickDiary.capture.appendDetected': '今天已有日記，這段會預設補到今日。',
+  'quickDiary.capture.createDetected': '今天還沒有日記，這段會預設建立新紀錄。',
+  'quickDiary.capture.afterSavePrompt': '已記下來。接著要補一點嗎？',
+  'quickDiary.capture.followUpTrade': '補交易理由',
+  'quickDiary.capture.followUpReminder': '設明天提醒',
+  'quickDiary.capture.followUpTags': '補標籤/細節',
   'quickDiary.date': '日期',
   'quickDiary.reminders.presets.tomorrow': '明天',
   'quickDiary.reminders.presets.nextWeek': '下周',
@@ -39,6 +48,9 @@ const messages: Record<string, string> = {
   'quickDiary.reminders.set': '提醒已設定',
   'quickDiary.reminders.cleared': '提醒已清除',
   'quickDiary.toasts.saved': '已儲存快速筆記',
+  'quickDiary.validation.contentRequired': '請先輸入內容',
+  'quickDiary.errors.diaryExists': '該日期已有日記',
+  'diary.saveFailed': '儲存失敗',
 }
 
 const submitQuickNoteMock = vi.fn()
@@ -160,6 +172,24 @@ describe('QuickDiaryOneLiner', () => {
     expect(clearDraftMock).toHaveBeenCalled()
     expect(mockToast.success).toHaveBeenCalledWith('已儲存快速筆記')
     expect(wrapper.emitted('saved')).toBeTruthy()
+  })
+
+  it('saves one-line capture as append when today already has a diary', async () => {
+    vi.stubGlobal('$fetch', vi.fn().mockResolvedValue({ id: 'today-diary' }))
+    const wrapper = mountOneLiner()
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('今天已有日記')
+
+    await wrapper.get('[data-test="quick-capture-input"]').setValue('SPX broke above yesterday high')
+    await wrapper.get('[data-test="quick-capture-save"]').trigger('click')
+    await flushPromises()
+
+    expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({
+      content: 'SPX broke above yesterday high',
+      saveMode: 'append',
+    }))
+    expect(wrapper.text()).toContain('已記下來')
   })
 
   it('sets semantic quick reminders and announces the selected preset', async () => {
