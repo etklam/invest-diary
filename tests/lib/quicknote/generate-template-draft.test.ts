@@ -35,6 +35,24 @@ describe('generateTemplateDraft', () => {
     expect(result.content).toContain('Waited for confirmation before entry.')
   })
 
+  it('supports "No Trades" option in trading template', () => {
+    const result = generateTemplateDraft({
+      templateKind: 'trading',
+      date: '2026-03-22',
+      locale: 'en',
+      templateData: {
+        tradingType: 'none',
+        marketMood: 'neutral',
+        note: 'Market watching day, no entry signals.',
+      },
+    })
+
+    expect(result.title).toBe('2026/03/22 No Trades Diary')
+    expect(result.content).toContain('## Today\'s Operation')
+    expect(result.content).toContain('- Operation: No Trades')
+    expect(result.content).toContain('Market watching day, no entry signals.')
+  })
+
   it('uses the observation topic as the title when available', () => {
     const result = generateTemplateDraft({
       templateKind: 'observation',

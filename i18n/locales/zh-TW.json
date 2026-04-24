@@ -215,6 +215,7 @@
       "buy": "買入",
       "sell": "賣出",
       "both": "買賣都做",
+      "none": "沒有交易",
       "symbols": "股票代碼（可選，多個用逗號分隔）",
       "symbolsPlaceholder": "例如: 2330, 2317",
       "marketFeeling": "今日市場感覺",

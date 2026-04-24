@@ -47,6 +47,7 @@ export function generateTemplateDraft(input: GenerateTemplateDraftInput): Templa
           buy: '买入',
           sell: '卖出',
           both: '买卖都做',
+          none: '没有交易',
           bullish: '多头',
           bearish: '空头',
           neutral: '盘整',
@@ -81,6 +82,7 @@ export function generateTemplateDraft(input: GenerateTemplateDraftInput): Templa
             buy: '買入',
             sell: '賣出',
             both: '買賣都做',
+            none: '沒有交易',
             bullish: '多頭',
             bearish: '空頭',
             neutral: '盤整',
@@ -114,6 +116,7 @@ export function generateTemplateDraft(input: GenerateTemplateDraftInput): Templa
             buy: 'Buy',
             sell: 'Sell',
             both: 'Both',
+            none: 'No Trades',
             bullish: 'Bullish',
             bearish: 'Bearish',
             neutral: 'Neutral',
@@ -147,8 +150,9 @@ export function generateTemplateDraft(input: GenerateTemplateDraftInput): Templa
       buy: copy.trading.buy,
       sell: copy.trading.sell,
       both: copy.trading.both,
+      none: copy.trading.none,
     }
-    const type = input.templateData.tradingType as 'buy' | 'sell' | 'both' | undefined
+    const type = input.templateData.tradingType as 'buy' | 'sell' | 'both' | 'none' | undefined
     const typeLabel = typeLabelMap[type || 'both']
     const symbols = normalizeSymbols(input.templateData.symbols)
     let content = `## ${copy.trading.title}\n\n`

@@ -214,6 +214,7 @@
       "buy": "买入",
       "sell": "卖出",
       "both": "买卖都做",
+      "none": "没有交易",
       "symbols": "股票代码（可选，多个用逗号分隔）",
       "symbolsPlaceholder": "例如: 2330, 2317",
       "marketFeeling": "今日市场感觉",

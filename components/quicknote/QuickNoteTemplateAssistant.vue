@@ -32,7 +32,7 @@
         </label>
         <div class="flex gap-2 rounded-xl border p-1" style="border-color: var(--color-border); background: var(--color-surface-muted);">
           <button
-            v-for="type in ['buy', 'sell', 'both']"
+            v-for="type in ['buy', 'sell', 'both', 'none']"
             :key="type"
             type="button"
             class="flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-300"
@@ -41,7 +41,7 @@
               : 'color: var(--color-text-muted); hover:background: color-mix(in srgb, var(--color-surface) 90%, white);'"
             @click="updateField('tradingType', type)"
           >
-            {{ type === 'buy' ? t('quickDiary.trading.buy') : type === 'sell' ? t('quickDiary.trading.sell') : t('quickDiary.trading.both') }}
+            {{ type === 'buy' ? t('quickDiary.trading.buy') : type === 'sell' ? t('quickDiary.trading.sell') : type === 'both' ? t('quickDiary.trading.both') : t('quickDiary.trading.none') }}
           </button>
         </div>
       </div>

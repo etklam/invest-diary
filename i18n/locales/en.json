@@ -216,6 +216,7 @@
       "buy": "Buy",
       "sell": "Sell",
       "both": "Both",
+      "none": "No Trades",
       "symbols": "Stock symbols (optional, separate with commas)",
       "symbolsPlaceholder": "e.g., 2330, 2317",
       "marketFeeling": "Market feeling",
