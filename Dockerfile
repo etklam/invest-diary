@@ -2,14 +2,23 @@ FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
-# Install build dependencies in a single layer
+# Install native build dependencies in a single layer.
+# canvas falls back to node-gyp on Linux when no prebuilt binary is available.
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    python3 \
+    pkg-config \
     openssl \
     libcairo2 \
+    libcairo2-dev \
     libjpeg62-turbo \
+    libjpeg-dev \
     libpango-1.0-0 \
+    libpango1.0-dev \
     libgif7 \
+    libgif-dev \
     librsvg2-2 \
+    librsvg2-dev \
     libpixman-1-0 \
     libpangomm-1.4-1v5 \
     libfreetype6 \
