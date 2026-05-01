@@ -185,6 +185,60 @@
             </div>
           </div>
         </div>
+
+        <!-- 開單紀律確認（可摺疊） -->
+        <div v-if="disciplines && disciplines.length > 0" class="mt-3 border-t border-gray-100 dark:border-gray-700 pt-3">
+          <button
+            type="button"
+            @click="toggleDiscipline(index)"
+            class="flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            <Icon
+              :name="expandedDisciplineOpen.has(index) ? 'heroicons:chevron-down' : 'heroicons:chevron-right'"
+              class="h-3 w-3 mr-1"
+            />
+            {{ expandedDisciplineOpen.has(index) ? '收起紀律確認' : '+ 開單紀律確認（選填）' }}
+          </button>
+
+          <div v-if="expandedDisciplineOpen.has(index)" class="mt-3 space-y-3">
+            <div class="space-y-2">
+              <span class="block text-xs font-medium text-gray-600 dark:text-gray-400">交易前檢查項目</span>
+              <div
+                v-for="disc in disciplines"
+                :key="disc.id"
+                class="flex items-start space-x-2"
+              >
+                <input
+                  type="checkbox"
+                  :id="`discipline-${index}-${disc.id}`"
+                  :checked="isDisciplineChecked(index, disc.id)"
+                  @change="toggleDisciplineCheck(index, disc.id)"
+                  class="mt-0.5 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700"
+                />
+                <label
+                  :for="`discipline-${index}-${disc.id}`"
+                  class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none"
+                >
+                  {{ disc.content }}
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label :for="`discipline-note-${index}`" class="block text-xs font-medium text-gray-600 dark:text-gray-400">
+                紀律檢查備註
+              </label>
+              <textarea
+                :id="`discipline-note-${index}`"
+                :value="transactions[index]?.discipline_check_note ?? ''"
+                @input="updateDisciplineCheckNote(index, ($event.target as HTMLTextAreaElement).value)"
+                rows="2"
+                class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 resize-none"
+                placeholder="這筆交易的紀律評估..."
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -213,6 +267,9 @@ interface Transaction {
   notes?: string
   strategy?: string
   emotion?: string
+  // 開單紀律確認（選填）
+  discipline_checks?: Array<{ disciplineId: string; passed: boolean }>
+  discipline_check_note?: string
 }
 
 interface Holding {
@@ -220,8 +277,14 @@ interface Holding {
   quantity: number
 }
 
+interface DisciplineItem {
+  id: string
+  content: string
+}
+
 const props = defineProps<{
   modelValue: Transaction[]
+  disciplines?: DisciplineItem[] | null
 }>()
 
 const emit = defineEmits<{
@@ -247,6 +310,45 @@ const toggleNotes = (index: number) => {
   }
   // trigger reactivity
   expandedNotes.value = new Set(expandedNotes.value)
+}
+
+// 展開開單紀律確認的索引集合
+const expandedDisciplineOpen = ref<Set<number>>(new Set())
+
+const toggleDiscipline = (index: number) => {
+  if (expandedDisciplineOpen.value.has(index)) {
+    expandedDisciplineOpen.value.delete(index)
+  } else {
+    expandedDisciplineOpen.value.add(index)
+  }
+  expandedDisciplineOpen.value = new Set(expandedDisciplineOpen.value)
+}
+
+const isDisciplineChecked = (txIndex: number, disciplineId: string): boolean => {
+  const tx = transactions.value[txIndex]
+  if (!tx || !tx.discipline_checks) return false
+  const check = tx.discipline_checks.find(c => c.disciplineId === disciplineId)
+  return check ? check.passed : false
+}
+
+const toggleDisciplineCheck = (txIndex: number, disciplineId: string) => {
+  const tx = transactions.value[txIndex]
+  if (!tx) return
+  if (!tx.discipline_checks) {
+    tx.discipline_checks = []
+  }
+  const existing = tx.discipline_checks.find(c => c.disciplineId === disciplineId)
+  if (existing) {
+    existing.passed = !existing.passed
+  } else {
+    tx.discipline_checks.push({ disciplineId, passed: true })
+  }
+}
+
+const updateDisciplineCheckNote = (txIndex: number, value: string) => {
+  const tx = transactions.value[txIndex]
+  if (!tx) return
+  tx.discipline_check_note = value || undefined
 }
 
 // 更新指定欄位（通用，用於 notes/strategy/emotion）
@@ -364,6 +466,9 @@ const removeTransaction = (index: number) => {
   // Clear notes expanded state for this index
   expandedNotes.value.delete(index)
   expandedNotes.value = new Set(expandedNotes.value)
+  // Clear discipline expanded state for this index
+  expandedDisciplineOpen.value.delete(index)
+  expandedDisciplineOpen.value = new Set(expandedDisciplineOpen.value)
   // Revalidate all SELL transactions after removing one
   transactions.value.forEach((_, idx) => {
     const tx = transactions.value[idx]

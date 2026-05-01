@@ -43,7 +43,7 @@
         v-model:content="form.content"
       />
 
-      <TransactionInput v-model="form.transactions" />
+      <TransactionInput v-model="form.transactions" :disciplines="disciplines" />
 
       <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
         <div class="flex items-center justify-between mb-4">
@@ -133,6 +133,9 @@ const saving = ref(false)
 const toast = useToast()
 const { runWithAuthRecovery } = useAuthRecovery()
 const { getTodayDateString, getTimezone } = useTimezone()
+
+// Fetch disciplines for trade discipline checking
+const { data: disciplines } = useFetch<Array<{ id: string; content: string }>>('/api/discipline')
 
 // Use lazy fetch to avoid calling API during SSR before auth check
 const { data: diary, pending, error } = await useLazyFetch<any>(`/api/diaries/${id}`)

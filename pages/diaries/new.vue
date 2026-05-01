@@ -47,7 +47,7 @@
             複製上筆交易
           </button>
         </div>
-        <TransactionInput v-model="form.transactions" />
+        <TransactionInput v-model="form.transactions" :disciplines="disciplines" />
       </div>
 
       <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
@@ -155,6 +155,9 @@ const isEditing = ref(false)
 const existingDiaryId = ref<string | null>(null)
 const { runWithAuthRecovery } = useAuthRecovery()
 const { getTodayDateString, formatLocaleDate, getTimezone } = useTimezone()
+
+// Fetch disciplines for trade discipline checking
+const { data: disciplines } = useFetch<Array<{ id: string; content: string }>>('/api/discipline')
 
 // Get date from URL query parameter or use today
 const initialDate = (route.query.date as string) || getTodayDateString()
@@ -364,15 +367,19 @@ const saveDiary = async () => {
         } as any)
       })
       toast.success('日記更新成功！')
+      // Save discipline checks for existing diary
+      await saveDisciplineChecks(existingDiaryId.value)
     } else {
       // Create new diary
-      await runWithAuthRecovery(async (): Promise<void> => {
-        await $fetch('/api/diaries', {
+      const newDiary = await runWithAuthRecovery(async () => {
+        return await $fetch('/api/diaries', {
           method: 'POST',
           body: payload
         })
       })
       toast.success('日記儲存成功！')
+      // Save discipline checks for new diary
+      await saveDisciplineChecks(newDiary?.id?.toString() ?? null)
     }
 
     // Show random discipline quote
@@ -385,6 +392,43 @@ const saveDiary = async () => {
     toast.error('儲存失敗: ' + (e.data?.statusMessage || e.message))
   } finally {
     saving.value = false
+  }
+}
+
+// Save discipline checks collected from all transactions
+const saveDisciplineChecks = async (diaryId: string | null) => {
+  if (!diaryId) return
+
+  const allChecks: Array<{ disciplineId: string; passed: boolean }> = []
+  const notes: string[] = []
+
+  for (const tx of form.transactions) {
+    if (tx.discipline_checks && Array.isArray(tx.discipline_checks)) {
+      for (const check of tx.discipline_checks) {
+        if (check.disciplineId) {
+          allChecks.push({ disciplineId: check.disciplineId, passed: check.passed })
+        }
+      }
+    }
+    if (tx.discipline_check_note) {
+      notes.push(tx.discipline_check_note)
+    }
+  }
+
+  if (allChecks.length === 0) return
+
+  try {
+    await runWithAuthRecovery(() => $fetch('/api/discipline/check', {
+      method: 'POST',
+      body: {
+        diaryId,
+        checks: allChecks,
+        note: notes.length > 0 ? notes.join(' | ') : undefined
+      }
+    }))
+  } catch (e: any) {
+    if (isAuthSessionError(e)) return
+    console.error('Failed to save discipline checks:', e)
   }
 }
 </script>
