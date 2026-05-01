@@ -1,9 +1,9 @@
 import { computed, getCurrentInstance, onUnmounted, reactive, ref, toRef, watch } from 'vue'
-import { generateTemplateDraft } from '~/lib/quicknote/generate-template-draft'
 import { resolveQuickReminderTime } from '~/lib/quicknote/quick-reminders'
 import { useQuickNoteDraft } from '~/composables/useQuickNoteDraft'
 import { useQuickNoteReminders } from '~/composables/useQuickNoteReminders'
 import { useQuickNoteSubmit } from '~/composables/useQuickNoteSubmit'
+import { cloneQuickNoteTemplateData, useQuickNoteTemplateDraft } from '~/composables/useQuickNoteTemplateDraft'
 import { useQuickNoteTemplates } from '~/composables/useQuickNoteTemplates'
 import {
   createEmptyQuickNoteTemplateData,
@@ -11,29 +11,12 @@ import {
   type QuickNoteQuickReminderPreset,
   type QuickNoteReminderKey,
   type QuickNoteSaveMode,
-  type QuickNoteTemplateData,
   type QuickNoteTemplateKind,
 } from '~/types/quicknote'
 
 interface UseQuickNoteComposerOptions {
   defaultTemplateKind?: QuickNoteTemplateKind
   defaultSaveMode?: QuickNoteSaveMode
-}
-
-function cloneTemplateData(data: QuickNoteTemplateData | undefined): QuickNoteTemplateData {
-  return {
-    ...createEmptyQuickNoteTemplateData(),
-    ...(data || {}),
-  }
-}
-
-function normalizeSymbols(symbols: string | undefined): string {
-  if (!symbols) return ''
-  return symbols
-    .split(',')
-    .map(symbol => symbol.trim().toUpperCase())
-    .filter(Boolean)
-    .join(', ')
 }
 
 export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) {
@@ -69,18 +52,21 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   const readyForAutosave = ref(false)
   const restoredThisSession = ref(false)
   const nowTick = ref(Date.now())
-  const appliedTemplateContent = ref('')
   const saveModeTouched = ref(false)
   const existingDiaryForDate = ref(false)
   const checkingExistingDiaryForDate = ref(false)
   let reminderTimer: ReturnType<typeof setInterval> | null = null
 
-  const suggestedDraft = computed(() => generateTemplateDraft({
-      templateKind: state.templateKind,
-      date: state.date,
-      locale: locale.value,
-      templateData: state.templateData,
-  }))
+  const {
+    suggestedDraft,
+    hasTemplateChangesPending,
+    syncSuggestedDraft,
+    applyTemplateKind,
+    updateTemplateData,
+    applyTemplateChanges,
+    regenerateFromTemplate,
+    setAppliedTemplateContent,
+  } = useQuickNoteTemplateDraft(state, locale)
 
   const draftHint = computed(() => {
     if (!lastSavedAt.value) return ''
@@ -118,22 +104,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       .filter(Boolean) as Array<{ key: string; label: string; remaining: string }>
   })
 
-  const hasTemplateChangesPending = computed(() => {
-    if (state.templateKind === 'blank') return false
-    if (state.contentTouched && appliedTemplateContent.value !== suggestedDraft.value.content) return true
-    return false
-  })
-
-  function syncSuggestedDraft(force = false) {
-    if (force || !state.titleTouched) {
-      state.title = suggestedDraft.value.title
-    }
-    if (force || !state.contentTouched) {
-      state.content = suggestedDraft.value.content
-      appliedTemplateContent.value = suggestedDraft.value.content
-    }
-  }
-
   watch(
     () => [state.templateKind, state.date, locale.value, JSON.stringify(state.templateData)],
     () => syncSuggestedDraft(),
@@ -156,23 +126,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     },
     { deep: true }
   )
-
-  function applyTemplateKind(kind: QuickNoteTemplateKind) {
-    state.templateKind = kind
-    if (kind === 'blank') {
-      Object.assign(state.templateData, createEmptyQuickNoteTemplateData())
-    }
-    syncSuggestedDraft()
-  }
-
-  function updateTemplateData(patch: Partial<QuickNoteTemplateData>) {
-    const nextPatch = { ...patch }
-    if (typeof nextPatch.symbols === 'string') {
-      nextPatch.symbols = normalizeSymbols(nextPatch.symbols)
-    }
-    Object.assign(state.templateData, nextPatch)
-    syncSuggestedDraft()
-  }
 
   function setTitle(title: string) {
     state.title = title
@@ -212,35 +165,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       return
     }
     setContent([state.content, templateContent].filter(Boolean).join('\n\n').trim())
-  }
-
-  function mergeTemplateContent(currentContent: string, nextTemplateContent: string): string {
-    const current = currentContent.trim()
-    const nextTemplate = nextTemplateContent.trim()
-    const previousTemplate = appliedTemplateContent.value.trim()
-
-    if (!current) return nextTemplate
-
-    if (previousTemplate && current.includes(previousTemplate)) {
-      const updated = current.replace(previousTemplate, nextTemplate).trim()
-      return updated || current
-    }
-
-    if (!nextTemplate || current === nextTemplate) {
-      return current
-    }
-
-    return [current, nextTemplate].join('\n\n').trim()
-  }
-
-  function applyTemplateChanges() {
-    state.content = mergeTemplateContent(state.content, suggestedDraft.value.content)
-    state.contentTouched = true
-    appliedTemplateContent.value = suggestedDraft.value.content
-  }
-
-  function regenerateFromTemplate() {
-    applyTemplateChanges()
   }
 
   function setQuickReminder(preset: QuickNoteQuickReminderPreset) {
@@ -336,11 +260,11 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     state.date = draft.value.date || getTodayDateString()
     state.saveMode = draft.value.saveMode || defaultSaveMode
     state.templateKind = draft.value.templateKind || defaultTemplateKind
-    Object.assign(state.templateData, cloneTemplateData(draft.value.templateData))
+    Object.assign(state.templateData, cloneQuickNoteTemplateData(draft.value.templateData))
     state.titleTouched = Boolean(state.title)
     state.contentTouched = Boolean(state.content)
     saveModeTouched.value = Boolean(draft.value.saveMode)
-    appliedTemplateContent.value = state.templateKind === 'blank' ? '' : suggestedDraft.value.content
+    setAppliedTemplateContent(state.templateKind === 'blank' ? '' : suggestedDraft.value.content)
     return true
   }
 

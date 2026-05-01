@@ -189,38 +189,41 @@ coverage: {
 ## Phase 4: 可維護性提升
 
 > 來源：分析報告 Section 1（可維護性）+ TECH_DEBT.md
+> 狀態（2026-05-01）：已完成 Quick Note composer 低風險收斂、BlogEditor 子元件拆分、Logger JSON 測試與手寫 API 文件。依賴升級僅嘗試 `shiki`，但鎖檔 churn 過大，本輪未落地依賴變更。
 
 ### 4.1 更新過時依賴
 **優先級順序**:
-1. `shiki` 3.22.0 → 4.x（影響範圍最小，先做）
-2. `@nuxtjs/sitemap` 7.6.0 → 8.x
-3. `@nuxt/image` 1.11.0 → 2.x
-4. `md-editor-v3` 5.8.x → 6.x
-5. `vue-router` 4.6.4 → 5.x（最後做，影響最大）
+1. ⏸️ `shiki` 3.23.0 → 4.x：已嘗試，`package-lock.json` 產生大範圍 transitive churn，本輪為低風險 Phase 4 先不落地
+2. ⏸️ `@nuxtjs/sitemap` 7.6.0 → 8.x：本輪不碰
+3. ⏸️ `@nuxt/image` 1.11.0 → 2.x：本輪不碰
+4. ⏸️ `md-editor-v3` 5.8.x → 6.x：本輪不碰
+5. ⏸️ `vue-router` 4.6.4 → 5.x：本輪不碰，避免牽動 Nuxt 路由整合
 
 **每個依賴更新流程**: 建立 feature branch → 更新 → typecheck + lint + test → 合併
 
 ### 4.2 拆分 useQuickNoteComposer
 **問題**: 超過 350 行，違反單一職責
 **重構**:
-- `useQuickNoteComposer.ts` → 保留為 coordinator
-- 提取 `useQuickNoteDraft.ts`、`useQuickNoteSubmit.ts`、`useQuickNoteTags.ts`、`useQuickNoteTemplates.ts`（已存在）
-- 確認 coordinator 只做組合，不做具體邏輯
+- ✅ `useQuickNoteComposer.ts` → 保留為 coordinator，行數降至 350 行以下
+- ✅ 確認 `useQuickNoteDraft.ts`、`useQuickNoteSubmit.ts`、`useQuickNoteTags.ts`、`useQuickNoteTemplates.ts` 已存在
+- ✅ 新增 `useQuickNoteTemplateDraft.ts` 收斂模板草稿同步、模板合併與 symbol 正規化，避免 composer 繼續塞業務細節
 
 ### 4.3 拆分大型組件
 **目標**:
 - `Navigation.vue` (392行) → `DesktopNav.vue` + `MobileNav.vue` + `NavLogo.vue` + `ThemeToggle.vue`（部分已存在，檢查是否需要進一步拆分）
-- `BlogEditor.vue` → 提取 toolbar、preview、metadata form 為子組件
+- ✅ `Navigation.vue` 已有 `DesktopNav.vue`、`MobileNav.vue`、`NavLogo.vue` 拆分；本輪不做無關重構
+- ✅ `BlogEditor.vue` → 提取 `BlogEditorToolbar.vue`、`BlogEditorMarkdownPreview.vue`、`BlogEditorMetadataForm.vue`
 
 ### 4.4 Logger 結構化輸出
 **問題**: Logger 輸出純文字而非 JSON，日誌聚合工具無法解析
-**修復**: `lib/logger.ts` 加入 JSON 輸出模式（通過環境變數 `LOG_FORMAT=json` 控制）
+**修復**: ✅ `lib/logger.ts` 已有 JSON 輸出模式（通過環境變數 `LOG_FORMAT=json` 控制），本輪新增 `tests/unit/lib/logger.test.ts` 覆蓋 JSON 可解析輸出、PII masking 與純文字相容性
 
 ### 4.5 API 文檔生成
 **問題**: 85 個 API endpoint 完全無文檔
 **修復**:
-- 引入 `nuxt-swagger` 或手寫 OpenAPI spec
-- 優先文檔化: auth、diaries、blog、agent、stocks（Phase 5 新增）
+- ✅ 不引入高風險 swagger runtime 依賴
+- ✅ 新增 `docs/API.md` 手寫 API 文件
+- ✅ 優先文檔化: auth、diaries、api-keys、agent、stocks
 
 ---
 
