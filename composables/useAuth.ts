@@ -60,7 +60,13 @@ export const useAuth = () => {
   const isLoading = useState<boolean>('auth:loading', () => false)
   const isInitialized = useState<boolean>('auth:initialized', () => false)
   const toast = useToast()
-  const { t } = useI18n()
+  const { t } = (() => {
+    try {
+      return useI18n()
+    } catch {
+      return { t: (key: string) => key }
+    }
+  })()
   const serverCookieHeader = process.server
     ? (useRequestHeaders(['cookie']).cookie ?? '')
     : ''
