@@ -37,9 +37,14 @@ wait_for_db() {
 # Function to run migrations
 run_migrations() {
     if [ "$RUN_MIGRATIONS" = "true" ]; then
-        echo "❌ RUN_MIGRATIONS=true is not supported in the slim runtime image."
-        echo "   Run prisma migrations in pre-deploy/init job instead."
-        return 1
+        echo "📦 Running Prisma migrations..."
+        npx prisma migrate deploy
+        if [ $? -eq 0 ]; then
+            echo "✅ Migrations applied successfully."
+        else
+            echo "❌ Migration failed!"
+            return 1
+        fi
     else
         echo "⏭️  Skipping migrations (RUN_MIGRATIONS=false)"
     fi

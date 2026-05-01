@@ -31,15 +31,5 @@
       "containerPath": "/app/.cache"
     }
   ],
-  "preDeployFunction": {
-    "containerName": "diary-vue-migrate",
-    "dockerfilePath": "./Dockerfile",
-    "envVars": [
-      {
-        "key": "DATABASE_URL",
-        "value": "$DATABASE_URL"
-      }
-    ],
-    "command": "node ./node_modules/prisma/build/index.js migrate deploy"
-  }
+  "preDeployFunction": {}
 }
