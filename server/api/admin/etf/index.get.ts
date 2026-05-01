@@ -5,10 +5,12 @@
 import { requireUser } from '~/server/utils/auth'
 import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
 
 type AdminEtfListItem = Awaited<ReturnType<typeof prisma.etf.findMany>>[number]
 
 export default defineEventHandler(async (event) => {
+  const log = logger.admin.withRequestId(event.context.requestId)
   requireUser(event)
   await adminMiddleware(event)
 

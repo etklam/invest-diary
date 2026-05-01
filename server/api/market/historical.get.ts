@@ -7,8 +7,10 @@
 import { fetchHistoricalData } from '~/lib/yahoo-finance'
 import type { HistoricalQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event): Promise<HistoricalQuote[]> => {
+  const log = logger.api.withRequestId(event.context.requestId)
   const symbol = getQuery(event).symbol as string
   const range = getQuery(event).range as string || '1y' // Default to 1 year
 

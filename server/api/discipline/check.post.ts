@@ -1,5 +1,6 @@
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
+import { logger } from '~/lib/logger'
 
 interface CheckItem {
   disciplineId: string | null
@@ -26,6 +27,7 @@ interface CheckBody {
  *   { created: number }
  */
 export default defineEventHandler(async (event) => {
+  const log = logger.discipline.withRequestId(event.context.requestId)
   const user = requireUser(event)
   const userId = BigInt(user.id)
 

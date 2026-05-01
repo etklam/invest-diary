@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { createCanvas } from 'canvas'
+import { logger } from '~/lib/logger'
 
 const querySchema = z.object({
   title: z.string().optional(),
@@ -7,6 +8,7 @@ const querySchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   const { title, author } = querySchema.parse(getQuery(event))
 
   // Mobile-friendly size: 1080x1350 (4:5)

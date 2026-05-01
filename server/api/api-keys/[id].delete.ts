@@ -1,8 +1,10 @@
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   const user = requireUser(event)
   const keyId = parsePositiveBigIntParam(event, 'id')
 

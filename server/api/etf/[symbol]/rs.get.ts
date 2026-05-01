@@ -2,11 +2,13 @@ import { fetchMonthlyData } from '~/lib/yahoo-finance'
 import { computeRelativeStrength } from '~/lib/etf-profile/calculators/rs'
 import { createEmptyRs } from '~/lib/etf-profile/defaults'
 import type { RsMetrics } from '~/lib/etf-profile/types'
+import { logger } from '~/lib/logger'
 
 const VALID_BENCHMARKS: RsMetrics['benchmark'][] = ['SPY', 'QQQ']
 const VALID_PERIODS: RsMetrics['period'][] = ['1m', '3m', '6m', '1y']
 
 export default defineEventHandler(async (event) => {
+  const log = logger.etf.withRequestId(event.context.requestId)
   const symbol = getRouterParam(event, 'symbol')
   if (!symbol) {
     throw createError({

@@ -1,6 +1,7 @@
 import { defineEventHandler } from 'h3'
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
+import { logger } from '~/lib/logger'
 
 // Default trading discipline quotes when user hasn't added any
 const defaultDisciplines = [
@@ -10,6 +11,7 @@ const defaultDisciplines = [
 ]
 
 export default defineEventHandler(async (event) => {
+  const log = logger.discipline.withRequestId(event.context.requestId)
   const user = await requireUser(event)
 
   // @ts-ignore prisma client type may be stale

@@ -5,8 +5,10 @@
 import { requireUser } from '~/server/utils/auth'
 import type { AlertType } from '@prisma/client'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.etf.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   const body = await readBody(event)

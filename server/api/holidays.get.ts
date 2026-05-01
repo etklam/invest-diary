@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { logger } from '~/lib/logger'
 
 const querySchema = z.object({
   year: z.coerce.number().int().min(1900).max(2100),
@@ -6,6 +7,7 @@ const querySchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
   if (!userId) {

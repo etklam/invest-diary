@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const schema = z.object({
   title: z.string().optional(),
@@ -12,6 +14,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  const log = logger.discipline.withRequestId(event.context.requestId)
   const rawUserId = event.context.user?.id
   const userId = rawUserId ? BigInt(rawUserId) : undefined
 
@@ -71,13 +74,6 @@ export default defineEventHandler(async (event) => {
       json: shareDataToJSON(shareData)
     }
   } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      const first = error.issues?.[0]
-      throw createError({
-        statusCode: 400,
-        statusMessage: first?.message || 'Invalid query parameters'
-      })
-    }
-    throw error
+    handleApiError(error, log)
   }
 })

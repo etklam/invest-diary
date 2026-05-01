@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const schema = z.object({
   json: z.string(),
@@ -7,6 +9,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  const log = logger.discipline.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
   if (!userId) {
@@ -69,21 +72,6 @@ export default defineEventHandler(async (event) => {
       message: `Successfully imported ${imported.count} disciplines`
     }
   } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: error.issues[0]?.message ?? 'Invalid input'
-      })
-    }
-
-    // Re-throw createError instances
-    if (error.statusCode) {
-      throw error
-    }
-
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Import failed'
-    })
+    handleApiError(error, log)
   }
 })

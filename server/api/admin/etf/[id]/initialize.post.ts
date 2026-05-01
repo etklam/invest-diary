@@ -8,8 +8,10 @@ import adminMiddleware from '~/server/middleware/admin'
 import { fetchMonthlyData } from '~/lib/yahoo-finance'
 import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.admin.withRequestId(event.context.requestId)
   requireUser(event)
   await adminMiddleware(event)
 

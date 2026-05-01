@@ -4,8 +4,10 @@
 
 import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.etf.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   const watchlist = await prisma.etfWatchlist.findMany({

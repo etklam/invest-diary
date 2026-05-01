@@ -2,8 +2,10 @@ import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { serializePartnerLink } from '~/server/utils/partner-response'
 import type { PartnerLinkRecord } from '~/server/utils/partner'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   const user = requireUser(event)
   const currentUserId = BigInt(user.id)
 

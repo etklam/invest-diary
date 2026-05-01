@@ -1,8 +1,10 @@
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.auth.withRequestId(event.context.requestId)
   const auth = requireUser(event)
 
   const user = await prisma.user.findUnique({

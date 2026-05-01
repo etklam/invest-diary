@@ -5,8 +5,10 @@
 import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.etf.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   const watchlistId = parsePositiveBigIntParam(event, 'id')

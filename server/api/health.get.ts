@@ -1,4 +1,5 @@
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
 
 interface HealthCheckResponse {
   status: 'healthy' | 'unhealthy'
@@ -18,6 +19,7 @@ interface HealthCheckResponse {
 }
 
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   const startTime = Date.now()
   const checks: HealthCheckResponse['checks'] = {
     database: {

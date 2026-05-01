@@ -7,6 +7,7 @@ import { analyzeEtf, type EtfAnalysis } from '~/lib/etf-analyzer'
 import { fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
 
 type SortField =
   | 'symbol'
@@ -32,6 +33,8 @@ const sortValueMap = {
 } satisfies Record<SortField, (row: EtfAnalysis) => string | number>
 
 export default defineEventHandler(async (event) => {
+  const log = logger.etf.withRequestId(event.context.requestId)
+
   // Rate limiting
   const ip = getRequestIP(event) || 'unknown'
   try {

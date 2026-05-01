@@ -1,7 +1,9 @@
 import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.blog.withRequestId(event.context.requestId)
   await adminMiddleware(event)
 
   const body = await readBody(event)

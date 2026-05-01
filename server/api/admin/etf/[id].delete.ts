@@ -7,8 +7,10 @@ import { requireUser } from '~/server/utils/auth'
 import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.admin.withRequestId(event.context.requestId)
   requireUser(event)
   await adminMiddleware(event)
 

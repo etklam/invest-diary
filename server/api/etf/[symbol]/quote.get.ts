@@ -6,8 +6,10 @@
 
 import { fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.etf.withRequestId(event.context.requestId)
   const symbol = getRouterParam(event, 'symbol')
   if (!symbol) {
     throw createError({

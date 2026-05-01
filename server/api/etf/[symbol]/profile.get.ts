@@ -2,8 +2,10 @@ import { aggregateEtfProfile } from '~/lib/etf-profile/aggregator'
 import { createEmptyProfile } from '~/lib/etf-profile/defaults'
 import { getCached, setCached } from '~/lib/etf-profile/cache'
 import type { RsMetrics } from '~/lib/etf-profile/types'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.etf.withRequestId(event.context.requestId)
   const symbol = getRouterParam(event, 'symbol')
   if (!symbol) {
     throw createError({

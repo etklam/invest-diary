@@ -1,5 +1,6 @@
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
+import { logger } from '~/lib/logger'
 
 /**
  * GET /api/discipline/fill-rate
@@ -13,6 +14,7 @@ import { requireUser } from '~/server/utils/auth'
  *   fillRate = checkedDiaries / totalDiaries * 100，若無日記則為 null
  */
 export default defineEventHandler(async (event) => {
+  const log = logger.discipline.withRequestId(event.context.requestId)
   const user = requireUser(event)
   const userId = BigInt(user.id)
 

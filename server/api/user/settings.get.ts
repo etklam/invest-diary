@@ -1,6 +1,8 @@
 import prisma from '../../../lib/prisma'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
   if (!userId) {
