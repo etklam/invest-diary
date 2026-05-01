@@ -38,7 +38,7 @@ wait_for_db() {
 run_migrations() {
     if [ "$RUN_MIGRATIONS" = "true" ]; then
         echo "📦 Running Prisma migrations..."
-        npx prisma migrate deploy
+        HOME=/tmp ./node_modules/.bin/prisma migrate deploy
         if [ $? -eq 0 ]; then
             echo "✅ Migrations applied successfully."
         else
