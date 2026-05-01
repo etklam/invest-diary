@@ -172,8 +172,8 @@
               class="mt-16 flex flex-col items-center gap-6"
             >
               <div ref="loadMoreTrigger" class="h-4 w-full" aria-hidden="true" />
-              <div v-if="loadingMore" class="flex items-center gap-3 rounded-2xl px-6 py-3 text-sm font-bold" style="background: var(--color-surface); box-shadow: var(--shadow-md)">
-                <span class="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" style="border-color: var(--color-secondary); border-top-color: transparent"></span>
+              <div v-if="loadingMore" class="flex items-center gap-3 rounded-2xl px-6 py-3 text-sm font-bold" style="background: var(--color-surface); box-shadow: var(--shadow-md)" role="status" aria-live="polite">
+                <span class="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" style="border-color: var(--color-secondary); border-top-color: transparent" aria-hidden="true"></span>
                 <span style="color: var(--color-text)">{{ $t('blog.exploringMore') }}</span>
               </div>
               <div v-else-if="!hasMore && posts.length > 0" class="flex items-center gap-3" style="color: var(--color-text-soft)">
@@ -298,6 +298,7 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useInfiniteScroll, useMediaQuery } from '@vueuse/core'
 import { CATEGORY_OPTIONS } from '~/types/blog'
 import type { LocationQueryValue } from 'vue-router'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 
 // Blog is a public page
 definePageMeta({
@@ -306,6 +307,7 @@ definePageMeta({
 
 // SEO
 const { t } = useI18n()
+const toast = useToast()
 const config = useRuntimeConfig()
 const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').replace(/\/+$/, '')
 const canonicalUrl = `${siteUrl}/articles`
@@ -538,7 +540,7 @@ const loadMore = async () => {
     prefetchCache.delete(nextPage)
     await prefetchNextPage()
   } catch (err) {
-    console.error('Failed to load more posts:', err)
+    toast.error(resolveErrorMessage(err, t))
   } finally {
     loadingMore.value = false
   }

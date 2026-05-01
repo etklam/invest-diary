@@ -356,8 +356,8 @@ const copyLink = async () => {
     setTimeout(() => {
       copied.value = false
     }, 2000)
-  } catch (err) {
-    console.error('Failed to copy link:', err)
+  } catch {
+    toast.error('複製連結失敗，請手動複製')
   }
 }
 

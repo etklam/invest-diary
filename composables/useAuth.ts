@@ -235,6 +235,7 @@ export const useAuth = () => {
         toast.success('設定已更新')
         return true
       }
+      return false
     } catch (error) {
       const authError = error as AuthErrorShape
       toast.error(resolveErrorMessage(error, t))
@@ -256,6 +257,7 @@ export const useAuth = () => {
         toast.success('密碼已更改')
         return true
       }
+      return false
     } catch (error) {
       const authError = error as AuthErrorShape
       toast.error(resolveErrorMessage(error, t))

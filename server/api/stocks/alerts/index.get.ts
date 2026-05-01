@@ -2,6 +2,7 @@
  * Get user's stock price alerts
  */
 
+import type { PriceAlert } from '@prisma/client'
 import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
@@ -15,7 +16,7 @@ export default defineEventHandler(async (event) => {
     orderBy: { createdAt: 'desc' },
   })
 
-  return alerts.map((alert) => ({
+  return alerts.map((alert: PriceAlert) => ({
     id: alert.id.toString(),
     symbol: alert.symbol,
     type: alert.type,

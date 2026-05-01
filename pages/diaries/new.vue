@@ -141,6 +141,7 @@
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { toDateTimeLocalValue } from '~/lib/diary-date'
 import { isAuthSessionError } from '~/lib/auth/session-error'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 
 definePageMeta({
   middleware: 'auth'
@@ -148,6 +149,7 @@ definePageMeta({
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 const saving = ref(false)
 const checkingDate = ref(false)
 const loadingLatest = ref(false)
@@ -219,9 +221,9 @@ watch(() => form.date, async (newDate) => {
       form.transactions = []
       form.alerts = []
     }
-  } catch (error) {
+  } catch (error: any) {
     if (isAuthSessionError(error)) return
-    console.error('Error checking existing diary:', error)
+    toast.error(resolveErrorMessage(error) || '無法檢查既有日記')
   } finally {
     checkingDate.value = false
   }
@@ -428,7 +430,7 @@ const saveDisciplineChecks = async (diaryId: string | null) => {
     }))
   } catch (e: any) {
     if (isAuthSessionError(e)) return
-    console.error('Failed to save discipline checks:', e)
+    toast.error(resolveErrorMessage(e) || '交易紀律檢查記錄失敗')
   }
 }
 </script>

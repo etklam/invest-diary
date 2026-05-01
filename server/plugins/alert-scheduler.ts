@@ -1,3 +1,4 @@
+import type { PriceAlert } from '@prisma/client'
 import prisma from '~/lib/prisma'
 import { connectionManager } from '~/server/websocket/connectionManager'
 import { checkDrawdown } from '~/server/utils/drawdown-alerts'
@@ -159,7 +160,7 @@ export default defineNitroPlugin(() => {
     try {
       const priceAlerts = await prisma.priceAlert.findMany({
         where: { isTriggered: false },
-      })
+      }) as PriceAlert[]
 
       if (priceAlerts.length === 0) {
         return
@@ -168,7 +169,7 @@ export default defineNitroPlugin(() => {
       console.log(`[AlertScheduler] Checking ${priceAlerts.length} price alerts`)
 
       // 收集所有不重複的 symbol，減少 API 呼叫次數
-      const uniqueSymbols = [...new Set(priceAlerts.map((a) => a.symbol))]
+      const uniqueSymbols: string[] = [...new Set(priceAlerts.map((a: PriceAlert) => a.symbol))]
 
       // 批次取得所有 symbol 的報價（用 Map 快取）
       const priceCache = new Map<string, number | null>()

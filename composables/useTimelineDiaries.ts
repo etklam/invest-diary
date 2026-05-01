@@ -1,6 +1,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { formatDateWithWeekday } from '~/lib/utils'
 import { formatYmdInTimezone } from '~/lib/diary-date'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import type {
   Diary,
   DiaryGroup,
@@ -11,6 +12,7 @@ import type {
 export const useTimelineDiaries = (options?: { limit?: number; timezone?: string }) => {
   const { t } = useI18n()
   const { user } = useAuth()
+  const toast = useToast()
 
   // Options
   const limit = options?.limit || 20
@@ -69,7 +71,7 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
         pagination.value = response.pagination
       }
     } catch (err) {
-      console.error('Error loading more diaries:', err)
+      toast.error(resolveErrorMessage(err, t))
       page.value-- // Revert on error
     } finally {
       loadingMore.value = false

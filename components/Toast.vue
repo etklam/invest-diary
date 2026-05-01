@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:items-start sm:justify-end z-50 space-y-3">
+  <div class="fixed inset-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:items-start sm:justify-end z-50 space-y-3" role="status" aria-live="polite">
     <TransitionGroup
       enter-active-class="transition-all duration-300 ease-out"
       enter-from-class="translate-y-4 opacity-0 scale-95"
@@ -13,6 +13,7 @@
         :key="toast.id"
         class="max-w-sm w-full pointer-events-auto overflow-hidden"
         :class="getToastWrapperClass(toast.type)"
+        :role="toast.type === 'error' || toast.type === 'warning' ? 'alert' : 'status'"
       >
         <div class="backdrop-blur-xl rounded-2xl shadow-xl border" style="background: color-mix(in srgb, var(--color-surface) 92%, transparent); border-color: color-mix(in srgb, var(--color-border) 40%, transparent);">
           <div class="p-4">

@@ -1,6 +1,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import type { Diary, DiariesApiResponse } from '~/types/diary'
 import {
   buildDailyActivityMap,
@@ -16,6 +17,8 @@ export const useCalendar = () => {
   const { isAuthenticated, user } = useAuth()
   const { getTimezone } = useTimezone()
   const { runWithAuthRecovery } = useAuthRecovery()
+  const toast = useToast()
+  const { t } = useI18n()
 
   // State
   const userTimezone = computed(() => user.value?.timezone || getTimezone() || 'Asia/Taipei')
@@ -100,7 +103,7 @@ export const useCalendar = () => {
       diaries.value = response.data
     } catch (error) {
       if (isAuthSessionError(error)) return
-      console.error('獲取日記失敗:', error)
+      toast.error(resolveErrorMessage(error, t))
     } finally {
       pending.value = false
     }
@@ -151,7 +154,7 @@ export const useCalendar = () => {
 
       holidayDateSet.value = holidayDates
     } catch (error) {
-      console.error('載入假期失敗:', error)
+      toast.error(resolveErrorMessage(error, t))
       holidayDateSet.value = new Set()
     } finally {
       loadingHolidays.value = false

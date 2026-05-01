@@ -1,6 +1,8 @@
 {
   "extends": "./.nuxt/tsconfig.shared.json",
   "compilerOptions": {
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "lib": [
       "ESNext",
       "DOM",

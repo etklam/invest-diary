@@ -13,8 +13,9 @@ export default defineNuxtConfig({
           'X-Content-Type-Options': 'nosniff',
           'X-Frame-Options': 'SAMEORIGIN',
           'Referrer-Policy': 'strict-origin-when-cross-origin',
-          'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self'; frame-src 'self'",
-          'Content-Security-Policy-Report-Only': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self'; frame-src 'self'"
+          'Content-Security-Policy': process.env.NODE_ENV === 'production'
+            ? "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self'; frame-src 'self'"
+            : "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self'; frame-src 'self'"
         }
       },
       '/api/blog': {

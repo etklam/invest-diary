@@ -300,11 +300,12 @@ const roleBadgeClass = (role: string) => {
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-if="loading.users">
+              <tr v-if="loading.users" role="status" aria-live="polite">
                 <td :colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                   <div class="flex justify-center">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" aria-hidden="true"></div>
                   </div>
+                  <span class="sr-only">{{ $t('common.loading') || '載入中...' }}</span>
                 </td>
               </tr>
               <tr v-else-if="users.length === 0">
