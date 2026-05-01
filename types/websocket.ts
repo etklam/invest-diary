@@ -19,11 +19,36 @@ export interface ConnectionSuccessPayload {
   userId: string
 }
 
+// Drawdown alert payload
+export interface DrawdownAlertPayload {
+  currentValue: number
+  peakValue: number
+  drawdownPct: number
+  threshold: number
+  peakDate: string
+  currentDate: string
+  message: string
+  benchmarkSymbol: string
+}
+
+// Price alert 推送 payload
+export interface PriceAlertPayload {
+  id: string
+  symbol: string
+  type: string
+  threshold: number
+  currentPrice: number
+  message: string
+  triggeredAt: string
+}
+
 // Server -> Client 事件
 export interface ServerToClientEvents {
   'alert:triggered': (alert: AlertPayload) => void
   'alert:dismissed': (data: { alertId: string }) => void
   'alert:error': (data: { message: string; alertId?: string }) => void
+  'drawdown:alert': (data: DrawdownAlertPayload) => void
+  'price-alert:triggered': (data: PriceAlertPayload) => void
   'system:notification': (data: { message: string; type: 'info' | 'warning' | 'error' }) => void
   'connection:success': (data: ConnectionSuccessPayload) => void
   'pong': () => void

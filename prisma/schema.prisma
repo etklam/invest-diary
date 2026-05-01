@@ -82,6 +82,7 @@ model User {
   initiatedPartnerLinks PartnerLink[]   @relation("PartnerLinkInitiatedBy")
   disciplineChecks      DisciplineCheck[]
   portfolioSnapshots    PortfolioSnapshot[]
+  priceAlerts           PriceAlert[]
 
   @@map("users")
 }
@@ -446,4 +447,25 @@ model PortfolioSnapshot {
   @@unique([userId, snapshotDate], map: "portfolio_snapshots_user_date_key")
   @@index([userId, snapshotDate(sort: Desc)], map: "portfolio_snapshots_user_date_idx")
   @@map("portfolio_snapshots")
+}
+
+// ─── Phase 6.1: Stock Price Alerts ────────────────────────────────────────────
+
+model PriceAlert {
+  id          BigInt     @id @default(autoincrement())
+  userId      BigInt     @map("user_id")
+  symbol      String     @db.VarChar(20)
+  type        AlertType
+  threshold   Decimal    @db.Decimal(10, 4)
+  message     String     @db.VarChar(500)
+  isTriggered Boolean    @default(false) @map("is_triggered")
+  triggeredAt DateTime?  @map("triggered_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isTriggered])
+  @@index([symbol, isTriggered])
+  @@map("price_alerts")
 }
