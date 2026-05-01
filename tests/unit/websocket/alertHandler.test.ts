@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const mockAlertFindFirst = vi.fn()
 const mockAlertUpdate = vi.fn()
 
-vi.mock('../../lib/prisma', () => ({
+vi.mock('~/lib/prisma', () => ({
   default: {
     alert: {
       findFirst: mockAlertFindFirst,
@@ -36,8 +36,8 @@ describe('setupAlertHandlers', () => {
 
   describe('alert:dismiss', () => {
     it('successfully dismisses alert owned by the user', async () => {
-      const socket = makeSocket('user-1')
-      const { setupAlertHandlers } = await import('../../server/websocket/alertHandler')
+      const socket = makeSocket('1')
+      const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
       mockAlertFindFirst.mockResolvedValue({
@@ -52,7 +52,7 @@ describe('setupAlertHandlers', () => {
       expect(mockAlertFindFirst).toHaveBeenCalledWith({
         where: {
           id: BigInt('42'),
-          diary: { userId: BigInt('user-1') },
+          diary: { userId: BigInt('1') },
         },
         include: { diary: { select: { userId: true } } },
       })
@@ -64,8 +64,8 @@ describe('setupAlertHandlers', () => {
     })
 
     it('sends alert:error when alert is not found', async () => {
-      const socket = makeSocket('user-1')
-      const { setupAlertHandlers } = await import('../../server/websocket/alertHandler')
+      const socket = makeSocket('1')
+      const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
       mockAlertFindFirst.mockResolvedValue(null)
@@ -80,8 +80,8 @@ describe('setupAlertHandlers', () => {
     })
 
     it('sends alert:error when alert belongs to another user (diary ownership check)', async () => {
-      const socket = makeSocket('user-1')
-      const { setupAlertHandlers } = await import('../../server/websocket/alertHandler')
+      const socket = makeSocket('1')
+      const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
       // findFirst returns null because the diary.userId doesn't match
@@ -92,7 +92,7 @@ describe('setupAlertHandlers', () => {
       expect(mockAlertFindFirst).toHaveBeenCalledWith(expect.objectContaining({
         where: expect.objectContaining({
           id: BigInt('42'),
-          diary: { userId: BigInt('user-1') },
+          diary: { userId: BigInt('1') },
         }),
       }))
       expect(socket.emit).toHaveBeenCalledWith('alert:error', {
@@ -102,8 +102,8 @@ describe('setupAlertHandlers', () => {
     })
 
     it('sends alert:error when database update fails', async () => {
-      const socket = makeSocket('user-1')
-      const { setupAlertHandlers } = await import('../../server/websocket/alertHandler')
+      const socket = makeSocket('1')
+      const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
       mockAlertFindFirst.mockResolvedValue({
@@ -121,8 +121,8 @@ describe('setupAlertHandlers', () => {
     })
 
     it('verifies diary-level ownership (userId scoped within diary relation)', async () => {
-      const socket = makeSocket('user-2')
-      const { setupAlertHandlers } = await import('../../server/websocket/alertHandler')
+      const socket = makeSocket('2')
+      const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
       mockAlertFindFirst.mockResolvedValue({
@@ -137,7 +137,7 @@ describe('setupAlertHandlers', () => {
       expect(mockAlertFindFirst).toHaveBeenCalledWith(expect.objectContaining({
         where: expect.objectContaining({
           id: BigInt('10'),
-          diary: { userId: BigInt('user-2') },
+          diary: { userId: BigInt('2') },
         }),
       }))
       expect(mockAlertUpdate).toHaveBeenCalled()
@@ -147,9 +147,9 @@ describe('setupAlertHandlers', () => {
 
   describe('multiple alerts across users', () => {
     it('each socket has its own isolated handler', async () => {
-      const socketA = makeSocket('user-a')
-      const socketB = makeSocket('user-b')
-      const { setupAlertHandlers } = await import('../../server/websocket/alertHandler')
+      const socketA = makeSocket('1')
+      const socketB = makeSocket('2')
+      const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socketA as any)
       setupAlertHandlers(socketB as any)
 

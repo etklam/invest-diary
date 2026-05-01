@@ -140,7 +140,9 @@ describe('ETF watchlist routes', () => {
     })
 
     it('rejects unauthenticated access with 401', async () => {
-      vi.resetModules()
+      mockRequireUser.mockImplementation(() => {
+        throw Object.assign(new Error('Authentication required'), { statusCode: 401 })
+      })
       const { default: handler } = await import('~/server/api/etf/watchlist/index.get')
       await expect(handler({ context: {} } as any)).rejects.toMatchObject({ statusCode: 401 })
     })
@@ -250,7 +252,9 @@ describe('ETF watchlist routes', () => {
     })
 
     it('rejects unauthenticated access with 401', async () => {
-      vi.resetModules()
+      mockRequireUser.mockImplementation(() => {
+        throw Object.assign(new Error('Authentication required'), { statusCode: 401 })
+      })
       const { default: handler } = await import('~/server/api/etf/watchlist/index.post')
       await expect(handler({ context: {} } as any)).rejects.toMatchObject({ statusCode: 401 })
     })
@@ -290,7 +294,9 @@ describe('ETF watchlist routes', () => {
     })
 
     it('rejects unauthenticated access with 401', async () => {
-      vi.resetModules()
+      mockRequireUser.mockImplementation(() => {
+        throw Object.assign(new Error('Authentication required'), { statusCode: 401 })
+      })
       const { default: handler } = await import('~/server/api/etf/watchlist/[id].delete')
       await expect(handler({ context: {} } as any)).rejects.toMatchObject({ statusCode: 401 })
     })

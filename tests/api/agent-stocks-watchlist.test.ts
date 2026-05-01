@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Errors } from '~/lib/errors/factory'
 
 const mockRequireApiKey = vi.fn()
 const mockStockWatchlistFindMany = vi.fn()
@@ -135,9 +136,7 @@ describe('Agent stocks watchlist API', () => {
   })
 
   it('rejects with 401 when API key is invalid', async () => {
-    mockRequireApiKey.mockRejectedValue(
-      Object.assign(new Error('Invalid API key'), { statusCode: 401 })
-    )
+    mockRequireApiKey.mockRejectedValue(Errors.apiKeyInvalid())
 
     const { default: handler } = await import('~/server/api/agent/stocks/watchlist.get')
 
@@ -148,9 +147,7 @@ describe('Agent stocks watchlist API', () => {
   })
 
   it('rejects with 403 when API key scope is insufficient', async () => {
-    mockRequireApiKey.mockRejectedValue(
-      Object.assign(new Error('API key scope denied'), { statusCode: 403 })
-    )
+    mockRequireApiKey.mockRejectedValue(Errors.apiKeyScopeDenied())
 
     const { default: handler } = await import('~/server/api/agent/stocks/watchlist.get')
 

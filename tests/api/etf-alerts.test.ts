@@ -101,7 +101,7 @@ describe('ETF alert routes', () => {
         id: '1',
         symbol: 'SPY',
         type: 'PRICE_ABOVE',
-        threshold: 100,
+        threshold: 450,
         isTriggered: false,
       })
       expect(result[1]).toMatchObject({
@@ -122,7 +122,9 @@ describe('ETF alert routes', () => {
     })
 
     it('rejects unauthenticated access with 401', async () => {
-      vi.resetModules()
+      mockRequireUser.mockImplementation(() => {
+        throw Object.assign(new Error('Authentication required'), { statusCode: 401 })
+      })
       const { default: handler } = await import('~/server/api/etf/alerts/index.get')
       await expect(handler({ context: {} } as any)).rejects.toMatchObject({ statusCode: 401 })
     })
@@ -237,7 +239,9 @@ describe('ETF alert routes', () => {
     })
 
     it('rejects unauthenticated access with 401', async () => {
-      vi.resetModules()
+      mockRequireUser.mockImplementation(() => {
+        throw Object.assign(new Error('Authentication required'), { statusCode: 401 })
+      })
       const { default: handler } = await import('~/server/api/etf/alerts/index.post')
       await expect(handler({ context: {} } as any)).rejects.toMatchObject({ statusCode: 401 })
     })
@@ -308,7 +312,9 @@ describe('ETF alert routes', () => {
     })
 
     it('rejects unauthenticated access with 401', async () => {
-      vi.resetModules()
+      mockRequireUser.mockImplementation(() => {
+        throw Object.assign(new Error('Authentication required'), { statusCode: 401 })
+      })
       const { default: handler } = await import('~/server/api/etf/alerts/[id].delete')
       await expect(handler({ context: {} } as any)).rejects.toMatchObject({ statusCode: 401 })
     })

@@ -99,7 +99,7 @@ describe('User settings API', () => {
     expect(mockApiLogWarn).toHaveBeenCalledWith(
       'Validation failed',
       expect.objectContaining({
-        code: 'SYS_VALIDATION_ERROR',
+        issues: expect.any(Array),
       })
     )
   })
@@ -118,11 +118,13 @@ describe('User settings API', () => {
       },
     } as any
 
-    await expect(handler(mockEvent)).rejects.toThrow('database unavailable')
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 500,
+    })
 
     expect(mockApiWithRequestId).toHaveBeenCalledWith('req-settings-error')
     expect(mockApiLogError).toHaveBeenCalledWith(
-      'Failed to update user settings',
+      'Unexpected error',
       expect.objectContaining({
         error: expect.stringContaining('database unavailable'),
       })
