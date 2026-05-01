@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireApiKey } from '~/server/utils/api-key'
 import { createStockTimelineRecordsFromAgent } from '~/server/utils/stock-timeline-records'
@@ -48,17 +48,6 @@ export default defineEventHandler(async (event) => {
 
     return result
   } catch (error) {
-    if (error instanceof AppError) {
-      log.warn(error.message, { code: error.code })
-      throw error.toH3Error()
-    }
-    if (error instanceof z.ZodError) {
-      throw Errors.validationError(error.issues.map((issue) => ({
-        field: issue.path.join('.'),
-        message: issue.message,
-      }))).toH3Error()
-    }
-    log.error('Failed to write stock timeline records via API key', { error: String(error) })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

@@ -1,14 +1,17 @@
 import { z } from 'zod'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { listUserTimelineBySymbol, toTimelineResponseItem } from '~/server/utils/stock-timeline-records'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { logger } from '~/lib/logger'
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(100),
 })
 
 export default defineEventHandler(async (event) => {
+  const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   try {
@@ -29,15 +32,6 @@ export default defineEventHandler(async (event) => {
       records: records.map(toTimelineResponseItem),
     }
   } catch (error) {
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    if (error instanceof z.ZodError) {
-      throw Errors.validationError(error.issues.map((issue) => ({
-        field: issue.path.join('.'),
-        message: issue.message,
-      }))).toH3Error()
-    }
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

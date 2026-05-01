@@ -1,15 +1,15 @@
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { generateSlug } from '~/lib/blog'
-import { ZodError } from 'zod'
 import adminMiddleware from '~/server/middleware/admin'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { blogPostInputSchema, resolveExcerpt } from '~/server/utils/blog-schemas'
 import { serializeBlogPost } from '~/server/utils/blog-response'
 
 export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
 
+  const log = logger.blog.withRequestId(event.context.requestId)
   const userId = BigInt(event.context.user!.id)
 
   try {
@@ -55,21 +55,9 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    logger.blog.info('Post created', { postId: post.id.toString(), userId: userId.toString() })
+    log.info('Post created', { postId: post.id.toString(), userId: userId.toString() })
     return serializeBlogPost(post)
   } catch (error) {
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    if (error instanceof ZodError) {
-      throw Errors.validationError(
-        error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }))
-      ).toH3Error()
-    }
-    logger.blog.error('Error creating post', { error })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

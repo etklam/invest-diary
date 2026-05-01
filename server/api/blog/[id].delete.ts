@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
   // Check admin permission
   await adminMiddleware(event)
 
+  const log = logger.blog.withRequestId(event.context.requestId)
   const postId = parsePositiveBigIntParam(event, 'id')
 
   try {
@@ -14,10 +15,10 @@ export default defineEventHandler(async (event) => {
       where: { id: postId }
     })
 
-    logger.blog.info('Post deleted', { postId: postId.toString() })
+    log.info('Post deleted', { postId: postId.toString() })
     return { success: true, message: 'Post deleted successfully' }
   } catch (error) {
-    logger.blog.error('Error deleting post', { error })
+    log.error('Error deleting post', { error })
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to delete post',

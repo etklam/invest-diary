@@ -1,9 +1,9 @@
-import { ZodError } from 'zod'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { generateSlug } from '~/lib/blog'
 import adminMiddleware from '~/server/middleware/admin'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { blogPostInputSchema, resolveExcerpt } from '~/server/utils/blog-schemas'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { serializeBlogPost } from '~/server/utils/blog-response'
@@ -11,6 +11,7 @@ import { serializeBlogPost } from '~/server/utils/blog-response'
 export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
 
+  const log = logger.blog.withRequestId(event.context.requestId)
   const postId = parsePositiveBigIntParam(event, 'id')
 
   try {
@@ -78,21 +79,9 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    logger.blog.info('Post updated', { postId: post.id.toString() })
+    log.info('Post updated', { postId: post.id.toString() })
     return serializeBlogPost(post)
   } catch (error) {
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    if (error instanceof ZodError) {
-      throw Errors.validationError(
-        error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }))
-      ).toH3Error()
-    }
-    logger.blog.error('Error updating post', { error })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

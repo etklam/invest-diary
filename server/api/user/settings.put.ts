@@ -1,8 +1,7 @@
 import { z } from 'zod'
 import prisma from '../../../lib/prisma'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
-import { ErrorCodes } from '~/lib/errors/codes'
 import { isValidIanaTimezone, normalizeInput, optionalNormalizedString } from '~/server/utils/validation'
 import { requireUser } from '~/server/utils/auth'
 
@@ -20,10 +19,8 @@ const settingsSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
-  let currentUserId: string | undefined
   try {
     const user = requireUser(event)
-    currentUserId = user.id
 
     const body = await readBody(event)
     const validatedData = settingsSchema.parse(body)
@@ -55,29 +52,6 @@ export default defineEventHandler(async (event) => {
       }
     }
   } catch (error) {
-    if (error instanceof AppError) {
-      log.warn(error.message, {
-        code: error.code,
-        userId: currentUserId,
-      })
-      throw error.toH3Error()
-    }
-    if (error instanceof z.ZodError) {
-      const validationDetails = error.issues.map((issue) => ({
-        field: issue.path.join('.'),
-        message: issue.message,
-      }))
-      log.warn('Validation failed', {
-        code: ErrorCodes.SYS_VALIDATION_ERROR,
-        userId: currentUserId,
-        issues: validationDetails,
-      })
-      throw Errors.validationError(validationDetails).toH3Error()
-    }
-    log.error('Failed to update user settings', {
-      userId: currentUserId,
-      error: String(error),
-    })
-    throw error
+    handleApiError(error, log)
   }
 })
