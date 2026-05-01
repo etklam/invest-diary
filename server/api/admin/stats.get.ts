@@ -1,7 +1,10 @@
 import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.admin.withRequestId(event.context.requestId)
   await adminMiddleware(event)
 
   try {
@@ -56,7 +59,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    console.log('[ADMIN] Get system stats', { userId: event.context.user?.id })
+    log.info('Got system stats', { userId: event.context.user?.id })
 
     return {
       success: true,
@@ -86,7 +89,6 @@ export default defineEventHandler(async (event) => {
       }
     }
   } catch (error) {
-    console.error('[ADMIN] Get stats error:', error)
-    throw error
+    handleApiError(error, log)
   }
 })

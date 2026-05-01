@@ -1,11 +1,12 @@
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { normalizeInput } from '~/server/utils/validation'
 import { orderPartnerUserIds, type PartnerLinkRecord } from '~/server/utils/partner'
 import { serializePartnerLink } from '~/server/utils/partner-response'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const createPartnerSchema = z.object({
   partnerEmail: z.string()
@@ -67,15 +68,6 @@ export default defineEventHandler(async (event) => {
       link: serializePartnerLink(link as PartnerLinkRecord, user.id),
     }
   } catch (error) {
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    if (error instanceof z.ZodError) {
-      throw Errors.validationError(error.issues.map((issue) => ({
-        field: issue.path.join('.'),
-        message: issue.message,
-      }))).toH3Error()
-    }
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

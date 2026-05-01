@@ -1,6 +1,8 @@
 import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
 import { serializeBlogPosts } from '~/server/utils/blog-response'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const normalizeQueryValue = (value: unknown) => {
   if (value === undefined || value === null) return ''
@@ -33,10 +35,10 @@ const parseDateParam = (value: unknown, label: string) => {
 }
 
 export default defineEventHandler(async (event) => {
+  const log = logger.blog.withRequestId(event.context.requestId)
   // Check admin permission
   await adminMiddleware(event)
 
-  console.log('[Blog] Admin: Fetching all posts...')
   try {
     const query = getQuery(event)
     const page = parsePage(query.page, 1)
@@ -144,10 +146,6 @@ export default defineEventHandler(async (event) => {
       },
     }
   } catch (error) {
-    console.error('[Blog] Admin: Error fetching posts:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch posts'
-    })
+    handleApiError(error, log)
   }
 })

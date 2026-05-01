@@ -2,8 +2,11 @@ import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { serializeBlogPost } from '~/server/utils/blog-response'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.blog.withRequestId(event.context.requestId)
   // Check admin permission
   await adminMiddleware(event)
 
@@ -27,13 +30,9 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    console.log('[Blog] Post archived:', post.id)
+    log.info('Post archived', { postId: String(post.id) })
     return serializeBlogPost(post)
   } catch (error) {
-    console.error('[Blog] Error archiving post:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to archive post',
-    })
+    handleApiError(error, log)
   }
 })

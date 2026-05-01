@@ -2,8 +2,11 @@ import { defineEventHandler, createError } from 'h3'
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.discipline.withRequestId(event.context.requestId)
   try {
     const user = await requireUser(event)
 
@@ -29,13 +32,9 @@ export default defineEventHandler(async (event) => {
       where: { id }
     })
 
-    console.log('[discipline.delete] deleted:', id, 'for user:', user.id)
+    log.info('Discipline deleted', { disciplineId: String(id), userId: String(user.id) })
     return { success: true }
-  } catch (err: any) {
-    console.error('[discipline.delete] error', {
-      message: err?.message,
-      code: err?.code
-    })
-    throw err
+  } catch (error) {
+    handleApiError(error, log)
   }
 })

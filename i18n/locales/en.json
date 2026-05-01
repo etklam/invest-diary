@@ -322,9 +322,43 @@
     "fetchFailed": "Failed to fetch prices, please try again later",
     "analytics": "Analytics",
     "costDistribution": "Cost Distribution",
+    "watchlist": {
+      "title": "Stock Watchlist",
+      "subtitle": "Track symbols and review AI timeline records.",
+      "timeline": "Timeline",
+      "backToDashboard": "Dashboard",
+      "backToWatchlist": "Watchlist",
+      "symbolPlaceholder": "e.g. NVDA, TSLA, 2330.TW",
+      "add": "Add",
+      "addSuccess": "Added to watchlist",
+      "addFailed": "Failed to add watchlist item",
+      "archive": "Archive",
+      "archiveSuccess": "Archived successfully",
+      "archiveFailed": "Failed to archive",
+      "loading": "Loading...",
+      "latestRecord": "Latest Record",
+      "recordCount": "Records",
+      "updatedAt": "Updated",
+      "actions": "Actions",
+      "noRecord": "No timeline record yet",
+      "noName": "No company name",
+      "emptyTimelineTitle": "No timeline records yet",
+      "emptyTimelineDescription": "Once AI writes records for this symbol, they will appear here.",
+      "openSource": "Open source",
+      "openDiary": "Open diary",
+      "confidence": "Confidence",
+      "sourceTypes": {
+        "TRADE_BASIC_DIARY": "Trade Diary",
+        "VIDEO_TRANSCRIBE_SUMMARIZE": "Video Summary",
+        "DIARY": "Diary",
+        "ARTICLE": "Article",
+        "MANUAL": "Manual",
+        "SYSTEM": "System"
+      }
+    },
     "dashboard": {
       "title": "Trading Dashboard",
-      "manageDescription": "View all holdings information (FIFO calculation)",
+      "manageDescription": "View all holdings information (average cost calculation)",
       "marketState": "Market",
       "refresh": "Refresh",
       "home": "Home",
@@ -408,8 +442,11 @@
     "partnerRemoved": "Partner link removed",
     "partnerRemoveFailed": "Failed to remove partner link",
     "apiKeysTitle": "API Keys",
-    "apiKeysDesc": "Create scoped keys for external agents. Current scope only allows diary creation for this account.",
+    "apiKeysDesc": "Create scoped keys for external agents. Use diary keys for journal creation and agent-write keys for stock timeline ingestion.",
     "apiKeyLabelPlaceholder": "Key label, for example OpenClaw market diary",
+    "apiKeyScope": "API key scope",
+    "apiKeyScopeDiaryCreate": "Diary create",
+    "apiKeyScopeAgentWrite": "Agent write",
     "createApiKey": "Create API key",
     "apiKeyCreatedTitle": "Copy this key now",
     "apiKeyCreatedHint": "It is shown only once. If you lose it, revoke the key and create a new one.",
@@ -597,7 +634,7 @@
       },
       "stocks": {
         "title": "Stock Management",
-        "description": "Track holdings, calculate average costs, and use FIFO cost calculation to accurately measure investment performance."
+        "description": "Track holdings, calculate average costs, and use average cost calculation to accurately measure investment performance."
       },
       "alerts": {
         "title": "Smart Alerts",
@@ -678,7 +715,7 @@
       },
       "stocks": {
         "title": "Stock Management",
-        "description": "Track stock holdings, calculate average costs, and use the FIFO (First-In-First-Out) method to accurately calculate profit and loss, keeping track of investment performance."
+        "description": "Track stock holdings, calculate average costs, and use the average cost method to accurately calculate profit and loss, keeping track of investment performance."
       },
       "alerts": {
         "title": "Alert System",

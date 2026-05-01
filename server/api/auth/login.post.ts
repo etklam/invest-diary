@@ -4,34 +4,17 @@ import { z } from 'zod'
 import { signAccessToken, signRefreshToken, REFRESH_TOKEN_MAX_AGE_SECONDS } from '~/lib/jwt'
 import prisma from '~/lib/prisma'
 import { setAuthCookies } from '~/server/utils/auth'
-import { Errors, AppError } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { hashToken } from '~/server/utils/auth-session'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
+import { enforceRateLimit } from '~/server/utils/rate-limit'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(1, 'Password is required')
 })
-
-type RateLimitLogger = {
-  warn: (message: string, meta?: Record<string, unknown>) => void
-}
-
-async function enforceRateLimit(
-  limitFn: (identifier: string) => Promise<void>,
-  identifier: string,
-  log: RateLimitLogger,
-  message: string,
-  meta: Record<string, unknown>
-): Promise<void> {
-  try {
-    await limitFn(identifier)
-  } catch {
-    log.warn(message, meta)
-    throw Errors.rateLimited(60)
-  }
-}
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
@@ -121,14 +104,6 @@ export default defineEventHandler(async (event) => {
       }
     }
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      log.warn('Login validation failed', { issues: error.issues })
-      throw Errors.validationError(error.issues.map(i => ({ field: i.path.join('.'), message: i.message }))).toH3Error()
-    }
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    log.error('Login unexpected error', { error: String(error) })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

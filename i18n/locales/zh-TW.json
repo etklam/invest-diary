@@ -321,9 +321,43 @@
     "fetchFailed": "取得股價失敗，請稍後再試",
     "analytics": "分析",
     "costDistribution": "成本占比",
+    "watchlist": {
+      "title": "股票追蹤清單",
+      "subtitle": "管理追蹤標的並查看 AI 時間線紀錄。",
+      "timeline": "時間線",
+      "backToDashboard": "回儀表板",
+      "backToWatchlist": "回追蹤清單",
+      "symbolPlaceholder": "例如 NVDA、TSLA、2330.TW",
+      "add": "新增追蹤",
+      "addSuccess": "已加入追蹤清單",
+      "addFailed": "加入追蹤失敗",
+      "archive": "封存",
+      "archiveSuccess": "已封存",
+      "archiveFailed": "封存失敗",
+      "loading": "載入中...",
+      "latestRecord": "最新紀錄",
+      "recordCount": "紀錄數",
+      "updatedAt": "更新時間",
+      "actions": "操作",
+      "noRecord": "尚無時間線紀錄",
+      "noName": "尚無名稱",
+      "emptyTimelineTitle": "目前還沒有時間線紀錄",
+      "emptyTimelineDescription": "等 AI 寫入這檔股票的紀錄後，這裡就會出現內容。",
+      "openSource": "開啟來源",
+      "openDiary": "開啟日記",
+      "confidence": "信心",
+      "sourceTypes": {
+        "TRADE_BASIC_DIARY": "交易日記",
+        "VIDEO_TRANSCRIBE_SUMMARIZE": "影片摘要",
+        "DIARY": "日記",
+        "ARTICLE": "文章",
+        "MANUAL": "手動",
+        "SYSTEM": "系統"
+      }
+    },
     "dashboard": {
       "title": "交易儀表板",
-      "manageDescription": "查看所有持股資訊 (FIFO 計算)",
+      "manageDescription": "查看所有持股資訊 (平均成本法)",
       "marketState": "市場",
       "refresh": "更新",
       "home": "回首頁",
@@ -407,8 +441,11 @@
     "partnerRemoved": "已移除 partner",
     "partnerRemoveFailed": "移除 partner 失敗",
     "apiKeysTitle": "API Key",
-    "apiKeysDesc": "建立給外部 agent 用的限權 key。目前 scope 只允許替這個帳號新增 diary。",
+    "apiKeysDesc": "建立給外部 agent 用的限權 key。Diary key 用於新增日記，Agent write key 用於寫入股票 timeline。",
     "apiKeyLabelPlaceholder": "Key 名稱，例如 OpenClaw market diary",
+    "apiKeyScope": "API key 權限範圍",
+    "apiKeyScopeDiaryCreate": "新增日記",
+    "apiKeyScopeAgentWrite": "Agent 寫入",
     "createApiKey": "建立 API key",
     "apiKeyCreatedTitle": "現在就把這把 key 收好",
     "apiKeyCreatedHint": "這串只會顯示一次。弄丟了就直接 revoke 再重建，別硬找。",
@@ -595,7 +632,7 @@
       },
       "stocks": {
         "title": "股票管理",
-        "description": "追蹤持倉、計算平均成本，FIFO 成本計算幫助您精準掌握投資績效。"
+        "description": "追蹤持倉、計算平均成本，平均成本法幫助您精準掌握投資績效。"
       },
       "alerts": {
         "title": "智能提醒",
@@ -676,7 +713,7 @@
       },
       "stocks": {
         "title": "股票管理",
-        "description": "追蹤股票持倉、計算平均成本，使用 FIFO 先進先出法精確計算損益，掌握投資績效。"
+        "description": "追蹤股票持倉、計算平均成本，使用平均成本法精確計算損益，掌握投資績效。"
       },
       "alerts": {
         "title": "提醒系統",

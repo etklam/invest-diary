@@ -1,34 +1,17 @@
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
+import { enforceRateLimit } from '~/server/utils/rate-limit'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   name: z.string().optional()
 })
-
-type RateLimitLogger = {
-  warn: (message: string, meta?: Record<string, unknown>) => void
-}
-
-async function enforceRateLimit(
-  limitFn: (identifier: string) => Promise<void>,
-  identifier: string,
-  log: RateLimitLogger,
-  message: string,
-  meta: Record<string, unknown>
-): Promise<void> {
-  try {
-    await limitFn(identifier)
-  } catch {
-    log.warn(message, meta)
-    throw Errors.rateLimited(60)
-  }
-}
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
@@ -94,17 +77,6 @@ export default defineEventHandler(async (event) => {
       user
     }
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw Errors.validationError(
-        error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }))
-      ).toH3Error()
-    }
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

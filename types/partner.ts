@@ -40,7 +40,7 @@ export interface ApiKeySummary {
   id: string
   label: string
   keyPrefix: string
-  scope: 'DIARY_CREATE'
+  scope: 'DIARY_CREATE' | 'AGENT_WRITE'
   lastUsedAt: string | null
   revokedAt: string | null
   createdAt: string

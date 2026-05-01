@@ -17,7 +17,11 @@
       <PWAInstallPrompt />
       <!-- Render Navigation only after user info is fully synced -->
       <Navigation v-if="isInitialized" />
-      <main id="main-content" class="mx-auto w-full max-w-[1240px] px-4 py-8 sm:px-6 lg:px-8" :class="{ 'pt-24': showInstallPrompt }">
+      <main
+        id="main-content"
+        class="mx-auto w-full max-w-[1240px] px-4 py-8 pb-28 sm:px-6 lg:px-8 xl:pb-8"
+        :class="{ 'pt-24': showInstallPrompt }"
+      >
         <slot />
       </main>
       <Toast :toasts="toasts" @remove="removeToast" />
@@ -28,12 +32,13 @@
         :show="showAlert"
         @close="dismissCurrentAlert"
       />
+      <BottomNavigation v-if="isAuthenticated" class="xl:hidden" />
       <!-- Floating Quick Diary Button -->
       <button
         v-if="isAuthenticated"
         @click="showQuickDiaryModal = true"
         :aria-label="$t('diary.quickDiary')"
-        class="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-all duration-300 group"
+        class="fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-all duration-300 group xl:bottom-6"
         style="background: var(--color-accent); box-shadow: 0 18px 34px color-mix(in srgb, var(--color-accent) 30%, transparent);"
         :title="$t('diary.quickDiary')"
       >

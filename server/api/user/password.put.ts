@@ -2,33 +2,16 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import prisma from '../../../lib/prisma'
 import { clearAuthCookies } from '~/server/utils/auth'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
+import { enforceRateLimit } from '~/server/utils/rate-limit'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
   newPassword: z.string().min(8, 'New password must be at least 8 characters')
 })
-
-type RateLimitLogger = {
-  warn: (message: string, meta?: Record<string, unknown>) => void
-}
-
-async function enforceRateLimit(
-  limitFn: (identifier: string) => Promise<void>,
-  identifier: string,
-  log: RateLimitLogger,
-  message: string,
-  meta: Record<string, unknown>
-): Promise<void> {
-  try {
-    await limitFn(identifier)
-  } catch {
-    log.warn(message, meta)
-    throw Errors.rateLimited(60)
-  }
-}
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
@@ -111,18 +94,6 @@ export default defineEventHandler(async (event) => {
       message: 'Password changed successfully. Please login again.'
     }
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw Errors.validationError(
-        error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        }))
-      ).toH3Error()
-    }
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    log.error('Password change unexpected error', { error: String(error) })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

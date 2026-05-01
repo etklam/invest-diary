@@ -19,6 +19,10 @@
           </div>
         </div>
         <div class="flex items-center gap-3">
+          <NuxtLink to="/stocks/watchlist" class="action-btn-muted-dashboard">
+            <Icon name="heroicons:queue-list" class="w-4 h-4 mr-2" />
+            {{ t('stock.watchlist.title') }}
+          </NuxtLink>
           <button
             @click="fetchStockPrices"
             :disabled="isFetchingPrices || cooldownRemaining > 0 || pending"

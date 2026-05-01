@@ -3,7 +3,7 @@ import type { Prisma } from '@prisma/client'
 import type { DiariesApiResponse } from '~/types/diary'
 import { parseDiaryTags } from '~/lib/diary-tags'
 import { logger } from '~/lib/logger'
-import { Errors, AppError } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { parsePagination, parsePositiveInt } from '~/server/utils/query-params'
 
@@ -96,13 +96,6 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
       },
     }
   } catch (error: unknown) {
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
-    }
-    log.error('Failed to fetch diaries', { error: String(error) })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

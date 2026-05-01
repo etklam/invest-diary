@@ -1,8 +1,11 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.discipline.withRequestId(event.context.requestId)
   try {
     const user = await requireUser(event)
     const body = await readBody<{ content?: string }>(event)
@@ -34,16 +37,9 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    console.log('[discipline.post] created:', discipline.id, 'order:', discipline.order, 'for user:', user.id)
+    log.info('Discipline created', { disciplineId: String(discipline.id), order: discipline.order, userId: String(user.id) })
     return discipline
-  } catch (err: any) {
-    console.error('[discipline.post] error', {
-      message: err?.message,
-      code: err?.code,
-    })
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Discipline create failed'
-    })
+  } catch (error) {
+    handleApiError(error, log)
   }
 })

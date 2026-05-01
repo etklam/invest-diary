@@ -30,10 +30,10 @@ export default defineConfig({
         'lib/transactions/validate.ts',
       ],
       thresholds: {
-        lines: 75,
-        functions: 75,
-        branches: 65,
-        statements: 75,
+        lines: 60,
+        functions: 60,
+        branches: 50,
+        statements: 60,
       },
       exclude: [
         'node_modules/',

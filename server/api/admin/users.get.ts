@@ -1,7 +1,10 @@
 import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.admin.withRequestId(event.context.requestId)
   await adminMiddleware(event)
 
   try {
@@ -47,7 +50,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    console.log('[ADMIN] List users', { userId: event.context.user?.id, count: users.length })
+    log.info('Listed users', { userId: event.context.user?.id, count: users.length })
 
     return {
       success: true,
@@ -60,7 +63,6 @@ export default defineEventHandler(async (event) => {
       }
     }
   } catch (error) {
-    console.error('[ADMIN] List users error:', error)
-    throw error
+    handleApiError(error, log)
   }
 })

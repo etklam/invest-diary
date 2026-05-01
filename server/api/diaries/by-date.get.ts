@@ -4,6 +4,7 @@ import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { attachDiaryTags } from '~/server/utils/diary-response'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -43,11 +44,6 @@ export default defineEventHandler(async (event) => {
 
     return diary ? attachDiaryTags(diary) : null
   } catch (error) {
-    log.error('Failed to load diary by date', {
-      userId: user.id,
-      date: dateStr,
-      error,
-    })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

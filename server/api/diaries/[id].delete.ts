@@ -1,7 +1,8 @@
 import prisma from '../../../lib/prisma'
 import { logger } from '~/lib/logger'
-import { Errors, AppError } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -39,11 +40,6 @@ export default defineEventHandler(async (event) => {
     log.info('Diary deleted', { diaryId: diaryIdString, userId })
     return { success: true }
   } catch (error) {
-    if (error instanceof AppError) {
-      log.warn(error.message, { code: error.code })
-      throw error.toH3Error()
-    }
-    log.error('Failed to delete diary', { error: String(error) })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

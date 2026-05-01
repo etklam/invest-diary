@@ -1,6 +1,7 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
+import { logger } from '~/lib/logger'
 
 interface OrderItem {
   id: number
@@ -8,6 +9,7 @@ interface OrderItem {
 }
 
 export default defineEventHandler(async (event) => {
+  const log = logger.discipline.withRequestId(event.context.requestId)
   try {
     const user = await requireUser(event)
 
@@ -55,7 +57,7 @@ export default defineEventHandler(async (event) => {
       }))
     )
 
-    console.log('[discipline.reorder] updated orders for user:', user.id)
+    log.info('Discipline orders updated', { userId: String(user.id) })
 
     // Return updated list
     const disciplines = await prisma.discipline.findMany({
@@ -71,10 +73,7 @@ export default defineEventHandler(async (event) => {
 
     return disciplines
   } catch (err: any) {
-    console.error('[discipline.reorder] error', {
-      message: err?.message,
-      code: err?.code
-    })
+    log.error('Reorder failed', { message: err?.message, code: err?.code })
     throw err
   }
 })

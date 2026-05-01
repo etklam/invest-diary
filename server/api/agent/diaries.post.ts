@@ -8,7 +8,7 @@ export default defineEventHandler(async (event): Promise<Diary> => {
   const log = logger.diary.withRequestId(event.context.requestId)
 
   try {
-    const auth = await requireApiKey(event, 'DIARY_CREATE')
+    const auth = await requireApiKey(event, ['DIARY_CREATE', 'AGENT_WRITE'])
     const body = await readBody(event)
 
     if (body?.appendToToday) {

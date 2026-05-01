@@ -1,13 +1,16 @@
 import adminMiddleware from '~/server/middleware/admin'
-import prisma from '~/lib/prisma'
 import { z } from 'zod'
+import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const updateRoleSchema = z.object({
   role: z.enum(['USER', 'ADMIN'])
 })
 
 export default defineEventHandler(async (event) => {
+  const log = logger.admin.withRequestId(event.context.requestId)
   await adminMiddleware(event)
 
   try {
@@ -48,7 +51,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    console.log('[ADMIN] Update user role', {
+    log.info('Updated user role', {
       adminId: event.context.user?.id,
       targetUserId: userId.toString(),
       newRole: validatedData.role
@@ -59,13 +62,6 @@ export default defineEventHandler(async (event) => {
       data: updatedUser
     }
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: error.issues[0]?.message ?? 'Invalid request'
-      })
-    }
-    console.error('[ADMIN] Update user role error:', error)
-    throw error
+    handleApiError(error, log)
   }
 })

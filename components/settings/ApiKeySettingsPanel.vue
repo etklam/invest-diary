@@ -9,13 +9,21 @@
       </p>
     </div>
 
-    <form class="mt-6 flex flex-col gap-3 sm:flex-row" @submit.prevent="createKey">
+    <form class="mt-6 grid gap-3 sm:grid-cols-[1fr_220px_auto]" @submit.prevent="createKey">
       <input
         v-model="label"
         type="text"
         :placeholder="t('settings.apiKeyLabelPlaceholder')"
         class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
       >
+      <select
+        v-model="scope"
+        class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+        :aria-label="t('settings.apiKeyScope')"
+      >
+        <option value="DIARY_CREATE">{{ t('settings.apiKeyScopeDiaryCreate') }}</option>
+        <option value="AGENT_WRITE">{{ t('settings.apiKeyScopeAgentWrite') }}</option>
+      </select>
       <button
         type="submit"
         :disabled="isSubmitting || !label.trim()"
@@ -99,6 +107,7 @@ const { t, locale } = useI18n()
 const toast = useToast()
 
 const label = ref('')
+const scope = ref<'DIARY_CREATE' | 'AGENT_WRITE'>('DIARY_CREATE')
 const keys = ref<ApiKeySummary[]>([])
 const latestRawKey = ref('')
 const isLoading = ref(true)
@@ -126,12 +135,13 @@ const createKey = async () => {
     isSubmitting.value = true
     const response = await $fetch<ApiKeyCreateResponse>('/api/api-keys', {
       method: 'POST',
-      body: { label: label.value },
+      body: { label: label.value, scope: scope.value },
     })
 
     keys.value.unshift(response.key)
     latestRawKey.value = response.rawKey
     label.value = ''
+    scope.value = 'DIARY_CREATE'
     toast.success(t('settings.apiKeyCreateSuccess'))
   } catch (error: any) {
     toast.error(error?.data?.statusMessage || t('settings.apiKeyCreateFailed'))

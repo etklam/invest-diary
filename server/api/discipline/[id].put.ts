@@ -2,8 +2,11 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.discipline.withRequestId(event.context.requestId)
   try {
     const user = await requireUser(event)
 
@@ -47,13 +50,9 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    console.log('[discipline.put] updated:', discipline.id, 'for user:', user.id)
+    log.info('Discipline updated', { disciplineId: String(discipline.id), userId: String(user.id) })
     return discipline
-  } catch (err: any) {
-    console.error('[discipline.put] error', {
-      message: err?.message,
-      code: err?.code
-    })
-    throw err
+  } catch (error) {
+    handleApiError(error, log)
   }
 })

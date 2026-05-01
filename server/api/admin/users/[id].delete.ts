@@ -1,8 +1,11 @@
 import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.admin.withRequestId(event.context.requestId)
   await adminMiddleware(event)
 
   try {
@@ -33,7 +36,7 @@ export default defineEventHandler(async (event) => {
       where: { id: userId }
     })
 
-    console.log('[ADMIN] Delete user', {
+    log.info('Deleted user', {
       adminId: event.context.user?.id,
       deletedUserId: userId.toString(),
       deletedUserEmail: existingUser.email
@@ -44,7 +47,6 @@ export default defineEventHandler(async (event) => {
       message: 'User deleted successfully'
     }
   } catch (error) {
-    console.error('[ADMIN] Delete user error:', error)
-    throw error
+    handleApiError(error, log)
   }
 })

@@ -2,12 +2,13 @@ import type { Prisma } from '@prisma/client'
 import prisma from '../../../lib/prisma'
 import type { DiaryInput, Diary } from '~/types/diary'
 import { logger } from '~/lib/logger'
-import { Errors, AppError } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
 import { toUtcNoonDate } from '~/lib/diary-date'
 import { stringifyDiaryTags } from '~/lib/diary-tags'
 import { validateTransactions } from '~/lib/transactions/validate'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { attachDiaryTags } from '~/server/utils/diary-response'
+import { handleApiError } from '~/server/utils/error-handler'
 
 function toInputDate(value: string | Date): Date {
   return value instanceof Date ? value : new Date(value)
@@ -136,11 +137,6 @@ export default defineEventHandler(async (event): Promise<Diary> => {
     log.info('Diary updated', { diaryId: diary.id.toString(), userId })
     return attachDiaryTags(diary as Diary)
   } catch (error) {
-    if (error instanceof AppError) {
-      log.warn(error.message, { code: error.code })
-      throw error.toH3Error()
-    }
-    log.error('Failed to update diary', { error: String(error) })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

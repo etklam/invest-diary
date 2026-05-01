@@ -1,17 +1,31 @@
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { generateApiKey } from '~/server/utils/api-key'
 import { normalizedRequiredString } from '~/server/utils/validation'
+import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
+import { enforceRateLimit } from '~/server/utils/rate-limit'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const createApiKeySchema = z.object({
   label: normalizedRequiredString('label', 100),
+  scope: z.enum(['DIARY_CREATE', 'AGENT_WRITE']).default('DIARY_CREATE'),
 })
 
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   try {
     const user = requireUser(event)
+
+    await enforceRateLimit(
+      rateLimiters.generalApi,
+      getRateLimitIdentifier(event),
+      log,
+      'API key create rate limited',
+      { userId: user.id }
+    )
+
     const body = await readBody(event)
     const validated = createApiKeySchema.parse(body)
     const generated = generateApiKey()
@@ -22,6 +36,7 @@ export default defineEventHandler(async (event) => {
         label: validated.label,
         keyHash: generated.keyHash,
         keyPrefix: generated.keyPrefix,
+        scope: validated.scope,
       },
     })
 
@@ -38,15 +53,6 @@ export default defineEventHandler(async (event) => {
       rawKey: generated.rawKey,
     }
   } catch (error) {
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    if (error instanceof z.ZodError) {
-      throw Errors.validationError(error.issues.map((issue) => ({
-        field: issue.path.join('.'),
-        message: issue.message,
-      }))).toH3Error()
-    }
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

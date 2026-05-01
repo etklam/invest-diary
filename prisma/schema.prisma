@@ -19,6 +19,27 @@ enum DiaryCreatedVia {
 
 enum ApiKeyScope {
   DIARY_CREATE
+  AGENT_WRITE
+}
+
+enum StockWatchStatus {
+  WATCHING
+  ARCHIVED
+}
+
+enum StockTimelineSourceType {
+  TRADE_BASIC_DIARY
+  VIDEO_TRANSCRIBE_SUMMARIZE
+  DIARY
+  ARTICLE
+  MANUAL
+  SYSTEM
+}
+
+enum StockTimelineCreatedVia {
+  API_KEY
+  WEB
+  SYSTEM
 }
 
 enum PostStatus {
@@ -54,6 +75,8 @@ model User {
   etfAlerts             EtfAlert[]
   etfWatchlist          EtfWatchlist[]
   apiKeys               ApiKeyCredential[]
+  stockWatchlists       StockWatchlist[]
+  stockTimelineRecords  StockTimelineRecord[]
   partnerLinksA         PartnerLink[]   @relation("PartnerLinkUserA")
   partnerLinksB         PartnerLink[]   @relation("PartnerLinkUserB")
   initiatedPartnerLinks PartnerLink[]   @relation("PartnerLinkInitiatedBy")
@@ -92,6 +115,7 @@ model Diary {
   alerts       Alert[]
   transactions Transaction[]
   disciplineChecks DisciplineCheck[]
+  stockTimelineRecords StockTimelineRecord[] @relation("StockTimelineSourceDiary")
 
   @@index([userId], map: "diaries_user_id_fkey")
   // 複合索引：優化使用者日記列表查詢（按建立時間排序）
@@ -325,6 +349,72 @@ model EtfWatchlist {
   @@unique([userId, etfId], map: "etf_watchlists_user_id_etf_id_key")
   @@index([userId, sortOrder], map: "etf_watchlists_user_id_sort_order_idx")
   @@map("etf_watchlists")
+}
+
+model Stock {
+  id          BigInt   @id @default(autoincrement())
+  symbol      String   @unique @db.VarChar(32)
+  quoteSymbol String?  @map("quote_symbol") @db.VarChar(32)
+  name        String?  @db.VarChar(255)
+  exchange    String?  @db.VarChar(32)
+  currency    String?  @db.VarChar(8)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  watchlists  StockWatchlist[]
+  records     StockTimelineRecord[]
+
+  @@index([symbol], map: "stocks_symbol_idx")
+  @@map("stocks")
+}
+
+model StockWatchlist {
+  id        BigInt           @id @default(autoincrement())
+  userId    BigInt           @map("user_id")
+  stockId   BigInt           @map("stock_id")
+  status    StockWatchStatus @default(WATCHING)
+  sortOrder Int              @default(0) @map("sort_order")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock     Stock            @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stockId], map: "stock_watchlists_user_stock_key")
+  @@index([userId, status, sortOrder], map: "stock_watchlists_user_status_sort_idx")
+  @@map("stock_watchlists")
+}
+
+model StockTimelineRecord {
+  id               BigInt                  @id @default(autoincrement())
+  userId           BigInt                  @map("user_id")
+  stockId          BigInt                  @map("stock_id")
+  summary          String                  @db.Text
+  sourceType       StockTimelineSourceType @map("source_type")
+  sourceTitle      String?                 @map("source_title") @db.VarChar(255)
+  sourceUrl        String?                 @map("source_url") @db.VarChar(1000)
+  sourceDiaryId    BigInt?                 @map("source_diary_id")
+  sourceExternalId String?                 @map("source_external_id") @db.VarChar(255)
+  sourceExcerpt    String?                 @map("source_excerpt") @db.Text
+  confidence       Int?                    @db.UnsignedTinyInt
+  idempotencyKey   String                  @map("idempotency_key") @db.VarChar(128)
+  occurredAt       DateTime                @map("occurred_at")
+  createdVia       StockTimelineCreatedVia @default(API_KEY) @map("created_via")
+  createdByLabel   String?                 @map("created_by_label") @db.VarChar(100)
+  metadataJson     String?                 @map("metadata_json") @db.Text
+  createdAt        DateTime                @default(now()) @map("created_at")
+  updatedAt        DateTime                @updatedAt @map("updated_at")
+
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock            Stock                   @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  sourceDiary      Diary?                  @relation("StockTimelineSourceDiary", fields: [sourceDiaryId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, stockId, idempotencyKey], map: "stock_timeline_records_user_stock_idempotency_key")
+  @@index([userId, stockId, occurredAt(sort: Desc)], map: "stock_timeline_records_user_stock_time_idx")
+  @@index([userId, occurredAt(sort: Desc)], map: "stock_timeline_records_user_time_idx")
+  @@index([sourceType, sourceExternalId], map: "stock_timeline_records_source_external_idx")
+  @@index([sourceDiaryId], map: "stock_timeline_records_source_diary_idx")
+  @@map("stock_timeline_records")
 }
 
 // ─── Phase 5: 持倉歷史快照 ────────────────────────────────────────────────────

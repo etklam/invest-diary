@@ -7,6 +7,7 @@
 ```
 docs/
 ├── README.md                                    # 本文件
+├── BACKUP_RESTORE.md                            # 備份、恢復與演練流程
 ├── PLANS_COMPLETENESS_REVIEW.md                 # 文檔完成度審查報告
 │
 ├── archives/            # ❌ 已過時/不再使用
@@ -62,6 +63,7 @@ docs/
 - **Stocks Page UI/UX**: 搜尋、篩選、快速排序、移動優化
 - **Public ETF Profile V2**: Risk/Valuation/RS tabs
 - **Quick Note Center**: Modal 桌面置中
+- **Backup/Restore Docs**: 資料庫備份、恢復與定期演練流程
 
 ### 進行中 ⚠️
 - **Quality Review**: Lint/Typecheck gate 需修復

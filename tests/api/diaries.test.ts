@@ -216,9 +216,8 @@ describe('Diary API Routes', () => {
 
       expect(mockDiaryWithRequestId).toHaveBeenCalledWith('req-error')
       expect(mockDiaryLogError).toHaveBeenCalledWith(
-        'Error creating diary',
+        'Unexpected error',
         expect.objectContaining({
-          userId: '1',
           error: expect.stringContaining('DB failure'),
         })
       )

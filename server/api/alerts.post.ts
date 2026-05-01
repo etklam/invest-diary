@@ -1,7 +1,10 @@
 import prisma from '../../lib/prisma'
 import { generateRecurringAlertsData } from '~/lib/recurring-alerts'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.alert.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
   if (!userId) {
@@ -49,7 +52,7 @@ export default defineEventHandler(async (event) => {
           triggerAt: new Date(body.trigger_at),
         },
       })
-      console.log('[API] Single alert created:', alert.id, 'for user:', userId)
+      log.info('Single alert created', { alertId: String(alert.id), userId })
       return alert
     }
 
@@ -95,14 +98,10 @@ export default defineEventHandler(async (event) => {
       return allAlerts
     })
 
-    console.log('[API] Recurring alerts created:', result.length, 'for user:', userId)
+    log.info('Recurring alerts created', { count: result.length, userId })
     return result[0] ?? null // Return the parent alert
 
   } catch (error) {
-    console.error('Error creating alert:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to create alert',
-    })
+    handleApiError(error, log)
   }
 })

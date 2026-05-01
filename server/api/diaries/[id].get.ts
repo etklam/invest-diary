@@ -1,8 +1,9 @@
 import prisma from '../../../lib/prisma'
 import { logger } from '~/lib/logger'
-import { Errors, AppError } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { attachDiaryTags } from '~/server/utils/diary-response'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -37,11 +38,6 @@ export default defineEventHandler(async (event) => {
     log.info('Diary fetched', { diaryId: diaryIdString })
     return attachDiaryTags(diary)
   } catch (error) {
-    if (error instanceof AppError) {
-      log.warn(error.message, { code: error.code })
-      throw error.toH3Error()
-    }
-    log.error('Failed to fetch diary', { error: String(error) })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

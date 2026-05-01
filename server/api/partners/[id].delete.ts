@@ -1,10 +1,13 @@
 import prisma from '~/lib/prisma'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { assertPartnerParticipant } from '~/server/utils/partner'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   try {
     const user = requireUser(event)
     const linkId = parsePositiveBigIntParam(event, 'id')
@@ -30,9 +33,6 @@ export default defineEventHandler(async (event) => {
 
     return { success: true }
   } catch (error) {
-    if (error instanceof AppError) {
-      throw error.toH3Error()
-    }
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

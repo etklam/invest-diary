@@ -8,7 +8,7 @@ const API_KEY_VISIBLE_PREFIX_LENGTH = 12
 export interface ApiKeyAuthResult {
   apiKeyId: string
   label: string
-  scope: 'DIARY_CREATE'
+  scope: 'DIARY_CREATE' | 'AGENT_WRITE'
   user: {
     id: string
     email: string
@@ -40,7 +40,10 @@ export function generateApiKey() {
   }
 }
 
-export async function requireApiKey(event: any, expectedScope: 'DIARY_CREATE'): Promise<ApiKeyAuthResult> {
+export async function requireApiKey(
+  event: any,
+  allowedScopes: Array<'DIARY_CREATE' | 'AGENT_WRITE'>
+): Promise<ApiKeyAuthResult> {
   const headerValue = getHeader(event, 'x-api-key') || getHeader(event, 'authorization')
   const rawKey = extractApiKeyFromHeader(headerValue)
 
@@ -71,7 +74,7 @@ export async function requireApiKey(event: any, expectedScope: 'DIARY_CREATE'): 
     throw Errors.apiKeyRevoked().toH3Error()
   }
 
-  if (credential.scope !== expectedScope) {
+  if (!allowedScopes.includes(credential.scope)) {
     throw Errors.apiKeyScopeDenied().toH3Error()
   }
 

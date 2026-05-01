@@ -3,8 +3,10 @@ import { logger } from '~/lib/logger'
 import adminMiddleware from '~/server/middleware/admin'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { serializeBlogPost } from '~/server/utils/blog-response'
+import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
+  const log = logger.blog.withRequestId(event.context.requestId)
   await adminMiddleware(event)
 
   const postId = parsePositiveBigIntParam(event, 'id')
@@ -32,14 +34,6 @@ export default defineEventHandler(async (event) => {
 
     return serializeBlogPost(post)
   } catch (error) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
-    }
-
-    logger.blog.error('Admin: Error fetching post', { error })
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch post',
-    })
+    handleApiError(error, log)
   }
 })
