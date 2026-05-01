@@ -1,3 +1,5 @@
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
+
 interface AuthUser {
   id: string
   email: string
@@ -58,6 +60,7 @@ export const useAuth = () => {
   const isLoading = useState<boolean>('auth:loading', () => false)
   const isInitialized = useState<boolean>('auth:initialized', () => false)
   const toast = useToast()
+  const { t } = useI18n()
   const serverCookieHeader = process.server
     ? (useRequestHeaders(['cookie']).cookie ?? '')
     : ''
@@ -133,7 +136,7 @@ export const useAuth = () => {
       const authError = error as AuthErrorShape
       devLog('[Auth] Login failed raw', error)
       devLog('[Auth] Login failed', { statusCode: authError.statusCode })
-      toast.error(authError.data?.statusMessage || '登入失敗')
+      toast.error(resolveErrorMessage(error, t))
       throw error
     } finally {
       isLoading.value = false
@@ -154,7 +157,7 @@ export const useAuth = () => {
       }
     } catch (error) {
       const authError = error as AuthErrorShape
-      toast.error(authError.data?.statusMessage || '註冊失敗')
+      toast.error(resolveErrorMessage(error, t))
       throw error
     } finally {
       isLoading.value = false
@@ -234,7 +237,7 @@ export const useAuth = () => {
       }
     } catch (error) {
       const authError = error as AuthErrorShape
-      toast.error(authError.data?.statusMessage || '更新設定失敗')
+      toast.error(resolveErrorMessage(error, t))
       throw error
     } finally {
       isLoading.value = false
@@ -255,7 +258,7 @@ export const useAuth = () => {
       }
     } catch (error) {
       const authError = error as AuthErrorShape
-      toast.error(authError.data?.statusMessage || '更改密碼失敗')
+      toast.error(resolveErrorMessage(error, t))
       throw error
     } finally {
       isLoading.value = false
