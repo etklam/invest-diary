@@ -8,6 +8,7 @@ import { fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { requireUser } from '~/server/utils/auth'
 
 type SortField =
   | 'symbol'
@@ -34,6 +35,9 @@ const sortValueMap = {
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
+
+  // Authentication: require valid user session
+  const user = requireUser(event)
 
   // Rate limiting
   const ip = getRequestIP(event) || 'unknown'

@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -41,7 +41,7 @@ RUN npx prisma generate && \
     npm prune --omit=dev --omit=optional --legacy-peer-deps
 
 # Runtime stage
-FROM node:20-bookworm-slim AS runtime
+FROM node:22-bookworm-slim AS runtime
 
 WORKDIR /app
 
