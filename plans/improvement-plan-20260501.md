@@ -21,6 +21,37 @@
 
 ---
 
+## 執行狀態（2026-05-01 檢查）
+
+| Phase | 狀態 | 完成率 | 備註 |
+|-------|------|--------|------|
+| Phase 0 | ✅ 完成 | 3/3 | symbol 正規化、transaction ID 穩定化、成本法註解統一全到位 |
+| Phase 1 | ✅ 完成 | 5/5 | CSP、CSRF、速率限制 middleware、PII 遮罩無遺漏 |
+| Phase 2 | 🔄 進行中 | 3.5/6 | 2.4: 14 個端點未包 withRequestId；2.6: 錯誤訊息仍硬編碼英文，未 i18n |
+| Phase 3 | 🔄 進行中 | 5/8 | 缺 3.3 ETF alert/watchlist 測試、3.4 WebSocket 測試、3.5 E2E 三支 spec |
+| Phase 4 | ✅ 完成 | 4/5 | 4.1 依賴升級明確延期（⏸️），其餘 composable 拆分、元件拆分、logger JSON、API 文檔全到位 |
+| Phase 5 | 🔄 進行中 | 6.5/7 | 核心功能完整；5.7 測試合併在 `tests/api/stock-tracking.test.ts` 而非 6 個獨立檔案 |
+| Phase 6 | 🔄 進行中 | 0.75/4 | 僅 6.4 行動 UX（底部導航、safe-area、手勢）完成；6.1-6.3 通知功能全未動 |
+| Phase 7 | ✅ 完成 | 3/3 | CONTRIBUTING.md、CHANGELOG.md、BACKUP_RESTORE.md 全部存在 |
+
+### 未完成項目摘要
+
+| 優先級 | 項目 | 所屬 Phase |
+|--------|------|------------|
+| 🟠 P1 | requestId 鏈路補完（14 個端點） | Phase 2.4 |
+| 🟠 P1 | 錯誤訊息 i18n | Phase 2.6 |
+| 🟠 P1 | 5 個端點仍用內聯 ZodError 處理 | Phase 2.5 |
+| 🟠 P1 | ETF alert/watchlist 測試 | Phase 3.3 |
+| 🟠 P1 | WebSocket 功能測試 | Phase 3.4 |
+| 🟠 P1 | E2E 測試（auth-flow、diary-crud、stock-tracking） | Phase 3.5 |
+| 🔵 Feature | 股票追蹤獨立測試檔案拆分 | Phase 5.7 |
+| 🟡 P2 | 股票到價提醒（PriceAlert model + checkPriceAlerts） | Phase 6.1 |
+| 🟡 P2 | 持倉回撤提醒（drawdown-alerts.ts） | Phase 6.2 |
+| 🟡 P2 | 開單紀律確認（TransactionInput checkbox UI） | Phase 6.3 |
+| 🟡 P2 | 錯誤處理樣板抽取（5 個端點殘留） | Phase 2.5 |
+
+---
+
 ## Phase 0: 資料品質修復（前置條件）
 
 > 來源：dev-plan-20260411.md Phase 0 / Codex Review 發現
