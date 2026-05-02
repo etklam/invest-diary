@@ -26,17 +26,8 @@
         :items="items"
         :removing-id="removingId"
         @archive="archiveItem"
-        @edit="openEditModal"
       />
     </main>
-
-    <!-- Edit Modal -->
-    <StockWatchlistEditModal
-      :is-open="isEditModalOpen"
-      :item="editingItem"
-      @close="closeEditModal"
-      @save="saveEdit"
-    />
   </div>
 </template>
 
@@ -62,8 +53,6 @@ const toast = useToast()
 
 const adding = ref(false)
 const removingId = ref<string | null>(null)
-const editingItem = ref<WatchlistItem | null>(null)
-const isEditModalOpen = ref(false)
 
 const { data, pending, refresh } = await useLazyFetch<WatchlistResponse>('/api/stocks/watchlist', {
   server: false,
@@ -100,30 +89,6 @@ const archiveItem = async (id: string) => {
     toast.error(t('stock.watchlist.archiveFailed'))
   } finally {
     removingId.value = null
-  }
-}
-
-const openEditModal = (item: WatchlistItem) => {
-  editingItem.value = item
-  isEditModalOpen.value = true
-}
-
-const closeEditModal = () => {
-  isEditModalOpen.value = false
-  editingItem.value = null
-}
-
-const saveEdit = async (id: string, data: { status?: string; sortOrder?: number }) => {
-  try {
-    await $fetch(`/api/stocks/watchlist/${id}`, {
-      method: 'PATCH',
-      body: data
-    })
-    toast.success(t('stock.watchlist.editModal.saveSuccess'))
-    await refresh()
-    closeEditModal()
-  } catch {
-    toast.error(t('stock.watchlist.editModal.saveFailed'))
   }
 }
 

@@ -366,6 +366,18 @@
         "saveFailed": "更新失敗"
       }
     },
+    "notes": {
+      "title": "股票筆記",
+      "empty": "還沒有關於這檔股票的筆記，寫下你的第一筆觀點。",
+      "write": "寫筆記",
+      "createdByUser": "我",
+      "createdByAgent": "Ana",
+      "filterAll": "全部筆記",
+      "filterMine": "我的筆記",
+      "filterAgent": "Ana 觀點",
+      "saveSuccess": "筆記已儲存",
+      "deleteConfirm": "確定刪除這篇筆記？"
+    },
     "dashboard": {
       "title": "交易儀表板",
       "manageDescription": "查看所有持股資訊 (平均成本法)",

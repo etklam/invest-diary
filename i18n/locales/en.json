@@ -367,6 +367,18 @@
         "saveFailed": "Update failed"
       }
     },
+    "notes": {
+      "title": "Stock Notes",
+      "empty": "No notes for this stock yet. Write your first observation.",
+      "write": "Write Note",
+      "createdByUser": "Me",
+      "createdByAgent": "Ana",
+      "filterAll": "All Notes",
+      "filterMine": "My Notes",
+      "filterAgent": "Ana's View",
+      "saveSuccess": "Note saved",
+      "deleteConfirm": "Delete this note?"
+    },
     "dashboard": {
       "title": "Trading Dashboard",
       "manageDescription": "View all holdings information (average cost calculation)",

@@ -41,13 +41,6 @@
             <td class="px-4 py-3">
               <div class="flex justify-end gap-2">
                 <button
-                  class="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
-                  @click="$emit('edit', item)"
-                >
-                  <Icon name="heroicons:pencil" class="w-3.5 h-3.5" />
-                  {{ t('common.edit') }}
-                </button>
-                <button
                   class="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400"
                   :disabled="removingId === item.id"
                   @click="$emit('archive', item.id)"
@@ -82,7 +75,6 @@ defineProps<{
 
 defineEmits<{
   archive: [id: string]
-  edit: [item: WatchlistItem]
 }>()
 
 const { t, locale } = useI18n()

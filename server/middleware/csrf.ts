@@ -4,7 +4,7 @@ import { logger } from '~/lib/logger'
 const CSRF_COOKIE = 'csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
 const STATE_CHANGE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
-const SKIP_PATHS = ['/api/auth']
+const SKIP_PATHS = ['/api/auth', '/api/agent']
 
 const log = logger.auth
 
@@ -21,7 +21,9 @@ function generateToken(): string {
  */
 function isApiKeyAuth(event: Parameters<typeof getRequestURL>[0]): boolean {
   const authHeader = getHeader(event, 'authorization')
-  return !!(authHeader && authHeader.startsWith('Bearer sk_'))
+  if (authHeader && authHeader.startsWith('Bearer sk_')) return true
+  const apiKeyHeader = getHeader(event, 'x-api-key')
+  return !!apiKeyHeader
 }
 
 /**

@@ -42,6 +42,11 @@ enum StockTimelineCreatedVia {
   SYSTEM
 }
 
+enum StockNoteCreatedVia {
+  USER
+  AGENT
+}
+
 enum PostStatus {
   DRAFT
   PUBLISHED
@@ -83,6 +88,7 @@ model User {
   disciplineChecks      DisciplineCheck[]
   portfolioSnapshots    PortfolioSnapshot[]
   priceAlerts           PriceAlert[]
+  stockNotes            StockNote[]
 
   @@map("users")
 }
@@ -364,6 +370,7 @@ model Stock {
 
   watchlists  StockWatchlist[]
   records     StockTimelineRecord[]
+  notes       StockNote[]
 
   @@index([symbol], map: "stocks_symbol_idx")
   @@map("stocks")
@@ -416,6 +423,28 @@ model StockTimelineRecord {
   @@index([sourceType, sourceExternalId], map: "stock_timeline_records_source_external_idx")
   @@index([sourceDiaryId], map: "stock_timeline_records_source_diary_idx")
   @@map("stock_timeline_records")
+}
+
+// ─── StockNote: 股票日記系統 ─────────────────────────────────────────────────
+
+model StockNote {
+  id             BigInt               @id @default(autoincrement())
+  userId         BigInt               @map("user_id")
+  stockId        BigInt               @map("stock_id")
+  title          String               @db.VarChar(255)
+  content        String               @db.Text
+  date           DateTime             @default(now())
+  createdVia     StockNoteCreatedVia  @default(USER) @map("created_via")
+  createdByLabel String?              @map("created_by_label") @db.VarChar(100)
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock          Stock                @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@index([userId, stockId, date(sort: Desc)], map: "stock_notes_user_stock_date_idx")
+  @@index([stockId, date(sort: Desc)], map: "stock_notes_stock_date_idx")
+  @@map("stock_notes")
 }
 
 // ─── Phase 5: 持倉歷史快照 ────────────────────────────────────────────────────
