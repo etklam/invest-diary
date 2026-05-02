@@ -1,24 +1,27 @@
+import { ofetch } from 'ofetch'
+
 export default defineNuxtPlugin(() => {
   const csrfToken = useCookie('csrf-token')
 
   const methods = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
-  // Wrap global $fetch to inject x-csrf-token header on mutating requests
+  // Preserve Nuxt's $fetch ofetch instance while adding CSRF interceptor
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const _fetch: any = globalThis.$fetch
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  globalThis.$fetch = ((input: any, init?: any) => {
-    const method = (init?.method || 'GET').toUpperCase()
-    if (methods.has(method) && csrfToken.value) {
-      init = {
-        ...init,
-        headers: {
-          ...(init?.headers || {}),
+  const wrappedFetch = ofetch.create({
+    onRequest({ options }) {
+      const method = (options.method || 'GET').toUpperCase()
+      if (methods.has(method) && csrfToken.value) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(options as any).headers = {
+          ...((options as any).headers || {}),
           'x-csrf-token': csrfToken.value,
-        },
+        }
       }
-    }
-    return _fetch(input, init)
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }) as any
+  }, _fetch as any)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  globalThis.$fetch = wrappedFetch as any
 })
