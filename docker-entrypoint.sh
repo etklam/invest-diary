@@ -67,11 +67,12 @@ validate_schema() {
 
     MISSING_TABLES=""
     for table in $REQUIRED_TABLES; do
+        exit_code=0
         result=$(node -e "
-            const mysql = require('mysql2/promise');
+            const mariadb = require('mariadb');
             (async () => {
                 try {
-                    const conn = await mysql.createConnection({
+                    const conn = await mariadb.createConnection({
                         host: '$DB_HOST',
                         port: $DB_PORT,
                         user: '$DB_USER',
@@ -79,7 +80,7 @@ validate_schema() {
                         database: '$DB_NAME',
                         connectTimeout: 5000
                     });
-                    const [rows] = await conn.execute(
+                    const rows = await conn.query(
                         'SELECT COUNT(*) AS c FROM information_schema.tables WHERE table_schema = ? AND table_name = ?',
                         ['$DB_NAME', '$table']
                     );
@@ -89,8 +90,7 @@ validate_schema() {
                     process.exit(2);
                 }
             })();
-        " 2>/dev/null)
-        exit_code=$?
+        " 2>/dev/null) || exit_code=$?
         if [ $exit_code -eq 1 ]; then
             MISSING_TABLES="$MISSING_TABLES $table"
         fi
@@ -127,6 +127,8 @@ seed_database() {
         echo "   Run seed scripts in a separate admin/init container instead."
         return 1
     fi
+    # If not true, do nothing and return 0
+    return 0
 }
 
 # Main execution
