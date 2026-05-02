@@ -30,7 +30,7 @@ jobs:
       - name: Build and push
         run: |
           SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          DOCKER_BUILDKIT=1 docker build \
+          docker build \
             --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA} \
             .
