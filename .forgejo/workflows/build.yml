@@ -30,8 +30,10 @@ jobs:
       - name: Build and push
         run: |
           SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          docker builder prune -f --filter until=24h || true
           docker build \
             --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            --pull \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA} \
             .
           docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
