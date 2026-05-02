@@ -8,6 +8,7 @@ on:
 env:
   REGISTRY: git.913555.xyz
   IMAGE_NAME: ${{ github.repository }}
+  DOCKER_BUILDKIT: 1
 
 jobs:
   build-and-push:
@@ -31,6 +32,7 @@ jobs:
         run: |
           SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           docker builder prune -f --filter until=24h || true
+          docker image prune -f --filter until=24h || true
           docker build \
             --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             --pull \
