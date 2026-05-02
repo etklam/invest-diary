@@ -4,6 +4,7 @@
     "loading": "載入中...",
     "loadMore": "載入更多",
     "save": "儲存",
+    "saving": "儲存中...",
     "cancel": "取消",
     "delete": "刪除",
     "edit": "編輯",
@@ -353,6 +354,16 @@
         "ARTICLE": "文章",
         "MANUAL": "手動",
         "SYSTEM": "系統"
+      },
+      "editModal": {
+        "title": "編輯追蹤項目",
+        "status": "狀態",
+        "statusWatching": "追蹤中",
+        "statusArchived": "已封存",
+        "sortOrder": "排序順序",
+        "sortOrderHint": "數字越小越靠前",
+        "saveSuccess": "更新成功",
+        "saveFailed": "更新失敗"
       }
     },
     "dashboard": {

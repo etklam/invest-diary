@@ -4,6 +4,7 @@
     "loading": "Loading...",
     "loadMore": "Load More",
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -354,6 +355,16 @@
         "ARTICLE": "Article",
         "MANUAL": "Manual",
         "SYSTEM": "System"
+      },
+      "editModal": {
+        "title": "Edit Watchlist Item",
+        "status": "Status",
+        "statusWatching": "Watching",
+        "statusArchived": "Archived",
+        "sortOrder": "Sort Order",
+        "sortOrderHint": "Lower numbers appear first",
+        "saveSuccess": "Updated successfully",
+        "saveFailed": "Update failed"
       }
     },
     "dashboard": {

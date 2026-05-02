@@ -5,6 +5,7 @@
         <thead class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800">
           <tr class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             <th class="px-4 py-3">{{ t('stock.symbol') }}</th>
+            <th class="px-4 py-3">{{ t('stock.watchlist.editModal.status') }}</th>
             <th class="px-4 py-3 min-w-[240px]">{{ t('stock.watchlist.latestRecord') }}</th>
             <th class="px-4 py-3">{{ t('stock.watchlist.recordCount') }}</th>
             <th class="px-4 py-3">{{ t('stock.watchlist.updatedAt') }}</th>
@@ -18,13 +19,34 @@
                 {{ item.stock.symbol }}
               </NuxtLink>
             </td>
+            <td class="px-4 py-3">
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                :class="item.status === 'ARCHIVED'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                  : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'"
+              >
+                <span
+                  class="w-1.5 h-1.5 rounded-full"
+                  :class="item.status === 'ARCHIVED' ? 'bg-slate-400 dark:bg-slate-500' : 'bg-green-500 dark:bg-green-400'"
+                />
+                {{ t(`stock.watchlist.editModal.status${item.status === 'ARCHIVED' ? 'Archived' : 'Watching'}`) }}
+              </span>
+            </td>
             <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
               {{ item.latestRecord?.summary || t('stock.watchlist.noRecord') }}
             </td>
             <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{{ item.recordCount }}</td>
             <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{{ formatAt(item.updatedAt) }}</td>
             <td class="px-4 py-3">
-              <div class="flex justify-end">
+              <div class="flex justify-end gap-2">
+                <button
+                  class="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
+                  @click="$emit('edit', item)"
+                >
+                  <Icon name="heroicons:pencil" class="w-3.5 h-3.5" />
+                  {{ t('common.edit') }}
+                </button>
                 <button
                   class="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400"
                   :disabled="removingId === item.id"
@@ -46,9 +68,11 @@
 interface WatchlistItem {
   id: string
   updatedAt: string
-  stock: { symbol: string }
+  stock: { symbol: string; name?: string | null }
   recordCount: number
   latestRecord?: { summary?: string | null } | null
+  status?: string
+  sortOrder?: number
 }
 
 defineProps<{
@@ -58,6 +82,7 @@ defineProps<{
 
 defineEmits<{
   archive: [id: string]
+  edit: [item: WatchlistItem]
 }>()
 
 const { t, locale } = useI18n()

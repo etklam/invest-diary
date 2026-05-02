@@ -4,6 +4,7 @@
     "loading": "加载中...",
     "loadMore": "加载更多",
     "save": "保存",
+    "saving": "保存中...",
     "cancel": "取消",
     "delete": "删除",
     "edit": "编辑",
@@ -475,6 +476,16 @@
         "ARTICLE": "文章",
         "MANUAL": "手动",
         "SYSTEM": "系统"
+      },
+      "editModal": {
+        "title": "编辑追踪项目",
+        "status": "状态",
+        "statusWatching": "追踪中",
+        "statusArchived": "已封存",
+        "sortOrder": "排序顺序",
+        "sortOrderHint": "数字越小越靠前",
+        "saveSuccess": "更新成功",
+        "saveFailed": "更新失败"
       }
     },
     "dashboard": {
