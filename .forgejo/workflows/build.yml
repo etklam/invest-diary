@@ -24,10 +24,14 @@ jobs:
       - name: Login to Forgejo Registry
         run: echo "${{ secrets.FORGEJO_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
 
+      - name: Pull previous image for cache
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest || true
+
       - name: Build and push
         run: |
           SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          docker build \
+          DOCKER_BUILDKIT=1 docker build \
+            --cache-from ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA} \
             .
           docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
