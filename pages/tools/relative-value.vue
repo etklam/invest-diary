@@ -9,7 +9,7 @@ import {
   type PricePoint
 } from '~/lib/relativeValue'
 import { getYahooSymbolAliasSuggestion } from '~/lib/market-data/yahoo'
-import type { QuoteResponse, HistoricalQuote } from '~/lib/yahoo-finance'
+import type { QuoteResponse, HistoricalQuote } from '~/lib/market-data/yahoo'
 import StockInput from '~/components/StockInput.vue'
 import { Line } from 'vue-chartjs'
 import {

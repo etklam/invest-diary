@@ -31,7 +31,7 @@ const getIconName = (icon: string) => `heroicons:${icon}`
         <li v-for="item in mainNavItems" :key="item.to">
           <NuxtLink
             :to="item.to"
-            class="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[0.925rem] font-medium text-slate-600 transition-all duration-200 dark:text-slate-300"
+            class="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[0.925rem] font-medium text-slate-600 transition-all duration-200 dark:text-slate-300"
             :class="[
               isHomeRoute
                 ? 'hover:bg-[color:color-mix(in_srgb,var(--color-surface-strong)_82%,transparent)] hover:text-[color:var(--color-primary)] dark:hover:bg-slate-800'
@@ -64,7 +64,7 @@ const getIconName = (icon: string) => `heroicons:${icon}`
           <li>
             <NuxtLink
               to="/auth/login"
-              class="rounded px-2 py-1 text-sm text-slate-600 transition-colors duration-200 hover:text-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-slate-900"
+              class="inline-flex min-h-[44px] items-center rounded px-3 py-1 text-sm text-slate-600 transition-colors duration-200 hover:text-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-slate-900"
             >
               {{ t('auth.login') }}
             </NuxtLink>
@@ -72,7 +72,7 @@ const getIconName = (icon: string) => `heroicons:${icon}`
           <li>
             <NuxtLink
               to="/auth/register"
-              class="inline-flex items-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:text-slate-950 dark:focus:ring-offset-slate-900"
+              class="inline-flex min-h-[44px] items-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:text-slate-950 dark:focus:ring-offset-slate-900"
               :class="isHomeRoute
                 ? 'focus:ring-[color:var(--color-secondary)]'
                 : 'focus:ring-[color:var(--color-secondary)]'"
@@ -101,7 +101,7 @@ const getIconName = (icon: string) => `heroicons:${icon}`
           <li v-for="item in featuredToolItems" :key="item.to">
             <NuxtLink
               :to="item.to"
-              class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 dark:text-slate-300 dark:hover:bg-slate-800"
+              class="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 dark:text-slate-300 dark:hover:bg-slate-800"
               :class="[
                 isHomeRoute
                   ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200'
@@ -128,7 +128,7 @@ const getIconName = (icon: string) => `heroicons:${icon}`
               <li v-for="item in otherToolItems" :key="item.to">
                 <NuxtLink
                   :to="item.to"
-                  class="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 dark:text-slate-300 dark:hover:bg-slate-800"
+                  class="inline-flex min-h-[44px] cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-200 dark:text-slate-300 dark:hover:bg-slate-800"
                   :class="[
                     isHomeRoute
                       ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200'
@@ -150,7 +150,7 @@ const getIconName = (icon: string) => `heroicons:${icon}`
           <li v-if="isAuthenticated">
             <NuxtLink
               to="/settings"
-              class="rounded-lg p-2 text-slate-600 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
+              class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg p-2 text-slate-600 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
               :class="isHomeRoute ? 'hover:bg-sky-50 hover:text-sky-700 dark:hover:text-sky-200' : 'hover:bg-cyan-50 hover:text-cyan-700 dark:hover:text-cyan-200'"
             >
               <Icon name="heroicons:cog-6-tooth" class="h-[18px] w-[18px]" width="18" height="18" />

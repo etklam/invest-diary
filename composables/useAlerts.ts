@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import type { AlertPayload } from '../types/websocket'
 import { POLLING } from '~/lib/constants'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
@@ -56,6 +56,7 @@ export const useAlerts = () => {
   const toast = useToast()
   const { isConnected, onAlert, dismissAlert: wsDismissAlert } = useWebSocket()
   const { runWithAuthRecovery } = useAuthRecovery()
+  const { isAuthenticated } = useAuth()
 
   const hasNextAlert = computed(() => alertQueue.value.length > 0)
 
@@ -83,6 +84,8 @@ export const useAlerts = () => {
   }
 
   const fetchAlertsViaHttp = async (): Promise<AlertItem[]> => {
+    if (!isAuthenticated.value) return []
+
     try {
       const response = await runWithAuthRecovery(() => $fetch<AlertApiResponse[]>('/api/alerts'))
       return response.map(alert => ({
@@ -101,6 +104,11 @@ export const useAlerts = () => {
   }
 
   const startPolling = async () => {
+    if (!isAuthenticated.value) {
+      stopPolling()
+      return
+    }
+
     checkDailyReset()
     
     const alerts = await fetchAlertsViaHttp()
@@ -116,6 +124,28 @@ export const useAlerts = () => {
     if (pollTimer) {
       clearTimeout(pollTimer)
       pollTimer = null
+    }
+  }
+
+  const clearAlertState = () => {
+    alertQueue.value = []
+    currentAlert.value = null
+    showAlert.value = false
+  }
+
+  const syncAlertTransport = async () => {
+    if (!isAuthenticated.value) {
+      stopPolling()
+      clearAlertState()
+      return
+    }
+
+    const alerts = await fetchAlertsViaHttp()
+    enqueueAlerts(alerts)
+
+    if (!isConnected.value) {
+      devLog('[Alerts] WebSocket not connected, starting HTTP polling')
+      scheduleNextPoll(startPolling)
     }
   }
 
@@ -226,19 +256,16 @@ export const useAlerts = () => {
       enqueueSingleAlert(alert)
     })
 
-    // 初始載入：透過 HTTP 載入現有 alerts
-    // （在 WebSocket listener 註冊後執行，確保不會漏掉任何 alerts）
-    const alerts = await fetchAlertsViaHttp()
-    enqueueAlerts(alerts)
-
-    // 如果 WebSocket 未連線，啟動 polling
-    if (!isConnected.value) {
-      devLog('[Alerts] WebSocket not connected, starting HTTP polling')
-      scheduleNextPoll(startPolling)
-    }
+    // 初始載入：只在已登入時透過 HTTP 載入現有 alerts。
+    await syncAlertTransport()
 
     // 監聽 WebSocket 連線狀態變化
     watch(isConnected, (connected) => {
+      if (!isAuthenticated.value) {
+        stopPolling()
+        return
+      }
+
       if (connected) {
         devLog('[Alerts] WebSocket connected, stopping HTTP polling')
         stopPolling()
@@ -246,6 +273,10 @@ export const useAlerts = () => {
         devLog('[Alerts] WebSocket disconnected, starting HTTP polling')
         scheduleNextPoll(startPolling)
       }
+    })
+
+    watch(isAuthenticated, () => {
+      void syncAlertTransport()
     })
 
     // 啟動定期清理（每小時清理一次）

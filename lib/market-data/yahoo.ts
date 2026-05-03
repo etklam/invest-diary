@@ -280,15 +280,3 @@ export function parseYahooDailyQuotes(response: YahooChartResponse): HistoricalQ
     }))
     .filter(quote => quote.close !== null)
 }
-
-export async function fetchYahooRegularMarketPrice(
-  symbol: string
-): Promise<number | null> {
-  try {
-    const { fetchQuote } = await import('~/lib/yahoo-finance')
-    const quote = await fetchQuote(symbol)
-    return quote.regularMarketPrice
-  } catch {
-    return null
-  }
-}

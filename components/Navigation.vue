@@ -17,7 +17,7 @@ const mobileNavOpen = ref(false)
         <div class="ml-auto flex xl:hidden">
           <button
             @click="mobileNavOpen = !mobileNavOpen"
-            class="flex cursor-pointer items-center rounded-xl border bg-white/80 p-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
+            class="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border bg-white/80 p-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
             :class="isHomeRoute
               ? 'border-sky-100 text-sky-700 hover:bg-sky-50 dark:text-sky-200'
               : 'border-cyan-100 text-cyan-700 hover:bg-cyan-50 dark:text-cyan-200'"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { QuoteResponse } from '~/lib/yahoo-finance'
+import type { QuoteResponse } from '~/lib/market-data/yahoo'
 import { formatPrice } from '~/lib/relativeValue'
 
 const props = defineProps<{

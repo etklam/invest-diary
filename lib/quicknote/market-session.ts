@@ -1,4 +1,4 @@
-import type { IntradayQuote, QuoteResponse } from '~/lib/yahoo-finance'
+import type { IntradayQuote, QuoteResponse } from '~/lib/market-data/yahoo'
 import type { ReflectionMarketConditionKey } from '~/lib/quicknote/template-localization'
 
 export interface MarketSessionInput {

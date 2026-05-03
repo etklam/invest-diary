@@ -18,8 +18,8 @@ export default defineNuxtConfig({
           'X-Frame-Options': 'SAMEORIGIN',
           'Referrer-Policy': 'strict-origin-when-cross-origin',
           'Content-Security-Policy': process.env.NODE_ENV === 'production'
-            ? "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self'; frame-src 'self'"
-            : "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self'; frame-src 'self'"
+            ? "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self' https://fonts.gstatic.com; frame-src 'self'"
+            : "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self' https://fonts.gstatic.com; frame-src 'self'"
         }
       },
       '/api/blog': {

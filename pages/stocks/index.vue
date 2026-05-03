@@ -548,7 +548,7 @@ import {
   PointElement,
   Filler,
 } from 'chart.js'
-import type { QuoteResponse } from '~/lib/yahoo-finance'
+import type { QuoteResponse } from '~/lib/market-data/yahoo'
 import { formatCurrency } from '~/lib/utils'
 import { watchDebounced } from '@vueuse/core'
 
