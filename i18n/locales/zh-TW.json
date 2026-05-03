@@ -1084,6 +1084,7 @@
     "titlePlaceholder": "輸入文章標題",
     "slug": "網址",
     "content": "內容",
+    "contentUnavailable": "這篇文章目前沒有可顯示的內容。",
     "contentPlaceholder": "# 開始撰寫您的文章...\n\n支援 Markdown 語法",
     "excerpt": "摘要",
     "excerptOptional": "選填，若留空將自動從內容生成",

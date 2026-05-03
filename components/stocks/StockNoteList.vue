@@ -6,13 +6,13 @@
       class="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 py-16 px-4 text-center"
     >
       <Icon name="heroicons:document-text" class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-      <p class="text-sm text-slate-500 dark:text-slate-400">{{ t('stocks.notes.empty') }}</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400">{{ t('stock.notes.empty') }}</p>
       <button
         class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
         @click="$emit('write')"
       >
         <Icon name="heroicons:plus" class="w-4 h-4" />
-        {{ t('stocks.notes.write') }}
+        {{ t('stock.notes.write') }}
       </button>
     </div>
 

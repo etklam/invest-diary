@@ -148,7 +148,25 @@
           prose-img:rounded-3xl prose-img:shadow-lg"
         >
           <div v-if="isHtmlContent" v-html="sanitizedContent" />
-          <MDC v-else :value="post.content" />
+          <MDC
+            v-else-if="articleContent"
+            :key="articleContentCacheKey"
+            v-slot="{ body, data }"
+            :value="articleContent"
+            :cache-key="articleContentCacheKey"
+          >
+            <MDCRenderer
+              v-if="body"
+              :body="body"
+              :data="data"
+            />
+            <div v-else class="whitespace-pre-line leading-relaxed" style="color: var(--color-text-muted)">
+              {{ markdownFallbackContent }}
+            </div>
+          </MDC>
+          <p v-else class="leading-relaxed" style="color: var(--color-text-muted)">
+            {{ $t('blog.contentUnavailable') }}
+          </p>
         </div>
 
         <!-- Tags -->
@@ -238,7 +256,18 @@ onUnmounted(() => {
   window.removeEventListener('scroll', updateScrollProgress)
 })
 
-const readingTime = computed(() => (post.value ? calculateReadingTime(post.value.content) : 0))
+const articleContent = computed(() => typeof post.value?.content === 'string' ? post.value.content : '')
+const articleContentCacheKey = computed(() => {
+  const id = post.value?.id ? String(post.value.id) : String(route.params.slug || 'unknown')
+  const updatedAt = post.value?.updatedAt ? String(post.value.updatedAt) : ''
+  return `article-mdc-${id}-${updatedAt || articleContent.value.length}`
+})
+const markdownFallbackContent = computed(() =>
+  articleContent.value
+    .replace(/^---[\s\S]*?---\s*/, '')
+    .trim()
+)
+const readingTime = computed(() => (articleContent.value ? calculateReadingTime(articleContent.value) : 0))
 const parsedTags = computed(() => (post.value ? parseTags(post.value.tags) : []))
 const getErrorStatusCode = (value: unknown): number | null => {
   if (!value || typeof value !== 'object') return null
@@ -289,19 +318,19 @@ const htmlSanitizeConfig: DOMPurifyConfig = {
 }
 
 const isHtmlContent = computed(() => {
-  if (!post.value?.content) return false
+  if (!articleContent.value) return false
   const type = post.value?.contentType ? String(post.value.contentType).toLowerCase() : ''
   if (type === 'html') return true
   if (type === 'markdown') return false
-  return looksLikeHtmlContent(post.value.content)
+  return looksLikeHtmlContent(articleContent.value)
 })
 
 const sanitizedContent = computed(() => {
-  if (!post.value?.content) return ''
+  if (!articleContent.value) return ''
   if (typeof DOMPurify?.sanitize !== 'function') {
-    return post.value.content
+    return articleContent.value
   }
-  return DOMPurify.sanitize(post.value.content, htmlSanitizeConfig)
+  return DOMPurify.sanitize(articleContent.value, htmlSanitizeConfig)
 })
 
 const canonicalUrl = computed(() => {

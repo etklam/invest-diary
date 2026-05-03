@@ -1086,6 +1086,7 @@
     "titlePlaceholder": "Enter post title",
     "slug": "Slug",
     "content": "Content",
+    "contentUnavailable": "This article has no content available yet.",
     "contentPlaceholder": "# Start writing your post...\n\nSupports Markdown syntax",
     "excerpt": "Excerpt",
     "excerptOptional": "Optional, will be auto-generated from content if left blank",

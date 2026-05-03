@@ -17,7 +17,7 @@
                 :name="note.createdVia === 'AGENT' ? 'heroicons:cpu-chip' : 'heroicons:user'"
                 class="w-3 h-3"
               />
-              {{ note.createdByLabel || (note.createdVia === 'AGENT' ? t('stocks.notes.createdByAgent') : t('stocks.notes.createdByUser')) }}
+              {{ note.createdByLabel || (note.createdVia === 'AGENT' ? t('stock.notes.createdByAgent') : t('stock.notes.createdByUser')) }}
             </span>
           </div>
         </div>

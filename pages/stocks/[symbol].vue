@@ -25,7 +25,7 @@
           @click="showEditor = true"
         >
           <Icon name="heroicons:plus" class="w-4 h-4" />
-          {{ t('stocks.notes.write') }}
+          {{ t('stock.notes.write') }}
         </button>
       </div>
     </header>
@@ -125,9 +125,9 @@ const activeFilter = ref<'all' | 'USER' | 'AGENT'>('all')
 const currentPage = ref(1)
 
 const filters = computed(() => [
-  { value: 'all' as const, label: t('stocks.notes.filterAll') },
-  { value: 'USER' as const, label: t('stocks.notes.filterMine') },
-  { value: 'AGENT' as const, label: t('stocks.notes.filterAgent') },
+  { value: 'all' as const, label: t('stock.notes.filterAll') },
+  { value: 'USER' as const, label: t('stock.notes.filterMine') },
+  { value: 'AGENT' as const, label: t('stock.notes.filterAgent') },
 ])
 
 const createdViaParam = computed(() => activeFilter.value === 'all' ? undefined : activeFilter.value)
@@ -157,7 +157,7 @@ const handleSave = async (noteData: { title: string; content: string; date: stri
       method: 'POST',
       body: noteData,
     })
-    toast.success(t('stocks.notes.saveSuccess'))
+    toast.success(t('stock.notes.saveSuccess'))
     showEditor.value = false
     editorRef.value?.resetForm()
     await refresh()
@@ -179,7 +179,7 @@ const handleEdit = async (note: StockNoteData) => {
       method: 'PUT',
       body: { title: newTitle, content: newContent },
     })
-    toast.success(t('stocks.notes.saveSuccess'))
+    toast.success(t('stock.notes.saveSuccess'))
     await refresh()
   } catch {
     toast.error(t('common.error'))
@@ -187,7 +187,7 @@ const handleEdit = async (note: StockNoteData) => {
 }
 
 const handleDelete = async (note: StockNoteData) => {
-  if (!confirm(t('stocks.notes.deleteConfirm'))) return
+  if (!confirm(t('stock.notes.deleteConfirm'))) return
 
   try {
     await $fetch(`/api/stocks/${encodeURIComponent(String(route.params.symbol))}/notes/${note.id}`, {
@@ -209,6 +209,6 @@ watch(activeFilter, () => {
 })
 
 useHead({
-  title: computed(() => `${displaySymbol.value} - ${t('stocks.notes.title')} - Investment Diary`),
+  title: computed(() => `${displaySymbol.value} - ${t('stock.notes.title')} - Investment Diary`),
 })
 </script>
