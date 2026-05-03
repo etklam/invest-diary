@@ -33,3 +33,4 @@ screenshots
 !public/screenshots
 .worktrees/
 .gstack/
+.agents/
