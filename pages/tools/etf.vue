@@ -332,7 +332,8 @@ definePageMeta({
     <!-- Live Quote Card -->
     <div
       v-if="liveQuote"
-      class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg p-6 mb-6 text-white"
+      class="rounded-xl shadow-lg p-6 mb-6 text-white"
+      style="background: linear-gradient(135deg, var(--color-panel-ink), color-mix(in srgb, var(--color-panel-ink) 70%, var(--color-secondary)));"
     >
       <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

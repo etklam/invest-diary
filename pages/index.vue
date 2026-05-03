@@ -226,7 +226,7 @@
           <p class="mt-6 text-sm leading-6">
             {{ $t('home.cta.disclaimer') }}
           </p>
-          <NuxtLink to="/auth/register" class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-orange-500 px-7 py-3 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-400 cursor-pointer">
+          <NuxtLink to="/auth/register" class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-orange-500 dark:bg-orange-700 px-7 py-3 text-base font-semibold text-white dark:text-orange-50 shadow-lg shadow-orange-500/30 dark:shadow-orange-700/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-400 dark:hover:bg-orange-600 cursor-pointer">
             {{ $t('home.cta.register') }}
             <Icon name="heroicons:arrow-up-right-20-solid" class="h-5 w-5" />
           </NuxtLink>
@@ -390,7 +390,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   background:
     radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 30%),
     linear-gradient(145deg, #132739, #1e3445 58%, #213847);
-  color: var(--color-background);
+  color: var(--color-on-ink);
 }
 
 .terminal-head {
@@ -404,7 +404,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 
 :global(.dark .terminal-head),
 :global(.dark-mode .terminal-head) {
-  color: var(--color-background);
+  color: var(--color-on-ink);
 }
 
 .row-item {
@@ -627,7 +627,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 
 :global(.dark .chapter-label),
 :global(.dark-mode .chapter-label) {
-  color: color-mix(in srgb, var(--color-background) 72%, var(--color-secondary));
+  color: color-mix(in srgb, var(--color-on-ink) 72%, var(--color-secondary));
 }
 
 .reveal { animation: reveal-up 700ms ease both; }

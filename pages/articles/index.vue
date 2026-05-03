@@ -241,7 +241,7 @@
       <div
         v-if="isMobile && showMobileFilters"
         class="fixed inset-0 z-50 flex items-end justify-center backdrop-blur-sm lg:hidden"
-        style="background: rgba(0,0,0,0.35)"
+        style="background: color-mix(in srgb, var(--color-background) 60%, black)"
         @click.self="toggleMobileFilters"
       >
         <Transition name="slide-up">

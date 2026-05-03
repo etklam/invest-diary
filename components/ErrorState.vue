@@ -20,7 +20,7 @@
       v-if="retryFn"
       @click="retryFn"
       class="mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-all"
-      style="background: var(--color-primary); color: var(--color-background);"
+      style="background: var(--color-primary); color: var(--color-on-ink);"
     >
       <Icon name="heroicons:arrow-path" class="h-4 w-4" />
       {{ $t('common.retry') }}

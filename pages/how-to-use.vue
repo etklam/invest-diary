@@ -1,22 +1,18 @@
 <template>
-  <main class="how-to-use-page min-h-screen text-slate-900 dark:text-slate-100">
+  <main class="how-to-use-page min-h-screen">
     <!-- Hero Section -->
     <section class="relative overflow-hidden px-4 pb-20 pt-20 sm:px-6 sm:pt-32">
       <div class="bg-grid absolute inset-0 opacity-20 dark:opacity-10" aria-hidden="true" />
-      <div class="orb orb-1" aria-hidden="true" />
-      <div class="orb orb-2" aria-hidden="true" />
-      <div class="orb orb-3" aria-hidden="true" />
-
       <div class="relative mx-auto max-w-7xl">
         <div class="hero-shell p-6 md:p-10">
           <div class="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
             <div class="reveal">
-              <p class="inline-flex items-center gap-2 rounded-full border border-sky-300/50 bg-sky-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-sky-700 backdrop-blur-md dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300">
+              <p class="hero-badge inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest">
                 <Icon name="heroicons:map-20-solid" class="h-4 w-4" />
                 {{ $t('howToUse.badge') }}
               </p>
               <h1 class="mt-6 max-w-4xl text-4xl font-extrabold leading-[1.15] tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-7xl">
-                <span class="gradient-text">{{ $t('howToUse.hero.title') }}</span>
+                <span class="hero-title">{{ $t('howToUse.hero.title') }}</span>
               </h1>
               <p class="mt-8 max-w-2xl text-lg leading-relaxed text-slate-600 dark:text-slate-400 sm:text-xl">
                 {{ $t('howToUse.hero.subtitle') }}
@@ -76,13 +72,13 @@
                     <p class="board-step-title">{{ $t('howToUse.workflow.step3.title') }}</p>
                   </div>
                 </article>
-                <article class="board-step group border-sky-400/30 bg-sky-400/5">
-                  <div class="board-icon-wrapper bg-sky-500 text-white">
+                <article class="board-step group board-step-active">
+                  <div class="board-icon-wrapper board-icon-active">
                     <Icon name="heroicons:arrows-right-left-20-solid" class="h-5 w-5" />
                   </div>
                   <div>
-                    <p class="board-step-label text-sky-400">{{ $t('howToUse.workflow.step4.label') }}</p>
-                    <p class="board-step-title font-semibold text-white">{{ $t('howToUse.workflow.step4.title') }}</p>
+                    <p class="board-step-label board-step-label-active">{{ $t('howToUse.workflow.step4.label') }}</p>
+                    <p class="board-step-title board-step-title-active font-semibold">{{ $t('howToUse.workflow.step4.title') }}</p>
                   </div>
                 </article>
               </div>
@@ -154,11 +150,10 @@
     </section>
 
     <!-- Workflow Detail Section -->
-    <section class="workflow-detail-section py-24 overflow-hidden relative" style="background: var(--color-panel-ink); color: var(--color-background);">
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-sky-500/10 via-transparent to-transparent opacity-50" />
+    <section class="workflow-detail-section py-24 overflow-hidden relative" style="background: var(--color-panel-ink); color: var(--color-on-ink);">
       <div class="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div class="section-header reveal mb-16 text-center">
-          <h2 class="text-4xl font-bold tracking-tight sm:text-5xl" style="color: var(--color-background);">
+          <h2 class="text-4xl font-bold tracking-tight sm:text-5xl" style="color: var(--color-on-ink);">
             {{ $t('howToUse.workflow.title') }}
           </h2>
           <p class="mx-auto mt-4 max-w-2xl text-lg" style="color: var(--color-text-muted);">
@@ -169,9 +164,9 @@
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <div v-for="(step, i) in 4" :key="i" class="sequence-card reveal" :class="`reveal-${i+1}`">
             <div class="sequence-icon-box">
-              <Icon :name="['heroicons:pencil-square', 'heroicons:link', 'heroicons:cpu-chip', 'heroicons:arrows-right-left'][i] + '-20-solid'" class="h-8 w-8 text-sky-400" />
+              <Icon :name="['heroicons:pencil-square', 'heroicons:link', 'heroicons:cpu-chip', 'heroicons:arrows-right-left'][i] + '-20-solid'" class="sequence-icon h-8 w-8" />
             </div>
-            <h3 class="mt-6 text-xl font-bold" style="color: var(--color-background);">{{ $t(`howToUse.workflow.step${i+1}.title`) }}</h3>
+            <h3 class="mt-6 text-xl font-bold" style="color: var(--color-on-ink);">{{ $t(`howToUse.workflow.step${i+1}.title`) }}</h3>
             <p class="mt-4 leading-relaxed text-sm" style="color: var(--color-text-muted);">
               {{ $t(`howToUse.workflow.step${i+1}.description`) }}
             </p>
@@ -208,7 +203,7 @@
             </div>
             <div class="p-6">
               <p class="surface-kicker">{{ $t(feature.kicker) }}</p>
-              <h3 class="mt-2 text-xl font-bold text-slate-950 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+              <h3 class="surface-title mt-2 text-xl font-bold transition-colors">
                 {{ $t(`howToUse.surfaces.${key}.title`) }}
               </h3>
               <p class="mt-3 text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
@@ -261,9 +256,6 @@
     <section class="px-4 pb-32 sm:px-6">
       <div class="mx-auto max-w-7xl">
         <div class="cta-banner reveal overflow-hidden relative">
-          <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-sky-500/20 blur-3xl" />
-          <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-amber-500/20 blur-3xl" />
-          
           <div class="relative flex flex-col items-center text-center p-12 md:p-20">
             <h2 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl max-w-4xl">
               {{ $t('howToUse.cta.title') }}
@@ -362,69 +354,41 @@ injectFAQSchema([
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
-
 .how-to-use-page {
-  font-family: 'IBM Plex Sans', sans-serif;
-  background: rgb(250 250 251);
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-background);
 }
 
 :global(.dark .how-to-use-page), :global(.dark-mode .how-to-use-page) {
-  background: rgb(8 10 15);
+  color: var(--color-text);
+  background: var(--color-background);
 }
 
 .bg-grid {
-  background-image: radial-gradient(rgb(15 23 42 / 0.15) 1px, transparent 1px);
+  background-image: radial-gradient(rgb(36 62 104 / 0.14) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
 :global(.dark .bg-grid), :global(.dark-mode .bg-grid) {
-  background-image: radial-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-image: radial-gradient(rgb(200 180 150 / 0.12) 1px, transparent 1px);
 }
-
-.orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
-}
-
-.orb-1 { width: 400px; height: 400px; background: rgb(56 189 248 / 0.2); top: -100px; right: -50px; }
-.orb-2 { width: 350px; height: 350px; background: rgb(245 158 11 / 0.15); bottom: 20%; left: -100px; }
-.orb-3 { width: 300px; height: 300px; background: rgb(139 92 246 / 0.1); top: 30%; right: 10%; }
 
 .hero-shell {
-  border: 1px solid rgb(255 255 255 / 0.6);
-  border-radius: 2.5rem;
-  background: rgb(255 255 255 / 0.4);
-  backdrop-filter: blur(12px);
-  box-shadow: 
-    0 4px 6px -1px rgb(0 0 0 / 0.05),
-    0 20px 25px -5px rgb(0 0 0 / 0.05);
+  border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+  border-radius: 2rem;
+  background: var(--color-surface);
+  box-shadow: 0 18px 40px -28px rgb(12 22 38 / 0.32);
 }
 
-:global(.dark .hero-shell), :global(.dark-mode .hero-shell) {
-  border-color: rgb(255 255 255 / 0.05);
-  background: rgb(255 255 255 / 0.02);
+.hero-badge {
+  color: var(--color-primary);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 84%, var(--color-primary) 16%);
 }
 
-.gradient-text {
-  color: #0f172a;
-  display: inline-block;
-  background-image: linear-gradient(to bottom right, #0f172a, #334155);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-:global(.dark .gradient-text), :global(.dark-mode .gradient-text) {
-  color: #f8fafc;
-  background-image: linear-gradient(135deg, #ffffff 0%, #f8fafc 42%, #dbeafe 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.hero-title {
+  color: var(--color-text);
 }
 
 /* Buttons */
@@ -439,26 +403,31 @@ injectFAQSchema([
 }
 
 .btn-primary {
-  background: #0f172a;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-on-ink);
   padding: 0.875rem 1.75rem;
 }
 
+:global(.dark .btn-primary),
+:global(.dark-mode .btn-primary) {
+  color: var(--color-on-ink);
+}
+
 .btn-primary:hover {
-  background: #1e293b;
+  background: color-mix(in srgb, var(--color-primary) 86%, black);
   transform: translateY(-2px);
-  box-shadow: 0 12px 20px -5px rgb(15 23 42 / 0.25);
+  box-shadow: 0 12px 20px -5px color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .btn-primary-large {
-  background: white;
-  color: #0f172a;
+  background: var(--color-surface);
+  color: var(--color-primary);
   padding: 1.25rem 2.5rem;
   font-size: 1.125rem;
 }
 
 .btn-primary-large:hover {
-  background: #f8fafc;
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-accent) 12%);
   transform: scale(1.05);
 }
 
@@ -469,26 +438,32 @@ injectFAQSchema([
   padding: 0.875rem 1.75rem;
   border-radius: 1rem;
   font-weight: 600;
-  border: 1px solid rgb(15 23 42 / 0.1);
-  background: white;
+  border: 1px solid color-mix(in srgb, var(--color-border) 74%, transparent);
+  background: var(--color-surface);
+  color: var(--color-text);
   transition: all 0.2s;
 }
 
 .btn-secondary:hover {
-  background: #f8fafc;
-  border-color: rgb(15 23 42 / 0.2);
+  background: color-mix(in srgb, var(--color-surface) 85%, var(--color-primary) 15%);
+  border-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
 .btn-secondary-large {
-  border-color: rgb(255 255 255 / 0.2);
+  border-color: color-mix(in srgb, var(--color-on-ink) 35%, transparent);
   background: transparent;
-  color: white;
+  color: var(--color-on-ink);
   padding: 1.25rem 2.5rem;
   font-size: 1.125rem;
 }
 
 .btn-secondary-large:hover {
-  background: rgb(255 255 255 / 0.05);
+  background: color-mix(in srgb, var(--color-on-ink) 10%, transparent);
+}
+
+:global(.dark .btn-secondary-large),
+:global(.dark-mode .btn-secondary-large) {
+  color: var(--color-on-ink);
 }
 
 :global(.dark .btn-secondary), :global(.dark-mode .btn-secondary) {
@@ -503,11 +478,11 @@ injectFAQSchema([
 
 /* Workflow Board */
 .workflow-board {
-  border-radius: 2rem;
-  background: #0f172a;
+  border-radius: 1.5rem;
+  background: var(--color-panel-ink);
   padding: 2rem;
   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
 }
 
 .board-label {
@@ -515,7 +490,7 @@ injectFAQSchema([
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgb(14 165 233);
+  color: var(--color-accent);
 }
 
 .board-step {
@@ -527,9 +502,14 @@ injectFAQSchema([
   transition: all 0.3s;
 }
 
-.board-step:hover:not(.border-sky-400\/30) {
+.board-step:hover:not(.board-step-active) {
   background: rgb(255 255 255 / 0.05);
   border-color: rgb(255 255 255 / 0.1);
+}
+
+.board-step-active {
+  border-color: color-mix(in srgb, var(--color-accent) 36%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
 .board-icon-wrapper {
@@ -541,8 +521,18 @@ injectFAQSchema([
   justify-content: center;
   border-radius: 0.875rem;
   background: rgb(255 255 255 / 0.1);
-  color: rgb(148 163 184);
+  color: color-mix(in srgb, var(--color-on-ink) 65%, transparent);
   transition: all 0.3s;
+}
+
+.board-icon-active {
+  background: var(--color-accent);
+  color: var(--color-on-ink);
+}
+
+:global(.dark .board-icon-active),
+:global(.dark-mode .board-icon-active) {
+  color: var(--color-on-ink);
 }
 
 .board-step:hover .board-icon-wrapper {
@@ -555,21 +545,25 @@ injectFAQSchema([
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgb(100 116 139);
+  color: color-mix(in srgb, var(--color-on-ink) 55%, transparent);
 }
+
+.board-step-label-active { color: var(--color-accent); }
 
 .board-step-title {
   margin-top: 0.25rem;
   font-size: 0.9375rem;
-  color: rgb(203 213 225);
+  color: color-mix(in srgb, var(--color-on-ink) 80%, transparent);
   line-height: 1.5;
 }
 
+.board-step-title-active { color: var(--color-on-ink); }
+
 /* Cards */
 .guide-card, .surface-card, .tool-card {
-  border-radius: 1.75rem;
-  border: 1px solid rgb(15 23 42 / 0.06);
-  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+  background: var(--color-surface);
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -583,7 +577,7 @@ injectFAQSchema([
 .guide-card:hover, .surface-card:hover, .tool-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 30px 60px -15px rgb(15 23 42 / 0.1);
-  border-color: rgb(14 165 233 / 0.3);
+  border-color: color-mix(in srgb, var(--color-accent) 32%, transparent);
 }
 
 .guide-number {
@@ -593,8 +587,8 @@ injectFAQSchema([
   align-items: center;
   justify-content: center;
   border-radius: 1rem;
-  background: rgb(14 165 233 / 0.08);
-  color: rgb(14 165 233);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-accent);
   font-weight: 800;
   font-size: 1.25rem;
 }
@@ -604,7 +598,7 @@ injectFAQSchema([
   font-weight: 800;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgb(14 165 233);
+  color: var(--color-accent);
 }
 
 .guide-link {
@@ -612,7 +606,7 @@ injectFAQSchema([
   align-items: center;
   gap: 0.5rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-primary);
 }
 
 :global(.dark .guide-link), :global(.dark-mode .guide-link) { color: white; }
@@ -627,18 +621,22 @@ injectFAQSchema([
 
 .sequence-card:hover {
   background: rgb(255 255 255 / 0.07);
-  border-color: rgb(14 165 233 / 0.4);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
   transform: translateY(-4px);
 }
 
 .sequence-icon-box {
   height: 4rem;
   width: 4rem;
-  background: rgb(14 165 233 / 0.1);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
   border-radius: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.sequence-icon {
+  color: var(--color-accent);
 }
 
 /* Browser Frame */
@@ -679,10 +677,18 @@ injectFAQSchema([
   color: rgb(100 116 139);
 }
 
+.surface-title {
+  color: var(--color-text);
+}
+
+.surface-card:hover .surface-title {
+  color: var(--color-primary);
+}
+
 /* CTA Banner */
 .cta-banner {
-  border-radius: 3rem;
-  background: #0f172a;
+  border-radius: 1rem;
+  background: var(--color-panel-ink);
   box-shadow: 0 40px 80px -20px rgb(0 0 0 / 0.4);
 }
 
