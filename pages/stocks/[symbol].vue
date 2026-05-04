@@ -59,7 +59,7 @@
       </div>
 
       <!-- Filters -->
-      <div v-if="!error" class="flex items-center gap-2 mb-6">
+      <div v-if="!error" class="flex flex-wrap items-center gap-2 mb-6">
         <button
           v-for="filter in filters"
           :key="filter.value"
@@ -104,6 +104,7 @@ interface StockNoteData {
   createdByLabel?: string | null
   createdAt: string
   updatedAt: string
+  isOwnedByViewer?: boolean
 }
 
 interface NotesResponse {
@@ -121,26 +122,58 @@ const displaySymbol = computed(() => String(route.params.symbol).toUpperCase())
 const showEditor = ref(false)
 const editorRef = ref<{ resetForm: () => void }>()
 const isSaving = ref(false)
-const activeFilter = ref<'all' | 'USER' | 'AGENT'>('all')
+const activeFilter = ref<string>('all')
 const currentPage = ref(1)
 
-const filters = computed(() => [
-  { value: 'all' as const, label: t('stock.notes.filterAll') },
-  { value: 'USER' as const, label: t('stock.notes.filterMine') },
-  { value: 'AGENT' as const, label: t('stock.notes.filterAgent') },
-])
+import type { PartnerLinkSummary, PartnerLinksResponse } from '~/types/partner'
 
-const createdViaParam = computed(() => activeFilter.value === 'all' ? undefined : activeFilter.value)
+const acceptedPartnerLinks = ref<PartnerLinkSummary[]>([])
+
+const filters = computed(() => {
+  const base: Array<{ value: string; label: string }> = [
+    { value: 'all', label: t('stock.notes.filterAll') },
+    { value: 'USER', label: t('stock.notes.filterMine') },
+  ]
+  for (const link of acceptedPartnerLinks.value) {
+    if (link.partnerSharesStockNotes) {
+      const name = link.partner?.name || link.partner?.email || t('stock.notes.filterPartner')
+      base.push({
+        value: `partner:${link.partner.id}`,
+        label: name,
+      })
+    }
+  }
+  return base
+})
+
+const queryParams = computed(() => {
+  const params: Record<string, string | number> = { page: currentPage.value, limit: 20 }
+  if (activeFilter.value === 'USER') {
+    params.createdVia = 'USER'
+  } else if (activeFilter.value.startsWith('partner:')) {
+    params.partnerId = activeFilter.value.replace('partner:', '')
+  }
+  return params
+})
+
+const fetchPartners = async () => {
+  try {
+    const response = await $fetch<PartnerLinksResponse>('/api/partners')
+    acceptedPartnerLinks.value = response.links.filter(
+      (l: any) => !l.pendingIncoming && !l.pendingOutgoing,
+    )
+  } catch {
+    // Partners not critical — silently fail
+  }
+}
+
+await fetchPartners()
 
 const { data, pending, error, refresh } = await useLazyFetch<NotesResponse>(
   () => `/api/stocks/${encodeURIComponent(String(route.params.symbol))}/notes`,
   {
     server: false,
-    query: computed(() => ({
-      page: currentPage.value,
-      limit: 20,
-      ...(createdViaParam.value ? { createdVia: createdViaParam.value } : {}),
-    })),
+    query: queryParams,
     default: () => ({ notes: [], total: 0, page: 1, limit: 20 }),
   },
 )

@@ -36,6 +36,9 @@ export default defineEventHandler(async (event): Promise<Diary> => {
       log.warn(error.message, { code: error.code })
       throw error.toH3Error()
     }
+    if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+      throw error
+    }
     log.error('Failed to create diary via API key', { error: String(error) })
     throw Errors.internalError(error).toH3Error()
   }

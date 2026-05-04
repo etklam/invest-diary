@@ -80,6 +80,7 @@ interface StockNoteData {
   createdByLabel?: string | null
   createdAt: string
   updatedAt: string
+  isOwnedByViewer?: boolean
 }
 
 const props = defineProps<{

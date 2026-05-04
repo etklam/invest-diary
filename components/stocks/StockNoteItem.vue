@@ -11,17 +11,17 @@
             <span class="text-xs text-slate-300 dark:text-slate-600">·</span>
             <span
               class="inline-flex items-center gap-1 text-xs font-medium"
-              :class="note.createdVia === 'AGENT' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-600 dark:text-slate-400'"
+              :class="note.isOwnedByViewer === false ? 'text-emerald-600 dark:text-emerald-400' : note.createdVia === 'AGENT' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'"
             >
               <Icon
-                :name="note.createdVia === 'AGENT' ? 'heroicons:cpu-chip' : 'heroicons:user'"
+                :name="note.isOwnedByViewer === false || note.createdVia === 'AGENT' ? 'heroicons:cpu-chip' : 'heroicons:user'"
                 class="w-3 h-3"
               />
-              {{ note.createdByLabel || (note.createdVia === 'AGENT' ? t('stock.notes.createdByAgent') : t('stock.notes.createdByUser')) }}
+              {{ note.createdByLabel || (note.isOwnedByViewer === false ? t('stock.notes.createdByPartner') : note.createdVia === 'AGENT' ? t('stock.notes.createdByAgent') : t('stock.notes.createdByUser')) }}
             </span>
           </div>
         </div>
-        <div v-if="note.createdVia === 'USER'" class="flex items-center gap-1 flex-shrink-0">
+        <div v-if="note.isOwnedByViewer !== false" class="flex items-center gap-1 flex-shrink-0">
           <button
             class="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
             :title="t('common.edit')"
@@ -57,6 +57,7 @@ interface StockNoteData {
   createdByLabel?: string | null
   createdAt: string
   updatedAt: string
+  isOwnedByViewer?: boolean
 }
 
 defineProps<{

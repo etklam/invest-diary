@@ -28,6 +28,8 @@ export function serializePartnerLink(link: PartnerLinkRecord, currentUserId: str
     },
     selfSharesDiaries: side.selfSharesDiaries,
     partnerSharesDiaries: side.partnerSharesDiaries,
+    selfSharesStockNotes: side.selfSharesStockNotes,
+    partnerSharesStockNotes: side.partnerSharesStockNotes,
     pendingIncoming: side.pendingIncoming,
     pendingOutgoing: side.pendingOutgoing,
     initiatedByCurrentUser: side.initiatedByCurrentUser,

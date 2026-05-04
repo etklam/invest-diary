@@ -9,7 +9,10 @@ import { serializePartnerLink } from '~/server/utils/partner-response'
 import { handleApiError } from '~/server/utils/error-handler'
 
 const sharingSchema = z.object({
-  shareDiaries: z.boolean(),
+  shareDiaries: z.boolean().optional(),
+  shareStockNotes: z.boolean().optional(),
+}).refine(data => data.shareDiaries !== undefined || data.shareStockNotes !== undefined, {
+  message: 'At least one of shareDiaries or shareStockNotes is required',
 })
 
 export default defineEventHandler(async (event) => {
@@ -41,11 +44,17 @@ export default defineEventHandler(async (event) => {
       throw Errors.partnerLinkPending()
     }
 
+    const updateData: Record<string, boolean> = {}
+    if (validated.shareDiaries !== undefined) {
+      updateData[side.diaryShareField] = validated.shareDiaries
+    }
+    if (validated.shareStockNotes !== undefined) {
+      updateData[side.stockNotesShareField] = validated.shareStockNotes
+    }
+
     const updated = await prisma.partnerLink.update({
       where: { id: linkId },
-      data: {
-        [side.shareField]: validated.shareDiaries,
-      },
+      data: updateData,
       include: {
         userA: {
           select: { id: true, email: true, name: true },

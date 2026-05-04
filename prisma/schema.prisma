@@ -138,6 +138,8 @@ model PartnerLink {
   acceptedAt         DateTime? @map("accepted_at")
   userASharesDiaries Boolean  @default(false) @map("user_a_shares_diaries")
   userBSharesDiaries Boolean  @default(false) @map("user_b_shares_diaries")
+  userASharesStockNotes Boolean  @default(false) @map("user_a_shares_stock_notes")
+  userBSharesStockNotes Boolean  @default(false) @map("user_b_shares_stock_notes")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 

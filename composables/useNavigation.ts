@@ -35,6 +35,7 @@ export const useNavigation = () => {
       { label: t('nav.diaries'), to: '/diaries', icon: 'document-text' },
       { label: t('nav.howToUse'), to: '/how-to-use', icon: 'map' },
       { label: t('nav.stocks'), to: '/stocks', icon: 'chart-bar' },
+      { label: t('nav.watchlist'), to: '/stocks/watchlist', icon: 'eye' },
       { label: t('nav.about'), to: '/about', icon: 'information-circle' }
     ]
   })

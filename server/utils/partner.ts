@@ -14,6 +14,8 @@ export interface PartnerLinkRecord {
   acceptedAt: Date | null
   userASharesDiaries: boolean
   userBSharesDiaries: boolean
+  userASharesStockNotes: boolean
+  userBSharesStockNotes: boolean
   createdAt: Date
   updatedAt: Date
   userA: PartnerParticipant
@@ -63,7 +65,13 @@ export function getPartnerSide(link: PartnerLinkRecord, currentUserId: string | 
     partner,
     selfSharesDiaries: isUserA ? link.userASharesDiaries : link.userBSharesDiaries,
     partnerSharesDiaries: isUserA ? link.userBSharesDiaries : link.userASharesDiaries,
+    // @deprecated — use diaryShareField instead
     shareField: isUserA ? 'userASharesDiaries' : 'userBSharesDiaries',
+    // New fields
+    diaryShareField: isUserA ? 'userASharesDiaries' as const : 'userBSharesDiaries' as const,
+    stockNotesShareField: isUserA ? 'userASharesStockNotes' as const : 'userBSharesStockNotes' as const,
+    selfSharesStockNotes: isUserA ? link.userASharesStockNotes : link.userBSharesStockNotes,
+    partnerSharesStockNotes: isUserA ? link.userBSharesStockNotes : link.userASharesStockNotes,
     accepted: Boolean(link.acceptedAt),
     initiatedByCurrentUser: link.initiatedByUserId === viewerId,
     pendingIncoming: !link.acceptedAt && link.initiatedByUserId !== viewerId,

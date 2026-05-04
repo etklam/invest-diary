@@ -378,7 +378,8 @@ const handleChangePassword = async () => {
 
 // Set page meta
 definePageMeta({
-  layout: 'default'
+  layout: 'default',
+  middleware: 'auth'
 })
 </script>
 

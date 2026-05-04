@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+  <div id="partners" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -63,9 +63,15 @@
                 {{ link.partner.email }}
               </p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ t('settings.shareStatus', {
+                {{ t('settings.shareStatusDiary', {
                   mine: link.selfSharesDiaries ? t('settings.shareOn') : t('settings.shareOff'),
                   theirs: link.partnerSharesDiaries ? t('settings.shareOn') : t('settings.shareOff')
+                }) }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {{ t('settings.shareStatusStockNotes', {
+                  mine: link.selfSharesStockNotes ? t('settings.shareOn') : t('settings.shareOff'),
+                  theirs: link.partnerSharesStockNotes ? t('settings.shareOn') : t('settings.shareOff')
                 }) }}
               </p>
             </div>
@@ -111,6 +117,22 @@
             <span>
               <span class="block font-medium">{{ t('settings.shareMyDiaries') }}</span>
               <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.shareMyDiariesHint') }}</span>
+            </span>
+          </label>
+
+          <label
+            v-if="!link.pendingIncoming && !link.pendingOutgoing"
+            class="mt-2 flex items-start gap-3 rounded-xl bg-white px-3 py-3 text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-200"
+          >
+            <input
+              :checked="link.selfSharesStockNotes"
+              type="checkbox"
+              class="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              @change="handleStockNotesShareChange(link, $event)"
+            >
+            <span>
+              <span class="block font-medium">{{ t('settings.shareStockNotes') }}</span>
+              <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.shareStockNotesHint') }}</span>
             </span>
           </label>
         </article>
@@ -198,19 +220,20 @@ const acceptLink = async (linkId: string) => {
   }
 }
 
-const toggleSharing = async (link: PartnerLinkSummary, shareDiaries: boolean) => {
-  const previous = link.selfSharesDiaries
-  upsertLink({ ...link, selfSharesDiaries: shareDiaries })
+const toggleSharingField = async (link: PartnerLinkSummary, field: 'shareDiaries' | 'shareStockNotes', value: boolean) => {
+  const updateField = field === 'shareDiaries' ? 'selfSharesDiaries' : 'selfSharesStockNotes'
+  const previous = link[updateField]
+  upsertLink({ ...link, [updateField]: value })
 
   try {
     const response = await $fetch<{ link: PartnerLinkSummary }>(`/api/partners/${link.id}/sharing`, {
       method: 'PUT',
-      body: { shareDiaries },
+      body: { [field]: value },
     })
     upsertLink(response.link)
-    toast.success(shareDiaries ? t('settings.shareEnabled') : t('settings.shareDisabled'))
+    toast.success(value ? t('settings.shareEnabled') : t('settings.shareDisabled'))
   } catch (error: any) {
-    upsertLink({ ...link, selfSharesDiaries: previous })
+    upsertLink({ ...link, [updateField]: previous })
     toast.error(error?.data?.statusMessage || t('settings.partnerShareFailed'))
   }
 }
@@ -218,7 +241,13 @@ const toggleSharing = async (link: PartnerLinkSummary, shareDiaries: boolean) =>
 const handleShareChange = (link: PartnerLinkSummary, event: Event) => {
   const target = event.target as HTMLInputElement | null
   if (!target) return
-  void toggleSharing(link, target.checked)
+  void toggleSharingField(link, 'shareDiaries', target.checked)
+}
+
+const handleStockNotesShareChange = (link: PartnerLinkSummary, event: Event) => {
+  const target = event.target as HTMLInputElement | null
+  if (!target) return
+  void toggleSharingField(link, 'shareStockNotes', target.checked)
 }
 
 const removeLink = async (linkId: string) => {

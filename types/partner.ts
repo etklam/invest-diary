@@ -13,6 +13,8 @@ export interface PartnerLinkSummary {
   partner: PartnerAccountSummary
   selfSharesDiaries: boolean
   partnerSharesDiaries: boolean
+  selfSharesStockNotes: boolean
+  partnerSharesStockNotes: boolean
   pendingIncoming: boolean
   pendingOutgoing: boolean
   initiatedByCurrentUser: boolean

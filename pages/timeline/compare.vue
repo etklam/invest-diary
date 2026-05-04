@@ -31,7 +31,7 @@
         </select>
 
         <NuxtLink
-          to="/settings"
+          to="/settings#partners"
           class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-600 dark:hover:text-indigo-300"
         >
           {{ t('compareDiary.managePartners') }}
