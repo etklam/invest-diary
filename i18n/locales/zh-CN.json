@@ -719,8 +719,8 @@
   "home": {
     "badge": "交易复盘同行平台",
     "hero": {
-      "title": "从交易基础开始，建立可持续的投资纪律",
-      "subtitle": "交易注定是孤独的，所以更需要把市场判断留下来。先自己写清楚，之后再和 partner 或 AI 账号做同日对照，复盘才更有依据。",
+      "title": "留下每一次判断，让过去的你成为最好的教练",
+      "subtitle": "一只年化 15% 的股票，每日赚钱的概率只有 50.02%——几乎跟掷硬币没区别。交易从来不是靠单次胜负，而是靠足够多的记录去验证你的决策过程。写下来，复盘，然后和 partner 对照——这是拉开差距的起点。",
       "getStarted": "开始记录",
       "learnMore": "了解学习路径"
     },
@@ -736,126 +736,126 @@
       "title": "学习快照",
       "status": "进行中",
       "focusLabel": "本期重点",
-      "focusValue": "Trade Basics",
+      "focusValue": "正期望值决策",
       "methodLabel": "方法",
-      "methodValue": "记录 -> 复盘 -> 修正",
+      "methodValue": "记录 → 复盘 → 修正",
       "communityLabel": "同行模式",
       "communityValue": "Partner / AI 对照",
-      "description": "把每次市场判断留在同一条时间线，之后再和 partner 左右对照，逐步减少重复犯错。"
+      "description": "复盘的时间应该远多于交易本身。把每次市场判断留在时间线上，再和 partner 左右对照——历史不会重复，但总有惊人的相似。"
     },
     "promise": {
       "title": "学习承诺",
-      "basics": "基础先行",
-      "risk": "风险优先",
-      "community": "可对照复盘",
-      "longTerm": "长期积累",
+      "basics": "过程导向",
+      "risk": "防守先行",
+      "community": "对照复盘",
+      "longTerm": "长期复利",
       "noGuarantee": "不保证盈利"
     },
     "learning": {
-      "title": "Trade Basics 学习路径",
-      "subtitle": "先建立方法，再追求结果。每一步都可执行、可回顾。",
+      "title": "投资者的修炼路径",
+      "subtitle": "投资到了后期，拼的不是金融知识，而是投资心理。先搞清楚自己，再搞清楚市场。",
       "basics": {
-        "title": "市场与策略基础",
-        "description": "厘清交易逻辑、进出场条件与常见误区，避免凭感觉下单。"
+        "title": "投资定位与认知",
+        "description": "搞不清自己是价值投资还是价格投机，是很多投资者亏损的根源。正确思维不保证赚钱，但错误思维保证长期赔钱。"
       },
       "risk": {
-        "title": "风险管理",
-        "description": "练习仓位、止损与回撤控制，先活下来再谈成长。"
+        "title": "仓位管理与生存",
+        "description": "进攻决定最多能赚多少，但防守决定你能玩多久。活下去是兑现所有优势的唯一前提——正股止损 25%、杠杆止损 5% 是不可动摇的红线。"
       },
       "review": {
-        "title": "记录与复盘",
-        "description": "用固定模板记录决策，通过每周复盘找到可改进的行为。"
+        "title": "复盘方法论",
+        "description": "由大到小：新闻 → 全球 → 大盘 → 板块 → 个股 → 更新计划。复盘时才启动系统二——那个刻意、耗能、但真正能修正偏见的思考模式。"
       }
     },
     "community": {
-      "title": "和 partner 一起复盘",
-      "subtitle": "你可以自己记，但更有杀伤力的是让真人或 AI partner 也针对同一天市场写下判断，然后把两份 diary 摆在一起看。",
+      "title": "交易不需要孤军奋战",
+      "subtitle": "你可以自己记，但和 partner 做同日对照才能真正压测你的判断。让真人或 AI 针对同一天市场各写一份 diary，然后左右排开——看到盲点的瞬间，就是成长的瞬间。",
       "share": {
         "title": "账号级分享",
-        "description": "对某段 partner 关系开启 diary 分享后，双方就能对照历史与未来记录，但 stock 持仓不会被带出去。"
+        "description": "开启某段 partner 关系的 diary 分享，双方就能对照历史与未来记录。stock 持仓永远不会被带出去——你的底牌只有你自己看得到。"
       },
       "feedback": {
         "title": "同日左右对照",
-        "description": "把你和 partner 同一天的 diary 挂在一起，比谁抓到了重点，不再只和模糊印象打架。"
+        "description": "把两份同一天的 diary 挂在一起，比谁抓到重点、谁漏掉风险。不再跟模糊印象打架，用白纸黑字说话。"
       },
       "accountability": {
         "title": "AI 也能入场",
-        "description": "给 partner 账号开一把限权 API key，让外部 agent 可以写 diary，但拿不到整套网页登录权限。"
+        "description": "给 partner 账号开一把限权 API key，让外部 agent 可以写 diary，但拿不到整套网页登录权限。机器的判断加上你的直觉，互相补盲。"
       }
     },
     "turnaround": {
-      "title": "扭亏为盈：以流程改进为核心",
-      "subtitle": "不承诺结果，专注减少重复错误并提升一致性。",
+      "title": "从亏损到稳定：把过程变成优势",
+      "subtitle": "衡量成败的不是单次结果，是你的决策在足够多重复下是否稳定盈利。放下对单次结果的执念，专注决策过程的质量。",
       "step1": {
-        "title": "1. 记录错误",
-        "description": "如实写下亏损决策的背景与执行细节。"
+        "title": "1. 记录判断",
+        "description": "在市场还活着的时候写下你的理由、风险假设和操作计划。不要等收盘——记忆会替你改稿。"
       },
       "step2": {
-        "title": "2. 找出模式",
-        "description": "识别重复出现的错误触发条件与情境。"
+        "title": "2. 辨识偏见",
+        "description": "复盘时对照执行结果和原始假设，找出是决策有问题，还是只是方差作祟。正确的过程也可能带来暂时的亏损。"
       },
       "step3": {
-        "title": "3. 制定修正规则",
-        "description": "把修正方案写成可执行的纪律条款。"
+        "title": "3. 制定规则",
+        "description": "把修正方案写成具体可执行的纪律条款。沉默成本不是继续持有的理由——学会认输、学会弃牌，是成为大师最难的一关。"
       },
       "step4": {
-        "title": "4. 反复验证",
-        "description": "持续检查规则效果，必要时迭代更新。"
+        "title": "4. 长期验证",
+        "description": "持续检查规则效果，用足够多的样本验证正期望值。德州扑克最好的起手牌胜率超过 80%，但仍有近 20% 会输——永远给自己留容错空间。"
       }
     },
     "features": {
-      "title": "强大功能",
-      "subtitle": "用记录、对照、分析与提醒支持你的学习节奏",
+      "title": "功能一览",
+      "subtitle": "每一个功能都在服务同一件事：让你的决策过程可回顾、可对照、可优化",
       "diary": {
-        "title": "交易基础",
-        "description": "使用 Markdown 撰写丰富的投资日记，记录交易理由与市场洞察。"
+        "title": "交易日记",
+        "description": "用 Markdown 写下每一次操作的理由、风险假设与市场观察。这是你启动「系统二」的地方——从盯盘的直觉反应切换到刻意思考。"
       },
       "stocks": {
-        "title": "股票管理",
-        "description": "追踪持仓、计算平均成本，平均成本法帮助您精准掌握投资绩效。"
+        "title": "持仓管理",
+        "description": "追踪持仓与平均成本。股价波动高度不确定，人一定会犯错——仓位管理是你提升容错空间的最后防线。"
       },
       "alerts": {
         "title": "智能提醒",
-        "description": "设定时间触发的提醒，帮助你减少漏掉重要观察时点。"
+        "description": "设定时间触发的提醒，强迫自己在关键时点回头检查。不让重要观察沉没在时间流里。"
       },
       "timeline": {
         "title": "时间轴视图",
-        "description": "先回看自己的长期记录，需要更锐利的检查时，再切去同日 partner 对照。"
+        "description": "把所有判断串成一条可回溯的时间线。先看自己的长期节奏，需要更锐利的检查时再切去 partner 同日对照。"
       },
       "partnerCompare": {
         "title": "Partner 对照",
-        "description": "真人或 AI 都能成为 partner，在同一天左右对照 diary，同时保住 stock 持仓隐私。"
+        "description": "真人或 AI 都能成为 partner，同一天左右对照 diary。你的盲区，就是别人看得到的地方。持仓隐私始终受保护。"
       },
       "security": {
         "title": "安全可靠",
-        "description": "JWT 身份验证与 bcrypt 密码加密，保护您的投资数据安全。"
+        "description": "JWT + bcrypt + HttpOnly Cookie。你的交易数据和你一样，不该被任何人轻易拿到。"
       },
       "themes": {
         "title": "深色模式",
-        "description": "支持深色与浅色主题，随时切换舒适的浏览体验。"
+        "description": "支持深色与浅色主题。长时间复盘不伤眼，才有可能持续下去。"
       }
     },
     "cta": {
-      "title": "准备开始你的学习循环？",
-      "description": "从今天开始记录、每周复盘，准备好时再接上 partner 压测你的市场判断。以财富自由与被动收入为长期方向，但不对任何回报做保证。",
+      "title": "最强大的敌人从来不是 K 线，而是你自己",
+      "description": "从今天开始记录、每周复盘，准备好时再接上 partner 压测你的市场判断。上头的时候前额叶皮层宕机，只剩杏仁核疯狂尖叫——唯一的解药是事先写好的计划和足够多的记录。",
       "register": "立即加入",
       "login": "已有账号登录",
       "step1": {
         "label": "步骤 01",
         "title": "记录",
-        "description": "写下每次决策的理由、风险与计划。"
+        "description": "写下每次决策的理由、风险假设与止损计划。下单前先做好止损，这是必修课。"
       },
       "step2": {
         "label": "步骤 02",
         "title": "复盘",
-        "description": "比较执行结果与原始假设，找出偏差。"
+        "description": "对照执行结果与原始假设，分辨哪些是决策问题，哪些只是随机波动。"
       },
       "step3": {
         "label": "步骤 03",
         "title": "优化",
-        "description": "把反馈转成下一轮可执行的规则。"
+        "description": "把反馈转成可执行的规则，用足够多的样本验证正期望值。过程正确了，结果终究会跟上。"
       },
-      "disclaimer": "本平台内容仅供教育与复盘，不构成投资建议；投资有风险，结果会因策略与执行而异。"
+      "disclaimer": "本平台内容仅供教育与复盘，不构成投资建议。合理年化收益 6-10% 已属不易，投资有风险，结果因策略与执行而异。"
     },
     "footer": {
       "rights": "保留所有权利"

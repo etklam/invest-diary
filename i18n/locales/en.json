@@ -606,8 +606,8 @@
   "home": {
     "badge": "Trading Review Companion",
     "hero": {
-      "title": "Start with trade basics and build sustainable discipline",
-      "subtitle": "Trading is lonely, so your market read needs to survive long enough to be reviewed. Journal it yourself first, then compare the same day with a partner or AI account when you need a second read.",
+      "title": "Write down every thesis. Let your past self become your best coach.",
+      "subtitle": "A stock compounding at 15% annually has a daily profit probability of just 50.02% — almost indistinguishable from a coin flip. Trading is never about any single outcome. It's about having enough records to validate your decision process. Write, review, then compare with a partner — that's where the gap begins.",
       "getStarted": "Start Recording",
       "learnMore": "See Learning Path"
     },
@@ -623,126 +623,126 @@
       "title": "Learning Snapshot",
       "status": "In Progress",
       "focusLabel": "Current Focus",
-      "focusValue": "Trade Basics",
+      "focusValue": "Positive-Expectancy Decisions",
       "methodLabel": "Method",
-      "methodValue": "Record -> Review -> Improve",
+      "methodValue": "Record → Review → Refine",
       "communityLabel": "Companion Mode",
       "communityValue": "Partner / AI compare",
-      "description": "Keep each market thesis on one timeline, then compare the same day side by side with a partner to reduce repeated mistakes."
+      "description": "Time spent reviewing should far exceed time spent trading. Log every market thesis on one timeline, then compare side by side with a partner. History doesn't repeat, but it rhymes."
     },
     "promise": {
       "title": "Learning Promise",
-      "basics": "Basics first",
-      "risk": "Risk first",
+      "basics": "Process over outcomes",
+      "risk": "Defense first",
       "community": "Partner compare",
       "longTerm": "Long-term compounding",
       "noGuarantee": "No return guarantees"
     },
     "learning": {
-      "title": "Trade Basics Learning Path",
-      "subtitle": "Build process first, then pursue results. Every step is practical and reviewable.",
+      "title": "The Investor's Path",
+      "subtitle": "At the highest level, investing is less about financial knowledge and more about psychology. Know yourself before you try to know the market.",
       "basics": {
-        "title": "Market and strategy foundations",
-        "description": "Clarify setup logic, entry/exit conditions, and common mistakes before placing trades."
+        "title": "Investment Identity & Awareness",
+        "description": "Not knowing whether you're a value investor or a price speculator is the root cause of many losses. Correct thinking doesn't guarantee profits, but wrong thinking virtually guarantees long-term losses."
       },
       "risk": {
-        "title": "Risk management",
-        "description": "Practice position sizing, stop-loss rules, and drawdown control before scaling."
+        "title": "Position Sizing & Survival",
+        "description": "Offense determines your ceiling, but defense determines how long you stay in the game. Survival is the only prerequisite for compounding every edge you have. A 25% stop-loss on stocks and 5% on leverage are non-negotiable lines."
       },
       "review": {
-        "title": "Journaling and review",
-        "description": "Use a fixed template and weekly review rhythm to improve decision quality."
+        "title": "The Review Methodology",
+        "description": "Top-down: news → global → index → sectors → individual stocks → update plan. Reviewing is when System 2 activates — the deliberate, energy-hungry thinking mode that actually corrects biases."
       }
     },
     "community": {
-      "title": "Review with a partner",
-      "subtitle": "You can journal alone, but the real leverage comes when a human or AI partner writes against the same market day and you compare both takes.",
+      "title": "You don't have to trade alone",
+      "subtitle": "Journaling solo is fine, but the real breakthrough comes when a partner — human or AI — writes against the same market day and you compare both takes side by side. The moment you spot your blind spot is the moment you grow.",
       "share": {
         "title": "Account-level sharing",
-        "description": "Turn diary sharing on for a partner link so both sides can compare history and new entries without exposing stock holdings."
+        "description": "Turn on diary sharing for a partner link and both sides can compare history and new entries. Stock holdings are never exposed — your cards stay face-down."
       },
       "feedback": {
         "title": "Same-day side-by-side",
-        "description": "Put both diaries next to each other on the same date and spot what you missed without relying on vague memory."
+        "description": "Put both diaries next to each other on the same date. See who caught the key move and who missed the risk. No more arguing with vague impressions — let the written record speak."
       },
       "accountability": {
-        "title": "AI can write too",
-        "description": "Issue a scoped API key to a partner account so an external agent can create diaries without inheriting full web access."
+        "title": "AI can join the table",
+        "description": "Issue a scoped API key to a partner account so an external agent can create diaries without inheriting full web access. Machine judgment plus your intuition — each covers the other's blind spots."
       }
     },
     "turnaround": {
-      "title": "From losses to stability: process over promises",
-      "subtitle": "No outcome guarantees. Focus on reducing repeated errors and improving consistency.",
+      "title": "From losses to consistency: turn process into edge",
+      "subtitle": "Success isn't measured by any single outcome — it's whether your decisions produce stable profits across enough repetitions. Let go of individual results and focus on decision quality.",
       "step1": {
-        "title": "1. Record mistakes",
-        "description": "Write down the context and execution details behind losing decisions."
+        "title": "1. Record your thesis",
+        "description": "Write down your rationale, risk assumptions, and trade plan while the market is still live. Don't wait until after the close — memory will rewrite the script for you."
       },
       "step2": {
-        "title": "2. Find patterns",
-        "description": "Identify recurring triggers and conditions behind repeated mistakes."
+        "title": "2. Identify biases",
+        "description": "Compare execution results against your original hypothesis. Determine whether the decision was flawed or whether it was just variance. A correct process can still produce temporary losses."
       },
       "step3": {
-        "title": "3. Define corrective rules",
-        "description": "Turn corrections into clear, executable discipline rules."
+        "title": "3. Define rules",
+        "description": "Turn corrections into concrete, executable discipline rules. Sunk cost is never a reason to hold — learning to fold is the hardest and most important skill in investing."
       },
       "step4": {
-        "title": "4. Re-test and iterate",
-        "description": "Review rule effectiveness regularly and update when needed."
+        "title": "4. Validate long-term",
+        "description": "Review rule effectiveness continuously and verify positive expectancy with enough samples. The best starting hand in poker wins over 80% of the time — but still loses nearly 20%. Always leave room for error."
       }
     },
     "features": {
-      "title": "Powerful Features",
-      "subtitle": "Tools that support your learning rhythm through logs, comparison, analytics, and reminders",
+      "title": "Features",
+      "subtitle": "Every feature serves one purpose: making your decision process reviewable, comparable, and optimizable",
       "diary": {
-        "title": "Trade Basic",
-        "description": "Write rich investment diaries in Markdown, documenting trade reasons and market insights."
+        "title": "Trading Diary",
+        "description": "Write every trade rationale, risk assumption, and market observation in Markdown. This is where System 2 kicks in — shifting from gut-reaction watching to deliberate, structured thinking."
       },
       "stocks": {
-        "title": "Stock Management",
-        "description": "Track holdings, calculate average costs, and use average cost calculation to accurately measure investment performance."
+        "title": "Portfolio Management",
+        "description": "Track holdings and average costs. Stock prices are deeply uncertain and every trader makes mistakes — position sizing is your last line of defense for error tolerance."
       },
       "alerts": {
         "title": "Smart Alerts",
-        "description": "Set time-based reminders to reduce the chance of missing important review moments."
+        "description": "Set time-triggered reminders that force you to revisit key moments. Don't let important observations drown in the stream of time."
       },
       "timeline": {
         "title": "Timeline View",
-        "description": "Review your own entries over time, then switch into same-day partner comparison when you need a sharper read."
+        "description": "String every thesis into a traceable timeline. Review your own long-term rhythm first, then switch to same-day partner comparison when you need a sharper read."
       },
       "partnerCompare": {
         "title": "Partner Compare",
-        "description": "Compare diaries side by side with a human or AI partner on the same day while keeping stock holdings private."
+        "description": "Human or AI — anyone can be a partner. Compare diaries side by side on the same day. Your blind spots are exactly what others can see. Holdings stay private."
       },
       "security": {
         "title": "Secure & Reliable",
-        "description": "JWT authentication and bcrypt password hashing to protect your investment data."
+        "description": "JWT + bcrypt + HttpOnly Cookie. Your trading data, like your edge, shouldn't be easy for anyone else to access."
       },
       "themes": {
         "title": "Dark Mode",
-        "description": "Support for dark and light themes, switch anytime for a comfortable browsing experience."
+        "description": "Support for dark and light themes. Long review sessions only work if they don't burn your eyes out."
       }
     },
     "cta": {
-      "title": "Ready to start your learning loop?",
-      "description": "Start logging today, review weekly, and bring in a partner when you are ready to pressure-test your market read. Financial freedom and passive income are long-term directions, not guaranteed outcomes.",
+      "title": "Your toughest opponent is never the chart — it's yourself",
+      "description": "Start logging today, review weekly, and bring in a partner when you're ready to stress-test your market read. When you're tilting, the prefrontal cortex shuts down and the amygdala takes over — the only antidote is a plan written in advance and enough records to anchor you.",
       "register": "Join Now",
       "login": "Log In",
       "step1": {
         "label": "Step 01",
         "title": "Record",
-        "description": "Capture your rationale, risk assumptions, and trade plan."
+        "description": "Capture your rationale, risk assumptions, and stop-loss plan before every trade. Setting your stop before entry is non-negotiable."
       },
       "step2": {
         "label": "Step 02",
         "title": "Review",
-        "description": "Compare outcomes with your original thesis and detect gaps."
+        "description": "Compare outcomes with your original thesis. Separate decision flaws from random variance — not every loss means you were wrong."
       },
       "step3": {
         "label": "Step 03",
         "title": "Refine",
-        "description": "Convert feedback into clearer rules for the next cycle."
+        "description": "Convert feedback into executable rules and verify positive expectancy with enough samples. Get the process right, and the results will follow."
       },
-      "disclaimer": "This platform is for education and review only, not investment advice. All investing carries risk, and outcomes vary by strategy and execution."
+      "disclaimer": "This platform is for education and review only, not investment advice. A reasonable annualized return of 6–10% is already hard-won. All investing carries risk, and outcomes vary by strategy and execution."
     },
     "footer": {
       "rights": "All rights reserved"

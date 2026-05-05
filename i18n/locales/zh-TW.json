@@ -604,8 +604,8 @@
   "home": {
     "badge": "交易復盤同行平台",
     "hero": {
-      "title": "從交易基礎開始，建立可持續的投資紀律",
-      "subtitle": "交易注定是孤獨的，所以更需要把市場判斷留下來。先自己寫清楚，之後再和 partner 或 AI 帳號做同日對照，復盤才更有依據。",
+      "title": "留下每一次判斷，讓過去的你成為最好的教練",
+      "subtitle": "一隻年化 15% 的股票，每日賺錢的概率只有 50.02%——幾乎跟擲硬幣沒兩樣。交易從來不是靠單次勝負，而是靠足夠多的紀錄去驗證你的決策過程。寫下來，復盤，然後和 partner 對照——這是拉開差距的起點。",
       "getStarted": "開始記錄",
       "learnMore": "了解學習路徑"
     },
@@ -621,126 +621,126 @@
       "title": "學習快照",
       "status": "進行中",
       "focusLabel": "本期重點",
-      "focusValue": "Trade Basics",
+      "focusValue": "正期望值決策",
       "methodLabel": "方法",
-      "methodValue": "記錄 -> 復盤 -> 修正",
+      "methodValue": "紀錄 → 復盤 → 修正",
       "communityLabel": "同行模式",
       "communityValue": "Partner / AI 對照",
-      "description": "把每次市場判斷留在同一條時間線，之後再和 partner 左右對照，逐步降低重複犯錯。"
+      "description": "復盤的時間應該遠多於交易本身。把每次市場判斷留在時間線上，再和 partner 左右對照——歷史不會重複，但總有驚人的相似。"
     },
     "promise": {
       "title": "學習承諾",
-      "basics": "基礎先行",
-      "risk": "風險優先",
-      "community": "可對照復盤",
-      "longTerm": "長期累積",
+      "basics": "過程導向",
+      "risk": "防守先行",
+      "community": "對照復盤",
+      "longTerm": "長期複利",
       "noGuarantee": "不保證獲利"
     },
     "learning": {
-      "title": "Trade Basics 學習路徑",
-      "subtitle": "先建立方法，再追求結果。每一步都可執行、可回顧。",
+      "title": "投資者的修煉路徑",
+      "subtitle": "投資到了後期，拼的不是金融知識，而是投資心理。先搞清楚自己，再搞清楚市場。",
       "basics": {
-        "title": "市場與策略基礎",
-        "description": "釐清交易邏輯、進出場條件與常見誤區，避免憑感覺下單。"
+        "title": "投資定位與認知",
+        "description": "搞不清自己是價值投資還是價格投機，是很多投資者虧損的根源。正確思維不保證賺錢，但錯誤思維保證長期賠錢。"
       },
       "risk": {
-        "title": "風險管理",
-        "description": "練習倉位、止損與回撤控制，先活下來再談成長。"
+        "title": "倉位管理與生存",
+        "description": "進攻決定最多能賺多少，但防守決定你能玩多久。活下去是兌現所有優勢的唯一前提——正股止損 25%、槓桿止損 5% 是不可動搖的紅線。"
       },
       "review": {
-        "title": "紀錄與復盤",
-        "description": "用固定模板記錄決策，透過每週復盤找出可改善的行為。"
+        "title": "復盤方法論",
+        "description": "由大到小：新聞 → 全球 → 大盤 → 板塊 → 個股 → 更新計劃。復盤時才啟動系統二——那個刻意、耗能、但真正能修正偏見的思考模式。"
       }
     },
     "community": {
-      "title": "和 partner 一起復盤",
-      "subtitle": "你可以自己記，但更有殺傷力的是讓真人或 AI partner 也針對同一天市場寫下判斷，然後把兩份 diary 擺在一起看。",
+      "title": "交易不需要孤軍作戰",
+      "subtitle": "你可以自己記，但和 partner 做同日對照才能真正壓測你的判斷。讓真人或 AI 針對同一天市場各寫一份 diary，然後左右排開——看到盲點的瞬間，就是成長的瞬間。",
       "share": {
         "title": "帳號級分享",
-        "description": "對某段 partner 關係開啟 diary 分享後，雙方就能對照歷史與未來紀錄，但 stock 持倉不會被帶出去。"
+        "description": "開啟某段 partner 關係的 diary 分享，雙方就能對照歷史與未來紀錄。stock 持倉永遠不會被帶出去——你的底牌只有你自己看得到。"
       },
       "feedback": {
         "title": "同日左右對照",
-        "description": "把你和 partner 同一天的 diary 掛在一起，比誰抓到重點，不再只跟模糊印象打架。"
+        "description": "把兩份同一天的 diary 掛在一起，比誰抓到重點、誰漏掉風險。不再跟模糊印象打架，用白紙黑字說話。"
       },
       "accountability": {
         "title": "AI 也能入場",
-        "description": "幫 partner 帳號開一把限權 API key，讓外部 agent 可以寫 diary，但拿不到整套網頁登入權限。"
+        "description": "幫 partner 帳號開一把限權 API key，讓外部 agent 可以寫 diary，但拿不到整套網頁登入權限。機器的判斷加上你的直覺，互相補盲。"
       }
     },
     "turnaround": {
-      "title": "扭虧為盈：以流程改善為核心",
-      "subtitle": "不承諾結果，專注降低重複錯誤與提升一致性。",
+      "title": "從虧損到穩定：把過程變成優勢",
+      "subtitle": "衡量成敗的不是單次結果，是你的決策在足夠多重複下是否穩定盈利。放下對單次結果的執著，專注決策過程的質量。",
       "step1": {
-        "title": "1. 記錄錯誤",
-        "description": "如實記下虧損決策的背景與執行細節。"
+        "title": "1. 記錄判斷",
+        "description": "在市場還活著的時候寫下你的理由、風險假設和操作計劃。不要等收盤——記憶會替你改稿。"
       },
       "step2": {
-        "title": "2. 找出模式",
-        "description": "辨識重複出現的錯誤觸發條件與情境。"
+        "title": "2. 辨識偏見",
+        "description": "復盤時對照執行結果和原始假設，找出是決策有問題，還是只是方差作祟。正確的過程也可能帶來暫時的虧損。"
       },
       "step3": {
-        "title": "3. 制定修正規則",
-        "description": "把修正方案寫成可執行的紀律條款。"
+        "title": "3. 制定規則",
+        "description": "把修正方案寫成具體可執行的紀律條款。沉默成本不是繼續持有的理由——學會認輸、學會棄牌，是成為大師最難的一關。"
       },
       "step4": {
-        "title": "4. 反覆驗證",
-        "description": "持續檢查規則效果，必要時迭代更新。"
+        "title": "4. 長期驗證",
+        "description": "持續檢查規則效果，用足夠多的樣本驗證正期望值。德州撲克最好的起手牌勝率超過 80%，但仍有近 20% 會輸——永遠給自己留容錯空間。"
       }
     },
     "features": {
-      "title": "強大功能",
-      "subtitle": "以紀錄、對照、分析與提醒支持你的學習節奏",
+      "title": "功能一覽",
+      "subtitle": "每一個功能都在服務同一件事：讓你的決策過程可回顧、可對照、可優化",
       "diary": {
-        "title": "交易基礎",
-        "description": "使用 Markdown 撰寫豐富的投資日記，記錄交易理由與市場洞察。"
+        "title": "交易日記",
+        "description": "用 Markdown 寫下每一次操作的理由、風險假設與市場觀察。這是你啟動「系統二」的地方——從盯盤的直覺反應切換到刻意思考。"
       },
       "stocks": {
-        "title": "股票管理",
-        "description": "追蹤持倉、計算平均成本，平均成本法幫助您精準掌握投資績效。"
+        "title": "持倉管理",
+        "description": "追蹤持倉與平均成本。股價波動高度不確定，人一定會犯錯——倉位管理是你提升容錯空間的最後防線。"
       },
       "alerts": {
         "title": "智能提醒",
-        "description": "設定時間觸發的提醒，幫助你減少漏掉重要觀察時點。"
+        "description": "設定時間觸發的提醒，強迫自己在關鍵時點回頭檢查。不讓重要觀察沉沒在時間流裡。"
       },
       "timeline": {
         "title": "時間軸視圖",
-        "description": "先回看自己的長期紀錄，需要更銳利的檢查時，再切去同日 partner 對照。"
+        "description": "把所有判斷串成一條可回溯的時間線。先看自己的長期節奏，需要更銳利的檢查時再切去 partner 同日對照。"
       },
       "partnerCompare": {
         "title": "Partner 對照",
-        "description": "真人或 AI 都能成為 partner，在同一天左右對照 diary，同時保住 stock 持倉隱私。"
+        "description": "真人或 AI 都能成為 partner，同一天左右對照 diary。你的盲區，就是別人看得到的地方。持倉隱私始終受保護。"
       },
       "security": {
         "title": "安全可靠",
-        "description": "JWT 身份驗證與 bcrypt 密碼加密，保護您的投資數據安全。"
+        "description": "JWT + bcrypt + HttpOnly Cookie。你的交易數據和你一樣，不該被任何人輕易拿到。"
       },
       "themes": {
         "title": "深色模式",
-        "description": "支援深色與淺色主題，隨時切換舒適的瀏覽體驗。"
+        "description": "支援深色與淺色主題。長時間復盤不傷眼，才有可能持續下去。"
       }
     },
     "cta": {
-      "title": "準備開始你的學習循環？",
-      "description": "從今天開始記錄、每週復盤，準備好時再接上 partner 壓測你的市場判斷。以財富自由與被動收入為長期方向，但不對任何報酬做保證。",
+      "title": "最強大的敵人從來不是 K 線，而是你自己",
+      "description": "從今天開始記錄、每週復盤，準備好時再接上 partner 壓測你的市場判斷。上頭的時候前額葉皮層宕機，只剩杏仁核瘋狂尖叫——唯一的解藥是事先寫好的計劃和足夠多的紀錄。",
       "register": "立即加入",
       "login": "已有帳戶登入",
       "step1": {
         "label": "步驟 01",
         "title": "記錄",
-        "description": "寫下每次決策的理由、風險與計畫。"
+        "description": "寫下每次決策的理由、風險假設與止損計劃。下單前先做好止損，這是必修課。"
       },
       "step2": {
         "label": "步驟 02",
         "title": "復盤",
-        "description": "比較執行結果與原始假設，找出偏差。"
+        "description": "對照執行結果與原始假設，分辨哪些是決策問題，哪些只是隨機波動。"
       },
       "step3": {
         "label": "步驟 03",
         "title": "優化",
-        "description": "把回饋轉成下一輪可執行的規則。"
+        "description": "把回饋轉成可執行的規則，用足夠多的樣本驗證正期望值。過程正確了，結果終究會跟上。"
       },
-      "disclaimer": "本平台內容僅供教育與復盤，不構成投資建議；投資有風險，結果會因策略與執行而異。"
+      "disclaimer": "本平台內容僅供教育與復盤，不構成投資建議。合理年化收益 6-10% 已屬不易，投資有風險，結果因策略與執行而異。"
     },
     "footer": {
       "rights": "保留所有權利"
