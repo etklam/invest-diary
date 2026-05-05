@@ -616,7 +616,9 @@
   "partners": {
     "title": "合作伙伴",
     "subtitle": "管理合作伙伴关系与 API 密钥",
-    "backToDashboard": "返回日记工作台"
+    "backToDashboard": "返回日记工作台",
+    "emptyHint": "在上方输入 partner 账号 email 来发送连线邀请。对方接受后，就可以互相分享 diary 并做同日对照。",
+    "apiKeysEmptyHint": "建立一把限权 API key，让外部 agent 可以帮 partner 账号写 diary，但不需要完整的网页登录权限。"
   },
   "timeline": {
     "title": "时间轴",

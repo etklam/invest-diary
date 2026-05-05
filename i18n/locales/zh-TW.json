@@ -494,7 +494,9 @@
   "partners": {
     "title": "合作夥伴",
     "subtitle": "管理合作夥伴關係與 API 金鑰",
-    "backToDashboard": "返回日記工作台"
+    "backToDashboard": "返回日記工作台",
+    "emptyHint": "在上方輸入 partner 帳號 email 來發送連線邀請。對方接受後，就可以互相分享 diary 並做同日對照。",
+    "apiKeysEmptyHint": "建立一把限權 API key，讓外部 agent 可以幫 partner 帳號寫 diary，但不需要完整的網頁登入權限。"
   },
   "timeline": {
     "title": "時間軸",

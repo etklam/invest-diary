@@ -495,7 +495,9 @@
   "partners": {
     "title": "Partners",
     "subtitle": "Manage partner relationships and API keys",
-    "backToDashboard": "Back to Diaries"
+    "backToDashboard": "Back to Diaries",
+    "emptyHint": "Enter a partner account email above to send a connection request. Once accepted, you can share diaries and compare notes side by side.",
+    "apiKeysEmptyHint": "Create a scoped API key so an external agent can write diaries on behalf of a partner account without full web access."
   },
   "timeline": {
     "title": "Timeline",
