@@ -1,5 +1,5 @@
 <template>
-  <div id="partners" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white">

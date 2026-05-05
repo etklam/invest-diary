@@ -61,7 +61,8 @@
     "seasonality": "Seasonality",
     "financialFreedom": "Financial Freedom Calculator",
     "etf": "ETF Analysis",
-    "relativeValue": "Relative Value Calculator"
+    "relativeValue": "Relative Value Calculator",
+    "partners": "Partners"
   },
   "auth": {
     "login": "Login",
@@ -490,6 +491,11 @@
     "apiKeyCreateFailed": "Failed to create API key",
     "apiKeyRevokedSuccess": "API key revoked",
     "apiKeyRevokeFailed": "Failed to revoke API key"
+  },
+  "partners": {
+    "title": "Partners",
+    "subtitle": "Manage partner relationships and API keys",
+    "backToDashboard": "Back to Diaries"
   },
   "timeline": {
     "title": "Timeline",

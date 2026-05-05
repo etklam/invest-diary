@@ -42,6 +42,13 @@
           <Icon name="heroicons:plus" class="h-5 w-5" />
           新增日記
         </NuxtLink>
+        <NuxtLink
+          to="/partners"
+          class="action-btn-muted cursor-pointer"
+        >
+          <Icon name="heroicons:user-group" class="h-5 w-5" />
+          合作夥伴
+        </NuxtLink>
       </div>
     </section>
 

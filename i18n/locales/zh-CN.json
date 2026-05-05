@@ -59,7 +59,8 @@
     "positionSizing": "建仓计算器",
     "seasonality": "季节性分析",
     "financialFreedom": "财务自由计算器",
-    "relativeValue": "相对价值计算器"
+    "relativeValue": "相对价值计算器",
+    "partners": "合作伙伴"
   },
   "auth": {
     "login": "登录",
@@ -611,6 +612,11 @@
     "apiKeyCreateFailed": "建立 API key 失败",
     "apiKeyRevokedSuccess": "API key 已停用",
     "apiKeyRevokeFailed": "停用 API key 失败"
+  },
+  "partners": {
+    "title": "合作伙伴",
+    "subtitle": "管理合作伙伴关系与 API 密钥",
+    "backToDashboard": "返回日记工作台"
   },
   "timeline": {
     "title": "时间轴",

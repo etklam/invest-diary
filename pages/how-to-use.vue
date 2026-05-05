@@ -294,7 +294,7 @@ const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').repla
 const canonicalUrl = `${siteUrl}/how-to-use`
 const primaryLink = computed(() => (isAuthenticated.value ? '/settings' : '/auth/register'))
 const workspaceLink = computed(() => (isAuthenticated.value ? '/diaries' : '/auth/register'))
-const settingsLink = computed(() => (isAuthenticated.value ? '/settings' : '/auth/register'))
+const settingsLink = computed(() => (isAuthenticated.value ? '/partners' : '/auth/register'))
 
 const features = {
   quickNotes: { link: '/diaries/quick', img: '/screenshots/how-to-use-features/01-quick-notes.png', kicker: 'quickDiary.title' },

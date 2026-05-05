@@ -60,7 +60,8 @@
     "seasonality": "季節性分析",
     "financialFreedom": "財務自由計算機",
     "etf": "ETF 分析",
-    "relativeValue": "相對價值計算器"
+    "relativeValue": "相對價值計算器",
+    "partners": "合作夥伴"
   },
   "auth": {
     "login": "登入",
@@ -489,6 +490,11 @@
     "apiKeyCreateFailed": "建立 API key 失敗",
     "apiKeyRevokedSuccess": "API key 已停用",
     "apiKeyRevokeFailed": "停用 API key 失敗"
+  },
+  "partners": {
+    "title": "合作夥伴",
+    "subtitle": "管理合作夥伴關係與 API 金鑰",
+    "backToDashboard": "返回日記工作台"
   },
   "timeline": {
     "title": "時間軸",

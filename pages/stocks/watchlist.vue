@@ -6,10 +6,16 @@
           <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ t('stock.watchlist.title') }}</h1>
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ t('stock.watchlist.subtitle') }}</p>
         </div>
-        <NuxtLink to="/stocks" class="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
-          <Icon name="heroicons:arrow-left" class="w-4 h-4" />
-          {{ t('stock.watchlist.backToDashboard') }}
-        </NuxtLink>
+        <div class="flex items-center gap-4">
+          <NuxtLink to="/stocks" class="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+            <Icon name="heroicons:arrow-left" class="w-4 h-4" />
+            {{ t('stock.watchlist.backToDashboard') }}
+          </NuxtLink>
+          <NuxtLink to="/partners" class="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+            <Icon name="heroicons:user-group" class="w-4 h-4" />
+            {{ t('nav.partners') }}
+          </NuxtLink>
+        </div>
       </div>
       <div class="mt-4">
         <StockWatchlistAddForm :loading="adding" @submit="addSymbol" />
