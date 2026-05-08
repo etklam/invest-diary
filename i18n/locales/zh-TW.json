@@ -111,14 +111,19 @@
     },
     "capture": {
       "title": "一句話先記下來",
-      "placeholder": "先不用整理格式，直接寫：我看到什麼、做了什麼、接下來要注意什麼。",
-      "save": "立即記下",
-      "appendDetected": "今天已有日記，這段會預設補到今日。",
-      "createDetected": "今天還沒有日記，這段會預設建立新紀錄。",
+      "placeholder": "寫下當下的判斷、觀察、或提醒...",
+      "save": "記下",
+      "saving": "儲存中...",
+      "appendDetected": "將追加到今日日記",
+      "createDetected": "將建立新日記",
       "afterSavePrompt": "已記下來。接著要補一點讓未來更好回看嗎？",
-      "followUpTrade": "補交易理由",
+      "followUpTrade": "補交易",
       "followUpReminder": "設明天提醒",
-      "followUpTags": "補標籤/細節"
+      "followUpTags": "補細節",
+      "savedBrief": "已記下",
+      "willCreate": "今天尚無日記，將建立新紀錄",
+      "willAppend": "今天已有日記，將追加到今日內容後",
+      "checking": "偵測中..."
     },
     "entry": {
       "eyebrow": "記錄模式",
@@ -132,7 +137,7 @@
     },
     "page": {
       "eyebrow": "筆記空間",
-      "intro": "這不僅是記下一句話，更是將當下的臨場判斷、觀察與後續動作轉化為有價值的紀錄。您可以從模板開始，最後再決定如何保存這份心得。",
+      "intro": "不用整理，不用分類，先記下來。",
       "rhythmTitle": "記錄小撇步",
       "rhythm": {
         "template": "模板是用來激發靈感的，最真實的還是您的直覺。",
@@ -154,7 +159,12 @@
         "title": "標題是否能讓未來的您一眼看懂當時的想法？",
         "append": "如果您只是想補充今日日記，請選擇「補充到今日」。",
         "create": "若是獨立的分析或新發現，建議「開啟新紀錄」以便日後整理。"
-      }
+      },
+      "expand": "完整編輯",
+      "collapse": "收起編輯器",
+      "dateHint": "{date} · 點此更改",
+      "saveModeHintCreate": "將建立新日記 · 點此變更",
+      "saveModeHintAppend": "將追加到今日 · 點此變更"
     },
     "saveModes": {
       "create": {
@@ -194,7 +204,7 @@
       "titleRequired": "請先輸入標題"
     },
     "errors": {
-      "diaryExists": "該日期已有日記，若只是補一段內容，請切到「追加到當日」。",
+      "diaryExists": "今天已有日記，已自動切換為追加模式。",
       "createFailedPrefix": "建立失敗："
     },
     "templates": {
@@ -211,7 +221,17 @@
       "title": "模板助手",
       "description": "模板欄位會更新建議標題與內容，送出前仍可自由編輯。",
       "applyChanges": "套用模板變更",
-      "regenerate": "重新產生模板內容"
+      "regenerate": "重新產生模板內容",
+      "expand": "使用模板",
+      "collapse": "收起模板"
+    },
+    "tools": {
+      "expand": "更多工具",
+      "collapse": "收起工具",
+      "date": "更改日期",
+      "reminders": "設定提醒",
+      "voice": "語音輸入",
+      "templates": "管理模板"
     },
     "trading": {
       "operation": "今日操作",

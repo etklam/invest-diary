@@ -5,9 +5,6 @@ import { mockToast } from '../vi-setup'
 import QuickDiaryOneLiner from '~/components/QuickDiaryOneLiner.vue'
 
 const messages: Record<string, string> = {
-  'quickDiary.entry.eyebrow': '記錄模式',
-  'quickDiary.entry.title': '快速捕捉想法',
-  'quickDiary.entry.intro': '您可以直接開始書寫，或使用下方的模板來幫助您整理思緒。',
   'quickDiary.title': '隨手筆記',
   'quickDiary.editor.eyebrow': '編輯工作檯',
   'quickDiary.editor.intro': '先決定保存方式，再整理內容，讓您的記錄流程更順暢。',
@@ -21,6 +18,11 @@ const messages: Record<string, string> = {
   'quickDiary.editor.checklist.title': '標題是否能讓未來的您一眼看懂當時的想法？',
   'quickDiary.editor.checklist.append': '如果您只是想補充今日日記，請選擇「補充到今日」。',
   'quickDiary.editor.checklist.create': '若是獨立的分析或新發現，建議「開啟新紀錄」以便日後整理。',
+  'quickDiary.editor.expand': '完整編輯',
+  'quickDiary.editor.collapse': '收起編輯器',
+  'quickDiary.editor.dateHint': '{date} · 點此更改',
+  'quickDiary.editor.saveModeHintCreate': '將建立新日記 · 點此變更',
+  'quickDiary.editor.saveModeHintAppend': '將追加到今日 · 點此變更',
   'quickDiary.templates.blank': '自由編輯',
   'quickDiary.templates.trading': '交易日記',
   'quickDiary.templates.reflection': '盤後反思',
@@ -30,17 +32,26 @@ const messages: Record<string, string> = {
   'quickDiary.saveModes.create.summary': '系統將為您建立一則獨立的日記，適合記錄全新的交易思路。',
   'quickDiary.saveModes.append.label': '補充到今日',
   'quickDiary.saveModes.append.description': '這是在今日日記上的小補充，內容將會連接在後面。',
+  'quickDiary.saveModes.append.summary': '內容將會自動銜接在今日現有的日記之後。',
   'quickDiary.oneLiner.placeholder': '把當下的直覺、市場觀察或一點小提醒記下來吧...',
   'quickDiary.capture.title': '一句話先記下來',
   'quickDiary.capture.placeholder': '先不用整理格式',
-  'quickDiary.capture.save': '立即記下',
+  'quickDiary.capture.save': '記下',
   'quickDiary.capture.appendDetected': '今天已有日記，這段會預設補到今日。',
   'quickDiary.capture.createDetected': '今天還沒有日記，這段會預設建立新紀錄。',
   'quickDiary.capture.afterSavePrompt': '已記下來。接著要補一點嗎？',
-  'quickDiary.capture.followUpTrade': '補交易理由',
+  'quickDiary.capture.followUpTrade': '補交易',
   'quickDiary.capture.followUpReminder': '設明天提醒',
-  'quickDiary.capture.followUpTags': '補標籤/細節',
+  'quickDiary.capture.followUpTags': '補細節',
+  'quickDiary.capture.savedBrief': '已記下',
+  'quickDiary.capture.willCreate': '今天尚無日記，將建立新紀錄',
+  'quickDiary.capture.willAppend': '今天已有日記，將追加到今日內容後',
+  'quickDiary.capture.checking': '偵測中...',
   'quickDiary.date': '日期',
+  'quickDiary.createDiary': '開啟新紀錄',
+  'quickDiary.appendDiary': '補充到今日',
+  'quickDiary.creating': '正在為您準備紀錄...',
+  'quickDiary.appending': '正在更新今日內容...',
   'quickDiary.reminders.presets.tomorrow': '明天',
   'quickDiary.reminders.presets.nextWeek': '下周',
   'quickDiary.reminders.presets.nextMonth': '下個月',
@@ -50,7 +61,16 @@ const messages: Record<string, string> = {
   'quickDiary.toasts.saved': '已儲存快速筆記',
   'quickDiary.validation.contentRequired': '請先輸入內容',
   'quickDiary.errors.diaryExists': '該日期已有日記',
+  'quickDiary.tools.date': '更改日期',
+  'quickDiary.tools.reminders': '設定提醒',
+  'quickDiary.tools.voice': '語音輸入',
+  'quickDiary.tools.templates': '管理模板',
+  'quickDiary.templateAssistant.expand': '使用模板',
+  'quickDiary.templateAssistant.collapse': '收起模板',
+  'diary.diaryTitle': '標題',
   'diary.saveFailed': '儲存失敗',
+  'common.loading': '載入中...',
+  'common.save': '儲存',
 }
 
 const submitQuickNoteMock = vi.fn()
@@ -126,18 +146,14 @@ function mountOneLiner() {
           template: '<button type="button" data-test="set-tags" @click="$emit(\'update:modelValue\', [\'watch\', \'profit\'])">set tags</button>',
           props: ['modelValue'],
         },
+        QuickNoteTemplateAssistant: {
+          template: '<div />',
+          props: ['templateKind', 'templateData', 'hasTemplateChangesPending'],
+        },
         Icon: true,
       },
     },
   })
-}
-
-async function clickSubmitButton(wrapper: ReturnType<typeof mount>) {
-  const target = wrapper.findAll('button').find(button => button.classes().includes('overflow-hidden'))
-  if (!target) {
-    throw new Error('Submit button not found')
-  }
-  await target.trigger('click')
 }
 
 describe('QuickDiaryOneLiner', () => {
@@ -154,21 +170,18 @@ describe('QuickDiaryOneLiner', () => {
     vi.clearAllMocks()
   })
 
-  it('submits the quick note through useQuickNoteSubmit with smart-save behavior', async () => {
+  it('saves one-liner via capture textarea with smart-save behavior', async () => {
     const wrapper = mountOneLiner()
-
-    await wrapper.get('textarea[aria-label="筆記內容"]').setValue('Need to journal this trade')
-    await wrapper.get('[data-test="set-tags"]').trigger('click')
-    await clickSubmitButton(wrapper)
     await flushPromises()
 
-    expect(submitQuickNoteMock).toHaveBeenCalledWith({
-      title: '2026/03/22 日記',
+    await wrapper.get('[data-test="quick-capture-input"]').setValue('Need to journal this trade')
+    await wrapper.get('[data-test="quick-capture-save"]').trigger('click')
+    await flushPromises()
+
+    expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({
       content: 'Need to journal this trade',
-      date: '2026-03-22',
       saveMode: 'create',
-      tags: ['watch', 'profit'],
-    })
+    }))
     expect(clearDraftMock).toHaveBeenCalled()
     expect(mockToast.success).toHaveBeenCalledWith('已儲存快速筆記')
     expect(wrapper.emitted('saved')).toBeTruthy()
@@ -179,7 +192,7 @@ describe('QuickDiaryOneLiner', () => {
     const wrapper = mountOneLiner()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('今天已有日記')
+    expect(wrapper.text()).toContain('將追加到今日內容後')
 
     await wrapper.get('[data-test="quick-capture-input"]').setValue('SPX broke above yesterday high')
     await wrapper.get('[data-test="quick-capture-save"]').trigger('click')
@@ -189,17 +202,24 @@ describe('QuickDiaryOneLiner', () => {
       content: 'SPX broke above yesterday high',
       saveMode: 'append',
     }))
-    expect(wrapper.text()).toContain('已記下來')
+    expect(wrapper.text()).toContain('已記下')
   })
 
-  it('sets semantic quick reminders and announces the selected preset', async () => {
+  it('sets semantic quick reminders via more tools and announces the selected preset', async () => {
+    vi.stubGlobal('$fetch', vi.fn().mockResolvedValue(null))
     const wrapper = mountOneLiner()
+    await flushPromises()
 
-    const tomorrowButton = wrapper.findAll('button').find(button => button.text().trim() === '明天')
+    // Expand the editor first to show more tools
+    const expandEditorBtn = wrapper.findAll('button').find(button => button.text().trim() === '完整編輯')
+    expect(expandEditorBtn).toBeTruthy()
+    await expandEditorBtn!.trigger('click')
 
-    expect(tomorrowButton).toBeTruthy()
-
-    await tomorrowButton!.trigger('click')
+    // Find and click the "設定提醒" tool chip
+    const reminderChip = wrapper.findAll('button').find(button => button.text().trim() === '設定提醒')
+    expect(reminderChip).toBeTruthy()
+    await reminderChip!.trigger('click')
+    await flushPromises()
 
     expect(setReminderMock).toHaveBeenCalledWith('reminder1', '2026-03-23T08:30:00.000Z')
     expect(mockToast.info).toHaveBeenCalledWith('已設定 明天 提醒')

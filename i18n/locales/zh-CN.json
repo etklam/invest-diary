@@ -110,14 +110,19 @@
     },
     "capture": {
       "title": "一句话先记下来",
-      "placeholder": "先不用整理格式，直接写：我看到什么、做了什么、接下来要注意什么。",
-      "save": "立即记下",
-      "appendDetected": "今天已有日记，这段会默认补到今日。",
-      "createDetected": "今天还没有日记，这段会默认建立新纪录。",
+      "placeholder": "写下当下的判断、观察、或提醒...",
+      "save": "记下",
+      "saving": "保存中...",
+      "appendDetected": "将追加到今日日记",
+      "createDetected": "将建立新日记",
       "afterSavePrompt": "已记下来。接着要补一点让未来更好回看吗？",
-      "followUpTrade": "补交易理由",
+      "followUpTrade": "补交易",
       "followUpReminder": "设明天提醒",
-      "followUpTags": "补标签/细节"
+      "followUpTags": "补细节",
+      "savedBrief": "已记下",
+      "willCreate": "今天尚无日记，将建立新纪录",
+      "willAppend": "今天已有日记，将追加到今日内容后",
+      "checking": "检测中..."
     },
     "entry": {
       "eyebrow": "记录模式",
@@ -131,7 +136,7 @@
     },
     "page": {
       "eyebrow": "笔记空间",
-      "intro": "这不只是记下一句话，而是把当下的临场判断、观察与后续动作转成有价值的记录。",
+      "intro": "不用整理，不用分类，先记下来。",
       "rhythmTitle": "记录小技巧",
       "rhythm": {
         "template": "模板是用来激发灵感的，最真实的还是您的直觉。",
@@ -153,7 +158,12 @@
         "title": "标题是否能让未来的您一眼看懂当时的想法？",
         "append": "如果您只是想补充今日日记，请选择「补充到今日」。",
         "create": "若是独立的分析或新发现，建议建立新纪录以便日后整理。"
-      }
+      },
+      "expand": "完整编辑",
+      "collapse": "收起编辑器",
+      "dateHint": "{date} · 点此更改",
+      "saveModeHintCreate": "将建立新日记 · 点此变更",
+      "saveModeHintAppend": "将追加到今日 · 点此变更"
     },
     "saveModes": {
       "create": {
@@ -193,7 +203,7 @@
       "titleRequired": "请先输入标题"
     },
     "errors": {
-      "diaryExists": "该日期已有日记，若只是补一段内容，请切到「补充到今日」。",
+      "diaryExists": "今天已有日记，已自动切换为追加模式。",
       "createFailedPrefix": "建立失败："
     },
     "templates": {
@@ -210,7 +220,17 @@
       "title": "模板助手",
       "description": "模板字段会更新建议标题与内容，提交前仍可自由编辑。",
       "applyChanges": "应用模板变更",
-      "regenerate": "重新生成模板内容"
+      "regenerate": "重新生成模板内容",
+      "expand": "使用模板",
+      "collapse": "收起模板"
+    },
+    "tools": {
+      "expand": "更多工具",
+      "collapse": "收起工具",
+      "date": "更改日期",
+      "reminders": "设置提醒",
+      "voice": "语音输入",
+      "templates": "管理模板"
     },
     "trading": {
       "operation": "今日操作",

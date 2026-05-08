@@ -112,14 +112,19 @@
     },
     "capture": {
       "title": "Capture the thought first",
-      "placeholder": "Skip formatting. Write what you saw, what you did, or what you need to watch next.",
-      "save": "Save Now",
-      "appendDetected": "A diary already exists today, so this will append by default.",
-      "createDetected": "No diary exists today, so this will create a new entry by default.",
+      "placeholder": "Write down your judgment, observation, or reminder...",
+      "save": "Save",
+      "saving": "Saving...",
+      "appendDetected": "Will append to today",
+      "createDetected": "Will create a new diary",
       "afterSavePrompt": "Saved. Add one more piece so future review is easier?",
-      "followUpTrade": "Add Trade Reason",
+      "followUpTrade": "Add Trade",
       "followUpReminder": "Set Tomorrow Reminder",
-      "followUpTags": "Add Tags/Details"
+      "followUpTags": "Add Details",
+      "savedBrief": "Saved",
+      "willCreate": "No diary today, will create a new entry",
+      "willAppend": "Diary exists today, will append to it",
+      "checking": "Checking..."
     },
     "entry": {
       "eyebrow": "Entry Mode",
@@ -133,7 +138,7 @@
     },
     "page": {
       "eyebrow": "Quicknote Studio",
-      "intro": "This page is not just for jotting down a quick sentence. It helps you turn live judgment, observations, and next actions into a complete record. Templates help you get started, and you still decide how it should be saved.",
+      "intro": "No formatting, no filing. Just write it down.",
       "rhythmTitle": "Working Rhythm",
       "rhythm": {
         "template": "Templates help you start, they do not think for you.",
@@ -155,7 +160,12 @@
         "title": "The title should make sense at a glance tomorrow.",
         "append": "If you are only adding one more thought, choose append to today.",
         "create": "If this is a standalone judgment, creating a new diary will keep things easier to organize."
-      }
+      },
+      "expand": "Full Editor",
+      "collapse": "Collapse Editor",
+      "dateHint": "{date} · click to change",
+      "saveModeHintCreate": "Will create a new diary · click to change",
+      "saveModeHintAppend": "Will append to today · click to change"
     },
     "saveModes": {
       "create": {
@@ -195,7 +205,7 @@
       "titleRequired": "Please enter a title first"
     },
     "errors": {
-      "diaryExists": "A diary already exists for that date. If this is just an extra note, switch to append to today.",
+      "diaryExists": "A diary already exists for today. Automatically switched to append mode.",
       "createFailedPrefix": "Create failed: "
     },
     "templates": {
@@ -212,7 +222,17 @@
       "title": "Template Assistant",
       "description": "Template fields update the suggested title and content, but you can still edit freely before saving.",
       "applyChanges": "Apply template changes",
-      "regenerate": "Regenerate template content"
+      "regenerate": "Regenerate template content",
+      "expand": "Use Template",
+      "collapse": "Hide Template"
+    },
+    "tools": {
+      "expand": "More Tools",
+      "collapse": "Hide Tools",
+      "date": "Change Date",
+      "reminders": "Set Reminder",
+      "voice": "Voice Input",
+      "templates": "Manage Templates"
     },
     "trading": {
       "operation": "Today's Operation",

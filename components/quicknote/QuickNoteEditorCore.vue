@@ -4,7 +4,7 @@
     style="border-color: var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);"
   >
     <div class="flex flex-col gap-4 border-b pb-4 md:flex-row md:items-start md:justify-between" style="border-color: var(--color-border);">
-      <div class="space-y-1">
+      <div v-if="!isCompact" class="space-y-1">
         <p
           class="text-[11px] font-semibold uppercase tracking-[0.18em]"
           style="color: var(--color-secondary); font-family: var(--font-body);"
@@ -26,7 +26,7 @@
         </p>
       </div>
 
-      <div class="space-y-2 md:max-w-[320px]">
+      <div v-if="!isCompact" class="space-y-2 md:max-w-[320px]">
         <p class="text-xs font-semibold uppercase tracking-[0.14em]" style="color: var(--color-text-soft);">
           {{ t('quickDiary.editor.saveModeLabel') }}
         </p>
@@ -53,7 +53,10 @@
       </div>
     </div>
 
-    <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
+    <div
+      class="mt-6 grid gap-6"
+      :class="isCompact ? '' : 'lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start'"
+    >
       <div class="space-y-5">
         <div class="grid gap-3.5">
           <input
@@ -68,17 +71,37 @@
 
           <textarea
             :value="content"
-            class="min-h-[260px] w-full rounded-2xl border px-5 py-4 text-sm leading-8 shadow-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+            class="min-h-[200px] w-full rounded-2xl border px-4 py-3.5 text-sm leading-7 shadow-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/20 sm:min-h-[260px] sm:px-5 sm:py-4 sm:leading-8"
             style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
             :placeholder="t('quickDiary.oneLiner.placeholder')"
-            rows="10"
-            autofocus
+            rows="8"
+            :autofocus="!isCompact"
             :aria-label="t('quickDiary.editor.contentAria')"
             @input="handleContentInput"
           />
         </div>
 
-        <div class="space-y-4 rounded-3xl border p-5 shadow-inner-sm" style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-strong) 68%, var(--color-background));">
+        <!-- Compact mode hints: date + saveMode inline -->
+        <div v-if="isCompact" class="flex flex-wrap items-center gap-4 text-xs" style="color: var(--color-text-muted);">
+          <button
+            type="button"
+            class="hover:underline focus:outline-none"
+            @click="$emit('toggle-date-picker')"
+          >
+            {{ dateHint }}
+          </button>
+          <span style="color: var(--color-border);">|</span>
+          <button
+            type="button"
+            class="hover:underline focus:outline-none"
+            @click="$emit('toggle-save-mode')"
+          >
+            {{ saveModeHintText }}
+          </button>
+        </div>
+
+        <!-- Quick tools (hidden in compact) -->
+        <div v-if="!isCompact" class="space-y-4 rounded-3xl border p-5 shadow-inner-sm" style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-strong) 68%, var(--color-background));">
           <div class="flex flex-wrap items-center gap-3">
             <span class="text-[10px] font-bold uppercase tracking-[0.2em]" style="color: var(--color-text-soft);">{{ t('quickDiary.editor.snippets') }}</span>
             <VoiceInput @result="emit('append-text', $event)" />
@@ -103,15 +126,16 @@
               </button>
             </div>
           </div>
-
-          <QuickTags
-            :model-value="tags"
-            @update:model-value="emit('update:tags', $event)"
-          />
         </div>
+
+        <!-- QuickTags always visible -->
+        <QuickTags
+          :model-value="tags"
+          @update:model-value="emit('update:tags', $event)"
+        />
       </div>
 
-      <aside class="space-y-5">
+      <aside v-if="!isCompact" class="space-y-5">
         <section class="rounded-3xl border p-5 shadow-sm" style="border-color: var(--color-border); background: var(--color-surface);">
           <div class="space-y-4">
             <div class="flex flex-col gap-2.5">
@@ -241,6 +265,7 @@ const props = defineProps<{
     label: string
     remaining: string
   }>
+  variant?: 'full' | 'compact'
 }>()
 
 const emit = defineEmits<{
@@ -255,11 +280,15 @@ const emit = defineEmits<{
   (e: 'set-quick-reminder', value: QuickNoteQuickReminderPreset): void
   (e: 'reminder-set', payload: { key: QuickNoteReminderKey; time: string }): void
   (e: 'reminder-clear', payload: { key: QuickNoteReminderKey }): void
+  (e: 'toggle-date-picker'): void
+  (e: 'toggle-save-mode'): void
 }>()
 
 const { t } = useI18n()
 
 const showTemplateManager = ref(false)
+
+const isCompact = computed(() => props.variant === 'compact')
 
 const quickReminderOptions = computed(() => createQuickReminderOptions(t))
 
@@ -284,6 +313,17 @@ const saveModeSummary = computed(() => {
     return t('quickDiary.saveModes.append.summary')
   }
   return t('quickDiary.saveModes.create.summary')
+})
+
+const dateHint = computed(() => {
+  return t('quickDiary.editor.dateHint', { date: props.date })
+})
+
+const saveModeHintText = computed(() => {
+  if (props.saveMode === 'append') {
+    return t('quickDiary.editor.saveModeHintAppend')
+  }
+  return t('quickDiary.editor.saveModeHintCreate')
 })
 
 function handleContentInput(event: Event) {
