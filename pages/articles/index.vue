@@ -98,22 +98,7 @@
           <!-- Article Grid -->
           <div class="lg:col-span-9">
             <div v-if="pending" class="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-              <div
-                v-for="i in 6"
-                :key="i"
-                class="skeleton-card animate-pulse rounded-3xl p-5" style="background: var(--color-surface)"
-              >
-                <div class="mb-4 aspect-[16/10] rounded-2xl" style="background: var(--color-surface-strong)" />
-                <div class="mb-3 h-4 w-3/4 rounded-lg" style="background: var(--color-surface-strong)" />
-                <div class="mb-6 h-4 w-1/2 rounded-lg" style="background: var(--color-surface-strong)" />
-                <div class="flex items-center gap-3">
-                  <div class="h-10 w-10 rounded-full" style="background: var(--color-surface-strong)" />
-                  <div class="space-y-2">
-                    <div class="h-3 w-24 rounded" style="background: var(--color-surface-strong)" />
-                    <div class="h-3 w-16 rounded" style="background: var(--color-surface-strong)" />
-                  </div>
-                </div>
-              </div>
+              <AppSkeleton variant="card" :count="6" />
             </div>
 
             <div v-else-if="error" class="rounded-3xl border p-8 text-center" style="border-color: color-mix(in srgb, var(--color-danger) 20%, transparent); background: color-mix(in srgb, var(--color-danger) 5%, transparent)">

@@ -4,9 +4,8 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('alert.title') }}</h1>
     </div>
 
-    <div v-if="pending" class="text-center py-12">
-      <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-indigo-600" />
-      <p class="mt-2 text-gray-500">{{ t('common.loading') }}</p>
+    <div v-if="pending" class="py-8">
+      <AppSkeleton variant="table-row" :count="5" />
     </div>
 
     <div v-else-if="error" class="bg-red-50 p-4 rounded-md">

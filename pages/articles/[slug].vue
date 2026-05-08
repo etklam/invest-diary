@@ -11,12 +11,7 @@
     />
 
     <div v-if="pending" class="mx-auto w-full max-w-4xl px-4 pt-20">
-      <div class="mb-8 aspect-[21/9] animate-pulse rounded-3xl" style="background: var(--color-surface-strong)" />
-      <div class="mx-auto max-w-3xl space-y-6">
-        <div class="h-4 w-24 animate-pulse rounded-full" style="background: var(--color-surface-strong)" />
-        <div class="h-12 w-full animate-pulse rounded-xl" style="background: var(--color-surface-strong)" />
-        <div class="h-4 w-2/3 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
-      </div>
+      <AppSkeleton variant="article" />
     </div>
 
     <div
@@ -160,8 +155,10 @@
               :body="body"
               :data="data"
             />
-            <div v-else class="whitespace-pre-line leading-relaxed" style="color: var(--color-text-muted)">
-              {{ markdownFallbackContent }}
+            <div v-else class="space-y-3">
+              <div class="h-4 w-full animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
+              <div class="h-4 w-4/5 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
+              <div class="h-4 w-2/3 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
             </div>
           </MDC>
           <p v-else class="leading-relaxed" style="color: var(--color-text-muted)">
@@ -262,11 +259,6 @@ const articleContentCacheKey = computed(() => {
   const updatedAt = post.value?.updatedAt ? String(post.value.updatedAt) : ''
   return `article-mdc-${id}-${updatedAt || articleContent.value.length}`
 })
-const markdownFallbackContent = computed(() =>
-  articleContent.value
-    .replace(/^---[\s\S]*?---\s*/, '')
-    .trim()
-)
 const readingTime = computed(() => (articleContent.value ? calculateReadingTime(articleContent.value) : 0))
 const parsedTags = computed(() => (post.value ? parseTags(post.value.tags) : []))
 const getErrorStatusCode = (value: unknown): number | null => {

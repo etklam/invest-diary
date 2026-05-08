@@ -205,8 +205,7 @@
     </section>
 
     <section v-if="pending" class="state-panel">
-      <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-[color:var(--color-primary)]" />
-      <p>正在整理你的日記桌面...</p>
+      <AppSkeleton variant="card" :count="3" />
     </section>
 
     <section v-else-if="error" class="state-panel state-panel-error">

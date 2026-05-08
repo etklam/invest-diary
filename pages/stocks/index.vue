@@ -138,9 +138,8 @@
               </div>
             </div>
 
-            <div v-if="pending" class="py-20 flex flex-col items-center justify-center" role="status" aria-live="polite">
-              <div class="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" aria-hidden="true"></div>
-              <p class="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">{{ t('stock.dashboard.synchronizing') }}</p>
+            <div v-if="pending" class="py-12">
+              <AppSkeleton variant="table-row" :count="5" />
             </div>
 
             <div v-else class="overflow-x-auto">

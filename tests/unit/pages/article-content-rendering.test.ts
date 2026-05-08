@@ -3,12 +3,12 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('article content rendering contract', () => {
-  it('keeps article content visible when MDC parsing does not return a body', () => {
+  it('shows skeleton loader when MDC body is not available instead of raw markdown', () => {
     const content = readFileSync(resolve(process.cwd(), 'pages/articles/[slug].vue'), 'utf8')
 
     expect(content).toContain('v-slot="{ body, data }"')
     expect(content).toContain('v-if="body"')
-    expect(content).toContain('markdownFallbackContent')
+    expect(content).toContain('animate-pulse')
     expect(content).toContain('blog.contentUnavailable')
   })
 

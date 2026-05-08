@@ -6,18 +6,18 @@
     </div>
 
     <div class="space-y-2">
-      <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <div class="flex flex-1 flex-col gap-2 sm:flex-row">
+      <div class="space-y-2">
+        <div class="grid grid-cols-2 gap-2">
           <input
             v-model="form.reminder1.date"
             type="date"
-            class="w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+            class="w-full min-w-0 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
             aria-label="提醒日期"
           />
           <input
             v-model="form.reminder1.time"
             type="time"
-            class="w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+            class="w-full min-w-0 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
             aria-label="提醒時間"
           />
         </div>

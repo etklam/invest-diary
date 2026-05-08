@@ -22,9 +22,21 @@ useHead({
 })
 </script>
 
+<style>
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 160ms ease-out;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+}
+</style>
+
 <template>
   <NuxtLayout>
     <NuxtRouteAnnouncer />
+    <NuxtLoadingIndicator />
     <NuxtPage />
   </NuxtLayout>
 </template>
