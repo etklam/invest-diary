@@ -1752,11 +1752,11 @@
   },
   "telegram": {
     "start": {
-      "welcome": "Welcome to Investment Diary Bot!\n\nQuick commands:\n/buy 5 2330@600 — Record buy\n/sell 3 AAPL@150 — Record sell\n/note content — Record note\n/login — Link account\n/language — Switch language",
-      "notLinked": "Your account is not linked yet.\nPlease generate a verification code in the web app settings, then use /login <code>"
+      "welcome": "Welcome to Investment Diary Bot!\n\nQuick commands:\n/buy 5 2330{'@'}600 — Record buy\n/sell 3 AAPL{'@'}150 — Record sell\n/note content — Record note\n/login — Link account\n/language — Switch language",
+      "notLinked": "Your account is not linked yet.\nPlease generate a verification code in the web app settings, then use /login CODE"
     },
     "buy": {
-      "oneLinerSuccess": "✅ Recorded\nBuy {quantity} {symbol} @ ${price}\nTotal: ${total}",
+      "oneLinerSuccess": "✅ Recorded\nBuy {quantity} {symbol} {'@'} ${price}\nTotal: ${total}",
       "askQuantity": "Enter quantity:",
       "askSymbol": "Enter stock symbol:",
       "askPrice": "Enter buy price:",
@@ -1764,7 +1764,7 @@
       "invalidPrice": "Price must be a positive number. Try again:"
     },
     "sell": {
-      "oneLinerSuccess": "✅ Recorded\nSell {quantity} {symbol} @ ${price}\nTotal: ${total}",
+      "oneLinerSuccess": "✅ Recorded\nSell {quantity} {symbol} {'@'} ${price}\nTotal: ${total}",
       "askQuantity": "Enter quantity:",
       "askSymbol": "Enter stock symbol:",
       "askPrice": "Enter sell price:"
@@ -1774,7 +1774,7 @@
       "askContent": "Enter diary content:"
     },
     "login": {
-      "usage": "Usage: /login <code>\nGenerate a verification code in the web app settings first.",
+      "usage": "Usage: /login CODE\nGenerate a verification code in the web app settings first.",
       "success": "✅ Account linked",
       "invalidCode": "❌ Invalid or expired code. Please generate a new one.",
       "alreadyLinked": "Your account is already linked. Use /language to switch language."
@@ -1785,7 +1785,7 @@
     },
     "errors": {
       "notLinked": "Please use /login to link your account first.",
-      "parseFailed": "Invalid format. Use:\n/buy quantity symbol@price (e.g. /buy 5 2330@600)\nOr just type /buy to start guided input.",
+      "parseFailed": "Invalid format. Use:\n/buy quantity symbol{'@'}price (e.g. /buy 5 2330{'@'}600)\nOr just type /buy to start guided input.",
       "dbWriteFailed": "❌ Recording failed. Please try again later.",
       "unknown": "Unknown command. Use /start to see available commands."
     }
