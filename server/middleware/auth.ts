@@ -15,6 +15,9 @@ export default defineEventHandler(async (event) => {
   // Only parse auth for API routes
   if (!url.pathname.startsWith('/api/')) return
 
+  // Telegram webhook uses its own secret token authentication, skip JWT check
+  if (url.pathname === '/api/telegram/webhook') return
+
   // Try new access token first, then fall back to legacy token
   const accessToken = getCookie(event, 'access-token')
   const legacyToken = getCookie(event, 'auth-token')

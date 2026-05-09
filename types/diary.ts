@@ -52,7 +52,7 @@ export interface Diary {
   content: string | null
   tags?: string[]
   tagsString?: string | null
-  createdVia?: 'WEB' | 'API_KEY'
+  createdVia?: 'WEB' | 'API_KEY' | 'TELEGRAM_BOT'
   createdByLabel?: string | null
   date: Date
   createdAt: Date

@@ -13,7 +13,7 @@ function toInputDate(value: string | Date): Date {
 export interface CreateDiaryForUserInput {
   userId: string | bigint
   body: DiaryInput & { appendToToday?: boolean }
-  createdVia?: 'WEB' | 'API_KEY'
+  createdVia?: 'WEB' | 'API_KEY' | 'TELEGRAM_BOT'
   createdByLabel?: string | null
 }
 

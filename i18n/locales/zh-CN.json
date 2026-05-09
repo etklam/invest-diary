@@ -1649,5 +1649,45 @@
       "refresh": "刷新",
       "later": "稍后"
     }
+  },
+  "telegram": {
+    "start": {
+      "welcome": "欢迎使用投资日记 Bot！\n\n快速指令：\n/buy 5 2330@600 — 记录买入\n/sell 3 AAPL@150 — 记录卖出\n/note 内容 — 记录备注\n/login — 绑定账号\n/language — 切换语言",
+      "notLinked": "你还没有绑定账号。\n请先在网站设置页面生成验证码，然后输入 /login <验证码>"
+    },
+    "buy": {
+      "oneLinerSuccess": "✅ 已记录\n买入 {quantity} {symbol} @ ${price}\n总金额: ${total}",
+      "askQuantity": "请输入购买数量：",
+      "askSymbol": "请输入股票代码：",
+      "askPrice": "请输入买入价格：",
+      "invalidQuantity": "数量必须为正数，请重新输入：",
+      "invalidPrice": "价格必须为正数，请重新输入："
+    },
+    "sell": {
+      "oneLinerSuccess": "✅ 已记录\n卖出 {quantity} {symbol} @ ${price}\n总金额: ${total}",
+      "askQuantity": "请输入卖出数量：",
+      "askSymbol": "请输入股票代码：",
+      "askPrice": "请输入卖出价格："
+    },
+    "note": {
+      "success": "✅ 已记录日记",
+      "askContent": "请输入日记内容："
+    },
+    "login": {
+      "usage": "使用方法：/login <验证码>\n请先在网站设置页面生成验证码。",
+      "success": "✅ 已绑定到账号",
+      "invalidCode": "❌ 无效的验证码或已过期，请重新生成。",
+      "alreadyLinked": "你已经绑定过账号了。使用 /language 切换语言。"
+    },
+    "language": {
+      "unsupported": "不支持的语言。支持的语言：zh-TW, zh-CN, en\n使用方法：/language zh-CN",
+      "set": "✅ 语言已设定为 {language}"
+    },
+    "errors": {
+      "notLinked": "请先使用 /login 绑定你的账号。",
+      "parseFailed": "格式错误，请使用：\n/buy 数量 代码@价格（例：/buy 5 2330@600）\n或直接输入 /buy 开始多段对话。",
+      "dbWriteFailed": "❌ 记录失败，请稍后再试",
+      "unknown": "未知指令，请使用 /start 查看可用指令。"
+    }
   }
 }
