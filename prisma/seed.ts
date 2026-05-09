@@ -1,6 +1,10 @@
+import { config } from 'dotenv'
 import { PrismaClient, TransactionType, UserRole } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { createPrismaClientOptions } from '../lib/prisma-client-options'
+
+// Load .env file
+config()
 
 const prisma = new PrismaClient(createPrismaClientOptions())
 

@@ -24,12 +24,17 @@ export default defineConfig({
         ...devices['Pixel 5'],
         browserName: 'chromium',
       },
+      // Pixel 5 tests need longer timeout due to slower performance
+      timeout: 60_000,
     },
   ],
   webServer: {
     command: 'npm run dev -- --host 127.0.0.1 --port 3000',
     url: 'http://127.0.0.1:3000',
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
+  // Global setup for authenticated state
+  globalSetup: './tests/e2e/global-setup.ts',
+  globalTeardown: './tests/e2e/global-teardown.ts',
 })
