@@ -6,6 +6,9 @@ import {
   updateTelegramLanguage,
   verifyAndConsumeCode,
   touchTelegramAccount,
+  sessionDelete,
+  sessionWrite,
+  sessionRead,
 } from '~/server/utils/telegram-db'
 
 // Pragmatic type: grammY's generics for i18n plugins are overly complex.
@@ -22,7 +25,7 @@ async function requireLinked(ctx: Ctx): Promise<bigint | null> {
   }
   const account = await findTelegramAccount(ctx.from.id)
   if (!account) {
-    await ctx.reply('請先使用 /login 綁定你的帳號。\n在網站設定頁面產生驗證碼後，輸入 /login <驗證碼>')
+    await ctx.reply(ctx.t('telegram.errors.notLinked'))
     return null
   }
   await touchTelegramAccount(ctx.from.id)
@@ -58,6 +61,13 @@ export async function startCommand(ctx: Ctx) {
   }
 }
 
+// ─── /help ──────────────────────────────────────────────────────────────────
+
+export async function helpCommand(ctx: Ctx) {
+  if (!await privateOnly(ctx)) return
+  await ctx.reply(ctx.t('telegram.help'))
+}
+
 // ─── /login ─────────────────────────────────────────────────────────────────
 
 export async function loginCommand(ctx: Ctx) {
@@ -79,15 +89,19 @@ export async function loginCommand(ctx: Ctx) {
     return
   }
 
-  const userId = await verifyAndConsumeCode(code)
-  if (!userId) {
-    await ctx.reply(ctx.t('telegram.login.invalidCode'))
+  const result = await verifyAndConsumeCode(code)
+  if (!result.success) {
+    if (result.tooManyAttempts) {
+      await ctx.reply(ctx.t('telegram.errors.tooManyCodeAttempts'))
+    } else {
+      await ctx.reply(ctx.t('telegram.login.invalidCode'))
+    }
     return
   }
 
   await createTelegramAccount({
     telegramId: ctx.from.id,
-    userId,
+    userId: result.userId!,
     username: ctx.from.username ?? null,
     firstName: ctx.from.first_name ?? null,
     lastName: ctx.from.last_name ?? null,
@@ -112,16 +126,27 @@ export async function languageCommand(ctx: Ctx) {
     return
   }
 
-  // Language can be set even without linked account (store in session-like fashion)
-  // For simplicity, require linking first for persistence
   const normalized = lang === 'zh-tw' ? 'zh-TW' : lang === 'zh-cn' ? 'zh-CN' : 'en'
+
+  // Persist to account if linked, otherwise store in session
   const account = await findTelegramAccount(ctx.from.id)
   if (account) {
     await updateTelegramLanguage(ctx.from.id, normalized)
-    await ctx.reply(ctx.t('telegram.language.set', { language: normalized }))
   } else {
-    await ctx.reply(ctx.t('telegram.login.usage'))
+    // Store language preference in session for unlinked users
+    const key = `user:${ctx.from.id}`
+    const session = await sessionRead(key)
+    await sessionWrite(key, { ...(session ?? {}), language: normalized })
   }
+
+  // Update i18n locale at runtime so the response uses the new language
+  try {
+    await ctx.i18n.setLocale(normalized)
+  } catch {
+    // i18n may not support runtime locale change without session
+  }
+
+  await ctx.reply(ctx.t('telegram.language.set', { language: normalized }))
 }
 
 // ─── /buy (one-liner + conversation starter) ────────────────────────────────
@@ -184,10 +209,9 @@ export async function cancelCommand(ctx: Ctx) {
   // Cancel any active conversation by clearing session
   if (ctx.from) {
     const key = `conversation:${ctx.from.id}`
-    const { sessionDelete } = await import('~/server/utils/telegram-db')
     await sessionDelete(key)
   }
-  await ctx.reply('已取消')
+  await ctx.reply(ctx.t('telegram.cancel'))
 }
 
 // ─── One-liner handlers ────────────────────────────────────────────────────
@@ -283,11 +307,15 @@ export async function handleMessage(ctx: Ctx) {
   // Ignore commands (handled separately)
   if (text.startsWith('/')) return
 
-  const userId = ctx.from ? await findTelegramAccount(ctx.from.id) : null
-  if (!userId) return
+  // For unlinked users, guide them to link first
+  const account = ctx.from ? await findTelegramAccount(ctx.from.id) : null
+  if (!account) {
+    await ctx.reply(ctx.t('telegram.errors.notLinked'))
+    return
+  }
 
   // For V1, messages without command prefix are treated as potential conversation
   // continuations. The grammY conversations plugin handles the state machine.
   // This handler is a fallback for messages outside conversations.
-  // In practice, multi-step conversations are managed by @grammyjs/conversations.
+  await ctx.reply(ctx.t('telegram.generic.noReply'))
 }

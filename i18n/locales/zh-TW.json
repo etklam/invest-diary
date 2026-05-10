@@ -1781,11 +1781,17 @@
       "unsupported": "不支援的語言。支援的語言：zh-TW, zh-CN, en\n使用方法：/language zh-TW",
       "set": "✅ 語言已設定為 {language}"
     },
+    "cancel": "已取消",
+    "help": "投資日記 Bot\n\n可用指令：\n/buy 數量 代碼{'@'}價格 — 記錄買入\n/sell 數量 代碼{'@'}價格 — 記錄賣出\n/note 內容 — 記錄備註\n/login 驗證碼 — 綁定帳號\n/language zh-TW|zh-CN|en — 切換語言\n/cancel — 取消目前操作\n/help — 顯示此說明\n/start — 歡迎訊息",
+    "generic": {
+      "noReply": "使用 /help 查看可用指令。"
+    },
     "errors": {
       "notLinked": "請先使用 /login 綁定你的帳號。",
       "parseFailed": "格式錯誤，請使用：\n/buy 數量 代碼{'@'}價格（例：/buy 5 2330{'@'}600）\n或直接輸入 /buy 開始多段對話。",
       "dbWriteFailed": "❌ 記錄失敗，請稍後再試",
-      "unknown": "未知指令，請使用 /start 查看可用指令。"
+      "unknown": "未知指令，請使用 /start 查看可用指令。",
+      "tooManyCodeAttempts": "嘗試次數過多，請重新產生驗證碼。"
     }
   }
 }

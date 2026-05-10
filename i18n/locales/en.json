@@ -1783,11 +1783,17 @@
       "unsupported": "Unsupported language. Supported: zh-TW, zh-CN, en\nUsage: /language en",
       "set": "✅ Language set to {language}"
     },
+    "cancel": "Cancelled",
+    "help": "Investment Diary Bot\n\nCommands:\n/buy qty symbol{'@'}price — Record buy\n/sell qty symbol{'@'}price — Record sell\n/note content — Record note\n/login CODE — Link account\n/language zh-TW|zh-CN|en — Switch language\n/cancel — Cancel active operation\n/help — Show this help\n/start — Welcome message",
+    "generic": {
+      "noReply": "Use /help to see available commands."
+    },
     "errors": {
       "notLinked": "Please use /login to link your account first.",
       "parseFailed": "Invalid format. Use:\n/buy quantity symbol{'@'}price (e.g. /buy 5 2330{'@'}600)\nOr just type /buy to start guided input.",
       "dbWriteFailed": "❌ Recording failed. Please try again later.",
-      "unknown": "Unknown command. Use /start to see available commands."
+      "unknown": "Unknown command. Use /start to see available commands.",
+      "tooManyCodeAttempts": "Too many failed attempts. Please generate a new verification code."
     }
   }
 }

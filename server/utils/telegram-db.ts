@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import prisma from '~/lib/prisma'
 
 /**
@@ -83,17 +84,23 @@ export async function createVerificationCode(userId: bigint | number): Promise<s
   return code
 }
 
-export async function verifyAndConsumeCode(code: string): Promise<bigint | null> {
+export interface VerifyCodeResult {
+  success: boolean
+  userId: bigint | null
+  tooManyAttempts: boolean
+}
+
+export async function verifyAndConsumeCode(code: string): Promise<VerifyCodeResult> {
   const record = await prisma.telegramVerificationCode.findUnique({ where: { code } })
-  if (!record) return null
-  if (record.usedAt) return null
-  if (record.expiresAt < new Date()) return null
+  if (!record) return { success: false, userId: null, tooManyAttempts: false }
+  if (record.usedAt) return { success: false, userId: null, tooManyAttempts: false }
+  if (record.expiresAt < new Date()) return { success: false, userId: null, tooManyAttempts: false }
 
   await prisma.telegramVerificationCode.update({
     where: { id: record.id },
     data: { usedAt: new Date() },
   })
-  return record.userId
+  return { success: true, userId: record.userId, tooManyAttempts: false }
 }
 
 // ─── Session Adapter ────────────────────────────────────────────────────────
@@ -135,13 +142,34 @@ export async function checkAndMarkUpdate(updateId: number, action: string): Prom
   }
 }
 
+// ─── Cleanup ────────────────────────────────────────────────────────────────
+
+export async function cleanupExpiredTelegramData(): Promise<{ sessions: number; codes: number }> {
+  const now = new Date()
+
+  const { count: sessionsDeleted } = await prisma.telegramSession.deleteMany({
+    where: { expiresAt: { lt: now } },
+  })
+
+  const { count: codesDeleted } = await prisma.telegramVerificationCode.deleteMany({
+    where: {
+      OR: [
+        { expiresAt: { lt: now } },
+        { usedAt: { not: null } },
+      ],
+    },
+  })
+
+  return { sessions: sessionsDeleted, codes: codesDeleted }
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function generateCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // No 0/O/1/I to avoid confusion
   let code = ''
   for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)]
+    code += chars[crypto.randomInt(0, chars.length)]
   }
   return code
 }

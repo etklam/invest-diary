@@ -1,11 +1,10 @@
-import { findTelegramAccount } from '~/server/utils/telegram-db'
 import { Errors } from '~/lib/errors/factory'
 
 /**
  * Get Telegram binding status for the current user.
  * GET /api/telegram/status
  *
- * Returns linked Telegram account info, or null if not linked.
+ * Returns linked Telegram account info, or { linked: false } if not linked.
  */
 
 export default defineEventHandler(async (event) => {
@@ -14,10 +13,6 @@ export default defineEventHandler(async (event) => {
     throw Errors.unauthorized().toH3Error()
   }
 
-  // Find Telegram account linked to this user
-  const accounts = await findTelegramAccount(BigInt(userId))
-  // findTelegramAccount takes telegramId, not userId. We need to search differently.
-  // For status check, we need to query by userId
   const { default: prisma } = await import('~/lib/prisma')
   const account = await prisma.telegramAccount.findFirst({
     where: { userId: BigInt(userId) },

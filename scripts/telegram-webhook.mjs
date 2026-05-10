@@ -118,12 +118,13 @@ async function main(argv = process.argv.slice(2)) {
   }
 
   if (action === 'set') {
-    console.log(`Setting Telegram webhook to ${config.webhookUrl}`)
+    const dropPending = !argv.includes('--keep-pending')
+    console.log(`Setting Telegram webhook to ${config.webhookUrl}${dropPending ? '' : ' (keeping pending updates)'}`)
     await callTelegram(config.token, 'setWebhook', {
       url: config.webhookUrl,
       secret_token: config.secret,
       allowed_updates: ['message'],
-      drop_pending_updates: false,
+      drop_pending_updates: dropPending,
     })
     printWebhookInfo(await callTelegram(config.token, 'getWebhookInfo'))
     return

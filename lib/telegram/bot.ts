@@ -3,6 +3,7 @@ import { I18n } from '@grammyjs/i18n'
 import { createPrismaSessionAdapter } from './session'
 import {
   startCommand,
+  helpCommand,
   loginCommand,
   languageCommand,
   buyCommand,
@@ -56,6 +57,7 @@ export function createBot(token: string) {
 
   // ─── Commands ───────────────────────────────────────────────────────
   bot.command('start', startCommand)
+  bot.command('help', helpCommand)
   bot.command('login', loginCommand)
   bot.command('language', languageCommand)
   bot.command('buy', buyCommand)

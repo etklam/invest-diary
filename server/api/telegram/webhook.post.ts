@@ -1,5 +1,6 @@
 import { createBot } from '~/lib/telegram/bot'
 import { checkAndMarkUpdate } from '~/server/utils/telegram-db'
+import { logger } from '~/lib/logger'
 
 /**
  * Telegram Bot webhook endpoint.
@@ -8,6 +9,8 @@ import { checkAndMarkUpdate } from '~/server/utils/telegram-db'
  * Receives updates from Telegram. Validates secret token, enforces idempotency
  * via telegram_processed_updates, and delegates to grammY.
  */
+
+const log = logger.api
 
 export default defineEventHandler(async (event) => {
   // 1. Validate secret token (before any processing)
@@ -37,14 +40,23 @@ export default defineEventHandler(async (event) => {
     const isNew = await checkAndMarkUpdate(updateId, 'diary_write')
     if (!isNew) {
       // Already processed — return OK without re-executing
+      log.debug('Skipping duplicate Telegram update', { updateId })
       return { ok: true }
     }
   }
 
   // 5. Per-request Bot initialization + handle update
-  const bot = createBot(botToken)
-  await bot.init()
-  await bot.handleUpdate(body)
+  try {
+    const bot = createBot(botToken)
+    await bot.init()
+    await bot.handleUpdate(body)
+  } catch (error) {
+    log.error('Telegram webhook processing failed', {
+      updateId,
+      error: String(error),
+    })
+    throw createError({ statusCode: 500, message: 'Webhook processing failed' })
+  }
 
   return { ok: true }
 })
