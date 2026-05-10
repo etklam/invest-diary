@@ -191,6 +191,32 @@ After seeding, you can login with:
 
 > **Important**: Change the default password after first login in production!
 
+## Telegram Bot Setup
+
+Telegram support uses webhooks, not polling. Setting `TELEGRAM_BOT_TOKEN` alone is not enough: Telegram must be told to send updates to this app.
+
+Required `.env` values:
+
+```bash
+NUXT_PUBLIC_SITE_URL="https://your-domain.com"
+NUXT_PUBLIC_TELEGRAM_BOT_USERNAME="your_bot_username"
+TELEGRAM_BOT_TOKEN="123456789:ABCdef..."
+TELEGRAM_WEBHOOK_SECRET="use-a-random-secret-with-letters-numbers-underscore-or-dash"
+```
+
+Then register the webhook after the app is deployed:
+
+```bash
+npm run telegram:webhook:set
+npm run telegram:webhook:info
+```
+
+Notes:
+
+- `NUXT_PUBLIC_SITE_URL` must be a public HTTPS URL that Telegram can reach.
+- For local testing, expose Nuxt with an HTTPS tunnel such as ngrok and set `NUXT_PUBLIC_SITE_URL` to that tunnel URL.
+- If a bot token was pasted into chat, logs, or an issue tracker, rotate it in BotFather before using it in production.
+
 ## Development Commands
 
 ```bash
@@ -220,6 +246,11 @@ npm run typecheck       # TypeScript checking
 npm run health:check    # System health validation
 npm run health:full     # Health check + build
 npm run health:quick    # Quick tests + Prisma validate
+
+# Telegram webhook
+npm run telegram:webhook:set     # Register /api/telegram/webhook with Telegram
+npm run telegram:webhook:info    # Inspect Telegram webhook status
+npm run telegram:webhook:delete  # Remove Telegram webhook registration
 ```
 
 ## PWA Architecture

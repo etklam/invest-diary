@@ -88,6 +88,12 @@ JWT_SECRET="your-very-secure-random-32-character-secret-key-change-this"
 
 # 應用程式名稱
 NUXT_PUBLIC_APP_NAME="投資日記"
+NUXT_PUBLIC_SITE_URL="https://your-domain.com"
+
+# Telegram Bot（如需 Telegram 快速記錄）
+NUXT_PUBLIC_TELEGRAM_BOT_USERNAME="your_bot_username"
+TELEGRAM_BOT_TOKEN="123456789:ABCdef..."
+TELEGRAM_WEBHOOK_SECRET="use-a-random-secret-with-letters-numbers-underscore-or-dash"
 ```
 
 ### 3. 生成安全的 JWT_SECRET
@@ -96,6 +102,25 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 # 生成隨機金鑰
 openssl rand -base64 32
 ```
+
+### 4. 註冊 Telegram Webhook
+
+Telegram bot 採用 webhook 模式。只設定 `TELEGRAM_BOT_TOKEN` 不會讓 bot 自動回應，還必須把 webhook URL 註冊到 Telegram。
+
+部署完成且網域可用後，在專案目錄執行：
+
+```bash
+npm run telegram:webhook:set
+npm run telegram:webhook:info
+```
+
+檢查 `telegram:webhook:info` 輸出的 `url` 是否為：
+
+```text
+https://your-domain.com/api/telegram/webhook
+```
+
+如果 `last_error_message` 有值，先處理 HTTPS、反向代理、環境變數或資料庫連線問題。Telegram 發送 webhook 時會帶 `x-telegram-bot-api-secret-token` header，值必須和 `TELEGRAM_WEBHOOK_SECRET` 一致，否則 `/api/telegram/webhook` 會回 401。
 
 ---
 
@@ -132,6 +157,11 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 
 # Site URL（用於 SEO/Sitemap）
 NUXT_PUBLIC_SITE_URL="https://your-domain.com"
+
+# Telegram Bot（如需 Telegram 快速記錄）
+NUXT_PUBLIC_TELEGRAM_BOT_USERNAME="your_bot_username"
+TELEGRAM_BOT_TOKEN="123456789:ABCdef..."
+TELEGRAM_WEBHOOK_SECRET="use-a-random-secret-with-letters-numbers-underscore-or-dash"
 
 # 調度器啟用狀態（重要！）
 # 只在主實例上設置為 "true"，其他實例設為 "false" 或不設置
