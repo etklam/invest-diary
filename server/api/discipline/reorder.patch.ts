@@ -1,7 +1,8 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, readBody } from 'h3'
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 interface OrderItem {
   id: number
@@ -16,10 +17,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<{ orders?: OrderItem[] }>(event)
 
     if (!body?.orders || !Array.isArray(body.orders)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Orders array is required'
-      })
+      throw Errors.validationError([{ field: 'orders', message: 'Orders array is required' }]).toH3Error()
     }
 
     const { orders } = body
@@ -39,10 +37,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (existingDisciplines.length !== orders.length) {
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'One or more disciplines not found or access denied'
-      })
+      throw Errors.forbidden('One or more disciplines not found or access denied').toH3Error()
     }
 
     await prisma.$transaction(

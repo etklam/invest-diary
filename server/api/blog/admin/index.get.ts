@@ -2,6 +2,7 @@ import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
 import { serializeBlogPosts } from '~/server/utils/blog-response'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 const normalizeQueryValue = (value: unknown) => {
@@ -26,10 +27,7 @@ const parseDateParam = (value: unknown, label: string) => {
   if (!normalized) return undefined
   const parsed = new Date(normalized)
   if (Number.isNaN(parsed.getTime())) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: `Invalid ${label}`
-    })
+    throw Errors.validationError([{ field: label, message: `Invalid ${label}` }]).toH3Error()
   }
   return parsed
 }

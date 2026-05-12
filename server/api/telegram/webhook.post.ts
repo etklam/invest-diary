@@ -1,6 +1,7 @@
 import { createBot } from '~/lib/telegram/bot'
 import { checkAndMarkUpdate } from '~/server/utils/telegram-db'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 /**
  * Telegram Bot webhook endpoint.
@@ -17,13 +18,13 @@ export default defineEventHandler(async (event) => {
   const secretToken = getHeader(event, 'x-telegram-bot-api-secret-token')
   const config = useRuntimeConfig()
   if (!secretToken || secretToken !== config.telegramWebhookSecret) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
+    throw Errors.unauthorized().toH3Error()
   }
 
   // 2. Get the bot token from runtime config
   const botToken = config.telegramBotToken as string
   if (!botToken) {
-    throw createError({ statusCode: 500, message: 'Bot not configured' })
+    throw Errors.internalError().toH3Error()
   }
 
   // 3. Read the update body
@@ -55,7 +56,7 @@ export default defineEventHandler(async (event) => {
       updateId,
       error: String(error),
     })
-    throw createError({ statusCode: 500, message: 'Webhook processing failed' })
+    throw Errors.internalError().toH3Error()
   }
 
   return { ok: true }

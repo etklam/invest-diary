@@ -8,6 +8,7 @@ import adminMiddleware from '~/server/middleware/admin'
 import { validateSymbol } from '~/lib/yahoo-finance'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const log = logger.admin.withRequestId(event.context.requestId)
@@ -18,10 +19,7 @@ export default defineEventHandler(async (event) => {
   const { symbol, name, skipValidation } = body
 
   if (!symbol || typeof symbol !== 'string') {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid symbol',
-    })
+    throw Errors.validationError([{ field: 'symbol', message: 'Invalid symbol' }]).toH3Error()
   }
 
   const normalizedSymbol = symbol.toUpperCase().trim()
@@ -32,10 +30,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (existing) {
-    throw createError({
-      statusCode: 409,
-      statusMessage: 'ETF already exists',
-    })
+    throw Errors.etfAlreadyInWatchlist(normalizedSymbol).toH3Error()
   }
 
   // Validate symbol against Yahoo Finance (unless skipValidation is true)
@@ -43,10 +38,7 @@ export default defineEventHandler(async (event) => {
     try {
       const isValid = await validateSymbol(normalizedSymbol)
       if (!isValid) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: 'Invalid ETF symbol - not found on Yahoo Finance',
-        })
+        throw Errors.validationError([{ field: 'symbol', message: 'Invalid ETF symbol - not found on Yahoo Finance' }]).toH3Error()
       }
     } catch (error: unknown) {
       // If Yahoo API fails, allow user to retry or skip validation
@@ -58,10 +50,7 @@ export default defineEventHandler(async (event) => {
           || ('message' in error && typeof error.message === 'string' && error.message.includes('Too Many Requests'))
         )
       ) {
-        throw createError({
-          statusCode: 429,
-          statusMessage: 'Yahoo Finance rate limit exceeded. Please try again later or skip validation.',
-        })
+        throw Errors.rateLimited().toH3Error()
       }
       throw error
     }

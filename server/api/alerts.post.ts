@@ -1,6 +1,7 @@
 import prisma from '../../lib/prisma'
 import { generateRecurringAlertsData } from '~/lib/recurring-alerts'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
@@ -8,20 +9,17 @@ export default defineEventHandler(async (event) => {
   const userId = event.context.user?.id
 
   if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   const body = await readBody(event)
 
   // Support both single and recurring alerts
   if (!body.diary_id || !body.message) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing required fields',
-    })
+    throw Errors.validationError([
+      { field: 'diary_id', message: 'Required' },
+      { field: 'message', message: 'Required' },
+    ]).toH3Error()
   }
 
   try {
@@ -37,10 +35,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!diary) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Diary not found',
-      })
+      throw Errors.diaryNotFound(body.diary_id).toH3Error()
     }
 
     // Single alert (original logic)

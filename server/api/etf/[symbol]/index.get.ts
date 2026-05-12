@@ -8,15 +8,13 @@ import { fetchMonthlyData, fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
   const symbol = getRouterParam(event, 'symbol')
   if (!symbol) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing symbol',
-    })
+    throw Errors.validationError([{ field: 'symbol', message: 'Missing symbol' }]).toH3Error()
   }
 
   // Rate limiting
@@ -24,10 +22,7 @@ export default defineEventHandler(async (event) => {
   try {
     await rateLimiters.generalApi(ip)
   } catch {
-    throw createError({
-      statusCode: 429,
-      statusMessage: 'Too many requests. Please try again later.',
-    })
+    throw Errors.rateLimited().toH3Error()
   }
 
   const normalizedSymbol = symbol.toUpperCase()
@@ -72,10 +67,7 @@ export default defineEventHandler(async (event) => {
   ])
 
   if (monthlyData.length === 0) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'ETF not found',
-    })
+    throw Errors.etfNotFound(normalizedSymbol).toH3Error()
   }
 
   const prices = monthlyData.map(d => ({

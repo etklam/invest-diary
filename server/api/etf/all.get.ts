@@ -9,6 +9,7 @@ import { rateLimiters } from '~/lib/rate-limiter'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
+import { Errors } from '~/lib/errors/factory'
 
 type SortField =
   | 'symbol'
@@ -44,10 +45,7 @@ export default defineEventHandler(async (event) => {
   try {
     await rateLimiters.generalApi(ip)
   } catch {
-    throw createError({
-      statusCode: 429,
-      statusMessage: 'Too many requests. Please try again later.',
-    })
+    throw Errors.rateLimited().toH3Error()
   }
 
   const query = getQuery(event)

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 const schema = z.object({
@@ -13,10 +14,7 @@ export default defineEventHandler(async (event) => {
   const userId = event.context.user?.id
 
   if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   try {
@@ -28,17 +26,11 @@ export default defineEventHandler(async (event) => {
     const preview = parseShareData(json)
 
     if (!preview.isValid) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid import data'
-      })
+      throw Errors.validationError([{ field: 'json', message: 'Invalid import data' }]).toH3Error()
     }
 
     if (preview.disciplines.length === 0) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'No valid disciplines to import'
-      })
+      throw Errors.validationError([{ field: 'json', message: 'No valid disciplines to import' }]).toH3Error()
     }
 
     // If replace existing, delete all user's disciplines first

@@ -1,3 +1,5 @@
+import { Errors } from '~/lib/errors/factory'
+
 /**
  * Admin authorization middleware
  * Must be used after auth middleware
@@ -14,16 +16,10 @@ export default defineEventHandler(async (event) => {
   const user = event.context.user
 
   if (!user) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'UNAUTHORIZED'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   if (user.role !== 'ADMIN') {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'ADMIN_ONLY'
-    })
+    throw Errors.forbidden().toH3Error()
   }
 })

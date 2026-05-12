@@ -2,6 +2,7 @@ import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
@@ -13,10 +14,7 @@ export default defineEventHandler(async (event) => {
 
     // Prevent self-deletion
     if (userId.toString() === event.context.user?.id) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Cannot delete your own account'
-      })
+      throw Errors.accountSelfModification('delete your own account').toH3Error()
     }
 
     // Check if user exists
@@ -25,10 +23,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!existingUser) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'User not found'
-      })
+      throw Errors.userNotFound().toH3Error()
     }
 
     // Delete user (cascade deletes will handle diaries, alerts, transactions)

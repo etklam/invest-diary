@@ -1,15 +1,13 @@
 import prisma from '../../../lib/prisma'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
   if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   const user = await prisma.user.findUnique({
@@ -27,10 +25,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!user) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'User not found'
-    })
+    throw Errors.userNotFound().toH3Error()
   }
 
   return {

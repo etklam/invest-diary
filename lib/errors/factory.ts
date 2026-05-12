@@ -200,6 +200,45 @@ export const Errors = {
     message: `Blog post ${slug} not found`,
   }),
 
+  // Discipline
+  disciplineNotFound: () => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.DISCIPLINE_NOT_FOUND,
+    message: 'Discipline not found',
+  }),
+
+  // Stock Note
+  stockNoteNotFound: () => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.STOCK_NOTE_NOT_FOUND,
+    message: 'Note not found',
+  }),
+
+  stockNoteAccessDenied: (action: string) => new AppError({
+    statusCode: 403,
+    code: ErrorCodes.STOCK_NOTE_ACCESS_DENIED,
+    message: `Cannot ${action} agent-created notes`,
+  }),
+
+  // Generic
+  forbidden: (message?: string) => new AppError({
+    statusCode: 403,
+    code: ErrorCodes.AUTH_FORBIDDEN,
+    message: message ?? 'Forbidden',
+  }),
+
+  csrfFailed: () => new AppError({
+    statusCode: 403,
+    code: ErrorCodes.CSRF_FAILED,
+    message: 'CSRF token validation failed',
+  }),
+
+  notFound: (message?: string) => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.SYS_NOT_FOUND,
+    message: message ?? 'Resource not found',
+  }),
+
   // System
   validationError: (details: ErrorDetail[]) => new AppError({
     statusCode: 400,
@@ -213,5 +252,18 @@ export const Errors = {
     code: ErrorCodes.SYS_INTERNAL_ERROR,
     message: 'Internal server error',
     cause,
+  }),
+
+  externalServiceError: (message?: string) => new AppError({
+    statusCode: 502,
+    code: ErrorCodes.SYS_EXTERNAL_SERVICE_ERROR,
+    message: message ?? 'External service unavailable',
+  }),
+
+  // User
+  accountSelfModification: (action: string) => new AppError({
+    statusCode: 400,
+    code: ErrorCodes.USER_SELF_MODIFICATION,
+    message: `Cannot ${action} your own account`,
   }),
 }

@@ -1,6 +1,7 @@
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { getStockNoteById, deleteStockNote } from '~/lib/stocks/notes'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
@@ -13,15 +14,15 @@ export default defineEventHandler(async (event) => {
     // Verify ownership and type
     const existing = await getStockNoteById(noteId, BigInt(user.id))
     if (!existing) {
-      throw createError({ statusCode: 404, statusMessage: 'Note not found' })
+      throw Errors.stockNoteNotFound().toH3Error()
     }
     if (existing.createdVia !== 'USER') {
-      throw createError({ statusCode: 403, statusMessage: 'Cannot delete agent-created notes' })
+      throw Errors.stockNoteAccessDenied('delete').toH3Error()
     }
 
     const result = await deleteStockNote(noteId, BigInt(user.id))
     if (!result) {
-      throw createError({ statusCode: 404, statusMessage: 'Note not found' })
+      throw Errors.stockNoteNotFound().toH3Error()
     }
 
     return { success: true }

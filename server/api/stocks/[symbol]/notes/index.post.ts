@@ -3,6 +3,7 @@ import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { createStockNote, toStockNoteResponse } from '~/lib/stocks/notes'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 const SYMBOL_REGEX = /^[A-Za-z0-9.]{1,10}$/
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
   try {
     const rawSymbol = decodeURIComponent(String(event.context.params?.symbol))
     if (!SYMBOL_REGEX.test(rawSymbol)) {
-      throw createError({ statusCode: 400, statusMessage: 'Invalid stock symbol format' })
+      throw Errors.validationError([{ field: 'symbol', message: 'Invalid stock symbol format' }]).toH3Error()
     }
     const symbol = normalizeStockSymbol(rawSymbol)
 

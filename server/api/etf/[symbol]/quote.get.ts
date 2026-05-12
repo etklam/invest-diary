@@ -7,15 +7,13 @@
 import { fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
   const symbol = getRouterParam(event, 'symbol')
   if (!symbol) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing symbol',
-    })
+    throw Errors.validationError([{ field: 'symbol', message: 'Missing symbol' }]).toH3Error()
   }
 
   // Rate limiting
@@ -23,19 +21,13 @@ export default defineEventHandler(async (event) => {
   try {
     await rateLimiters.yahooFinance(ip)
   } catch {
-    throw createError({
-      statusCode: 429,
-      statusMessage: 'Too many requests. Please try again later.',
-    })
+    throw Errors.rateLimited().toH3Error()
   }
 
   try {
     const quote = await fetchQuote(symbol)
     return quote
   } catch {
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Yahoo quote unavailable. Please try again later.',
-    })
+    throw Errors.externalServiceError('Yahoo quote unavailable. Please try again later.').toH3Error()
   }
 })

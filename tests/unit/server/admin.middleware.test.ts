@@ -12,7 +12,7 @@ describe('server/middleware/admin', () => {
 
     await expect(handler({ context: {} } as any)).rejects.toMatchObject({
       statusCode: 401,
-      statusMessage: 'UNAUTHORIZED',
+      statusMessage: 'Authentication required',
     })
     expect(global.setHeader).toHaveBeenCalledWith(
       expect.any(Object),
@@ -29,7 +29,7 @@ describe('server/middleware/admin', () => {
       context: { user: { id: '1', role: 'USER' } },
     } as any)).rejects.toMatchObject({
       statusCode: 403,
-      statusMessage: 'ADMIN_ONLY',
+      statusMessage: 'Forbidden',
     })
   })
 
@@ -60,7 +60,7 @@ describe('server/middleware/admin', () => {
       context: { user: { id: '1', role: 'USER' } },
     } as any)).rejects.toMatchObject({
       statusCode: 403,
-      statusMessage: 'ADMIN_ONLY',
+      statusMessage: 'Forbidden',
     })
   })
 
@@ -84,7 +84,7 @@ describe('server/middleware/admin', () => {
       context: {},
     } as any)).rejects.toMatchObject({
       statusCode: 401,
-      statusMessage: 'UNAUTHORIZED',
+      statusMessage: 'Authentication required',
     })
     expect(global.setHeader).toHaveBeenCalledWith(
       expect.any(Object),
@@ -102,7 +102,7 @@ describe('server/middleware/admin', () => {
       context: { user: { id: '1', role: 'USER' } },
     } as any)).rejects.toMatchObject({
       statusCode: 403,
-      statusMessage: 'ADMIN_ONLY',
+      statusMessage: 'Forbidden',
     })
   })
 })

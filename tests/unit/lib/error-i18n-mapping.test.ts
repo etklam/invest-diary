@@ -27,6 +27,22 @@ describe('errorCodeToI18nKey', () => {
     expect(errorCodeToI18nKey(ErrorCodes.ETF_ALREADY_IN_WATCHLIST)).toBe('error.code.etf_already_in_watchlist')
   })
 
+  it('converts new AUTH_FORBIDDEN', () => {
+    expect(errorCodeToI18nKey(ErrorCodes.AUTH_FORBIDDEN)).toBe('error.code.auth_forbidden')
+  })
+
+  it('converts new CSRF_FAILED', () => {
+    expect(errorCodeToI18nKey(ErrorCodes.CSRF_FAILED)).toBe('error.code.csrf_failed')
+  })
+
+  it('converts new SYS_EXTERNAL_SERVICE_ERROR', () => {
+    expect(errorCodeToI18nKey(ErrorCodes.SYS_EXTERNAL_SERVICE_ERROR)).toBe('error.code.sys_external_service_error')
+  })
+
+  it('converts new STOCK_NOTE_NOT_FOUND', () => {
+    expect(errorCodeToI18nKey(ErrorCodes.STOCK_NOTE_NOT_FOUND)).toBe('error.code.stock_note_not_found')
+  })
+
   it('always produces lowercase keys for any code', () => {
     for (const code of ALL_ERROR_CODES) {
       const key = errorCodeToI18nKey(code)
@@ -37,8 +53,8 @@ describe('errorCodeToI18nKey', () => {
 })
 
 describe('ALL_ERROR_CODES', () => {
-  it('contains exactly 27 error codes', () => {
-    expect(ALL_ERROR_CODES).toHaveLength(27)
+  it('contains exactly 35 error codes', () => {
+    expect(ALL_ERROR_CODES).toHaveLength(35)
   })
 
   it('includes all auth codes', () => {
@@ -81,6 +97,7 @@ describe('ALL_ERROR_CODES', () => {
   it('includes all user codes', () => {
     expect(ALL_ERROR_CODES).toContain(ErrorCodes.USER_NOT_FOUND)
     expect(ALL_ERROR_CODES).toContain(ErrorCodes.USER_EMAIL_EXISTS)
+    expect(ALL_ERROR_CODES).toContain(ErrorCodes.USER_SELF_MODIFICATION)
   })
 
   it('includes blog code', () => {
@@ -90,5 +107,21 @@ describe('ALL_ERROR_CODES', () => {
   it('includes system codes', () => {
     expect(ALL_ERROR_CODES).toContain(ErrorCodes.SYS_INTERNAL_ERROR)
     expect(ALL_ERROR_CODES).toContain(ErrorCodes.SYS_VALIDATION_ERROR)
+    expect(ALL_ERROR_CODES).toContain(ErrorCodes.SYS_EXTERNAL_SERVICE_ERROR)
+    expect(ALL_ERROR_CODES).toContain(ErrorCodes.SYS_NOT_FOUND)
+  })
+
+  it('includes discipline codes', () => {
+    expect(ALL_ERROR_CODES).toContain(ErrorCodes.DISCIPLINE_NOT_FOUND)
+  })
+
+  it('includes stock note codes', () => {
+    expect(ALL_ERROR_CODES).toContain(ErrorCodes.STOCK_NOTE_NOT_FOUND)
+    expect(ALL_ERROR_CODES).toContain(ErrorCodes.STOCK_NOTE_ACCESS_DENIED)
+  })
+
+  it('includes generic codes', () => {
+    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_FORBIDDEN)
+    expect(ALL_ERROR_CODES).toContain(ErrorCodes.CSRF_FAILED)
   })
 })

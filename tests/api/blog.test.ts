@@ -266,7 +266,7 @@ describe('Blog API', () => {
 
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 400,
-        statusMessage: 'Invalid dateFrom',
+        statusMessage: 'Validation failed',
       })
     })
 
@@ -410,7 +410,7 @@ describe('Blog API', () => {
 
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 400,
-        statusMessage: 'Slug is required',
+        statusMessage: 'Validation failed',
       })
     })
   })

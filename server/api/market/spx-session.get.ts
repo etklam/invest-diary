@@ -3,6 +3,7 @@ import { rateLimiters } from '~/lib/rate-limiter'
 import { buildSpxSessionSummary } from '~/lib/quicknote/market-session'
 import { requireUser } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
@@ -12,10 +13,7 @@ export default defineEventHandler(async (event) => {
   try {
     await rateLimiters.yahooFinance(ip)
   } catch {
-    throw createError({
-      statusCode: 429,
-      statusMessage: 'Too many requests. Please try again later.',
-    })
+    throw Errors.rateLimited().toH3Error()
   }
 
   try {
@@ -26,9 +24,6 @@ export default defineEventHandler(async (event) => {
 
     return buildSpxSessionSummary(quote, intradayQuotes)
   } catch {
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'SPX session unavailable. Please try again later.',
-    })
+    throw Errors.externalServiceError('SPX session unavailable. Please try again later.').toH3Error()
   }
 })

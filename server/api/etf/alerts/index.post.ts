@@ -6,6 +6,7 @@ import { requireUser } from '~/server/utils/auth'
 import type { AlertType } from '@prisma/client'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
@@ -15,18 +16,16 @@ export default defineEventHandler(async (event) => {
   const { symbol, type, threshold, message } = body
 
   if (!symbol || !type || threshold === undefined) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing required fields: symbol, type, threshold',
-    })
+    throw Errors.validationError([
+      { field: 'symbol', message: 'Required' },
+      { field: 'type', message: 'Required' },
+      { field: 'threshold', message: 'Required' },
+    ]).toH3Error()
   }
 
   const validTypes: AlertType[] = ['PRICE_ABOVE', 'PRICE_BELOW', 'CHANGE_PERCENT', 'MOVING_AVG']
   if (!validTypes.includes(type)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid alert type',
-    })
+    throw Errors.validationError([{ field: 'type', message: 'Invalid alert type' }]).toH3Error()
   }
 
   const normalizedSymbol = symbol.toUpperCase().trim()
@@ -37,10 +36,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!etf) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'ETF not found',
-    })
+    throw Errors.etfNotFound(normalizedSymbol).toH3Error()
   }
 
   // Create alert

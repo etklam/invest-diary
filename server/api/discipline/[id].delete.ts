@@ -1,8 +1,9 @@
-import { defineEventHandler, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
@@ -21,10 +22,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!discipline) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Discipline not found'
-      })
+      throw Errors.disciplineNotFound().toH3Error()
     }
 
     // Delete the discipline

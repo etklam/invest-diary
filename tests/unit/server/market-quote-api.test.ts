@@ -54,7 +54,7 @@ describe('market quote api', () => {
 
     await expect(handler({ context: {} } as any)).rejects.toMatchObject({
       statusCode: 400,
-      statusMessage: 'Missing symbol',
+      statusMessage: 'Validation failed',
     })
   })
 

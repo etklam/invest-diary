@@ -3,6 +3,7 @@ import { z } from 'zod'
 import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 const updateRoleSchema = z.object({
@@ -21,10 +22,7 @@ export default defineEventHandler(async (event) => {
 
     // Prevent self-modification
     if (userId.toString() === event.context.user?.id) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Cannot modify your own role'
-      })
+      throw Errors.accountSelfModification('modify your own role').toH3Error()
     }
 
     // Check if user exists
@@ -33,10 +31,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!existingUser) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'User not found'
-      })
+      throw Errors.userNotFound().toH3Error()
     }
 
     // Update user role

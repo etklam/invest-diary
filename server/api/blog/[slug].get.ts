@@ -3,6 +3,7 @@ import prisma from '~/lib/prisma'
 import { PostStatus } from '@prisma/client'
 import { logger } from '~/lib/logger'
 import { serializeBlogPost } from '~/server/utils/blog-response'
+import { Errors } from '~/lib/errors/factory'
 
 const resolveSlug = (event: H3Event) => {
   const rawFromParams = event.context.params?.slug
@@ -18,10 +19,7 @@ export default defineEventHandler(async (event: H3Event) => {
   const slug = resolveSlug(event)
 
   if (!slug) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Slug is required',
-    })
+    throw Errors.validationError([{ field: 'slug', message: 'Slug is required' }]).toH3Error()
   }
 
   try {
@@ -61,10 +59,7 @@ export default defineEventHandler(async (event: H3Event) => {
         })
 
     if (!post) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Post not found',
-      })
+      throw Errors.blogNotFound(slug).toH3Error()
     }
 
     return serializeBlogPost(post)
@@ -75,9 +70,6 @@ export default defineEventHandler(async (event: H3Event) => {
 
     log.error('Error fetching post', { slug, error: String(error) })
 
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch post',
-    })
+    throw Errors.internalError(error).toH3Error()
   }
 })

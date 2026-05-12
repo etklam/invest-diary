@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 const CSRF_COOKIE = 'csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
@@ -80,9 +81,6 @@ export default defineEventHandler(async (event) => {
       tokensMatch: cookieToken === headerToken,
     })
 
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'CSRF token validation failed',
-    })
+    throw Errors.csrfFailed().toH3Error()
   }
 })

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 const querySchema = z.object({
   year: z.coerce.number().int().min(1900).max(2100),
@@ -11,10 +12,7 @@ export default defineEventHandler(async (event) => {
   const userId = event.context.user?.id
 
   if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   const query = getQuery(event)
@@ -27,9 +25,6 @@ export default defineEventHandler(async (event) => {
       data
     }
   } catch {
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Failed to fetch holiday data'
-    })
+    throw Errors.externalServiceError('Failed to fetch holiday data').toH3Error()
   }
 })

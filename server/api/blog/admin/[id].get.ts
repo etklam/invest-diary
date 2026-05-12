@@ -3,6 +3,7 @@ import { logger } from '~/lib/logger'
 import adminMiddleware from '~/server/middleware/admin'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { serializeBlogPost } from '~/server/utils/blog-response'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
@@ -26,10 +27,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!post) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Post not found',
-      })
+      throw Errors.blogNotFound(postId.toString()).toH3Error()
     }
 
     return serializeBlogPost(post)

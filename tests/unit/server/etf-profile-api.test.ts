@@ -30,7 +30,7 @@ describe('etf profile api', () => {
 
     await expect(handler({ context: {} } as any)).rejects.toMatchObject({
       statusCode: 400,
-      statusMessage: 'Invalid benchmark',
+      statusMessage: 'Validation failed',
     })
   })
 

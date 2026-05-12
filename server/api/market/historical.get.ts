@@ -8,6 +8,7 @@ import { fetchHistoricalData } from '~/lib/yahoo-finance'
 import type { HistoricalQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event): Promise<HistoricalQuote[]> => {
   const log = logger.api.withRequestId(event.context.requestId)
@@ -15,28 +16,19 @@ export default defineEventHandler(async (event): Promise<HistoricalQuote[]> => {
   const range = getQuery(event).range as string || '1y' // Default to 1 year
 
   if (!symbol) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Missing symbol',
-    })
+    throw Errors.validationError([{ field: 'symbol', message: 'Missing symbol' }]).toH3Error()
   }
 
   const ip = getRequestIP(event) || 'unknown'
   try {
     await rateLimiters.yahooFinance(ip)
   } catch {
-    throw createError({
-      statusCode: 429,
-      statusMessage: 'Too many requests. Please try again later.',
-    })
+    throw Errors.rateLimited().toH3Error()
   }
 
   try {
     return await fetchHistoricalData(symbol, range)
   } catch {
-    throw createError({
-      statusCode: 502,
-      statusMessage: `Historical data for ${symbol} unavailable. Please try again later.`,
-    })
+    throw Errors.externalServiceError(`Historical data for ${symbol} unavailable. Please try again later.`).toH3Error()
   }
 })

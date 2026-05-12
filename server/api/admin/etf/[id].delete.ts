@@ -8,6 +8,7 @@ import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const log = logger.admin.withRequestId(event.context.requestId)
@@ -31,10 +32,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!etf) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'ETF not found',
-    })
+    throw Errors.etfNotFound(etfId.toString()).toH3Error()
   }
 
   // Delete ETF (cascade will handle related records)

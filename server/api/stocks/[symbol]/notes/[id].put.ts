@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { getStockNoteById, updateStockNote, toStockNoteResponse } from '~/lib/stocks/notes'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 const requestSchema = z.object({
@@ -20,10 +21,10 @@ export default defineEventHandler(async (event) => {
     // Verify ownership and type
     const existing = await getStockNoteById(noteId, BigInt(user.id))
     if (!existing) {
-      throw createError({ statusCode: 404, statusMessage: 'Note not found' })
+      throw Errors.stockNoteNotFound().toH3Error()
     }
     if (existing.createdVia !== 'USER') {
-      throw createError({ statusCode: 403, statusMessage: 'Cannot edit agent-created notes' })
+      throw Errors.stockNoteAccessDenied('edit').toH3Error()
     }
 
     const body = await readBody(event)
@@ -31,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
     const updated = await updateStockNote(noteId, BigInt(user.id), payload)
     if (!updated) {
-      throw createError({ statusCode: 404, statusMessage: 'Note not found' })
+      throw Errors.stockNoteNotFound().toH3Error()
     }
 
     return toStockNoteResponse(updated)

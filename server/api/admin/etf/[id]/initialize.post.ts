@@ -9,6 +9,7 @@ import { fetchMonthlyData } from '~/lib/yahoo-finance'
 import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const log = logger.admin.withRequestId(event.context.requestId)
@@ -23,10 +24,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!etf) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'ETF not found',
-    })
+    throw Errors.etfNotFound(etfId.toString()).toH3Error()
   }
 
   try {
@@ -48,18 +46,12 @@ export default defineEventHandler(async (event) => {
       }))
 
     if (prices.length === 0) {
-      throw createError({
-        statusCode: 502,
-        statusMessage: 'No historical data available from Yahoo Finance',
-      })
+      throw Errors.externalServiceError('No historical data available from Yahoo Finance').toH3Error()
     }
     const firstPrice = prices.at(0)
     const lastPrice = prices.at(-1)
     if (!firstPrice || !lastPrice) {
-      throw createError({
-        statusCode: 502,
-        statusMessage: 'No historical data available from Yahoo Finance',
-      })
+      throw Errors.externalServiceError('No historical data available from Yahoo Finance').toH3Error()
     }
 
     // Batch insert with skipDuplicates
@@ -82,9 +74,6 @@ export default defineEventHandler(async (event) => {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Failed to fetch historical data from Yahoo Finance',
-    })
+    throw Errors.externalServiceError('Failed to fetch historical data from Yahoo Finance').toH3Error()
   }
 })

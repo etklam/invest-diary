@@ -2,6 +2,7 @@ import { logger } from '~/lib/logger'
 import { fetchQuote, type QuoteResponse } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import { requireUser } from '~/server/utils/auth'
+import { Errors } from '~/lib/errors/factory'
 
 type Body = {
   symbols: string[]
@@ -16,24 +17,18 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<Body>(event)
 
   if (!body?.symbols || body.symbols.length === 0) {
-    throw createError({ statusCode: 400, statusMessage: 'No symbols provided' })
+    throw Errors.validationError([{ field: 'symbols', message: 'No symbols provided' }]).toH3Error()
   }
 
   if (body.symbols.length > MAX_SYMBOLS_PER_REQUEST) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: `Maximum ${MAX_SYMBOLS_PER_REQUEST} symbols per request`,
-    })
+    throw Errors.validationError([{ field: 'symbols', message: `Maximum ${MAX_SYMBOLS_PER_REQUEST} symbols per request` }]).toH3Error()
   }
 
   const ip = getRequestIP(event) || 'unknown'
   try {
     await rateLimiters.generalApi(ip)
   } catch {
-    throw createError({
-      statusCode: 429,
-      statusMessage: 'Too many requests. Please try again later.',
-    })
+    throw Errors.rateLimited().toH3Error()
   }
 
   const result: Record<string, QuoteResponse> = {}
@@ -58,10 +53,7 @@ export default defineEventHandler(async (event) => {
   )
 
   if (Object.keys(result).length === 0) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: `Failed to fetch prices for all symbols. Errors: ${errors.join(', ')}`
-    })
+    throw Errors.externalServiceError(`Failed to fetch prices for all symbols. Errors: ${errors.join(', ')}`).toH3Error()
   }
 
   if (errors.length > 0) {

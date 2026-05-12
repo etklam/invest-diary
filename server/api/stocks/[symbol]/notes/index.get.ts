@@ -1,9 +1,9 @@
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
-import { createError } from 'h3'
 import { requireUser } from '~/server/utils/auth'
 import { listStockNotes, toStockNoteResponse } from '~/lib/stocks/notes'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
 
@@ -42,13 +42,13 @@ export default defineEventHandler(async (event) => {
       })
 
       if (!link || !link.acceptedAt) {
-        throw createError({ statusCode: 403, statusMessage: 'Partner link not found or not accepted' })
+        throw Errors.partnerLinkAccessDenied().toH3Error()
       }
 
       const side = getPartnerSide(link as PartnerLinkRecord, user.id)
 
       if (!side.partnerSharesStockNotes) {
-        throw createError({ statusCode: 403, statusMessage: 'Partner has not enabled stock notes sharing' })
+        throw Errors.forbidden('Partner has not enabled stock notes sharing').toH3Error()
       }
 
       targetUserId = BigInt(side.partner.id)

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 const schema = z.object({
@@ -19,10 +20,7 @@ export default defineEventHandler(async (event) => {
   const userId = rawUserId ? BigInt(rawUserId) : undefined
 
   if (!userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
+    throw Errors.unauthorized().toH3Error()
   }
 
   try {
@@ -36,10 +34,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (disciplines.length === 0) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'No disciplines found'
-      })
+      throw Errors.disciplineNotFound().toH3Error()
     }
 
     // Get user info if author should be included

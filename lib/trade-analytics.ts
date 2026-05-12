@@ -67,12 +67,18 @@ export interface PeriodStats {
 
 // ─── 輔助函數 ────────────────────────────────────────────────────────────────
 
+import {
+  normalizeSymbol,
+  toDate,
+  createPosition,
+  applyBuy,
+  applySell,
+  isPositionClosed,
+} from '~/lib/position-state'
+import type { SymbolPosition } from '~/lib/position-state'
+
 function toNum(v: { valueOf(): number } | number): number {
   return typeof v === 'number' ? v : Number(v.valueOf())
-}
-
-function toDate(v: Date | string): Date {
-  return v instanceof Date ? v : new Date(v)
 }
 
 function periodKey(date: Date, period: GroupPeriod): string {
@@ -99,34 +105,31 @@ function periodKey(date: Date, period: GroupPeriod): string {
 export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
   if (!transactions.length) return []
 
-  // 按 tradeDate 升序排序
   const sorted = [...transactions].sort((a, b) => {
     return toDate(a.tradeDate).getTime() - toDate(b.tradeDate).getTime()
   })
 
-  // 每個 symbol 的持倉狀態
-  const symbolState = new Map<string, { totalQuantity: number; totalCost: number }>()
+  const symbolState = new Map<string, SymbolPosition>()
   const closed: ClosedTrade[] = []
 
   for (const tx of sorted) {
-    const sym = tx.symbol.trim().toUpperCase()
+    const sym = normalizeSymbol(tx.symbol)
     const qty = toNum(tx.quantity)
     const price = toNum(tx.price)
-    const state = symbolState.get(sym) ?? { totalQuantity: 0, totalCost: 0 }
+    const pos = symbolState.get(sym) ?? createPosition()
 
     if (tx.type === 'BUY') {
-      state.totalQuantity += qty
-      state.totalCost += qty * price
-      symbolState.set(sym, state)
+      applyBuy(pos, qty, price)
+      symbolState.set(sym, pos)
     } else if (tx.type === 'SELL') {
-      if (state.totalQuantity <= 0) {
+      if (pos.totalQuantity <= 0) {
         // 無持倉卻賣出（資料問題），跳過
         continue
       }
 
-      const avgCost = state.totalCost / state.totalQuantity
+      const avgCost = pos.totalCost / pos.totalQuantity
       // 只計算有持倉的部分
-      const matchedQty = Math.min(qty, state.totalQuantity)
+      const matchedQty = Math.min(qty, pos.totalQuantity)
       const costBasis = matchedQty * avgCost
       const proceeds = matchedQty * price
       const realizedPnL = proceeds - costBasis
@@ -143,13 +146,13 @@ export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
         realizedPnLPct,
       })
 
-      // 更新持倉
-      state.totalQuantity -= matchedQty
-      state.totalCost -= matchedQty * avgCost
-      if (state.totalQuantity <= 0.0001) {
+      // 更新持倉（matchTrades 容忍截斷，不拋錯）
+      pos.totalQuantity -= matchedQty
+      pos.totalCost -= matchedQty * avgCost
+      if (isPositionClosed(pos)) {
         symbolState.delete(sym)
       } else {
-        symbolState.set(sym, state)
+        symbolState.set(sym, pos)
       }
     }
   }

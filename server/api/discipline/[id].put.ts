@@ -1,8 +1,9 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, readBody } from 'h3'
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
@@ -15,10 +16,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<{ content?: string }>(event)
 
     if (!body?.content || !body.content.trim()) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Content is required'
-      })
+      throw Errors.validationError([{ field: 'content', message: 'Content is required' }]).toH3Error()
     }
 
     // Verify ownership first
@@ -30,10 +28,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!existingDiscipline) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Discipline not found'
-      })
+      throw Errors.disciplineNotFound().toH3Error()
     }
 
     // Update the discipline

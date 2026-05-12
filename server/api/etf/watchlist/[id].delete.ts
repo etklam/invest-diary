@@ -6,6 +6,7 @@ import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
@@ -19,17 +20,11 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!item) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Watchlist item not found',
-    })
+    throw Errors.notFound().toH3Error()
   }
 
   if (String(item.userId) !== String(user.id)) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Forbidden',
-    })
+    throw Errors.forbidden().toH3Error()
   }
 
   // Delete item

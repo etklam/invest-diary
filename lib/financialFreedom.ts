@@ -342,14 +342,14 @@ export function formatPercent(value: number, decimals: number = 1): string {
   return `${value.toFixed(decimals)}%`
 }
 
+import { formatYearMonth } from '~/lib/dates'
+
 /**
- * 格式化日期
+ * 格式化日期（年月格式）
+ * 向後相容包裝器，委派給 lib/dates/
  */
 export function formatDate(date: Date, locale: string = 'zh-TW'): string {
-  return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'long'
-  }).format(date)
+  return formatYearMonth(date, locale)
 }
 
 /**

@@ -4,6 +4,7 @@ import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
 import { updateStockWatchlistItem } from '~/server/utils/stock-timeline-records'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { Errors } from '~/lib/errors/factory'
 
 const requestSchema = z.object({
   status: z.enum(['WATCHING', 'ARCHIVED']).optional(),
@@ -27,10 +28,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!item) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Watchlist item not found',
-      })
+      throw Errors.notFound('Watchlist item not found').toH3Error()
     }
 
     return {

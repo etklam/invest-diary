@@ -1,6 +1,7 @@
 import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
 
 interface CheckItem {
   disciplineId: string | null
@@ -34,11 +35,11 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<CheckBody>(event)
 
   if (!body?.checks || !Array.isArray(body.checks) || body.checks.length === 0) {
-    throw createError({ statusCode: 400, statusMessage: 'checks is required and must be a non-empty array' })
+    throw Errors.validationError([{ field: 'checks', message: 'Checks is required and must be a non-empty array' }]).toH3Error()
   }
 
   if (body.checks.length > 50) {
-    throw createError({ statusCode: 400, statusMessage: 'checks cannot exceed 50 items' })
+    throw Errors.validationError([{ field: 'checks', message: 'Checks cannot exceed 50 items' }]).toH3Error()
   }
 
   const diaryId = body.diaryId ? BigInt(body.diaryId) : null
@@ -50,7 +51,7 @@ export default defineEventHandler(async (event) => {
       select: { id: true },
     })
     if (!diary) {
-      throw createError({ statusCode: 403, statusMessage: 'Diary not found or access denied' })
+      throw Errors.diaryAccessDenied().toH3Error()
     }
   }
 

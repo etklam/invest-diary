@@ -178,7 +178,7 @@ describe('calculateHoldings', () => {
     expect(result[0].avgCost).toBe(150.75)
   })
 
-  it('should handle sell before buy (short position)', () => {
+  it('should throw when sell without prior holdings', () => {
     const transactions: Transaction[] = [
       createTransaction({
         id: '1',
@@ -200,13 +200,8 @@ describe('calculateHoldings', () => {
       })
     ]
 
-    const result = calculateHoldings(transactions)
-    // When quantity drops to zero or below, symbol is removed from map
-    // Then buy creates a fresh position
-    expect(result).toHaveLength(1)
-    expect(result[0].quantity).toBe(10)
-    expect(result[0].totalCost).toBe(5000)
-    expect(result[0].avgCost).toBe(500)
+    // 核心函數現在拒絕無持倉賣出
+    expect(() => calculateHoldings(transactions)).toThrow(/sell without holdings/i)
   })
 
   it('should sort transactions by date before calculating', () => {

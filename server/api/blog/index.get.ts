@@ -2,6 +2,7 @@ import type { H3Event } from 'h3'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { serializeBlogPosts } from '~/server/utils/blog-response'
+import { Errors } from '~/lib/errors/factory'
 
 const LEGACY_CATEGORY_ALIASES: Record<string, string[]> = {
   fundamental: ['基本面分析', 'Fundamental Analysis'],
@@ -32,10 +33,7 @@ const parseDateParam = (value: unknown, label: string) => {
   if (!normalized) return undefined
   const parsed = new Date(normalized)
   if (Number.isNaN(parsed.getTime())) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: `Invalid ${label}`
-    })
+    throw Errors.validationError([{ field: label, message: `Invalid ${label}` }]).toH3Error()
   }
   return parsed
 }
@@ -146,9 +144,6 @@ export default defineEventHandler(async (event: H3Event) => {
 
     log.error('Error fetching posts', { error: String(error) })
 
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to fetch posts'
-    })
+    throw Errors.internalError(error).toH3Error()
   }
 })
