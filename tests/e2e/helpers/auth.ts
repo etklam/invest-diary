@@ -10,7 +10,9 @@ export const TEST_USER = {
  * Perform real login by visiting the login page and submitting the form
  * This is the most reliable method for E2E tests
  */
-export async function authenticate(page: Page) {
+export async function authenticate(page: Page, options?: { timeout?: number }) {
+  const timeout = options?.timeout ?? 30_000
+
   // Go to login page first
   await page.goto('/auth/login', { waitUntil: 'domcontentloaded' })
 
@@ -23,7 +25,7 @@ export async function authenticate(page: Page) {
 
   // Submit login form
   await Promise.all([
-    page.waitForURL('**/diaries', { timeout: 30_000 }),
+    page.waitForURL('**/diaries', { timeout }),
     page.locator('button.login-submit').click(),
   ])
 

@@ -1,4 +1,5 @@
 import { Bot, session } from 'grammy'
+import { conversations } from '@grammyjs/conversations'
 import { I18n } from '@grammyjs/i18n'
 import { createPrismaSessionAdapter } from './session'
 import {
@@ -12,6 +13,11 @@ import {
   cancelCommand,
   handleMessage,
 } from './commands'
+import {
+  createBuyConversation,
+  createSellConversation,
+  createNoteConversation,
+} from './conversations'
 
 /**
  * Create and configure a grammY Bot instance.
@@ -54,6 +60,12 @@ export function createBot(token: string) {
       },
     },
   }))
+
+  // ─── Conversations Plugin ──────────────────────────────────────────────
+  bot.use(conversations())
+  bot.use(createBuyConversation())
+  bot.use(createSellConversation())
+  bot.use(createNoteConversation())
 
   // ─── Commands ───────────────────────────────────────────────────────
   bot.command('start', startCommand)

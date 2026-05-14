@@ -1,5 +1,5 @@
 import { createBot } from '~/lib/telegram/bot'
-import { checkAndMarkUpdate } from '~/server/utils/telegram-db'
+import { checkAndMarkUpdate, findTelegramAccount } from '~/server/utils/telegram-db'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 
@@ -36,7 +36,17 @@ export default defineEventHandler(async (event) => {
   const updateId = body.update_id as number
 
   // 4. Determine if this is a write operation (needs idempotency guard)
-  const isWrite = body.message?.text && /^\/(buy|sell|note)/.test(String(body.message.text))
+  // Only linked Telegram accounts can issue write commands.
+  // Unlinked users' /buy /sell /note messages are NOT idempotency-guarded,
+  // so they can retry after linking without hitting "already processed".
+  const fromId = body.message?.from?.id
+  let isWrite = false
+  if (fromId) {
+    const account = await findTelegramAccount(BigInt(fromId as number))
+    if (account) {
+      isWrite = true
+    }
+  }
   if (isWrite) {
     const isNew = await checkAndMarkUpdate(updateId, 'diary_write')
     if (!isNew) {

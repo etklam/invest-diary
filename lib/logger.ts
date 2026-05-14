@@ -187,4 +187,5 @@ export const logger = {
   discipline: createLogger('Discipline'),
   stocks: createLogger('Stocks'),
   etf: createLogger('ETF'),
+  telegram: createLogger('TG'),
 }

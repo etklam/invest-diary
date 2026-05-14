@@ -6,7 +6,6 @@ import {
   updateTelegramLanguage,
   verifyAndConsumeCode,
   touchTelegramAccount,
-  sessionDelete,
   sessionWrite,
   sessionRead,
 } from '~/server/utils/telegram-db'
@@ -164,7 +163,7 @@ export async function buyCommand(ctx: Ctx) {
     await handleBuySellOneLiner(ctx, parsed, userId)
   } else {
     // Start conversation
-    await ctx.reply(ctx.t('telegram.buy.askQuantity'))
+    await ctx.conversation.enter('buy')
   }
 }
 
@@ -181,7 +180,7 @@ export async function sellCommand(ctx: Ctx) {
   if (parsed && parsed.command === 'sell') {
     await handleBuySellOneLiner(ctx, parsed, userId)
   } else {
-    await ctx.reply(ctx.t('telegram.sell.askQuantity'))
+    await ctx.conversation.enter('sell')
   }
 }
 
@@ -198,7 +197,7 @@ export async function noteCommand(ctx: Ctx) {
   if (parsed && parsed.command === 'note') {
     await handleNoteOneLiner(ctx, parsed, userId)
   } else {
-    await ctx.reply(ctx.t('telegram.note.askContent'))
+    await ctx.conversation.enter('note')
   }
 }
 
@@ -206,10 +205,11 @@ export async function noteCommand(ctx: Ctx) {
 
 export async function cancelCommand(ctx: Ctx) {
   if (!await privateOnly(ctx)) return
-  // Cancel any active conversation by clearing session
-  if (ctx.from) {
-    const key = `conversation:${ctx.from.id}`
-    await sessionDelete(key)
+  // Exit any active conversation via the grammY conversations plugin
+  try {
+    await ctx.conversation.exit()
+  } catch {
+    // No active conversation — this is fine
   }
   await ctx.reply(ctx.t('telegram.cancel'))
 }

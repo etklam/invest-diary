@@ -1,16 +1,14 @@
 import prisma from '~/lib/prisma'
 import { connectionManager } from '~/server/websocket/connectionManager'
-import { checkDrawdown } from '~/server/utils/drawdown-alerts'
 import { fetchQuote } from '~/lib/yahoo-finance'
 import { logger } from '~/lib/logger'
 import { createAlertPusher } from '~/server/schedulers/alert-pusher'
-import { createDrawdownChecker } from '~/server/schedulers/drawdown-checker'
 import { createPriceAlertChecker } from '~/server/schedulers/price-alert-checker'
 
 /**
  * Alert 排程器組合 Plugin
  *
- * 將三個獨立的排程器（alert-pusher、drawdown-checker、price-alert-checker）
+ * 將兩個獨立的排程器（alert-pusher、price-alert-checker）
  * 組裝為一個 Nitro plugin。
  *
  * 多實例環境安全：只有當 SCHEDULER_ENABLED=true 時才啟動排程
@@ -35,13 +33,6 @@ export default defineNitroPlugin(() => {
     logger: schedulerLogger,
   })
 
-  const drawdownChecker = createDrawdownChecker({
-    prisma,
-    broadcaster: connectionManager,
-    logger: schedulerLogger,
-    checkDrawdown,
-  })
-
   const priceAlertChecker = createPriceAlertChecker({
     prisma,
     broadcaster: connectionManager,
@@ -50,18 +41,16 @@ export default defineNitroPlugin(() => {
   })
 
   alertPusher.start()
-  drawdownChecker.start()
   priceAlertChecker.start()
 
   console.log(
-    '[AlertScheduler] Started — alert pusher (every 60s), drawdown checker (every 5min), price alert checker (every 5min)'
+    '[AlertScheduler] Started — alert pusher (every 60s), price alert checker (every 5min)'
   )
 
   // 清理函數（雖然 Nitro plugin 通常不會被卸載）
   if (typeof process !== 'undefined') {
     process.on('SIGTERM', () => {
       alertPusher.stop()
-      drawdownChecker.stop()
       priceAlertChecker.stop()
       console.log('[AlertScheduler] Stopped')
     })

@@ -10,7 +10,7 @@ import {
 } from '~/lib/relativeValue'
 import { getYahooSymbolAliasSuggestion } from '~/lib/market-data/yahoo'
 import type { QuoteResponse, HistoricalQuote } from '~/lib/market-data/yahoo'
-import StockInput from '~/components/StockInput.vue'
+import QuoteInput from '~/components/QuoteInput.vue'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -251,7 +251,7 @@ const symbolsMatch = computed(() =>
 )
 
 // Watch symbol changes to auto-uppercase
-// Logic moved to StockInput component
+// Logic moved to QuoteInput component
 
 function buildQuoteErrorMessage(symbol: string, suggestion: string | null, error: ApiErrorLike | null | undefined): string {
   const statusMessage = error?.data?.statusMessage || error?.statusMessage || error?.message || ''
@@ -493,7 +493,7 @@ definePageMeta({
           <!-- Stock Input Cards -->
           <div class="mb-6 grid gap-6 sm:grid-cols-2">
             <!-- Primary Stock -->
-            <StockInput
+            <QuoteInput
               v-model="primarySymbol"
               :price="primaryPrice"
               :loading="primaryLoading"
@@ -506,7 +506,7 @@ definePageMeta({
             />
 
             <!-- Relative Stock -->
-            <StockInput
+            <QuoteInput
               v-model="relativeSymbol"
               :price="relativePrice"
               :loading="relativeLoading"

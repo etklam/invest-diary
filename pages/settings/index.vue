@@ -233,6 +233,15 @@
         </div>
       </div>
 
+      <!-- Telegram Binding Section -->
+      <div class="settings-card">
+        <h2 class="settings-h2 text-xl font-semibold mb-4">Telegram 綁定</h2>
+        <p class="settings-hint text-sm mb-4">連接 Telegram 機器人，快速記錄交易與日記</p>
+        <NuxtLink to="/settings/telegram" class="settings-btn-primary inline-block px-6 py-2.5 text-sm font-semibold rounded-dt-pill text-white">
+          管理 Telegram 綁定
+        </NuxtLink>
+      </div>
+
     </div>
   </div>
 </template>

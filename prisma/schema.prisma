@@ -86,8 +86,6 @@ model User {
   partnerLinksA         PartnerLink[]   @relation("PartnerLinkUserA")
   partnerLinksB         PartnerLink[]   @relation("PartnerLinkUserB")
   initiatedPartnerLinks PartnerLink[]   @relation("PartnerLinkInitiatedBy")
-  disciplineChecks      DisciplineCheck[]
-  portfolioSnapshots    PortfolioSnapshot[]
   priceAlerts           PriceAlert[]
   stockNotes            StockNote[]
   telegramAccounts      TelegramAccount[]
@@ -124,7 +122,6 @@ model Diary {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   alerts       Alert[]
   transactions Transaction[]
-  disciplineChecks DisciplineCheck[]
   stockTimelineRecords StockTimelineRecord[] @relation("StockTimelineSourceDiary")
 
   @@index([userId], map: "diaries_user_id_fkey")
@@ -201,30 +198,12 @@ model Discipline {
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  checks DisciplineCheck[]
 
   @@index([userId], map: "discipline_user_id_fkey")
   @@index([order], map: "discipline_order_idx")
   @@map("disciplines")
 }
 
-model DisciplineCheck {
-  id           BigInt      @id @default(autoincrement())
-  userId       BigInt      @map("user_id")
-  diaryId      BigInt?     @map("diary_id")
-  disciplineId BigInt?     @map("discipline_id")
-  passed       Boolean
-  note         String?     @db.Text
-  createdAt    DateTime    @default(now()) @map("created_at")
-
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  diary      Diary?      @relation(fields: [diaryId], references: [id], onDelete: SetNull)
-  discipline Discipline? @relation(fields: [disciplineId], references: [id], onDelete: SetNull)
-
-  @@index([userId, createdAt(sort: Desc)], map: "discipline_checks_user_created_idx")
-  @@index([diaryId], map: "discipline_checks_diary_id_idx")
-  @@map("discipline_checks")
-}
 
 model Transaction {
   id        BigInt          @id @default(autoincrement())
@@ -452,36 +431,6 @@ model StockNote {
   @@map("stock_notes")
 }
 
-// ─── Phase 5: 持倉歷史快照 ────────────────────────────────────────────────────
-
-model PortfolioSnapshot {
-  id                 BigInt   @id @default(autoincrement())
-  userId             BigInt   @map("user_id")
-  snapshotDate       DateTime @db.Date @map("snapshot_date")
-
-  /// 各持倉成本總和（持倉 quantity * avgCost 的加總）
-  totalCost          Decimal  @db.Decimal(18, 4) @map("total_cost")
-
-  /// 各持倉市值總和（持倉 quantity * 當日最新報價 的加總）
-  totalMarketValue   Decimal  @db.Decimal(18, 4) @map("total_market_value")
-
-  /// 持倉明細 JSON（{ symbol, quantity, avgCost, latestPrice }[]）
-  holdingsJson       String   @db.Text @map("holdings_json")
-
-  /// 基準指數代號（預設 SPY）
-  benchmarkSymbol    String   @default("SPY") @db.VarChar(20) @map("benchmark_symbol")
-
-  /// 快照當日基準指數收盤價
-  benchmarkPrice     Decimal  @db.Decimal(18, 4) @map("benchmark_price")
-
-  createdAt          DateTime @default(now()) @map("created_at")
-
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, snapshotDate], map: "portfolio_snapshots_user_date_key")
-  @@index([userId, snapshotDate(sort: Desc)], map: "portfolio_snapshots_user_date_idx")
-  @@map("portfolio_snapshots")
-}
 
 // ─── Phase 6.1: Stock Price Alerts ────────────────────────────────────────────
 
