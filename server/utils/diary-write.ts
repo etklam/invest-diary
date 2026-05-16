@@ -58,6 +58,23 @@ export interface TransactionDiffResult {
 }
 
 /**
+ * Map a single TransactionInput to TransactionWriteData.
+ * Shared by diffTransactions (update path) and createDiaryForUser (create path).
+ */
+export function mapTransactionWriteData(t: TransactionInput): TransactionWriteData {
+  return {
+    symbol: t.symbol?.trim().toUpperCase(),
+    type: t.type,
+    quantity: t.quantity,
+    price: t.price,
+    tradeDate: toInputDate(t.trade_date ?? t.tradeDate ?? new Date()),
+    notes: t.notes ?? null,
+    strategy: t.strategy ?? null,
+    emotion: t.emotion ?? null,
+  }
+}
+
+/**
  * Separate incoming transactions into "to create" (no DB id) and
  * "to update" (has a DB id that should be preserved).
  *
@@ -70,16 +87,7 @@ export function diffTransactions(
   const toUpdate: ResolvedTransactionUpdate[] = []
 
   for (const t of incoming ?? []) {
-    const data: TransactionWriteData = {
-      symbol: t.symbol?.trim().toUpperCase(),
-      type: t.type,
-      quantity: t.quantity,
-      price: t.price,
-      tradeDate: toInputDate(t.trade_date ?? t.tradeDate ?? new Date()),
-      notes: t.notes ?? null,
-      strategy: t.strategy ?? null,
-      emotion: t.emotion ?? null,
-    }
+    const data = mapTransactionWriteData(t)
 
     if (t.id != null) {
       toUpdate.push({ id: BigInt(t.id), data })
@@ -143,10 +151,18 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
   const userId = typeof input.userId === 'bigint' ? input.userId : BigInt(input.userId)
   const { body } = input
 
-  validateDiaryInput(body.title, body.transactions)
+  // Validate in original order: title → content → transactions
+  if (!body.title) {
+    throw Errors.validationError([{ field: 'title', message: 'Title is required' }])
+  }
 
   if (!body.content) {
     throw Errors.validationError([{ field: 'content', message: 'Content is required' }])
+  }
+
+  const transactionError = validateTransactions(body.transactions)
+  if (transactionError) {
+    throw Errors.validationError([{ field: 'transactions', message: transactionError }])
   }
 
   const { title, content, date, transactions, alerts, appendToToday, tags } = body
@@ -190,8 +206,6 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
     throw Errors.diaryAlreadyExists(errorDate)
   }
 
-  const { toCreate: txToCreate } = diffTransactions(transactions)
-
   const diary = await prisma.diary.create({
     data: {
       userId,
@@ -202,7 +216,10 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
       createdByLabel: input.createdByLabel ?? null,
       date: diaryDate,
       transactions: {
-        create: txToCreate.map(data => ({ ...data, userId })),
+        create: transactions?.map((tx) => ({
+          ...mapTransactionWriteData(tx),
+          userId,
+        })),
       },
       alerts: {
         create: alerts?.map((alert) => ({
