@@ -1,7 +1,7 @@
 import { AppError, Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { requireApiKey } from '~/server/utils/api-key'
-import { listUserWatchlist } from '~/server/utils/stock-timeline-records'
+import { listUserWatchlist } from '~/server/utils/stock-watchlist-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)

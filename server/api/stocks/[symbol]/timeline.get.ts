@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
-import { listUserTimelineBySymbol, toTimelineResponseItem } from '~/server/utils/stock-timeline-records'
+import { listUserTimelineBySymbol, toTimelineResponseItem } from '~/server/utils/stock-timeline-queries'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { logger } from '~/lib/logger'
 

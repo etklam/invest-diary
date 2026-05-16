@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { requireUser } from '~/server/utils/auth'
-import { listUserTimeline, toTimelineResponseItem } from '~/server/utils/stock-timeline-records'
+import { listUserTimeline, toTimelineResponseItem } from '~/server/utils/stock-timeline-queries'
 import { logger } from '~/lib/logger'
 
 const querySchema = z.object({

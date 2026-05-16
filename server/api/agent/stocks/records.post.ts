@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireApiKey } from '~/server/utils/api-key'
-import { createStockTimelineRecordsFromAgent } from '~/server/utils/stock-timeline-records'
+import { createStockTimelineRecordsFromAgent } from '~/server/utils/stock-timeline-queries'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 
 const timelineRecordSchema = z.object({

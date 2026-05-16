@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
-import { updateStockWatchlistItem } from '~/server/utils/stock-timeline-records'
+import { updateStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { Errors } from '~/lib/errors/factory'
 

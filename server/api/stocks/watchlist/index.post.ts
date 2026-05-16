@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
-import { upsertStockWatchlistItem } from '~/server/utils/stock-timeline-records'
+import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { handleApiError } from '~/server/utils/error-handler'
 

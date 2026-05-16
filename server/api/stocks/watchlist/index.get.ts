@@ -1,5 +1,5 @@
 import { requireUser } from '~/server/utils/auth'
-import { listUserWatchlistItems } from '~/server/utils/stock-timeline-records'
+import { listUserWatchlistItems } from '~/server/utils/stock-watchlist-queries'
 import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
