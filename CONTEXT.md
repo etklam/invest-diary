@@ -119,3 +119,75 @@ _避免：速記、草稿_
 - **PortfolioSnapshot**：設計為每日持倉快照，但使用者交易頻率極低（一個月不一定有一筆），實際上用不到。確認為設計債。
 - **"Stock" 一詞的重載**：在程式碼中 "stock" 同時指「實際交易的股票」和「關注清單中的標的」。目前透過 `Stock`（主表）、`StockNote`（觀點）、`StockWatchlist`（關注）區分，但新手使用者可能混淆。
 - **Telegram Bot**：目前為半成品，有 bug 無法正常使用。定位為「交易快速記錄入口」，與 Quick Note（日記入口）互補。
+
+---
+
+## 架構決策記錄 (Architecture decisions)
+
+> 以下記錄影響多模組的架構變更，供未來探索和重構時參考。單一模組內部的重構不在此列。
+
+### 2026-05 架構深化（7 項重構）
+
+一次系統性的架構審計，識別並修復了 7 個淺模組問題。核心原則：**加深模組**（高槓桿接口、小暴露面），**消除重複**（同一概念不該有 N 個實作），**強化測試表面**。
+
+#### 1. Blog 查詢統一 — `server/utils/post-queries.ts`
+
+**問題**：public `/api/blog` 和 admin `/api/blog/admin` 各自手寫 Prisma 查詢，95% 重複但參數不同（status 預設、排序欄位、搜尋語意、category alias）。
+
+**解法**：抽取 `queryPosts(config)` + `parsePostQueryConfig(query, options)`，透過 config 區分路由差異：
+- Public：`status: 'PUBLISHED'`, `searchMode: 'search'`, `searchFields: ['title', 'excerpt']`, `enableCategoryAliases: true`, `requirePublishedAt: true`
+- Admin：`searchMode: 'contains'`, `searchFields: ['title']`, `includeEmail: true`, `requirePublishedAt: false`
+
+**安全措施**：public 路由 strip `author` 防止 email 枚舉；admin 無效 `status` 回 400。
+
+#### 2. 績效統計純計算 — `server/utils/performance-stats.ts`
+
+**問題**：`/api/stats/performance` handler 內含 177 行計算邏輯（勝率、夏普比率、按月分群），與 HTTP/Prisma 緊耦合。
+
+**解法**：抽取 `computePerformanceStats(rawTxs, config)` 為純函數，handler 只做 auth → query → Prisma fetch → call → return。零測試改動。
+
+#### 3. 股票查詢拆分 — `stock-watchlist-queries.ts` + `stock-timeline-queries.ts`
+
+**問題**：`stock-timeline-records.ts`（361 行、10 個 export）混雜了 Watchlist CRUD、Timeline CRUD、和 Agent 資料寫入三個概念。
+
+**解法**：按領域概念拆分：
+- `stock-watchlist-queries.ts`：Watchlist CRUD（ensureStock, upsertWatchlist, listWatchlist）
+- `stock-timeline-queries.ts`：Timeline CRUD（createRecordsFromAgent, listTimeline, listTimelineBySymbol）
+
+刪除原檔案，更新 8 個 caller。+23 新測試。
+
+#### 4. QuickNote 合併 — `composables/useQuickNoteComposer.ts`
+
+**問題**：QuickNote 功能散落在 7 個 composable（Draft、Submit、Tags、Reminders、TemplateDraft、Templates、Composer），但只有 Composer 一個外部消費者。5 個淺模組全是 pass-through。
+
+**解法**：5 個 composable 合併為 1 個 `useQuickNoteComposer.ts`（559 行），Tags 邏輯 inline 到 `QuickTags.vue`。保留 `useQuickNoteTemplates.ts`（2 個消費者）。-5 個檔案，介面不變。
+
+#### 5. Admin middleware 清理
+
+**問題**：`authz-admin.ts`（25 行）零引用的死代碼；`auth.ts` 仍支援 legacy `auth-token` cookie。
+
+**解法**：
+- 刪除 `server/middleware/authz-admin.ts`
+- 移除 `auth.ts`、`websocket.ts`、`plugins/auth.ts` 中所有 `auth-token` fallback
+- Admin middleware 測試從 8 擴充到 18 個
+
+#### 6. 格式化函數統一 — `lib/format.ts`
+
+**問題**：`formatCurrency` 有 3 個不同實作（locale/小數位不同），散落在 `lib/utils.ts`、`lib/positionSizing.ts`、`lib/financialFreedom.ts`。
+
+**解法**：新建 `lib/format.ts` 作為 `formatCurrency`、`formatNumber`、`formatPercent` 的唯一真相源。舊模組改為 re-export 或指引註解。+21 新測試。
+
+`formatCurrency(amount, options?)` 預設 2 位小數、`zh-TW` locale；呼叫端可透過 `{ decimals: 0 }` 覆蓋。
+
+#### 7. Diary Write 深化 — `server/utils/diary-write.ts`
+
+**問題**：`createDiaryForUser` 和 `updateDiaryForUser` 共用驗證和交易映射邏輯但各自重複。
+
+**解法**：
+- 抽取 `validateDiaryInput(title, transactions)` 共用驗證
+- 抽取 `mapTransactionWriteData(tx)` 共用交易映射（create 和 diffTransactions 共用）
+- 抽取 `persistTransactionDiff(tx, diaryId, userId, diff)` 從 update 的 $transaction block 中
+- Create 路徑不使用 `diffTransactions`（避免帶 id 的交易被丟到 toUpdate 而靜默消失）
+- 驗證順序保持 title → content → transactions（與原始行為一致）
+
++14 新測試，公開介面不變。
