@@ -64,6 +64,8 @@ export interface PostQueryConfig {
   searchFields?: ('title' | 'excerpt')[]
   /** Search mode: 'contains' = substring match, 'search' = Prisma full-text. Default: 'contains'. */
   searchMode?: 'contains' | 'search'
+  /** Enforce publishedAt IS NOT NULL for PUBLISHED status. Default: true (public), false (admin). */
+  requirePublishedAt?: boolean
 }
 
 export interface PostListResult {
@@ -207,8 +209,9 @@ export async function queryPosts(config: PostQueryConfig = {}): Promise<PostList
     select.status = true
   }
 
-  // PUBLISHED-only list: ensure publishedAt is not null
-  if (config.status === 'PUBLISHED') {
+  // PUBLISHED-only list: ensure publishedAt is not null (public routes only)
+  const requirePublishedAt = config.requirePublishedAt !== false
+  if (config.status === 'PUBLISHED' && requirePublishedAt) {
     where.publishedAt = {
       ...(where.publishedAt || {}),
       not: null,

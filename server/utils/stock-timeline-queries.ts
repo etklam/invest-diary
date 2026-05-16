@@ -1,6 +1,5 @@
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
-import { ensureStockBySymbol } from '~/server/utils/stock-watchlist-queries'
 
 type StockTimelineSourceType =
   | 'TRADE_BASIC_DIARY'

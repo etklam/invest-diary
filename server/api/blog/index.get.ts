@@ -10,8 +10,11 @@ export default defineEventHandler(async (event: H3Event) => {
 
     log.info('Fetching public blog posts', { page: config.page, limit: config.limit })
 
+    // Public route: strip author filter to prevent email enumeration
+    const { author: _author, ...publicConfig } = config
+
     return queryPosts({
-      ...config,
+      ...publicConfig,
       status: 'PUBLISHED',
       dateField: 'publishedAt',
       defaultSortBy: 'publishedAt_desc',
