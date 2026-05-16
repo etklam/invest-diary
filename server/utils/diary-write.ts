@@ -15,6 +15,25 @@ export function toInputDate(value: string | Date): Date {
   return value instanceof Date ? value : new Date(value)
 }
 
+// ---- Shared validation ----
+
+/**
+ * Validate diary input shared by both create and update.
+ * Throws validation error if title is missing or transactions are invalid.
+ */
+export function validateDiaryInput(
+  title: string | undefined,
+  transactions: TransactionInput[] | undefined,
+): void {
+  if (!title) {
+    throw Errors.validationError([{ field: 'title', message: 'Title is required' }])
+  }
+  const transactionError = validateTransactions(transactions)
+  if (transactionError) {
+    throw Errors.validationError([{ field: 'transactions', message: transactionError }])
+  }
+}
+
 // ---- Transaction diff types and pure function ----
 
 export interface TransactionWriteData {
@@ -72,6 +91,47 @@ export function diffTransactions(
   return { toCreate, toUpdate }
 }
 
+/**
+ * Persist a transaction diff inside a Prisma $transaction callback.
+ *
+ * - Deletes transactions not in the `toUpdate` list
+ * - Updates existing transactions (validates they belong to the diary)
+ * - Creates new transactions
+ */
+async function persistTransactionDiff(
+  tx: Prisma.TransactionClient,
+  diaryId: bigint,
+  userId: bigint,
+  diff: TransactionDiffResult,
+): Promise<void> {
+  const updateIds = diff.toUpdate.map((t) => t.id)
+
+  await tx.transaction.deleteMany({
+    where: {
+      diaryId,
+      id: { notIn: updateIds.length > 0 ? updateIds : [BigInt(0)] },
+    },
+  })
+
+  for (const { id, data } of diff.toUpdate) {
+    const updated = await tx.transaction.updateMany({
+      where: { id, diaryId },
+      data,
+    })
+    if (updated.count === 0) {
+      throw Errors.validationError([
+        { field: 'transactions', message: `Transaction ${id.toString()} not found in this diary` },
+      ])
+    }
+  }
+
+  for (const data of diff.toCreate) {
+    await tx.transaction.create({
+      data: { ...data, diaryId, userId },
+    })
+  }
+}
+
 export interface CreateDiaryForUserInput {
   userId: string | bigint
   body: DiaryInput & { appendToToday?: boolean }
@@ -83,20 +143,13 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
   const userId = typeof input.userId === 'bigint' ? input.userId : BigInt(input.userId)
   const { body } = input
 
-  if (!body.title) {
-    throw Errors.validationError([{ field: 'title', message: 'Title is required' }])
-  }
+  validateDiaryInput(body.title, body.transactions)
 
   if (!body.content) {
     throw Errors.validationError([{ field: 'content', message: 'Content is required' }])
   }
 
   const { title, content, date, transactions, alerts, appendToToday, tags } = body
-
-  const transactionError = validateTransactions(transactions)
-  if (transactionError) {
-    throw Errors.validationError([{ field: 'transactions', message: transactionError }])
-  }
 
   const diaryDate = date ? toUtcNoonDate(date) : toUtcNoonDate(new Date())
   const { startOfDayUtc, endOfDayUtc } = getUtcDayRange(diaryDate)
@@ -137,6 +190,8 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
     throw Errors.diaryAlreadyExists(errorDate)
   }
 
+  const { toCreate: txToCreate } = diffTransactions(transactions)
+
   const diary = await prisma.diary.create({
     data: {
       userId,
@@ -147,17 +202,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
       createdByLabel: input.createdByLabel ?? null,
       date: diaryDate,
       transactions: {
-        create: transactions?.map((tx) => ({
-          userId,
-          symbol: tx.symbol?.trim().toUpperCase(),
-          type: tx.type,
-          quantity: tx.quantity,
-          price: tx.price,
-          tradeDate: toInputDate(tx.trade_date ?? tx.tradeDate ?? new Date()),
-          notes: tx.notes ?? null,
-          strategy: tx.strategy ?? null,
-          emotion: tx.emotion ?? null,
-        })),
+        create: txToCreate.map(data => ({ ...data, userId })),
       },
       alerts: {
         create: alerts?.map((alert) => ({
@@ -199,14 +244,7 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
 
   // --- Validation ---
 
-  if (!body.title) {
-    throw Errors.validationError([{ field: 'title', message: 'Title is required' }])
-  }
-
-  const transactionError = validateTransactions(body.transactions)
-  if (transactionError) {
-    throw Errors.validationError([{ field: 'transactions', message: transactionError }])
-  }
+  validateDiaryInput(body.title, body.transactions)
 
   // --- Ownership check ---
 
@@ -224,41 +262,14 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
 
   // --- Diff transactions ---
 
-  const { toCreate, toUpdate } = diffTransactions(body.transactions)
-  const updateIds = toUpdate.map((t) => t.id)
+  const diff = diffTransactions(body.transactions)
 
   // --- Persist inside a Prisma transaction ---
 
   const { title, content, date, alerts, tags } = body
 
   const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    // Delete transactions that are no longer in the payload
-    await tx.transaction.deleteMany({
-      where: {
-        diaryId,
-        id: { notIn: updateIds.length > 0 ? updateIds : [BigInt(0)] },
-      },
-    })
-
-    // Update existing transactions (preserve stable IDs)
-    for (const { id, data } of toUpdate) {
-      const updated = await tx.transaction.updateMany({
-        where: { id, diaryId },
-        data,
-      })
-      if (updated.count === 0) {
-        throw Errors.validationError([
-          { field: 'transactions', message: `Transaction ${id.toString()} not found in this diary` },
-        ])
-      }
-    }
-
-    // Create new transactions
-    for (const data of toCreate) {
-      await tx.transaction.create({
-        data: { ...data, diaryId, userId },
-      })
-    }
+    await persistTransactionDiff(tx, diaryId, userId, diff)
 
     // Alerts: delete-all + recreate
     await tx.alert.deleteMany({ where: { diaryId } })

@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // Mock variables must be hoisted so they're available when vi.mock runs
 const {
   mockPrismaDiaryFindFirst,
+  mockPrismaDiaryCreate,
+  mockPrismaDiaryUpdate,
   mockPrismaTransaction,
   mockTxDiaryUpdate,
   mockTxTransactionDeleteMany,
@@ -11,6 +13,8 @@ const {
   mockTxAlertDeleteMany,
 } = vi.hoisted(() => ({
   mockPrismaDiaryFindFirst: vi.fn(),
+  mockPrismaDiaryCreate: vi.fn(),
+  mockPrismaDiaryUpdate: vi.fn(),
   mockPrismaTransaction: vi.fn(),
   mockTxDiaryUpdate: vi.fn(),
   mockTxTransactionDeleteMany: vi.fn(),
@@ -23,6 +27,8 @@ vi.mock('~/lib/prisma', () => ({
   default: {
     diary: {
       findFirst: mockPrismaDiaryFindFirst,
+      create: mockPrismaDiaryCreate,
+      update: mockPrismaDiaryUpdate,
     },
     $transaction: mockPrismaTransaction,
   },
@@ -168,6 +174,247 @@ describe('diffTransactions', () => {
     const result = diffTransactions(incoming)
 
     expect(result.toUpdate[0].id).toBe(777n)
+  })
+})
+
+// ============================================================
+// Tests for validateDiaryInput
+// ============================================================
+
+import { validateDiaryInput } from '~/server/utils/diary-write'
+
+describe('validateDiaryInput', () => {
+  it('should throw validation error when title is empty', () => {
+    expect(() => validateDiaryInput('', undefined)).toThrow()
+    try {
+      validateDiaryInput('', undefined)
+    } catch (e: any) {
+      expect(e.code).toBe('SYS_VALIDATION_ERROR')
+      expect(e.details).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: 'title', message: 'Title is required' }),
+        ])
+      )
+    }
+  })
+
+  it('should throw validation error when title is missing (undefined)', () => {
+    expect(() => validateDiaryInput(undefined, undefined)).toThrow()
+    try {
+      validateDiaryInput(undefined, undefined)
+    } catch (e: any) {
+      expect(e.code).toBe('SYS_VALIDATION_ERROR')
+      expect(e.details[0].field).toBe('title')
+    }
+  })
+
+  it('should throw validation error when transactions are invalid (SELL more than held)', () => {
+    const transactions = [
+      { symbol: 'AAPL', type: 'SELL' as const, quantity: 100, price: 10 },
+    ]
+
+    expect(() => validateDiaryInput('Valid Title', transactions)).toThrow()
+    try {
+      validateDiaryInput('Valid Title', transactions)
+    } catch (e: any) {
+      expect(e.code).toBe('SYS_VALIDATION_ERROR')
+      expect(e.details[0].field).toBe('transactions')
+    }
+  })
+
+  it('should pass with valid title and no transactions', () => {
+    expect(() => validateDiaryInput('My Diary', undefined)).not.toThrow()
+  })
+
+  it('should pass with valid title and valid transactions', () => {
+    const transactions = [
+      { symbol: 'AAPL', type: 'BUY' as const, quantity: 10, price: 150 },
+      { symbol: 'AAPL', type: 'SELL' as const, quantity: 5, price: 160 },
+    ]
+
+    expect(() => validateDiaryInput('My Diary', transactions)).not.toThrow()
+  })
+})
+
+// ============================================================
+// Tests for createDiaryForUser
+// ============================================================
+
+import { createDiaryForUser } from '~/server/utils/diary-write'
+
+describe('createDiaryForUser', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  const baseCreatedDiary = {
+    id: 1n,
+    userId: 1n,
+    title: 'Test Diary',
+    content: 'Some content',
+    tagsString: null,
+    createdVia: 'WEB',
+    createdByLabel: null,
+    date: new Date('2026-05-17T12:00:00Z'),
+    createdAt: new Date('2026-05-17T12:00:00Z'),
+    updatedAt: new Date('2026-05-17T12:00:00Z'),
+    transactions: [],
+    alerts: [],
+  }
+
+  it('should create a diary successfully', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
+    mockPrismaDiaryCreate.mockResolvedValue(baseCreatedDiary)
+
+    const result = await createDiaryForUser({
+      userId: '1',
+      body: { title: 'Test Diary', content: 'Some content' },
+    })
+
+    expect(result.id).toBe(1n)
+    expect(mockPrismaDiaryCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          title: 'Test Diary',
+          content: 'Some content',
+          userId: 1n,
+        }),
+      })
+    )
+  })
+
+  it('should throw validation error when title is missing', async () => {
+    await expect(
+      createDiaryForUser({
+        userId: '1',
+        body: { content: 'Some content' } as any,
+      })
+    ).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+    })
+  })
+
+  it('should throw validation error when content is missing', async () => {
+    await expect(
+      createDiaryForUser({
+        userId: '1',
+        body: { title: 'Test Diary' } as any,
+      })
+    ).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+    })
+  })
+
+  it('should throw diaryAlreadyExists when diary exists and appendToToday is false', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({ id: 99n, userId: 1n })
+
+    await expect(
+      createDiaryForUser({
+        userId: '1',
+        body: { title: 'Test Diary', content: 'Some content' },
+      })
+    ).rejects.toMatchObject({
+      code: 'DIARY_ALREADY_EXISTS',
+    })
+  })
+
+  it('should append to existing diary when appendToToday is true', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({
+      id: 99n,
+      userId: 1n,
+      content: 'Existing content',
+      tagsString: 'watch',
+    })
+    mockPrismaDiaryUpdate.mockResolvedValue({
+      ...baseCreatedDiary,
+      id: 99n,
+      content: 'Existing content\n\n---\n\nNew content',
+      tagsString: 'watch,mistake',
+    })
+
+    const result = await createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Test Diary',
+        content: 'New content',
+        appendToToday: true,
+        tags: ['mistake'],
+      },
+    })
+
+    expect(mockPrismaDiaryUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 99n },
+        data: expect.objectContaining({
+          tagsString: 'watch,mistake',
+        }),
+      })
+    )
+    expect(mockPrismaDiaryCreate).not.toHaveBeenCalled()
+  })
+
+  it('should create diary with transactions', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
+    mockPrismaDiaryCreate.mockResolvedValue(baseCreatedDiary)
+
+    await createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Test Diary',
+        content: 'Some content',
+        transactions: [
+          { symbol: 'AAPL', type: 'BUY', quantity: 10, price: 150 },
+        ],
+      },
+    })
+
+    expect(mockPrismaDiaryCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          transactions: {
+            create: expect.arrayContaining([
+              expect.objectContaining({
+                symbol: 'AAPL',
+                type: 'BUY',
+                quantity: 10,
+                price: 150,
+                userId: 1n,
+              }),
+            ]),
+          },
+        }),
+      })
+    )
+  })
+
+  it('should create diary with alerts', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
+    mockPrismaDiaryCreate.mockResolvedValue(baseCreatedDiary)
+
+    await createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Test Diary',
+        content: 'Some content',
+        alerts: [
+          { message: 'Check AAPL', triggerAt: '2026-06-01T12:00:00Z' },
+        ],
+      },
+    })
+
+    expect(mockPrismaDiaryCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          alerts: {
+            create: expect.arrayContaining([
+              expect.objectContaining({
+                message: 'Check AAPL',
+              }),
+            ]),
+          },
+        }),
+      })
+    )
   })
 })
 
