@@ -1,23 +1,79 @@
 import { computed, getCurrentInstance, onUnmounted, reactive, ref, toRef, watch } from 'vue'
+import { useDebounceFn, useLocalStorage } from '@vueuse/core'
+import { toUtcNoonDate } from '~/lib/diary-date'
+import { generateTemplateDraft } from '~/lib/quicknote/generate-template-draft'
 import { resolveQuickReminderTime } from '~/lib/quicknote/quick-reminders'
-import { useQuickNoteDraft } from '~/composables/useQuickNoteDraft'
-import { useQuickNoteReminders } from '~/composables/useQuickNoteReminders'
-import { useQuickNoteSubmit } from '~/composables/useQuickNoteSubmit'
-import { cloneQuickNoteTemplateData, useQuickNoteTemplateDraft } from '~/composables/useQuickNoteTemplateDraft'
 import { useQuickNoteTemplates } from '~/composables/useQuickNoteTemplates'
 import {
   createEmptyQuickNoteTemplateData,
   type QuickNoteComposerState,
   type QuickNoteQuickReminderPreset,
   type QuickNoteReminderKey,
+  type QuickNoteReminders,
   type QuickNoteSaveMode,
+  type QuickNoteTemplateData,
   type QuickNoteTemplateKind,
 } from '~/types/quicknote'
+
+// ---------------------------------------------------------------------------
+// Internal helpers (inlined from deleted sub-composables)
+// ---------------------------------------------------------------------------
+
+function cloneQuickNoteTemplateData(data: QuickNoteTemplateData | undefined): QuickNoteTemplateData {
+  return {
+    ...createEmptyQuickNoteTemplateData(),
+    ...(data || {}),
+  }
+}
+
+function normalizeSymbols(symbols: string | undefined): string {
+  if (!symbols) return ''
+  return symbols
+    .split(',')
+    .map(symbol => symbol.trim().toUpperCase())
+    .filter(Boolean)
+    .join(', ')
+}
+
+function normalizeQuickNoteDate(date: string | Date): string {
+  return toUtcNoonDate(date).toISOString()
+}
+
+// ---------------------------------------------------------------------------
+// Draft interface (kept for autosave shape clarity)
+// ---------------------------------------------------------------------------
+
+interface QuickNoteDraft {
+  title: string
+  content: string
+  tags: string[]
+  date: string
+  saveMode: QuickNoteSaveMode
+  templateKind: QuickNoteTemplateKind
+  templateData: QuickNoteTemplateData
+  savedAt: string
+}
+
+// ---------------------------------------------------------------------------
+// Composer options
+// ---------------------------------------------------------------------------
 
 interface UseQuickNoteComposerOptions {
   defaultTemplateKind?: QuickNoteTemplateKind
   defaultSaveMode?: QuickNoteSaveMode
 }
+
+// ---------------------------------------------------------------------------
+// Draft storage keys & TTL
+// ---------------------------------------------------------------------------
+
+const DRAFT_KEY = 'quick-note-draft'
+const DRAFT_TTL_MS = 24 * 60 * 60 * 1000
+const REMINDER_KEY = 'quick-note-reminders'
+
+// ---------------------------------------------------------------------------
+// useQuickNoteComposer — main orchestrator (deep module)
+// ---------------------------------------------------------------------------
 
 export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) {
   const { getTodayDateString } = useTimezone()
@@ -28,14 +84,123 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     return rawLocale?.value || 'en'
   })
   const t = (key: string, params?: Record<string, unknown>) => i18n.t(key, params)
-  const { draft, hasDraft, lastSavedAt, saveDraft, clearDraft } = useQuickNoteDraft()
-  const { reminders, setReminder, clearReminder, checkReminders } = useQuickNoteReminders()
+
+  // --- Draft (inlined from useQuickNoteDraft) ---
+  const draft = useLocalStorage<QuickNoteDraft>(DRAFT_KEY, {
+    title: '',
+    content: '',
+    tags: [],
+    date: '',
+    saveMode: 'create',
+    templateKind: 'blank',
+    templateData: createEmptyQuickNoteTemplateData(),
+    savedAt: '',
+  })
+
+  const lastSavedAt = ref('')
+
+  const hasDraft = computed(() => {
+    if (!draft.value.savedAt) return false
+    const savedAt = new Date(draft.value.savedAt).getTime()
+    if (!Number.isFinite(savedAt)) return false
+    if (Date.now() - savedAt > DRAFT_TTL_MS) return false
+    return Boolean(
+      draft.value.title?.trim() ||
+      draft.value.content?.trim() ||
+      draft.value.tags?.length ||
+      draft.value.date ||
+      draft.value.saveMode !== 'create' ||
+      draft.value.templateKind !== 'blank',
+    )
+  })
+
+  const saveDraft = useDebounceFn((data: Partial<QuickNoteDraft>) => {
+    draft.value = {
+      ...draft.value,
+      ...data,
+      savedAt: new Date().toISOString(),
+    }
+    lastSavedAt.value = draft.value.savedAt
+  }, 1000)
+
+  function clearDraft() {
+    draft.value = {
+      title: '',
+      content: '',
+      tags: [],
+      date: '',
+      saveMode: 'create',
+      templateKind: 'blank',
+      templateData: createEmptyQuickNoteTemplateData(),
+      savedAt: '',
+    }
+    lastSavedAt.value = ''
+  }
+
+  // --- Reminders (inlined from useQuickNoteReminders) ---
+  const reminders = useLocalStorage<QuickNoteReminders>(REMINDER_KEY, {
+    reminder1: null,
+  })
+
+  function setReminder(key: QuickNoteReminderKey, time: string | null) {
+    reminders.value = { ...reminders.value, [key]: time }
+  }
+
+  function clearReminder(key: QuickNoteReminderKey) {
+    reminders.value = { ...reminders.value, [key]: null }
+  }
+
+  function checkReminders() {
+    if (!process.client) return
+    const now = Date.now()
+    const time = reminders.value.reminder1
+    if (!time) return
+    const target = new Date(time).getTime()
+    if (!Number.isFinite(target)) {
+      clearReminder('reminder1')
+      return
+    }
+    if (now >= target) {
+      showToast('快速筆記提醒：該記錄一下了')
+      clearReminder('reminder1')
+    }
+  }
+
+  function showToast(message: string) {
+    if (!process.client) return
+    const toast = useToast()
+    toast.info(message, 6000)
+  }
+
+  // --- Submit (inlined from useQuickNoteSubmit) ---
+  async function submitQuickNote(input: {
+    title: string
+    content: string
+    date: string | Date
+    saveMode?: QuickNoteSaveMode
+    tags?: string[]
+  }) {
+    const body = {
+      title: input.title,
+      content: input.content,
+      date: normalizeQuickNoteDate(input.date),
+      tags: input.tags ?? [],
+      appendToToday: input.saveMode === 'append',
+    }
+
+    return await $fetch<{ id?: string | bigint | { toString: () => string } }>('/api/diaries', {
+      method: 'POST',
+      body,
+    })
+  }
+
+  // --- Templates ---
   const { templates } = useQuickNoteTemplates()
-  const { submitQuickNote } = useQuickNoteSubmit()
 
   const defaultTemplateKind = options.defaultTemplateKind ?? 'blank'
   const defaultSaveMode = options.defaultSaveMode ?? 'create'
 
+  // --- Core state ---
   const state = reactive<QuickNoteComposerState>({
     date: getTodayDateString(),
     saveMode: defaultSaveMode,
@@ -57,17 +222,79 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   const checkingExistingDiaryForDate = ref(false)
   let reminderTimer: ReturnType<typeof setInterval> | null = null
 
-  const {
-    suggestedDraft,
-    hasTemplateChangesPending,
-    syncSuggestedDraft,
-    applyTemplateKind,
-    updateTemplateData,
-    applyTemplateChanges,
-    regenerateFromTemplate,
-    setAppliedTemplateContent,
-  } = useQuickNoteTemplateDraft(state, locale)
+  // --- Template draft (inlined from useQuickNoteTemplateDraft) ---
+  const appliedTemplateContent = ref('')
 
+  const suggestedDraft = computed(() => generateTemplateDraft({
+    templateKind: state.templateKind,
+    date: state.date,
+    locale: locale.value,
+    templateData: state.templateData,
+  }))
+
+  const hasTemplateChangesPending = computed(() => {
+    if (state.templateKind === 'blank') return false
+    if (state.contentTouched && appliedTemplateContent.value !== suggestedDraft.value.content) return true
+    return false
+  })
+
+  function syncSuggestedDraft(force = false) {
+    if (force || !state.titleTouched) {
+      state.title = suggestedDraft.value.title
+    }
+    if (force || !state.contentTouched) {
+      state.content = suggestedDraft.value.content
+      appliedTemplateContent.value = suggestedDraft.value.content
+    }
+  }
+
+  function applyTemplateKind(kind: QuickNoteTemplateKind) {
+    state.templateKind = kind
+    if (kind === 'blank') {
+      Object.assign(state.templateData, createEmptyQuickNoteTemplateData())
+    }
+    syncSuggestedDraft()
+  }
+
+  function updateTemplateData(patch: Partial<QuickNoteTemplateData>) {
+    const nextPatch = { ...patch }
+    if (typeof nextPatch.symbols === 'string') {
+      nextPatch.symbols = normalizeSymbols(nextPatch.symbols)
+    }
+    Object.assign(state.templateData, nextPatch)
+    syncSuggestedDraft()
+  }
+
+  function mergeTemplateContent(currentContent: string, nextTemplateContent: string): string {
+    const current = currentContent.trim()
+    const nextTemplate = nextTemplateContent.trim()
+    const previousTemplate = appliedTemplateContent.value.trim()
+
+    if (!current) return nextTemplate
+
+    if (previousTemplate && current.includes(previousTemplate)) {
+      const updated = current.replace(previousTemplate, nextTemplate).trim()
+      return updated || current
+    }
+
+    if (!nextTemplate || current === nextTemplate) {
+      return current
+    }
+
+    return [current, nextTemplate].join('\n\n').trim()
+  }
+
+  function applyTemplateChanges() {
+    state.content = mergeTemplateContent(state.content, suggestedDraft.value.content)
+    state.contentTouched = true
+    appliedTemplateContent.value = suggestedDraft.value.content
+  }
+
+  function setAppliedTemplateContent(content: string) {
+    appliedTemplateContent.value = content
+  }
+
+  // --- Computed outputs ---
   const draftHint = computed(() => {
     if (!lastSavedAt.value) return ''
     return t('quickDiary.draft.saved')
@@ -104,10 +331,11 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       .filter(Boolean) as Array<{ key: string; label: string; remaining: string }>
   })
 
+  // --- Watchers ---
   watch(
     () => [state.templateKind, state.date, locale.value, JSON.stringify(state.templateData)],
     () => syncSuggestedDraft(),
-    { immediate: true }
+    { immediate: true },
   )
 
   watch(
@@ -124,9 +352,10 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
         templateData: { ...state.templateData },
       })
     },
-    { deep: true }
+    { deep: true },
   )
 
+  // --- Mutations ---
   function setTitle(title: string) {
     state.title = title
     state.titleTouched = true
@@ -317,7 +546,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     appendVoiceTranscript,
     applySnippet,
     applyTemplateChanges,
-    regenerateFromTemplate,
+    regenerateFromTemplate: applyTemplateChanges,
     setQuickReminder,
     handleReminderSet,
     handleReminderClear,

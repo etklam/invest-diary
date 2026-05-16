@@ -1,5 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { ref } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mockToast } from '../vi-setup'
 import QuickDiaryModal from '~/components/QuickDiaryModal.vue'
@@ -78,39 +78,90 @@ const submitQuickNoteMock = vi.fn()
 const clearDraftMock = vi.fn()
 const setReminderMock = vi.fn()
 const clearReminderMock = vi.fn()
-const checkRemindersMock = vi.fn()
 
-vi.mock('~/composables/useQuickNoteDraft', () => ({
-  useQuickNoteDraft: () => ({
-    draft: ref({ content: '', tags: [], date: '', savedAt: '' }),
-    hasDraft: ref(false),
-    lastSavedAt: ref(''),
-    saveDraft: vi.fn(),
-    clearDraft: clearDraftMock,
-  }),
-}))
+function createMockState() {
+  return reactive({
+    date: '2026-03-22',
+    saveMode: 'create' as string,
+    templateKind: 'blank' as const,
+    title: '',
+    content: '',
+    tags: [] as string[],
+    reminders: { reminder1: null as string | null },
+    templateData: {} as Record<string, unknown>,
+    titleTouched: false,
+    contentTouched: false,
+  })
+}
 
-vi.mock('~/composables/useQuickNoteTemplates', () => ({
-  useQuickNoteTemplates: () => ({
+function createMockComposer() {
+  const state = createMockState()
+  const composer: Record<string, any> = {
+    state,
+    saveMode: computed(() => state.saveMode),
+    title: computed(() => state.title),
+    content: computed(() => state.content),
+    tags: computed(() => state.tags),
+    date: ref('2026-03-22'),
+    templateKind: computed(() => state.templateKind),
     templates: ref([]),
-  }),
-}))
-
-vi.mock('~/composables/useQuickNoteReminders', () => ({
-  useQuickNoteReminders: () => ({
-    reminders: ref({
-      reminder1: null,
+    reminders: computed(() => state.reminders),
+    draftHint: ref(''),
+    activeReminders: ref([]),
+    existingDiaryForDate: ref(false),
+    checkingExistingDiaryForDate: ref(false),
+    suggestedDraft: ref({ title: '2026/03/22 日記', content: '' }),
+    hasTemplateChangesPending: ref(false),
+    applyTemplateKind: vi.fn((kind: string) => {
+      state.templateKind = kind as typeof state.templateKind
     }),
-    setReminder: setReminderMock,
-    clearReminder: clearReminderMock,
-    checkReminders: checkRemindersMock,
-  }),
-}))
+    updateTemplateData: vi.fn((patch: Record<string, unknown>) => {
+      // Simulate template data update
+      if (patch.symbols) {
+        const sym = typeof patch.symbols === 'string'
+          ? patch.symbols.split(',').map((s: string) => s.trim().toUpperCase()).join(', ')
+          : ''
+        state.title = `2026/03/22 ${patch.tradingType === 'sell' ? 'Sell' : 'Buy'} Diary - ${sym}`
+      }
+      // Simulate syncSuggestedDraft updating content from template note
+      if (patch.note) {
+        state.content = patch.note as string
+      }
+    }),
+    setTitle: vi.fn((title: string) => { state.title = title }),
+    setContent: vi.fn((content: string) => { state.content = content }),
+    setTags: vi.fn((tags: string[]) => { state.tags = tags }),
+    setDate: vi.fn(),
+    setSaveMode: vi.fn((mode: string) => { state.saveMode = mode }),
+    appendVoiceTranscript: vi.fn(),
+    applySnippet: vi.fn(),
+    applyTemplateChanges: vi.fn(),
+    regenerateFromTemplate: vi.fn(),
+    setQuickReminder: setReminderMock,
+    handleReminderSet: setReminderMock,
+    handleReminderClear: clearReminderMock,
+    syncExistingDiaryForDate: vi.fn(async () => false),
+    save: vi.fn(async () => {
+      await submitQuickNoteMock({
+        title: state.title,
+        content: state.content,
+        date: '2026-03-22',
+        saveMode: state.saveMode,
+        tags: state.tags,
+      })
+      clearDraftMock()
+      clearReminderMock('reminder1')
+      return { id: '42' }
+    }),
+    initialize: vi.fn(() => false),
+    dispose: vi.fn(),
+    resetState: vi.fn(),
+  }
+  return composer
+}
 
-vi.mock('~/composables/useQuickNoteSubmit', () => ({
-  useQuickNoteSubmit: () => ({
-    submitQuickNote: submitQuickNoteMock,
-  }),
+vi.mock('~/composables/useQuickNoteComposer', () => ({
+  useQuickNoteComposer: () => createMockComposer(),
 }))
 
 function mountModal() {
@@ -197,8 +248,10 @@ describe('QuickDiaryModal', () => {
 
     await clickByText(wrapper, '交易日記')
 
-    await wrapper.findAll('input[placeholder="例如: 2330, 2317"]')[0].setValue('tsla, nvda')
-    await wrapper.findAll('textarea[placeholder="簡單記錄今日操作心得..."]')[0].setValue('Watch setup')
+    const symbolInput = wrapper.findAll('input[placeholder="例如: 2330, 2317"]')[0]!
+    await symbolInput.setValue('tsla, nvda')
+    const noteTextarea = wrapper.findAll('textarea[placeholder="簡單記錄今日操作心得..."]')[0]!
+    await noteTextarea.setValue('Watch setup')
     await clickByText(wrapper, '補充到今日')
     await clickSubmitButton(wrapper)
     await flushPromises()

@@ -78,9 +78,27 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
 import { DEFAULT_TAGS, type TagKey } from '~/types/diary'
-import { useQuickNoteTags } from '~/composables/useQuickNoteTags'
 
+// --- Tag history (inlined from deleted useQuickNoteTags) ---
+const TAGS_KEY = 'quick-note-tags'
+const MAX_HISTORY = 30
+
+const tagHistory = useLocalStorage<string[]>(TAGS_KEY, [])
+
+function getRecentTags(limit = 8) {
+  return tagHistory.value.slice(0, limit)
+}
+
+function addTagToHistory(tag: string) {
+  const cleaned = tag.trim()
+  if (!cleaned) return
+  const next = [cleaned, ...tagHistory.value.filter(t => t !== cleaned)]
+  tagHistory.value = next.slice(0, MAX_HISTORY)
+}
+
+// --- Component logic ---
 const props = defineProps<{
   modelValue: string[]
 }>()
@@ -97,7 +115,6 @@ const selected = computed(() => new Set(props.modelValue))
 const selectedTags = computed(() => props.modelValue)
 
 const customInput = ref('')
-const { getRecentTags, addTag } = useQuickNoteTags()
 
 const recentTags = computed(() => getRecentTags())
 
@@ -112,7 +129,7 @@ function toggle(key: TagKey) {
     next.delete(key)
   } else {
     next.add(key)
-    addTag(key)
+    addTagToHistory(key)
   }
   emit('update:modelValue', Array.from(next))
 }
@@ -122,7 +139,7 @@ function addSelected(tag: string) {
   if (!cleaned) return
   if (selected.value.has(cleaned)) return
   emit('update:modelValue', [...props.modelValue, cleaned])
-  addTag(cleaned)
+  addTagToHistory(cleaned)
 }
 
 function removeSelected(tag: string) {
@@ -140,7 +157,7 @@ function addFromInput() {
   const next = new Set(props.modelValue)
   parts.forEach(tag => {
     next.add(tag)
-    addTag(tag)
+    addTagToHistory(tag)
   })
   emit('update:modelValue', Array.from(next))
   customInput.value = ''

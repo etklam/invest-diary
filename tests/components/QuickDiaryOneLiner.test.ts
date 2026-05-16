@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { ref } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { mockToast } from '../vi-setup'
 import QuickDiaryOneLiner from '~/components/QuickDiaryOneLiner.vue'
 
@@ -77,39 +77,94 @@ const submitQuickNoteMock = vi.fn()
 const clearDraftMock = vi.fn()
 const setReminderMock = vi.fn()
 const clearReminderMock = vi.fn()
-const checkRemindersMock = vi.fn()
 
-vi.mock('~/composables/useQuickNoteSubmit', () => ({
-  useQuickNoteSubmit: () => ({
-    submitQuickNote: submitQuickNoteMock,
-  }),
-}))
+// Mutable refs that tests can adjust before mounting
+const mockExistingDiary = ref(false)
 
-vi.mock('~/composables/useQuickNoteDraft', () => ({
-  useQuickNoteDraft: () => ({
-    draft: ref({ content: '', tags: [], date: '', savedAt: '' }),
-    hasDraft: ref(false),
-    lastSavedAt: ref(''),
-    saveDraft: vi.fn(),
-    clearDraft: clearDraftMock,
-  }),
-}))
+function createMockState() {
+  return reactive({
+    date: '2026-03-22',
+    saveMode: 'create' as string,
+    templateKind: 'blank' as const,
+    title: '',
+    content: '',
+    tags: [] as string[],
+    reminders: { reminder1: null as string | null },
+    templateData: {} as Record<string, unknown>,
+    titleTouched: false,
+    contentTouched: false,
+  })
+}
 
-vi.mock('~/composables/useQuickNoteTemplates', () => ({
-  useQuickNoteTemplates: () => ({
+function createMockComposer() {
+  const state = createMockState()
+  const composer: Record<string, any> = {
+    state,
+    saveMode: computed(() => state.saveMode),
+    title: computed(() => state.title),
+    content: computed(() => state.content),
+    tags: computed(() => state.tags),
+    date: ref('2026-03-22'),
+    templateKind: computed(() => state.templateKind),
     templates: ref([]),
-  }),
-}))
-
-vi.mock('~/composables/useQuickNoteReminders', () => ({
-  useQuickNoteReminders: () => ({
-    reminders: ref({
-      reminder1: null,
+    reminders: computed(() => state.reminders),
+    draftHint: ref(''),
+    activeReminders: ref([]),
+    existingDiaryForDate: mockExistingDiary,
+    checkingExistingDiaryForDate: ref(false),
+    suggestedDraft: ref({ title: '2026/03/22 Diary', content: '' }),
+    hasTemplateChangesPending: ref(false),
+    applyTemplateKind: vi.fn((kind: string) => { state.templateKind = kind as typeof state.templateKind }),
+    updateTemplateData: vi.fn((patch: Record<string, unknown>) => {
+      if (patch.note) state.content = patch.note as string
     }),
-    setReminder: setReminderMock,
-    clearReminder: clearReminderMock,
-    checkReminders: checkRemindersMock,
-  }),
+    setTitle: vi.fn((title: string) => { state.title = title }),
+    setContent: vi.fn((content: string) => { state.content = content }),
+    setTags: vi.fn((tags: string[]) => { state.tags = tags }),
+    setDate: vi.fn((date: string) => { state.date = date }),
+    setSaveMode: vi.fn((mode: string) => { state.saveMode = mode }),
+    appendVoiceTranscript: vi.fn(),
+    applySnippet: vi.fn(),
+    applyTemplateChanges: vi.fn(),
+    regenerateFromTemplate: vi.fn(),
+    setQuickReminder: setReminderMock,
+    handleReminderSet: setReminderMock,
+    handleReminderClear: clearReminderMock,
+    syncExistingDiaryForDate: vi.fn(async () => {
+      // Simulate real behavior: check $fetch result to set existingDiary
+      try {
+        const result = await $fetch('/api/diaries/by-date', { query: { date: '2026-03-22' } })
+        const has = Boolean(result)
+        mockExistingDiary.value = has
+        if (has) state.saveMode = 'append'
+        return has
+      } catch {
+        return mockExistingDiary.value
+      }
+    }),
+    save: vi.fn(async () => {
+      await submitQuickNoteMock({
+        content: state.content,
+        saveMode: state.saveMode,
+        tags: state.tags,
+      })
+      clearDraftMock()
+      clearReminderMock('reminder1')
+      return { id: '10' }
+    }),
+    initialize: vi.fn(() => {
+      // Simulate real initialize: trigger syncExistingDiaryForDate
+      composer.syncExistingDiaryForDate()
+      return false
+    }),
+    dispose: vi.fn(),
+    resetState: vi.fn(),
+  }
+  return composer
+}
+
+vi.mock('~/composables/useQuickNoteComposer', () => ({
+  useQuickNoteComposer: () => createMockComposer(),
 }))
 
 function mountOneLiner() {
@@ -162,6 +217,8 @@ describe('QuickDiaryOneLiner', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-03-22T08:30:00.000Z'))
     submitQuickNoteMock.mockResolvedValue({ id: '10' })
+    // Reset mock composer state
+    mockExistingDiary.value = false
   })
 
   afterEach(() => {
@@ -221,7 +278,7 @@ describe('QuickDiaryOneLiner', () => {
     await reminderChip!.trigger('click')
     await flushPromises()
 
-    expect(setReminderMock).toHaveBeenCalledWith('reminder1', '2026-03-23T08:30:00.000Z')
+    expect(setReminderMock).toHaveBeenCalledWith('tomorrow')
     expect(mockToast.info).toHaveBeenCalledWith('已設定 明天 提醒')
   })
 })
