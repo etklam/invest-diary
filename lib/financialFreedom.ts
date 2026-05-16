@@ -324,33 +324,7 @@ export function calculateFinancialFreedom(input: FinancialFreedomInput): Financi
   }
 }
 
-/**
- * 格式化貨幣 - 使用 $ 符號
- */
-export function formatCurrency(value: number, locale: string = 'zh-TW'): string {
-  const formatter = new Intl.NumberFormat(locale === 'en' ? 'en-US' : locale, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  })
-  return '$' + formatter.format(value)
-}
-
-/**
- * 格式化百分比
- */
-export function formatPercent(value: number, decimals: number = 1): string {
-  return `${value.toFixed(decimals)}%`
-}
-
-import { formatYearMonth } from '~/lib/dates'
-
-/**
- * 格式化日期（年月格式）
- * 向後相容包裝器，委派給 lib/dates/
- */
-export function formatDate(date: Date, locale: string = 'zh-TW'): string {
-  return formatYearMonth(date, locale)
-}
+// 格式化函數已移至 lib/format.ts 和 lib/dates/ — 請直接從該處 import
 
 /**
  * 取得風險等級顏色

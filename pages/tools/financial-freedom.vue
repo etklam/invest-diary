@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import {
   withdrawalRatePresets,
-  formatCurrency,
-  formatPercent,
-  formatDate
 } from '~/lib/financialFreedom'
+import { formatCurrency, formatPercent } from '~/lib/format'
+import { formatYearMonth as formatDate } from '~/lib/dates'
 import { useFinancialFreedomCalculator } from '~/composables/useFinancialFreedomCalculator'
 
 const { t, locale } = useI18n()
@@ -60,7 +59,7 @@ const getPresetName = (preset: typeof withdrawalRatePresets[0]) => {
   return t(`tools.financialFreedom.withdrawalPresets.${preset.id}.name`)
 }
 
-const formatCurrencyLocal = (value: number) => formatCurrency(value, locale.value)
+const formatCurrencyLocal = (value: number) => formatCurrency(value, { decimals: 0, locale: locale.value })
 
 const formatCompactValue = (value: number) => {
   const abs = Math.abs(value)

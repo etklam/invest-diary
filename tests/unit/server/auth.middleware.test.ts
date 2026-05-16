@@ -90,7 +90,6 @@ describe('server/middleware/auth', () => {
   it('should recover session via refresh token when access token is expired', async () => {
     mockGetCookie
       .mockReturnValueOnce('expired-access-token')
-      .mockReturnValueOnce(null)
       .mockReturnValueOnce('valid-refresh-token')
 
     mockVerifyToken
@@ -130,7 +129,7 @@ describe('server/middleware/auth', () => {
   })
 
   it('should clear context when access token is a refresh token', async () => {
-    mockGetCookie.mockReturnValueOnce('refresh-token-as-access').mockReturnValueOnce(null).mockReturnValueOnce(null)
+    mockGetCookie.mockReturnValueOnce('refresh-token-as-access').mockReturnValueOnce(null)
     mockVerifyToken.mockResolvedValue({
       userId: '1',
       email: 'token@example.com',
@@ -150,7 +149,6 @@ describe('server/middleware/auth', () => {
   it('should clear context when refresh token is missing in storage', async () => {
     mockGetCookie
       .mockReturnValueOnce('expired-access-token')
-      .mockReturnValueOnce(null)
       .mockReturnValueOnce('valid-refresh-token')
 
     mockVerifyToken

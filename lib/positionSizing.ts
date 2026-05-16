@@ -174,19 +174,4 @@ export function calculatePositionSizing(input: CalculationInput): {
   return { results, summary, warnings }
 }
 
-/**
- * 格式化貨幣（與頁面一致）
- */
-export function formatCurrency(value: number): string {
-  return '$' + new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(value)
-}
-
-/**
- * 格式化數字（與頁面一致）
- */
-export function formatNumber(value: number): string {
-  return new Intl.NumberFormat('zh-TW').format(value)
-}
+// 格式化函數已移至 lib/format.ts — 請直接 import { formatCurrency, formatNumber } from '~/lib/format'

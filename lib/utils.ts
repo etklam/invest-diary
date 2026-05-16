@@ -50,12 +50,6 @@ export function calculateHoldings(transactions: TransactionForHolding[]): Holdin
   }))
 }
 
-/**
- * 格式化金額
- */
-export function formatCurrency(amount: number): string {
-  return '$' + new Intl.NumberFormat('zh-TW', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(amount)
-}
+// ─── Re-exports ───────────────────────────────────────────────────────────────
+// 數字格式化已移至 lib/format.ts，此處保留向後相容的 re-export
+export { formatCurrency } from '~/lib/format'

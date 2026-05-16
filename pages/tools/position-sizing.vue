@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { calculatePositionSizing, validateRatios, formatCurrency as formatCurrencyUtil, formatNumber as formatNumberUtil } from '~/lib/positionSizing'
+import { calculatePositionSizing, validateRatios } from '~/lib/positionSizing'
+import { formatCurrency as formatCurrencyUtil, formatNumber as formatNumberUtil } from '~/lib/format'
 import type { RoundingMode, PositionResult, CalculationSummary } from '~/lib/positionSizing'
 import type { VueMessageType } from 'vue-i18n'
 

@@ -5,7 +5,7 @@ import { logger } from '~/lib/logger'
 
 /**
  * Global API authentication middleware
- * - Checks access-token cookie first, falls back to auth-token for backward compatibility
+ * - Checks access-token cookie, falls back to refresh-token for session recovery
  * - All protected APIs rely on event.context.user
  */
 export default defineEventHandler(async (event) => {
@@ -18,20 +18,17 @@ export default defineEventHandler(async (event) => {
   // Telegram webhook uses its own secret token authentication, skip JWT check
   if (url.pathname === '/api/telegram/webhook') return
 
-  // Try new access token first, then fall back to legacy token
   const accessToken = getCookie(event, 'access-token')
-  const legacyToken = getCookie(event, 'auth-token')
   const refreshToken = getCookie(event, 'refresh-token')
-  const token = accessToken || legacyToken
 
-  if (!token && !refreshToken) {
+  if (!accessToken && !refreshToken) {
     event.context.user = undefined
     return
   }
 
-  if (token) {
+  if (accessToken) {
     try {
-      const user = await authenticateAccessToken(token)
+      const user = await authenticateAccessToken(accessToken)
       if (user) {
         event.context.user = user
         return
