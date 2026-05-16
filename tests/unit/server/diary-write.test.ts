@@ -416,6 +416,57 @@ describe('createDiaryForUser', () => {
       })
     )
   })
+
+  it('should create all transactions even when payload contains id (not silently dropped)', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
+    mockPrismaDiaryCreate.mockResolvedValue(baseCreatedDiary)
+
+    await createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Test Diary',
+        content: 'Some content',
+        transactions: [
+          { id: '999', symbol: 'AAPL', type: 'BUY', quantity: 10, price: 150 },
+          { symbol: 'MSFT', type: 'BUY', quantity: 5, price: 400 },
+        ],
+      },
+    })
+
+    // Both transactions should be created (id is ignored, not routed to update)
+    expect(mockPrismaDiaryCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          transactions: {
+            create: expect.arrayContaining([
+              expect.objectContaining({ symbol: 'AAPL', userId: 1n }),
+              expect.objectContaining({ symbol: 'MSFT', userId: 1n }),
+            ]),
+          },
+        }),
+      })
+    )
+  })
+
+  it('should report content error before transaction error when both are invalid', async () => {
+    await expect(
+      createDiaryForUser({
+        userId: '1',
+        body: {
+          title: 'Test Diary',
+          content: '',
+          transactions: [
+            { symbol: 'AAPL', type: 'SELL', quantity: 100, price: 10 },
+          ],
+        } as any,
+      })
+    ).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      details: expect.arrayContaining([
+        expect.objectContaining({ field: 'content' }),
+      ]),
+    })
+  })
 })
 
 // ============================================================
