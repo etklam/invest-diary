@@ -258,7 +258,7 @@ describe('Blog API', () => {
       )
     })
 
-    it('should preserve 400 validation errors for invalid date filters', async () => {
+    it('should reject invalid date filters with 400', async () => {
       mockGetQuery.mockReturnValue({ dateFrom: 'not-a-date' })
 
       const { default: handler } = await import('~/server/api/blog/index.get')
