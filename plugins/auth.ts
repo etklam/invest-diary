@@ -11,7 +11,6 @@ const hasServerAuthCookies = () => {
   const cookieHeader = useRequestHeaders(['cookie']).cookie ?? ''
   return cookieHeader.includes('access-token=')
     || cookieHeader.includes('refresh-token=')
-    || cookieHeader.includes('auth-token=')
 }
 
 export default defineNuxtPlugin(async () => {

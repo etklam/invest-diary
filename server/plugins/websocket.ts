@@ -104,7 +104,7 @@ function createSocketServer(
   io.use(async (socket, next) => {
     const authToken = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '')
     const cookieHeader = socket.handshake.headers.cookie
-    const cookieToken = getCookieValue(cookieHeader, 'access-token') || getCookieValue(cookieHeader, 'auth-token')
+    const cookieToken = getCookieValue(cookieHeader, 'access-token')
     const token = authToken || cookieToken
 
     if (!token) {

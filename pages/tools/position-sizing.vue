@@ -93,7 +93,7 @@ const calculationResults = computed<PositionResult[]>(() => calculationOutput.va
 const summary = computed<CalculationSummary | null>(() => calculationOutput.value.summary)
 const warnings = computed<string[]>(() => calculationOutput.value.warnings)
 
-const formatCurrency = formatCurrencyUtil
+const formatCurrency = (value: number) => formatCurrencyUtil(value, { decimals: 0 })
 const formatNumber = formatNumberUtil
 
 const copySuccess = ref(false)
