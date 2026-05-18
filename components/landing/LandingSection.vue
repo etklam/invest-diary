@@ -83,7 +83,7 @@ const revealDelayClass = computed(() => {
   width: 4px;
   height: 1.2em;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(180deg, var(--color-primary), var(--color-info));
 }
 
 .section-subtitle {

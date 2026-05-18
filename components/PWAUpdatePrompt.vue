@@ -40,16 +40,16 @@ const handleDismiss = () => {
       v-if="showPrompt"
       class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-50"
     >
-      <div class="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl shadow-indigo-500/10 border border-white/40 dark:border-white/10 overflow-hidden">
+      <div class="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl shadow-blue-500/10 border border-white/40 dark:border-white/10 overflow-hidden">
         <!-- Header with gradient accent -->
-        <div class="h-1 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+        <div class="h-1 bg-gradient-to-r from-blue-600 to-cyan-500"></div>
 
         <div class="p-4">
           <div class="flex items-start gap-4">
             <!-- Icon with gradient background -->
             <div class="flex-shrink-0 relative">
-              <div class="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl blur-lg opacity-40"></div>
-              <div class="relative w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div class="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl blur-lg opacity-40"></div>
+              <div class="relative w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center">
                 <Icon name="heroicons:arrow-path-solid" class="w-6 h-6 text-white animate-spin-slow" />
               </div>
             </div>
@@ -71,7 +71,7 @@ const handleDismiss = () => {
             </button>
             <button
               @click="handleUpdate"
-              class="flex-1 px-4 py-2.5 text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/25 cursor-pointer flex items-center justify-center gap-2"
+              class="flex-1 px-4 py-2.5 text-sm font-medium bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:from-blue-700 hover:to-cyan-600 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-2"
             >
               <Icon name="heroicons:arrow-path-solid" class="w-4 h-4" />
               {{ t('pwa.update.refresh') }}

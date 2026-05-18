@@ -1,29 +1,29 @@
-/* Editorial Ledger design tokens */
+/* Institutional Fintech design tokens */
 :root {
   --font-display: 'Fraunces', serif;
   --font-body: 'Source Sans 3', sans-serif;
   --font-data: 'IBM Plex Mono', monospace;
 
-  --color-background: #f6f1e8;
-  --color-surface: rgba(255, 252, 247, 0.82);
-  --color-surface-strong: #ece3d6;
-  --color-surface-muted: #f1e8dc;
-  --color-panel-ink: #17324d;
-  --color-primary: #17324d;
-  --color-primary-active: #244764;
-  --color-secondary: #b85c38;
-  --color-secondary-active: #9d4828;
-  --color-accent: #1c6b5c;
-  --color-success: #1c6b5c;
-  --color-danger: #b33a2f;
-  --color-warning: #a56a18;
-  --color-info: #2f5e88;
-  --color-border: #d7ccbc;
-  --color-border-strong: #b6a893;
-  --color-on-ink: #f6f1e8;
-  --color-text: #191714;
-  --color-text-muted: #4e463e;
-  --color-text-soft: #6e645a;
+  --color-background: #F8FAFC;
+  --color-surface: rgba(255, 255, 255, 0.92);
+  --color-surface-strong: #F1F5F9;
+  --color-surface-muted: #E2E8F0;
+  --color-panel-ink: #1E3A5F;
+  --color-primary: #2563EB;
+  --color-primary-active: #1D4ED8;
+  --color-secondary: #3B82F6;
+  --color-secondary-active: #2563EB;
+  --color-accent: #10B981;
+  --color-success: #10B981;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #38BDF8;
+  --color-border: #CBD5E1;
+  --color-border-strong: #94A3B8;
+  --color-on-ink: #FFFFFF;
+  --color-text: #0F172A;
+  --color-text-muted: #475569;
+  --color-text-soft: #64748B;
 
   --font-size-xs: 12px;
   --font-size-sm: 14px;
@@ -45,44 +45,60 @@
 
   --touch-target-min: 44px;
 
-  --radius-sm: 10px;
+  --radius-sm: 12px;
   --radius-md: 16px;
-  --radius-lg: 28px;
+  --radius-lg: 24px;
   --radius-pill: 999px;
 
-  --shadow-sm: 0 10px 25px rgba(40, 29, 14, 0.06);
-  --shadow-md: 0 18px 40px rgba(40, 29, 14, 0.08);
-  --shadow-lg: 0 28px 60px rgba(40, 29, 14, 0.1);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
 
   --motion-fast: 150ms;
   --motion-base: 280ms;
   --motion-slow: 420ms;
   --easing-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Glass morphism tokens (light mode) */
+  --glass-surface: rgba(255, 255, 255, 0.92);
+  --glass-surface-strong: rgba(255, 255, 255, 0.96);
+  --glass-border: rgba(203, 213, 225, 0.6);
+  --glass-border-strong: rgba(148, 163, 184, 0.8);
+  --color-grid-dot: rgba(37, 99, 235, 0.06);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.25), 0 0 40px rgba(37, 99, 235, 0.08);
 }
 
 :root.dark,
 .dark {
-  --color-background: #0f1316;
-  --color-surface: rgba(22, 28, 32, 0.9);
-  --color-surface-strong: #1c2328;
-  --color-surface-muted: #161c20;
-  --color-panel-ink: #243748;
-  --color-primary: #4a7099;
-  --color-primary-active: #3f6588;
-  --color-secondary: #c47d5e;
-  --color-secondary-active: #c98565;
-  --color-accent: #2f7b6d;
-  --color-success: #2f7b6d;
-  --color-danger: #c45e55;
-  --color-warning: #be873c;
-  --color-info: #5b7ea4;
-  --color-border: #2a343b;
-  --color-border-strong: #42505a;
-  --color-on-ink: #f3eee6;
-  --color-text: #f3eee6;
-  --color-text-muted: #b7aea2;
-  --color-text-soft: #a89e94;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.20);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.32);
+  --color-background: #0B1220;
+  --color-surface: rgba(255, 255, 255, 0.04);
+  --color-surface-strong: rgba(255, 255, 255, 0.06);
+  --color-surface-muted: rgba(255, 255, 255, 0.03);
+  --color-panel-ink: #0F172A;
+  --color-primary: #3B82F6;
+  --color-primary-active: #60A5FA;
+  --color-secondary: #38BDF8;
+  --color-secondary-active: #7DD3FC;
+  --color-accent: #34D399;
+  --color-success: #34D399;
+  --color-danger: #F87171;
+  --color-warning: #FBBF24;
+  --color-info: #38BDF8;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.14);
+  --color-on-ink: #F8FAFC;
+  --color-text: #F8FAFC;
+  --color-text-muted: #CBD5E1;
+  --color-text-soft: #94A3B8;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.50);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.60);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.70);
+
+  /* Glass morphism tokens (dark mode) */
+  --glass-surface: rgba(255, 255, 255, 0.05);
+  --glass-surface-strong: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-strong: rgba(255, 255, 255, 0.14);
+  --color-grid-dot: rgba(255, 255, 255, 0.03);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.3), 0 0 40px rgba(37, 99, 235, 0.1);
 }

@@ -109,7 +109,7 @@ onUnmounted(() => {
 <style scoped>
 .default-shell {
   background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--color-secondary) 10%, transparent), transparent 28%),
+    radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 28%),
     var(--color-background);
 }
 </style>

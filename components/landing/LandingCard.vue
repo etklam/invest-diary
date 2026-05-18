@@ -89,7 +89,7 @@ const revealDelayClass = computed(() => {
   position: absolute;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--color-secondary), color-mix(in srgb, var(--color-primary) 38%, transparent));
+  background: linear-gradient(90deg, var(--color-primary), var(--color-info));
 }
 
 .feature-card:hover {
@@ -100,7 +100,7 @@ const revealDelayClass = computed(() => {
 
 .feature-card-featured {
   background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 32%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 32%),
     linear-gradient(145deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 85%, transparent));
 }
 
@@ -117,7 +117,7 @@ const revealDelayClass = computed(() => {
 }
 
 .feature-card-quiet::after {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 36%, transparent), transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-info) 36%, transparent), transparent);
 }
 
 .metric-card {
@@ -134,8 +134,8 @@ const revealDelayClass = computed(() => {
   min-width: 2.8rem;
   height: 2rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-secondary) 14%, transparent);
-  color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -143,8 +143,8 @@ const revealDelayClass = computed(() => {
 
 :global(.dark .number-chip),
 :global(.dark-mode .number-chip) {
-  background: color-mix(in srgb, var(--color-secondary) 22%, transparent);
-  color: color-mix(in srgb, white 82%, var(--color-secondary));
+  background: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  color: color-mix(in srgb, white 82%, var(--color-primary));
 }
 
 .feature-icon {

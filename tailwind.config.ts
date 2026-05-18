@@ -50,7 +50,8 @@ export default <Config>{
         'dt-lg': 'var(--shadow-lg)',
       },
       backgroundImage: {
-        'gradient-purple-top': 'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)'
+        'gradient-purple-top': 'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)',
+        'gradient-accent': 'linear-gradient(135deg, var(--color-primary), var(--color-info))'
       }
     }
   },

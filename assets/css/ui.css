@@ -20,13 +20,13 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: var(--color-secondary);
+  color: var(--color-info);
   font-weight: 700;
   margin-bottom: 0.25rem;
 }
 
 .dark .fin-kicker {
-  color: var(--color-secondary);
+  color: var(--color-info);
 }
 
 .fin-title {
@@ -93,8 +93,8 @@
 
 .fin-input:focus {
   outline: none;
-  border-color: var(--color-secondary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 18%, transparent);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
 .fin-label {

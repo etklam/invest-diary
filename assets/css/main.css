@@ -193,14 +193,14 @@
 .focus\:ring-indigo-500:focus,
 .ring-sky-300,
 .focus\:ring-sky-300:focus {
-  --tw-ring-color: var(--color-secondary);
+  --tw-ring-color: var(--color-primary);
 }
 
 .dark .dark\:ring-sky-500,
 .dark .dark\:focus\:ring-sky-500:focus,
 .dark .dark\:ring-indigo-500,
 .dark .dark\:focus\:ring-indigo-500:focus {
-  --tw-ring-color: var(--color-secondary);
+  --tw-ring-color: var(--color-primary);
 }
 
 /* ── Semantic colours (keep or refine) ─────────────────── */
@@ -357,7 +357,7 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-secondary) 24%, transparent);
+    background: color-mix(in srgb, var(--color-primary) 24%, transparent);
   }
 
   a {

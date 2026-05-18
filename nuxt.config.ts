@@ -262,8 +262,8 @@ export default defineNuxtConfig({
       lang: 'zh-TW',
       display: 'standalone',
       start_url: '/',
-      background_color: '#ffffff',
-      theme_color: '#3b82f6',
+      background_color: '#0B1220',
+      theme_color: '#2563EB',
       icons: [
         {
           src: '/icon-192x192.png',

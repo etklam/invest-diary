@@ -177,7 +177,7 @@ const prefetchDetail = async () => {
 }
 
 .group:hover .card-title {
-  color: var(--color-secondary);
+  color: var(--color-primary);
 }
 
 .card-arrow:hover {

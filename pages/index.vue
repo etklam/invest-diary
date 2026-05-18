@@ -226,7 +226,7 @@
           <p class="mt-6 text-sm leading-6">
             {{ $t('home.cta.disclaimer') }}
           </p>
-          <NuxtLink to="/auth/register" class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-orange-500 dark:bg-orange-700 px-7 py-3 text-base font-semibold text-white dark:text-orange-50 shadow-lg shadow-orange-500/30 dark:shadow-orange-700/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-400 dark:hover:bg-orange-600 cursor-pointer">
+          <NuxtLink to="/auth/register" class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] dark:bg-[var(--color-primary)] px-7 py-3 text-base font-semibold text-white dark:text-white shadow-lg shadow-[var(--color-primary)]/30 dark:shadow-[var(--color-primary)]/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-primary-active)] dark:hover:bg-[var(--color-primary-active)] cursor-pointer">
             {{ $t('home.cta.register') }}
             <Icon name="heroicons:arrow-up-right-20-solid" class="h-5 w-5" />
           </NuxtLink>
@@ -295,27 +295,27 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 <style scoped>
 .fintech-home {
   --home-primary: var(--color-primary);
-  --home-secondary: var(--color-secondary);
-  --home-cta: var(--color-secondary);
+  --home-secondary: var(--color-info);
+  --home-cta: var(--color-primary);
   --home-bg: var(--color-background);
   --home-text: var(--color-text);
   font-family: var(--font-body);
   background:
-    radial-gradient(1200px 700px at 12% -10%, color-mix(in srgb, var(--color-secondary) 12%, transparent), transparent 58%),
-    radial-gradient(1100px 620px at 95% -5%, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 62%),
+    radial-gradient(1200px 700px at 12% -10%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 58%),
+    radial-gradient(1100px 620px at 95% -5%, color-mix(in srgb, var(--color-info) 12%, transparent), transparent 62%),
     var(--home-bg);
 }
 
 :global(.dark .fintech-home),
 :global(.dark-mode .fintech-home) {
   background:
-    radial-gradient(1100px 640px at 10% -10%, color-mix(in srgb, var(--color-secondary) 10%, transparent), transparent 58%),
-    radial-gradient(900px 520px at 95% -8%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 62%),
+    radial-gradient(1100px 640px at 10% -10%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 58%),
+    radial-gradient(900px 520px at 95% -8%, color-mix(in srgb, var(--color-info) 12%, transparent), transparent 62%),
     var(--color-background);
 }
 
 .bg-grid {
-  background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--color-primary) 10%, transparent) 1px, transparent 0);
+  background-image: radial-gradient(circle at 1px 1px, var(--color-grid-dot) 1px, transparent 0);
   background-size: 34px 34px;
 }
 
@@ -326,7 +326,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 
 .editorial-panel-wrapper :deep(.section-panel) {
   background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 12%, transparent), transparent 34%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 34%),
     linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 88%, transparent), color-mix(in srgb, var(--color-surface-strong) 84%, transparent));
 }
 
@@ -351,13 +351,13 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 .action-btn-primary {
   color: #fff;
   background: var(--home-primary);
-  box-shadow: 0 16px 28px color-mix(in srgb, var(--home-primary) 26%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 35%, transparent), 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .action-btn-primary:hover {
   transform: translateY(-2px);
   background: var(--color-primary-active);
-  box-shadow: 0 22px 36px color-mix(in srgb, var(--home-primary) 34%, transparent);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--color-primary) 44%, transparent), 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 .action-btn-secondary {
@@ -379,7 +379,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   border-radius: 1.35rem;
   overflow: hidden;
   background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 30%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 30%),
     var(--color-surface);
   box-shadow: var(--shadow-md);
   color: var(--color-text);
@@ -388,8 +388,9 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 :global(.dark .terminal-panel),
 :global(.dark-mode .terminal-panel) {
   background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 30%),
-    linear-gradient(145deg, #132739, #1e3445 58%, #213847);
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 30%),
+    rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--color-on-ink);
 }
 
@@ -443,8 +444,8 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 
 :global(.dark .trust-pill),
 :global(.dark-mode .trust-pill) {
-  border-color: var(--color-border);
-  background: color-mix(in srgb, var(--color-surface-strong) 88%, transparent);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--color-text);
 }
 
@@ -477,7 +478,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--color-secondary);
+  color: var(--color-info);
 }
 
 .split-grid { display: grid; gap: 1.5rem; }
@@ -519,7 +520,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 }
 
 .workflow-step-number {
-  color: var(--color-secondary);
+  color: var(--color-info);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -560,14 +561,14 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   height: 2.5rem;
   border-radius: 999px;
   color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-secondary) 14%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
 }
 
 .workflow-tool-title {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--color-secondary);
+  color: var(--color-info);
 }
 
 .workflow-footnote {
@@ -580,7 +581,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   border-radius: var(--radius-lg);
   padding: 1.6rem;
   background:
-    radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 60%),
+    radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 60%),
     var(--color-surface);
   box-shadow: var(--shadow-lg);
   color: var(--color-text);
@@ -589,8 +590,9 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 :global(.dark .story-panel),
 :global(.dark-mode .story-panel) {
   background:
-    radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 60%),
-    linear-gradient(145deg, #111720, #17212a);
+    radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 60%),
+    rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--color-text);
 }
 
@@ -603,8 +605,8 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 
 :global(.dark .chapter-card),
 :global(.dark-mode .chapter-card) {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 :global(.dark .story-panel h2),
@@ -618,7 +620,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 }
 
 .chapter-label {
-  color: color-mix(in srgb, var(--color-primary) 72%, var(--color-secondary));
+  color: var(--color-info);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -627,7 +629,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 
 :global(.dark .chapter-label),
 :global(.dark-mode .chapter-label) {
-  color: color-mix(in srgb, var(--color-on-ink) 72%, var(--color-secondary));
+  color: var(--color-info);
 }
 
 .reveal { animation: reveal-up 700ms ease both; }

@@ -7,21 +7,22 @@
 - **Project type:** hybrid web app。公開頁面偏 editorial / marketing，登入後偏 workflow product。
 
 ## Aesthetic Direction
-- **Direction:** Editorial Ledger
+- **Direction:** Institutional Fintech
 - **Decoration level:** intentional
-- **Mood:** 像一本被高頻翻閱的投資筆記本，前台有觀點感，後台有紀律感。視覺上要有內容重量，不要像任何一個套版 SaaS。
+- **Mood:** 像一個專業交易者的深色工作台，結合數據驅動儀表板與玻璃擬態面板。深色背景營造專注感，電光藍色提供精準導引，玻璃材質在層級間建立通透的空間深度。不要把華麗放在信任感前面，不要把裝飾放在數據前面。
 - **Reference sites:** 本次未做外部競品研究，提案基於現有 codebase、產品類型與第一性原理。
 
-## AI Slop Audit
-- 公開頁目前有明顯的玻璃卡、浮動 orb、功能卡連發問題。單個元素不算罪，疊在一起就變成「很會做 landing page 的模板」，不是這個產品自己的臉。
-- `pages/index.vue`、`pages/auth/login.vue`、`pages/diaries/index.vue` 是三套人格。首頁像 content-heavy fintech marketing，登入像標準 SaaS，日記頁又像泛用後台卡片庫。這種斷裂比醜更傷，因為使用者會覺得產品沒有中心。
-- 字體角色沒有被嚴格定義。全域同時載入 `Playfair Display`、`Inter`、`Plus Jakarta Sans`，但沒有清楚規定誰負責敘事、誰負責 UI、誰負責資料。結果就是頁面看起來「有設計過」，但沒有章法。
-- 互動狀態偏表面。多數地方只有 hover 換色或卡片微上浮，缺少輸入、過濾、成功、風險、複盤這些高頻任務真正需要的節奏感與層級。
+## Post-Refactor Audit (2026-05-19)
+- **色彩系統已統一：** 全站 CSS 變數從暖色紙張（`#F6F1E8`）遷移至 Institutional Fintech 冷色系（`#0B1220` 深色底、`#2563EB` 電光藍、`#38BDF8` 青色）。16 個檔案中所有硬編碼 copper/orange/indigo 顏色已清除，統一使用設計 token。
+- **設計 Token 層重構完成：** `design-tokens.css` 新增 12 個 glass token（`--glass-surface`、`--glass-border`、`--color-grid-dot`、`--shadow-glow`），暗色模式表面從不透明色轉為半透明白色（玻璃擬態）。
+- **字體角色已嚴格定義：** `Fraunces`（展示）、`Source Sans 3`（內文/UI）、`IBM Plex Mono`（數據/程式碼）三件套，全域一致，無冗餘載入。
+- **Bridge 層保持一致：** `main.css` 的 Tailwind 顏色映射自動跟隨 token 更新，`text-slate-*`、`bg-white` 等標準類別正確對應新色調。
+- **待觀察：** 亮色模式下冷灰系（slate-based）取代暖紙色後的閱讀舒適度，以及行動端暗色模式下的玻璃擬態可讀性。
 
 ## Strategic Design Calls
 - **Safe choices:** 保留清晰的資料層級、明確的 gain/loss semantic、緊湊但不擁擠的 app 密度，這些是投資工具的識字能力。
-- **Risk 1:** 公開頁標題導入 serif，讓產品從泛用金融藍綠科技風退一步，變成「有觀點的投資筆記」。代價是沒有那麼像標準 SaaS，但換來辨識度與內容可信感。
-- **Risk 2:** 背景與卡片改走 paper-and-ink，而不是 cyan glass。代價是少一點「新創炫光」，但更適合 journaling 與長時間閱讀。
+- **Risk 1:** 在 fintech 藍色系中導入 Fraunces serif 作為展示字體，讓產品在「專業交易平台」的基礎上疊加「有觀點的投資筆記」性格。代價是不像標準無襯線 SaaS，但換來辨識度與內容可信感。
+- **Risk 2:** 深色背景搭配玻璃擬態面板，走 institutional fintech 資料工作台路線。代價是比暖紙風格更冷，但更適合資料密集工作與螢幕長時間觀看。
 - **Risk 3:** 公開頁與產品頁統一在同一個設計語系下，但採不同密度。代價是不能每頁各玩各的，換來產品人格完整。
 
 ## Typography
@@ -46,29 +47,30 @@
 
 ## Color
 - **Approach:** restrained
-- **Primary:** `#17324D` — Deep Ledger Blue。用於主要導覽、主 CTA、焦點框、重要資訊區塊。它比亮青更穩，適合金融決策情境。
-- **Secondary:** `#B85C38` — Burnt Copper。用於 editorial 強調、章節引子、特定 CTA。這是產品的辨識點，不是到處灑的糖果色。
-- **Accent:** `#1C6B5C` — Discipline Green。用於正向行為、完成、持續、紀律提示。
-- **Neutrals:** 暖灰紙面，不要純藍灰科技底
-  - `#F6F1E8` surface-0
-  - `#ECE3D6` surface-1
-  - `#D7CCBC` border-soft
-  - `#A19687` text-muted
-  - `#4E463E` text-secondary
-  - `#191714` text-strong
+- **Primary:** `#2563EB` — Electric Blue。用於主要導覽、主 CTA、焦點框、重要資訊區塊。冷調藍色傳達專業與信任，適合金融決策情境。
+- **Secondary:** `#3B82F6` — Sky Blue。用於次要互動、輔助按鈕、連結提示。比 Primary 輕一階，建立清晰的視覺層級。
+- **Accent:** `#10B981` — Terminal Green。用於正向行為、完成、持續、紀律提示、gain 數據。
+- **Info:** `#38BDF8` — Cyan Light。用於資訊面板、kicker、資料亮點。
+- **Neutrals:** 冷灰系，搭配玻璃擬態的透明層級
+  - `#F8FAFC` surface-0 (light) / `#0B1220` (dark)
+  - `#F1F5F9` surface-1 (light) / translucent glass (dark)
+  - `#CBD5E1` border-soft (light) / `rgba(255,255,255,0.08)` (dark)
+  - `#94A3B8` border-strong
+  - `#475569` text-muted (light) / `#CBD5E1` (dark)
+  - `#0F172A` text-strong (light) / `#F8FAFC` (dark)
 - **Semantic:**
-  - success `#1C6B5C`
-  - warning `#A56A18`
-  - error `#B33A2F`
-  - info `#2F5E88`
-- **Dark mode:** 不做單純反相。暗色模式要像深色工作桌，不是黑底 neon app。
-  - bg `#0F1316`
-  - surface `#161C20`
-  - surface-raised `#1C2328`
-  - border `#2A343B`
-  - text `#F3EEE6`
-  - muted `#B7AEA2`
-  - primary 在 dark mode 降飽和 12%，secondary 降飽和 18%
+  - success `#10B981` (light) / `#34D399` (dark)
+  - warning `#F59E0B` (light) / `#FBBF24` (dark)
+  - error `#EF4444` (light) / `#F87171` (dark)
+  - info `#38BDF8`
+- **Dark mode:** 不做單純反相。暗色模式像深夜交易工作台，以半透明表面建構層級深度。
+  - bg `#0B1220`
+  - surface `rgba(255,255,255,0.04)`
+  - surface-raised `rgba(255,255,255,0.06)`
+  - border `rgba(255,255,255,0.08)`
+  - text `#F8FAFC`
+  - muted `#CBD5E1`
+  - 玻璃擬態 token: `--glass-surface`, `--glass-border` 提供可控的透明層級
 
 ## Spacing
 - **Base unit:** 8px
@@ -87,9 +89,9 @@
   - desktop: 12 columns
 - **Max content width:** 1200px for app, 1280px for public/editorial
 - **Border radius:**
-  - input-sm: 10px
+  - input-sm: 12px
   - card-md: 16px
-  - hero-lg: 28px
+  - hero-lg: 24px
   - pill: 999px
 - **Screen rules:**
   - 公開頁允許 editorial breakouts，但不能用 feature grid 填滿一切
@@ -109,7 +111,7 @@
 - **Make the next move obvious:** 每個畫面第一視線內必須有主要任務，不要讓使用者先看一圈裝飾再找入口。
 - **Show system confidence:** 成功、失敗、空狀態、載入中，要有穩定語氣與視覺模式。不能一頁很精緻，另一頁回到預設 alert。
 - **Differentiate reading vs doing:** 文章、about、landing 是閱讀型；日記、工具、設定是操作型。兩者共享同一語系，但密度和節奏不同。
-- **Use color with intent:** 銅色只給觀點與行動召喚，綠色只給正向結果與紀律，不要互相搶戲。
+- **Use color with intent:** 電光藍只給主要行動與導航，青色給資訊亮點，綠色只給正向結果與紀律，不要互相搶戲。
 - **Honor data:** 金額、比率、日期、持倉數據要使用等寬數字與穩定 baseline，這是金融產品的基本尊嚴。
 
 ## Component Rules
@@ -133,3 +135,4 @@
 | 2026-04-05 | 採用 `Fraunces + Source Sans 3 + IBM Plex Mono` | 分清楚敘事、UI、數據三種語氣，結束當前字體角色混亂 |
 | 2026-04-05 | 改用 warm paper + deep ledger blue + burnt copper | 避免泛用 fintech cyan glass 模板味，建立更穩定且有記憶點的配色 |
 | 2026-04-05 | 公開頁與產品頁統一語系但不同密度 | 讓品牌人格一致，同時保留閱讀與操作的最佳節奏 |
+| 2026-05-19 | 設計方向從 `Editorial Ledger` 轉向 `Institutional Fintech`，全站 16 檔案重構 | 深色背景（`#0B1220`）、電光藍主色（`#2563EB`）、青色資訊（`#38BDF8`）、玻璃擬態表面（`rgba(255,255,255,0.04-0.08)`）。新增 12 個 glass token，清除所有硬編碼 copper/orange/indigo 顏色。取代 2026-04-05 暖色紙張決策 |

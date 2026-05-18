@@ -46,8 +46,8 @@ useHead({
 <style scoped>
 .auth-shell {
   background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--color-secondary) 14%, transparent), transparent 35%),
-    radial-gradient(circle at right 20% top 15%, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 30%),
+    radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 35%),
+    radial-gradient(circle at right 20% top 15%, color-mix(in srgb, var(--color-info) 10%, transparent), transparent 30%),
     var(--color-background);
 }
 </style>
