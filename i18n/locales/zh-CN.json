@@ -1568,6 +1568,15 @@
         "benchmark": "比较基准",
         "relativeReturn": "相对收益",
         "rsTrend": "RS 趋势"
+      },
+      "board": {
+        "loading": "正在加载 sector data...",
+        "fetchFailed": "ETF sector board 加载失败",
+        "partialFetchFailed": "{count} 个 ticker 暂时取不到数据",
+        "failedSymbols": "{symbols} 暂时无法加载，通常是 Yahoo Finance 响应慢或 rate limit。",
+        "copySuccess": "已复制 sector table",
+        "copyFailed": "浏览器拒绝剪贴板权限",
+        "noChartData": "没有足够数据绘制 mini chart"
       }
     },
     "relativeValue": {

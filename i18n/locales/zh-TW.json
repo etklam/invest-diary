@@ -1513,6 +1513,15 @@
         "removeFailed": "移除失敗",
         "empty": "追蹤清單是空的，加入一些 ETF 來追蹤吧"
       },
+      "board": {
+        "loading": "正在載入 sector data...",
+        "fetchFailed": "ETF sector board 載入失敗",
+        "partialFetchFailed": "{count} 個 ticker 暫時取不到資料",
+        "failedSymbols": "{symbols} 暫時無法載入，通常是 Yahoo Finance 回應慢或 rate limit。",
+        "copySuccess": "已複製 sector table",
+        "copyFailed": "瀏覽器拒絕剪貼簿權限",
+        "noChartData": "沒有足夠資料繪製 mini chart"
+      },
       "admin": {
         "title": "ETF 管理",
         "subtitle": "管理 ETF 並初始化歷史數據",

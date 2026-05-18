@@ -1515,6 +1515,15 @@
         "removeFailed": "Failed to remove from watchlist",
         "empty": "No ETFs in watchlist yet. Add some to track them here."
       },
+      "board": {
+        "loading": "Loading sector data...",
+        "fetchFailed": "ETF sector board failed to load",
+        "partialFetchFailed": "{count} tickers are temporarily unavailable",
+        "failedSymbols": "{symbols} could not be loaded. Yahoo Finance may be slow or rate limited.",
+        "copySuccess": "Sector table copied",
+        "copyFailed": "Browser denied clipboard access",
+        "noChartData": "Not enough data to draw the mini chart"
+      },
       "admin": {
         "title": "ETF Management",
         "subtitle": "Manage ETFs and initialize historical data",
