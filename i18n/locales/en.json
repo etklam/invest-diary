@@ -1770,17 +1770,24 @@
       "askSymbol": "Enter stock symbol:",
       "askPrice": "Enter buy price:",
       "invalidQuantity": "Quantity must be a positive number. Try again:",
-      "invalidPrice": "Price must be a positive number. Try again:"
+      "invalidPrice": "Price must be a positive number. Try again:",
+      "invalidSymbol": "Invalid stock symbol. Try again:",
+      "confirm": "Buy {quantity} {symbol} @ ${price} — Confirm? (yes/no)"
     },
     "sell": {
       "oneLinerSuccess": "✅ Recorded\nSell {quantity} {symbol} {'@'} ${price}\nTotal: ${total}",
       "askQuantity": "Enter quantity:",
       "askSymbol": "Enter stock symbol:",
-      "askPrice": "Enter sell price:"
+      "askPrice": "Enter sell price:",
+      "invalidQuantity": "Quantity must be a positive number. Try again:",
+      "invalidPrice": "Price must be a positive number. Try again:",
+      "invalidSymbol": "Invalid stock symbol. Try again:",
+      "confirm": "Sell {quantity} {symbol} @ ${price} — Confirm? (yes/no)"
     },
     "note": {
       "success": "✅ Diary recorded",
-      "askContent": "Enter diary content:"
+      "askContent": "Enter diary content:",
+      "tooLong": "Content must be 1-2000 characters. Try again:"
     },
     "login": {
       "usage": "Usage: /login CODE\nGenerate a verification code in the web app settings first.",

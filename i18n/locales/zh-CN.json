@@ -1670,17 +1670,24 @@
       "askSymbol": "请输入股票代码：",
       "askPrice": "请输入买入价格：",
       "invalidQuantity": "数量必须为正数，请重新输入：",
-      "invalidPrice": "价格必须为正数，请重新输入："
+      "invalidPrice": "价格必须为正数，请重新输入：",
+      "invalidSymbol": "无效的股票代码，请重新输入：",
+      "confirm": "买入 {quantity} {symbol} @ ${price} — 确认？(yes/no)"
     },
     "sell": {
       "oneLinerSuccess": "✅ 已记录\n卖出 {quantity} {symbol} {'@'} ${price}\n总金额: ${total}",
       "askQuantity": "请输入卖出数量：",
       "askSymbol": "请输入股票代码：",
-      "askPrice": "请输入卖出价格："
+      "askPrice": "请输入卖出价格：",
+      "invalidQuantity": "数量必须为正数，请重新输入：",
+      "invalidPrice": "价格必须为正数，请重新输入：",
+      "invalidSymbol": "无效的股票代码，请重新输入：",
+      "confirm": "卖出 {quantity} {symbol} @ ${price} — 确认？(yes/no)"
     },
     "note": {
       "success": "✅ 已记录日记",
-      "askContent": "请输入日记内容："
+      "askContent": "请输入日记内容：",
+      "tooLong": "内容长度必须在 1-2000 字之间，请重新输入："
     },
     "login": {
       "usage": "使用方法：/login <验证码>\n请先在网站设置页面生成验证码。",

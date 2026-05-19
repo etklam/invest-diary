@@ -1,5 +1,6 @@
 import type { ParseResult } from '~/types/telegram'
 import { parseOneLiner } from './parser'
+import { createBuySellDiary, createNoteDiary } from './diary-write'
 import {
   findTelegramAccount,
   createTelegramAccount,
@@ -9,6 +10,9 @@ import {
   sessionWrite,
   sessionRead,
 } from '~/server/utils/telegram-db'
+import { logger } from '~/lib/logger'
+
+const log = logger.telegram
 
 // Pragmatic type: grammY's generics for i18n plugins are overly complex.
 // The `.t()` method is added at runtime by @grammyjs/i18n.
@@ -19,7 +23,7 @@ type Ctx = any
 
 async function requireLinked(ctx: Ctx): Promise<bigint | null> {
   if (!ctx.from) {
-    await ctx.reply('Unable to identify user')
+    await ctx.reply('無法辨識使用者')
     return null
   }
   const account = await findTelegramAccount(ctx.from.id)
@@ -141,8 +145,8 @@ export async function languageCommand(ctx: Ctx) {
   // Update i18n locale at runtime so the response uses the new language
   try {
     await ctx.i18n.setLocale(normalized)
-  } catch {
-    // i18n may not support runtime locale change without session
+  } catch (err) {
+    log.warn('Failed to set i18n locale', { locale: normalized, error: String(err) })
   }
 
   await ctx.reply(ctx.t('telegram.language.set', { language: normalized }))
@@ -221,49 +225,14 @@ async function handleBuySellOneLiner(
   result: ParseResult & { command: 'buy' | 'sell' },
   userId: bigint
 ) {
-  const { createDiaryForUser } = await import('~/server/utils/diary-write')
-
-  // Get user timezone
-  const { default: prisma } = await import('~/lib/prisma')
-  const user = await prisma.user.findUnique({ where: { id: userId } })
-  const timezone = user?.timezone ?? 'Asia/Taipei'
-
-  // Compute date in user's timezone
-  const now = new Date()
-  const dateStr = now.toLocaleDateString('zh-TW', { timeZone: timezone })
-  const title = `${result.command === 'buy' ? '買入' : '賣出'} ${result.symbol} x${result.quantity} - ${dateStr}`
-  const total = result.quantity * result.price
-  const content = `${result.command === 'buy' ? '買入' : '賣出'} ${result.quantity} ${result.symbol} @ ${result.price}，總金額 ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-
-  try {
-    await createDiaryForUser({
-      userId,
-      body: {
-        title,
-        content,
-        transactions: [{
-          symbol: result.symbol,
-          type: result.command === 'buy' ? 'BUY' : 'SELL',
-          quantity: result.quantity,
-          price: result.price,
-          tradeDate: new Date(),
-        }],
-      },
-      createdVia: 'TELEGRAM_BOT',
-      createdByLabel: 'Telegram',
-    })
-
-    await ctx.reply(
-      ctx.t(`telegram.${result.command}.oneLinerSuccess`, {
-        quantity: result.quantity,
-        symbol: result.symbol,
-        price: result.price,
-        total,
-      })
-    )
-  } catch {
-    await ctx.reply(ctx.t('telegram.errors.dbWriteFailed'))
-  }
+  await createBuySellDiary(
+    ctx,
+    userId,
+    result.symbol,
+    result.quantity,
+    result.price,
+    result.command === 'buy' ? 'BUY' : 'SELL'
+  )
 }
 
 async function handleNoteOneLiner(
@@ -271,30 +240,7 @@ async function handleNoteOneLiner(
   result: ParseResult & { command: 'note' },
   userId: bigint
 ) {
-  const { createDiaryForUser } = await import('~/server/utils/diary-write')
-  const { default: prisma } = await import('~/lib/prisma')
-  const user = await prisma.user.findUnique({ where: { id: userId } })
-  const timezone = user?.timezone ?? 'Asia/Taipei'
-
-  const now = new Date()
-  const dateStr = now.toLocaleDateString('zh-TW', { timeZone: timezone })
-  const title = `日記 - ${dateStr}`
-
-  try {
-    await createDiaryForUser({
-      userId,
-      body: {
-        title,
-        content: result.content,
-      },
-      createdVia: 'TELEGRAM_BOT',
-      createdByLabel: 'Telegram',
-    })
-
-    await ctx.reply(ctx.t('telegram.note.success'))
-  } catch {
-    await ctx.reply(ctx.t('telegram.errors.dbWriteFailed'))
-  }
+  await createNoteDiary(ctx, userId, result.content)
 }
 
 // ─── Bot message handler (for conversation steps) ───────────────────────────
