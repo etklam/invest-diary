@@ -8,6 +8,12 @@ import { fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
+import {
+  buildMarketQuoteCacheKey,
+  getMarketDataCacheTtlSeconds,
+  getOrSetCached,
+  shouldBypassCache,
+} from '~/lib/etf-profile/cache'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
@@ -25,7 +31,13 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const quote = await fetchQuote(symbol)
+    const query = getQuery(event) || {}
+    const quote = await getOrSetCached(
+      buildMarketQuoteCacheKey(symbol),
+      getMarketDataCacheTtlSeconds('quote'),
+      () => fetchQuote(symbol),
+      shouldBypassCache(query.nocache)
+    )
     return quote
   } catch {
     throw Errors.externalServiceError('Yahoo quote unavailable. Please try again later.').toH3Error()

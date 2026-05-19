@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mockGetRouterParam } from '../../vi-setup'
+import { clearCache } from '~/lib/etf-profile/cache'
+import { mockGetQuery, mockGetRouterParam } from '../../vi-setup'
 
 const mockFetchQuote = vi.fn()
 const mockYahooFinanceLimiter = vi.fn()
@@ -19,7 +20,9 @@ global.getRequestIP = mockGetRequestIP
 
 describe('market quote api', () => {
   beforeEach(() => {
+    clearCache()
     vi.clearAllMocks()
+    mockGetQuery.mockReturnValue({})
     mockGetRouterParam.mockReturnValue('SPY')
     mockGetRequestIP.mockReturnValue('127.0.0.1')
     mockYahooFinanceLimiter.mockResolvedValue(undefined)
@@ -34,6 +37,30 @@ describe('market quote api', () => {
     expect(mockYahooFinanceLimiter).toHaveBeenCalledWith('127.0.0.1')
     expect(mockFetchQuote).toHaveBeenCalledWith('SPY')
     expect(result).toEqual({ symbol: 'SPY', regularMarketPrice: 600 })
+  })
+
+  it('returns cached quote without fetching Yahoo again', async () => {
+    const { default: handler } = await import('~/server/api/market/quote/[symbol].get')
+
+    await handler({ context: {} } as any)
+    const result = await handler({ context: {} } as any)
+
+    expect(mockYahooFinanceLimiter).toHaveBeenCalledTimes(2)
+    expect(mockFetchQuote).toHaveBeenCalledTimes(1)
+    expect(result).toEqual({ symbol: 'SPY', regularMarketPrice: 600 })
+  })
+
+  it('bypasses cached quote when nocache is set', async () => {
+    const { default: handler } = await import('~/server/api/market/quote/[symbol].get')
+
+    await handler({ context: {} } as any)
+    mockGetQuery.mockReturnValue({ nocache: '1' })
+    mockFetchQuote.mockResolvedValue({ symbol: 'SPY', regularMarketPrice: 601 })
+
+    const result = await handler({ context: {} } as any)
+
+    expect(mockFetchQuote).toHaveBeenCalledTimes(2)
+    expect(result).toEqual({ symbol: 'SPY', regularMarketPrice: 601 })
   })
 
   it('decodes encoded router symbols before fetching the quote', async () => {

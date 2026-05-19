@@ -9,6 +9,12 @@ import { fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
+import {
+  buildMarketQuoteCacheKey,
+  getMarketDataCacheTtlSeconds,
+  getOrSetCached,
+  shouldBypassCache,
+} from '~/lib/etf-profile/cache'
 
 function resolveSymbol(event: H3Event): string | undefined {
   const rawSymbol = getRouterParam(event, 'symbol')
@@ -39,7 +45,16 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    return await fetchQuote(symbol)
+    const query = getQuery(event) || {}
+    const cacheKey = buildMarketQuoteCacheKey(symbol)
+    const ttlSeconds = getMarketDataCacheTtlSeconds('quote')
+
+    return await getOrSetCached(
+      cacheKey,
+      ttlSeconds,
+      () => fetchQuote(symbol),
+      shouldBypassCache(query.nocache)
+    )
   } catch {
     throw Errors.externalServiceError('Quote unavailable. Please try again later.').toH3Error()
   }

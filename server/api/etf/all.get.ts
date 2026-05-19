@@ -10,6 +10,12 @@ import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
+import {
+  buildMarketQuoteCacheKey,
+  getMarketDataCacheTtlSeconds,
+  getOrSetCached,
+  shouldBypassCache,
+} from '~/lib/etf-profile/cache'
 
 type SortField =
   | 'symbol'
@@ -48,9 +54,10 @@ export default defineEventHandler(async (event) => {
     throw Errors.rateLimited().toH3Error()
   }
 
-  const query = getQuery(event)
+  const query = getQuery(event) || {}
   const rawSort = typeof query.sort === 'string' ? query.sort : 'symbol'
   const rawOrder = typeof query.order === 'string' ? query.order : 'asc'
+  const bypassCache = shouldBypassCache(query.nocache)
 
   const sortBy: SortField = rawSort in sortValueMap ? (rawSort as SortField) : 'symbol'
   const order: 'asc' | 'desc' = rawOrder === 'desc' ? 'desc' : 'asc'
@@ -70,7 +77,12 @@ export default defineEventHandler(async (event) => {
   const results = await Promise.allSettled(
     etfs.map(async (etf: any) => {
       const quote = etf.prices.length > 0
-        ? await fetchQuote(etf.symbol).catch(() => null)
+        ? await getOrSetCached(
+          buildMarketQuoteCacheKey(etf.symbol),
+          getMarketDataCacheTtlSeconds('quote'),
+          () => fetchQuote(etf.symbol),
+          bypassCache
+        ).catch(() => null)
         : null
 
       const prices = etf.prices.map((p: any) => ({
