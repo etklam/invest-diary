@@ -171,7 +171,7 @@ describe('Agent stocks watchlist API', () => {
       statusCode: 500,
     })
     expect(mockStocksLogError).toHaveBeenCalledWith(
-      'Failed to fetch stock watchlist via API key',
+      'Unexpected error',
       expect.objectContaining({ error: expect.stringContaining('DB connection lost') })
     )
   })

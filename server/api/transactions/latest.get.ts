@@ -1,5 +1,5 @@
 import prisma from '../../../lib/prisma'
-import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 
@@ -30,10 +30,6 @@ export default defineEventHandler(async (event) => {
       transactions: latestDiary.transactions,
     }
   } catch (error) {
-    log.error('Failed to fetch latest transactions', {
-      userId: user.id,
-      error,
-    })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

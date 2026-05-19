@@ -1,4 +1,5 @@
 import { Errors } from '~/lib/errors/factory'
+import { logger } from '~/lib/logger'
 
 /**
  * Get Telegram binding status for the current user.
@@ -8,6 +9,7 @@ import { Errors } from '~/lib/errors/factory'
  */
 
 export default defineEventHandler(async (event) => {
+  const log = logger.telegram.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
   if (!userId) {
     throw Errors.unauthorized().toH3Error()

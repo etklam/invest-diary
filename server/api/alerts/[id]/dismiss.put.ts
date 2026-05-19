@@ -1,6 +1,6 @@
-import { H3Error } from 'h3'
 import prisma from '../../../../lib/prisma'
 import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
@@ -41,14 +41,6 @@ export default defineEventHandler(async (event) => {
     })
     return updatedAlert
   } catch (error) {
-    if (error instanceof H3Error) {
-      throw error
-    }
-    log.error('Failed to dismiss alert', {
-      userId: user.id,
-      alertId: alertId.toString(),
-      error,
-    })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

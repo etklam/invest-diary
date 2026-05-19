@@ -1,5 +1,5 @@
 import prisma from '~/lib/prisma'
-import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { calculateHoldings } from '~/lib/utils'
 import { requireUser } from '~/server/utils/auth'
@@ -40,10 +40,6 @@ export default defineEventHandler(async (event) => {
     })
     return holdings
   } catch (error) {
-    log.error('Failed to fetch holdings', {
-      userId: user.id,
-      error,
-    })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

@@ -11,9 +11,8 @@ import { Errors } from '~/lib/errors/factory'
  * via telegram_processed_updates, and delegates to grammY.
  */
 
-const log = logger.api
-
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   // 1. Validate secret token (before any processing)
   const secretToken = getHeader(event, 'x-telegram-bot-api-secret-token')
   const config = useRuntimeConfig()

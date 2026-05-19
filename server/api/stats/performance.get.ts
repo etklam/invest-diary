@@ -12,7 +12,7 @@
  *   symbol?: string                          (可選，只分析指定股票)
  */
 import prisma from '~/lib/prisma'
-import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { computePerformanceStats, type PerformanceConfig } from '~/server/utils/performance-stats'
@@ -64,7 +64,6 @@ export default defineEventHandler(async (event) => {
 
     return result
   } catch (error) {
-    log.error('Failed to calculate performance stats', { userId: user.id, error: String(error) })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

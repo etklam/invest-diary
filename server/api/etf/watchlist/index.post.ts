@@ -2,9 +2,9 @@
  * Add ETF to user's watchlist
  */
 
-import { H3Error } from 'h3'
 import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
 
@@ -75,15 +75,6 @@ export default defineEventHandler(async (event) => {
       sortOrder: watchlistItem.sortOrder,
     }
   } catch (error) {
-    if (error instanceof H3Error) {
-      throw error
-    }
-
-    log.error('Failed to add ETF to watchlist', {
-      userId: user.id,
-      symbol: normalizedSymbol,
-      error,
-    })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

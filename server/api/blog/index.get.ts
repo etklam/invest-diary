@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 import { logger } from '~/lib/logger'
-import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { queryPosts, parsePostQueryConfig, PUBLIC_DEFAULT_LIMIT } from '~/server/utils/post-queries'
 
 export default defineEventHandler(async (event: H3Event) => {
@@ -25,13 +25,7 @@ export default defineEventHandler(async (event: H3Event) => {
       includeEmail: false,
       includeStatus: false,
     })
-  } catch (error: any) {
-    if (error?.statusCode) {
-      throw error
-    }
-
-    log.error('Error fetching posts', { error: String(error) })
-
-    throw Errors.internalError(error).toH3Error()
+  } catch (error: unknown) {
+    handleApiError(error, log)
   }
 })

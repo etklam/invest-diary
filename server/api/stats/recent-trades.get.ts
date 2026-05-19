@@ -9,7 +9,7 @@
  *   limit?: number (預設 50，最大 100)
  */
 import prisma from '~/lib/prisma'
-import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { matchTrades } from '~/lib/trade-analytics'
@@ -83,7 +83,6 @@ export default defineEventHandler(async (event) => {
 
     return { trades: recentTrades }
   } catch (error) {
-    log.error('Failed to fetch recent closed trades', { userId: user.id, error: String(error) })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

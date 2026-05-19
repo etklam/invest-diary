@@ -1,8 +1,8 @@
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 import adminMiddleware from '~/server/middleware/admin'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
-import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
   // Check admin permission
@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
     log.info('Post deleted', { postId: postId.toString() })
     return { success: true, message: 'Post deleted successfully' }
   } catch (error) {
-    log.error('Error deleting post', { error })
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

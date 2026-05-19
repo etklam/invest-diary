@@ -11,7 +11,7 @@
  *   Content-Disposition: attachment; filename="trades-YYYY-MM-DD.csv"
  */
 import prisma from '~/lib/prisma'
-import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { matchTrades } from '~/lib/trade-analytics'
 import { logger } from '~/lib/logger'
@@ -117,6 +117,6 @@ export default defineEventHandler(async (event) => {
 
     return csv
   } catch (error) {
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })
