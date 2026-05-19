@@ -13,7 +13,7 @@ type Ctx = any
 
 async function requireLinked(ctx: Ctx): Promise<bigint | null> {
   if (!ctx.from) {
-    await ctx.reply('Unable to identify user')
+    await ctx.reply('無法辨識使用者')
     return null
   }
   const account = await findTelegramAccount(ctx.from.id)
@@ -45,7 +45,7 @@ export function createBuyConversation() {
     }
     const quantity = parseFloat(qtyText)
     if (isNaN(quantity) || quantity <= 0) {
-      await ctx.reply('Invalid quantity.')
+      await ctx.reply(ctx.t('telegram.buy.invalidQuantity'))
       return
     }
 
@@ -57,7 +57,7 @@ export function createBuyConversation() {
     }
     const symbol = symCtx.message.text.trim().toUpperCase()
     if (!symbol || symbol.length > 20) {
-      await ctx.reply('Invalid symbol.')
+      await ctx.reply(ctx.t('telegram.buy.invalidSymbol'))
       return
     }
 
@@ -69,11 +69,13 @@ export function createBuyConversation() {
     }
     const price = parseFloat(priceCtx.message.text.trim())
     if (isNaN(price) || price <= 0) {
-      await ctx.reply('Invalid price.')
+      await ctx.reply(ctx.t('telegram.buy.invalidPrice'))
       return
     }
 
-    await ctx.reply(`Buy ${quantity} ${symbol} @ $${price} — confirm? (yes/no)`)
+    await ctx.reply(
+      ctx.t('telegram.buy.confirm', { quantity, symbol, price })
+    )
     const confirmCtx = await conversation.wait()
     const confirmText = confirmCtx.message?.text?.trim().toLowerCase()
     if (confirmText === 'yes' || confirmText === 'y') {
@@ -99,7 +101,7 @@ export function createSellConversation() {
     }
     const quantity = parseFloat(qtyCtx.message.text.trim())
     if (isNaN(quantity) || quantity <= 0) {
-      await ctx.reply('Invalid quantity.')
+      await ctx.reply(ctx.t('telegram.sell.invalidQuantity'))
       return
     }
 
@@ -111,7 +113,7 @@ export function createSellConversation() {
     }
     const symbol = symCtx.message.text.trim().toUpperCase()
     if (!symbol || symbol.length > 20) {
-      await ctx.reply('Invalid symbol.')
+      await ctx.reply(ctx.t('telegram.sell.invalidSymbol'))
       return
     }
 
@@ -123,11 +125,13 @@ export function createSellConversation() {
     }
     const price = parseFloat(priceCtx.message.text.trim())
     if (isNaN(price) || price <= 0) {
-      await ctx.reply('Invalid price.')
+      await ctx.reply(ctx.t('telegram.sell.invalidPrice'))
       return
     }
 
-    await ctx.reply(`Sell ${quantity} ${symbol} @ $${price} — confirm? (yes/no)`)
+    await ctx.reply(
+      ctx.t('telegram.sell.confirm', { quantity, symbol, price })
+    )
     const confirmCtx = await conversation.wait()
     const confirmText = confirmCtx.message?.text?.trim().toLowerCase()
     if (confirmText === 'yes' || confirmText === 'y') {
@@ -153,7 +157,7 @@ export function createNoteConversation() {
     }
     const content = contentCtx.message.text.trim()
     if (!content || content.length > 2000) {
-      await ctx.reply('Content must be 1-2000 characters.')
+      await ctx.reply(ctx.t('telegram.note.tooLong'))
       return
     }
 

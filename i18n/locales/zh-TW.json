@@ -1776,17 +1776,24 @@
       "askSymbol": "請輸入股票代碼：",
       "askPrice": "請輸入買入價格：",
       "invalidQuantity": "數量必須是正數，請重新輸入：",
-      "invalidPrice": "價格必須是正數，請重新輸入："
+      "invalidPrice": "價格必須是正數，請重新輸入：",
+      "invalidSymbol": "無效的股票代碼，請重新輸入：",
+      "confirm": "買入 {quantity} {symbol} @ ${price} — 確認？(yes/no)"
     },
     "sell": {
       "oneLinerSuccess": "✅ 已記錄\n賣出 {quantity} {symbol} {'@'} ${price}\n總金額: ${total}",
       "askQuantity": "請輸入賣出數量：",
       "askSymbol": "請輸入股票代碼：",
-      "askPrice": "請輸入賣出價格："
+      "askPrice": "請輸入賣出價格：",
+      "invalidQuantity": "數量必須是正數，請重新輸入：",
+      "invalidPrice": "價格必須是正數，請重新輸入：",
+      "invalidSymbol": "無效的股票代碼，請重新輸入：",
+      "confirm": "賣出 {quantity} {symbol} @ ${price} — 確認？(yes/no)"
     },
     "note": {
       "success": "✅ 已記錄日記",
-      "askContent": "請輸入日記內容："
+      "askContent": "請輸入日記內容：",
+      "tooLong": "內容長度必須在 1-2000 字之間，請重新輸入："
     },
     "login": {
       "usage": "使用方法：/login <驗證碼>\n請先在網站設定頁面產生驗證碼。",

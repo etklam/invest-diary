@@ -96,6 +96,11 @@ export async function verifyAndConsumeCode(code: string): Promise<VerifyCodeResu
   if (record.usedAt) return { success: false, userId: null, tooManyAttempts: false }
   if (record.expiresAt < new Date()) return { success: false, userId: null, tooManyAttempts: false }
 
+  // Rate-limit: lock the code after 5 failed attempts
+  if (record.attempts >= 5) {
+    return { success: false, userId: null, tooManyAttempts: true }
+  }
+
   await prisma.telegramVerificationCode.update({
     where: { id: record.id },
     data: { usedAt: new Date() },
