@@ -4,6 +4,7 @@ import { requireUser } from '~/server/utils/auth'
 import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 const requestSchema = z.object({
   symbol: z.string().min(1).max(32).transform(normalizeStockSymbol),
@@ -23,12 +24,12 @@ export default defineEventHandler(async (event) => {
       status: 'WATCHING',
     })
 
-    return {
-      id: item.id.toString(),
+    return serialize({
+      id: item.id,
       symbol: item.stock.symbol,
       sortOrder: item.sortOrder,
       status: item.status,
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

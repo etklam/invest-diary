@@ -4,6 +4,7 @@ import { logger } from '~/lib/logger'
 import { requireApiKey } from '~/server/utils/api-key'
 import { createStockTimelineRecordsFromAgent } from '~/server/utils/stock-timeline-queries'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { serialize } from '~/server/utils/serialize'
 
 const timelineRecordSchema = z.object({
   symbol: z.string().min(1).max(32).transform(normalizeStockSymbol),
@@ -46,7 +47,7 @@ export default defineEventHandler(async (event) => {
       skippedCount: result.skipped.length,
     })
 
-    return result
+    return serialize(result)
   } catch (error) {
     handleApiError(error, log)
   }

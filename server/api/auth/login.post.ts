@@ -10,6 +10,7 @@ import { hashToken } from '~/server/utils/auth-session'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { enforceRateLimit } from '~/server/utils/rate-limit'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -90,10 +91,10 @@ export default defineEventHandler(async (event) => {
 
     log.info('Login success', { userId: user.id.toString() })
 
-    return {
+    return serialize({
       ok: true,
       data: {
-        id: user.id.toString(),
+        id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
@@ -102,7 +103,7 @@ export default defineEventHandler(async (event) => {
         expectedAvgHolding: user.expectedAvgHolding,
         timezone: user.timezone
       }
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

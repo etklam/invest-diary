@@ -9,6 +9,7 @@ import { validateSymbol } from '~/lib/yahoo-finance'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.admin.withRequestId(event.context.requestId)
@@ -64,10 +65,10 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  return {
-    id: etf.id.toString(),
+  return serialize({
+    id: etf.id,
     symbol: etf.symbol,
     name: etf.name,
     createdAt: etf.createdAt,
-  }
+  })
 })

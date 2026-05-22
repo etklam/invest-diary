@@ -7,6 +7,7 @@ import type { AlertType } from '@prisma/client'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -45,13 +46,13 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  return {
-    id: alert.id.toString(),
+  return serialize({
+    id: alert.id,
     symbol: alert.symbol,
     type: alert.type,
     threshold: Number(alert.threshold),
     message: alert.message,
     isTriggered: alert.isTriggered,
     createdAt: alert.createdAt,
-  }
+  })
 })

@@ -1,5 +1,6 @@
 import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
+import { serialize } from '~/server/utils/serialize'
 
 /**
  * Get Telegram binding status for the current user.
@@ -34,14 +35,14 @@ export default defineEventHandler(async (event) => {
     return { linked: false }
   }
 
-  return {
+  return serialize({
     linked: true,
-    telegramId: String(account.telegramId),
+    telegramId: account.telegramId,
     username: account.username,
     firstName: account.firstName,
     lastName: account.lastName,
     language: account.language,
     linkedAt: account.linkedAt,
     lastActiveAt: account.lastActiveAt,
-  }
+  })
 })

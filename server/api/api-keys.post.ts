@@ -7,6 +7,7 @@ import { normalizedRequiredString } from '~/server/utils/validation'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { enforceRateLimit } from '~/server/utils/rate-limit'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 const createApiKeySchema = z.object({
   label: normalizedRequiredString('label', 100),
@@ -40,18 +41,18 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    return {
+    return serialize({
       key: {
-        id: key.id.toString(),
+        id: key.id,
         label: key.label,
         keyPrefix: key.keyPrefix,
         scope: key.scope,
         lastUsedAt: null,
         revokedAt: null,
-        createdAt: key.createdAt.toISOString(),
+        createdAt: key.createdAt,
       },
       rawKey: generated.rawKey,
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
 
     log.info('Dismissed alert', {
       userId: user.id,
-      alertId: alertId.toString(),
+      alertId: String(alertId),
     })
     return serialize(updatedAlert)
   } catch (error) {

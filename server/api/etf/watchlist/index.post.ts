@@ -7,6 +7,7 @@ import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
@@ -65,15 +66,15 @@ export default defineEventHandler(async (event) => {
     log.info('Added ETF to watchlist', {
       userId: user.id,
       symbol: normalizedSymbol,
-      watchlistItemId: watchlistItem.id.toString(),
+      watchlistItemId: String(watchlistItem.id),
     })
 
-    return {
-      id: watchlistItem.id.toString(),
+    return serialize({
+      id: watchlistItem.id,
       symbol: etf.symbol,
       name: etf.name,
       sortOrder: watchlistItem.sortOrder,
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

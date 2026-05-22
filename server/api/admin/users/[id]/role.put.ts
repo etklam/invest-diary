@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
 
     log.info('Updated user role', {
       adminId: event.context.user?.id,
-      targetUserId: userId.toString(),
+      targetUserId: String(userId),
       newRole: validatedData.role
     })
 

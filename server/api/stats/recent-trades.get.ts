@@ -13,6 +13,7 @@ import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { matchTrades } from '~/lib/trade-analytics'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -81,7 +82,7 @@ export default defineEventHandler(async (event) => {
       count: recentTrades.length,
     })
 
-    return { trades: recentTrades }
+    return serialize({ trades: recentTrades })
   } catch (error) {
     handleApiError(error, log)
   }

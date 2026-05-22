@@ -2,6 +2,7 @@ import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
@@ -28,10 +29,10 @@ export default defineEventHandler(async (event) => {
     throw Errors.userNotFound().toH3Error()
   }
 
-  return {
+  return serialize({
     ok: true,
     data: {
-      id: user.id.toString(),
+      id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
@@ -43,5 +44,5 @@ export default defineEventHandler(async (event) => {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     }
-  }
+  })
 })

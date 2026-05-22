@@ -6,6 +6,7 @@ import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { parsePagination, parsePositiveInt } from '~/server/utils/query-params'
+import { serialize } from '~/server/utils/serialize'
 
 type DiaryListItem = Awaited<ReturnType<typeof prisma.diary.findMany>>[number]
 type DiaryAlertItem = DiaryListItem['alerts'][number]
@@ -73,28 +74,21 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
       prisma.diary.count({ where })
     ])
 
-    // 將 BigInt 轉為 string，避免本機 Nitro JSON 序列化 500 error
-    const safeDiaries = diaries.map((d: DiaryListItem) => ({
+    // Attach parsed tags (BigInt handled by serialize)
+    const shapedDiaries = diaries.map((d: DiaryListItem) => ({
       ...d,
-      id: d.id.toString(),
-      userId: d.userId.toString(),
       tags: parseDiaryTags(d.tagsString),
-      alerts: d.alerts.map((a: DiaryAlertItem) => ({ ...a, id: a.id.toString() })),
-      transactions: d.transactions.map((t: DiaryTransactionItem) => ({
-        ...t,
-        id: t.id.toString(),
-      })),
     }))
 
-    return {
-      data: safeDiaries,
+    return serialize({
+      data: shapedDiaries,
       pagination: {
         page,
         limit,
         total,
         totalPages: Math.ceil(total / limit),
       },
-    }
+    })
   } catch (error: unknown) {
     handleApiError(error, log)
   }

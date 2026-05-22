@@ -6,6 +6,7 @@ import type { PriceAlert } from '@prisma/client'
 import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -16,8 +17,8 @@ export default defineEventHandler(async (event) => {
     orderBy: { createdAt: 'desc' },
   })
 
-  return alerts.map((alert: PriceAlert) => ({
-    id: alert.id.toString(),
+  return serialize(alerts.map((alert: PriceAlert) => ({
+    id: alert.id,
     symbol: alert.symbol,
     type: alert.type,
     threshold: Number(alert.threshold),
@@ -26,5 +27,5 @@ export default defineEventHandler(async (event) => {
     triggeredAt: alert.triggeredAt,
     createdAt: alert.createdAt,
     updatedAt: alert.updatedAt,
-  }))
+  })))
 })

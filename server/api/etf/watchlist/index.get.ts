@@ -5,6 +5,7 @@
 import { requireUser } from '~/server/utils/auth'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
@@ -25,8 +26,8 @@ export default defineEventHandler(async (event) => {
     orderBy: { sortOrder: 'asc' },
   })
 
-  return watchlist.map((item: any) => ({
-    id: item.id.toString(),
+  return serialize(watchlist.map((item: any) => ({
+    id: item.id,
     symbol: item.etf.symbol,
     name: item.etf.name,
     sortOrder: item.sortOrder,
@@ -34,5 +35,5 @@ export default defineEventHandler(async (event) => {
       ? Number(item.etf.prices[0].close)
       : null,
     latestDate: item.etf.prices[0]?.date ?? null,
-  }))
+  })))
 })

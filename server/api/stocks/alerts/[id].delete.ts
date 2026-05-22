@@ -7,6 +7,7 @@ import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)

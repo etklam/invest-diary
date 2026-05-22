@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    log.info('Post updated', { postId: post.id.toString() })
+    log.info('Post updated', { postId: String(post.id) })
     return serializeBlogPost(post)
   } catch (error) {
     handleApiError(error, log)

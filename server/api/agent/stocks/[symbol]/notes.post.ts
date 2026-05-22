@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
       userId: auth.user.id,
       apiKeyId: auth.apiKeyId,
       symbol,
-      noteId: note.id.toString(),
+      noteId: String(note.id),
     })
 
     return toStockNoteResponse(note)

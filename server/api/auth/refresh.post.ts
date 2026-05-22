@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
     // Keep refresh token stable to avoid cross-tab refresh races causing forced logout.
     setAccessTokenCookie(event, newAccessToken)
 
-    log.info('Token refreshed', { userId: user.id.toString() })
+    log.info('Token refreshed', { userId: String(user.id) })
     return { ok: true }
   } catch (error: unknown) {
     if (error instanceof AppError) {

@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
       where: { id: postId }
     })
 
-    log.info('Post deleted', { postId: postId.toString() })
+    log.info('Post deleted', { postId: String(postId) })
     return { success: true, message: 'Post deleted successfully' }
   } catch (error) {
     handleApiError(error, log)

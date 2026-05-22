@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    log.info('User registered', { userId: user.id.toString() })
+    log.info('User registered', { userId: String(user.id) })
 
     return serialize({
       success: true,

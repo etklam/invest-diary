@@ -6,6 +6,7 @@ import { requireUser } from '~/server/utils/auth'
 import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
 import { serializeDiaryForPartnerView, serializePartnerLink } from '~/server/utils/partner-response'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
@@ -75,9 +76,9 @@ export default defineEventHandler(async (event) => {
     }
 
     if (!selectedLink) {
-      return {
+      return serialize({
         owner: {
-          id: viewer.id.toString(),
+          id: viewer.id,
           email: viewer.email,
           name: viewer.name,
         },
@@ -85,7 +86,7 @@ export default defineEventHandler(async (event) => {
         selectedPartnerId: null,
         links: serializedLinks,
         compareDays: [],
-      }
+      })
     }
 
     const side = getPartnerSide(selectedLink as PartnerLinkRecord, user.id)
@@ -146,21 +147,21 @@ export default defineEventHandler(async (event) => {
         partnerDiary: serializeDiaryForPartnerView(partnerByDate.get(dateKey) as any),
       }))
 
-    return {
+    return serialize({
       owner: {
-        id: viewer.id.toString(),
+        id: viewer.id,
         email: viewer.email,
         name: viewer.name,
       },
       partner: {
-        id: side.partner.id.toString(),
+        id: side.partner.id,
         email: side.partner.email,
         name: side.partner.name,
       },
-      selectedPartnerId: side.partner.id.toString(),
+      selectedPartnerId: side.partner.id,
       links: serializedLinks,
       compareDays,
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

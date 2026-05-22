@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
 
     log.info('Deleted user', {
       adminId: event.context.user?.id,
-      deletedUserId: userId.toString(),
+      deletedUserId: String(userId),
       deletedUserEmail: existingUser.email
     })
 

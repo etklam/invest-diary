@@ -60,8 +60,8 @@ export default defineEventHandler(async (event) => {
 
     log.info('Partner link created', {
       userId: user.id,
-      partnerUserId: partnerUser.id.toString(),
-      linkId: link.id.toString(),
+      partnerUserId: String(partnerUser.id),
+      linkId: String(link.id),
     })
 
     return {

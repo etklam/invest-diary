@@ -5,6 +5,7 @@ import { handleApiError } from '~/server/utils/error-handler'
 import { updateStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { Errors } from '~/lib/errors/factory'
+import { serialize } from '~/server/utils/serialize'
 
 const requestSchema = z.object({
   status: z.enum(['WATCHING', 'ARCHIVED']).optional(),
@@ -31,13 +32,13 @@ export default defineEventHandler(async (event) => {
       throw Errors.notFound('Watchlist item not found').toH3Error()
     }
 
-    return {
-      id: item.id.toString(),
+    return serialize({
+      id: item.id,
       symbol: item.stock.symbol,
       sortOrder: item.sortOrder,
       status: item.status,
       updatedAt: item.updatedAt.toISOString(),
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

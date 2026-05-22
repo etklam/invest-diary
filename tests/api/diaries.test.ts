@@ -130,7 +130,7 @@ describe('Diary API Routes', () => {
           tagsString: 'profit,watch',
         }),
       }))
-      expect(result.id).toBe(100n)
+      expect(result.id).toBe('100')
       expect(result.tags).toEqual(['profit', 'watch'])
       expect(mockDiaryWithRequestId).toHaveBeenCalledWith('req-create')
       expect(mockDiaryLogInfo).toHaveBeenCalledWith(

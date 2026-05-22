@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    log.info('Post created', { postId: post.id.toString(), userId: userId.toString() })
+    log.info('Post created', { postId: String(post.id), userId: String(userId) })
     return serializeBlogPost(post)
   } catch (error) {
     handleApiError(error, log)
