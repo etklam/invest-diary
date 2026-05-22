@@ -2,6 +2,7 @@ import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.admin.withRequestId(event.context.requestId)
@@ -42,7 +43,7 @@ export default defineEventHandler(async (event) => {
 
     log.info('Listed all diaries', { userId: event.context.user?.id, count: diaries.length })
 
-    return {
+    return serialize({
       success: true,
       data: diaries,
       pagination: {
@@ -51,7 +52,7 @@ export default defineEventHandler(async (event) => {
         total,
         totalPages: Math.ceil(total / limit)
       }
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

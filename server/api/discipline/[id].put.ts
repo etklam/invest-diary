@@ -5,6 +5,7 @@ import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.discipline.withRequestId(event.context.requestId)
@@ -46,7 +47,7 @@ export default defineEventHandler(async (event) => {
     })
 
     log.info('Discipline updated', { disciplineId: String(discipline.id), userId: String(user.id) })
-    return discipline
+    return serialize(discipline)
   } catch (error) {
     handleApiError(error, log)
   }

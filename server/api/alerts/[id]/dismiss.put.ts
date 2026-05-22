@@ -1,6 +1,7 @@
 import prisma from '../../../../lib/prisma'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
       userId: user.id,
       alertId: alertId.toString(),
     })
-    return updatedAlert
+    return serialize(updatedAlert)
   } catch (error) {
     handleApiError(error, log)
   }

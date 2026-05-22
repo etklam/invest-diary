@@ -3,6 +3,7 @@ import { generateRecurringAlertsData } from '~/lib/recurring-alerts'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.alert.withRequestId(event.context.requestId)
@@ -48,7 +49,7 @@ export default defineEventHandler(async (event) => {
         },
       })
       log.info('Single alert created', { alertId: String(alert.id), userId })
-      return alert
+      return serialize(alert)
     }
 
     // Recurring alert: batch create
@@ -94,7 +95,7 @@ export default defineEventHandler(async (event) => {
     })
 
     log.info('Recurring alerts created', { count: result.length, userId })
-    return result[0] ?? null // Return the parent alert
+    return serialize(result[0] ?? null)
 
   } catch (error) {
     handleApiError(error, log)

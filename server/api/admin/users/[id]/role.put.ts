@@ -5,6 +5,7 @@ import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 const updateRoleSchema = z.object({
   role: z.enum(['USER', 'ADMIN'])
@@ -52,10 +53,10 @@ export default defineEventHandler(async (event) => {
       newRole: validatedData.role
     })
 
-    return {
+    return serialize({
       success: true,
       data: updatedUser
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

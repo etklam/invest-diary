@@ -1,4 +1,5 @@
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    return alerts
+    return serialize(alerts)
   } catch (error) {
     handleApiError(error, log)
   }

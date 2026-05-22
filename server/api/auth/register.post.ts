@@ -6,6 +6,7 @@ import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
 import { enforceRateLimit } from '~/server/utils/rate-limit'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -72,10 +73,10 @@ export default defineEventHandler(async (event) => {
 
     log.info('User registered', { userId: user.id.toString() })
 
-    return {
+    return serialize({
       success: true,
       user
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

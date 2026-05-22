@@ -295,7 +295,7 @@ describe('Auth API', () => {
 
       expect(result).toEqual({
         success: true,
-        user: mockUser,
+        user: { ...mockUser, id: '1' },
       })
       expect(mockRateLimitersAuthRegisterIp).toHaveBeenCalledWith('127.0.0.1')
       expect(mockRateLimitersAuthRegisterIdentity).toHaveBeenCalledWith('newuser@example.com')

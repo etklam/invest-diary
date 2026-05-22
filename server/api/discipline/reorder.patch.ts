@@ -3,6 +3,7 @@ import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
+import { serialize } from '~/server/utils/serialize'
 
 interface OrderItem {
   id: number
@@ -66,7 +67,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    return disciplines
+    return serialize(disciplines)
   } catch (err: any) {
     log.error('Reorder failed', { message: err?.message, code: err?.code })
     throw err

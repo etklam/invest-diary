@@ -4,6 +4,7 @@ import { Errors } from '~/lib/errors/factory'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { attachDiaryTags } from '~/server/utils/diary-response'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -36,7 +37,7 @@ export default defineEventHandler(async (event) => {
     }
 
     log.info('Diary fetched', { diaryId: diaryIdString })
-    return attachDiaryTags(diary)
+    return serialize(attachDiaryTags(diary))
   } catch (error) {
     handleApiError(error, log)
   }

@@ -5,6 +5,7 @@ import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { attachDiaryTags } from '~/server/utils/diary-response'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -42,7 +43,7 @@ export default defineEventHandler(async (event) => {
       found: Boolean(diary),
     })
 
-    return diary ? attachDiaryTags(diary) : null
+    return diary ? serialize(attachDiaryTags(diary)) : null
   } catch (error) {
     handleApiError(error, log)
   }

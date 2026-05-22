@@ -4,6 +4,7 @@ import { requireUser } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.discipline.withRequestId(event.context.requestId)
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
     })
 
     log.info('Discipline created', { disciplineId: String(discipline.id), order: discipline.order, userId: String(user.id) })
-    return discipline
+    return serialize(discipline)
   } catch (error) {
     handleApiError(error, log)
   }
