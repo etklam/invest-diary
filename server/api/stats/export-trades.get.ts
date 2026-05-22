@@ -10,20 +10,11 @@
  *   Content-Type: text/csv
  *   Content-Disposition: attachment; filename="trades-YYYY-MM-DD.csv"
  */
-import prisma from '~/lib/prisma'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { matchTrades } from '~/lib/trade-analytics'
 import { logger } from '~/lib/logger'
-
-interface StatsRawTransactionRow {
-  id: bigint
-  symbol: string
-  type: 'BUY' | 'SELL'
-  quantity: { valueOf(): number } | number
-  price: { valueOf(): number } | number
-  tradeDate: Date
-}
+import { findUserRawTransactions, prepareTransactionsForMatching } from '~/server/utils/trade-queries'
 
 /** 轉義 CSV 欄位：若含逗號、換行或雙引號則用雙引號包圍 */
 function csvEscape(value: string | number | null | undefined): string {
@@ -49,32 +40,12 @@ export default defineEventHandler(async (event) => {
     : null
 
   try {
-    const rawTxs = await prisma.transaction.findMany({
-      where: {
-        OR: [
-          { userId },
-          { diary: { userId } },
-        ],
-        ...(symbolFilter ? { symbol: symbolFilter } : {}),
-      },
-      select: {
-        id: true,
-        symbol: true,
-        type: true,
-        quantity: true,
-        price: true,
-        tradeDate: true,
-      },
-      orderBy: { tradeDate: 'asc' },
-    })
-
-    const closedTrades = matchTrades(
-      rawTxs.map((tx: StatsRawTransactionRow) => ({
-        ...tx,
-        id: tx.id.toString(),
-        type: tx.type,
-      }))
+    const rawTxs = await findUserRawTransactions(
+      userId,
+      symbolFilter ? { symbol: symbolFilter } : undefined,
     )
+
+    const closedTrades = matchTrades(prepareTransactionsForMatching(rawTxs))
 
     // 按賣出日期升序排列
     const sorted = [...closedTrades].sort(

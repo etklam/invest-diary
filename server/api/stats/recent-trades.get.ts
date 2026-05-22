@@ -8,12 +8,12 @@
  *   days?: number  (預設 30，最大 90)
  *   limit?: number (預設 50，最大 100)
  */
-import prisma from '~/lib/prisma'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { matchTrades } from '~/lib/trade-analytics'
 import { serialize } from '~/server/utils/serialize'
+import { findUserRawTransactions, prepareTransactionsForMatching } from '~/server/utils/trade-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -34,33 +34,13 @@ export default defineEventHandler(async (event) => {
     cutoff.setDate(cutoff.getDate() - days)
 
     // 查詢所有交易（計算用，不限時間範圍）
-    const rawTxs = await prisma.transaction.findMany({
-      where: {
-        OR: [
-          { userId },
-          { diary: { userId } },
-        ],
-      },
-      select: {
-        id: true,
-        symbol: true,
-        type: true,
-        quantity: true,
-        price: true,
-        tradeDate: true,
-      },
-      orderBy: { tradeDate: 'asc' },
-    })
+    const rawTxs = await findUserRawTransactions(userId)
 
     if (!rawTxs.length) {
       return { trades: [] }
     }
 
-    const closedTrades = matchTrades(rawTxs.map((tx: typeof rawTxs[number]) => ({
-      ...tx,
-      id: tx.id.toString(),
-      type: tx.type as 'BUY' | 'SELL',
-    })))
+    const closedTrades = matchTrades(prepareTransactionsForMatching(rawTxs))
 
     // 過濾視窗期內的賣出交易，並取最新的前 N 筆
     const recentTrades = closedTrades
