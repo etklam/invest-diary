@@ -78,7 +78,6 @@ model User {
   disciplines           Discipline[]
   posts                 Post[]
   refreshTokens         RefreshToken[]
-  etfAlerts             EtfAlert[]
   etfWatchlist          EtfWatchlist[]
   apiKeys               ApiKeyCredential[]
   stockWatchlists       StockWatchlist[]
@@ -277,7 +276,6 @@ model Etf {
   name        String?       @db.VarChar(255)
 
   prices      EtfPrice[]
-  alerts      EtfAlert[]
   watchlists  EtfWatchlist[]
 
   createdAt   DateTime      @default(now()) @map("created_at")
@@ -306,25 +304,6 @@ model EtfPrice {
   @@unique([etfId, date], map: "etf_prices_etf_id_date_key")
   @@index([etfId, date(sort: Desc)], map: "etf_prices_etf_id_date_idx")
   @@map("etf_prices")
-}
-
-model EtfAlert {
-  id          BigInt     @id @default(autoincrement())
-  userId      BigInt     @map("user_id")
-  etfId       BigInt     @map("etf_id")
-  type        AlertType
-  threshold   Decimal    @db.Decimal(10, 4)
-  message     String     @db.VarChar(500)
-  isTriggered Boolean    @default(false) @map("is_triggered")
-  triggeredAt DateTime?  @map("triggered_at")
-  createdAt   DateTime   @default(now()) @map("created_at")
-
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  etf         Etf        @relation(fields: [etfId], references: [id], onDelete: Cascade)
-
-  @@index([userId, isTriggered], map: "etf_alerts_user_id_is_triggered_idx")
-  @@index([etfId, isTriggered], map: "etf_alerts_etf_id_is_triggered_idx")
-  @@map("etf_alerts")
 }
 
 model EtfWatchlist {

@@ -1559,12 +1559,11 @@
         "seedFailed": "新增 ETF 失敗",
         "noEtfs": "沒有 ETF。新增第一個 ETF 開始使用。",
         "priceCount": "價格數據",
-        "alertCount": "提醒",
         "createdAt": "建立時間",
         "infoTitle": "管理 ETF",
         "infoPoint1": "使用代碼新增 ETF（例如：SPY, QQQ, IWM）",
         "infoPoint2": "初始化歷史數據以填充價格歷史供分析使用",
-        "infoPoint3": "刪除 ETF 會級聯刪除所有相關的價格、提醒和追蹤清單"
+        "infoPoint3": "刪除 ETF 會級聯刪除所有相關的價格和追蹤清單"
       },
       "name": "名稱",
       "fetchFailed": "獲取數據失敗，請稍後再試",

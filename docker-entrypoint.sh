@@ -63,7 +63,7 @@ validate_schema() {
     DB_NAME=$(echo "$DATABASE_URL" | sed -n 's#mysql://[^/]*/\([^?]*\).*#\1#p')
 
     # Critical tables that must exist (from schema.prisma)
-    REQUIRED_TABLES="price_alerts stock_timeline_records stock_watchlists stocks etf_alerts etf_prices etf_watchlists etfs"
+    REQUIRED_TABLES="price_alerts stock_timeline_records stock_watchlists stocks etf_prices etf_watchlists etfs"
 
     MISSING_TABLES=""
     for table in $REQUIRED_TABLES; do

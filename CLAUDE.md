@@ -212,7 +212,7 @@ nitro: {
 - `Alert` - Time-based reminders with recurring support (WEEK/MONTH modes)
 - `Discipline` - Investment principles/quotes with shareable tokens
 - `Post` - Blog articles (DRAFT/PUBLISHED/ARCHIVED)
-- `Etf` / `EtfPrice` / `EtfAlert` / `EtfWatchlist` - ETF tracking system
+- `Etf` / `EtfPrice` / `EtfWatchlist` - ETF tracking system
 
 **Key Relationships**:
 - User → Diaries (1:N, cascade delete)

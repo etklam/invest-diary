@@ -24,7 +24,6 @@ export default defineEventHandler(async (event) => {
       _count: {
         select: {
           prices: true,
-          alerts: true,
           watchlists: true,
         },
       },
@@ -43,7 +42,6 @@ export default defineEventHandler(async (event) => {
   return {
     success: true,
     deletedPrices: etf._count.prices,
-    deletedAlerts: etf._count.alerts,
     deletedWatchlists: etf._count.watchlists,
   }
 })

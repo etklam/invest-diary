@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
       _count: {
         select: {
           prices: true,
-          alerts: true,
           watchlists: true,
         },
       },
@@ -34,7 +33,6 @@ export default defineEventHandler(async (event) => {
     symbol: etf.symbol,
     name: etf.name,
     priceCount: etf._count.prices,
-    alertCount: etf._count.alerts,
     watchlistCount: etf._count.watchlists,
     createdAt: etf.createdAt,
     updatedAt: etf.updatedAt,

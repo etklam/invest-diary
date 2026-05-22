@@ -6,7 +6,6 @@ interface AdminEtfListItem {
   symbol: string
   name: string | null
   priceCount: number
-  alertCount: number
   createdAt: string
 }
 
@@ -311,9 +310,6 @@ definePageMeta({
                 {{ t('tools.etf.admin.priceCount') }}
               </th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                {{ t('tools.etf.admin.alertCount') }}
-              </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                 {{ t('tools.etf.admin.createdAt') }}
               </th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
@@ -335,9 +331,6 @@ definePageMeta({
               </td>
               <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
                 {{ etf.priceCount }}
-              </td>
-              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                {{ etf.alertCount }}
               </td>
               <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
                 {{ new Date(etf.createdAt).toLocaleDateString() }}
