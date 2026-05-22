@@ -7,6 +7,7 @@ import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
 import { serializePartnerLink } from '~/server/utils/partner-response'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 const sharingSchema = z.object({
   shareDiaries: z.boolean().optional(),
@@ -65,9 +66,9 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    return {
+    return serialize({
       link: serializePartnerLink(updated as PartnerLinkRecord, user.id),
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

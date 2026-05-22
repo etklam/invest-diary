@@ -6,6 +6,7 @@ import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
 import { serializePartnerLink } from '~/server/utils/partner-response'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
@@ -47,9 +48,9 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    return {
+    return serialize({
       link: serializePartnerLink(accepted as PartnerLinkRecord, user.id),
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

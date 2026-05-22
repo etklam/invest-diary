@@ -7,8 +7,6 @@ export function serializeDiaryForPartnerView<T extends Diary>(diary: T | null) {
 
   return attachDiaryTags({
     ...diary,
-    id: String(diary.id),
-    userId: String(diary.userId),
     transactions: undefined,
     alerts: undefined,
   })
@@ -18,11 +16,11 @@ export function serializePartnerLink(link: PartnerLinkRecord, currentUserId: str
   const side = getPartnerSide(link, currentUserId)
 
   return {
-    id: link.id.toString(),
-    acceptedAt: link.acceptedAt ? link.acceptedAt.toISOString() : null,
-    createdAt: link.createdAt.toISOString(),
+    id: link.id,
+    acceptedAt: link.acceptedAt,
+    createdAt: link.createdAt,
     partner: {
-      id: side.partner.id.toString(),
+      id: side.partner.id,
       email: side.partner.email,
       name: side.partner.name,
     },
