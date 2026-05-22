@@ -41,7 +41,7 @@ vi.mock('~/server/utils/validation', async (importOriginal) => {
 })
 
 // ── Logger mock ──────────────────────────────────────────────────────────
-const mockEtfLog = { info: vi.fn(), error: vi.fn() }
+const mockEtfLog = { info: vi.fn(), error: vi.fn(), warn: vi.fn() }
 vi.mock('~/lib/logger', () => ({
   logger: {
     etf: { withRequestId: vi.fn(() => mockEtfLog) },
@@ -103,7 +103,7 @@ describe('ETF watchlist routes', () => {
       const result = await handler({ context: { user: { id: '1' }, requestId: 'req-1' } } as any)
 
       expect(mockEtfWatchlistFindMany).toHaveBeenCalledWith(expect.objectContaining({
-        where: { userId: '1' },
+        where: { userId: 1n },
         orderBy: { sortOrder: 'asc' },
         include: expect.objectContaining({
           etf: expect.objectContaining({
@@ -158,6 +158,7 @@ describe('ETF watchlist routes', () => {
       mockEtfWatchlistCreate.mockResolvedValue({
         id: 100n,
         sortOrder: 0,
+        etf: { symbol: 'SPY', name: 'SPDR S&P 500 ETF' },
       })
 
       const { default: handler } = await import('~/server/api/etf/watchlist/index.post')
@@ -166,10 +167,11 @@ describe('ETF watchlist routes', () => {
       expect(mockEtfFindUnique).toHaveBeenCalledWith({ where: { symbol: 'SPY' } })
       expect(mockEtfWatchlistCreate).toHaveBeenCalledWith(expect.objectContaining({
         data: expect.objectContaining({
-          userId: '1',
+          userId: 1n,
           etfId: 10n,
           sortOrder: 0,
         }),
+        include: { etf: true },
       }))
       expect(result).toMatchObject({
         id: '100',
@@ -187,13 +189,14 @@ describe('ETF watchlist routes', () => {
       mockEtfWatchlistCreate.mockResolvedValue({
         id: 101n,
         sortOrder: 4,
+        etf: { symbol: 'QQQ', name: 'Invesco QQQ' },
       })
 
       const { default: handler } = await import('~/server/api/etf/watchlist/index.post')
       const result = await handler({ context: { user: { id: '1' }, requestId: 'req-2' } } as any)
 
       expect(mockEtfWatchlistFindFirst).toHaveBeenCalledWith(expect.objectContaining({
-        where: { userId: '1' },
+        where: { userId: 1n },
         orderBy: { sortOrder: 'desc' },
       }))
       expect(mockEtfWatchlistCreate).toHaveBeenCalledWith(expect.objectContaining({
@@ -207,7 +210,7 @@ describe('ETF watchlist routes', () => {
       mockEtfFindUnique.mockResolvedValue({ id: 10n, symbol: 'SPY', name: 'SPDR S&P 500 ETF' })
       mockEtfWatchlistFindUnique.mockResolvedValue(null)
       mockEtfWatchlistFindFirst.mockResolvedValue(null)
-      mockEtfWatchlistCreate.mockResolvedValue({ id: 102n, sortOrder: 0 })
+      mockEtfWatchlistCreate.mockResolvedValue({ id: 102n, sortOrder: 0, etf: { symbol: 'SPY', name: 'SPDR S&P 500 ETF' } })
 
       const { default: handler } = await import('~/server/api/etf/watchlist/index.post')
       await handler({ context: { user: { id: '1' }, requestId: 'req-3' } } as any)
@@ -219,7 +222,7 @@ describe('ETF watchlist routes', () => {
       mockReadBody.mockResolvedValue({})
 
       const { default: handler } = await import('~/server/api/etf/watchlist/index.post')
-      // Validation error via Errors.validationError().toH3Error() → 400
+      // Validation error via Errors.validationError().toH3Error() -> 400
       await expect(handler({ context: { user: { id: '1' }, requestId: 'req-4' } } as any))
         .rejects.toMatchObject({ statusCode: 400 })
     })

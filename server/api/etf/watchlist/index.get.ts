@@ -3,28 +3,15 @@
  */
 
 import { requireUser } from '~/server/utils/auth'
-import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { serialize } from '~/server/utils/serialize'
+import { listUserEtfWatchlist } from '~/server/utils/etf-watchlist-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
-  const watchlist = await prisma.etfWatchlist.findMany({
-    where: { userId: user.id },
-    include: {
-      etf: {
-        include: {
-          prices: {
-            orderBy: { date: 'desc' },
-            take: 1,
-          },
-        },
-      },
-    },
-    orderBy: { sortOrder: 'asc' },
-  })
+  const watchlist = await listUserEtfWatchlist(user.id)
 
   return serialize(watchlist.map((item: any) => ({
     id: item.id,
