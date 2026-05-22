@@ -1,10 +1,11 @@
 import prisma from '~/lib/prisma'
-import { formatYmdInTimezone } from '~/lib/diary-date'
 import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
-import { serializeDiaryForPartnerView, serializePartnerLink } from '~/server/utils/partner-response'
+import { buildCompareDays } from '~/server/utils/partner-compare'
+import { findUserPartnerLinks } from '~/server/utils/partner-queries'
+import { serializePartnerLink } from '~/server/utils/partner-response'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
 
@@ -27,26 +28,7 @@ export default defineEventHandler(async (event) => {
           timezone: true,
         },
       }),
-      prisma.partnerLink.findMany({
-        where: {
-          OR: [
-            { userAId: currentUserId },
-            { userBId: currentUserId },
-          ],
-        },
-        include: {
-          userA: {
-            select: { id: true, email: true, name: true },
-          },
-          userB: {
-            select: { id: true, email: true, name: true },
-          },
-        },
-        orderBy: [
-          { acceptedAt: 'desc' },
-          { updatedAt: 'desc' },
-        ],
-      }),
+      findUserPartnerLinks(currentUserId),
     ])
 
     if (!viewer) {
@@ -131,21 +113,12 @@ export default defineEventHandler(async (event) => {
         : Promise.resolve([]),
     ])
 
-    const ownerDatePairs = ownerDiaries.map((diary: (typeof ownerDiaries)[number]) => [formatYmdInTimezone(diary.date, timeZone), diary] as const)
-    const partnerDatePairs = partnerDiaries.map((diary: (typeof partnerDiaries)[number]) => [formatYmdInTimezone(diary.date, timeZone), diary] as const)
-    const ownerByDate = new Map(ownerDatePairs)
-    const partnerByDate = new Map(partnerDatePairs)
-    const compareDays = Array.from(new Set<string>([
-      ...ownerDatePairs.map(([dateKey]: readonly [string, (typeof ownerDiaries)[number]]) => dateKey),
-      ...partnerDatePairs.map(([dateKey]: readonly [string, (typeof partnerDiaries)[number]]) => dateKey),
-    ]))
-      .sort((left, right) => right.localeCompare(left))
-      .slice(0, limit)
-      .map((dateKey) => ({
-        dateKey,
-        ownerDiary: serializeDiaryForPartnerView(ownerByDate.get(dateKey) as any),
-        partnerDiary: serializeDiaryForPartnerView(partnerByDate.get(dateKey) as any),
-      }))
+    const compareDays = buildCompareDays(
+      ownerDiaries as any[],
+      partnerDiaries as any[],
+      timeZone,
+      limit,
+    )
 
     return serialize({
       owner: {

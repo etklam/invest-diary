@@ -5,6 +5,7 @@ import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { normalizeInput } from '~/server/utils/validation'
 import { orderPartnerUserIds, type PartnerLinkRecord } from '~/server/utils/partner'
+import { LINK_INCLUDE } from '~/server/utils/partner-queries'
 import { serializePartnerLink } from '~/server/utils/partner-response'
 import { handleApiError } from '~/server/utils/error-handler'
 
@@ -48,14 +49,7 @@ export default defineEventHandler(async (event) => {
         ...ordered,
         initiatedByUserId: currentUserId,
       },
-      include: {
-        userA: {
-          select: { id: true, email: true, name: true },
-        },
-        userB: {
-          select: { id: true, email: true, name: true },
-        },
-      },
+      include: LINK_INCLUDE,
     })
 
     log.info('Partner link created', {
