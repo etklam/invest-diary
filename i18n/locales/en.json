@@ -637,7 +637,7 @@
     "badge": "Trading Review Companion",
     "hero": {
       "title": "Write down every thesis. Let your past self become your best coach.",
-      "subtitle": "A stock compounding at 15% annually has a daily profit probability of just 50.02% — almost indistinguishable from a coin flip. Trading is never about any single outcome. It's about having enough records to validate your decision process. Write, review, then compare with a partner — that's where the gap begins.",
+      "subtitle": "A stock compounding at 15% annually has a daily profit probability of just 50.02% — almost indistinguishable from a coin flip. Trading is never about any single outcome — it's about having enough records to validate your decision process. Markets don't reward effort, they reward capability — and capability comes from traceable decisions and honest reviews. Write, review, then compare with a partner — that's where the gap begins.",
       "getStarted": "Start Recording",
       "learnMore": "See Learning Path"
     },
@@ -658,7 +658,7 @@
       "methodValue": "Record → Review → Refine",
       "communityLabel": "Companion Mode",
       "communityValue": "Partner / AI compare",
-      "description": "Time spent reviewing should far exceed time spent trading. Log every market thesis on one timeline, then compare side by side with a partner. History doesn't repeat, but it rhymes."
+      "description": "Reviewing isn't optional — a loss you didn't learn from is just a loss. Log every market thesis on one timeline, then compare side by side with a partner. History doesn't repeat, but it rhymes."
     },
     "promise": {
       "title": "Learning Promise",
@@ -670,14 +670,14 @@
     },
     "learning": {
       "title": "The Investor's Path",
-      "subtitle": "At the highest level, investing is less about financial knowledge and more about psychology. Know yourself before you try to know the market.",
+      "subtitle": "Markets don't reward effort, they reward capability. At the highest level, investing is less about financial knowledge and more about psychology. Know yourself before you try to know the market.",
       "basics": {
         "title": "Investment Identity & Awareness",
         "description": "Not knowing whether you're a value investor or a price speculator is the root cause of many losses. Correct thinking doesn't guarantee profits, but wrong thinking virtually guarantees long-term losses."
       },
       "risk": {
         "title": "Position Sizing & Survival",
-        "description": "Offense determines your ceiling, but defense determines how long you stay in the game. Survival is the only prerequisite for compounding every edge you have. A 25% stop-loss on stocks and 5% on leverage are non-negotiable lines."
+        "description": "Offense determines your ceiling, but defense determines how long you stay in the game. A 25% drawdown requires a 33% gain just to break even — beyond that point, recovery becomes exponentially harder. Survival is the only prerequisite for compounding every edge you have. A 25% stop-loss on stocks and 5% on leverage are non-negotiable lines."
       },
       "review": {
         "title": "The Review Methodology",
@@ -686,7 +686,7 @@
     },
     "community": {
       "title": "You don't have to trade alone",
-      "subtitle": "Journaling solo is fine, but the real breakthrough comes when a partner — human or AI — writes against the same market day and you compare both takes side by side. The moment you spot your blind spot is the moment you grow.",
+      "subtitle": "Trade Basic's real value isn't just recording — it's putting your judgment and your partner's into the same review rhythm. System 1 makes snap decisions, System 2 corrects through review — and the loop itself is the engine that builds capability.",
       "share": {
         "title": "Account-level sharing",
         "description": "Turn on diary sharing for a partner link and both sides can compare history and new entries. Stock holdings are never exposed — your cards stay face-down."
@@ -709,7 +709,7 @@
       },
       "step2": {
         "title": "2. Identify biases",
-        "description": "Compare execution results against your original hypothesis. Determine whether the decision was flawed or whether it was just variance. A correct process can still produce temporary losses."
+        "description": "Compare execution results against your original hypothesis. Remember: making money once doesn't mean you've matured — a lucky profit can create the illusion of skill. Determine whether the decision was flawed or whether it was just variance. A correct process can still produce temporary losses."
       },
       "step3": {
         "title": "3. Define rules",
@@ -717,7 +717,7 @@
       },
       "step4": {
         "title": "4. Validate long-term",
-        "description": "Review rule effectiveness continuously and verify positive expectancy with enough samples. The best starting hand in poker wins over 80% of the time — but still loses nearly 20%. Always leave room for error."
+        "description": "Review rule effectiveness continuously. The ability to maintain discipline after consecutive losses is what separates novices from mature traders. Verify positive expectancy with at least 30 samples — one trade is random, a large sample is meaningful. The best starting hand in poker wins over 80% of the time — but still loses nearly 20%. Always leave room for error."
       }
     },
     "features": {
@@ -754,7 +754,7 @@
     },
     "cta": {
       "title": "Your toughest opponent is never the chart — it's yourself",
-      "description": "Start logging today, review weekly, and bring in a partner when you're ready to stress-test your market read. When you're tilting, the prefrontal cortex shuts down and the amygdala takes over — the only antidote is a plan written in advance and enough records to anchor you.",
+      "description": "Start logging today, review weekly, and bring in a partner when you're ready to stress-test your market read. When you're tilting, the prefrontal cortex shuts down and the amygdala takes over — System 1 makes snap judgments while System 2 gets dragged along. The only antidote is a plan written in advance and enough records to force System 2 online when you need it.",
       "register": "Join Now",
       "login": "Log In",
       "step1": {
@@ -786,11 +786,11 @@
     },
     "intro": {
       "title": "Who I Am",
-      "content": "I am the developer of this site and a trader still learning every day. This project started as my own journal and evolved into a structured workflow for recording, reviewing, and improving decisions, so past experience can stay close to every future trade."
+      "content": "I am the developer of this site and a trader still learning every day. This project started as my own journal and evolved into a structured workflow for recording, reviewing, and improving decisions. Markets don't reward effort, they reward capability — and capability starts with acknowledging hindsight bias, then using written records to fight memory's tendency for self-editing."
     },
     "motivation": {
       "title": "Why I Built This",
-      "paragraph1": "I used to repeat the same mistakes in emotional, low-discipline trades. Over time, I learned the real issue was not a lack of information, but the lack of a consistent process I could review.",
+      "paragraph1": "I used to repeat the same mistakes in emotional, low-discipline trades. Over time, I learned the real issue was not a lack of information, but the lack of a consistent process I could review. A loss you didn't learn from is just a loss — I didn't want any of my losses to go to waste.",
       "paragraph2": "This site is not built to promise quick wins. It is a practical training environment: log each decision, review it regularly, and refine your rules to reduce repeated errors while moving toward long-term goals like financial freedom and passive income."
     },
     "features": {
@@ -867,7 +867,7 @@
     },
     "workflow": {
       "title": "A practical daily loop",
-      "subtitle": "Trade Basic gets more useful when your journal and a partner journal live inside the same review loop.",
+      "subtitle": "Trade Basic gets more useful when your journal and a partner journal live inside the same review loop. System 1 makes snap judgments, System 2 corrects through review — and the loop itself is the engine that builds capability.",
       "step1": {
         "label": "Write",
         "title": "Record your own market read before memory edits it",

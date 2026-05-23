@@ -135,6 +135,7 @@ _避免：速記、草稿_
 **問題**：public `/api/blog` 和 admin `/api/blog/admin` 各自手寫 Prisma 查詢，95% 重複但參數不同（status 預設、排序欄位、搜尋語意、category alias）。
 
 **解法**：抽取 `queryPosts(config)` + `parsePostQueryConfig(query, options)`，透過 config 區分路由差異：
+
 - Public：`status: 'PUBLISHED'`, `searchMode: 'search'`, `searchFields: ['title', 'excerpt']`, `enableCategoryAliases: true`, `requirePublishedAt: true`
 - Admin：`searchMode: 'contains'`, `searchFields: ['title']`, `includeEmail: true`, `requirePublishedAt: false`
 
@@ -151,6 +152,7 @@ _避免：速記、草稿_
 **問題**：`stock-timeline-records.ts`（361 行、10 個 export）混雜了 Watchlist CRUD、Timeline CRUD、和 Agent 資料寫入三個概念。
 
 **解法**：按領域概念拆分：
+
 - `stock-watchlist-queries.ts`：Watchlist CRUD（ensureStock, upsertWatchlist, listWatchlist）
 - `stock-timeline-queries.ts`：Timeline CRUD（createRecordsFromAgent, listTimeline, listTimelineBySymbol）
 
@@ -167,6 +169,7 @@ _避免：速記、草稿_
 **問題**：`authz-admin.ts`（25 行）零引用的死代碼；`auth.ts` 仍支援 legacy `auth-token` cookie。
 
 **解法**：
+
 - 刪除 `server/middleware/authz-admin.ts`
 - 移除 `auth.ts`、`websocket.ts`、`plugins/auth.ts` 中所有 `auth-token` fallback
 - Admin middleware 測試從 8 擴充到 18 個
@@ -184,6 +187,7 @@ _避免：速記、草稿_
 **問題**：`createDiaryForUser` 和 `updateDiaryForUser` 共用驗證和交易映射邏輯但各自重複。
 
 **解法**：
+
 - 抽取 `validateDiaryInput(title, transactions)` 共用驗證
 - 抽取 `mapTransactionWriteData(tx)` 共用交易映射（create 和 diffTransactions 共用）
 - 抽取 `persistTransactionDiff(tx, diaryId, userId, diff)` 從 update 的 $transaction block 中
