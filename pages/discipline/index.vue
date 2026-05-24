@@ -8,6 +8,7 @@ import DisciplineCard from '~/components/discipline/DisciplineCard.vue'
 import DisciplineForm from '~/components/discipline/DisciplineForm.vue'
 import DisciplineShareModal from '~/components/discipline/DisciplineShareModal.vue'
 import DisciplineImportModal from '~/components/discipline/DisciplineImportModal.vue'
+import { parseImportFromURL } from '~/lib/disciplineShare'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -123,6 +124,9 @@ const moveDown = (index: number) => {
 
 onMounted(async () => {
   await fetchList()
+  if (parseImportFromURL()?.isValid) {
+    showImportModal.value = true
+  }
 })
 
 definePageMeta({

@@ -2,26 +2,9 @@ FROM node:22-bookworm-slim AS deps
 
 WORKDIR /app
 
-# Install native build dependencies in a single layer.
-# canvas falls back to node-gyp on Linux when no prebuilt binary is available.
+# Install only the native tools required by Prisma/sharp postinstall.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    python3 \
-    pkg-config \
     openssl \
-    libcairo2 \
-    libcairo2-dev \
-    libjpeg62-turbo \
-    libjpeg-dev \
-    libpango-1.0-0 \
-    libpango1.0-dev \
-    libgif7 \
-    libgif-dev \
-    librsvg2-2 \
-    librsvg2-dev \
-    libpixman-1-0 \
-    libpangomm-1.4-1v5 \
-    libfreetype6 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency files first for better caching.
@@ -29,7 +12,7 @@ COPY package.json package-lock.json ./
 
 # Install dependencies and rebuild native modules.
 RUN npm install --ignore-scripts --legacy-peer-deps && \
-    npm rebuild canvas sharp && \
+    npm rebuild sharp && \
     npm run postinstall
 
 # Build stage
@@ -60,14 +43,6 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl \
     netcat-openbsd \
-    libcairo2 \
-    libjpeg62-turbo \
-    libpango-1.0-0 \
-    libgif7 \
-    librsvg2-2 \
-    libpixman-1-0 \
-    libpangomm-1.4-1v5 \
-    libfreetype6 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set production environment

@@ -22,6 +22,7 @@ export interface DisciplineShareData {
 
 export interface DisciplineImportPreview {
   title: string
+  author?: string
   description?: string
   disciplines: Omit<DisciplineItem, 'id' | 'createdAt'>[]
   count: number
@@ -110,6 +111,7 @@ export function parseShareData(json: string): DisciplineImportPreview {
 
     return {
       title: data.title || 'Trading Disciplines',
+      author: data.author,
       description: data.description,
       disciplines: validDisciplines,
       count: validDisciplines.length,
@@ -130,17 +132,34 @@ export function parseShareData(json: string): DisciplineImportPreview {
  * Note: For large datasets, consider using server-side storage
  */
 export function generateShareURL(data: DisciplineShareData, baseUrl: string = ''): string {
-  // For small datasets, encode in URL hash
-  const json = shareDataToJSON(data)
-  const compressed = btoa(encodeURIComponent(json))
+  const compressed = encodeShareData(data)
 
   if (baseUrl) {
-    return `${baseUrl}/discipline?import=${compressed}`
+    return `${trimTrailingSlash(baseUrl)}/discipline?import=${compressed}`
   }
 
   // For client-side routing
   const url = new URL(window.location.href)
-  url.hash = `import=${compressed}`
+  url.searchParams.set('import', compressed)
+  url.hash = ''
+  return url.toString()
+}
+
+/**
+ * Generate a public share landing URL for social crawlers.
+ */
+export function generatePublicShareURL(data: DisciplineShareData, baseUrl: string = ''): string {
+  const compressed = encodeShareData(data)
+
+  if (baseUrl) {
+    return `${trimTrailingSlash(baseUrl)}/discipline/share?import=${compressed}`
+  }
+
+  const url = new URL(window.location.href)
+  url.pathname = '/discipline/share'
+  url.search = ''
+  url.searchParams.set('import', compressed)
+  url.hash = ''
   return url.toString()
 }
 
@@ -151,16 +170,33 @@ export function parseImportFromURL(): DisciplineImportPreview | null {
   if (typeof window === 'undefined') return null
 
   const url = new URL(window.location.href)
-  const importData = url.hash?.match(/import=([^&]+)/)?.[1]
+  const importData = url.searchParams.get('import') || url.hash?.match(/import=([^&]+)/)?.[1]
 
+  return parseImportParam(importData)
+}
+
+export function parseImportParam(importData?: string | null): DisciplineImportPreview | null {
   if (!importData) return null
 
   try {
-    const json = decodeURIComponent(atob(importData))
+    const json = decodeURIComponent(decodeBase64(importData))
     return parseShareData(json)
   } catch {
     return null
   }
+}
+
+export function buildDisciplineOgImageURL(
+  preview: Pick<DisciplineImportPreview, 'title' | 'author' | 'count'> | null | undefined,
+  baseUrl: string = ''
+): string {
+  const params = new URLSearchParams({
+    title: preview?.title || '我的投資紀律',
+    author: preview?.author || 'Anonymous',
+    count: String(preview?.count || 0),
+  })
+  const path = `/api/og/discipline.svg?${params.toString()}`
+  return baseUrl ? `${trimTrailingSlash(baseUrl)}${path}` : path
 }
 
 /**
@@ -211,7 +247,7 @@ export function generateShareText(data: DisciplineShareData, platform: 'twitter'
   const description = data.description || ''
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const shareUrl = generateShareURL(data, baseUrl)
+  const shareUrl = generatePublicShareURL(data, baseUrl)
 
   switch (platform) {
     case 'twitter':
@@ -238,7 +274,7 @@ export function generateSocialShareURL(
 ): string {
   const text = generateShareText(data, 'generic')
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const shareUrl = generateShareURL(data, baseUrl)
+  const shareUrl = generatePublicShareURL(data, baseUrl)
 
   switch (platform) {
     case 'twitter':
@@ -256,4 +292,22 @@ export function generateSocialShareURL(
     default:
       return shareUrl
   }
+}
+
+function encodeShareData(data: DisciplineShareData): string {
+  return encodeBase64(encodeURIComponent(shareDataToJSON(data)))
+}
+
+function encodeBase64(value: string): string {
+  if (typeof btoa === 'function') return btoa(value)
+  return Buffer.from(value, 'utf-8').toString('base64')
+}
+
+function decodeBase64(value: string): string {
+  if (typeof atob === 'function') return atob(value)
+  return Buffer.from(value, 'base64').toString('utf-8')
+}
+
+function trimTrailingSlash(value: string): string {
+  return value.replace(/\/+$/, '')
 }

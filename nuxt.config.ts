@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 
   nitro: {
     externals: {
-      external: ['@prisma/client', 'canvas']
+      external: ['@prisma/client']
     },
     nodeModulesDirs: [process.cwd() + '/node_modules'],
     routeRules: {
@@ -68,7 +68,7 @@ export default defineNuxtConfig({
       }
     },
     optimizeDeps: {
-      exclude: ['@prisma/client', '@prisma/client/runtime', 'canvas'],
+      exclude: ['@prisma/client', '@prisma/client/runtime'],
       include: [
         '@vue/devtools-core',
         '@vue/devtools-kit',
