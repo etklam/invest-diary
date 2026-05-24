@@ -1779,7 +1779,7 @@
       "invalidQuantity": "Quantity must be a positive number. Try again:",
       "invalidPrice": "Price must be a positive number. Try again:",
       "invalidSymbol": "Invalid stock symbol. Try again:",
-      "confirm": "Buy {quantity} {symbol} @ ${price} — Confirm? (yes/no)"
+      "confirm": "Buy {quantity} {symbol} {'@'} {'$'}{price} — Confirm? (yes/no)"
     },
     "sell": {
       "oneLinerSuccess": "✅ Recorded\nSell {quantity} {symbol} {'@'} ${price}\nTotal: ${total}",
@@ -1789,7 +1789,7 @@
       "invalidQuantity": "Quantity must be a positive number. Try again:",
       "invalidPrice": "Price must be a positive number. Try again:",
       "invalidSymbol": "Invalid stock symbol. Try again:",
-      "confirm": "Sell {quantity} {symbol} @ ${price} — Confirm? (yes/no)"
+      "confirm": "Sell {quantity} {symbol} {'@'} {'$'}{price} — Confirm? (yes/no)"
     },
     "note": {
       "success": "✅ Diary recorded",

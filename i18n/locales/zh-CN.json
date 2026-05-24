@@ -1680,7 +1680,7 @@
       "invalidQuantity": "数量必须为正数，请重新输入：",
       "invalidPrice": "价格必须为正数，请重新输入：",
       "invalidSymbol": "无效的股票代码，请重新输入：",
-      "confirm": "买入 {quantity} {symbol} @ ${price} — 确认？(yes/no)"
+      "confirm": "买入 {quantity} {symbol} {'@'} {'$'}{price} — 确认？(yes/no)"
     },
     "sell": {
       "oneLinerSuccess": "✅ 已记录\n卖出 {quantity} {symbol} {'@'} ${price}\n总金额: ${total}",
@@ -1690,7 +1690,7 @@
       "invalidQuantity": "数量必须为正数，请重新输入：",
       "invalidPrice": "价格必须为正数，请重新输入：",
       "invalidSymbol": "无效的股票代码，请重新输入：",
-      "confirm": "卖出 {quantity} {symbol} @ ${price} — 确认？(yes/no)"
+      "confirm": "卖出 {quantity} {symbol} {'@'} {'$'}{price} — 确认？(yes/no)"
     },
     "note": {
       "success": "✅ 已记录日记",

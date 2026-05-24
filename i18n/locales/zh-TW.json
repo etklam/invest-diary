@@ -1777,7 +1777,7 @@
       "invalidQuantity": "數量必須是正數，請重新輸入：",
       "invalidPrice": "價格必須是正數，請重新輸入：",
       "invalidSymbol": "無效的股票代碼，請重新輸入：",
-      "confirm": "買入 {quantity} {symbol} @ ${price} — 確認？(yes/no)"
+      "confirm": "買入 {quantity} {symbol} {'@'} {'$'}{price} — 確認？(yes/no)"
     },
     "sell": {
       "oneLinerSuccess": "✅ 已記錄\n賣出 {quantity} {symbol} {'@'} ${price}\n總金額: ${total}",
@@ -1787,7 +1787,7 @@
       "invalidQuantity": "數量必須是正數，請重新輸入：",
       "invalidPrice": "價格必須是正數，請重新輸入：",
       "invalidSymbol": "無效的股票代碼，請重新輸入：",
-      "confirm": "賣出 {quantity} {symbol} @ ${price} — 確認？(yes/no)"
+      "confirm": "賣出 {quantity} {symbol} {'@'} {'$'}{price} — 確認？(yes/no)"
     },
     "note": {
       "success": "✅ 已記錄日記",
