@@ -130,6 +130,29 @@ export function getMarketDataCacheTtlSeconds(kind: MarketDataCacheKind, now = ne
   )
 }
 
+const BOARD_CACHE_MARKET_HOURS_TTL_SECONDS = 15 * 60
+const BOARD_CACHE_ALL_FAILED_TTL_SECONDS = 5 * 60
+
+export function getBoardCacheTtlSeconds(allFailed: boolean, now = new Date()): number {
+  if (allFailed) {
+    return BOARD_CACHE_ALL_FAILED_TTL_SECONDS
+  }
+
+  const nyNow = getNewYorkDateTimeParts(now)
+
+  if (isWeekday(nyNow) && isDuringMarketHours(nyNow)) {
+    return BOARD_CACHE_MARKET_HOURS_TTL_SECONDS
+  }
+
+  const target = getNextHistoricalRefreshTime(nyNow)
+  const ttlSeconds = Math.ceil((target.getTime() - now.getTime()) / 1000)
+
+  return Math.min(
+    MAX_MARKET_DATA_TTL_SECONDS,
+    Math.max(MIN_MARKET_DATA_TTL_SECONDS, ttlSeconds)
+  )
+}
+
 function normalizeMarketCachePart(value: string): string {
   return value.trim().toUpperCase()
 }

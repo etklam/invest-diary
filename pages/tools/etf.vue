@@ -1,47 +1,13 @@
 <script setup lang="ts">
 import {
-  buildFallbackSectorTrendRow,
-  buildSectorTrendRow,
   buildSparklinePoints,
   type MaStatus,
-  type PresetEtf,
   type SectorTrendRow,
 } from '~/lib/etf-sector-trend'
-import type { HistoricalQuote, QuoteResponse } from '~/lib/market-data/yahoo'
 
 type PresetKey = 'sectors' | 'indexes' | 'custom'
 type FilterKey = 'all' | 'aboveAll' | 'belowShort' | 'belowAll' | 'hotRsi' | 'weakRsi'
 type SortField = 'symbol' | 'sector' | 'rsi' | 'last' | 'dailyChange' | 'weeklyChange' | 'ytdHighDistance'
-
-const presetLists: Record<Exclude<PresetKey, 'custom'>, PresetEtf[]> = {
-  sectors: [
-    { symbol: 'XLK', sector: 'Tech' },
-    { symbol: 'SPY', sector: 'S&P 500' },
-    { symbol: 'MAGS', sector: 'Mag 7' },
-    { symbol: 'QQQE', sector: 'Nasdaq Equal Weight' },
-    { symbol: 'XLE', sector: 'Energy' },
-    { symbol: 'XLP', sector: 'Staples' },
-    { symbol: 'XLC', sector: 'Communication' },
-    { symbol: 'RSP', sector: 'S&P 500 Equal Weight' },
-    { symbol: 'XLI', sector: 'Industrial' },
-    { symbol: 'XLV', sector: 'Health Care' },
-    { symbol: 'XLY', sector: 'Cyclical' },
-    { symbol: 'XLF', sector: 'Financial' },
-    { symbol: 'VNQ', sector: 'REITs' },
-    { symbol: 'XLB', sector: 'Materials' },
-    { symbol: 'XLU', sector: 'Utilities' },
-  ],
-  indexes: [
-    { symbol: 'SPY', sector: 'S&P 500' },
-    { symbol: 'QQQ', sector: 'Nasdaq 100' },
-    { symbol: 'DIA', sector: 'Dow Jones' },
-    { symbol: 'IWM', sector: 'Russell 2000' },
-    { symbol: 'RSP', sector: 'S&P 500 Equal Weight' },
-    { symbol: 'VTI', sector: 'US Total Market' },
-    { symbol: 'VEA', sector: 'Developed ex-US' },
-    { symbol: 'VWO', sector: 'Emerging Markets' },
-  ],
-}
 
 const presetOptions: Array<{ key: PresetKey; label: string; icon: string }> = [
   { key: 'sectors', label: 'US Sectors', icon: 'heroicons:squares-2x2' },
@@ -74,25 +40,13 @@ const sortBy = ref<SortField>('rsi')
 const sortOrder = ref<'asc' | 'desc'>('desc')
 const rows = ref<SectorTrendRow[]>([])
 const loading = ref(false)
+const forceRefresh = ref(false)
 const selectedRow = ref<SectorTrendRow | null>(null)
 const customSymbols = ref('SMH, SOXX, IBB, IYR')
 const lastRefreshAt = ref<Date | null>(null)
 const boardRef = ref<HTMLElement | null>(null)
 const toast = useToast()
 const { t } = useI18n()
-
-const currentPresetList = computed(() => {
-  if (activePreset.value !== 'custom') {
-    return presetLists[activePreset.value]
-  }
-
-  return customSymbols.value
-    .split(/[\s,]+/)
-    .map(symbol => symbol.trim().toUpperCase())
-    .filter(Boolean)
-    .slice(0, 20)
-    .map(symbol => ({ symbol, sector: 'Custom' }))
-})
 
 const validRows = computed(() => rows.value.filter(row => !row.error && row.last !== null))
 
@@ -226,55 +180,25 @@ function handleSort(field: SortField) {
   sortOrder.value = field === 'symbol' || field === 'sector' ? 'asc' : 'desc'
 }
 
-async function mapWithConcurrency<T, R>(items: T[], limit: number, mapper: (item: T) => Promise<R>) {
-  const results: R[] = []
-  let nextIndex = 0
-
-  async function worker() {
-    while (nextIndex < items.length) {
-      const currentIndex = nextIndex
-      nextIndex += 1
-      const item = items[currentIndex]
-      if (item !== undefined) {
-        results[currentIndex] = await mapper(item)
-      }
-    }
-  }
-
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
-  return results
-}
-
-async function fetchTrendRow(etf: PresetEtf): Promise<SectorTrendRow> {
-  try {
-    const [history, quote] = await Promise.all([
-      $fetch<HistoricalQuote[]>('/api/market/historical', {
-        params: { symbol: etf.symbol, range: '1y' },
-        timeout: 12000,
-      }),
-      $fetch<QuoteResponse>(`/api/market/quote/${encodeURIComponent(etf.symbol)}`, {
-        timeout: 8000,
-      }).catch(() => null),
-    ])
-
-    return buildSectorTrendRow(etf, history, quote)
-  } catch (error) {
-    return buildFallbackSectorTrendRow(etf, error instanceof Error ? error.message : 'Data unavailable')
-  }
-}
-
 async function refreshBoard() {
-  const list = currentPresetList.value
-  if (list.length === 0) {
-    rows.value = []
-    return
-  }
-
   loading.value = true
   selectedRow.value = null
 
   try {
-    rows.value = await mapWithConcurrency(list, 4, fetchTrendRow)
+    const params: Record<string, string> = { preset: activePreset.value }
+    if (activePreset.value === 'custom') {
+      params.symbols = customSymbols.value
+    }
+    if (forceRefresh.value) {
+      params.nocache = '1'
+      forceRefresh.value = false
+    }
+
+    const data = await $fetch<{ rows: SectorTrendRow[] }>('/api/market/sector-board', {
+      params,
+      timeout: 30000,
+    })
+    rows.value = data.rows
     lastRefreshAt.value = new Date()
 
     if (failedRows.value.length > 0) {
@@ -454,7 +378,7 @@ definePageMeta({
               class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10"
               :disabled="loading"
               aria-label="Refresh sector board"
-              @click="refreshBoard"
+              @click="forceRefresh = true; refreshBoard()"
             >
               <Icon name="heroicons:arrow-path" class="h-5 w-5" :class="{ 'animate-spin': loading }" />
             </button>
