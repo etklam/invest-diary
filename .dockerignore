@@ -16,6 +16,12 @@ dist
 # IDE
 .vscode
 .idea
+.agents
+.claude
+.codex
+.context
+.gstack
+.worktrees
 *.swp
 *.swo
 
@@ -31,6 +37,11 @@ Thumbs.db
 # Testing
 coverage
 .nyc_output
+test-results
+tests
+screenshots
+!public/screenshots
+!public/screenshots/**
 
 # Docker files
 Dockerfile*
@@ -41,6 +52,9 @@ docker-compose*.yml
 README.md
 CLAUDE.md
 *.md
+docs
+issues
+plans
 
 # Misc
 *.log

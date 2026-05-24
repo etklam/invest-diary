@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS deps
 
 WORKDIR /app
 
@@ -24,21 +24,32 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfreetype6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency files first for better caching
+# Copy dependency files first for better caching.
 COPY package.json package-lock.json ./
 
-# Install dependencies and rebuild native modules
+# Install dependencies and rebuild native modules.
 RUN npm install --ignore-scripts --legacy-peer-deps && \
     npm rebuild canvas sharp && \
     npm run postinstall
 
+# Build stage
+FROM deps AS builder
+
+WORKDIR /app
+
 # Copy source code
 COPY . .
 
-# Build application
+# Build application.
 RUN npx prisma generate && \
-    npm run build && \
-    npm prune --omit=dev --omit=optional --legacy-peer-deps
+    npm run build
+
+# Production dependencies stage
+FROM deps AS prod-deps
+
+WORKDIR /app
+
+RUN npm prune --omit=dev --omit=optional --legacy-peer-deps
 
 # Runtime stage
 FROM node:22-bookworm-slim AS runtime
@@ -68,7 +79,7 @@ ENV NODE_ENV=production \
 
 # Copy built application from builder
 COPY --from=builder /app/.output ./.output
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/package.json ./package.json
