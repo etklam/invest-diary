@@ -48,10 +48,15 @@ export function getCached<T>(key: string): T | null {
   if (!entry) return null
 
   if (Date.now() > entry.expiresAt) {
-    cache.delete(key)
     return null
   }
 
+  return entry.value as T
+}
+
+export function getStaleCached<T>(key: string): T | null {
+  const entry = cache.get(key)
+  if (!entry) return null
   return entry.value as T
 }
 
@@ -107,9 +112,17 @@ export async function getOrSetCached<T>(
     }
   }
 
-  const fresh = await fetcher()
-  setCached(key, fresh, ttlSeconds)
-  return fresh
+  try {
+    const fresh = await fetcher()
+    setCached(key, fresh, ttlSeconds)
+    return fresh
+  } catch {
+    const stale = getStaleCached<T>(key)
+    if (stale !== null) {
+      return stale
+    }
+    throw new Error('Fetch failed and no stale cache available')
+  }
 }
 
 export function getMarketDataCacheTtlSeconds(kind: MarketDataCacheKind, now = new Date()): number {

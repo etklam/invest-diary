@@ -15,6 +15,7 @@ import {
   getMarketDataCacheTtlSeconds,
   getCached,
   getOrSetCached,
+  getStaleCached,
   setCached,
   shouldBypassCache,
 } from '~/lib/etf-profile/cache'
@@ -150,6 +151,24 @@ export default defineEventHandler(async (event) => {
   }
 
   const rows = await mapWithConcurrency(etfList, CONCURRENCY_LIMIT, fetchTrendRow)
+
+  // Fill failed rows with stale board data when available
+  const staleRows = getStaleCached<SectorTrendRow[]>(cacheKey)
+  if (staleRows && rows.some(row => row.error)) {
+    const staleBySymbol = new Map(
+      staleRows.filter(r => !r.error).map(r => [r.symbol, r])
+    )
+    for (const row of rows) {
+      if (row.error) {
+        const stale = staleBySymbol.get(row.symbol)
+        if (stale) {
+          const idx = rows.indexOf(row)
+          rows[idx] = stale
+        }
+      }
+    }
+  }
+
   const allFailed = rows.length > 0 && rows.every(row => Boolean(row.error))
   const ttlSeconds = getBoardCacheTtlSeconds(allFailed)
   setCached(cacheKey, rows, ttlSeconds)

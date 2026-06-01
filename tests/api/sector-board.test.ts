@@ -36,6 +36,7 @@ vi.mock('~/lib/logger', () => ({
 const mockGetCached = vi.fn()
 const mockSetCached = vi.fn()
 const mockGetOrSetCached = vi.fn()
+const mockGetStaleCached = vi.fn()
 
 vi.mock('~/lib/etf-profile/cache', () => ({
   buildMarketHistoricalCacheKey: (symbol: string, range: string) => `market:historical:${symbol}:${range}`,
@@ -44,6 +45,7 @@ vi.mock('~/lib/etf-profile/cache', () => ({
   getMarketDataCacheTtlSeconds: () => 300,
   getCached: (...args: any[]) => mockGetCached(...args),
   getOrSetCached: (...args: any[]) => mockGetOrSetCached(...args),
+  getStaleCached: (...args: any[]) => mockGetStaleCached(...args),
   setCached: (...args: any[]) => mockSetCached(...args),
   shouldBypassCache: (v: unknown) => v === '1' || v === 1 || v === true || v === 'true',
 }))
@@ -59,6 +61,7 @@ beforeEach(async () => {
   mockGetOrSetCached.mockImplementation(async (_key: string, _ttl: number, fetcher: () => Promise<any>) => fetcher())
   // Default: board cache miss
   mockGetCached.mockReturnValue(null)
+  mockGetStaleCached.mockReturnValue(null)
 
   handler = (await import('~/server/api/market/sector-board.get')).default
 })
@@ -155,6 +158,24 @@ describe('GET /api/market/sector-board', () => {
     expect(result.rows[0].error).toBeDefined()
     expect(result.rows[0].symbol).toBe('FAIL')
     expect(result.rows[1].error).toBeUndefined()
+  })
+
+  it('fills failed rows from stale board cache', async () => {
+    mockFetchHistoricalData.mockImplementation(() => { throw new Error('Yahoo down') })
+    mockFetchQuote.mockResolvedValue(null)
+
+    // Stale board cache has good data for XLK
+    mockGetStaleCached.mockReturnValue([
+      { symbol: 'XLK', sector: 'Tech', error: undefined, last: 200 },
+    ])
+
+    const result = await handler(makeEvent({ preset: 'sectors' }))
+
+    // XLK should be filled from stale cache, not an error row
+    const xlkRow = result.rows.find((r: any) => r.symbol === 'XLK')
+    expect(xlkRow).toBeDefined()
+    expect(xlkRow.error).toBeUndefined()
+    expect(xlkRow.last).toBe(200)
   })
 
   it('throws rate limited error when rate limiter rejects', async () => {
