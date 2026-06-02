@@ -3,9 +3,8 @@ import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { listStockNotes, toStockNoteResponse } from '~/lib/stocks/notes'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
-import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
-import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
+import { resolveSharedStockNotesOwner } from '~/server/utils/partner'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -31,27 +30,7 @@ export default defineEventHandler(async (event) => {
     let isOwnedByViewer = true
 
     if (partnerId) {
-      // Find partner link
-      const link = await prisma.partnerLink.findFirst({
-        where: {
-          OR: [
-            { userAId: BigInt(user.id), userBId: BigInt(partnerId) },
-            { userAId: BigInt(partnerId), userBId: BigInt(user.id) },
-          ],
-        },
-      })
-
-      if (!link || !link.acceptedAt) {
-        throw Errors.partnerLinkAccessDenied().toH3Error()
-      }
-
-      const side = getPartnerSide(link as PartnerLinkRecord, user.id)
-
-      if (!side.partnerSharesStockNotes) {
-        throw Errors.forbidden('Partner has not enabled stock notes sharing').toH3Error()
-      }
-
-      targetUserId = BigInt(side.partner.id)
+      targetUserId = await resolveSharedStockNotesOwner(user.id, partnerId)
       isOwnedByViewer = false
     }
 

@@ -43,7 +43,7 @@ interface RawDiary {
 
 function stripAndTag(diary: RawDiary | undefined): PartnerDiary | null {
   if (!diary) return null
-  const { transactions, alerts, ...rest } = diary
+  const { transactions: _transactions, alerts: _alerts, ...rest } = diary
   return {
     ...rest,
     tags: parseDiaryTags(diary.tagsString),

@@ -1,31 +1,27 @@
-import { fetchMonthlyData } from '~/lib/yahoo-finance'
-import { computeRiskMetrics } from '~/lib/etf-profile/calculators/risk'
-import { EMPTY_RISK_METRICS } from '~/lib/etf-profile/defaults'
-import { logger } from '~/lib/logger'
+import { readEtfResearch } from '~/lib/etf-profile/research'
+import { shouldBypassCache } from '~/lib/etf-profile/cache'
+import type { RsMetrics } from '~/lib/etf-profile/types'
 import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
-  const log = logger.etf.withRequestId(event.context.requestId)
   const symbol = getRouterParam(event, 'symbol')
   if (!symbol) {
     throw Errors.validationError([{ field: 'symbol', message: 'Missing symbol' }]).toH3Error()
   }
 
-  try {
-    const data = await fetchMonthlyData(symbol.toUpperCase(), 5)
-    const series = data.map(row => ({
-      close: row.adjClose ?? row.close ?? 0,
-      volume: row.volume,
-    }))
+  const benchmark: RsMetrics['benchmark'] = 'SPY'
+  const period: RsMetrics['period'] = '3m'
+  const query = getQuery(event) || {}
+  const profile = await readEtfResearch({
+    symbol: symbol.trim().toUpperCase(),
+    benchmark,
+    period,
+    bypassCache: shouldBypassCache(query.nocache),
+  })
 
-    return {
-      ...computeRiskMetrics(series),
-      asOf: new Date().toISOString(),
-    }
-  } catch {
-    return {
-      ...EMPTY_RISK_METRICS,
-      asOf: null,
-    }
+  return {
+    ...profile.risk,
+    asOf: profile.meta.asOf,
+    meta: profile.meta,
   }
 })

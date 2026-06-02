@@ -95,6 +95,10 @@ export function buildMarketHistoricalCacheKey(symbol: string, range: string): st
   return `market:historical:${normalizeMarketCachePart(symbol)}:${normalizeMarketCachePart(range).toLowerCase()}`
 }
 
+export function buildEtfResearchCacheKey(symbol: string, benchmark: string, period: string): string {
+  return `etf-profile:${normalizeMarketCachePart(symbol)}:${normalizeMarketCachePart(benchmark)}:${normalizeMarketCachePart(period).toLowerCase()}`
+}
+
 export function shouldBypassCache(nocache: unknown): boolean {
   return nocache === '1' || nocache === 1 || nocache === true || nocache === 'true'
 }

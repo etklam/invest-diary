@@ -68,8 +68,6 @@ vi.mock('~/server/utils/validation', async (importOriginal) => {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const currentUser = { id: '1', email: 'user@example.com', role: 'USER' }
-const partnerUser = { id: '2', email: 'partner@example.com', name: 'Ana' }
-
 function makeStockNote(overrides: Record<string, unknown> = {}) {
   return {
     id: overrides.id as bigint ?? 100n,
@@ -215,6 +213,23 @@ describe('Partner Stock Notes', () => {
 
   // ── Stock notes access with partner ───────────────────────────────────
   describe('GET /api/stocks/:symbol/notes with partnerId', () => {
+    it('returns 400 when partnerId is invalid', async () => {
+      mockGetQuery.mockReturnValue({ partnerId: 'invalid' })
+      mockStockFindUnique.mockResolvedValue({ id: 10n })
+
+      const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.get')
+
+      await expect(handler({
+        context: {
+          params: { symbol: 'AAPL' },
+          user: currentUser,
+          requestId: 'req-notes-invalid-partner',
+        },
+      } as any)).rejects.toMatchObject({
+        statusCode: 400,
+      })
+    })
+
     it('returns 403 when partner link is not accepted', async () => {
       mockGetQuery.mockReturnValue({ partnerId: '2', page: '1', limit: '20' })
       mockStockFindUnique.mockResolvedValue({ id: 10n })

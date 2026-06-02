@@ -37,3 +37,52 @@ export async function findPartnerLinkById(linkId: bigint) {
     include: LINK_INCLUDE,
   })
 }
+
+export async function findPartnerUserByEmail(email: string) {
+  return prisma.user.findUnique({
+    where: { email },
+    select: PARTICIPANT_SELECT,
+  })
+}
+
+export async function findPartnerLinkByUserPair(userAId: bigint, userBId: bigint) {
+  return prisma.partnerLink.findUnique({
+    where: {
+      userAId_userBId: { userAId, userBId },
+    },
+    include: LINK_INCLUDE,
+  })
+}
+
+export async function findPartnerLinkBetweenUsers(userId: bigint, partnerUserId: bigint) {
+  return prisma.partnerLink.findFirst({
+    where: {
+      OR: [
+        { userAId: userId, userBId: partnerUserId },
+        { userAId: partnerUserId, userBId: userId },
+      ],
+    },
+    include: LINK_INCLUDE,
+  })
+}
+
+export async function createPartnerLinkRecord(userAId: bigint, userBId: bigint, initiatedByUserId: bigint) {
+  return prisma.partnerLink.create({
+    data: { userAId, userBId, initiatedByUserId },
+    include: LINK_INCLUDE,
+  })
+}
+
+export async function updatePartnerLinkRecord(linkId: bigint, data: Record<string, boolean | Date>) {
+  return prisma.partnerLink.update({
+    where: { id: linkId },
+    data,
+    include: LINK_INCLUDE,
+  })
+}
+
+export async function deletePartnerLinkRecord(linkId: bigint) {
+  return prisma.partnerLink.delete({
+    where: { id: linkId },
+  })
+}

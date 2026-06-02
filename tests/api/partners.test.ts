@@ -91,6 +91,74 @@ describe('Partner API routes', () => {
     expect(result.link.pendingOutgoing).toBe(true)
   })
 
+  it('allows only the receiving partner to accept a pending link', async () => {
+    mockPartnerLinkFindUnique.mockResolvedValue({
+      id: 9n,
+      userAId: 5n,
+      userBId: 7n,
+      initiatedByUserId: 7n,
+      acceptedAt: null,
+      userASharesDiaries: false,
+      userBSharesDiaries: false,
+      userASharesStockNotes: false,
+      userBSharesStockNotes: false,
+      createdAt: new Date('2026-04-09T00:00:00.000Z'),
+      updatedAt: new Date('2026-04-09T00:00:00.000Z'),
+      userA: { id: 5n, email: 'owner@example.com', name: 'Owner' },
+      userB: { id: 7n, email: 'partner@example.com', name: 'Partner' },
+    })
+    mockPartnerLinkUpdate.mockResolvedValue({
+      id: 9n,
+      userAId: 5n,
+      userBId: 7n,
+      initiatedByUserId: 7n,
+      acceptedAt: new Date('2026-04-10T00:00:00.000Z'),
+      userASharesDiaries: false,
+      userBSharesDiaries: false,
+      userASharesStockNotes: false,
+      userBSharesStockNotes: false,
+      createdAt: new Date('2026-04-09T00:00:00.000Z'),
+      updatedAt: new Date('2026-04-10T00:00:00.000Z'),
+      userA: { id: 5n, email: 'owner@example.com', name: 'Owner' },
+      userB: { id: 7n, email: 'partner@example.com', name: 'Partner' },
+    })
+
+    const { default: handler } = await import('~/server/api/partners/[id]/accept.post')
+    const result = await handler({
+      context: {
+        params: { id: '9' },
+        user: { id: '5', email: 'owner@example.com', role: 'USER' },
+        requestId: 'req-partner-accept',
+      },
+    } as any)
+
+    expect(mockPartnerLinkUpdate).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 9n },
+      data: { acceptedAt: expect.any(Date) },
+    }))
+    expect(result.link.pendingIncoming).toBe(false)
+  })
+
+  it('removes a partner link for either participant', async () => {
+    mockPartnerLinkFindUnique.mockResolvedValue({
+      id: 9n,
+      userAId: 5n,
+      userBId: 7n,
+    })
+
+    const { default: handler } = await import('~/server/api/partners/[id].delete')
+    const result = await handler({
+      context: {
+        params: { id: '9' },
+        user: { id: '5', email: 'owner@example.com', role: 'USER' },
+        requestId: 'req-partner-delete',
+      },
+    } as any)
+
+    expect(mockPartnerLinkDelete).toHaveBeenCalledWith({ where: { id: 9n } })
+    expect(result).toEqual({ success: true })
+  })
+
   it('builds same-day compare data and strips private relations', async () => {
     mockGetQuery.mockReturnValue({
       partnerId: '7',

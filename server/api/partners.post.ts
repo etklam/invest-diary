@@ -1,11 +1,8 @@
 import { z } from 'zod'
-import prisma from '~/lib/prisma'
-import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { normalizeInput } from '~/server/utils/validation'
-import { orderPartnerUserIds, type PartnerLinkRecord } from '~/server/utils/partner'
-import { LINK_INCLUDE } from '~/server/utils/partner-queries'
+import { createPartnerLink, getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
 import { serializePartnerLink } from '~/server/utils/partner-response'
 import { handleApiError } from '~/server/utils/error-handler'
 
@@ -22,39 +19,11 @@ export default defineEventHandler(async (event) => {
     const user = requireUser(event)
     const body = await readBody(event)
     const validated = createPartnerSchema.parse(body)
-    const currentUserId = BigInt(user.id)
-
-    const partnerUser = await prisma.user.findUnique({
-      where: { email: validated.partnerEmail },
-      select: { id: true, email: true, name: true },
-    })
-
-    if (!partnerUser) {
-      throw Errors.userNotFound()
-    }
-
-    const ordered = orderPartnerUserIds(currentUserId, partnerUser.id)
-    const existing = await prisma.partnerLink.findUnique({
-      where: {
-        userAId_userBId: ordered,
-      },
-    })
-
-    if (existing) {
-      throw Errors.partnerLinkAlreadyExists()
-    }
-
-    const link = await prisma.partnerLink.create({
-      data: {
-        ...ordered,
-        initiatedByUserId: currentUserId,
-      },
-      include: LINK_INCLUDE,
-    })
+    const link = await createPartnerLink(user.id, validated.partnerEmail)
 
     log.info('Partner link created', {
       userId: user.id,
-      partnerUserId: String(partnerUser.id),
+      partnerUserId: String(getPartnerSide(link as PartnerLinkRecord, user.id).partner.id),
       linkId: String(link.id),
     })
 

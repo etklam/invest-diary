@@ -1,15 +1,12 @@
-import { fetchMonthlyData } from '~/lib/yahoo-finance'
-import { computeRelativeStrength } from '~/lib/etf-profile/calculators/rs'
-import { createEmptyRs } from '~/lib/etf-profile/defaults'
+import { readEtfResearch } from '~/lib/etf-profile/research'
+import { shouldBypassCache } from '~/lib/etf-profile/cache'
 import type { RsMetrics } from '~/lib/etf-profile/types'
-import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 
 const VALID_BENCHMARKS: RsMetrics['benchmark'][] = ['SPY', 'QQQ']
 const VALID_PERIODS: RsMetrics['period'][] = ['1m', '3m', '6m', '1y']
 
 export default defineEventHandler(async (event) => {
-  const log = logger.etf.withRequestId(event.context.requestId)
   const symbol = getRouterParam(event, 'symbol')
   if (!symbol) {
     throw Errors.validationError([{ field: 'symbol', message: 'Missing symbol' }]).toH3Error()
@@ -30,23 +27,16 @@ export default defineEventHandler(async (event) => {
   const benchmark = rawBenchmark as RsMetrics['benchmark']
   const period = rawPeriod as RsMetrics['period']
 
-  try {
-    const [symbolData, benchmarkData] = await Promise.all([
-      fetchMonthlyData(symbol.toUpperCase(), 1),
-      fetchMonthlyData(benchmark, 1),
-    ])
+  const profile = await readEtfResearch({
+    symbol: symbol.trim().toUpperCase(),
+    benchmark,
+    period,
+    bypassCache: shouldBypassCache(query.nocache),
+  })
 
-    const symbolSeries = symbolData.map(row => ({ close: row.adjClose ?? row.close ?? 0 }))
-    const benchmarkSeries = benchmarkData.map(row => ({ close: row.adjClose ?? row.close ?? 0 }))
-    const rs = computeRelativeStrength(symbolSeries, benchmarkSeries, period)
-
-    return {
-      benchmark,
-      period,
-      ...rs,
-      asOf: new Date().toISOString(),
-    }
-  } catch {
-    return createEmptyRs(benchmark, period)
+  return {
+    ...profile.rs,
+    asOf: profile.meta.asOf,
+    meta: profile.meta,
   }
 })
