@@ -8,8 +8,8 @@ const mockStockUpsert = vi.fn()
 const mockStockFindUnique = vi.fn()
 
 // Prisma mocks — StockWatchlist
-const mockStockWatchlistFindUnique = vi.fn()
-const mockStockWatchlistCreate = vi.fn()
+const mockStockWatchlistFindFirst = vi.fn()
+const mockStockWatchlistUpsert = vi.fn()
 
 // Prisma mocks — StockNote
 const mockStockNoteCreate = vi.fn()
@@ -39,8 +39,8 @@ vi.mock('~/lib/prisma', () => ({
       findUnique: mockStockFindUnique,
     },
     stockWatchlist: {
-      findUnique: mockStockWatchlistFindUnique,
-      create: mockStockWatchlistCreate,
+      findFirst: mockStockWatchlistFindFirst,
+      upsert: mockStockWatchlistUpsert,
     },
     stockNote: {
       create: mockStockNoteCreate,
@@ -104,6 +104,14 @@ describe('Stock Notes API', () => {
     mockRequireUser.mockReturnValue({ id: '1', email: 'user@example.com', role: 'USER' })
     mockGetQuery.mockReturnValue({})
     mockReadBody.mockResolvedValue(null)
+    mockStockWatchlistFindFirst.mockResolvedValue(null)
+    mockStockWatchlistUpsert.mockResolvedValue({
+      id: 10n,
+      stockId: 2n,
+      status: 'WATCHING',
+      sortOrder: 0,
+      stock: { id: 2n, symbol: 'AAPL', name: 'Apple Inc.' },
+    })
   })
 
   // ─── POST /api/stocks/[symbol]/notes ────────────────────────────────
@@ -116,9 +124,8 @@ describe('Stock Notes API', () => {
         date: '2026-05-18T00:00:00.000Z',
       })
 
-      // ensureStockAndWatchlist flow
+      // upsertStockWatchlistItem flow
       mockStockUpsert.mockResolvedValue({ id: 2n, symbol: 'AAPL' })
-      mockStockWatchlistFindUnique.mockResolvedValue({ id: 10n }) // already watching
       // createStockNote
       mockStockNoteCreate.mockResolvedValue(makeStockNote({ title: 'AAPL thesis', content: 'Strong buy at current levels.' }))
 
@@ -190,8 +197,13 @@ describe('Stock Notes API', () => {
       })
 
       mockStockUpsert.mockResolvedValue({ id: 3n, symbol: 'NVDA' })
-      mockStockWatchlistFindUnique.mockResolvedValue(null) // not watching yet
-      mockStockWatchlistCreate.mockResolvedValue({ id: 11n })
+      mockStockWatchlistUpsert.mockResolvedValue({
+        id: 11n,
+        stockId: 3n,
+        status: 'WATCHING',
+        sortOrder: 0,
+        stock: { id: 3n, symbol: 'NVDA', name: 'NVIDIA Corp.' },
+      })
       mockStockNoteCreate.mockResolvedValue(makeStockNote({ id: 2n, stockId: 3n, stock: { symbol: 'NVDA', name: 'NVIDIA Corp.' } }))
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.post')
@@ -203,9 +215,9 @@ describe('Stock Notes API', () => {
       } as any)
 
       // Should have created watchlist entry
-      expect(mockStockWatchlistCreate).toHaveBeenCalledWith(
+      expect(mockStockWatchlistUpsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
+          create: expect.objectContaining({
             userId: 1n,
             stockId: 3n,
             status: 'WATCHING',
@@ -213,6 +225,84 @@ describe('Stock Notes API', () => {
         }),
       )
       expect(result.symbol).toBe('NVDA')
+    })
+
+    it('adds a new watchlist item after existing items when creating a note', async () => {
+      mockReadBody.mockResolvedValue({
+        title: 'New stock thesis',
+        content: 'First note for this stock.',
+      })
+
+      mockStockUpsert.mockResolvedValue({ id: 3n, symbol: 'NVDA' })
+      mockStockWatchlistFindFirst.mockResolvedValue({ sortOrder: 4 })
+      mockStockWatchlistUpsert.mockResolvedValue({
+        id: 11n,
+        stockId: 3n,
+        status: 'WATCHING',
+        sortOrder: 5,
+        stock: { symbol: 'NVDA', name: 'NVIDIA Corp.' },
+      })
+      mockStockNoteCreate.mockResolvedValue(makeStockNote({
+        id: 2n,
+        stockId: 3n,
+        stock: { symbol: 'NVDA', name: 'NVIDIA Corp.' },
+      }))
+
+      const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.post')
+      await handler({
+        context: {
+          params: { symbol: 'NVDA' },
+          requestId: 'req-auto-watch-sort',
+        },
+      } as any)
+
+      expect(mockStockWatchlistUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            userId: 1n,
+            stockId: 3n,
+            status: 'WATCHING',
+            sortOrder: 5,
+          }),
+        }),
+      )
+    })
+
+    it('restores an archived watchlist item when creating a note', async () => {
+      mockReadBody.mockResolvedValue({
+        title: 'Updated thesis',
+        content: 'Reviewing this stock again.',
+      })
+
+      mockStockUpsert.mockResolvedValue({ id: 3n, symbol: 'NVDA' })
+      mockStockWatchlistFindFirst.mockResolvedValue({ sortOrder: 4 })
+      mockStockWatchlistUpsert.mockResolvedValue({
+        id: 11n,
+        stockId: 3n,
+        status: 'WATCHING',
+        sortOrder: 2,
+        stock: { id: 3n, symbol: 'NVDA', name: 'NVIDIA Corp.' },
+      })
+      mockStockNoteCreate.mockResolvedValue(makeStockNote({
+        id: 2n,
+        stockId: 3n,
+        stock: { symbol: 'NVDA', name: 'NVIDIA Corp.' },
+      }))
+
+      const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.post')
+      await handler({
+        context: {
+          params: { symbol: 'NVDA' },
+          requestId: 'req-restore-watch',
+        },
+      } as any)
+
+      expect(mockStockWatchlistUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId_stockId: { userId: 1n, stockId: 3n } },
+          update: { status: 'WATCHING' },
+        }),
+      )
     })
 
     it('requires authentication', async () => {
@@ -235,7 +325,6 @@ describe('Stock Notes API', () => {
       })
 
       mockStockUpsert.mockResolvedValue({ id: 2n, symbol: 'AAPL' })
-      mockStockWatchlistFindUnique.mockResolvedValue({ id: 10n })
       mockStockNoteCreate.mockResolvedValue(
         makeStockNote({ title: 'Past thesis', content: 'Looking back at Q1.', date: new Date('2026-03-15T00:00:00.000Z') }),
       )

@@ -1,4 +1,4 @@
-import type { AlertPayload } from '~/types/websocket'
+import type { AlertBroadcaster, AlertPayload } from '~/types/websocket'
 
 // ─── Dependency interfaces ────────────────────────────────────────────────────
 
@@ -33,19 +33,14 @@ export interface AlertPusherPrisma {
   }
 }
 
-export interface AlertPusherBroadcaster {
-  isUserConnected: (userId: string) => boolean
-  emitToUser: (userId: string, event: string, data: unknown) => boolean
-}
-
 export interface AlertPusherLogger {
   info: (message: string) => void
-  error: (message: string, ...args: unknown[]) => void
+  error: (message: string, error?: unknown) => void
 }
 
 export interface AlertPusherDeps {
   prisma: AlertPusherPrisma
-  broadcaster: AlertPusherBroadcaster
+  broadcaster: AlertBroadcaster
   logger: AlertPusherLogger
 }
 
@@ -104,25 +99,20 @@ export function createAlertPusher(deps: AlertPusherDeps) {
         try {
           const userId = alert.diary.userId.toString()
 
-          // 檢查用戶是否在線
-          if (deps.broadcaster.isUserConnected(userId)) {
-            // 構建推播 payload
-            const payload: AlertPayload = {
-              id: alert.id.toString(),
-              message: alert.message,
-              triggerAt: alert.triggerAt.toISOString(),
-              diary: {
-                id: alert.diary.id.toString(),
-                title: alert.diary.title,
-              },
-            }
+          const payload: AlertPayload = {
+            id: alert.id.toString(),
+            message: alert.message,
+            triggerAt: alert.triggerAt.toISOString(),
+            diary: {
+              id: alert.diary.id.toString(),
+              title: alert.diary.title,
+            },
+          }
 
-            // 即時推播
-            const pushed = deps.broadcaster.emitToUser(userId, 'alert:triggered', payload)
+          const pushed = deps.broadcaster.emitToUser(userId, 'alert:triggered', payload)
 
-            if (pushed) {
-              deps.logger.info(`${TAG} Pushed alert ${alert.id} to user ${userId}`)
-            }
+          if (pushed) {
+            deps.logger.info(`${TAG} Pushed alert ${alert.id} to user ${userId}`)
           } else {
             deps.logger.info(
               `${TAG} User ${userId} is offline, alert ${alert.id} will be fetched via HTTP`

@@ -1,5 +1,5 @@
 import prisma from '~/lib/prisma'
-import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 
 type StockNoteCreatedVia = 'USER' | 'AGENT'
 
@@ -24,38 +24,11 @@ export interface UpdateStockNoteInput {
   date?: string
 }
 
-export async function ensureStockAndWatchlist(userId: bigint, symbolRaw: string) {
-  const symbol = normalizeStockSymbol(symbolRaw)
-  const stock = await prisma.stock.upsert({
-    where: { symbol },
-    update: {},
-    create: { symbol },
-  })
-
-  // Auto-add to watchlist if not already tracking
-  const existing = await prisma.stockWatchlist.findUnique({
-    where: {
-      userId_stockId: { userId, stockId: stock.id },
-    },
-    select: { id: true },
-  })
-
-  if (!existing) {
-    await prisma.stockWatchlist.create({
-      data: {
-        userId,
-        stockId: stock.id,
-        status: 'WATCHING',
-        sortOrder: 0,
-      },
-    })
-  }
-
-  return stock
-}
-
 export async function createStockNote(userId: bigint, input: CreateStockNoteInput) {
-  const stock = await ensureStockAndWatchlist(userId, input.symbol)
+  const { stock } = await upsertStockWatchlistItem({
+    userId,
+    symbol: input.symbol,
+  })
 
   return prisma.stockNote.create({
     data: {

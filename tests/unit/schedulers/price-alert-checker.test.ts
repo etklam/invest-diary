@@ -15,7 +15,6 @@ async function flushAllMicrotasks(iterations = 10) {
 describe('createPriceAlertChecker', () => {
   const mockFindMany = vi.fn()
   const mockUpdate = vi.fn()
-  const mockIsUserConnected = vi.fn()
   const mockEmitToUser = vi.fn()
   const mockFetchQuote = vi.fn()
   const mockLoggerInfo = vi.fn()
@@ -29,7 +28,6 @@ describe('createPriceAlertChecker', () => {
       },
     },
     broadcaster: {
-      isUserConnected: mockIsUserConnected,
       emitToUser: mockEmitToUser,
     },
     logger: {
@@ -105,7 +103,6 @@ describe('createPriceAlertChecker', () => {
       makePriceAlert({ id: 1n, type: 'PRICE_ABOVE', threshold: 200 }),
     ])
     mockFetchQuote.mockResolvedValueOnce({ regularMarketPrice: 210 })
-    mockIsUserConnected.mockReturnValue(true)
     mockEmitToUser.mockReturnValue(true)
     mockUpdate.mockResolvedValueOnce({})
 
@@ -157,7 +154,6 @@ describe('createPriceAlertChecker', () => {
       makePriceAlert({ id: 1n, type: 'PRICE_BELOW', threshold: 100 }),
     ])
     mockFetchQuote.mockResolvedValueOnce({ regularMarketPrice: 95 })
-    mockIsUserConnected.mockReturnValue(true)
     mockEmitToUser.mockReturnValue(true)
     mockUpdate.mockResolvedValueOnce({})
 
@@ -255,7 +251,6 @@ describe('createPriceAlertChecker', () => {
     mockFetchQuote
       .mockResolvedValueOnce({ regularMarketPrice: 210 }) // AAPL
       .mockResolvedValueOnce({ regularMarketPrice: 110 }) // GOOGL
-    mockIsUserConnected.mockReturnValue(true)
     mockEmitToUser.mockReturnValue(true)
     // First update succeeds, second throws
     mockUpdate
@@ -324,12 +319,12 @@ describe('createPriceAlertChecker', () => {
     expect(mockFindMany).toHaveBeenCalledTimes(1)
   })
 
-  it('should not push to offline users even when alert triggers', async () => {
+  it('should let the broadcaster report offline users after an alert triggers', async () => {
     mockFindMany.mockResolvedValueOnce([
       makePriceAlert({ id: 1n, type: 'PRICE_ABOVE', threshold: 200 }),
     ])
     mockFetchQuote.mockResolvedValueOnce({ regularMarketPrice: 210 })
-    mockIsUserConnected.mockReturnValue(false)
+    mockEmitToUser.mockReturnValue(false)
     mockUpdate.mockResolvedValueOnce({})
 
     const checker = createPriceAlertChecker(createDeps())
@@ -339,8 +334,14 @@ describe('createPriceAlertChecker', () => {
 
     // Should still update DB (mark as triggered)
     expect(mockUpdate).toHaveBeenCalled()
-    // But should not push
-    expect(mockEmitToUser).not.toHaveBeenCalled()
+    // Broadcaster reports that no live connection received the push
+    expect(mockEmitToUser).toHaveBeenCalledWith(
+      '5',
+      'price-alert:triggered',
+      expect.objectContaining({
+        id: '1',
+      })
+    )
     // Should log that user is offline
     expect(mockLoggerInfo).toHaveBeenCalledWith(
       expect.stringContaining('User 5 is offline')

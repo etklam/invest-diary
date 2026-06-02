@@ -1,5 +1,5 @@
 import type { PriceAlert } from '@prisma/client'
-import type { PriceAlertPayload } from '~/types/websocket'
+import type { AlertBroadcaster, PriceAlertPayload } from '~/types/websocket'
 import type { QuoteResponse } from '~/lib/yahoo-finance'
 
 // ─── Dependency interfaces ────────────────────────────────────────────────────
@@ -16,19 +16,14 @@ export interface PriceAlertCheckerPrisma {
   }
 }
 
-export interface PriceAlertCheckerBroadcaster {
-  isUserConnected: (userId: string) => boolean
-  emitToUser: (userId: string, event: string, data: unknown) => boolean
-}
-
 export interface PriceAlertCheckerLogger {
   info: (message: string) => void
-  error: (message: string, ...args: unknown[]) => void
+  error: (message: string, error?: unknown) => void
 }
 
 export interface PriceAlertCheckerDeps {
   prisma: PriceAlertCheckerPrisma
-  broadcaster: PriceAlertCheckerBroadcaster
+  broadcaster: AlertBroadcaster
   logger: PriceAlertCheckerLogger
   fetchQuote: (symbol: string) => Promise<QuoteResponse>
 }
@@ -127,29 +122,26 @@ export function createPriceAlertChecker(deps: PriceAlertCheckerDeps) {
 
           const userIdStr = alert.userId.toString()
 
-          // Push notification if user is online
-          if (deps.broadcaster.isUserConnected(userIdStr)) {
-            const payload: PriceAlertPayload = {
-              id: alert.id.toString(),
-              symbol: alert.symbol,
-              type: alert.type,
-              threshold,
-              currentPrice,
-              message: alert.message,
-              triggeredAt: now.toISOString(),
-            }
+          const payload: PriceAlertPayload = {
+            id: alert.id.toString(),
+            symbol: alert.symbol,
+            type: alert.type,
+            threshold,
+            currentPrice,
+            message: alert.message,
+            triggeredAt: now.toISOString(),
+          }
 
-            const pushed = deps.broadcaster.emitToUser(
-              userIdStr,
-              'price-alert:triggered',
-              payload,
+          const pushed = deps.broadcaster.emitToUser(
+            userIdStr,
+            'price-alert:triggered',
+            payload,
+          )
+
+          if (pushed) {
+            deps.logger.info(
+              `${TAG} Pushed price alert ${alert.id} (${alert.symbol} ${alert.type} ${threshold}) to user ${userIdStr}`
             )
-
-            if (pushed) {
-              deps.logger.info(
-                `${TAG} Pushed price alert ${alert.id} (${alert.symbol} ${alert.type} ${threshold}) to user ${userIdStr}`
-              )
-            }
           } else {
             deps.logger.info(
               `${TAG} User ${userIdStr} is offline, price alert ${alert.id} will be fetched via HTTP`

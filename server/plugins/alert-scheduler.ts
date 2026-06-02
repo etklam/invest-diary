@@ -24,7 +24,9 @@ export default defineNitroPlugin(() => {
 
   const schedulerLogger = {
     info: (msg: string) => logger.alert.info(msg),
-    error: (msg: string, ...args: unknown[]) => logger.alert.error(msg, ...args),
+    error: (msg: string, error?: unknown) => logger.alert.error(msg, {
+      error: error instanceof Error ? error.message : error,
+    }),
   }
 
   const alertPusher = createAlertPusher({

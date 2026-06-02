@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 const mockFindMany = vi.fn()
-const mockIsUserConnected = vi.fn()
+const mockPriceAlertFindMany = vi.fn()
 const mockEmitToUser = vi.fn()
 
 vi.mock('~/lib/prisma', () => ({
@@ -9,12 +9,14 @@ vi.mock('~/lib/prisma', () => ({
     alert: {
       findMany: mockFindMany,
     },
+    priceAlert: {
+      findMany: mockPriceAlertFindMany,
+    },
   },
 }))
 
 vi.mock('~/server/websocket/connectionManager', () => ({
   connectionManager: {
-    isUserConnected: (...args: any[]) => mockIsUserConnected(...args),
     emitToUser: (...args: any[]) => mockEmitToUser(...args),
   },
 }))
@@ -23,6 +25,7 @@ describe('alert-scheduler plugin', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.clearAllMocks()
+    mockPriceAlertFindMany.mockResolvedValue([])
     vi.stubGlobal('defineNitroPlugin', (fn: any) => fn)
   })
 
@@ -60,7 +63,6 @@ describe('alert-scheduler plugin', () => {
         },
       },
     ])
-    mockIsUserConnected.mockReturnValue(true)
     mockEmitToUser.mockReturnValue(true)
 
     const plugin = (await import('~/server/plugins/alert-scheduler')).default
@@ -69,7 +71,6 @@ describe('alert-scheduler plugin', () => {
     await Promise.resolve()
 
     expect(mockFindMany).toHaveBeenCalledTimes(1)
-    expect(mockIsUserConnected).toHaveBeenCalledWith('5')
     expect(mockEmitToUser).toHaveBeenCalledWith(
       '5',
       'alert:triggered',

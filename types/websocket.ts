@@ -41,6 +41,16 @@ export interface ServerToClientEvents {
   'pong': () => void
 }
 
+export type AlertBroadcastEvent = 'alert:triggered' | 'price-alert:triggered'
+
+export interface AlertBroadcaster {
+  emitToUser<E extends AlertBroadcastEvent>(
+    userId: string | bigint,
+    event: E,
+    ...args: Parameters<ServerToClientEvents[E]>
+  ): boolean
+}
+
 // Client -> Server 事件
 export interface ClientToServerEvents {
   'alert:dismiss': (alertId: string) => void

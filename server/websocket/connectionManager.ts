@@ -1,5 +1,5 @@
 import type { Socket } from 'socket.io'
-import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
+import type { AlertBroadcaster, ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
 
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
 
@@ -7,7 +7,7 @@ type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServe
  * WebSocket 連線管理器
  * 管理用戶與 Socket 的映射關係，支援多用戶多裝置
  */
-class ConnectionManager {
+class ConnectionManager implements AlertBroadcaster {
   // userId -> Set<Socket>
   private connections: Map<string, Set<TypedSocket>> = new Map()
   
@@ -68,10 +68,10 @@ class ConnectionManager {
    * 推播訊息給特定用戶的所有連線
    * @returns 是否成功推播（用戶是否在線）
    */
-  emitToUser(
+  emitToUser<E extends keyof ServerToClientEvents>(
     userId: string | bigint,
-    event: keyof ServerToClientEvents,
-    data: any
+    event: E,
+    ...args: Parameters<ServerToClientEvents[E]>
   ): boolean {
     const userIdStr = userId.toString()
     const userSockets = this.connections.get(userIdStr)
@@ -81,7 +81,7 @@ class ConnectionManager {
     }
     
     userSockets.forEach(socket => {
-      socket.emit(event, data)
+      socket.emit(event, ...args)
     })
     
     console.log(`[WS] Emitted ${event} to user ${userIdStr} (${userSockets.size} sockets)`)
@@ -91,15 +91,15 @@ class ConnectionManager {
   /**
    * 推播訊息給所有連線的用戶（廣播）
    */
-  broadcast(
-    event: keyof ServerToClientEvents,
-    data: any
+  broadcast<E extends keyof ServerToClientEvents>(
+    event: E,
+    ...args: Parameters<ServerToClientEvents[E]>
   ): number {
     let recipientCount = 0
     
     this.connections.forEach((sockets) => {
       sockets.forEach(socket => {
-        socket.emit(event, data)
+        socket.emit(event, ...args)
         recipientCount++
       })
     })

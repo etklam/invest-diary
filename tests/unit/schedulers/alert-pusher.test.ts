@@ -3,7 +3,6 @@ import { createAlertPusher } from '~/server/schedulers/alert-pusher'
 
 describe('createAlertPusher', () => {
   const mockFindMany = vi.fn()
-  const mockIsUserConnected = vi.fn()
   const mockEmitToUser = vi.fn()
   const mockLoggerInfo = vi.fn()
   const mockLoggerError = vi.fn()
@@ -15,7 +14,6 @@ describe('createAlertPusher', () => {
       },
     },
     broadcaster: {
-      isUserConnected: mockIsUserConnected,
       emitToUser: mockEmitToUser,
     },
     logger: {
@@ -49,7 +47,6 @@ describe('createAlertPusher', () => {
         },
       },
     ])
-    mockIsUserConnected.mockReturnValue(true)
     mockEmitToUser.mockReturnValue(true)
 
     const pusher = createAlertPusher(createDeps())
@@ -70,7 +67,6 @@ describe('createAlertPusher', () => {
         },
       })
     )
-    expect(mockIsUserConnected).toHaveBeenCalledWith('5')
     expect(mockEmitToUser).toHaveBeenCalledWith(
       '5',
       'alert:triggered',
@@ -86,7 +82,7 @@ describe('createAlertPusher', () => {
     )
   })
 
-  it('should not push alerts to offline users', async () => {
+  it('should let the broadcaster report offline users', async () => {
     const now = new Date('2026-03-13T00:00:00.000Z')
     vi.setSystemTime(now)
 
@@ -102,7 +98,7 @@ describe('createAlertPusher', () => {
         },
       },
     ])
-    mockIsUserConnected.mockReturnValue(false)
+    mockEmitToUser.mockReturnValue(false)
 
     const pusher = createAlertPusher(createDeps())
     pusher.start()
@@ -110,8 +106,16 @@ describe('createAlertPusher', () => {
     await vi.runAllTicks()
 
     expect(mockFindMany).toHaveBeenCalledTimes(1)
-    expect(mockIsUserConnected).toHaveBeenCalledWith('7')
-    expect(mockEmitToUser).not.toHaveBeenCalled()
+    expect(mockEmitToUser).toHaveBeenCalledWith(
+      '7',
+      'alert:triggered',
+      expect.objectContaining({
+        id: '2',
+      })
+    )
+    expect(mockLoggerInfo).toHaveBeenCalledWith(
+      expect.stringContaining('User 7 is offline')
+    )
   })
 
   it('should handle empty alert results gracefully', async () => {
@@ -123,7 +127,6 @@ describe('createAlertPusher', () => {
     await vi.runAllTicks()
 
     expect(mockFindMany).toHaveBeenCalledTimes(1)
-    expect(mockIsUserConnected).not.toHaveBeenCalled()
     expect(mockEmitToUser).not.toHaveBeenCalled()
   })
 
@@ -147,7 +150,6 @@ describe('createAlertPusher', () => {
     ])
 
     // First user connected and succeeds, second throws
-    mockIsUserConnected.mockReturnValueOnce(true).mockReturnValueOnce(true)
     mockEmitToUser.mockReturnValueOnce(true).mockImplementationOnce(() => {
       throw new Error('Emit failed')
     })
@@ -158,7 +160,6 @@ describe('createAlertPusher', () => {
     await vi.runAllTicks()
 
     // Both alerts should have been attempted
-    expect(mockIsUserConnected).toHaveBeenCalledTimes(2)
     expect(mockEmitToUser).toHaveBeenCalledTimes(2)
     // Error for the second alert should be logged
     expect(mockLoggerError).toHaveBeenCalledWith(
