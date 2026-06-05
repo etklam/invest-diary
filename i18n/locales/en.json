@@ -1935,5 +1935,35 @@
       "openEntry": "Open Entry",
       "noExcerpt": "This entry has no summary yet. Open it and complete your reasoning."
     }
+  },
+  "review": {
+    "candidates": "Review Candidates",
+    "candidatesDesc": "Past notes worth revisiting",
+    "noCandidates": "No pending reviews",
+    "noCandidatesDesc": "Write a note with thesis and risk to start building your review queue.",
+    "statusNone": "No review",
+    "statusPending": "Pending review",
+    "statusReviewed": "Reviewed",
+    "markReviewed": "Mark as reviewed",
+    "reviewNow": "Review now",
+    "dueIn": "Review due in {duration}",
+    "overdue": "Review overdue",
+    "prompts": {
+      "thesisWrong": "Was the thesis wrong?",
+      "timingWrong": "Was the timing wrong?",
+      "sizingWrong": "Was the sizing wrong?",
+      "justVariance": "Was it just variance?",
+      "differently": "What would you do differently?"
+    },
+    "fields": {
+      "thesis": "Thesis",
+      "thesisPlaceholder": "What's your rationale for this trade?",
+      "risk": "Risk",
+      "riskPlaceholder": "What could go wrong? Stop loss level?",
+      "execution": "Execution",
+      "executionPlaceholder": "How did you actually execute?",
+      "reviewDue": "Review due",
+      "reviewNotes": "Review notes"
+    }
   }
 }

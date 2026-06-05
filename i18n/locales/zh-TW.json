@@ -1935,5 +1935,35 @@
       "openEntry": "打開條目",
       "noExcerpt": "這篇條目還沒有摘要內容，打開把判斷補完整。"
     }
+  },
+  "review": {
+    "candidates": "複盤候選",
+    "candidatesDesc": "值得回顧的過去筆記",
+    "noCandidates": "沒有待複盤的筆記",
+    "noCandidatesDesc": "寫一篇帶有交易假設和風險評估的筆記，開始建立你的複盤佇列。",
+    "statusNone": "未設定",
+    "statusPending": "待複盤",
+    "statusReviewed": "已複盤",
+    "markReviewed": "標記為已複盤",
+    "reviewNow": "立即複盤",
+    "dueIn": "{duration} 後複盤",
+    "overdue": "已過複盤期限",
+    "prompts": {
+      "thesisWrong": "交易假設錯了嗎？",
+      "timingWrong": "時間點錯了嗎？",
+      "sizingWrong": "倉位大小錯了嗎？",
+      "justVariance": "只是隨機波動嗎？",
+      "differently": "下次你會怎麼做？"
+    },
+    "fields": {
+      "thesis": "交易假設",
+      "thesisPlaceholder": "這筆交易的理由是什麼？",
+      "risk": "風險評估",
+      "riskPlaceholder": "可能出什麼問題？停損點在哪？",
+      "execution": "執行紀錄",
+      "executionPlaceholder": "實際怎麼執行的？",
+      "reviewDue": "複盤期限",
+      "reviewNotes": "複盤筆記"
+    }
   }
 }

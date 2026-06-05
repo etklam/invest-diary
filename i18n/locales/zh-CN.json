@@ -1838,5 +1838,35 @@
       "openEntry": "打开条目",
       "noExcerpt": "这篇条目还没有摘要内容，打开把判断补完整。"
     }
+  },
+  "review": {
+    "candidates": "复盘候选",
+    "candidatesDesc": "值得回顾的过去笔记",
+    "noCandidates": "没有待复盘的笔记",
+    "noCandidatesDesc": "写一篇带有交易假设和风险评估的笔记，开始建立你的复盘队列。",
+    "statusNone": "未设定",
+    "statusPending": "待复盘",
+    "statusReviewed": "已复盘",
+    "markReviewed": "标记为已复盘",
+    "reviewNow": "立即复盘",
+    "dueIn": "{duration} 后复盘",
+    "overdue": "已过复盘期限",
+    "prompts": {
+      "thesisWrong": "交易假设错了吗？",
+      "timingWrong": "时间点错了吗？",
+      "sizingWrong": "仓位大小错了吗？",
+      "justVariance": "只是随机波动吗？",
+      "differently": "下次你会怎么做？"
+    },
+    "fields": {
+      "thesis": "交易假设",
+      "thesisPlaceholder": "这笔交易的理由是什么？",
+      "risk": "风险评估",
+      "riskPlaceholder": "可能出什么问题？止损点在哪？",
+      "execution": "执行纪录",
+      "executionPlaceholder": "实际怎么执行的？",
+      "reviewDue": "复盘期限",
+      "reviewNotes": "复盘笔记"
+    }
   }
 }

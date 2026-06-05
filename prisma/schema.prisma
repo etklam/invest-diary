@@ -118,6 +118,15 @@ model Diary {
   date         DateTime      @default(now()) @map("date")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  // Structured review fields
+  thesis         String?       @db.Text                // Trading thesis / rationale
+  risk           String?       @db.Text                // Risk assessment
+  execution      String?       @db.Text                // Execution notes
+  reviewDueAt    DateTime?     @map("review_due_at")   // When to review this diary
+  reviewStatus   String?       @default("none") @map("review_status") @db.VarChar(20)  // none / pending / reviewed
+  reviewedAt     DateTime?     @map("reviewed_at")     // When actually reviewed
+
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   alerts       Alert[]
   transactions Transaction[]
