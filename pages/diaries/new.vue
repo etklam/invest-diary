@@ -33,6 +33,32 @@
         v-model:content="form.content"
       />
 
+      <!-- Thesis & Risk -->
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
+            {{ $t('review.fields.thesis') }}
+          </label>
+          <textarea
+            v-model="form.thesis"
+            :placeholder="$t('review.fields.thesisPlaceholder')"
+            class="mt-1 w-full rounded-lg border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+            rows="3"
+          />
+        </div>
+        <div>
+          <label class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
+            {{ $t('review.fields.risk') }}
+          </label>
+          <textarea
+            v-model="form.risk"
+            :placeholder="$t('review.fields.riskPlaceholder')"
+            class="mt-1 w-full rounded-lg border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+            rows="3"
+          />
+        </div>
+      </div>
+
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white">交易記錄</h3>
@@ -166,6 +192,8 @@ const form = reactive({
   date: initialDate,
   title: '',
   content: '',
+  thesis: '',
+  risk: '',
   transactions: [] as any[],
   alerts: [] as any[]
 })
@@ -185,6 +213,8 @@ watch(() => form.date, async (newDate) => {
       // Load diary data into form
       form.title = existingDiary.title
       form.content = existingDiary.content || ''
+      form.thesis = existingDiary.thesis || ''
+      form.risk = existingDiary.risk || ''
 
       // Load transactions
       form.transactions = existingDiary.transactions?.map((tx: any) => ({
@@ -216,6 +246,8 @@ watch(() => form.date, async (newDate) => {
       existingDiaryId.value = null
       form.title = ''
       form.content = ''
+      form.thesis = ''
+      form.risk = ''
       form.transactions = []
       form.alerts = []
     }
@@ -346,6 +378,8 @@ const saveDiary = async () => {
     const payload = {
       title: form.title,
       content: form.content,
+      thesis: form.thesis || undefined,
+      risk: form.risk || undefined,
       date: toApiDayNoon(form.date),
       transactions: form.transactions.map(t => ({
         ...t,

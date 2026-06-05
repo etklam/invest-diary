@@ -44,6 +44,13 @@ export interface DiaryInput {
   date?: string | Date
   transactions?: TransactionInput[]
   alerts?: AlertInput[]
+  // Structured review fields
+  thesis?: string
+  risk?: string
+  execution?: string
+  reviewDueAt?: string | Date
+  reviewStatus?: string
+  reviewedAt?: string | Date
 }
 
 // Prisma-like return shape used by APIs
@@ -61,6 +68,13 @@ export interface Diary {
   updatedAt: Date
   transactions?: TransactionInput[]
   alerts?: AlertInput[]
+  // Structured review fields
+  thesis?: string | null
+  risk?: string | null
+  execution?: string | null
+  reviewDueAt?: Date | null
+  reviewStatus?: string | null
+  reviewedAt?: Date | null
 }
 
 export interface DiariesApiResponse {

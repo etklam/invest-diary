@@ -164,6 +164,24 @@
       </aside>
     </div>
 
+    <!-- Review Candidates -->
+    <section v-if="reviewCandidates.length > 0" class="review-candidates-panel">
+      <LedgerCard :title="t('review.candidates')" :description="t('review.candidatesDesc')">
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ReviewCandidateCard
+            v-for="diary in reviewCandidates"
+            :key="diary.id"
+            :date="formatDiaryDate(diary.date || diary.createdAt)"
+            :title="diary.title || t('desk.tasks.untitled')"
+            :thesis="diary.thesis"
+            :risk="diary.risk"
+            :review-status="diary.reviewStatus || 'none'"
+            @review="navigateTo(`/diaries/${diary.id}`)"
+          />
+        </div>
+      </LedgerCard>
+    </section>
+
     <!-- Filters -->
     <LedgerCard class="order-5 md:order-none">
         <div class="flex flex-wrap items-start justify-between gap-4">
@@ -387,6 +405,10 @@ const handleDiaryCreated = () => {
 const diaryItems = computed<any[]>(() => apiResponse.value?.data ?? [])
 
 const totalDiaries = computed<number>(() => apiResponse.value?.total ?? 0)
+
+const reviewCandidates = computed<any[]>(() =>
+  diaryItems.value.filter(diary => diary.reviewStatus === 'pending').slice(0, 5)
+)
 
 const latestDiary = computed<any | null>(() => diaryItems.value[0] ?? null)
 

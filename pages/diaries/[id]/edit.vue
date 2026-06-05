@@ -43,6 +43,32 @@
         v-model:content="form.content"
       />
 
+      <!-- Thesis & Risk -->
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
+            {{ $t('review.fields.thesis') }}
+          </label>
+          <textarea
+            v-model="form.thesis"
+            :placeholder="$t('review.fields.thesisPlaceholder')"
+            class="mt-1 w-full rounded-lg border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+            rows="3"
+          />
+        </div>
+        <div>
+          <label class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
+            {{ $t('review.fields.risk') }}
+          </label>
+          <textarea
+            v-model="form.risk"
+            :placeholder="$t('review.fields.riskPlaceholder')"
+            class="mt-1 w-full rounded-lg border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+            rows="3"
+          />
+        </div>
+      </div>
+
       <TransactionInput v-model="form.transactions" :disciplines="disciplines" />
 
       <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
@@ -144,6 +170,8 @@ const form = reactive({
   date: getTodayDateString(),
   title: '',
   content: '',
+  thesis: '',
+  risk: '',
   transactions: [] as any[],
   alerts: [] as any[]
 })
@@ -155,6 +183,8 @@ watch(diary, (newDiary) => {
       : getTodayDateString()
     form.title = newDiary.title
     form.content = newDiary.content || ''
+    form.thesis = newDiary.thesis || ''
+    form.risk = newDiary.risk || ''
     form.transactions = newDiary.transactions.map((t: any) => ({
       ...t,
       trade_date: toDateTimeLocalValue(t.tradeDate)
@@ -224,6 +254,8 @@ const saveDiary = async () => {
     const payload = {
       title: form.title,
       content: form.content,
+      thesis: form.thesis || undefined,
+      risk: form.risk || undefined,
       date: `${form.date}T12:00:00.000Z`,
       transactions: form.transactions.map(t => ({
         ...t,
