@@ -21,7 +21,6 @@
     "previous": "Previous",
     "next": "Next",
     "switchLanguage": "Switch Language",
-
     "or": "or",
     "and": "and",
     "optional": "optional",
@@ -313,7 +312,18 @@
     "quickDiary": "Quick Diary",
     "backToList": "Back to diaries",
     "createdAt": "Created at",
-    "updatedAt": "Updated at"
+    "updatedAt": "Updated at",
+    "fields": {
+      "thesis": "Thesis",
+      "risk": "Risk",
+      "execution": "Execution",
+      "review": "Review"
+    },
+    "reviewIn": "Review in {duration}",
+    "empty": {
+      "title": "No notes today",
+      "description": "Write one market read before the close."
+    }
   },
   "alert": {
     "title": "Alerts",
@@ -571,7 +581,6 @@
     "backToToday": "Back to Today",
     "quickDiary": "Quick Diary"
   },
-
   "theme": {
     "toggleDarkMode": "Toggle dark mode",
     "openMenu": "Open menu",
@@ -639,7 +648,11 @@
       "title": "Write down every thesis. Let your past self become your best coach.",
       "subtitle": "A stock compounding at 15% annually has a daily profit probability of just 50.02% — almost indistinguishable from a coin flip. Trading is never about any single outcome — it's about having enough records to validate your decision process. Markets don't reward effort, they reward capability — and capability comes from traceable decisions and honest reviews. Write, review, then compare with a partner — that's where the gap begins.",
       "getStarted": "Start Recording",
-      "learnMore": "See Learning Path"
+      "learnMore": "See Learning Path",
+      "eyebrow": "Trading Journal",
+      "description": "A calm trading journal for active investors. Record your thesis, risk, execution and review — so every decision leaves a trace.",
+      "primaryCta": "Write today's note",
+      "secondaryCta": "View sample diary"
     },
     "progress": {
       "journalLabel": "Journaling Habit",
@@ -1817,6 +1830,17 @@
       "dbWriteFailed": "❌ Recording failed. Please try again later.",
       "unknown": "Unknown command. Use /start to see available commands.",
       "tooManyCodeAttempts": "Too many failed attempts. Please generate a new verification code."
+    }
+  },
+  "today": {
+    "title": "Today",
+    "quickNotePrompt": "What changed in your view today?",
+    "checklist": {
+      "marketRegime": "Market regime updated",
+      "watchlist": "Watchlist reviewed",
+      "riskNotes": "Risk notes written",
+      "thesisChanged": "Any thesis changed?",
+      "reviewYesterday": "Yesterday's note reviewed"
     }
   }
 }

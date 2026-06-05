@@ -311,7 +311,18 @@
     "contentRequired": "请输入内容",
     "backToList": "返回日记列表",
     "createdAt": "创建于",
-    "updatedAt": "更新于"
+    "updatedAt": "更新于",
+    "fields": {
+      "thesis": "交易假设",
+      "risk": "风险",
+      "execution": "执行",
+      "review": "复盘"
+    },
+    "reviewIn": "{duration} 后复盘",
+    "empty": {
+      "title": "今日尚未有笔记",
+      "description": "收盘前写下一条市场观察。"
+    }
   },
   "alert": {
     "title": "提醒管理",
@@ -693,7 +704,6 @@
     "backToToday": "回到今天",
     "quickDiary": "快速日记"
   },
-
   "theme": {
     "toggleDarkMode": "切换深色模式",
     "openMenu": "开启菜单",
@@ -753,7 +763,11 @@
       "title": "留下每一次判断，让过去的你成为最好的教练",
       "subtitle": "一只年化 15% 的股票，每日赚钱的概率只有 50.02%——几乎跟掷硬币没区别。交易从来不是靠单次胜负，而是靠足够多的记录去验证决策过程。市场不奖励努力，只奖励能力——而能力来自可追溯的决定和扎实的复盘。写下来，复盘，再和 partner 对照——这是拉开差距的起点。",
       "getStarted": "开始记录",
-      "learnMore": "了解学习路径"
+      "learnMore": "了解学习路径",
+      "eyebrow": "交易日记",
+      "description": "一个给主动投资者使用的冷静交易日记。记录 thesis、风险、执行与复盘，让每次决策都有迹可循。",
+      "primaryCta": "写下今日笔记",
+      "secondaryCta": "查看日记范例"
     },
     "progress": {
       "journalLabel": "记录习惯",
@@ -903,7 +917,7 @@
     },
     "motivation": {
       "title": "我为什么做这个网站",
-      "paragraph1": "我曾在情绪化和缺乏纪律的交易中反复犯错。后来我意识到，关键问题不是\u201c信息不够\u201d，而是没有一套稳定、可回顾的方法。亏损如果没学到东西，就只是亏损——我不想让每一笔亏损都白费。",
+      "paragraph1": "我曾在情绪化和缺乏纪律的交易中反复犯错。后来我意识到，关键问题不是“信息不够”，而是没有一套稳定、可回顾的方法。亏损如果没学到东西，就只是亏损——我不想让每一笔亏损都白费。",
       "paragraph2": "这个网站不是为了包装神奇收益，而是一个务实练习场：把每次操作留下来、定期复盘、持续修正，目标是减少重复错误，朝财富自由和被动收入的长期方向前进。"
     },
     "features": {
@@ -1719,6 +1733,17 @@
       "dbWriteFailed": "❌ 记录失败，请稍后再试",
       "unknown": "未知指令，请使用 /start 查看可用指令。",
       "tooManyCodeAttempts": "尝试次数过多，请重新生成验证码。"
+    }
+  },
+  "today": {
+    "title": "今日",
+    "quickNotePrompt": "今天你的观点有什么改变？",
+    "checklist": {
+      "marketRegime": "已更新市场状态",
+      "watchlist": "已检查观察清单",
+      "riskNotes": "已写下风险笔记",
+      "thesisChanged": "交易假设是否有改变？",
+      "reviewYesterday": "已回顾昨日笔记"
     }
   }
 }

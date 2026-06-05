@@ -312,7 +312,18 @@
     "quickDiary": "快速日記",
     "backToList": "返回日記列表",
     "createdAt": "建立於",
-    "updatedAt": "更新於"
+    "updatedAt": "更新於",
+    "fields": {
+      "thesis": "交易假設",
+      "risk": "風險",
+      "execution": "執行",
+      "review": "複盤"
+    },
+    "reviewIn": "{duration} 後複盤",
+    "empty": {
+      "title": "今日尚未有筆記",
+      "description": "收市前寫下一條市場觀察。"
+    }
   },
   "alert": {
     "title": "提醒管理",
@@ -637,7 +648,11 @@
       "title": "留下每一次判斷，讓過去的你成為最好的教練",
       "subtitle": "一隻年化 15% 的股票，每日賺錢的概率只有 50.02%——幾乎跟擲硬幣沒兩樣。交易從來不是靠單次勝負，而是靠足夠多的紀錄去驗證決策過程。市場不獎勵努力，只獎勵能力——而能力來自可追溯的決定和紮實的覆盤。寫下來，覆盤，再和 partner 對照——這是拉開差距的起點。",
       "getStarted": "開始記錄",
-      "learnMore": "了解學習路徑"
+      "learnMore": "了解學習路徑",
+      "eyebrow": "交易日記",
+      "description": "一個給主動投資者使用的冷靜交易日記。記錄 thesis、風險、執行與複盤，讓每次決策都有跡可尋。",
+      "primaryCta": "寫下今日筆記",
+      "secondaryCta": "查看日記範例"
     },
     "progress": {
       "journalLabel": "紀錄習慣",
@@ -1815,6 +1830,17 @@
       "dbWriteFailed": "❌ 記錄失敗，請稍後再試",
       "unknown": "未知指令，請使用 /start 查看可用指令。",
       "tooManyCodeAttempts": "嘗試次數過多，請重新產生驗證碼。"
+    }
+  },
+  "today": {
+    "title": "今日",
+    "quickNotePrompt": "今日你的觀點有什麼改變？",
+    "checklist": {
+      "marketRegime": "已更新市場狀態",
+      "watchlist": "已檢查觀察清單",
+      "riskNotes": "已寫下風險筆記",
+      "thesisChanged": "交易假設是否有改變？",
+      "reviewYesterday": "已回顧昨日筆記"
     }
   }
 }

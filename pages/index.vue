@@ -1,75 +1,39 @@
 <template>
   <main class="fintech-home min-h-screen text-slate-900 dark:text-slate-100">
     <!-- Hero Section -->
-    <section class="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
-      <div class="bg-grid absolute inset-0 opacity-35" aria-hidden="true" />
-
-      <div class="relative mx-auto max-w-7xl">
+    <section class="relative px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
+      <div class="mx-auto max-w-7xl">
         <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <!-- Left: copy + CTAs -->
           <div class="reveal">
-            <LandingBadge icon="heroicons:shield-check-20-solid">
-              {{ $t('home.badge') }}
-            </LandingBadge>
+            <span class="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.18em] text-dt-text-muted">
+              {{ $t('home.hero.eyebrow') }}
+            </span>
             <h1 class="text-4xl font-semibold leading-tight text-slate-950 dark:text-slate-100 sm:text-5xl lg:text-6xl">
               {{ $t('home.hero.title') }}
             </h1>
             <p class="mt-6 max-w-2xl text-base leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg">
-              {{ $t('home.hero.subtitle') }}
+              {{ $t('home.hero.description') }}
             </p>
 
-            <div class="mt-8 flex flex-col gap-4 sm:flex-row">
-              <NuxtLink to="/auth/register" class="action-btn action-btn-primary cursor-pointer">
-                {{ $t('home.hero.getStarted') }}
-                <Icon name="heroicons:arrow-up-right-20-solid" class="h-5 w-5" />
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <NuxtLink to="/auth/register" class="cursor-pointer">
+                <BaseButton variant="primary">
+                  {{ $t('home.hero.primaryCta') }}
+                  <Icon name="heroicons:pencil-square-20-solid" class="ml-2 h-4 w-4" />
+                </BaseButton>
               </NuxtLink>
-              <NuxtLink to="/how-to-use" class="action-btn action-btn-secondary cursor-pointer">
-                {{ $t('home.hero.learnMore') }}
+              <NuxtLink to="/how-to-use" class="cursor-pointer">
+                <BaseButton variant="secondary">
+                  {{ $t('home.hero.secondaryCta') }}
+                </BaseButton>
               </NuxtLink>
             </div>
-
-            <dl class="mt-10 grid gap-4 sm:grid-cols-3">
-              <LandingCard variant="metric" :reveal="true" :reveal-delay="2">
-                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.progress.journalLabel') }}</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('home.progress.journalValue') }}</dd>
-              </LandingCard>
-              <LandingCard variant="metric" :reveal="true" :reveal-delay="3">
-                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.progress.reviewLabel') }}</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('home.progress.reviewValue') }}</dd>
-              </LandingCard>
-              <LandingCard variant="metric" :reveal="true" :reveal-delay="4">
-                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.progress.rulesLabel') }}</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('home.progress.rulesValue') }}</dd>
-              </LandingCard>
-            </dl>
           </div>
 
+          <!-- Right: diary note preview card -->
           <div class="reveal reveal-2">
-            <div class="terminal-panel">
-              <header class="terminal-head">
-                <span class="font-medium">{{ $t('home.snapshot.title') }}</span>
-                <span class="rounded-full border border-emerald-400/50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-300">
-                  {{ $t('home.snapshot.status') }}
-                </span>
-              </header>
-              <div class="space-y-3 p-5">
-                <div class="row-item">
-                  <span>{{ $t('home.snapshot.focusLabel') }}</span>
-                  <span class="font-semibold text-emerald-300">{{ $t('home.snapshot.focusValue') }}</span>
-                </div>
-                <div class="row-item">
-                  <span>{{ $t('home.snapshot.methodLabel') }}</span>
-                  <span class="font-semibold text-amber-300">{{ $t('home.snapshot.methodValue') }}</span>
-                </div>
-                <div class="row-item">
-                  <span>{{ $t('home.snapshot.communityLabel') }}</span>
-                  <span class="font-semibold text-sky-300">{{ $t('home.snapshot.communityValue') }}</span>
-                </div>
-                <div class="h-px" style="background: color-mix(in srgb, var(--color-border) 60%, transparent);" />
-                <p class="text-sm leading-6">
-                  {{ $t('home.snapshot.description') }}
-                </p>
-              </div>
-            </div>
+            <DiaryNotePreview />
           </div>
         </div>
       </div>
@@ -260,7 +224,7 @@ const canonicalUrl = `${siteUrl}/`
 
 useHead(() => {
   const title = `${t('home.hero.title')} - ${t('common.appName')}`
-  const description = t('home.hero.subtitle')
+  const description = t('home.hero.description')
 
   return {
     title,
