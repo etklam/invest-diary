@@ -367,6 +367,8 @@ definePageMeta({
         </div>
       </section>
 
+      <MarketbeeSection />
+
       <section class="grid gap-4 lg:grid-cols-[280px_1fr]">
         <aside class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-900">
           <div class="mb-4 flex items-center justify-between gap-3">

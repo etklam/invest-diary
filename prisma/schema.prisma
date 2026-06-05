@@ -488,3 +488,64 @@ model PriceAlert {
   @@index([symbol, isTriggered])
   @@map("price_alerts")
 }
+
+// ─── Marketbee Regime Monitor ────────────────────────────────────────────────
+
+model MarketUniverse {
+  id        BigInt   @id @default(autoincrement())
+  symbol    String   @unique @db.VarChar(20)
+  name      String   @db.VarChar(255)
+  exchange  String   @db.VarChar(32)
+  assetType String   @map("asset_type") @db.VarChar(32)
+  isActive  Boolean  @default(true) @map("is_active")
+  sector    String?  @db.VarChar(100)
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@index([symbol], map: "market_universe_symbol_idx")
+  @@index([isActive, assetType], map: "market_universe_active_asset_type_idx")
+  @@index([exchange, isActive], map: "market_universe_exchange_active_idx")
+  @@map("market_universe")
+}
+
+model MarketBreadthDaily {
+  id            BigInt   @id @default(autoincrement())
+  universeKey   String   @map("universe_key") @db.VarChar(32)
+  date          DateTime @db.Date
+  universeCount Int      @map("universe_count")
+  up4Count      Int?     @map("up4_count")
+  down4Count    Int?     @map("down4_count")
+  up4Pct        Decimal? @map("up4_pct") @db.Decimal(8, 4)
+  down4Pct      Decimal? @map("down4_pct") @db.Decimal(8, 4)
+  above40dCount Int?     @map("above40d_count")
+  above40dPct   Decimal? @map("above40d_pct") @db.Decimal(8, 4)
+  ratio5d       Decimal? @map("ratio_5d") @db.Decimal(12, 4)
+  ratio10d      Decimal? @map("ratio_10d") @db.Decimal(12, 4)
+  regime        String?  @db.VarChar(32)
+  score         Int?
+  coveragePct   Decimal? @map("coverage_pct") @db.Decimal(5, 2)
+  isStale       Boolean  @default(false) @map("is_stale")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([universeKey, date], map: "market_breadth_daily_universe_date_key")
+  @@index([universeKey, date(sort: Desc)], map: "market_breadth_daily_universe_date_idx")
+  @@map("market_breadth_daily")
+}
+
+model MarketDailyPrice {
+  id            BigInt   @id @default(autoincrement())
+  symbol        String   @db.VarChar(20)
+  date          DateTime @db.Date
+  open          Decimal  @db.Decimal(18, 6)
+  high          Decimal  @db.Decimal(18, 6)
+  low           Decimal  @db.Decimal(18, 6)
+  close         Decimal  @db.Decimal(18, 6)
+  adjustedClose Decimal  @map("adjusted_close") @db.Decimal(18, 6)
+  volume        BigInt
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([symbol, date], map: "market_daily_price_symbol_date_key")
+  @@index([symbol, date], map: "market_daily_price_symbol_date_idx")
+  @@index([date], map: "market_daily_price_date_idx")
+  @@map("market_daily_price")
+}
