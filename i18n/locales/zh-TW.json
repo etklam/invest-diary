@@ -1842,5 +1842,98 @@
       "thesisChanged": "交易假設是否有改變？",
       "reviewYesterday": "已回顧昨日筆記"
     }
+  },
+  "desk": {
+    "kicker": "Diary Ledger",
+    "title": "日記工作台",
+    "summary": "先看節奏，再做紀錄。提醒、交易、最新複盤都放在第一視線，唔使再喺卡片海裡面兜圈。",
+    "snapshot": {
+      "label": "Ledger Snapshot",
+      "totalDiaries": "總日記數",
+      "thisWeek": "近 7 天紀錄",
+      "filteredResults": "目前篩選結果"
+    },
+    "actions": {
+      "quickDiary": "快速日記",
+      "newDiary": "新增日記",
+      "partners": "合作夥伴"
+    },
+    "nextMove": {
+      "label": "Next Move",
+      "latestDiary": "最近一篇",
+      "alertReview": "提醒盤點",
+      "tradeReview": "交易覆盤",
+      "noDiariesHeadline": "今天先寫下第一篇判斷紀錄",
+      "hasAlertsHeadline": "先處理 {count} 個提醒，別讓風險訊號失焦",
+      "latestDiaryHeadline": "從 {date} 的最近一篇開始複盤",
+      "defaultHeadline": "先把今天的交易節奏寫清楚",
+      "startStamp": "Start",
+      "riskCheckStamp": "Risk Check",
+      "reviewStamp": "Review",
+      "writingStamp": "Writing",
+      "noDiariesDesc": "這個頁面現在不是展示牆，是工作桌。第一步很簡單，先把今天的理由記下來。",
+      "hasAlertsDesc": "你的工作桌上還有未消化的提醒。先進相關條目檢查條件、更新判斷，再決定下一步。",
+      "hasTransactionsDesc": "交易和文字已經開始累積，接下來要做的不是再開更多卡片，而是把理由、結果、修正對齊。",
+      "defaultDesc": "目前節奏偏輕，適合補全條目細節，讓之後的複盤有完整上下文。"
+    },
+    "tasks": {
+      "noDiaryTitle": "還未開始",
+      "noDiaryText": "先用一篇快速日記，把今天的判斷和情緒落地。",
+      "untitled": "未命名紀錄",
+      "alertCountTitle": "{count} 個待留意提醒",
+      "alertCountMeta": "有提醒的日記 {count} 篇",
+      "hasAlertsText": "先處理帶提醒的條目，別讓風險提示變成背景音。",
+      "noAlertsText": "目前沒有待處理提醒，節奏算穩。",
+      "tradeCountTitle": "{count} 筆交易掛在日記裡",
+      "tradeCountMeta": "涉及交易的日記 {count} 篇",
+      "hasTradesText": "有交易就該有理由，從有交易的條目開始回看。",
+      "noTradesText": "還沒有交易紀錄，先把觀察和規則寫出來。"
+    },
+    "rules": {
+      "label": "Desk Rules",
+      "title": "先把帳對清楚，再談判斷。",
+      "rule1": "先記理由，再看結果，情緒放最後。",
+      "rule2": "日期、提醒、交易三條線要對得上。",
+      "rule3": "篩選器是拿來縮短決策，不是把自己繞暈。"
+    },
+    "filter": {
+      "label": "Filter Desk",
+      "title": "先縮窄範圍，再讀條目",
+      "clear": "清除篩選",
+      "searchLabel": "搜尋日記",
+      "searchPlaceholder": "搜尋標題或內容...",
+      "dateFrom": "開始日期",
+      "dateTo": "結束日期",
+      "sortBy": "排序方式",
+      "sortDateDesc": "日期（新到舊）",
+      "sortDateAsc": "日期（舊到新）",
+      "sortTitleAsc": "標題（A-Z）",
+      "sortTitleDesc": "標題（Z-A）",
+      "loadingSummary": "正在讀取條目...",
+      "noDataSummary": "還沒有資料可供篩選。",
+      "filteredSummary": "目前保留 {count} 篇條目。",
+      "defaultSummary": "共 {count} 篇日記，按時間由新到舊排列。"
+    },
+    "error": {
+      "title": "載入失敗"
+    },
+    "empty": {
+      "title": "尚無日記",
+      "description": "先記下第一篇投資日記，之後提醒、交易和複盤節奏才有地方可落。"
+    },
+    "noResults": {
+      "title": "沒有符合條件的日記",
+      "description": "篩選收太窄了，放寬日期或關鍵字，別把自己困在空結果裡。"
+    },
+    "list": {
+      "label": "Entries",
+      "title": "依時間線讀你的判斷痕跡",
+      "note": "點進條目繼續寫、補交易、處理提醒。",
+      "transactionCount": "{count} 筆交易",
+      "alertCount": "{count} 個提醒",
+      "textOnly": "純文字複盤",
+      "openEntry": "打開條目",
+      "noExcerpt": "這篇條目還沒有摘要內容，打開把判斷補完整。"
+    }
   }
 }

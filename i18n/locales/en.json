@@ -1842,5 +1842,98 @@
       "thesisChanged": "Any thesis changed?",
       "reviewYesterday": "Yesterday's note reviewed"
     }
+  },
+  "desk": {
+    "kicker": "Diary Ledger",
+    "title": "Journal Desk",
+    "summary": "Read the rhythm first, then write. Alerts, trades, and the latest reviews — all within your first glance. No more circling through a sea of cards.",
+    "snapshot": {
+      "label": "Ledger Snapshot",
+      "totalDiaries": "Total Diaries",
+      "thisWeek": "Last 7 Days",
+      "filteredResults": "Filtered Results"
+    },
+    "actions": {
+      "quickDiary": "Quick Diary",
+      "newDiary": "New Diary",
+      "partners": "Partners"
+    },
+    "nextMove": {
+      "label": "Next Move",
+      "latestDiary": "Latest Entry",
+      "alertReview": "Alert Review",
+      "tradeReview": "Trade Review",
+      "noDiariesHeadline": "Write your first judgment note today",
+      "hasAlertsHeadline": "Handle {count} alerts first — don't let risk signals blur",
+      "latestDiaryHeadline": "Start reviewing from the latest entry on {date}",
+      "defaultHeadline": "Write down today's trading rhythm clearly",
+      "startStamp": "Start",
+      "riskCheckStamp": "Risk Check",
+      "reviewStamp": "Review",
+      "writingStamp": "Writing",
+      "noDiariesDesc": "This page is a workstation, not a gallery. The first step is simple — write down your reasoning for today.",
+      "hasAlertsDesc": "You still have undigested alerts on your desk. Check conditions and update your judgment in related entries before deciding the next move.",
+      "hasTransactionsDesc": "Trades and notes are starting to pile up. The next step isn't opening more cards — it's aligning reasons, outcomes, and corrections.",
+      "defaultDesc": "The rhythm is light right now. A good time to fill in entry details so future reviews have full context."
+    },
+    "tasks": {
+      "noDiaryTitle": "Not Started Yet",
+      "noDiaryText": "Start with a quick diary — ground today's judgment and emotions.",
+      "untitled": "Untitled Entry",
+      "alertCountTitle": "{count} alerts to watch",
+      "alertCountMeta": "Diaries with alerts: {count}",
+      "hasAlertsText": "Tackle the entries with alerts first — don't let risk signals become background noise.",
+      "noAlertsText": "No pending alerts. Steady pace.",
+      "tradeCountTitle": "{count} trades logged in diaries",
+      "tradeCountMeta": "Diaries with trades: {count}",
+      "hasTradesText": "Every trade deserves a reason. Start reviewing from entries with transactions.",
+      "noTradesText": "No trade records yet. Start by writing down observations and rules."
+    },
+    "rules": {
+      "label": "Desk Rules",
+      "title": "Reconcile the books before making judgments.",
+      "rule1": "Record the reasoning first, review the outcome second, emotions last.",
+      "rule2": "Dates, alerts, and trades — all three lines must line up.",
+      "rule3": "Filters are for narrowing decisions, not for confusing yourself."
+    },
+    "filter": {
+      "label": "Filter Desk",
+      "title": "Narrow the scope, then read entries",
+      "clear": "Clear Filters",
+      "searchLabel": "Search Diaries",
+      "searchPlaceholder": "Search title or content...",
+      "dateFrom": "Start Date",
+      "dateTo": "End Date",
+      "sortBy": "Sort By",
+      "sortDateDesc": "Date (Newest)",
+      "sortDateAsc": "Date (Oldest)",
+      "sortTitleAsc": "Title (A-Z)",
+      "sortTitleDesc": "Title (Z-A)",
+      "loadingSummary": "Loading entries...",
+      "noDataSummary": "No data available to filter.",
+      "filteredSummary": "Currently showing {count} entries.",
+      "defaultSummary": "{count} diaries total, sorted newest to oldest."
+    },
+    "error": {
+      "title": "Failed to Load"
+    },
+    "empty": {
+      "title": "No Diaries Yet",
+      "description": "Write your first investment diary — alerts, trades, and review rhythms all need a place to land."
+    },
+    "noResults": {
+      "title": "No Matching Diaries",
+      "description": "The filters are too narrow. Widen the date range or keywords — don't trap yourself in empty results."
+    },
+    "list": {
+      "label": "Entries",
+      "title": "Read your judgment trail along the timeline",
+      "note": "Open an entry to keep writing, add trades, or handle alerts.",
+      "transactionCount": "{count} trades",
+      "alertCount": "{count} alerts",
+      "textOnly": "Text-only review",
+      "openEntry": "Open Entry",
+      "noExcerpt": "This entry has no summary yet. Open it and complete your reasoning."
+    }
   }
 }

@@ -1745,5 +1745,98 @@
       "thesisChanged": "交易假设是否有改变？",
       "reviewYesterday": "已回顾昨日笔记"
     }
+  },
+  "desk": {
+    "kicker": "Diary Ledger",
+    "title": "日记工作台",
+    "summary": "先看节奏，再做记录。提醒、交易、最新复盘都放在第一视线，不用再在卡片海里兜圈。",
+    "snapshot": {
+      "label": "Ledger Snapshot",
+      "totalDiaries": "总日记数",
+      "thisWeek": "近 7 天记录",
+      "filteredResults": "目前筛选结果"
+    },
+    "actions": {
+      "quickDiary": "快速日记",
+      "newDiary": "新增日记",
+      "partners": "合作伙伴"
+    },
+    "nextMove": {
+      "label": "Next Move",
+      "latestDiary": "最近一篇",
+      "alertReview": "提醒盘点",
+      "tradeReview": "交易复盘",
+      "noDiariesHeadline": "今天先写下第一篇判断记录",
+      "hasAlertsHeadline": "先处理 {count} 个提醒，别让风险信号失焦",
+      "latestDiaryHeadline": "从 {date} 的最近一篇开始复盘",
+      "defaultHeadline": "先把今天的交易节奏写清楚",
+      "startStamp": "Start",
+      "riskCheckStamp": "Risk Check",
+      "reviewStamp": "Review",
+      "writingStamp": "Writing",
+      "noDiariesDesc": "这个页面现在不是展示墙，是工作桌。第一步很简单，先把今天的理由记下来。",
+      "hasAlertsDesc": "你的工作桌上还有未消化的提醒。先进相关条目检查条件、更新判断，再决定下一步。",
+      "hasTransactionsDesc": "交易和文字已经开始累积，接下来要做的不是再开更多卡片，而是把理由、结果、修正对齐。",
+      "defaultDesc": "目前节奏偏轻，适合补全条目细节，让之后的复盘有完整上下文。"
+    },
+    "tasks": {
+      "noDiaryTitle": "还未开始",
+      "noDiaryText": "先用一篇快速日记，把今天的判断和情绪落地。",
+      "untitled": "未命名记录",
+      "alertCountTitle": "{count} 个待留意提醒",
+      "alertCountMeta": "有提醒的日记 {count} 篇",
+      "hasAlertsText": "先处理带提醒的条目，别让风险提示变成背景音。",
+      "noAlertsText": "目前没有待处理提醒，节奏算稳。",
+      "tradeCountTitle": "{count} 笔交易挂在日记里",
+      "tradeCountMeta": "涉及交易的日记 {count} 篇",
+      "hasTradesText": "有交易就该有理由，从有交易的条目开始回看。",
+      "noTradesText": "还没有交易记录，先把观察和规则写出来。"
+    },
+    "rules": {
+      "label": "Desk Rules",
+      "title": "先把账对清楚，再谈判断。",
+      "rule1": "先记理由，再看结果，情绪放最后。",
+      "rule2": "日期、提醒、交易三条线要对得上。",
+      "rule3": "筛选器是拿来缩短决策，不是把自己绕晕。"
+    },
+    "filter": {
+      "label": "Filter Desk",
+      "title": "先缩窄范围，再读条目",
+      "clear": "清除筛选",
+      "searchLabel": "搜索日记",
+      "searchPlaceholder": "搜索标题或内容...",
+      "dateFrom": "开始日期",
+      "dateTo": "结束日期",
+      "sortBy": "排序方式",
+      "sortDateDesc": "日期（新到旧）",
+      "sortDateAsc": "日期（旧到新）",
+      "sortTitleAsc": "标题（A-Z）",
+      "sortTitleDesc": "标题（Z-A）",
+      "loadingSummary": "正在读取条目...",
+      "noDataSummary": "还没有资料可供筛选。",
+      "filteredSummary": "目前保留 {count} 篇条目。",
+      "defaultSummary": "共 {count} 篇日记，按时间由新到旧排列。"
+    },
+    "error": {
+      "title": "载入失败"
+    },
+    "empty": {
+      "title": "尚无日记",
+      "description": "先记下第一篇投资日记，之后提醒、交易和复盘节奏才有地方可落。"
+    },
+    "noResults": {
+      "title": "没有符合条件的日记",
+      "description": "筛选收太窄了，放宽日期或关键字，别把自己困在空结果里。"
+    },
+    "list": {
+      "label": "Entries",
+      "title": "依时间线读你的判断痕迹",
+      "note": "点进条目继续写、补交易、处理提醒。",
+      "transactionCount": "{count} 笔交易",
+      "alertCount": "{count} 个提醒",
+      "textOnly": "纯文字复盘",
+      "openEntry": "打开条目",
+      "noExcerpt": "这篇条目还没有摘要内容，打开把判断补完整。"
+    }
   }
 }
