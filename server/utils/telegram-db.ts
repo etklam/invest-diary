@@ -142,9 +142,18 @@ export async function checkAndMarkUpdate(updateId: number, action: string): Prom
       data: { updateId, action },
     })
     return true // Not processed yet, proceed
-  } catch {
-    return false // Already processed, skip
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return false // Already processed, skip
+    }
+    throw error
   }
+}
+
+export async function releaseUpdate(updateId: number): Promise<void> {
+  await prisma.telegramProcessedUpdate.delete({
+    where: { updateId },
+  })
 }
 
 // ─── Cleanup ────────────────────────────────────────────────────────────────
@@ -177,6 +186,10 @@ function generateCode(): string {
     code += chars[crypto.randomInt(0, chars.length)]
   }
   return code
+}
+
+function isUniqueConstraintError(error: unknown): error is { code: string } {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002'
 }
 
 // Prisma Json helper type

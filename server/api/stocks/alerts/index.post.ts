@@ -3,14 +3,15 @@
  */
 
 import { requireUser } from '~/server/utils/auth'
-import type { AlertType } from '@prisma/client'
 import prisma from '~/lib/prisma'
-import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { serialize } from '~/server/utils/serialize'
+import {
+  isPriceAlertType,
+  isSupportedPriceAlertType,
+} from '~/server/utils/price-alert-condition'
 
 export default defineEventHandler(async (event) => {
-  const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   const body = await readBody(event)
@@ -24,9 +25,12 @@ export default defineEventHandler(async (event) => {
     ]).toH3Error()
   }
 
-  const validTypes: AlertType[] = ['PRICE_ABOVE', 'PRICE_BELOW', 'CHANGE_PERCENT', 'MOVING_AVG']
-  if (!validTypes.includes(type)) {
+  if (!isPriceAlertType(type)) {
     throw Errors.validationError([{ field: 'type', message: 'Invalid alert type' }]).toH3Error()
+  }
+
+  if (!isSupportedPriceAlertType(type)) {
+    throw Errors.validationError([{ field: 'type', message: 'Alert type is not supported yet' }]).toH3Error()
   }
 
   const normalizedSymbol = symbol.toUpperCase().trim()

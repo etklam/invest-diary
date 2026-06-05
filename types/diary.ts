@@ -33,6 +33,8 @@ export interface AlertInput {
   message: string
   triggerAt?: Date | string
   trigger_at?: Date | string
+  recurringMode?: 'WEEK' | 'MONTH'
+  recurring_mode?: 'WEEK' | 'MONTH'
 }
 
 export interface DiaryInput {

@@ -1,6 +1,7 @@
 import type { PriceAlert } from '@prisma/client'
 import type { AlertBroadcaster, PriceAlertPayload } from '~/types/websocket'
 import type { QuoteResponse } from '~/lib/yahoo-finance'
+import { evaluatePriceAlertCondition } from '~/server/utils/price-alert-condition'
 
 // ─── Dependency interfaces ────────────────────────────────────────────────────
 
@@ -83,27 +84,7 @@ export function createPriceAlertChecker(deps: PriceAlertCheckerDeps) {
           }
 
           const threshold = Number(alert.threshold)
-          let isTriggered = false
-
-          switch (alert.type) {
-            case 'PRICE_ABOVE':
-              isTriggered = currentPrice >= threshold
-              break
-            case 'PRICE_BELOW':
-              isTriggered = currentPrice <= threshold
-              break
-            case 'CHANGE_PERCENT':
-              // TODO: CHANGE_PERCENT 需要 previous close 來計算百分比變動。
-              // threshold 值代表要監控的百分比變化量。
-              // 目前的簡化方案只快取了價格，需要重新獲取完整報價才能取得 changePercent。
-              // 詳細設計：fetchQuote 已回傳 changePercent，因此可復用快取的報價。
-              // 為求簡化，暫時跳過 CHANGE_PERCENT，留待後續增強。
-              break
-            case 'MOVING_AVG':
-              // TODO: MOVING_AVG 需要歷史數據計算。
-              // 排程器暫時跳過 — 這最好作為獨立功能處理。
-              break
-          }
+          const isTriggered = evaluatePriceAlertCondition(alert.type, currentPrice, threshold)
 
           if (!isTriggered) {
             continue

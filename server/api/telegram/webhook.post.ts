@@ -1,5 +1,6 @@
 import { createBot } from '~/lib/telegram/bot'
-import { checkAndMarkUpdate, findTelegramAccount } from '~/server/utils/telegram-db'
+import { classifyTelegramUpdate } from '~/lib/telegram/intake'
+import { checkAndMarkUpdate, findTelegramAccount, releaseUpdate } from '~/server/utils/telegram-db'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 
@@ -34,24 +35,19 @@ export default defineEventHandler(async (event) => {
 
   const updateId = body.update_id as number
 
-  // 4. Determine if this is a write operation (needs idempotency guard)
-  // Only linked Telegram accounts can issue write commands.
-  // Unlinked users' /buy /sell /note messages are NOT idempotency-guarded,
-  // so they can retry after linking without hitting "already processed".
-  const fromId = body.message?.from?.id
-  let isWrite = false
-  if (fromId) {
-    const account = await findTelegramAccount(BigInt(fromId as number))
+  // 4. Guard linked messages. Unlinked messages remain retryable after linking.
+  const classification = classifyTelegramUpdate(body)
+  let updateAcquired = false
+  if (classification.kind === 'message') {
+    const account = await findTelegramAccount(BigInt(classification.telegramId))
     if (account) {
-      isWrite = true
-    }
-  }
-  if (isWrite) {
-    const isNew = await checkAndMarkUpdate(updateId, 'diary_write')
-    if (!isNew) {
-      // Already processed — return OK without re-executing
-      log.debug('Skipping duplicate Telegram update', { updateId })
-      return { ok: true }
+      const isNew = await checkAndMarkUpdate(updateId, classification.action)
+      updateAcquired = isNew
+      if (!isNew) {
+        // Already processed — return OK without re-executing
+        log.debug('Skipping duplicate Telegram update', { updateId })
+        return { ok: true }
+      }
     }
   }
 
@@ -61,6 +57,9 @@ export default defineEventHandler(async (event) => {
     await bot.init()
     await bot.handleUpdate(body)
   } catch (error) {
+    if (updateAcquired) {
+      await releaseUpdate(updateId)
+    }
     log.error('Telegram webhook processing failed', {
       updateId,
       error: String(error),

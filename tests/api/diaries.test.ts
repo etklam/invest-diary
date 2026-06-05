@@ -12,6 +12,7 @@ const mockTxTransactionDeleteMany = vi.fn()
 const mockTxTransactionCreate = vi.fn()
 const mockTxTransactionUpdateMany = vi.fn()
 const mockTxAlertDeleteMany = vi.fn()
+const mockTxAlertCreate = vi.fn()
 const mockDiaryLogInfo = vi.fn()
 const mockDiaryLogWarn = vi.fn()
 const mockDiaryLogError = vi.fn()
@@ -56,8 +57,14 @@ describe('Diary API Routes', () => {
           create: mockTxTransactionCreate,
           updateMany: mockTxTransactionUpdateMany,
         },
-        alert: { deleteMany: mockTxAlertDeleteMany },
-        diary: { update: mockDiaryUpdate },
+        alert: {
+          deleteMany: mockTxAlertDeleteMany,
+          create: mockTxAlertCreate,
+        },
+        diary: {
+          create: mockDiaryCreate,
+          update: mockDiaryUpdate,
+        },
       }
       return callback(tx)
     })

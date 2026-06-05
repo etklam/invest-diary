@@ -58,6 +58,7 @@ export async function createBuySellDiary(
   } catch (err) {
     log.error('Failed to create buy/sell diary', { symbol, type, error: String(err) })
     await ctx.reply(t('telegram.errors.dbWriteFailed'))
+    throw err
   }
 }
 
@@ -88,5 +89,6 @@ export async function createNoteDiary(ctx: any, userId: bigint, content: string)
   } catch (err) {
     log.error('Failed to create note diary', { error: String(err) })
     await ctx.reply(t('telegram.errors.dbWriteFailed'))
+    throw err
   }
 }

@@ -6,21 +6,29 @@ const {
   mockPrismaDiaryCreate,
   mockPrismaDiaryUpdate,
   mockPrismaTransaction,
+  mockTxDiaryCreate,
   mockTxDiaryUpdate,
   mockTxTransactionDeleteMany,
   mockTxTransactionUpdateMany,
   mockTxTransactionCreate,
   mockTxAlertDeleteMany,
+  mockTxAlertCreate,
+  mockTxAlertCreateMany,
+  mockTxAlertUpdate,
 } = vi.hoisted(() => ({
   mockPrismaDiaryFindFirst: vi.fn(),
   mockPrismaDiaryCreate: vi.fn(),
   mockPrismaDiaryUpdate: vi.fn(),
   mockPrismaTransaction: vi.fn(),
+  mockTxDiaryCreate: vi.fn(),
   mockTxDiaryUpdate: vi.fn(),
   mockTxTransactionDeleteMany: vi.fn(),
   mockTxTransactionUpdateMany: vi.fn(),
   mockTxTransactionCreate: vi.fn(),
   mockTxAlertDeleteMany: vi.fn(),
+  mockTxAlertCreate: vi.fn(),
+  mockTxAlertCreateMany: vi.fn(),
+  mockTxAlertUpdate: vi.fn(),
 }))
 
 vi.mock('~/lib/prisma', () => ({
@@ -389,7 +397,12 @@ describe('createDiaryForUser', () => {
 
   it('should create diary with alerts', async () => {
     mockPrismaDiaryFindFirst.mockResolvedValue(null)
-    mockPrismaDiaryCreate.mockResolvedValue(baseCreatedDiary)
+    mockTxDiaryCreate.mockResolvedValue(baseCreatedDiary)
+    mockTxAlertCreate.mockResolvedValue({ id: 401n })
+    mockPrismaTransaction.mockImplementation(async (cb: any) => cb({
+      diary: { create: mockTxDiaryCreate },
+      alert: { create: mockTxAlertCreate },
+    }))
 
     await createDiaryForUser({
       userId: '1',
@@ -397,24 +410,58 @@ describe('createDiaryForUser', () => {
         title: 'Test Diary',
         content: 'Some content',
         alerts: [
-          { message: 'Check AAPL', triggerAt: '2026-06-01T12:00:00Z' },
+          { message: 'Check AAPL', triggerAt: '2026-06-01T09:30:00Z' },
         ],
       },
     })
 
-    expect(mockPrismaDiaryCreate).toHaveBeenCalledWith(
+    expect(mockTxAlertCreate).toHaveBeenCalledWith({
+      data: {
+        diaryId: 1n,
+        message: 'Check AAPL',
+        triggerAt: new Date('2026-06-01T09:30:00Z'),
+      },
+    })
+    expect(mockTxDiaryCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          alerts: {
-            create: expect.arrayContaining([
-              expect.objectContaining({
-                message: 'Check AAPL',
-              }),
-            ]),
-          },
+        data: expect.not.objectContaining({
+          alerts: expect.anything(),
         }),
       })
     )
+  })
+
+  it('should persist recurring_mode when creating a diary', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
+    mockTxDiaryCreate.mockResolvedValue(baseCreatedDiary)
+    mockTxAlertCreate.mockResolvedValue({ id: 601n })
+    mockPrismaTransaction.mockImplementation(async (cb: any) => cb({
+      diary: { create: mockTxDiaryCreate },
+      alert: {
+        create: mockTxAlertCreate,
+        createMany: mockTxAlertCreateMany,
+        update: mockTxAlertUpdate,
+      },
+    }))
+
+    await createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Test Diary',
+        content: 'Some content',
+        alerts: [{
+          message: 'Review trades',
+          trigger_at: '2026-06-03T09:30:00Z',
+          recurring_mode: 'WEEK',
+        }],
+      },
+    })
+
+    expect(mockTxAlertUpdate).toHaveBeenCalledWith({
+      where: { id: 601n },
+      data: { parentId: 601n },
+    })
+    expect(mockTxAlertCreateMany).toHaveBeenCalled()
   })
 
   it('should create all transactions even when payload contains id (not silently dropped)', async () => {
@@ -504,7 +551,12 @@ describe('updateDiaryForUser', () => {
           updateMany: mockTxTransactionUpdateMany,
           create: mockTxTransactionCreate,
         },
-        alert: { deleteMany: mockTxAlertDeleteMany },
+        alert: {
+          deleteMany: mockTxAlertDeleteMany,
+          create: mockTxAlertCreate,
+          createMany: mockTxAlertCreateMany,
+          update: mockTxAlertUpdate,
+        },
         diary: { update: mockTxDiaryUpdate },
       })
     })
@@ -705,14 +757,39 @@ describe('updateDiaryForUser', () => {
       body: { title: 'Title', content: 'Content' },
     })
 
-    // Alerts should still be deleted and recreated (even if empty)
+    // Alerts should still be deleted even if empty
     expect(mockTxAlertDeleteMany).toHaveBeenCalled()
     expect(mockTxDiaryUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          alerts: { create: undefined },
+        data: expect.not.objectContaining({
+          alerts: expect.anything(),
         }),
       })
     )
+  })
+
+  it('should persist recurring_mode from diary UI as a recurring series', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n })
+    mockTxAlertCreate.mockResolvedValue({ id: 501n })
+
+    await updateDiaryForUser({
+      userId: '1',
+      diaryId: '12',
+      body: {
+        title: 'Title',
+        content: 'Content',
+        alerts: [{
+          message: 'Review trades',
+          trigger_at: '2026-06-03T09:30:00Z',
+          recurring_mode: 'WEEK',
+        }],
+      },
+    })
+
+    expect(mockTxAlertUpdate).toHaveBeenCalledWith({
+      where: { id: 501n },
+      data: { parentId: 501n },
+    })
+    expect(mockTxAlertCreateMany).toHaveBeenCalled()
   })
 })

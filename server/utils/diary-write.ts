@@ -6,6 +6,7 @@ import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/di
 import { Errors } from '~/lib/errors/factory'
 import { validateTransactions } from '~/lib/transactions/validate'
 import { attachDiaryTags } from '~/server/utils/diary-response'
+import { persistAlerts, replaceAlerts } from '~/server/utils/alert-persistence'
 
 /**
  * Normalize a string-or-Date input into a native Date.
@@ -206,7 +207,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
     throw Errors.diaryAlreadyExists(errorDate)
   }
 
-  const diary = await prisma.diary.create({
+  const diaryCreateArgs = {
     data: {
       userId,
       title,
@@ -221,18 +222,24 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
           userId,
         })),
       },
-      alerts: {
-        create: alerts?.map((alert) => ({
-          message: alert.message,
-          triggerAt: toUtcNoonDate(alert.trigger_at ?? alert.triggerAt ?? new Date()),
-        })),
-      },
     },
     include: {
       transactions: true,
       alerts: true,
     },
-  })
+  }
+
+  if (alerts) {
+    const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const createdDiary = await tx.diary.create(diaryCreateArgs)
+      const persistedAlerts = await persistAlerts(tx, createdDiary.id, alerts)
+      return { ...createdDiary, alerts: persistedAlerts }
+    })
+
+    return attachDiaryTags(diary as Diary)
+  }
+
+  const diary = await prisma.diary.create(diaryCreateArgs)
 
   return attachDiaryTags(diary as Diary)
 }
@@ -287,9 +294,7 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
 
   const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await persistTransactionDiff(tx, diaryId, userId, diff)
-
-    // Alerts: delete-all + recreate
-    await tx.alert.deleteMany({ where: { diaryId } })
+    await replaceAlerts(tx, diaryId, alerts)
 
     // Update the diary record
     return await tx.diary.update({
@@ -299,12 +304,6 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
         content,
         tagsString: tags !== undefined ? stringifyDiaryTags(tags) : undefined,
         date: date ? toUtcNoonDate(date) : undefined,
-        alerts: {
-          create: alerts?.map((a) => ({
-            message: a.message,
-            triggerAt: toUtcNoonDate(a.trigger_at ?? a.triggerAt ?? new Date()),
-          })),
-        },
       },
       include: {
         transactions: true,

@@ -1,9 +1,10 @@
+import type { Prisma } from '@prisma/client'
 import prisma from '../../lib/prisma'
-import { generateRecurringAlertsData } from '~/lib/recurring-alerts'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
+import { persistAlert } from '~/server/utils/alert-persistence'
 
 export default defineEventHandler(async (event) => {
   const log = logger.alert.withRequestId(event.context.requestId)
@@ -29,9 +30,6 @@ export default defineEventHandler(async (event) => {
       where: {
         id: BigInt(body.diary_id),
         userId: userId
-      },
-      include: {
-        alerts: true
       }
     })
 
@@ -39,63 +37,19 @@ export default defineEventHandler(async (event) => {
       throw Errors.diaryNotFound(body.diary_id).toH3Error()
     }
 
-    // Single alert (original logic)
-    if (!body.recurring_mode) {
-      const alert = await prisma.alert.create({
-        data: {
-          diaryId: BigInt(body.diary_id),
-          message: body.message,
-          triggerAt: new Date(body.trigger_at),
-        },
+    const alert = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      return await persistAlert(tx, BigInt(body.diary_id), {
+        message: body.message,
+        trigger_at: body.trigger_at,
+        recurring_mode: body.recurring_mode,
       })
-      log.info('Single alert created', { alertId: String(alert.id), userId })
-      return serialize(alert)
-    }
-
-    // Recurring alert: batch create
-    const triggerDate = new Date(body.trigger_at)
-    const alertsData = generateRecurringAlertsData({
-      startDate: triggerDate,
-      triggerTime: triggerDate.toTimeString().slice(0, 5),
-      mode: body.recurring_mode,
-      message: body.message,
-      diaryId: BigInt(body.diary_id),
     })
 
-    // Use transaction for batch creation
-    const result = await prisma.$transaction(async (tx: any) => {
-      // Create all alerts
-      await tx.alert.createMany({
-        data: alertsData,
-      })
-
-      // Get the newly created alerts
-      const allAlerts = await tx.alert.findMany({
-        where: {
-          diaryId: BigInt(body.diary_id),
-          triggerAt: { gte: triggerDate }
-        },
-        orderBy: { triggerAt: 'asc' }
-      })
-
-      if (allAlerts.length === 0) {
-        return []
-      }
-
-      // Update parentId: first alert is the parent, others point to it
-      const parentId = allAlerts[0]!.id
-      await tx.alert.updateMany({
-        where: {
-          id: { in: allAlerts.map((a: any) => a.id) }
-        },
-        data: { parentId }
-      })
-
-      return allAlerts
+    log.info(body.recurring_mode ? 'Recurring alerts created' : 'Single alert created', {
+      alertId: alert ? String(alert.id) : null,
+      userId,
     })
-
-    log.info('Recurring alerts created', { count: result.length, userId })
-    return serialize(result[0] ?? null)
+    return serialize(alert)
 
   } catch (error) {
     handleApiError(error, log)

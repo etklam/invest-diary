@@ -25,6 +25,7 @@ const mockPrisma = vi.hoisted(() => ({
   },
   telegramProcessedUpdate: {
     create: vi.fn(),
+    delete: vi.fn(),
   },
 }))
 
@@ -38,6 +39,7 @@ import {
   verifyAndConsumeCode,
   createVerificationCode,
   checkAndMarkUpdate,
+  releaseUpdate,
   cleanupExpiredTelegramData,
   sessionRead,
   sessionWrite,
@@ -212,12 +214,32 @@ describe('Telegram DB Utilities', () => {
 
     it('returns false for already-processed update', async () => {
       mockPrisma.telegramProcessedUpdate.create.mockRejectedValue(
-        new Error('Unique constraint violation')
+        Object.assign(new Error('Unique constraint violation'), { code: 'P2002' })
       )
 
       const result = await checkAndMarkUpdate(1001, 'diary_write')
 
       expect(result).toBe(false)
+    })
+
+    it('does not treat DB failure as an already-processed update', async () => {
+      mockPrisma.telegramProcessedUpdate.create.mockRejectedValue(
+        new Error('DB unavailable')
+      )
+
+      await expect(checkAndMarkUpdate(1001, 'diary_write')).rejects.toThrow('DB unavailable')
+    })
+  })
+
+  describe('releaseUpdate', () => {
+    it('deletes the acquired update so a retry can process it again', async () => {
+      mockPrisma.telegramProcessedUpdate.delete.mockResolvedValue(undefined)
+
+      await releaseUpdate(1001)
+
+      expect(mockPrisma.telegramProcessedUpdate.delete).toHaveBeenCalledWith({
+        where: { updateId: 1001 },
+      })
     })
   })
 
