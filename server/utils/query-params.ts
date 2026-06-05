@@ -61,3 +61,27 @@ export function parseSearchQuery(
   if (!str) return undefined
   return str.slice(0, maxLength)
 }
+
+/**
+ * Sort option mapping for diary list endpoints.
+ * Keys are the query param values; values are Prisma orderBy objects.
+ */
+const DIARY_SORT_OPTIONS: Record<string, Record<string, 'asc' | 'desc'>> = {
+  'date-desc': { createdAt: 'desc' },
+  'date-asc': { createdAt: 'asc' },
+  'title-asc': { title: 'asc' },
+  'title-desc': { title: 'desc' },
+}
+
+const DEFAULT_DIARY_SORT: Record<string, 'asc' | 'desc'> = { createdAt: 'desc' }
+
+/**
+ * Parse and validate a diary sort option from query.
+ * Returns the matching Prisma orderBy object, or the default sort.
+ */
+export function parseDiarySortOption(
+  value: unknown
+): Record<string, 'asc' | 'desc'> {
+  if (typeof value !== 'string' || !value) return DEFAULT_DIARY_SORT
+  return DIARY_SORT_OPTIONS[value] ?? DEFAULT_DIARY_SORT
+}

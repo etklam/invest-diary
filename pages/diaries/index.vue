@@ -12,7 +12,7 @@
           <p class="workspace-label">Ledger Snapshot</p>
           <div class="stat-list">
             <article class="stat-card">
-              <span class="stat-value">{{ diaryItems.length }}</span>
+              <span class="stat-value">{{ totalDiaries }}</span>
               <span class="stat-label">總日記數</span>
             </article>
             <article class="stat-card">
@@ -20,7 +20,7 @@
               <span class="stat-label">近 7 天紀錄</span>
             </article>
             <article class="stat-card">
-              <span class="stat-value">{{ filteredAndSortedDiaries.length }}</span>
+              <span class="stat-value">{{ diaryItems.length }}</span>
               <span class="stat-label">目前篩選結果</span>
             </article>
           </div>
@@ -231,7 +231,7 @@
       </NuxtLink>
     </section>
 
-    <section v-else-if="filteredAndSortedDiaries.length === 0" class="state-panel">
+    <section v-else-if="totalDiaries > 0 && diaryItems.length === 0" class="state-panel">
       <Icon name="heroicons:funnel" class="h-10 w-10 text-[color:var(--color-text-soft)]" />
       <div>
         <h3 class="state-title">沒有符合條件的日記</h3>
@@ -249,7 +249,7 @@
       </header>
 
       <NuxtLink
-        v-for="diary in filteredAndSortedDiaries"
+        v-for="diary in diaryItems"
         :key="diary.id"
         :to="`/diaries/${diary.id}`"
         class="ledger-row group cursor-pointer"
@@ -291,25 +291,13 @@
 </template>
 
 <script setup lang="ts">
-import { formatYmdInTimezone } from '~/lib/diary-date'
-
 definePageMeta({
   middleware: 'auth'
 })
-const { formatLocaleDate, getTimezone } = useTimezone()
+const { formatLocaleDate } = useTimezone()
 
 // Quick diary modal state
 const showQuickModal = ref(false)
-
-const handleDiaryCreated = () => {
-  refresh()
-}
-
-// Use lazy fetch to avoid calling API during SSR before auth check
-// API returns { data, pagination }, so transform to diary array
-const { data: diaries, pending, error, refresh } = await useLazyFetch('/api/diaries', {
-  transform: (res: any) => res?.data ?? []
-})
 
 const filters = reactive({
   search: '',
@@ -318,7 +306,33 @@ const filters = reactive({
   sortBy: 'date-desc'
 })
 
-const diaryItems = computed<any[]>(() => diaries.value ?? [])
+// Build reactive query params — API does the filtering/sorting
+const queryParams = computed(() => {
+  const params: Record<string, string> = {}
+  if (filters.search) params.search = filters.search
+  if (filters.dateFrom) params.dateFrom = filters.dateFrom
+  if (filters.dateTo) params.dateTo = filters.dateTo
+  if (filters.sortBy !== 'date-desc') params.sortBy = filters.sortBy
+  return params
+})
+
+// Use lazy fetch to avoid calling API during SSR before auth check
+// API returns { data, pagination }, so transform extracts both
+const { data: apiResponse, pending, error, refresh } = await useLazyFetch('/api/diaries', {
+  query: queryParams,
+  transform: (res: any) => ({
+    data: res?.data ?? [],
+    total: res?.pagination?.total ?? 0,
+  }),
+})
+
+const handleDiaryCreated = () => {
+  refresh()
+}
+
+const diaryItems = computed<any[]>(() => apiResponse.value?.data ?? [])
+
+const totalDiaries = computed<number>(() => apiResponse.value?.total ?? 0)
 
 const latestDiary = computed<any | null>(() => diaryItems.value[0] ?? null)
 
@@ -393,9 +407,9 @@ const focusDescription = computed(() => {
 
 const filterSummary = computed(() => {
   if (pending.value) return '正在讀取條目...'
-  if (!diaryItems.value.length) return '還沒有資料可供篩選。'
-  if (hasActiveFilters.value) return `目前保留 ${filteredAndSortedDiaries.value.length} 篇條目。`
-  return `共 ${diaryItems.value.length} 篇日記，按時間由新到舊排列。`
+  if (!totalDiaries.value && !diaryItems.value.length) return '還沒有資料可供篩選。'
+  if (hasActiveFilters.value) return `目前保留 ${diaryItems.value.length} 篇條目。`
+  return `共 ${totalDiaries.value} 篇日記，按時間由新到舊排列。`
 })
 
 // Reset filters
@@ -405,66 +419,6 @@ const resetFilters = () => {
   filters.dateTo = ''
   filters.sortBy = 'date-desc'
 }
-
-// Filter diaries by search and date range
-const filteredDiaries = computed(() => {
-  if (!diaries.value) return []
-
-  let result = [...diaries.value]
-
-  // Search filter
-  if (filters.search) {
-    const searchLower = filters.search.toLowerCase()
-    result = result.filter(d =>
-      d.title.toLowerCase().includes(searchLower) ||
-      (d.content && d.content.toLowerCase().includes(searchLower))
-    )
-  }
-
-  // Date from filter
-  if (filters.dateFrom) {
-    result = result.filter(d => {
-      const diaryYmd = formatYmdInTimezone(d.date || d.createdAt, getTimezone())
-      return diaryYmd >= filters.dateFrom
-    })
-  }
-
-  // Date to filter
-  if (filters.dateTo) {
-    result = result.filter(d => {
-      const diaryYmd = formatYmdInTimezone(d.date || d.createdAt, getTimezone())
-      return diaryYmd <= filters.dateTo
-    })
-  }
-
-  return result
-})
-
-// Sort diaries
-const filteredAndSortedDiaries = computed(() => {
-  const result = [...filteredDiaries.value]
-
-  switch (filters.sortBy) {
-    case 'date-desc':
-      return result.sort((a, b) => {
-        const dateA = new Date(a.date || a.createdAt).getTime()
-        const dateB = new Date(b.date || b.createdAt).getTime()
-        return dateB - dateA
-      })
-    case 'date-asc':
-      return result.sort((a, b) => {
-        const dateA = new Date(a.date || a.createdAt).getTime()
-        const dateB = new Date(b.date || b.createdAt).getTime()
-        return dateA - dateB
-      })
-    case 'title-asc':
-      return result.sort((a, b) => a.title.localeCompare(b.title, 'zh-TW'))
-    case 'title-desc':
-      return result.sort((a, b) => b.title.localeCompare(a.title, 'zh-TW'))
-    default:
-      return result
-  }
-})
 
 watch(error, (error) => {
   if (error) {

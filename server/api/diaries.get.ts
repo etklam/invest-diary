@@ -5,7 +5,7 @@ import { parseDiaryTags } from '~/lib/diary-tags'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
-import { parsePagination, parsePositiveInt } from '~/server/utils/query-params'
+import { parsePagination, parsePositiveInt, parseSearchQuery, parseDiarySortOption } from '~/server/utils/query-params'
 import { serialize } from '~/server/utils/serialize'
 
 type DiaryListItem = Awaited<ReturnType<typeof prisma.diary.findMany>>[number]
@@ -22,12 +22,44 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const query = getQuery(event)
     const { page, limit, skip } = parsePagination(query)
     const days = parsePositiveInt(query.days)
+    const search = parseSearchQuery(query.search)
+    const orderBy = parseDiarySortOption(query.sortBy)
+
+    // Parse date range (YYYY-MM-DD → UTC day boundaries)
+    let dateFrom: Date | undefined
+    let dateTo: Date | undefined
+    if (typeof query.dateFrom === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(query.dateFrom)) {
+      const [y, m, d] = query.dateFrom.split('-').map(Number)
+      dateFrom = new Date(Date.UTC(y!, m! - 1, d!, 0, 0, 0, 0))
+    }
+    if (typeof query.dateTo === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(query.dateTo)) {
+      const [y, m, d] = query.dateTo.split('-').map(Number)
+      dateTo = new Date(Date.UTC(y!, m! - 1, d!, 23, 59, 59, 999))
+    }
 
     const where: Prisma.DiaryWhereInput = { userId }
+
+    // Days filter (legacy — uses createdAt)
     if (days !== undefined && days > 0) {
       const since = new Date()
       since.setDate(since.getDate() - days)
       where.createdAt = { gte: since }
+    }
+
+    // Search filter (case-insensitive contains on title + content)
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { content: { contains: search } },
+      ]
+    }
+
+    // Date range filter (uses diary date field)
+    if (dateFrom || dateTo) {
+      where.date = {
+        ...(dateFrom ? { gte: dateFrom } : {}),
+        ...(dateTo ? { lte: dateTo } : {}),
+      }
     }
 
     //效能優化：使用 select 只選擇必要欄位
@@ -36,7 +68,7 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const [diaries, total] = await Promise.all([
       prisma.diary.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         select: {
           id: true,
           userId: true,
