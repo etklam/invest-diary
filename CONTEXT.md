@@ -195,3 +195,45 @@ _避免：速記、草稿_
 - 驗證順序保持 title → content → transactions（與原始行為一致）
 
 +14 新測試，公開介面不變。
+
+### 2026-06 架構深化（5 項重構）
+
+延續 2026-05 的架構審計，針對讀取側對稱性、CRUD 一致性、快取 seam、死代碼和型別精確度進行深化。
+
+#### 1. Diary 讀取路徑 Query Layer — `server/utils/diary-read.ts`
+
+**問題**：Diary 寫入側有深層的 `diary-write.ts`（327 行），但讀取側完全沒有對應的 query layer。每個 handler 各自手寫 `prisma.diary.findFirst({ include: ... })`，include/where 在 4 個 handler 之間微妙不同（有的 include transactions，有的漏了 review 欄位）。明顯的對稱性缺失。
+
+**解法**：新建 `diary-read.ts`，提供 `findDiaryForUser(id, userId)` 和 `findDiaryByDate(date, userId)`。前者統一 include transactions + alerts + review 欄位，並驗證擁有權（不存在或非本人均拋 `notFound`，不洩漏存在性）。後者用 UTC day range 匹配日期。
+
+更新 3 個 handler：`[id].get.ts`、`by-date.get.ts`、`review.patch.ts`。`[id].put.ts` 已使用 `updateDiaryForUser()` 自帶 ownership check，無需改動。+10 新測試。
+
+#### 2. Price Alert Query Layer + Zod — `server/utils/price-alert-queries.ts`
+
+**問題**：Price Alert（價格警示）是唯一缺少 query layer 的 CRUD bounded context。4 個 handler 各自 inline Prisma 查詢和手寫驗證（`isPriceAlertType()`、必填檢查），而同 project 的 Stock Watchlist 和 ETF Watchlist 已正確使用 Zod schema + query layer。
+
+**解法**：新建 `price-alert-queries.ts`，包含 `CreatePriceAlertSchema` / `UpdatePriceAlertSchema`（Zod）和 4 個 CRUD 函數（`listPriceAlerts`、`createPriceAlert`、`updatePriceAlert`、`deletePriceAlert`）。Ownership check 統一用 `notFound`（不洩漏資源存在性）。Symbol 正規化在 schema 層透過 `transform` 處理。
+
+更新 3 個 handler：`index.get.ts`、`index.post.ts`、`[id].delete.ts`。+35 新測試。
+
+#### 3. Market Data Cache 統一 Seam — `lib/market-data/cache.ts`
+
+**問題**：9 個 market/ETF handler 全部從 `lib/etf-profile/cache.ts` import 快取函數，語意不合理（market handler 不該從 etf-profile 命名空間 import 快取）。如果未來從 Map 換成 Redis，需改 N 個檔案。
+
+**解法**：新建 `lib/market-data/cache.ts` 作為市場資料的唯一快取入口。Re-export 底層快取基元（`getOrSetCached`、`shouldBypassCache` 等）、cache key builders（`buildMarketQuoteCacheKey` 等）和 TTL 常數（`TTL_QUOTE_MARKET_HOURS`、`TTL_MARKET_DATA_MAX` 等）。9 個 handler + 2 個測試檔案 import 路徑統一。
+
+底層 `lib/etf-profile/cache.ts` 保持不動（ETF profile 內部仍直接引用底層，因為它使用 `getStaleCached` 做多層次 stale 回退，與 handler 的 `getOrSetCached` 用法本質不同）。+32 新測試。
+
+#### 4. Deprecated `quotes.ts` 清除
+
+**問題**：`lib/market-data/quotes.ts` 的 `fetchMarketPrice()` 已標記 `@deprecated`，指引改用 `fetchQuote` from `~/lib/yahoo-finance`。但檔案仍存在，新開發者會困惑「該用哪個」。
+
+**解法**：確認零 caller 後刪除。清理 1 個過時測試 case。
+
+#### 5. SerializedId 型別別名 — `types/common.ts`
+
+**問題**：因為 Prisma 回傳 `bigint` 而 `serialize()` 轉成 `string`，每個 domain type 的 id 欄位都寫成 `bigint | string`。這個 union 在 `types/diary.ts`、`types/websocket.ts` 等多個檔案中重複，增加認知負擔。實際上經過 `serialize()` 後 caller 永遠拿到 `string`。
+
+**解法**：新建 `types/common.ts`，定義 `type SerializedId = string`。所有 post-serialization 的 API 回應型別統一使用 `SerializedId` 替代 `bigint | string`。Server-side 內部函數（query layers、Prisma 參數）刻意保持 `bigint | string`，因為它們在 serialize 之前運作。
+
+更新 `types/diary.ts`、`types/websocket.ts`、`pages/alerts/index.vue`、`composables/useQuickNoteComposer.ts`。純型別重構，零 runtime 變更。+3 新測試。
