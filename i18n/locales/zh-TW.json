@@ -312,7 +312,18 @@
     "quickDiary": "快速日記",
     "backToList": "返回日記列表",
     "createdAt": "建立於",
-    "updatedAt": "更新於"
+    "updatedAt": "更新於",
+    "fields": {
+      "thesis": "交易假設",
+      "risk": "風險",
+      "execution": "執行",
+      "review": "複盤"
+    },
+    "reviewIn": "{duration} 後複盤",
+    "empty": {
+      "title": "今日尚未有筆記",
+      "description": "收市前寫下一條市場觀察。"
+    }
   },
   "alert": {
     "title": "提醒管理",
@@ -637,7 +648,11 @@
       "title": "留下每一次判斷，讓過去的你成為最好的教練",
       "subtitle": "一隻年化 15% 的股票，每日賺錢的概率只有 50.02%——幾乎跟擲硬幣沒兩樣。交易從來不是靠單次勝負，而是靠足夠多的紀錄去驗證決策過程。市場不獎勵努力，只獎勵能力——而能力來自可追溯的決定和紮實的覆盤。寫下來，覆盤，再和 partner 對照——這是拉開差距的起點。",
       "getStarted": "開始記錄",
-      "learnMore": "了解學習路徑"
+      "learnMore": "了解學習路徑",
+      "eyebrow": "交易日記",
+      "description": "一個給主動投資者使用的冷靜交易日記。記錄 thesis、風險、執行與複盤，讓每次決策都有跡可尋。",
+      "primaryCta": "寫下今日筆記",
+      "secondaryCta": "查看日記範例"
     },
     "progress": {
       "journalLabel": "紀錄習慣",
@@ -1815,6 +1830,140 @@
       "dbWriteFailed": "❌ 記錄失敗，請稍後再試",
       "unknown": "未知指令，請使用 /start 查看可用指令。",
       "tooManyCodeAttempts": "嘗試次數過多，請重新產生驗證碼。"
+    }
+  },
+  "today": {
+    "title": "今日",
+    "quickNotePrompt": "今日你的觀點有什麼改變？",
+    "checklist": {
+      "marketRegime": "已更新市場狀態",
+      "watchlist": "已檢查觀察清單",
+      "riskNotes": "已寫下風險筆記",
+      "thesisChanged": "交易假設是否有改變？",
+      "reviewYesterday": "已回顧昨日筆記"
+    }
+  },
+  "desk": {
+    "kicker": "Diary Ledger",
+    "title": "日記工作台",
+    "summary": "先看節奏，再做紀錄。提醒、交易、最新複盤都放在第一視線，唔使再喺卡片海裡面兜圈。",
+    "snapshot": {
+      "label": "Ledger Snapshot",
+      "totalDiaries": "總日記數",
+      "thisWeek": "近 7 天紀錄",
+      "filteredResults": "目前篩選結果"
+    },
+    "actions": {
+      "quickDiary": "快速日記",
+      "newDiary": "新增日記",
+      "partners": "合作夥伴"
+    },
+    "nextMove": {
+      "label": "Next Move",
+      "latestDiary": "最近一篇",
+      "alertReview": "提醒盤點",
+      "tradeReview": "交易覆盤",
+      "noDiariesHeadline": "今天先寫下第一篇判斷紀錄",
+      "hasAlertsHeadline": "先處理 {count} 個提醒，別讓風險訊號失焦",
+      "latestDiaryHeadline": "從 {date} 的最近一篇開始複盤",
+      "defaultHeadline": "先把今天的交易節奏寫清楚",
+      "startStamp": "Start",
+      "riskCheckStamp": "Risk Check",
+      "reviewStamp": "Review",
+      "writingStamp": "Writing",
+      "noDiariesDesc": "這個頁面現在不是展示牆，是工作桌。第一步很簡單，先把今天的理由記下來。",
+      "hasAlertsDesc": "你的工作桌上還有未消化的提醒。先進相關條目檢查條件、更新判斷，再決定下一步。",
+      "hasTransactionsDesc": "交易和文字已經開始累積，接下來要做的不是再開更多卡片，而是把理由、結果、修正對齊。",
+      "defaultDesc": "目前節奏偏輕，適合補全條目細節，讓之後的複盤有完整上下文。"
+    },
+    "tasks": {
+      "noDiaryTitle": "還未開始",
+      "noDiaryText": "先用一篇快速日記，把今天的判斷和情緒落地。",
+      "untitled": "未命名紀錄",
+      "alertCountTitle": "{count} 個待留意提醒",
+      "alertCountMeta": "有提醒的日記 {count} 篇",
+      "hasAlertsText": "先處理帶提醒的條目，別讓風險提示變成背景音。",
+      "noAlertsText": "目前沒有待處理提醒，節奏算穩。",
+      "tradeCountTitle": "{count} 筆交易掛在日記裡",
+      "tradeCountMeta": "涉及交易的日記 {count} 篇",
+      "hasTradesText": "有交易就該有理由，從有交易的條目開始回看。",
+      "noTradesText": "還沒有交易紀錄，先把觀察和規則寫出來。"
+    },
+    "rules": {
+      "label": "Desk Rules",
+      "title": "先把帳對清楚，再談判斷。",
+      "rule1": "先記理由，再看結果，情緒放最後。",
+      "rule2": "日期、提醒、交易三條線要對得上。",
+      "rule3": "篩選器是拿來縮短決策，不是把自己繞暈。"
+    },
+    "filter": {
+      "label": "Filter Desk",
+      "title": "先縮窄範圍，再讀條目",
+      "clear": "清除篩選",
+      "searchLabel": "搜尋日記",
+      "searchPlaceholder": "搜尋標題或內容...",
+      "dateFrom": "開始日期",
+      "dateTo": "結束日期",
+      "sortBy": "排序方式",
+      "sortDateDesc": "日期（新到舊）",
+      "sortDateAsc": "日期（舊到新）",
+      "sortTitleAsc": "標題（A-Z）",
+      "sortTitleDesc": "標題（Z-A）",
+      "loadingSummary": "正在讀取條目...",
+      "noDataSummary": "還沒有資料可供篩選。",
+      "filteredSummary": "目前保留 {count} 篇條目。",
+      "defaultSummary": "共 {count} 篇日記，按時間由新到舊排列。"
+    },
+    "error": {
+      "title": "載入失敗"
+    },
+    "empty": {
+      "title": "尚無日記",
+      "description": "先記下第一篇投資日記，之後提醒、交易和複盤節奏才有地方可落。"
+    },
+    "noResults": {
+      "title": "沒有符合條件的日記",
+      "description": "篩選收太窄了，放寬日期或關鍵字，別把自己困在空結果裡。"
+    },
+    "list": {
+      "label": "Entries",
+      "title": "依時間線讀你的判斷痕跡",
+      "note": "點進條目繼續寫、補交易、處理提醒。",
+      "transactionCount": "{count} 筆交易",
+      "alertCount": "{count} 個提醒",
+      "textOnly": "純文字複盤",
+      "openEntry": "打開條目",
+      "noExcerpt": "這篇條目還沒有摘要內容，打開把判斷補完整。"
+    }
+  },
+  "review": {
+    "candidates": "複盤候選",
+    "candidatesDesc": "值得回顧的過去筆記",
+    "noCandidates": "沒有待複盤的筆記",
+    "noCandidatesDesc": "寫一篇帶有交易假設和風險評估的筆記，開始建立你的複盤佇列。",
+    "statusNone": "未設定",
+    "statusPending": "待複盤",
+    "statusReviewed": "已複盤",
+    "markReviewed": "標記為已複盤",
+    "reviewNow": "立即複盤",
+    "dueIn": "{duration} 後複盤",
+    "overdue": "已過複盤期限",
+    "prompts": {
+      "thesisWrong": "交易假設錯了嗎？",
+      "timingWrong": "時間點錯了嗎？",
+      "sizingWrong": "倉位大小錯了嗎？",
+      "justVariance": "只是隨機波動嗎？",
+      "differently": "下次你會怎麼做？"
+    },
+    "fields": {
+      "thesis": "交易假設",
+      "thesisPlaceholder": "這筆交易的理由是什麼？",
+      "risk": "風險評估",
+      "riskPlaceholder": "可能出什麼問題？停損點在哪？",
+      "execution": "執行紀錄",
+      "executionPlaceholder": "實際怎麼執行的？",
+      "reviewDue": "複盤期限",
+      "reviewNotes": "複盤筆記"
     }
   }
 }

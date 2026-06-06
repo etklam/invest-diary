@@ -311,7 +311,18 @@
     "contentRequired": "请输入内容",
     "backToList": "返回日记列表",
     "createdAt": "创建于",
-    "updatedAt": "更新于"
+    "updatedAt": "更新于",
+    "fields": {
+      "thesis": "交易假设",
+      "risk": "风险",
+      "execution": "执行",
+      "review": "复盘"
+    },
+    "reviewIn": "{duration} 后复盘",
+    "empty": {
+      "title": "今日尚未有笔记",
+      "description": "收盘前写下一条市场观察。"
+    }
   },
   "alert": {
     "title": "提醒管理",
@@ -693,7 +704,6 @@
     "backToToday": "回到今天",
     "quickDiary": "快速日记"
   },
-
   "theme": {
     "toggleDarkMode": "切换深色模式",
     "openMenu": "开启菜单",
@@ -753,7 +763,11 @@
       "title": "留下每一次判断，让过去的你成为最好的教练",
       "subtitle": "一只年化 15% 的股票，每日赚钱的概率只有 50.02%——几乎跟掷硬币没区别。交易从来不是靠单次胜负，而是靠足够多的记录去验证决策过程。市场不奖励努力，只奖励能力——而能力来自可追溯的决定和扎实的复盘。写下来，复盘，再和 partner 对照——这是拉开差距的起点。",
       "getStarted": "开始记录",
-      "learnMore": "了解学习路径"
+      "learnMore": "了解学习路径",
+      "eyebrow": "交易日记",
+      "description": "一个给主动投资者使用的冷静交易日记。记录 thesis、风险、执行与复盘，让每次决策都有迹可循。",
+      "primaryCta": "写下今日笔记",
+      "secondaryCta": "查看日记范例"
     },
     "progress": {
       "journalLabel": "记录习惯",
@@ -903,7 +917,7 @@
     },
     "motivation": {
       "title": "我为什么做这个网站",
-      "paragraph1": "我曾在情绪化和缺乏纪律的交易中反复犯错。后来我意识到，关键问题不是\u201c信息不够\u201d，而是没有一套稳定、可回顾的方法。亏损如果没学到东西，就只是亏损——我不想让每一笔亏损都白费。",
+      "paragraph1": "我曾在情绪化和缺乏纪律的交易中反复犯错。后来我意识到，关键问题不是“信息不够”，而是没有一套稳定、可回顾的方法。亏损如果没学到东西，就只是亏损——我不想让每一笔亏损都白费。",
       "paragraph2": "这个网站不是为了包装神奇收益，而是一个务实练习场：把每次操作留下来、定期复盘、持续修正，目标是减少重复错误，朝财富自由和被动收入的长期方向前进。"
     },
     "features": {
@@ -1719,6 +1733,140 @@
       "dbWriteFailed": "❌ 记录失败，请稍后再试",
       "unknown": "未知指令，请使用 /start 查看可用指令。",
       "tooManyCodeAttempts": "尝试次数过多，请重新生成验证码。"
+    }
+  },
+  "today": {
+    "title": "今日",
+    "quickNotePrompt": "今天你的观点有什么改变？",
+    "checklist": {
+      "marketRegime": "已更新市场状态",
+      "watchlist": "已检查观察清单",
+      "riskNotes": "已写下风险笔记",
+      "thesisChanged": "交易假设是否有改变？",
+      "reviewYesterday": "已回顾昨日笔记"
+    }
+  },
+  "desk": {
+    "kicker": "Diary Ledger",
+    "title": "日记工作台",
+    "summary": "先看节奏，再做记录。提醒、交易、最新复盘都放在第一视线，不用再在卡片海里兜圈。",
+    "snapshot": {
+      "label": "Ledger Snapshot",
+      "totalDiaries": "总日记数",
+      "thisWeek": "近 7 天记录",
+      "filteredResults": "目前筛选结果"
+    },
+    "actions": {
+      "quickDiary": "快速日记",
+      "newDiary": "新增日记",
+      "partners": "合作伙伴"
+    },
+    "nextMove": {
+      "label": "Next Move",
+      "latestDiary": "最近一篇",
+      "alertReview": "提醒盘点",
+      "tradeReview": "交易复盘",
+      "noDiariesHeadline": "今天先写下第一篇判断记录",
+      "hasAlertsHeadline": "先处理 {count} 个提醒，别让风险信号失焦",
+      "latestDiaryHeadline": "从 {date} 的最近一篇开始复盘",
+      "defaultHeadline": "先把今天的交易节奏写清楚",
+      "startStamp": "Start",
+      "riskCheckStamp": "Risk Check",
+      "reviewStamp": "Review",
+      "writingStamp": "Writing",
+      "noDiariesDesc": "这个页面现在不是展示墙，是工作桌。第一步很简单，先把今天的理由记下来。",
+      "hasAlertsDesc": "你的工作桌上还有未消化的提醒。先进相关条目检查条件、更新判断，再决定下一步。",
+      "hasTransactionsDesc": "交易和文字已经开始累积，接下来要做的不是再开更多卡片，而是把理由、结果、修正对齐。",
+      "defaultDesc": "目前节奏偏轻，适合补全条目细节，让之后的复盘有完整上下文。"
+    },
+    "tasks": {
+      "noDiaryTitle": "还未开始",
+      "noDiaryText": "先用一篇快速日记，把今天的判断和情绪落地。",
+      "untitled": "未命名记录",
+      "alertCountTitle": "{count} 个待留意提醒",
+      "alertCountMeta": "有提醒的日记 {count} 篇",
+      "hasAlertsText": "先处理带提醒的条目，别让风险提示变成背景音。",
+      "noAlertsText": "目前没有待处理提醒，节奏算稳。",
+      "tradeCountTitle": "{count} 笔交易挂在日记里",
+      "tradeCountMeta": "涉及交易的日记 {count} 篇",
+      "hasTradesText": "有交易就该有理由，从有交易的条目开始回看。",
+      "noTradesText": "还没有交易记录，先把观察和规则写出来。"
+    },
+    "rules": {
+      "label": "Desk Rules",
+      "title": "先把账对清楚，再谈判断。",
+      "rule1": "先记理由，再看结果，情绪放最后。",
+      "rule2": "日期、提醒、交易三条线要对得上。",
+      "rule3": "筛选器是拿来缩短决策，不是把自己绕晕。"
+    },
+    "filter": {
+      "label": "Filter Desk",
+      "title": "先缩窄范围，再读条目",
+      "clear": "清除筛选",
+      "searchLabel": "搜索日记",
+      "searchPlaceholder": "搜索标题或内容...",
+      "dateFrom": "开始日期",
+      "dateTo": "结束日期",
+      "sortBy": "排序方式",
+      "sortDateDesc": "日期（新到旧）",
+      "sortDateAsc": "日期（旧到新）",
+      "sortTitleAsc": "标题（A-Z）",
+      "sortTitleDesc": "标题（Z-A）",
+      "loadingSummary": "正在读取条目...",
+      "noDataSummary": "还没有资料可供筛选。",
+      "filteredSummary": "目前保留 {count} 篇条目。",
+      "defaultSummary": "共 {count} 篇日记，按时间由新到旧排列。"
+    },
+    "error": {
+      "title": "载入失败"
+    },
+    "empty": {
+      "title": "尚无日记",
+      "description": "先记下第一篇投资日记，之后提醒、交易和复盘节奏才有地方可落。"
+    },
+    "noResults": {
+      "title": "没有符合条件的日记",
+      "description": "筛选收太窄了，放宽日期或关键字，别把自己困在空结果里。"
+    },
+    "list": {
+      "label": "Entries",
+      "title": "依时间线读你的判断痕迹",
+      "note": "点进条目继续写、补交易、处理提醒。",
+      "transactionCount": "{count} 笔交易",
+      "alertCount": "{count} 个提醒",
+      "textOnly": "纯文字复盘",
+      "openEntry": "打开条目",
+      "noExcerpt": "这篇条目还没有摘要内容，打开把判断补完整。"
+    }
+  },
+  "review": {
+    "candidates": "复盘候选",
+    "candidatesDesc": "值得回顾的过去笔记",
+    "noCandidates": "没有待复盘的笔记",
+    "noCandidatesDesc": "写一篇带有交易假设和风险评估的笔记，开始建立你的复盘队列。",
+    "statusNone": "未设定",
+    "statusPending": "待复盘",
+    "statusReviewed": "已复盘",
+    "markReviewed": "标记为已复盘",
+    "reviewNow": "立即复盘",
+    "dueIn": "{duration} 后复盘",
+    "overdue": "已过复盘期限",
+    "prompts": {
+      "thesisWrong": "交易假设错了吗？",
+      "timingWrong": "时间点错了吗？",
+      "sizingWrong": "仓位大小错了吗？",
+      "justVariance": "只是随机波动吗？",
+      "differently": "下次你会怎么做？"
+    },
+    "fields": {
+      "thesis": "交易假设",
+      "thesisPlaceholder": "这笔交易的理由是什么？",
+      "risk": "风险评估",
+      "riskPlaceholder": "可能出什么问题？止损点在哪？",
+      "execution": "执行纪录",
+      "executionPlaceholder": "实际怎么执行的？",
+      "reviewDue": "复盘期限",
+      "reviewNotes": "复盘笔记"
     }
   }
 }

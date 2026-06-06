@@ -2,6 +2,8 @@
  * WebSocket 訊息型別定義
  */
 
+import type { SerializedId } from './common'
+
 // Alert 推播 payload
 export interface AlertPayload {
   id: string
@@ -45,7 +47,7 @@ export type AlertBroadcastEvent = 'alert:triggered' | 'price-alert:triggered'
 
 export interface AlertBroadcaster {
   emitToUser<E extends AlertBroadcastEvent>(
-    userId: string | bigint,
+    userId: SerializedId,
     event: E,
     ...args: Parameters<ServerToClientEvents[E]>
   ): boolean

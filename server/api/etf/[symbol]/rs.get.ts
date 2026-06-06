@@ -1,5 +1,5 @@
 import { readEtfResearch } from '~/lib/etf-profile/research'
-import { shouldBypassCache } from '~/lib/etf-profile/cache'
+import { shouldBypassCache } from '~/lib/market-data/cache'
 import type { RsMetrics } from '~/lib/etf-profile/types'
 import { Errors } from '~/lib/errors/factory'
 

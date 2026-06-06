@@ -1,6 +1,7 @@
 // Diary-related shared types
 
 import type { Prisma } from '@prisma/client'
+import type { SerializedId } from './common'
 
 export const DEFAULT_TAGS = [
   { key: 'profit', labelKey: 'tags.profit', color: 'green' },
@@ -16,7 +17,7 @@ export type TagKey = typeof DEFAULT_TAGS[number]['key']
 // ---- API / Domain Types (backward compatible) ----
 
 export interface TransactionInput {
-  id?: bigint | string | number  // 現有 transaction 的 DB ID（更新時用，保持 ID 穩定）
+  id?: bigint | string | number  // pre-serialization input — accepts raw DB ID for updates
   symbol: string
   type: 'BUY' | 'SELL'
   quantity: Prisma.Decimal | number
@@ -44,12 +45,19 @@ export interface DiaryInput {
   date?: string | Date
   transactions?: TransactionInput[]
   alerts?: AlertInput[]
+  // Structured review fields
+  thesis?: string
+  risk?: string
+  execution?: string
+  reviewDueAt?: string | Date
+  reviewStatus?: string
+  reviewedAt?: string | Date
 }
 
 // Prisma-like return shape used by APIs
 export interface Diary {
-  id: bigint | string
-  userId: bigint | string
+  id: SerializedId
+  userId: SerializedId
   title: string
   content: string | null
   tags?: string[]
@@ -61,6 +69,13 @@ export interface Diary {
   updatedAt: Date
   transactions?: TransactionInput[]
   alerts?: AlertInput[]
+  // Structured review fields
+  thesis?: string | null
+  risk?: string | null
+  execution?: string | null
+  reviewDueAt?: Date | null
+  reviewStatus?: string | null
+  reviewedAt?: Date | null
 }
 
 export interface DiariesApiResponse {
@@ -81,7 +96,7 @@ export interface PaginationResponse {
 }
 
 export interface DiaryAlert {
-  id: bigint | string
+  id: SerializedId
   message: string
   triggerAt: Date | string
   isDismissed?: boolean

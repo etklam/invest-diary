@@ -132,25 +132,25 @@ function formatDateTime(value: Date | null) {
 
 function percentClass(value: number | null | undefined) {
   const normalized = normalizeNumber(value)
-  if (normalized === null) return 'text-slate-500 dark:text-slate-400'
+  if (normalized === null) return 'text-dt-text-muted'
   if (normalized > 0) return 'text-emerald-700 dark:text-emerald-300'
   if (normalized < 0) return 'text-rose-700 dark:text-rose-300'
-  return 'text-slate-600 dark:text-slate-300'
+  return 'text-dt-text-soft'
 }
 
 function rsiClass(value: number | null | undefined) {
   const normalized = normalizeNumber(value)
-  if (normalized === null) return 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400'
+  if (normalized === null) return 'bg-dt-surface-strong text-dt-text-muted'
   if (normalized > 70) return 'bg-amber-100 text-amber-800 dark:bg-amber-400/15 dark:text-amber-200'
   if (normalized >= 50) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-200'
   if (normalized >= 30) return 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-200'
   return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-400/15 dark:text-indigo-200'
 }
 
-function statusClass(status: MaStatus | null) {
-  if (status === 'ABOVE') return 'bg-emerald-200 text-emerald-950 dark:bg-emerald-400/25 dark:text-emerald-100'
-  if (status === 'BELOW') return 'bg-rose-200 text-rose-950 dark:bg-rose-400/25 dark:text-rose-100'
-  return 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400'
+function statusTone(status: MaStatus | null): 'success' | 'danger' | 'neutral' {
+  if (status === 'ABOVE') return 'success'
+  if (status === 'BELOW') return 'danger'
+  return 'neutral'
 }
 
 function getSortValue(row: SectorTrendRow, field: SortField) {
@@ -329,61 +329,64 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 px-4 py-6 dark:bg-slate-950 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-dt-bg px-4 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl space-y-6">
-      <section class="overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 text-white shadow-lg dark:border-white/10">
+      <!-- Hero section -->
+      <section class="overflow-hidden rounded-dt-lg border border-dt-border bg-dt-surface shadow-dt-md">
         <div class="grid gap-6 p-6 lg:grid-cols-[1.05fr_0.95fr] lg:p-8">
           <div class="min-w-0">
-            <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-sky-200">
+            <div class="mb-5 inline-flex items-center gap-2 rounded-dt-pill border border-dt-border bg-dt-surface-strong px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-dt-primary">
               <Icon name="heroicons:bolt" class="h-4 w-4" />
               Daily Market Snapshot
             </div>
-            <h1 class="text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 class="text-4xl font-black leading-tight text-dt-text sm:text-5xl lg:text-6xl">
               ETF Sector Trend Board
             </h1>
-            <p class="mt-4 max-w-3xl text-base leading-7 text-slate-300 sm:text-lg">
+            <p class="mt-4 max-w-3xl text-base leading-7 text-dt-text-soft sm:text-lg">
               一打開就看主要 ETF / sector 的強弱、RSI、均線位置和距離高位幅度。主流程是比較市場輪動，不是再輸入一隻 ticker 慢慢猜。
             </p>
           </div>
 
-          <div class="grid content-start gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-            <div class="flex items-center justify-between gap-3 border-b border-white/10 pb-3 text-sm">
-              <span class="text-slate-300">核心畫面</span>
-              <strong class="text-right text-white">Sector Matrix Table</strong>
+          <LedgerCard class="grid content-start gap-3">
+            <div class="flex items-center justify-between gap-3 border-b border-dt-border pb-3 text-sm">
+              <span class="text-dt-text-soft">核心畫面</span>
+              <strong class="text-right text-dt-text">Sector Matrix Table</strong>
             </div>
-            <div class="flex items-center justify-between gap-3 border-b border-white/10 pb-3 text-sm">
-              <span class="text-slate-300">主要排序</span>
-              <strong class="text-right text-white">RSI High to Low</strong>
+            <div class="flex items-center justify-between gap-3 border-b border-dt-border pb-3 text-sm">
+              <span class="text-dt-text-soft">主要排序</span>
+              <strong class="text-right text-dt-text">RSI High to Low</strong>
             </div>
-            <div class="flex items-center justify-between gap-3 border-b border-white/10 pb-3 text-sm">
-              <span class="text-slate-300">重點訊號</span>
-              <strong class="text-right text-white">ABOVE / BELOW MA</strong>
+            <div class="flex items-center justify-between gap-3 border-b border-dt-border pb-3 text-sm">
+              <span class="text-dt-text-soft">重點訊號</span>
+              <strong class="text-right text-dt-text">ABOVE / BELOW MA</strong>
             </div>
             <div class="flex items-center justify-between gap-3 text-sm">
-              <span class="text-slate-300">最後刷新</span>
-              <strong class="text-right text-white">{{ formatDateTime(lastRefreshAt) }}</strong>
+              <span class="text-dt-text-soft">最後刷新</span>
+              <strong class="text-right text-dt-text">{{ formatDateTime(lastRefreshAt) }}</strong>
             </div>
-          </div>
+          </LedgerCard>
         </div>
       </section>
 
       <MarketbeeSection />
 
+      <!-- Control panel + board -->
       <section class="grid gap-4 lg:grid-cols-[280px_1fr]">
-        <aside class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-900">
+        <!-- Control panel sidebar -->
+        <LedgerCard>
           <div class="mb-4 flex items-center justify-between gap-3">
-            <h2 class="text-sm font-bold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+            <h2 class="text-sm font-bold uppercase tracking-[0.08em] text-dt-text-muted">
               Control Panel
             </h2>
-            <button
-              type="button"
-              class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10"
+            <BaseButton
+              variant="ghost"
               :disabled="loading"
               aria-label="Refresh sector board"
+              class="!h-10 !w-10 !min-w-0 !rounded-full !px-0"
               @click="forceRefresh = true; refreshBoard()"
             >
               <Icon name="heroicons:arrow-path" class="h-5 w-5" :class="{ 'animate-spin': loading }" />
-            </button>
+            </BaseButton>
           </div>
 
           <div class="grid gap-2">
@@ -391,8 +394,8 @@ definePageMeta({
               v-for="preset in presetOptions"
               :key="preset.key"
               type="button"
-              class="flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              :class="activePreset === preset.key ? 'border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-white/10'"
+              class="flex min-h-11 items-center gap-2 rounded-dt-md border px-3 py-2 text-left text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+              :class="activePreset === preset.key ? 'border-dt-primary bg-dt-primary text-white' : 'border-dt-border bg-dt-surface text-dt-text-soft hover:bg-dt-surface-strong'"
               @click="selectPreset(preset.key)"
             >
               <Icon :name="preset.icon" class="h-4 w-4 shrink-0" />
@@ -401,20 +404,20 @@ definePageMeta({
           </div>
 
           <div v-if="activePreset === 'custom'" class="mt-4">
-            <label for="custom-etfs" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <label for="custom-etfs" class="mb-2 block text-sm font-semibold text-dt-text-soft">
               Custom ETF symbols
             </label>
             <textarea
               id="custom-etfs"
               v-model="customSymbols"
               rows="4"
-              class="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-slate-950 dark:text-white"
+              class="w-full resize-none rounded-dt-md border border-dt-border bg-dt-surface px-3 py-2 text-sm text-dt-text shadow-dt-sm focus:border-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/20"
               @blur="refreshBoard"
             />
           </div>
 
-          <div class="mt-5 border-t border-slate-200 pt-5 dark:border-white/10">
-            <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+          <div class="mt-5 border-t border-dt-border pt-5">
+            <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
               Filter
             </h3>
             <div class="flex flex-wrap gap-2">
@@ -422,8 +425,8 @@ definePageMeta({
                 v-for="filter in filters"
                 :key="filter.key"
                 type="button"
-                class="rounded-full border px-3 py-1.5 text-xs font-bold transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                :class="activeFilter === filter.key ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-white/10'"
+                class="rounded-dt-pill border px-3 py-1.5 text-xs font-bold transition focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+                :class="activeFilter === filter.key ? 'border-dt-primary bg-dt-primary text-white' : 'border-dt-border bg-dt-surface text-dt-text-soft hover:bg-dt-surface-strong'"
                 @click="activeFilter = filter.key"
               >
                 {{ filter.label }}
@@ -431,61 +434,50 @@ definePageMeta({
             </div>
           </div>
 
-          <div class="mt-5 grid gap-2 border-t border-slate-200 pt-5 dark:border-white/10">
-            <button
-              type="button"
-              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-              @click="exportPng"
-            >
+          <div class="mt-5 grid gap-2 border-t border-dt-border pt-5">
+            <BaseButton variant="primary" @click="exportPng">
               <Icon name="heroicons:photo" class="h-4 w-4" />
               Export PNG
-            </button>
-            <button
-              type="button"
-              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10"
-              @click="exportCsv"
-            >
+            </BaseButton>
+            <BaseButton variant="secondary" @click="exportCsv">
               <Icon name="heroicons:document-arrow-down" class="h-4 w-4" />
               Export CSV
-            </button>
-            <button
-              type="button"
-              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10"
-              @click="copyTable"
-            >
+            </BaseButton>
+            <BaseButton variant="secondary" @click="copyTable">
               <Icon name="heroicons:clipboard-document" class="h-4 w-4" />
               Copy Table
-            </button>
+            </BaseButton>
           </div>
-        </aside>
+        </LedgerCard>
 
-        <main ref="boardRef" class="min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-slate-900">
-          <div class="border-b border-slate-200 p-4 dark:border-white/10 sm:p-5">
+        <!-- Main board -->
+        <main ref="boardRef" class="min-w-0 rounded-dt-lg border border-dt-border bg-dt-surface shadow-dt-sm">
+          <div class="border-b border-dt-border p-4 sm:p-5">
             <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div class="min-w-0">
-                <p class="text-xs font-bold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+                <p class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
                   Main Board
                 </p>
-                <h2 class="mt-1 text-2xl font-black text-slate-950 dark:text-white">
+                <h2 class="mt-1 text-2xl font-black text-dt-text">
                   Sectors ({{ boardDateLabel }})
                 </h2>
               </div>
               <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
-                  <strong class="block text-xl text-slate-950 dark:text-white">{{ boardStats.above10 }} / {{ boardStats.total }}</strong>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">Above 10d EMA</span>
+                <div class="rounded-dt-md border border-dt-border bg-dt-bg p-3">
+                  <strong class="block text-xl text-dt-text">{{ boardStats.above10 }} / {{ boardStats.total }}</strong>
+                  <span class="text-xs text-dt-text-muted">Above 10d EMA</span>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
-                  <strong class="block text-xl text-slate-950 dark:text-white">{{ boardStats.above20 }} / {{ boardStats.total }}</strong>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">Above 20d EMA</span>
+                <div class="rounded-dt-md border border-dt-border bg-dt-bg p-3">
+                  <strong class="block text-xl text-dt-text">{{ boardStats.above20 }} / {{ boardStats.total }}</strong>
+                  <span class="text-xs text-dt-text-muted">Above 20d EMA</span>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
-                  <strong class="block text-xl text-slate-950 dark:text-white">{{ boardStats.above50 }} / {{ boardStats.total }}</strong>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">Above 50d SMA</span>
+                <div class="rounded-dt-md border border-dt-border bg-dt-bg p-3">
+                  <strong class="block text-xl text-dt-text">{{ boardStats.above50 }} / {{ boardStats.total }}</strong>
+                  <span class="text-xs text-dt-text-muted">Above 50d SMA</span>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
-                  <strong class="block text-xl text-slate-950 dark:text-white">{{ formatNumber(boardStats.avgRsi, 1) }}</strong>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">Average RSI</span>
+                <div class="rounded-dt-md border border-dt-border bg-dt-bg p-3">
+                  <strong class="block text-xl text-dt-text">{{ formatNumber(boardStats.avgRsi, 1) }}</strong>
+                  <span class="text-xs text-dt-text-muted">Average RSI</span>
                 </div>
               </div>
             </div>
@@ -493,83 +485,96 @@ definePageMeta({
 
           <div v-if="loading && rows.length === 0" class="grid min-h-[420px] place-items-center p-6">
             <div class="text-center">
-              <Icon name="heroicons:arrow-path" class="mx-auto h-9 w-9 animate-spin text-indigo-500" />
-              <p class="mt-3 text-sm font-semibold text-slate-600 dark:text-slate-300">{{ t('tools.etf.board.loading') }}</p>
+              <Icon name="heroicons:arrow-path" class="mx-auto h-9 w-9 animate-spin text-dt-primary" />
+              <p class="mt-3 text-sm font-semibold text-dt-text-soft">{{ t('tools.etf.board.loading') }}</p>
             </div>
           </div>
 
-          <div v-else class="overflow-x-auto">
-            <table class="w-full min-w-[1040px] border-collapse text-sm">
-              <caption class="bg-slate-950 px-4 py-2 text-left text-lg font-black text-white">
-                Sector Matrix · RSI Sorted
-              </caption>
-              <thead class="sticky top-0 z-10 bg-slate-200 text-slate-950">
-                <tr>
-                  <th
-                    v-for="column in columns"
-                    :key="column.key"
-                    scope="col"
-                    class="sticky top-0 z-10 cursor-pointer border border-slate-500 bg-slate-200 px-3 py-2 text-xs font-black uppercase tracking-[0.04em] transition hover:bg-slate-300"
-                    :class="column.align === 'right' ? 'text-right' : column.align === 'center' ? 'text-center' : 'text-left'"
-                    @click="handleSort(column.key)"
+          <template v-else>
+            <!-- Desktop table -->
+            <div class="hidden overflow-x-auto md:block">
+              <table class="w-full min-w-[1040px] border-collapse text-sm">
+                <caption class="bg-dt-bg px-4 py-2 text-left text-lg font-black text-dt-text">
+                  Sector Matrix · RSI Sorted
+                </caption>
+                <thead class="sticky top-0 z-10 bg-dt-surface-muted text-dt-text">
+                  <tr>
+                    <th
+                      v-for="column in columns"
+                      :key="column.key"
+                      scope="col"
+                      class="sticky top-0 z-10 cursor-pointer border border-dt-border-strong bg-dt-surface-muted px-3 py-2 text-xs font-black uppercase tracking-[0.04em] transition hover:bg-dt-surface-strong"
+                      :class="column.align === 'right' ? 'text-right' : column.align === 'center' ? 'text-center' : 'text-left'"
+                      @click="handleSort(column.key)"
+                    >
+                      <span class="inline-flex items-center gap-1">
+                        {{ column.label }}
+                        <Icon
+                          v-if="sortBy === column.key"
+                          :name="sortOrder === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+                          class="h-3.5 w-3.5"
+                        />
+                      </span>
+                    </th>
+                    <th scope="col" class="sticky top-0 z-10 border border-dt-border-strong bg-dt-surface-muted px-3 py-2 text-center text-xs font-black uppercase tracking-[0.04em]">
+                      10d EMA
+                    </th>
+                    <th scope="col" class="sticky top-0 z-10 border border-dt-border-strong bg-dt-surface-muted px-3 py-2 text-center text-xs font-black uppercase tracking-[0.04em]">
+                      20d EMA
+                    </th>
+                    <th scope="col" class="sticky top-0 z-10 border border-dt-border-strong bg-dt-surface-muted px-3 py-2 text-center text-xs font-black uppercase tracking-[0.04em]">
+                      50d SMA
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="row in filteredRows"
+                    :key="row.symbol"
+                    class="cursor-pointer border-b border-dt-border transition hover:bg-dt-surface-strong"
+                    @click="selectedRow = row"
                   >
-                    <span class="inline-flex items-center gap-1">
-                      {{ column.label }}
-                      <Icon
-                        v-if="sortBy === column.key"
-                        :name="sortOrder === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
-                        class="h-3.5 w-3.5"
-                      />
-                    </span>
-                  </th>
-                  <th scope="col" class="sticky top-0 z-10 border border-slate-500 bg-slate-200 px-3 py-2 text-center text-xs font-black uppercase tracking-[0.04em]">
-                    10d EMA
-                  </th>
-                  <th scope="col" class="sticky top-0 z-10 border border-slate-500 bg-slate-200 px-3 py-2 text-center text-xs font-black uppercase tracking-[0.04em]">
-                    20d EMA
-                  </th>
-                  <th scope="col" class="sticky top-0 z-10 border border-slate-500 bg-slate-200 px-3 py-2 text-center text-xs font-black uppercase tracking-[0.04em]">
-                    50d SMA
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="row in filteredRows"
-                  :key="row.symbol"
-                  class="cursor-pointer border-b border-slate-200 transition hover:bg-sky-50 dark:border-white/10 dark:hover:bg-white/5"
-                  @click="selectedRow = row"
-                >
-                  <td class="border border-slate-300 px-3 py-2 font-black text-slate-950 dark:border-white/10 dark:text-white">{{ row.symbol }}</td>
-                  <td class="border border-slate-300 px-3 py-2 text-slate-700 dark:border-white/10 dark:text-slate-300">{{ row.sector }}</td>
-                  <td class="border border-slate-300 px-3 py-2 text-right dark:border-white/10">
-                    <span class="inline-flex min-w-14 justify-center rounded-full px-2 py-1 text-xs font-black" :class="rsiClass(row.rsi)">
-                      {{ formatNumber(row.rsi) }}
-                    </span>
-                  </td>
-                  <td class="border border-slate-300 px-3 py-2 text-right font-mono text-slate-950 dark:border-white/10 dark:text-white">{{ formatNumber(row.last) }}</td>
-                  <td class="border border-slate-300 px-3 py-2 text-right font-mono font-bold dark:border-white/10" :class="percentClass(row.dailyChange)">
-                    {{ formatPercent(row.dailyChange) }}
-                  </td>
-                  <td class="border border-slate-300 px-3 py-2 text-right font-mono font-bold dark:border-white/10" :class="percentClass(row.weeklyChange)">
-                    {{ formatPercent(row.weeklyChange) }}
-                  </td>
-                  <td class="border border-slate-300 px-3 py-2 text-right font-mono font-bold dark:border-white/10" :class="percentClass(row.ytdHighDistance)">
-                    {{ formatPercent(row.ytdHighDistance) }}
-                  </td>
-                  <td class="border border-slate-300 px-3 py-2 text-center dark:border-white/10">
-                    <span class="inline-flex min-w-20 justify-center rounded px-2 py-1 text-xs font-black" :class="statusClass(row.ema10Status)">{{ row.ema10Status ?? '--' }}</span>
-                  </td>
-                  <td class="border border-slate-300 px-3 py-2 text-center dark:border-white/10">
-                    <span class="inline-flex min-w-20 justify-center rounded px-2 py-1 text-xs font-black" :class="statusClass(row.ema20Status)">{{ row.ema20Status ?? '--' }}</span>
-                  </td>
-                  <td class="border border-slate-300 px-3 py-2 text-center dark:border-white/10">
-                    <span class="inline-flex min-w-20 justify-center rounded px-2 py-1 text-xs font-black" :class="statusClass(row.sma50Status)">{{ row.sma50Status ?? '--' }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                    <td class="border border-dt-border px-3 py-2 font-black text-dt-text">{{ row.symbol }}</td>
+                    <td class="border border-dt-border px-3 py-2 text-dt-text-soft">{{ row.sector }}</td>
+                    <td class="border border-dt-border px-3 py-2 text-right">
+                      <span class="inline-flex min-w-14 justify-center rounded-dt-pill px-2 py-1 text-xs font-black" :class="rsiClass(row.rsi)">
+                        {{ formatNumber(row.rsi) }}
+                      </span>
+                    </td>
+                    <td class="border border-dt-border px-3 py-2 text-right font-mono text-dt-text">{{ formatNumber(row.last) }}</td>
+                    <td class="border border-dt-border px-3 py-2 text-right font-mono font-bold" :class="percentClass(row.dailyChange)">
+                      {{ formatPercent(row.dailyChange) }}
+                    </td>
+                    <td class="border border-dt-border px-3 py-2 text-right font-mono font-bold" :class="percentClass(row.weeklyChange)">
+                      {{ formatPercent(row.weeklyChange) }}
+                    </td>
+                    <td class="border border-dt-border px-3 py-2 text-right font-mono font-bold" :class="percentClass(row.ytdHighDistance)">
+                      {{ formatPercent(row.ytdHighDistance) }}
+                    </td>
+                    <td class="border border-dt-border px-3 py-2 text-center">
+                      <StatusBadge :tone="statusTone(row.ema10Status)">{{ row.ema10Status ?? '--' }}</StatusBadge>
+                    </td>
+                    <td class="border border-dt-border px-3 py-2 text-center">
+                      <StatusBadge :tone="statusTone(row.ema20Status)">{{ row.ema20Status ?? '--' }}</StatusBadge>
+                    </td>
+                    <td class="border border-dt-border px-3 py-2 text-center">
+                      <StatusBadge :tone="statusTone(row.sma50Status)">{{ row.sma50Status ?? '--' }}</StatusBadge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Mobile cards -->
+            <div class="space-y-3 p-4 md:hidden">
+              <EtfMobileCard
+                v-for="row in filteredRows"
+                :key="row.symbol"
+                :row="row"
+                @click="selectedRow = row"
+              />
+            </div>
+          </template>
 
           <div v-if="failedRows.length > 0" class="border-t border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-200">
             {{ t('tools.etf.board.failedSymbols', { symbols: failedRows.map(row => row.symbol).join(', ') }) }}
@@ -578,43 +583,44 @@ definePageMeta({
       </section>
     </div>
 
+    <!-- Detail modal -->
     <div
       v-if="selectedRow"
-      class="fixed inset-0 z-40 bg-slate-950/45 p-4 backdrop-blur-sm"
+      class="fixed inset-0 z-40 bg-dt-bg/60 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       @click.self="selectedRow = null"
     >
-      <aside class="ml-auto flex h-full w-full max-w-md flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-900">
-        <div class="flex items-start justify-between gap-4 border-b border-slate-200 p-5 dark:border-white/10">
+      <aside class="ml-auto flex h-full w-full max-w-md flex-col overflow-hidden rounded-dt-lg border border-dt-border bg-dt-surface shadow-dt-lg">
+        <div class="flex items-start justify-between gap-4 border-b border-dt-border p-5">
           <div>
-            <p class="text-xs font-bold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">ETF Detail</p>
-            <h2 class="text-2xl font-black text-slate-950 dark:text-white">{{ selectedRow.symbol }}</h2>
-            <p class="text-sm text-slate-500 dark:text-slate-400">{{ selectedRow.sector }}</p>
+            <p class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">ETF Detail</p>
+            <h2 class="text-2xl font-black text-dt-text">{{ selectedRow.symbol }}</h2>
+            <p class="text-sm text-dt-text-muted">{{ selectedRow.sector }}</p>
           </div>
-          <button
-            type="button"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10"
+          <BaseButton
+            variant="ghost"
             aria-label="Close ETF detail"
+            class="!h-10 !w-10 !min-w-0 !rounded-full !px-0"
             @click="selectedRow = null"
           >
             <Icon name="heroicons:x-mark" class="h-5 w-5" />
-          </button>
+          </BaseButton>
         </div>
 
         <div class="grid gap-3 overflow-y-auto p-5">
-          <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-            <p class="text-xs font-bold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">Last Price</p>
-            <p class="mt-1 text-3xl font-black text-slate-950 dark:text-white">{{ formatNumber(selectedRow.last) }}</p>
+          <LedgerCard>
+            <p class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">Last Price</p>
+            <p class="mt-1 text-3xl font-black text-dt-text">{{ formatNumber(selectedRow.last) }}</p>
             <p class="mt-1 font-mono text-sm font-bold" :class="percentClass(selectedRow.dailyChange)">
               {{ formatPercent(selectedRow.dailyChange) }} daily
             </p>
-          </div>
+          </LedgerCard>
 
-          <div class="rounded-xl border border-slate-200 bg-slate-950 p-4 text-white dark:border-white/10">
+          <div class="rounded-dt-lg border border-dt-border bg-dt-bg p-4">
             <div class="mb-3 flex items-center justify-between gap-3">
-              <p class="text-xs font-bold uppercase tracking-[0.08em] text-slate-400">Mini Chart</p>
-              <span class="font-mono text-xs text-slate-400">{{ selectedRow.recentCloses.length }} closes</span>
+              <p class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">Mini Chart</p>
+              <span class="font-mono text-xs text-dt-text-muted">{{ selectedRow.recentCloses.length }} closes</span>
             </div>
             <svg
               v-if="selectedRow.recentCloses.length >= 2"
@@ -623,46 +629,46 @@ definePageMeta({
               role="img"
               :aria-label="`${selectedRow.symbol} recent close sparkline`"
             >
-              <line x1="8" y1="88" x2="312" y2="88" class="stroke-white/10" stroke-width="1" />
+              <line x1="8" y1="88" x2="312" y2="88" class="stroke-dt-border-strong" stroke-width="1" />
               <polyline
                 :points="buildSparklinePoints(selectedRow.recentCloses)"
                 fill="none"
-                class="stroke-emerald-300"
+                class="stroke-emerald-400"
                 stroke-width="3"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
             </svg>
-            <p v-else class="py-8 text-center text-sm font-semibold text-slate-400">
+            <p v-else class="py-8 text-center text-sm font-semibold text-dt-text-muted">
               {{ t('tools.etf.board.noChartData') }}
             </p>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-white/10">
-              <p class="text-xs text-slate-500 dark:text-slate-400">RSI 14</p>
-              <p class="mt-1 text-xl font-black text-slate-950 dark:text-white">{{ formatNumber(selectedRow.rsi) }}</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-white/10">
-              <p class="text-xs text-slate-500 dark:text-slate-400">Weekly Change</p>
+            <LedgerCard>
+              <p class="text-xs text-dt-text-muted">RSI 14</p>
+              <p class="mt-1 text-xl font-black text-dt-text">{{ formatNumber(selectedRow.rsi) }}</p>
+            </LedgerCard>
+            <LedgerCard>
+              <p class="text-xs text-dt-text-muted">Weekly Change</p>
               <p class="mt-1 text-xl font-black" :class="percentClass(selectedRow.weeklyChange)">{{ formatPercent(selectedRow.weeklyChange) }}</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-white/10">
-              <p class="text-xs text-slate-500 dark:text-slate-400">10d EMA</p>
-              <p class="mt-1 text-xl font-black text-slate-950 dark:text-white">{{ formatNumber(selectedRow.ema10) }}</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-white/10">
-              <p class="text-xs text-slate-500 dark:text-slate-400">20d EMA</p>
-              <p class="mt-1 text-xl font-black text-slate-950 dark:text-white">{{ formatNumber(selectedRow.ema20) }}</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-white/10">
-              <p class="text-xs text-slate-500 dark:text-slate-400">50d SMA</p>
-              <p class="mt-1 text-xl font-black text-slate-950 dark:text-white">{{ formatNumber(selectedRow.sma50) }}</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-white/10">
-              <p class="text-xs text-slate-500 dark:text-slate-400">YTD % High</p>
+            </LedgerCard>
+            <LedgerCard>
+              <p class="text-xs text-dt-text-muted">10d EMA</p>
+              <p class="mt-1 text-xl font-black text-dt-text">{{ formatNumber(selectedRow.ema10) }}</p>
+            </LedgerCard>
+            <LedgerCard>
+              <p class="text-xs text-dt-text-muted">20d EMA</p>
+              <p class="mt-1 text-xl font-black text-dt-text">{{ formatNumber(selectedRow.ema20) }}</p>
+            </LedgerCard>
+            <LedgerCard>
+              <p class="text-xs text-dt-text-muted">50d SMA</p>
+              <p class="mt-1 text-xl font-black text-dt-text">{{ formatNumber(selectedRow.sma50) }}</p>
+            </LedgerCard>
+            <LedgerCard>
+              <p class="text-xs text-dt-text-muted">YTD % High</p>
               <p class="mt-1 text-xl font-black" :class="percentClass(selectedRow.ytdHighDistance)">{{ formatPercent(selectedRow.ytdHighDistance) }}</p>
-            </div>
+            </LedgerCard>
           </div>
         </div>
       </aside>

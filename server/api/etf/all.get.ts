@@ -15,7 +15,7 @@ import {
   getMarketDataCacheTtlSeconds,
   getOrSetCached,
   shouldBypassCache,
-} from '~/lib/etf-profile/cache'
+} from '~/lib/market-data/cache'
 
 type SortField =
   | 'symbol'

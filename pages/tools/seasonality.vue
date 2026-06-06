@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import LedgerCard from '~/components/LedgerCard.vue'
+import BaseButton from '~/components/BaseButton.vue'
 import {
   monthlyData,
   getMonthName,
@@ -110,119 +112,121 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="seasonality-page min-h-screen">
+  <div class="min-h-screen bg-dt-bg">
+    <!-- Hero section -->
     <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <div class="panel overflow-hidden p-6 sm:p-8">
+      <LedgerCard class="!p-6 sm:!p-8">
         <div class="grid gap-8 lg:grid-cols-[1.15fr_0.95fr] lg:items-center">
           <div>
-            <p class="kicker mb-3">{{ t('tools.seasonality.heroKicker') }}</p>
-            <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
+            <p class="mb-3 text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary">{{ t('tools.seasonality.heroKicker') }}</p>
+            <h1 class="text-3xl font-semibold tracking-tight text-dt-text sm:text-4xl">
               {{ t('tools.seasonality.title') }}
             </h1>
-            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-dt-text-muted sm:text-base">
               {{ t('tools.seasonality.subtitle') }}
             </p>
 
             <div class="mt-6 grid gap-3 sm:grid-cols-3">
-              <div class="metric-card">
-                <div class="metric-label">{{ t('tools.seasonality.currentMonth') }}</div>
-                <div class="metric-value">{{ formatReturn(currentMonthData.avgReturn) }}</div>
+              <div class="min-w-0 rounded-lg border border-dt-border bg-dt-bg p-4">
+                <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('tools.seasonality.currentMonth') }}</div>
+                <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight text-dt-text">{{ formatReturn(currentMonthData.avgReturn) }}</div>
               </div>
-              <div class="metric-card">
-                <div class="metric-label">{{ t('tools.seasonality.nextMonth') }}</div>
-                <div class="metric-value">{{ formatReturn(nextMonthData.avgReturn) }}</div>
+              <div class="min-w-0 rounded-lg border border-dt-border bg-dt-bg p-4">
+                <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('tools.seasonality.nextMonth') }}</div>
+                <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight text-dt-text">{{ formatReturn(nextMonthData.avgReturn) }}</div>
               </div>
-              <div class="metric-card">
-                <div class="metric-label">{{ t('tools.seasonality.bestMonths') }}</div>
-                <div class="metric-value">{{ getLocalizedName(bestMonths[0]!.month) }}</div>
+              <div class="min-w-0 rounded-lg border border-dt-border bg-dt-bg p-4">
+                <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('tools.seasonality.bestMonths') }}</div>
+                <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight text-dt-text">{{ getLocalizedName(bestMonths[0]!.month) }}</div>
               </div>
             </div>
           </div>
 
-          <div class="hero-spotlight">
-            <div class="hero-spotlight-label">{{ t('tools.seasonality.bestSixMonths') }}</div>
-            <div class="hero-spotlight-value">{{ formatReturn(strongPeriodReturn) }}</div>
-            <p class="text-sm leading-6 text-slate-300">
+          <!-- Strong-period spotlight (clean panel, no gradient) -->
+          <div class="rounded-xl border border-dt-border bg-dt-bg p-5">
+            <div class="text-xs font-bold uppercase tracking-[0.16em] text-dt-text-muted">{{ t('tools.seasonality.bestSixMonths') }}</div>
+            <div class="mt-2 overflow-wrap-anywhere break-words font-data text-4xl font-semibold leading-tight text-dt-text">{{ formatReturn(strongPeriodReturn) }}</div>
+            <p class="mt-3 text-sm leading-6 text-dt-text-muted">
               {{ t(analysis.strongPeriod.descriptionKey) }}
             </p>
-
             <div class="mt-6 flex flex-wrap gap-2">
-              <span v-for="m in strongPeriodMonths" :key="m" class="month-pill">
+              <span v-for="m in strongPeriodMonths" :key="m" class="rounded-full border border-dt-border bg-dt-surface px-3 py-1.5 text-xs font-bold text-dt-text">
                 {{ getLocalizedShortName(m) }}
               </span>
             </div>
           </div>
         </div>
-      </div>
+      </LedgerCard>
     </section>
 
+    <!-- Main content -->
     <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
       <div class="space-y-6">
+        <!-- Current & Next month highlight cards -->
         <div class="grid gap-6 xl:grid-cols-2">
-          <div class="month-highlight month-highlight-current">
+          <div class="rounded-xl border border-dt-border bg-dt-surface p-5">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">{{ t('tools.seasonality.currentMonth') }}</p>
-                <h2 class="mt-2 text-3xl font-semibold text-white">{{ getLocalizedName(currentMonth) }}</h2>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-dt-text-muted">{{ t('tools.seasonality.currentMonth') }}</p>
+                <h2 class="mt-2 text-3xl font-semibold text-dt-text">{{ getLocalizedName(currentMonth) }}</h2>
               </div>
-              <span class="highlight-badge">{{ getLocalizedStrength(currentMonthData.avgReturn) }}</span>
+              <span class="rounded-full border border-dt-border bg-dt-bg px-3 py-1.5 text-xs font-bold text-dt-text">{{ getLocalizedStrength(currentMonthData.avgReturn) }}</span>
             </div>
-            <div class="mt-5 text-4xl font-semibold text-white">{{ formatReturn(currentMonthData.avgReturn) }}</div>
-            <p class="mt-3 text-sm leading-6 text-white/85">{{ getCharacteristics(currentMonth) }}</p>
-
+            <div class="mt-5 text-4xl font-semibold text-dt-text">{{ formatReturn(currentMonthData.avgReturn) }}</div>
+            <p class="mt-3 text-sm leading-6 text-dt-text-muted">{{ getCharacteristics(currentMonth) }}</p>
             <div class="mt-5 grid gap-2">
-              <div v-for="reason in currentMonthData.possibleReasonsKeys" :key="reason" class="reason-row">
-                <Icon name="heroicons:arrow-trending-up" class="h-4 w-4 text-white/70" />
+              <div v-for="reason in currentMonthData.possibleReasonsKeys" :key="reason" class="flex items-start gap-2.5 text-sm text-dt-text">
+                <Icon name="heroicons:arrow-trending-up" class="h-4 w-4 shrink-0 text-dt-text-muted" />
                 <span>{{ t(reason) }}</span>
               </div>
             </div>
           </div>
 
-          <div class="month-highlight month-highlight-next">
+          <div class="rounded-xl border border-dt-border bg-dt-surface p-5">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">{{ t('tools.seasonality.nextMonth') }}</p>
-                <h2 class="mt-2 text-3xl font-semibold text-white">{{ getLocalizedName(nextMonth) }}</h2>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-dt-text-muted">{{ t('tools.seasonality.nextMonth') }}</p>
+                <h2 class="mt-2 text-3xl font-semibold text-dt-text">{{ getLocalizedName(nextMonth) }}</h2>
               </div>
-              <span class="highlight-badge">{{ getLocalizedStrength(nextMonthData.avgReturn) }}</span>
+              <span class="rounded-full border border-dt-border bg-dt-bg px-3 py-1.5 text-xs font-bold text-dt-text">{{ getLocalizedStrength(nextMonthData.avgReturn) }}</span>
             </div>
-            <div class="mt-5 text-4xl font-semibold text-white">{{ formatReturn(nextMonthData.avgReturn) }}</div>
-            <p class="mt-3 text-sm leading-6 text-white/85">{{ getCharacteristics(nextMonth) }}</p>
-
+            <div class="mt-5 text-4xl font-semibold text-dt-text">{{ formatReturn(nextMonthData.avgReturn) }}</div>
+            <p class="mt-3 text-sm leading-6 text-dt-text-muted">{{ getCharacteristics(nextMonth) }}</p>
             <div class="mt-5 grid gap-2">
-              <div v-for="reason in nextMonthData.possibleReasonsKeys" :key="reason" class="reason-row">
-                <Icon name="heroicons:arrow-path-rounded-square" class="h-4 w-4 text-white/70" />
+              <div v-for="reason in nextMonthData.possibleReasonsKeys" :key="reason" class="flex items-start gap-2.5 text-sm text-dt-text">
+                <Icon name="heroicons:arrow-path-rounded-square" class="h-4 w-4 shrink-0 text-dt-text-muted" />
                 <span>{{ t(reason) }}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="panel p-6 sm:p-7">
+        <!-- Monthly map -->
+        <LedgerCard>
           <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p class="kicker mb-2">{{ t('tools.seasonality.mapTitle') }}</p>
-              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ t('tools.seasonality.mapTitle') }}</h3>
+              <p class="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary">{{ t('tools.seasonality.mapTitle') }}</p>
+              <h3 class="text-xl font-semibold text-dt-text">{{ t('tools.seasonality.mapTitle') }}</h3>
             </div>
-            <button type="button" class="action-btn w-full cursor-pointer sm:w-auto" @click="copyToClipboard">
+            <BaseButton variant="primary" class="w-full sm:w-auto" @click="copyToClipboard">
               <Icon :name="copySuccess ? 'heroicons:check' : 'heroicons:clipboard-document'" class="mr-2 h-4 w-4" />
               {{ copySuccess ? t('common.copied') : t('common.copy') }}
-            </button>
+            </BaseButton>
           </div>
 
           <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <div
               v-for="month in monthlyData"
               :key="month.month"
-              class="month-card"
-              :class="month.month === currentMonth ? 'month-card-current' : ''"
+              class="min-w-0 rounded-lg border bg-dt-bg p-4"
+              :class="month.month === currentMonth ? 'border-dt-primary' : 'border-dt-border'"
             >
               <div class="flex items-start justify-between gap-3">
                 <div>
-                  <div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  <div class="text-sm font-semibold text-dt-text">
                     {{ getLocalizedName(month.month) }}
                   </div>
-                  <div class="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  <div class="mt-1 text-xs uppercase tracking-[0.14em] text-dt-text-muted">
                     {{ getLocalizedStrength(month.avgReturn) }}
                   </div>
                 </div>
@@ -234,22 +238,23 @@ definePageMeta({
               <div class="mt-4 text-2xl font-semibold" :class="getReturnColorClass(month.avgReturn)">
                 {{ formatReturn(month.avgReturn) }}
               </div>
-              <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              <p class="mt-3 text-sm leading-6 text-dt-text-muted">
                 {{ t(month.characteristicsKey) }}
               </p>
             </div>
           </div>
-        </div>
+        </LedgerCard>
 
-        <div class="panel p-6 sm:p-7">
+        <!-- Full table -->
+        <LedgerCard>
           <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p class="kicker mb-2">{{ t('tools.seasonality.allMonthsTable') }}</p>
-              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              <p class="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary">{{ t('tools.seasonality.allMonthsTable') }}</p>
+              <h3 class="text-xl font-semibold text-dt-text">
                 {{ t('tools.seasonality.allMonthsTable') }}
               </h3>
             </div>
-            <div class="text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+            <div class="text-xs uppercase tracking-[0.16em] text-dt-text-muted">
               {{ t('tools.seasonality.dataPeriod') }}
             </div>
           </div>
@@ -257,24 +262,24 @@ definePageMeta({
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead>
-                <tr class="border-b border-slate-200 dark:border-slate-800">
-                  <th class="py-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-300">{{ t('tools.seasonality.month') }}</th>
-                  <th class="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-300">{{ t('tools.seasonality.avgReturn') }}</th>
-                  <th class="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-300">{{ t('tools.seasonality.characteristics') }}</th>
-                  <th class="pl-4 py-3 text-center font-medium text-slate-500 dark:text-slate-300">{{ t('tools.seasonality.volatility') }}</th>
+                <tr class="border-b border-dt-border">
+                  <th class="py-3 pr-4 text-left font-medium text-dt-text-muted">{{ t('tools.seasonality.month') }}</th>
+                  <th class="px-4 py-3 text-right font-medium text-dt-text-muted">{{ t('tools.seasonality.avgReturn') }}</th>
+                  <th class="px-4 py-3 text-left font-medium text-dt-text-muted">{{ t('tools.seasonality.characteristics') }}</th>
+                  <th class="pl-4 py-3 text-center font-medium text-dt-text-muted">{{ t('tools.seasonality.volatility') }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
                   v-for="month in monthlyData"
                   :key="month.month"
-                  class="border-b border-slate-100 transition-colors dark:border-slate-800/70"
-                  :class="month.month === currentMonth ? 'table-row-current' : ''"
+                  class="border-b border-dt-border transition-colors"
+                  :class="month.month === currentMonth ? 'bg-dt-bg' : ''"
                 >
                   <td class="py-4 pr-4">
                     <div class="flex items-center gap-2">
-                      <span class="font-medium text-slate-900 dark:text-slate-100">{{ getLocalizedShortName(month.month) }}</span>
-                      <span v-if="month.month === currentMonth" class="rounded-full px-2 py-0.5 text-[11px] font-semibold text-white" style="background: var(--color-primary)">
+                      <span class="font-medium text-dt-text">{{ getLocalizedShortName(month.month) }}</span>
+                      <span v-if="month.month === currentMonth" class="rounded-full bg-dt-primary px-2 py-0.5 text-[11px] font-semibold text-white">
                         {{ t('tools.seasonality.now') }}
                       </span>
                     </div>
@@ -282,7 +287,7 @@ definePageMeta({
                   <td class="px-4 py-4 text-right font-semibold" :class="getReturnColorClass(month.avgReturn)">
                     {{ formatReturn(month.avgReturn) }}
                   </td>
-                  <td class="px-4 py-4 text-slate-600 dark:text-slate-300">
+                  <td class="px-4 py-4 text-dt-text-muted">
                     {{ t(month.characteristicsKey) }}
                   </td>
                   <td class="pl-4 py-4 text-center">
@@ -294,110 +299,106 @@ definePageMeta({
               </tbody>
             </table>
           </div>
-        </div>
+        </LedgerCard>
       </div>
 
+      <!-- Sidebar -->
       <div class="space-y-6">
-        <div class="panel p-6 sm:p-7">
+        <!-- Best months -->
+        <LedgerCard>
           <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p class="kicker mb-2">{{ t('tools.seasonality.bestMonths') }}</p>
-              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                {{ t('tools.seasonality.bestMonths') }}
-              </h3>
+              <p class="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary">{{ t('tools.seasonality.bestMonths') }}</p>
+              <h3 class="text-xl font-semibold text-dt-text">{{ t('tools.seasonality.bestMonths') }}</h3>
             </div>
             <Icon name="heroicons:arrow-trending-up" class="h-5 w-5 text-emerald-500" />
           </div>
 
           <div class="space-y-3">
-            <div v-for="(month, index) in bestMonths" :key="month.month" class="leader-row">
+            <div v-for="(month, index) in bestMonths" :key="month.month" class="flex flex-col gap-3 rounded-lg border border-dt-border bg-dt-bg p-3.5 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex items-center gap-3">
-                <span class="rank-badge rank-badge-positive">{{ index + 1 }}</span>
+                <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-dt-surface text-sm font-bold text-dt-accent">{{ index + 1 }}</span>
                 <div>
-                  <div class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ getLocalizedName(month.month) }}</div>
-                  <div class="text-xs text-slate-500 dark:text-slate-400">{{ getLocalizedVolatility(month.volatility) }}</div>
+                  <div class="text-sm font-semibold text-dt-text">{{ getLocalizedName(month.month) }}</div>
+                  <div class="text-xs text-dt-text-muted">{{ getLocalizedVolatility(month.volatility) }}</div>
                 </div>
               </div>
               <span class="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{{ formatReturn(month.avgReturn) }}</span>
             </div>
           </div>
-        </div>
+        </LedgerCard>
 
-        <div class="panel p-6 sm:p-7">
+        <!-- Worst months -->
+        <LedgerCard>
           <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p class="kicker mb-2">{{ t('tools.seasonality.worstMonths') }}</p>
-              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                {{ t('tools.seasonality.worstMonths') }}
-              </h3>
+              <p class="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary">{{ t('tools.seasonality.worstMonths') }}</p>
+              <h3 class="text-xl font-semibold text-dt-text">{{ t('tools.seasonality.worstMonths') }}</h3>
             </div>
             <Icon name="heroicons:arrow-trending-down" class="h-5 w-5 text-rose-500" />
           </div>
 
           <div class="space-y-3">
-            <div v-for="(month, index) in worstMonths" :key="month.month" class="leader-row">
+            <div v-for="(month, index) in worstMonths" :key="month.month" class="flex flex-col gap-3 rounded-lg border border-dt-border bg-dt-bg p-3.5 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex items-center gap-3">
-                <span class="rank-badge rank-badge-negative">{{ index + 1 }}</span>
+                <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-dt-surface text-sm font-bold text-dt-danger">{{ index + 1 }}</span>
                 <div>
-                  <div class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ getLocalizedName(month.month) }}</div>
-                  <div class="text-xs text-slate-500 dark:text-slate-400">{{ getLocalizedVolatility(month.volatility) }}</div>
+                  <div class="text-sm font-semibold text-dt-text">{{ getLocalizedName(month.month) }}</div>
+                  <div class="text-xs text-dt-text-muted">{{ getLocalizedVolatility(month.volatility) }}</div>
                 </div>
               </div>
               <span class="text-lg font-semibold" :class="getReturnColorClass(month.avgReturn)">{{ formatReturn(month.avgReturn) }}</span>
             </div>
           </div>
-        </div>
+        </LedgerCard>
 
-        <div class="panel p-6 sm:p-7">
-          <p class="kicker mb-2">{{ t('tools.seasonality.regimeViewTitle') }}</p>
-          <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ t('tools.seasonality.regimeViewTitle') }}</h3>
-
+        <!-- Regime view -->
+        <LedgerCard :title="t('tools.seasonality.regimeViewTitle')">
           <div class="mt-5 grid gap-4">
-            <div class="summary-card">
-              <div class="summary-label">{{ t('tools.seasonality.bestSixMonths') }}</div>
-              <div class="summary-value text-emerald-600 dark:text-emerald-400">{{ formatReturn(strongPeriodReturn) }}</div>
-              <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ t(analysis.strongPeriod.strategyKey) }}</p>
+            <div class="min-w-0 rounded-lg border border-dt-border bg-dt-bg p-4">
+              <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('tools.seasonality.bestSixMonths') }}</div>
+              <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight text-emerald-600 dark:text-emerald-400">{{ formatReturn(strongPeriodReturn) }}</div>
+              <p class="mt-3 text-sm leading-6 text-dt-text-muted">{{ t(analysis.strongPeriod.strategyKey) }}</p>
             </div>
 
-            <div class="summary-card">
-              <div class="summary-label">{{ t('tools.seasonality.weakSixMonths') }}</div>
-              <div class="summary-value" :class="weakPeriodReturn >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'">
+            <div class="min-w-0 rounded-lg border border-dt-border bg-dt-bg p-4">
+              <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('tools.seasonality.weakSixMonths') }}</div>
+              <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight" :class="weakPeriodReturn >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'">
                 {{ formatReturn(weakPeriodReturn) }}
               </div>
-              <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ t(analysis.weakPeriod.strategyKey) }}</p>
+              <p class="mt-3 text-sm leading-6 text-dt-text-muted">{{ t(analysis.weakPeriod.strategyKey) }}</p>
             </div>
           </div>
-        </div>
+        </LedgerCard>
 
-        <div class="panel p-6 sm:p-7">
-          <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-            {{ t('tools.seasonality.recommendations') }}
-          </h3>
+        <!-- Recommendations -->
+        <LedgerCard :title="t('tools.seasonality.recommendations')">
           <ul class="mt-5 space-y-3">
-            <li class="list-row">
-              <Icon name="heroicons:check-circle" class="h-5 w-5 text-emerald-500" />
-              <span>{{ t('tools.seasonality.recommendationsList.0') }}</span>
+            <li class="flex items-start gap-2.5">
+              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0 text-emerald-500" />
+              <span class="text-dt-text">{{ t('tools.seasonality.recommendationsList.0') }}</span>
             </li>
-            <li class="list-row">
-              <Icon name="heroicons:check-circle" class="h-5 w-5 text-emerald-500" />
-              <span>{{ t('tools.seasonality.recommendationsList.1') }}</span>
+            <li class="flex items-start gap-2.5">
+              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0 text-emerald-500" />
+              <span class="text-dt-text">{{ t('tools.seasonality.recommendationsList.1') }}</span>
             </li>
-            <li class="list-row">
-              <Icon name="heroicons:check-circle" class="h-5 w-5 text-emerald-500" />
-              <span>{{ t('tools.seasonality.recommendationsList.2') }}</span>
+            <li class="flex items-start gap-2.5">
+              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0 text-emerald-500" />
+              <span class="text-dt-text">{{ t('tools.seasonality.recommendationsList.2') }}</span>
             </li>
           </ul>
-        </div>
+        </LedgerCard>
 
-        <div class="warning-card">
-          <Icon name="heroicons:exclamation-triangle" class="h-5 w-5 text-amber-500" />
+        <!-- Disclaimer -->
+        <div class="flex gap-3 rounded-xl border border-dt-border bg-dt-surface p-4">
+          <Icon name="heroicons:exclamation-triangle" class="h-5 w-5 shrink-0 text-amber-500" />
           <div>
-            <p class="text-sm font-semibold text-amber-900 dark:text-amber-200">{{ t('tools.seasonality.disclaimerTitle') }}</p>
-            <p class="mt-2 text-sm leading-6 text-amber-800 dark:text-amber-100">{{ t('tools.seasonality.disclaimer') }}</p>
+            <p class="text-sm font-semibold text-dt-text">{{ t('tools.seasonality.disclaimerTitle') }}</p>
+            <p class="mt-2 text-sm leading-6 text-dt-text-muted">{{ t('tools.seasonality.disclaimer') }}</p>
           </div>
         </div>
 
-        <div class="text-center text-sm text-slate-500 dark:text-slate-400">
+        <div class="text-center text-sm text-dt-text-muted">
           {{ t('tools.seasonality.dataSource') }}
         </div>
       </div>
@@ -406,221 +407,4 @@ definePageMeta({
 </template>
 
 <style scoped>
-.seasonality-page {
-  font-family: var(--font-body);
-  background: var(--color-background);
-}
-
-.panel {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-}
-
-.kicker {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--color-secondary);
-  font-weight: 700;
-}
-
-.metric-card,
-.summary-card,
-.month-card {
-  min-width: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  padding: 1rem;
-}
-
-.metric-label,
-.summary-label,
-.spotlight-stat-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-text-soft);
-}
-
-.metric-value,
-.summary-value {
-  margin-top: 0.5rem;
-  display: block;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  line-height: 1.2;
-  font-size: 1.35rem;
-  font-weight: 600;
-  font-family: var(--font-data);
-  color: var(--color-text);
-}
-
-.hero-spotlight,
-.month-highlight {
-  min-width: 0;
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
-}
-
-.hero-spotlight {
-  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
-  background: linear-gradient(160deg, var(--color-panel-ink), color-mix(in srgb, var(--color-panel-ink) 94%, transparent) 48%, color-mix(in srgb, var(--color-panel-ink) 80%, var(--color-surface-strong)));
-}
-
-.month-highlight-current {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-info) 30%, transparent), transparent 30%),
-    linear-gradient(145deg, var(--color-info), var(--color-panel-ink));
-}
-
-.month-highlight-next {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-accent) 30%, transparent), transparent 30%),
-    linear-gradient(145deg, var(--color-accent), var(--color-panel-ink));
-}
-
-.hero-spotlight-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgb(255 255 255 / 60%);
-}
-
-.hero-spotlight-value {
-  margin-top: 0.5rem;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  line-height: 1.15;
-  font-size: 2.5rem;
-  font-weight: 600;
-  font-family: var(--font-data);
-  color: white;
-}
-
-.month-pill,
-.highlight-badge {
-  border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 12%);
-  padding: 0.45rem 0.8rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: white;
-}
-
-.reason-row,
-.leader-row,
-.list-row {
-  display: flex;
-  gap: 0.65rem;
-  align-items: flex-start;
-}
-
-.reason-row {
-  font-size: 0.9rem;
-  color: white;
-  opacity: 0.92;
-}
-
-.leader-row {
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  padding: 0.9rem 1rem;
-}
-
-.rank-badge {
-  display: inline-flex;
-  height: 2rem;
-  width: 2rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-pill);
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.rank-badge-positive {
-  background: color-mix(in srgb, var(--color-success) 15%, var(--color-surface));
-  color: var(--color-success);
-}
-
-.rank-badge-negative {
-  background: color-mix(in srgb, var(--color-danger) 15%, var(--color-surface));
-  color: var(--color-danger);
-}
-
-.month-card-current {
-  border-color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
-}
-
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-pill);
-  padding: 0.7rem 1.2rem;
-  color: white;
-  background: var(--color-primary);
-  transition: background-color var(--motion-fast) var(--easing-standard), transform var(--motion-fast) var(--easing-standard);
-}
-
-.action-btn:hover {
-  background: var(--color-primary-active);
-  transform: translateY(-1px);
-}
-
-.warning-card {
-  display: flex;
-  gap: 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--color-warning) 40%, var(--color-border));
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
-  padding: 1rem;
-}
-
-/* Typography & color overrides for Tailwind hardcoded classes */
-.seasonality-page h1 {
-  font-family: var(--font-display);
-  color: var(--color-text);
-}
-
-.seasonality-page h2,
-.seasonality-page h3 {
-  color: var(--color-text);
-}
-
-.seasonality-page table th {
-  color: var(--color-text-soft);
-  border-color: var(--color-border);
-}
-
-.seasonality-page table td {
-  border-color: var(--color-border);
-}
-
-.seasonality-page table tr {
-  border-color: var(--color-border);
-}
-
-.table-row-current {
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
-}
-
-@media (max-width: 639px) {
-  .leader-row {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-
 </style>

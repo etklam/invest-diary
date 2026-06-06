@@ -24,6 +24,7 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const days = parsePositiveInt(query.days)
     const search = parseSearchQuery(query.search)
     const orderBy = parseDiarySortOption(query.sortBy)
+    const reviewStatusFilter = typeof query.reviewStatus === 'string' ? query.reviewStatus : undefined
 
     // Parse date range (YYYY-MM-DD → UTC day boundaries)
     let dateFrom: Date | undefined
@@ -62,6 +63,17 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
       }
     }
 
+    // Review status filter
+    if (reviewStatusFilter) {
+      if (reviewStatusFilter === 'pending') {
+        // "pending" means reviewStatus='pending' AND reviewDueAt <= now (overdue or due)
+        where.reviewStatus = 'pending'
+        where.reviewDueAt = { lte: new Date() }
+      } else {
+        where.reviewStatus = reviewStatusFilter
+      }
+    }
+
     //效能優化：使用 select 只選擇必要欄位
     // - transactions 只選擇必要欄位（不需要 diaryId, createdAt）
     // - diary 不載入完整 content（列表頁不需要）
@@ -80,6 +92,12 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
           date: true,
           createdAt: true,
           updatedAt: true,
+          thesis: true,
+          risk: true,
+          execution: true,
+          reviewDueAt: true,
+          reviewStatus: true,
+          reviewedAt: true,
           alerts: {
             where: { isDismissed: false },
             select: {

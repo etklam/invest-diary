@@ -18,7 +18,7 @@ import {
   getStaleCached,
   setCached,
   shouldBypassCache,
-} from '~/lib/etf-profile/cache'
+} from '~/lib/market-data/cache'
 import {
   buildSectorTrendRow,
   buildFallbackSectorTrendRow,

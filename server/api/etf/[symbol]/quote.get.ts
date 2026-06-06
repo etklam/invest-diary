@@ -13,7 +13,7 @@ import {
   getMarketDataCacheTtlSeconds,
   getOrSetCached,
   shouldBypassCache,
-} from '~/lib/etf-profile/cache'
+} from '~/lib/market-data/cache'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)

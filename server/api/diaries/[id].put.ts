@@ -17,6 +17,11 @@ export default defineEventHandler(async (event): Promise<Diary> => {
   const diaryId = parsePositiveBigIntParam(event, 'id')
   const body = await readBody(event)
 
+  // Auto-set reviewedAt when marking as reviewed
+  if (body?.reviewStatus === 'reviewed' && !body.reviewedAt) {
+    body.reviewedAt = new Date()
+  }
+
   try {
     const diary = await updateDiaryForUser({
       userId,

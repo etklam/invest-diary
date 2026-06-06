@@ -11,6 +11,8 @@ import {
 import { getYahooSymbolAliasSuggestion } from '~/lib/market-data/yahoo'
 import type { QuoteResponse, HistoricalQuote } from '~/lib/market-data/yahoo'
 import QuoteInput from '~/components/QuoteInput.vue'
+import LedgerCard from '~/components/LedgerCard.vue'
+import BaseButton from '~/components/BaseButton.vue'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -434,20 +436,20 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="relative-value-page">
+  <div class="min-h-screen bg-dt-bg font-body">
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Header -->
       <header class="mb-10 text-center sm:mb-12">
-        <div class="mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2" style="background: color-mix(in srgb, var(--color-secondary) 12%, var(--color-surface))">
-          <Icon name="heroicons:calculator" class="h-4 w-4" style="color: var(--color-secondary)" />
-          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-secondary)">
+        <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-dt-secondary/20 bg-dt-surface px-4 py-2">
+          <Icon name="heroicons:calculator" class="h-4 w-4 text-dt-secondary" />
+          <span class="text-xs font-semibold uppercase tracking-wider text-dt-secondary">
             {{ t('tools.relativeValue.heroKicker') }}
           </span>
         </div>
-        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+        <h1 class="font-display text-3xl font-bold tracking-tight text-dt-text sm:text-4xl lg:text-5xl">
           {{ t('tools.relativeValue.title') }}
         </h1>
-        <p class="mx-auto mt-4 max-w-2xl text-sm leading-relaxed sm:text-base" style="color: var(--color-text-muted)">
+        <p class="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-dt-text-muted sm:text-base">
           {{ t('tools.relativeValue.subtitle') }}
         </p>
       </header>
@@ -459,8 +461,8 @@ definePageMeta({
           <!-- Quick Presets -->
           <section class="mb-6">
             <div class="mb-4 flex items-center gap-2">
-              <Icon name="heroicons:lightning-bolt" class="h-5 w-5" style="color: var(--color-secondary)" />
-              <h2 class="text-lg font-semibold">
+              <Icon name="heroicons:lightning-bolt" class="h-5 w-5 text-dt-secondary" />
+              <h2 class="text-lg font-semibold text-dt-text">
                 {{ t('tools.relativeValue.commonPresets') }}
               </h2>
             </div>
@@ -470,22 +472,21 @@ definePageMeta({
                 :key="`${preset.primarySymbol}-${preset.relativeSymbol}`"
                 type="button"
                 :data-testid="`preset-${preset.primarySymbol.replace(/[^A-Z0-9]/gi, '_')}-${preset.relativeSymbol.replace(/[^A-Z0-9]/gi, '_')}`"
-                class="group flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-all duration-200 hover:shadow-lg"
-                style="border-color: var(--color-border); background: var(--color-surface)"
+                class="group flex cursor-pointer items-center gap-4 rounded-2xl border border-dt-border bg-dt-surface p-4 transition-all duration-200 hover:shadow-lg"
                 @click="applyPreset(preset)"
               >
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-lg transition-transform duration-200 group-hover:scale-110" style="background: linear-gradient(to bottom right, var(--color-secondary), color-mix(in srgb, var(--color-secondary) 85%, black))">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-dt-secondary text-white shadow-lg">
                   <Icon name="heroicons:chart-bar" class="h-6 w-6" />
                 </div>
                 <div class="text-left">
-                  <div class="font-semibold" style="color: var(--color-text)">
+                  <div class="font-semibold text-dt-text">
                     {{ preset.primarySymbol }} / {{ preset.relativeSymbol }}
                   </div>
-                  <div class="text-sm" style="color: var(--color-text-soft)">
+                  <div class="text-sm text-dt-text-muted">
                     {{ preset.description }}
                   </div>
                 </div>
-                <Icon name="heroicons:arrow-right" class="ml-auto h-5 w-5 group-hover:translate-x-1 transition-all duration-200" style="color: var(--color-text-soft)" />
+                <Icon name="heroicons:arrow-right" class="ml-auto h-5 w-5 text-dt-text-muted" />
               </button>
             </div>
           </section>
@@ -520,20 +521,20 @@ definePageMeta({
           </div>
 
           <!-- Target Prices -->
-          <section class="rounded-3xl border p-6" style="border-color: var(--color-border); background: var(--color-surface)">
+          <LedgerCard class="p-6">
             <div class="mb-4 flex items-center gap-2">
-              <Icon name="heroicons:table-cells" class="h-5 w-5" style="color: var(--color-secondary)" />
-              <h2 class="text-lg font-semibold">
+              <Icon name="heroicons:table-cells" class="h-5 w-5 text-dt-secondary" />
+              <h2 class="text-lg font-semibold text-dt-text">
                 {{ t('tools.relativeValue.targetPrices') }}
               </h2>
             </div>
 
-            <div v-if="symbolsMatch" class="mb-4 rounded-2xl px-4 py-3 text-sm" style="border: 1px solid color-mix(in srgb, var(--color-warning) 40%, var(--color-border)); background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface)); color: var(--color-text)">
+            <div v-if="symbolsMatch" class="mb-4 rounded-2xl border border-dt-warning/40 bg-dt-surface px-4 py-3 text-sm text-dt-text">
               {{ t('tools.relativeValue.sameSymbolWarning') }}
             </div>
 
             <!-- Tab Buttons -->
-            <div class="mb-6 flex rounded-xl border p-1" style="border-color: var(--color-border); background: var(--color-surface)">
+            <div class="mb-6 flex rounded-xl border border-dt-border bg-dt-surface p-1">
               <button
                 type="button"
                 class="rv-tab flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
@@ -555,7 +556,7 @@ definePageMeta({
             <div class="grid gap-6 lg:grid-cols-2">
               <!-- Manual Input Content -->
               <div v-if="targetPriceInputMode === 'manual'">
-                <label for="target-prices" class="mb-1.5 block text-sm font-medium" style="color: var(--color-text)">
+                <label for="target-prices" class="mb-1.5 block text-sm font-medium text-dt-text">
                   {{ t('tools.relativeValue.targetPricesInput') }}
                 </label>
                 <div class="relative">
@@ -564,37 +565,37 @@ definePageMeta({
                     v-model="targetPricesInput"
                     rows="5"
                     :placeholder="t('tools.relativeValue.targetPricesPlaceholder')"
-                    class="rv-input w-full rounded-xl px-4 py-3 text-sm font-mono transition-all duration-200 focus:outline-none"
+                    class="rv-input w-full rounded-xl border border-dt-border bg-dt-surface px-4 py-3 text-sm font-mono text-dt-text transition-all duration-200 focus:border-dt-primary focus:outline-none"
                   />
                   <button
                     v-if="targetPricesInput"
                     type="button"
-                    class="absolute right-3 top-3 rounded-lg p-1.5 transition-colors" style="background: var(--color-surface-muted); color: var(--color-text-soft)"
+                    class="absolute right-3 top-3 rounded-lg bg-dt-surface-raised p-1.5 text-dt-text-muted transition-colors"
                     @click="targetPricesInput = ''"
                   >
                     <Icon name="heroicons:x-mark" class="h-4 w-4" />
                   </button>
                 </div>
-                <p class="mt-2 text-xs" style="color: var(--color-text-soft)">
+                <p class="mt-2 text-xs text-dt-text-muted">
                   {{ t('tools.relativeValue.targetPricesHint') }}
                 </p>
               </div>
 
               <!-- Auto Generate Content -->
               <div v-if="targetPriceInputMode === 'auto'" class="space-y-4">
-                <div class="rounded-xl p-4" style="background: var(--color-surface-muted)">
-                  <div class="flex items-center gap-2 text-sm font-medium" style="color: var(--color-text)">
-                    <Icon name="heroicons:sparkles" class="h-4 w-4" style="color: var(--color-secondary)" />
+                <div class="rounded-xl bg-dt-surface-raised p-4">
+                  <div class="flex items-center gap-2 text-sm font-medium text-dt-text">
+                    <Icon name="heroicons:sparkles" class="h-4 w-4 text-dt-secondary" />
                     {{ t('tools.relativeValue.autoGeneratePricePoints') }}
                   </div>
-                  <p class="mt-1 text-xs" style="color: var(--color-text-soft)">
+                  <p class="mt-1 text-xs text-dt-text-muted">
                     {{ t('tools.relativeValue.basedOnPrimaryPrice', { symbol: primarySymbol || t('tools.relativeValue.primary') }) }}
                   </p>
                 </div>
 
                 <div class="grid grid-cols-3 gap-3">
                   <div>
-                    <label for="price-count" class="mb-1.5 block text-xs font-medium" style="color: var(--color-text-soft)">
+                    <label for="price-count" class="mb-1.5 block text-xs font-medium text-dt-text-muted">
                       {{ t('tools.relativeValue.pricePointCount') }}
                     </label>
                     <input
@@ -603,11 +604,11 @@ definePageMeta({
                       type="number"
                       min="1"
                       max="20"
-                      class="rv-input w-full rounded-lg px-3 py-2 text-center text-sm font-medium transition-all duration-200 focus:outline-none"
+                      class="rv-input w-full rounded-lg border border-dt-border bg-dt-surface px-3 py-2 text-center text-sm font-medium text-dt-text transition-all duration-200 focus:border-dt-primary focus:outline-none"
                     >
                   </div>
                   <div>
-                    <label for="price-step" class="mb-1.5 block text-xs font-medium" style="color: var(--color-text-soft)">
+                    <label for="price-step" class="mb-1.5 block text-xs font-medium text-dt-text-muted">
                       {{ t('tools.relativeValue.pricePointStep') }}
                     </label>
                     <input
@@ -616,14 +617,14 @@ definePageMeta({
                       type="number"
                       min="1"
                       step="1"
-                      class="rv-input w-full rounded-lg px-3 py-2 text-center text-sm font-medium transition-all duration-200 focus:outline-none"
+                      class="rv-input w-full rounded-lg border border-dt-border bg-dt-surface px-3 py-2 text-center text-sm font-medium text-dt-text transition-all duration-200 focus:border-dt-primary focus:outline-none"
                     >
                   </div>
                   <div>
-                    <label class="mb-1.5 block text-xs font-medium" style="color: var(--color-text-soft)">
+                    <label class="mb-1.5 block text-xs font-medium text-dt-text-muted">
                       {{ t('tools.relativeValue.pricePointDirection') }}
                     </label>
-                    <div class="flex rounded-lg border overflow-hidden" style="border-color: var(--color-border); background: var(--color-surface)">
+                    <div class="flex rounded-lg border border-dt-border bg-dt-surface overflow-hidden">
                       <button
                         type="button"
                         class="rv-tab flex-1 px-2 py-2 text-xs font-medium transition-all duration-200"
@@ -634,7 +635,7 @@ definePageMeta({
                       </button>
                       <button
                         type="button"
-                        class="rv-tab flex-1 px-2 py-2 text-xs font-medium transition-all duration-200 border-l" style="border-color: var(--color-border)"
+                        class="rv-tab flex-1 border-l border-dt-border px-2 py-2 text-xs font-medium transition-all duration-200"
                         :class="pricePointDirection === 'down' ? 'rv-tab-active' : 'rv-tab-inactive'"
                         @click="pricePointDirection = 'down'"
                       >
@@ -642,7 +643,7 @@ definePageMeta({
                       </button>
                       <button
                         type="button"
-                        class="rv-tab flex-1 px-2 py-2 text-xs font-medium transition-all duration-200 border-l" style="border-color: var(--color-border)"
+                        class="rv-tab flex-1 border-l border-dt-border px-2 py-2 text-xs font-medium transition-all duration-200"
                         :class="pricePointDirection === 'both' ? 'rv-tab-active' : 'rv-tab-inactive'"
                         @click="pricePointDirection = 'both'"
                       >
@@ -655,7 +656,7 @@ definePageMeta({
                 <button
                   type="button"
                   data-testid="load-example-button"
-                  class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-medium text-slate-600 transition-all duration-200 hover:border-sky-500 hover:bg-sky-50/50 hover:text-sky-600 dark:border-slate-700 dark:text-slate-400 dark:hover:border-sky-500 dark:hover:bg-sky-950/30 dark:hover:text-sky-400"
+                  class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-dt-border px-4 py-3 text-sm font-medium text-dt-text-muted transition-all duration-200 hover:border-dt-primary hover:bg-dt-surface hover:text-dt-primary"
                   @click="loadExample"
                 >
                   <Icon name="heroicons:lightning-bolt" class="h-4 w-4" />
@@ -663,130 +664,111 @@ definePageMeta({
                 </button>
               </div>
             </div>
-          </section>
+          </LedgerCard>
         </div>
 
         <!-- Right Column: Results -->
         <div class="lg:col-span-5">
           <div class="sticky top-6 space-y-6">
             <!-- Historical Ratio Chart -->
-            <section
+            <LedgerCard
               v-if="primarySymbol.trim() && relativeSymbol.trim()"
-              class="overflow-hidden rounded-3xl border border-slate-200/60 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-sm dark:border-slate-700/60 dark:from-slate-800/90 dark:to-slate-800/60"
             >
-              <div class="relative h-2 bg-gradient-to-r from-sky-500 via-violet-500 to-amber-500" />
-              <div class="p-6">
-                <div class="mb-5 flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <Icon name="heroicons:chart-line" class="h-5 w-5 text-sky-500" />
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
-                      {{ t('tools.relativeValue.historicalRatio') }}
-                    </h3>
-                  </div>
-                  <div class="flex gap-2">
-                    <button
-                      v-for="rangeOption in ['1mo', '3mo', '6mo', '1y', '5y', 'max']"
-                      :key="rangeOption"
-                      type="button"
-                      class="rounded-full px-3 py-1 text-xs font-medium"
-                      :class="historicalRange === rangeOption ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'"
-                      @click="historicalRange = rangeOption as '1mo' | '3mo' | '6mo' | '1y' | '5y' | 'max'"
-                    >
-                      {{ rangeOption.toUpperCase() }}
-                    </button>
-                  </div>
-                </div>
-
-                <div v-if="historicalLoading" class="flex items-center justify-center h-48">
-                  <Icon name="heroicons:arrow-path" class="h-8 w-8 animate-spin text-sky-500" />
-                </div>
-                <div v-else-if="hasHistoricalRatioData">
-                  <Line
-                    :data="historicalRatioData"
-                    :options="chartOptions"
-                    class="h-72"
-                  />
-                </div>
-                <div v-else class="text-center text-sm text-slate-500 dark:text-slate-400 h-48 flex items-center justify-center">
-                  {{ t('tools.relativeValue.noHistoricalData') }}
-                </div>
-              </div>
-            </section>
-            <!-- Ratio Display -->
-            <div v-if="calculationResult" class="overflow-hidden rounded-3xl border border-slate-200/60 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-sm dark:border-slate-700/60 dark:from-slate-800/90 dark:to-slate-800/60">
-              <!-- Decorative gradient header -->
-              <div class="relative h-2 bg-gradient-to-r from-amber-500 via-violet-500 to-sky-500" />
-
-              <div class="p-6">
-                <div class="mb-5 flex items-center gap-2">
-                  <Icon name="heroicons:chart-pie" class="h-5 w-5 text-violet-500" />
-                  <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
-                    {{ t('tools.relativeValue.priceRatio') }}
+              <div class="mb-5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <Icon name="heroicons:chart-line" class="h-5 w-5 text-dt-secondary" />
+                  <h3 class="text-lg font-semibold text-dt-text">
+                    {{ t('tools.relativeValue.historicalRatio') }}
                   </h3>
                 </div>
+                <div class="flex gap-2">
+                  <button
+                    v-for="rangeOption in ['1mo', '3mo', '6mo', '1y', '5y', 'max']"
+                    :key="rangeOption"
+                    type="button"
+                    class="rounded-full px-3 py-1 text-xs font-medium"
+                    :class="historicalRange === rangeOption ? 'bg-dt-primary text-white' : 'bg-dt-surface-raised text-dt-text-muted hover:bg-dt-surface'"
+                    @click="historicalRange = rangeOption as '1mo' | '3mo' | '6mo' | '1y' | '5y' | 'max'"
+                  >
+                    {{ rangeOption.toUpperCase() }}
+                  </button>
+                </div>
+              </div>
 
-                <div class="space-y-3">
-                  <!-- Main Ratio -->
-                  <div class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 transition-all duration-200 hover:border-amber-500/30 hover:bg-amber-50/30 dark:border-slate-700/60 dark:bg-slate-900/60 dark:hover:border-amber-500/20 dark:hover:bg-amber-950/20">
-                    <div class="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                    <div class="relative">
-                      <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        {{ calculationResult.primarySymbol }} / {{ calculationResult.relativeSymbol }}
-                      </div>
-                      <div class="mt-2 text-3xl font-mono font-bold text-slate-900 dark:text-white">
-                        {{ formatRatio(calculationResult.ratio) }}
-                      </div>
-                    </div>
+              <div v-if="historicalLoading" class="flex h-48 items-center justify-center">
+                <Icon name="heroicons:arrow-path" class="h-8 w-8 animate-spin text-dt-secondary" />
+              </div>
+              <div v-else-if="hasHistoricalRatioData">
+                <Line
+                  :data="historicalRatioData"
+                  :options="chartOptions"
+                  class="h-72"
+                />
+              </div>
+              <div v-else class="flex h-48 items-center justify-center text-center text-sm text-dt-text-muted">
+                {{ t('tools.relativeValue.noHistoricalData') }}
+              </div>
+            </LedgerCard>
+            <!-- Ratio Display -->
+            <LedgerCard v-if="calculationResult">
+              <div class="mb-5 flex items-center gap-2">
+                <Icon name="heroicons:chart-pie" class="h-5 w-5 text-dt-accent" />
+                <h3 class="text-lg font-semibold text-dt-text">
+                  {{ t('tools.relativeValue.priceRatio') }}
+                </h3>
+              </div>
+
+              <div class="space-y-3">
+                <!-- Main Ratio -->
+                <div class="rounded-2xl border border-dt-border bg-dt-surface p-4 transition-all duration-200 hover:border-dt-border">
+                  <div class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">
+                    {{ calculationResult.primarySymbol }} / {{ calculationResult.relativeSymbol }}
                   </div>
-
-                  <!-- Inverse Ratio -->
-                  <div class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 transition-all duration-200 hover:border-violet-500/30 hover:bg-violet-50/30 dark:border-slate-700/60 dark:bg-slate-900/60 dark:hover:border-violet-500/20 dark:hover:bg-violet-950/20">
-                    <div class="absolute inset-0 bg-gradient-to-r from-violet-500/5 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                    <div class="relative">
-                      <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        {{ calculationResult.relativeSymbol }} / {{ calculationResult.primarySymbol }}
-                      </div>
-                      <div class="mt-2 text-3xl font-mono font-bold text-slate-900 dark:text-white">
-                        {{ formatRatio(calculationResult.inverseRatio) }}
-                      </div>
-                    </div>
+                  <div class="mt-2 font-mono text-3xl font-bold text-dt-text">
+                    {{ formatRatio(calculationResult.ratio) }}
                   </div>
                 </div>
 
-                <!-- Copy Button -->
-                <button
-                  type="button"
-                  class="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200/60 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:border-violet-500 hover:bg-violet-50 hover:text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-violet-500 dark:hover:bg-violet-950/30 dark:hover:text-violet-400 dark:focus:ring-offset-slate-900"
-                  @click="copyToClipboard"
-                >
-                  <Icon :name="copySuccess ? 'heroicons:check-circle' : 'heroicons:clipboard-document'" class="h-5 w-5" :class="{ 'text-emerald-500': copySuccess }" />
-                  {{ copySuccess ? t('tools.relativeValue.copied') : t('tools.relativeValue.copyToClipboard') }}
-                </button>
+                <!-- Inverse Ratio -->
+                <div class="rounded-2xl border border-dt-border bg-dt-surface p-4 transition-all duration-200 hover:border-dt-border">
+                  <div class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">
+                    {{ calculationResult.relativeSymbol }} / {{ calculationResult.primarySymbol }}
+                  </div>
+                  <div class="mt-2 font-mono text-3xl font-bold text-dt-text">
+                    {{ formatRatio(calculationResult.inverseRatio) }}
+                  </div>
+                </div>
               </div>
-            </div>
+
+              <!-- Copy Button -->
+              <BaseButton variant="secondary" class="mt-5 w-full" @click="copyToClipboard">
+                <Icon :name="copySuccess ? 'heroicons:check-circle' : 'heroicons:clipboard-document'" class="h-5 w-5" :class="{ 'text-emerald-500': copySuccess }" />
+                {{ copySuccess ? t('tools.relativeValue.copied') : t('tools.relativeValue.copyToClipboard') }}
+              </BaseButton>
+            </LedgerCard>
 
             <!-- Price Table -->
-            <div v-if="sortedPriceTable.length > 0" class="overflow-hidden rounded-3xl border border-slate-200/60 bg-white/80 backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-800/60">
-              <div class="flex items-center justify-between border-b border-slate-200/60 px-6 py-4 dark:border-slate-700/60">
+            <LedgerCard v-if="sortedPriceTable.length > 0">
+              <div class="flex items-center justify-between border-b border-dt-border pb-3">
                 <div class="flex items-center gap-2">
-                  <Icon name="heroicons:table" class="h-5 w-5 text-sky-500" />
-                  <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
+                  <Icon name="heroicons:table" class="h-5 w-5 text-dt-secondary" />
+                  <h3 class="text-lg font-semibold text-dt-text">
                     {{ t('tools.relativeValue.priceTable') }}
                   </h3>
                 </div>
-                <span class="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-600 dark:text-sky-400">
+                <span class="rounded-full bg-dt-primary/10 px-3 py-1 text-xs font-semibold text-dt-primary">
                   {{ sortedPriceTable.length }} points
                 </span>
               </div>
 
               <div class="max-h-[500px] overflow-y-auto">
                 <table class="w-full text-sm">
-                  <thead class="sticky top-0 bg-white/95 backdrop-blur-sm dark:bg-slate-800/95">
-                    <tr class="border-b border-slate-200/60 dark:border-slate-700/60">
-                      <th class="px-6 py-3 text-left font-semibold text-slate-700 dark:text-slate-300">
+                  <thead class="sticky top-0 bg-dt-surface">
+                    <tr class="border-b border-dt-border">
+                      <th class="px-6 py-3 text-left font-semibold text-dt-text">
                         {{ calculationResult?.primarySymbol || t('tools.relativeValue.primarySymbol') }}
                       </th>
-                      <th class="px-6 py-3 text-right font-semibold text-slate-700 dark:text-slate-300">
+                      <th class="px-6 py-3 text-right font-semibold text-dt-text">
                         {{ calculationResult?.relativeSymbol || t('tools.relativeValue.relativeSymbol') }}
                       </th>
                     </tr>
@@ -795,35 +777,32 @@ definePageMeta({
                     <tr
                       v-for="(row, index) in sortedPriceTable"
                       :key="index"
-                      class="group cursor-pointer border-b border-slate-100/60 last:border-0 transition-colors duration-150 hover:bg-slate-50/50 dark:border-slate-800/60 dark:hover:bg-slate-700/30"
-                      :class="{ 'bg-amber-50/50 dark:bg-amber-950/20': row.targetPrice === primaryPrice }"
+                      class="group cursor-pointer border-b border-dt-border last:border-0 transition-colors duration-150 hover:bg-dt-surface-raised"
+                      :class="{ 'bg-dt-surface-raised': row.targetPrice === primaryPrice }"
                       @click="selectPriceTableRow(row.targetPrice, row.correspondingPrice)"
                     >
-                      <td class="px-6 py-3 font-mono font-medium text-slate-900 dark:text-white">
+                      <td class="font-mono px-6 py-3 font-medium text-dt-text">
                         {{ formatPrice(row.targetPrice) }}
                       </td>
-                      <td class="px-6 py-3 text-right font-mono font-medium text-slate-900 dark:text-white">
+                      <td class="font-mono px-6 py-3 text-right font-medium text-dt-text">
                         {{ formatPrice(row.correspondingPrice) }}
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-            </div>
+            </LedgerCard>
 
             <!-- Empty State -->
-            <div v-else class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50/50 p-10 text-center dark:border-slate-700 dark:bg-slate-800/30">
-              <div class="relative mb-6">
-                <div class="absolute inset-0 animate-pulse rounded-full bg-sky-500/10 blur-xl" />
-                <Icon name="heroicons:chart-bar" class="relative h-20 w-20 text-slate-300 dark:text-slate-300" />
-              </div>
-              <h3 class="mb-2 text-lg font-semibold text-slate-700 dark:text-slate-300">
+            <LedgerCard v-else class="flex flex-col items-center justify-center p-10 text-center">
+              <Icon name="heroicons:chart-bar" class="mb-6 h-20 w-20 text-dt-text-muted" />
+              <h3 class="mb-2 text-lg font-semibold text-dt-text">
                 No data yet
               </h3>
-              <p class="max-w-xs text-sm text-slate-500 dark:text-slate-400">
+              <p class="max-w-xs text-sm text-dt-text-muted">
                 {{ t('tools.relativeValue.emptyState') }}
               </p>
-            </div>
+            </LedgerCard>
           </div>
         </div>
       </div>
@@ -832,26 +811,18 @@ definePageMeta({
 </template>
 
 <style scoped>
-.relative-value-page {
-  font-family: var(--font-body);
-  background: var(--color-background);
-  min-height: 100vh;
+/* Tab styles */
+.rv-tab-active {
+  background: var(--color-primary, #3b82f6);
+  color: white;
 }
 
-/* Typography overrides */
-.relative-value-page h1 {
-  font-family: var(--font-display);
-  color: var(--color-text);
+.rv-tab-inactive {
+  color: var(--color-text-muted, #94a3b8);
 }
 
-.relative-value-page h2,
-.relative-value-page h3 {
-  color: var(--color-text);
-}
-
-/* Mono values */
-.relative-value-page .font-mono {
-  font-family: var(--font-data);
+.rv-tab-inactive:hover {
+  color: var(--color-text, #f1f5f9);
 }
 
 /* Custom scrollbar */
@@ -869,17 +840,6 @@ definePageMeta({
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-text-soft);
-}
-
-/* Card overrides — scoped specificity beats Tailwind */
-.relative-value-page :deep(.rounded-3xl),
-.relative-value-page .rounded-3xl {
-  border-radius: var(--radius-md);
-}
-
-.relative-value-page :deep(.rounded-2xl),
-.relative-value-page .rounded-2xl {
-  border-radius: var(--radius-sm);
+  background-color: var(--color-text-muted);
 }
 </style>

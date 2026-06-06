@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { clearCache } from '~/lib/etf-profile/cache'
+import { clearCache } from '~/lib/market-data/cache'
 import { mockGetQuery, mockGetRouterParam } from '../../vi-setup'
 
 const mockFetchQuote = vi.fn()

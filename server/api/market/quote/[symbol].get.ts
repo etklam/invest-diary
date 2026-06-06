@@ -14,7 +14,7 @@ import {
   getMarketDataCacheTtlSeconds,
   getOrSetCached,
   shouldBypassCache,
-} from '~/lib/etf-profile/cache'
+} from '~/lib/market-data/cache'
 
 function resolveSymbol(event: H3Event): string | undefined {
   const rawSymbol = getRouterParam(event, 'symbol')

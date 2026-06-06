@@ -84,6 +84,7 @@
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 import { formatDate, formatShortDate } from '~/lib/utils'
+import type { SerializedId } from '~/types/common'
 
 const { t } = useI18n()
 const { user } = useAuth()
@@ -95,7 +96,7 @@ definePageMeta({
 
 // Use lazy fetch to avoid calling API during SSR before auth check
 const { data: alerts, pending, error, refresh } = await useLazyFetch<Array<{
-  id: string | bigint
+  id: SerializedId
   message: string
   triggerAt: Date | string
   isDismissed: boolean
@@ -103,7 +104,7 @@ const { data: alerts, pending, error, refresh } = await useLazyFetch<Array<{
   instanceNumber?: number | null
   createdAt: Date | string
   diary?: {
-    id: string | bigint
+    id: SerializedId
     title: string
   }
 }>>('/api/alerts')
@@ -113,7 +114,7 @@ const toast = useToast()
 // Get user's timezone
 const userTimezone = computed(() => user.value?.timezone || 'Asia/Taipei')
 
-const dismissAlert = async (id: string | bigint) => {
+const dismissAlert = async (id: SerializedId) => {
   try {
     await runWithAuthRecovery(async (): Promise<void> => {
       await $fetch(`/api/alerts/${id}/dismiss` as string, {

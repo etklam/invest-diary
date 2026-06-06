@@ -166,7 +166,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
     throw Errors.validationError([{ field: 'transactions', message: transactionError }])
   }
 
-  const { title, content, date, transactions, alerts, appendToToday, tags } = body
+  const { title, content, date, transactions, alerts, appendToToday, tags, thesis, risk, execution, reviewDueAt } = body
 
   const diaryDate = date ? toUtcNoonDate(date) : toUtcNoonDate(new Date())
   const { startOfDayUtc, endOfDayUtc } = getUtcDayRange(diaryDate)
@@ -216,6 +216,10 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
       createdVia: input.createdVia ?? 'WEB',
       createdByLabel: input.createdByLabel ?? null,
       date: diaryDate,
+      ...(thesis !== undefined ? { thesis } : {}),
+      ...(risk !== undefined ? { risk } : {}),
+      ...(execution !== undefined ? { execution } : {}),
+      ...(reviewDueAt !== undefined ? { reviewDueAt: reviewDueAt ? new Date(reviewDueAt) : null } : {}),
       transactions: {
         create: transactions?.map((tx) => ({
           ...mapTransactionWriteData(tx),
@@ -290,7 +294,7 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
 
   // --- Persist inside a Prisma transaction ---
 
-  const { title, content, date, alerts, tags } = body
+  const { title, content, date, alerts, tags, thesis, risk, execution, reviewDueAt, reviewStatus, reviewedAt } = body
 
   const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await persistTransactionDiff(tx, diaryId, userId, diff)
@@ -304,6 +308,12 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
         content,
         tagsString: tags !== undefined ? stringifyDiaryTags(tags) : undefined,
         date: date ? toUtcNoonDate(date) : undefined,
+        ...(thesis !== undefined ? { thesis } : {}),
+        ...(risk !== undefined ? { risk } : {}),
+        ...(execution !== undefined ? { execution } : {}),
+        ...(reviewDueAt !== undefined ? { reviewDueAt: reviewDueAt ? new Date(reviewDueAt) : null } : {}),
+        ...(reviewStatus !== undefined ? { reviewStatus } : {}),
+        ...(reviewedAt !== undefined ? { reviewedAt: reviewedAt ? new Date(reviewedAt) : null } : {}),
       },
       include: {
         transactions: true,
