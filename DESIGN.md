@@ -136,7 +136,9 @@
 - **Diary Desk (已完成)：** 從卡片瀑布改成帶主次層級的工作台。上方顯示今日狀態、未完成複盤候選（ReviewCandidateCard）、統計摘要；下方顯示日記條目列表。Scoped CSS 減少 92%。
 - **Tools — ETF (已完成)：** 統一使用 dt-* token + StatusBadge + BaseButton + EtfMobileCard（手機版）。移除 slate-* 硬編碼與自訂 statusClass()。
 - **Tools — Position Sizing (已完成)：** 移除 .hero-spotlight gradient 與 .result-banner gradient，改用 clean border + surface + dt-primary solid。Scoped CSS 減少 81%。
-- **Tools — 其他 (待處理)：** seasonality、relative-value、financial-freedom 等頁面仍使用舊樣式，需要統一。
+- **Tools — Seasonality (已完成)：** 移除 hero-spotlight linear-gradient、month-highlight radial-gradient + color-mix，全部改用 LedgerCard + dt-* tokens。Scoped CSS 從 218 行降至 0。
+- **Tools — Relative Value (已完成)：** 移除 40+ inline styles、glassmorphism（backdrop-blur/gradient headers）、preset 按鈕 gradient。全部改用 LedgerCard + BaseButton + dt-* tokens。
+- **Tools — Financial Freedom (已完成)：** 移除 hero-spotlight gradient、result-banner radial-gradient、表單欄位全 Tailwind 化。Scoped CSS 從 233 行降至 38 行。
 - **Articles:** 保留 editorial 方向，但收斂 hover 飄浮，讓長文閱讀更沉穩。
 
 ## Decisions Log
@@ -148,3 +150,4 @@
 | 2026-04-05 | 公開頁與產品頁統一語系但不同密度 | 讓品牌人格一致，同時保留閱讀與操作的最佳節奏 |
 | 2026-05-19 | 設計方向從 `Editorial Ledger` 轉向 `Institutional Fintech`，全站 16 檔案重構 | 深色背景（`#0B1220`）、電光藍主色（`#2563EB`）、青色資訊（`#38BDF8`）、玻璃擬態表面（`rgba(255,255,255,0.04-0.08)`）。新增 12 個 glass token，清除所有硬編碼 copper/orange/indigo 顏色。取代 2026-04-05 暖色紙張決策 |
 | 2026-06-06 | 設計方向從 `Institutional Fintech` 轉向 `Calm Institutional Ledger`，5 phase 重構 | 移除 glassmorphism、radial-gradient、hover translateY。建立 6 個 dt-* 元件（LedgerCard/BaseButton/StatusBadge/EtfMobileCard/ReviewCandidateCard/DiaryNotePreview）。4 頁重構（homepage/diary-desk/etf/position-sizing），scoped CSS 平均減少 85%+。Diary 新增 thesis/risk/review 欄位支援複盤流程。保留深色底色與電光藍主色，但改用 solid surface 替代半透明。取代 2026-05-19 玻璃擬態決策 |
+| 2026-06-06 | Phase 6：全站工具頁統一完成 | seasonality（scoped CSS 218→0）、relative-value（移除 40+ inline styles + glassmorphism）、financial-freedom（scoped CSS 233→38）。全站 5 個工具頁全部完成 Calm Institutional Ledger 重構，淨刪 445 行 |
