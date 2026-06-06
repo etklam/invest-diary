@@ -143,24 +143,20 @@
           prose-img:rounded-3xl prose-img:shadow-lg"
         >
           <div v-if="isHtmlContent" v-html="sanitizedContent" />
-          <MDC
-            v-else-if="articleContent"
+          <MDCRenderer
+            v-else-if="articleMarkdown?.body"
             :key="articleContentCacheKey"
-            v-slot="{ body, data }"
-            :value="articleContent"
-            :cache-key="articleContentCacheKey"
-          >
-            <MDCRenderer
-              v-if="body"
-              :body="body"
-              :data="data"
-            />
-            <div v-else class="space-y-3">
-              <div class="h-4 w-full animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
-              <div class="h-4 w-4/5 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
-              <div class="h-4 w-2/3 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
-            </div>
-          </MDC>
+            :body="articleMarkdown.body"
+            :data="articleMarkdown.data"
+          />
+          <div v-else-if="articleMarkdownPending" class="space-y-3">
+            <div class="h-4 w-full animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
+            <div class="h-4 w-4/5 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
+            <div class="h-4 w-2/3 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
+          </div>
+          <p v-else-if="articleMarkdownError" class="leading-relaxed" style="color: var(--color-text-muted)">
+            {{ $t('blog.loadFailedDescription') }}
+          </p>
           <p v-else class="leading-relaxed" style="color: var(--color-text-muted)">
             {{ $t('blog.contentUnavailable') }}
           </p>
@@ -214,6 +210,7 @@ import DOMPurify from 'dompurify'
 import type { Config as DOMPurifyConfig } from 'dompurify'
 import { calculateReadingTime, looksLikeHtmlContent, parseTags } from '~/lib/blog'
 import { usePerformance } from '~/composables/usePerformance'
+import { useArticleMarkdown } from '~/composables/useArticleMarkdown'
 import { normalizeCategory } from '~/types/blog'
 
 definePageMeta({
@@ -316,6 +313,12 @@ const isHtmlContent = computed(() => {
   if (type === 'markdown') return false
   return looksLikeHtmlContent(articleContent.value)
 })
+
+const {
+  parsed: articleMarkdown,
+  pending: articleMarkdownPending,
+  error: articleMarkdownError,
+} = useArticleMarkdown(articleContent, isHtmlContent)
 
 const sanitizedContent = computed(() => {
   if (!articleContent.value) return ''
