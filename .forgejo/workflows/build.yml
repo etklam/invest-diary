@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Push and Deploy
 
 on:
   push:
@@ -8,6 +8,10 @@ on:
 env:
   REGISTRY: git.913555.xyz
   IMAGE_NAME: ${{ github.repository }}
+  DEPLOY_HOST: 82.22.63.196
+  DEPLOY_USER: root
+  DEPLOY_NAMESPACE: diary-vue
+  DEPLOY_DEPLOYMENT: diary-vue-app
 
 jobs:
   build-and-push:
@@ -38,3 +42,14 @@ jobs:
           docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy to K3s
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/deploy_key \
+              ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} \
+              "kubectl rollout restart deployment/${{ env.DEPLOY_DEPLOYMENT }} -n ${{ env.DEPLOY_NAMESPACE }} && \
+               kubectl rollout status deployment/${{ env.DEPLOY_DEPLOYMENT }} -n ${{ env.DEPLOY_NAMESPACE }} --timeout=120s"
