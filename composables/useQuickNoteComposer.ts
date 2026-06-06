@@ -4,6 +4,7 @@ import { toUtcNoonDate } from '~/lib/diary-date'
 import { generateTemplateDraft } from '~/lib/quicknote/generate-template-draft'
 import { resolveQuickReminderTime } from '~/lib/quicknote/quick-reminders'
 import { useQuickNoteTemplates } from '~/composables/useQuickNoteTemplates'
+import type { SerializedId } from '~/types/common'
 import {
   createEmptyQuickNoteTemplateData,
   type QuickNoteComposerState,
@@ -188,7 +189,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       appendToToday: input.saveMode === 'append',
     }
 
-    return await $fetch<{ id?: string | bigint | { toString: () => string } }>('/api/diaries', {
+    return await $fetch<{ id?: SerializedId | { toString: () => string } }>('/api/diaries', {
       method: 'POST',
       body,
     })
