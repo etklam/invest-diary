@@ -38,7 +38,7 @@ const mockSetCached = vi.fn()
 const mockGetOrSetCached = vi.fn()
 const mockGetStaleCached = vi.fn()
 
-vi.mock('~/lib/etf-profile/cache', () => ({
+vi.mock('~/lib/market-data/cache', () => ({
   buildMarketHistoricalCacheKey: (symbol: string, range: string) => `market:historical:${symbol}:${range}`,
   buildMarketQuoteCacheKey: (symbol: string) => `market:quote:${symbol}`,
   getBoardCacheTtlSeconds: (allFailed: boolean) => allFailed ? 300 : 900,

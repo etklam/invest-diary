@@ -14,7 +14,7 @@ import {
   getMarketDataCacheTtlSeconds,
   getOrSetCached,
   shouldBypassCache,
-} from '~/lib/etf-profile/cache'
+} from '~/lib/market-data/cache'
 
 export default defineEventHandler(async (event): Promise<HistoricalQuote[]> => {
   const log = logger.api.withRequestId(event.context.requestId)

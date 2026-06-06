@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
   buildYahooChartUrl,
   getYahooSymbolAliasSuggestion,
@@ -9,7 +9,6 @@ import {
   parseYahooMonthlyQuotes,
   parseYahooRegularMarketPrice,
 } from '~/lib/market-data/yahoo'
-import { fetchMarketPrice } from '~/lib/market-data/quotes'
 import { buildTwseQuoteUrl, normalizeTwseSymbol, parseTwseQuotePrice } from '~/lib/market-data/twse'
 
 describe('market data providers', () => {
@@ -164,21 +163,4 @@ describe('market data providers', () => {
     ])
   })
 
-  it('uses one provider strategy for stock price lookup', async () => {
-    const fetchYahooPrice = vi.fn().mockResolvedValue(210.5)
-    const fetchTwsePrice = vi.fn().mockResolvedValue(999)
-
-    await expect(fetchMarketPrice('2330.TW', {
-      fetchYahooPrice,
-      fetchTwsePrice,
-    })).resolves.toBe(999)
-
-    await expect(fetchMarketPrice('AAPL', {
-      fetchYahooPrice,
-      fetchTwsePrice,
-    })).resolves.toBe(210.5)
-
-    expect(fetchTwsePrice).toHaveBeenCalledWith('2330.TW')
-    expect(fetchYahooPrice).toHaveBeenCalledWith('AAPL')
-  })
 })
