@@ -5,6 +5,8 @@ import {
 import { formatCurrency, formatPercent } from '~/lib/format'
 import { formatYearMonth as formatDate } from '~/lib/dates'
 import { useFinancialFreedomCalculator } from '~/composables/useFinancialFreedomCalculator'
+import LedgerCard from '~/components/LedgerCard.vue'
+import BaseButton from '~/components/BaseButton.vue'
 
 const { t, locale } = useI18n()
 const toast = useToast()
@@ -166,35 +168,35 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="freedom-page min-h-screen">
+  <div class="min-h-screen bg-dt-bg font-body">
     <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <div class="panel overflow-hidden p-6 sm:p-8">
+      <LedgerCard class="p-6 sm:p-8">
         <div class="grid gap-8 lg:grid-cols-[1.25fr_0.9fr] lg:items-center">
           <div>
-            <p class="kicker mb-3">{{ t('tools.financialFreedom.heroKicker') }}</p>
-            <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary mb-3">{{ t('tools.financialFreedom.heroKicker') }}</p>
+            <h1 class="font-display text-3xl font-semibold tracking-tight text-dt-text sm:text-4xl">
               {{ t('tools.financialFreedom.title') }}
             </h1>
-            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-dt-text-muted sm:text-base">
               {{ t('tools.financialFreedom.subtitle') }}
             </p>
 
             <div class="mt-6 grid gap-3 sm:grid-cols-3">
-              <div class="metric-card">
-                <div class="metric-label">{{ t('tools.financialFreedom.fireNumber') }}</div>
-                <div class="metric-value">
+              <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+                <span class="data-label">{{ t('tools.financialFreedom.fireNumber') }}</span>
+                <span class="data-value">
                   {{ result ? formatCompactValue(result.fireNumber) : '—' }}
-                </div>
+                </span>
               </div>
-              <div class="metric-card">
-                <div class="metric-label">{{ t('tools.financialFreedom.amountNeeded') }}</div>
-                <div class="metric-value">
+              <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+                <span class="data-label">{{ t('tools.financialFreedom.amountNeeded') }}</span>
+                <span class="data-value">
                   {{ result ? formatCompactValue(result.amountNeeded) : '—' }}
-                </div>
+                </span>
               </div>
-              <div class="metric-card">
-                <div class="metric-label">{{ t('tools.financialFreedom.yearsToFreedom') }}</div>
-                <div class="metric-value">
+              <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+                <span class="data-label">{{ t('tools.financialFreedom.yearsToFreedom') }}</span>
+                <span class="data-value">
                   <template v-if="result?.yearsToFreedom === 0">
                     {{ t('tools.financialFreedom.alreadyFree') }}
                   </template>
@@ -204,53 +206,53 @@ definePageMeta({
                   <template v-else>
                     —
                   </template>
-                </div>
+                </span>
               </div>
             </div>
           </div>
 
-          <div class="hero-spotlight">
-            <div class="hero-spotlight-label">{{ t('tools.financialFreedom.withdrawalRate') }}</div>
-            <div class="hero-spotlight-value">{{ formatPercent(withdrawalRate) }}</div>
-            <p class="text-sm leading-6 text-slate-300">
+          <div class="border border-dt-border rounded-xl bg-dt-surface p-5">
+            <div class="text-xs font-bold uppercase tracking-[0.16em] text-dt-text-muted">{{ t('tools.financialFreedom.withdrawalRate') }}</div>
+            <div class="hero-value mt-2 text-dt-text">{{ formatPercent(withdrawalRate) }}</div>
+            <p class="mt-1 text-sm leading-6 text-dt-text-muted">
               {{ t(`tools.financialFreedom.withdrawalPresets.${withdrawalRatePreset}.description`) }}
             </p>
 
             <div class="mt-5">
-              <div class="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-slate-400">
+              <div class="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.16em] text-dt-text-muted">
                 <span>{{ t('tools.financialFreedom.expectedReturn') }}</span>
                 <span>{{ expectedReturn }}%</span>
               </div>
               <div class="flex items-center gap-2">
                 <template v-for="(indicator, index) in returnRateIndicator" :key="indicator.level">
                   <div class="h-2.5 flex-1 rounded-full transition-all duration-300" :class="indicator.colorClass" />
-                  <span v-if="index < returnRateIndicator.length - 1" class="text-[10px] text-slate-500">•</span>
+                  <span v-if="index < returnRateIndicator.length - 1" class="text-[10px] text-dt-text-muted">•</span>
                 </template>
               </div>
             </div>
 
             <div class="mt-6 grid gap-3 sm:grid-cols-2">
-              <div class="spotlight-stat">
-                <span class="spotlight-stat-label">{{ t('tools.financialFreedom.monthlyContribution') }}</span>
-                <span class="spotlight-stat-value">{{ monthlyContribution ? formatCompactValue(monthlyContribution) : '—' }}</span>
+              <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-3">
+                <span class="data-label">{{ t('tools.financialFreedom.monthlyContribution') }}</span>
+                <span class="data-value">{{ monthlyContribution ? formatCompactValue(monthlyContribution) : '—' }}</span>
               </div>
-              <div class="spotlight-stat">
-                <span class="spotlight-stat-label">{{ t('tools.financialFreedom.currentAssets') }}</span>
-                <span class="spotlight-stat-value">{{ currentAssets !== null ? formatCompactValue(currentAssets) : '—' }}</span>
+              <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-3">
+                <span class="data-label">{{ t('tools.financialFreedom.currentAssets') }}</span>
+                <span class="data-value">{{ currentAssets !== null ? formatCompactValue(currentAssets) : '—' }}</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </LedgerCard>
     </section>
 
     <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8">
       <div class="space-y-6">
-        <div class="panel p-6 sm:p-7">
+        <LedgerCard>
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p class="kicker mb-2">{{ t('tools.financialFreedom.inputParams') }}</p>
-              <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              <p class="text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary mb-2">{{ t('tools.financialFreedom.inputParams') }}</p>
+              <h2 class="text-xl font-semibold text-dt-text">
                 {{ t('tools.financialFreedom.inputParams') }}
               </h2>
             </div>
@@ -261,90 +263,90 @@ definePageMeta({
 
           <div class="grid gap-5 md:grid-cols-2">
             <div>
-              <label class="field-label">{{ t('tools.financialFreedom.annualExpenses') }}</label>
-              <div class="field-shell">
-                <input v-model.number="annualExpenses" type="number" min="0" step="10000" :placeholder="t('tools.financialFreedom.annualExpensesPlaceholder')" class="field-input">
-                <span class="field-unit">{{ t('tools.financialFreedom.units.perYearCurrency') }}</span>
+              <label class="data-label">{{ t('tools.financialFreedom.annualExpenses') }}</label>
+              <div class="relative mt-1.5">
+                <input v-model.number="annualExpenses" type="number" min="0" step="10000" :placeholder="t('tools.financialFreedom.annualExpensesPlaceholder')" class="w-full border border-dt-border rounded-lg bg-dt-surface px-3 py-2.5 text-dt-text focus:border-dt-primary focus:outline-none">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold font-mono text-dt-text-muted">{{ t('tools.financialFreedom.units.perYearCurrency') }}</span>
               </div>
-              <p class="field-hint">{{ t('tools.financialFreedom.annualExpensesHint') }}</p>
+              <p class="mt-1.5 text-xs text-dt-text-muted">{{ t('tools.financialFreedom.annualExpensesHint') }}</p>
             </div>
 
             <div>
-              <label class="field-label">{{ t('tools.financialFreedom.currentAssets') }}</label>
-              <div class="field-shell">
-                <input v-model.number="currentAssets" type="number" min="0" step="100000" :placeholder="t('tools.financialFreedom.currentAssetsPlaceholder')" class="field-input">
-                <span class="field-unit">{{ t('tools.financialFreedom.units.currency') }}</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="field-label">{{ t('tools.financialFreedom.monthlyContribution') }}</label>
-              <div class="field-shell">
-                <input v-model.number="monthlyContribution" type="number" min="0" step="5000" :placeholder="t('tools.financialFreedom.monthlyContributionPlaceholder')" class="field-input">
-                <span class="field-unit">{{ t('tools.financialFreedom.units.perMonthCurrency') }}</span>
+              <label class="data-label">{{ t('tools.financialFreedom.currentAssets') }}</label>
+              <div class="relative mt-1.5">
+                <input v-model.number="currentAssets" type="number" min="0" step="100000" :placeholder="t('tools.financialFreedom.currentAssetsPlaceholder')" class="w-full border border-dt-border rounded-lg bg-dt-surface px-3 py-2.5 text-dt-text focus:border-dt-primary focus:outline-none">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold font-mono text-dt-text-muted">{{ t('tools.financialFreedom.units.currency') }}</span>
               </div>
             </div>
 
             <div>
-              <label class="field-label">{{ t('tools.financialFreedom.expectedReturn') }}</label>
-              <div class="field-shell">
-                <input v-model.number="expectedReturn" type="number" min="0" max="30" step="0.5" class="field-input">
-                <span class="field-unit">%</span>
+              <label class="data-label">{{ t('tools.financialFreedom.monthlyContribution') }}</label>
+              <div class="relative mt-1.5">
+                <input v-model.number="monthlyContribution" type="number" min="0" step="5000" :placeholder="t('tools.financialFreedom.monthlyContributionPlaceholder')" class="w-full border border-dt-border rounded-lg bg-dt-surface px-3 py-2.5 text-dt-text focus:border-dt-primary focus:outline-none">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold font-mono text-dt-text-muted">{{ t('tools.financialFreedom.units.perMonthCurrency') }}</span>
               </div>
-              <p class="field-hint">{{ t('tools.financialFreedom.expectedReturnHint') }}</p>
+            </div>
+
+            <div>
+              <label class="data-label">{{ t('tools.financialFreedom.expectedReturn') }}</label>
+              <div class="relative mt-1.5">
+                <input v-model.number="expectedReturn" type="number" min="0" max="30" step="0.5" class="w-full border border-dt-border rounded-lg bg-dt-surface px-3 py-2.5 text-dt-text focus:border-dt-primary focus:outline-none">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold font-mono text-dt-text-muted">%</span>
+              </div>
+              <p class="mt-1.5 text-xs text-dt-text-muted">{{ t('tools.financialFreedom.expectedReturnHint') }}</p>
             </div>
           </div>
 
-          <div class="subpanel mt-6">
+          <div class="mt-6 min-w-0 border border-dt-border rounded-lg bg-dt-surface-raised p-4">
             <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-300">
+              <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-dt-text-muted">
                 {{ t('tools.financialFreedom.expectedReturn') }} {{ t('common.range') }}
               </h3>
-              <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ expectedReturn }}%</span>
+              <span class="text-sm font-semibold text-dt-text">{{ expectedReturn }}%</span>
             </div>
 
             <div class="grid gap-3 sm:grid-cols-3">
-              <div class="range-card" :class="returnRateLevel === 'conservative' ? 'range-card-active-slate' : ''">
+              <div class="border border-dt-border rounded-lg bg-dt-surface p-4 text-left transition-colors duration-180" :class="returnRateLevel === 'conservative' ? 'border-dt-text-muted bg-dt-surface-raised' : ''">
                 <div class="mb-2 flex items-center gap-2">
                   <div class="h-2.5 w-2.5 rounded-full bg-slate-500" />
-                  <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <span class="text-sm font-semibold text-dt-text">
                     {{ t('tools.financialFreedom.returnRateLevels.conservative.label') }}
                   </span>
                 </div>
-                <div class="text-xs text-slate-500 dark:text-slate-400">
+                <div class="text-xs text-dt-text-muted">
                   {{ t('tools.financialFreedom.returnRateLevels.conservative.range') }}
                 </div>
-                <p class="mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                <p class="mt-2 text-xs leading-5 text-dt-text-muted">
                   {{ t('tools.financialFreedom.returnRateLevels.conservative.description') }}
                 </p>
               </div>
 
-              <div class="range-card" :class="returnRateLevel === 'target' ? 'range-card-active-green' : ''">
+              <div class="border border-dt-border rounded-lg bg-dt-surface p-4 text-left transition-colors duration-180" :class="returnRateLevel === 'target' ? 'border-dt-accent bg-dt-surface' : ''">
                 <div class="mb-2 flex items-center gap-2">
                   <div class="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <span class="text-sm font-semibold text-dt-text">
                     {{ t('tools.financialFreedom.returnRateLevels.target.label') }}
                   </span>
                 </div>
-                <div class="text-xs text-slate-500 dark:text-slate-400">
+                <div class="text-xs text-dt-text-muted">
                   {{ t('tools.financialFreedom.returnRateLevels.target.range') }}
                 </div>
-                <p class="mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                <p class="mt-2 text-xs leading-5 text-dt-text-muted">
                   {{ t('tools.financialFreedom.returnRateLevels.target.description') }}
                 </p>
               </div>
 
-              <div class="range-card" :class="returnRateLevel === 'expert' ? 'range-card-active-violet' : ''">
+              <div class="border border-dt-border rounded-lg bg-dt-surface p-4 text-left transition-colors duration-180" :class="returnRateLevel === 'expert' ? 'border-dt-primary bg-dt-surface' : ''">
                 <div class="mb-2 flex items-center gap-2">
                   <div class="h-2.5 w-2.5 rounded-full bg-violet-500" />
-                  <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <span class="text-sm font-semibold text-dt-text">
                     {{ t('tools.financialFreedom.returnRateLevels.expert.label') }}
                   </span>
                 </div>
-                <div class="text-xs text-slate-500 dark:text-slate-400">
+                <div class="text-xs text-dt-text-muted">
                   {{ t('tools.financialFreedom.returnRateLevels.expert.range') }}
                 </div>
-                <p class="mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                <p class="mt-2 text-xs leading-5 text-dt-text-muted">
                   {{ t('tools.financialFreedom.returnRateLevels.expert.description') }}
                 </p>
               </div>
@@ -352,25 +354,25 @@ definePageMeta({
           </div>
 
           <div class="mt-6">
-            <label class="field-label">{{ t('tools.financialFreedom.withdrawalRate') }}</label>
+            <label class="data-label">{{ t('tools.financialFreedom.withdrawalRate') }}</label>
             <div class="grid gap-3 sm:grid-cols-3">
               <button
                 v-for="preset in withdrawalRatePresets"
                 :key="preset.id"
                 type="button"
-                class="choice-card cursor-pointer"
-                :class="withdrawalRatePreset === preset.id ? 'choice-card-active' : ''"
+                class="cursor-pointer border border-dt-border rounded-lg bg-dt-surface p-4 text-left transition-colors duration-180"
+                :class="withdrawalRatePreset === preset.id ? 'border-dt-primary bg-dt-surface' : ''"
                 @click="withdrawalRatePreset = preset.id"
               >
                 <div class="text-sm font-semibold">{{ getPresetName(preset) }}</div>
-                <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ preset.rate }}%</div>
+                <div class="mt-1 text-xs text-dt-text-muted">{{ preset.rate }}%</div>
               </button>
             </div>
           </div>
-        </div>
+        </LedgerCard>
 
-        <div v-if="isValidInput && result" class="panel overflow-hidden">
-          <div class="result-banner p-6 sm:p-7">
+        <div v-if="isValidInput && result" class="overflow-hidden rounded-xl border border-dt-border shadow-sm">
+          <div class="bg-dt-primary rounded-t-xl p-6 sm:p-7">
             <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/80">
@@ -380,10 +382,10 @@ definePageMeta({
                   {{ formatCompactValue(result.fireNumber) }}
                 </div>
               </div>
-              <button type="button" class="action-btn w-full cursor-pointer sm:w-auto" @click="copyToClipboard">
+              <BaseButton variant="primary" class="w-full sm:w-auto" @click="copyToClipboard">
                 <Icon :name="copySuccess ? 'heroicons:check' : 'heroicons:clipboard-document'" class="mr-2 h-4 w-4" />
                 {{ copySuccess ? t('tools.financialFreedom.copied') : t('tools.financialFreedom.copyToClipboard') }}
-              </button>
+              </BaseButton>
             </div>
 
             <div class="mt-6">
@@ -397,14 +399,14 @@ definePageMeta({
             </div>
           </div>
 
-          <div class="grid gap-4 border-t border-slate-200/70 p-6 dark:border-slate-800 sm:grid-cols-3 sm:p-7">
-            <div class="summary-card">
-              <div class="summary-label">{{ t('tools.financialFreedom.amountNeeded') }}</div>
-              <div class="summary-value">{{ formatCompactValue(result.amountNeeded) }}</div>
+          <div class="grid gap-4 border-t border-dt-border bg-dt-surface p-6 sm:grid-cols-3 sm:p-7">
+            <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+              <span class="data-label">{{ t('tools.financialFreedom.amountNeeded') }}</span>
+              <span class="data-value">{{ formatCompactValue(result.amountNeeded) }}</span>
             </div>
-            <div class="summary-card">
-              <div class="summary-label">{{ t('tools.financialFreedom.yearsToFreedom') }}</div>
-              <div class="summary-value">
+            <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+              <span class="data-label">{{ t('tools.financialFreedom.yearsToFreedom') }}</span>
+              <span class="data-value">
                 <template v-if="result.yearsToFreedom === 0">
                   {{ t('tools.financialFreedom.alreadyFree') }}
                 </template>
@@ -414,11 +416,11 @@ definePageMeta({
                 <template v-else>
                   > 100 {{ t('tools.financialFreedom.years') }}
                 </template>
-              </div>
+              </span>
             </div>
-            <div class="summary-card">
-              <div class="summary-label">{{ t('tools.financialFreedom.freedomDate') }}</div>
-              <div class="summary-value">
+            <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+              <span class="data-label">{{ t('tools.financialFreedom.freedomDate') }}</span>
+              <span class="data-value">
                 <template v-if="result.yearsToFreedom === 0">
                   {{ t('tools.financialFreedom.now') }}
                 </template>
@@ -428,16 +430,16 @@ definePageMeta({
                 <template v-else>
                   —
                 </template>
-              </div>
+              </span>
             </div>
           </div>
         </div>
 
-        <div v-if="isValidInput && result" class="panel p-6 sm:p-7">
+        <LedgerCard v-if="isValidInput && result">
           <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <div>
-              <p class="kicker mb-2">{{ t('tools.financialFreedom.withdrawalCapacity') }}</p>
-              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              <p class="text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary mb-2">{{ t('tools.financialFreedom.withdrawalCapacity') }}</p>
+              <h3 class="text-xl font-semibold text-dt-text">
                 {{ t('tools.financialFreedom.withdrawalCapacity') }}
               </h3>
             </div>
@@ -447,45 +449,45 @@ definePageMeta({
           </div>
 
           <div class="grid gap-4 sm:grid-cols-3">
-            <div class="summary-card">
-              <div class="summary-label">{{ t('tools.financialFreedom.monthly') }}</div>
-              <div class="summary-value">{{ formatCompactValue(result.monthlyWithdrawal) }}</div>
+            <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+              <span class="data-label">{{ t('tools.financialFreedom.monthly') }}</span>
+              <span class="data-value">{{ formatCompactValue(result.monthlyWithdrawal) }}</span>
             </div>
-            <div class="summary-card">
-              <div class="summary-label">{{ t('tools.financialFreedom.weekly') }}</div>
-              <div class="summary-value">{{ formatCompactValue(result.weeklyWithdrawal) }}</div>
+            <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+              <span class="data-label">{{ t('tools.financialFreedom.weekly') }}</span>
+              <span class="data-value">{{ formatCompactValue(result.weeklyWithdrawal) }}</span>
             </div>
-            <div class="summary-card">
-              <div class="summary-label">{{ t('tools.financialFreedom.daily') }}</div>
-              <div class="summary-value">{{ formatCompactValue(result.dailyWithdrawal) }}</div>
+            <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+              <span class="data-label">{{ t('tools.financialFreedom.daily') }}</span>
+              <span class="data-value">{{ formatCompactValue(result.dailyWithdrawal) }}</span>
             </div>
           </div>
-        </div>
+        </LedgerCard>
       </div>
 
       <div class="space-y-6">
-        <div v-if="isValidInput && result" class="panel p-6 sm:p-7">
-          <p class="kicker mb-2">{{ t('tools.financialFreedom.recommendation') }}</p>
-          <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+        <LedgerCard v-if="isValidInput && result">
+          <p class="text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary mb-2">{{ t('tools.financialFreedom.recommendation') }}</p>
+          <h3 class="text-xl font-semibold text-dt-text">
             {{ t('tools.financialFreedom.recommendation') }}
           </h3>
-          <div class="recommendation-card mt-5">
-            <Icon name="heroicons:light-bulb" class="h-5 w-5 text-emerald-500" />
-            <p class="whitespace-pre-line text-sm leading-6 text-slate-700 dark:text-slate-200">
+          <div class="mt-5 flex gap-3 items-start border border-dt-border rounded-lg bg-dt-surface-raised p-4">
+            <Icon name="heroicons:light-bulb" class="h-5 w-5 shrink-0 text-emerald-500" />
+            <p class="whitespace-pre-line text-sm leading-6 text-dt-text">
               {{ localizedRecommendation }}
             </p>
           </div>
-        </div>
+        </LedgerCard>
 
-        <div v-if="isValidInput && result" class="panel p-6 sm:p-7">
+        <LedgerCard v-if="isValidInput && result">
           <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p class="kicker mb-2">{{ t('tools.financialFreedom.yearlyProjection') }}</p>
-              <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              <p class="text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary mb-2">{{ t('tools.financialFreedom.yearlyProjection') }}</p>
+              <h3 class="text-xl font-semibold text-dt-text">
                 {{ t('tools.financialFreedom.yearlyProjection') }}
               </h3>
             </div>
-            <div class="text-right text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+            <div class="text-right text-xs uppercase tracking-[0.16em] text-dt-text-muted">
               {{ result.yearlyProjection.length }} {{ t('tools.financialFreedom.years') }}
             </div>
           </div>
@@ -494,15 +496,15 @@ definePageMeta({
             <div
               v-for="year in result.yearlyProjection"
               :key="year.year"
-              class="projection-row"
-              :class="year.isFreed ? 'projection-row-active' : ''"
+              class="min-w-0 border border-dt-border rounded-lg bg-dt-surface-raised p-4"
+              :class="year.isFreed ? 'border-dt-accent bg-dt-surface' : ''"
             >
               <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  <div class="text-sm font-semibold text-dt-text">
                     {{ t('tools.financialFreedom.yearN', { n: year.year }) }}
                   </div>
-                  <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  <div class="mt-1 text-xs text-dt-text-muted">
                     {{ t('tools.financialFreedom.startingAssets') }} {{ formatCompactValue(year.startingAssets) }}
                   </div>
                 </div>
@@ -512,72 +514,38 @@ definePageMeta({
               </div>
 
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                <div class="projection-stat">
-                  <span class="projection-label">{{ t('tools.financialFreedom.contribution') }}</span>
-                  <span class="projection-value">+{{ formatCompactValue(year.contribution) }}</span>
+                <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+                  <span class="data-label">{{ t('tools.financialFreedom.contribution') }}</span>
+                  <span class="data-value">+{{ formatCompactValue(year.contribution) }}</span>
                 </div>
-                <div class="projection-stat">
-                  <span class="projection-label">{{ t('tools.financialFreedom.returns') }}</span>
-                  <span class="projection-value" :class="year.returns >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+                <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+                  <span class="data-label">{{ t('tools.financialFreedom.returns') }}</span>
+                  <span class="data-value" :class="year.returns >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
                     {{ year.returns >= 0 ? '+' : '' }}{{ formatCompactValue(year.returns) }}
                   </span>
                 </div>
-                <div class="projection-stat">
-                  <span class="projection-label">{{ t('tools.financialFreedom.endingAssets') }}</span>
-                  <span class="projection-value">{{ formatCompactValue(year.endingAssets) }}</span>
+                <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+                  <span class="data-label">{{ t('tools.financialFreedom.endingAssets') }}</span>
+                  <span class="data-value">{{ formatCompactValue(year.endingAssets) }}</span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </LedgerCard>
 
-        <div v-else class="panel p-10 text-center">
-          <Icon name="heroicons:banknotes" class="mx-auto h-14 w-14 text-slate-300 dark:text-slate-300" />
-          <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">
+        <LedgerCard v-else class="p-10 text-center">
+          <Icon name="heroicons:banknotes" class="mx-auto h-14 w-14 text-dt-text-muted" />
+          <p class="mt-4 text-sm text-dt-text-muted">
             {{ t('tools.financialFreedom.emptyState') }}
           </p>
-        </div>
+        </LedgerCard>
       </div>
     </section>
   </div>
 </template>
 
 <style scoped>
-.freedom-page {
-  font-family: var(--font-body);
-  background: var(--color-background);
-}
-
-.panel {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-}
-
-.kicker {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--color-secondary);
-  font-weight: 700;
-}
-
-.metric-card,
-.summary-card,
-.projection-stat {
-  min-width: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  padding: 1rem;
-}
-
-.metric-label,
-.summary-label,
-.projection-label,
-.spotlight-stat-label,
-.field-label {
+.data-label {
   display: block;
   min-width: 0;
   font-size: 0.75rem;
@@ -590,10 +558,7 @@ definePageMeta({
   color: var(--color-text-soft);
 }
 
-.metric-value,
-.summary-value,
-.projection-value,
-.spotlight-stat-value {
+.data-value {
   margin-top: 0.5rem;
   display: block;
   min-width: 0;
@@ -606,166 +571,13 @@ definePageMeta({
   color: var(--color-text);
 }
 
-.hero-spotlight {
-  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
-  background: linear-gradient(160deg, var(--color-panel-ink), color-mix(in srgb, var(--color-panel-ink) 94%, transparent) 48%, color-mix(in srgb, var(--color-panel-ink) 80%, var(--color-surface-strong)));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
-}
-
-.hero-spotlight-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgb(255 255 255 / 60%);
-}
-
-.hero-spotlight-value {
-  margin-top: 0.5rem;
+.hero-value {
   overflow-wrap: anywhere;
   word-break: break-word;
   line-height: 1.1;
   font-size: clamp(1.75rem, 4vw, 2.5rem);
   font-weight: 600;
   font-family: var(--font-data);
-  color: white;
-}
-
-.spotlight-stat {
-  min-width: 0;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: var(--radius-sm);
-  padding: 0.9rem 1rem;
-  background: rgb(255 255 255 / 4%);
-}
-
-.subpanel,
-.recommendation-card,
-.projection-row {
-  min-width: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-muted);
-  padding: 1rem;
-}
-
-.field-shell {
-  position: relative;
-  margin-top: 0.55rem;
-}
-
-.field-input {
-  width: 100%;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  padding: 0.9rem 3.5rem 0.9rem 1rem;
-  color: var(--color-text);
-  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-}
-
-.field-input:focus {
-  outline: none;
-  border-color: var(--color-secondary);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-secondary) 15%, transparent);
-}
-
-.field-unit {
-  position: absolute;
-  right: 0.95rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: var(--font-data);
-  color: var(--color-text-soft);
-}
-
-.field-hint {
-  margin-top: 0.45rem;
-  font-size: 0.8rem;
-  color: var(--color-text-soft);
-}
-
-.range-card,
-.choice-card {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  padding: 1rem;
-  text-align: left;
-  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
-}
-
-.choice-card:hover,
-.range-card:hover {
-  transform: translateY(-1px);
-}
-
-.choice-card-active {
-  border-color: var(--color-secondary);
-  background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-surface));
-}
-
-.range-card-active-slate {
-  border-color: var(--color-text-soft);
-  background: var(--color-surface-muted);
-}
-
-.range-card-active-green {
-  border-color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
-}
-
-.range-card-active-violet {
-  border-color: #8b5cf6;
-  background: color-mix(in srgb, #8b5cf6 8%, var(--color-surface));
-}
-
-.result-banner {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-info) 35%, transparent), transparent 28%),
-    linear-gradient(145deg, var(--color-panel-ink), color-mix(in srgb, var(--color-panel-ink) 80%, var(--color-surface-strong)));
-}
-
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-pill);
-  padding: 0.7rem 1.2rem;
-  color: white;
-  background: var(--color-primary);
-  transition: background-color var(--motion-fast) var(--easing-standard), transform var(--motion-fast) var(--easing-standard);
-}
-
-.action-btn:hover {
-  background: var(--color-primary-active);
-  transform: translateY(-1px);
-}
-
-.recommendation-card {
-  display: flex;
-  gap: 0.85rem;
-  align-items: flex-start;
-}
-
-.projection-row-active {
-  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
-}
-
-/* Typography & color overrides for Tailwind hardcoded classes */
-.freedom-page h1 {
-  font-family: var(--font-display);
-  color: var(--color-text);
-}
-
-.freedom-page h2,
-.freedom-page h3 {
-  color: var(--color-text);
 }
 
 @media (max-width: 639px) {
@@ -773,5 +585,4 @@ definePageMeta({
     flex-direction: column;
   }
 }
-
 </style>
