@@ -1,8 +1,7 @@
-import prisma from '~/lib/prisma'
-import { getUtcDayRange } from '~/lib/diary-date'
 import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
+import { findDiaryByDate } from '~/server/utils/diary-read'
 import { attachDiaryTags } from '~/server/utils/diary-response'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
@@ -19,23 +18,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Normalize date search to UTC day range for timezone-stable matching
-    const { startOfDayUtc, endOfDayUtc } = getUtcDayRange(dateStr)
-
-    // Find diary within the date range for this user
-    const diary = await prisma.diary.findFirst({
-      where: {
-        userId: user.id,
-        date: {
-          gte: startOfDayUtc,
-          lte: endOfDayUtc,
-        },
-      },
-      include: {
-        transactions: true,
-        alerts: true,
-      },
-    })
+    const diary = await findDiaryByDate(dateStr, user.id)
 
     log.debug('Loaded diary by date', {
       userId: user.id,

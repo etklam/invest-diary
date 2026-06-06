@@ -1,7 +1,7 @@
-import prisma from '../../../lib/prisma'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { findDiaryForUser } from '~/server/utils/diary-read'
 import { attachDiaryTags } from '~/server/utils/diary-response'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
@@ -15,28 +15,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const diaryId = parsePositiveBigIntParam(event, 'id')
-  const diaryIdString = diaryId.toString()
 
   try {
-    const diary = await prisma.diary.findFirst({
-      where: {
-        id: diaryId,
-      },
-      include: {
-        transactions: true,
-        alerts: true,
-      },
-    })
+    const diary = await findDiaryForUser(diaryId, rawUserId)
 
-    if (!diary) {
-      throw Errors.diaryNotFound(diaryIdString)
-    }
-
-    if (diary.userId?.toString() !== rawUserId.toString()) {
-      throw Errors.diaryAccessDenied()
-    }
-
-    log.info('Diary fetched', { diaryId: diaryIdString })
+    log.info('Diary fetched', { diaryId: String(diaryId) })
     return serialize(attachDiaryTags(diary))
   } catch (error) {
     handleApiError(error, log)

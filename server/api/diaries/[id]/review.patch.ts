@@ -3,6 +3,7 @@ import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { findDiaryForUser } from '~/server/utils/diary-read'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
 
@@ -15,7 +16,6 @@ export default defineEventHandler(async (event) => {
   const userId = BigInt(user.id)
 
   const diaryId = parsePositiveBigIntParam(event, 'id')
-  const diaryIdString = diaryId.toString()
 
   try {
     const body = await readBody(event)
@@ -30,17 +30,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Ownership check
-    const existingDiary = await prisma.diary.findFirst({
-      where: { id: diaryId },
-    })
-
-    if (!existingDiary) {
-      throw Errors.diaryNotFound(diaryIdString)
-    }
-
-    if (existingDiary.userId?.toString() !== userId.toString()) {
-      throw Errors.diaryAccessDenied()
-    }
+    await findDiaryForUser(diaryId, userId)
 
     // Build update data
     const updateData: Record<string, unknown> = { reviewStatus }
@@ -63,7 +53,7 @@ export default defineEventHandler(async (event) => {
     })
 
     log.info('Diary review status updated', {
-      diaryId: diaryIdString,
+      diaryId: String(diaryId),
       reviewStatus,
       userId: user.id,
     })
