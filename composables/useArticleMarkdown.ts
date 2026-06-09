@@ -1,14 +1,9 @@
 import { ref, shallowRef, watch, type Ref } from 'vue'
+import { parseMarkdown } from '@nuxtjs/mdc/runtime'
 import type { MDCParserResult } from '@nuxtjs/mdc'
 
 type ArticleMarkdownParser = (content: string) => Promise<MDCParserResult>
 
-/**
- * Uses Nuxt auto-imported parseMarkdown from @nuxtjs/mdc.
- * Do NOT use dynamic `import('@nuxtjs/mdc/runtime')` — the bare specifier
- * cannot be resolved by the browser, so it only works during SSR and fails
- * on the client with "Failed to resolve module specifier".
- */
 const defaultParseArticleMarkdown: ArticleMarkdownParser = async (content) => {
   return parseMarkdown(content, {
     toc: false,
