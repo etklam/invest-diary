@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diary-vue-app
+  namespace: diary-vue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: diary-vue-app
+  template:
+    metadata:
+      labels:
+        app: diary-vue-app
+    spec:
+      containers:
+        - name: diary-vue
+          image: git.913555.xyz/etklam/invest-diary:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: DATABASE_URL
+              value: "mysql://diaryvue:puvCjALat7da1aBYz4ILuLqo@diary-vue-db.diary-vue.svc.cluster.local:3306/invest_diary"
+            - name: NUXT_PUBLIC_APP_NAME
+              value: "投資日記"
+            - name: NUXT_PUBLIC_SITE_URL
+              value: "https://trade-basic.com"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: diary-vue-app-secrets
+                  key: JWT_SECRET
+            - name: TELEGRAM_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: diary-vue-app-secrets
+                  key: TELEGRAM_WEBHOOK_SECRET
+            - name: TELEGRAM_BOT_TOKEN
+              value: ""
+            - name: NUXT_PUBLIC_TELEGRAM_BOT_USERNAME
+              value: ""
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10

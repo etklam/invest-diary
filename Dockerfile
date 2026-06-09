@@ -55,6 +55,8 @@ ENV NODE_ENV=production \
 # Copy built application from builder
 COPY --from=builder /app/.output ./.output
 COPY --from=prod-deps /app/node_modules ./node_modules
+# Prisma client is generated in builder stage but not in prod-deps; copy it explicitly
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/package.json ./package.json

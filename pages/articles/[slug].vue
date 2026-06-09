@@ -208,9 +208,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import DOMPurify from 'dompurify'
 import type { Config as DOMPurifyConfig } from 'dompurify'
+import { parseMarkdown } from '@nuxtjs/mdc/runtime'
 import { calculateReadingTime, looksLikeHtmlContent, parseTags } from '~/lib/blog'
 import { usePerformance } from '~/composables/usePerformance'
-import { useArticleMarkdown } from '~/composables/useArticleMarkdown'
 import { normalizeCategory } from '~/types/blog'
 
 definePageMeta({
@@ -314,11 +314,24 @@ const isHtmlContent = computed(() => {
   return looksLikeHtmlContent(articleContent.value)
 })
 
+// Use useAsyncData so markdown parsing is awaited during SSR
 const {
-  parsed: articleMarkdown,
+  data: articleMarkdown,
   pending: articleMarkdownPending,
   error: articleMarkdownError,
-} = useArticleMarkdown(articleContent, isHtmlContent)
+} = useAsyncData(
+  articleContentCacheKey,
+  async () => {
+    if (!articleContent.value || isHtmlContent.value) return null
+    return parseMarkdown(articleContent.value, {
+      toc: false,
+      contentHeading: false,
+    })
+  },
+  {
+    watch: [articleContentCacheKey],
+  },
+)
 
 const sanitizedContent = computed(() => {
   if (!articleContent.value) return ''

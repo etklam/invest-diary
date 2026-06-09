@@ -37,11 +37,17 @@ jobs:
           docker image prune -f --filter "dangling=true" || true
           docker build \
             --pull \
+            --no-cache \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA} \
             .
           docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHA}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Verify Prisma client in image
+        run: |
+          docker run --rm --entrypoint ls ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest /app/node_modules/.prisma/client/default.js \
+            || (echo "ERROR: .prisma/client missing from image!" && exit 1)
 
       - name: Deploy to K3s
         run: |
