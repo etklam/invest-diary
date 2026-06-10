@@ -1,0 +1,139 @@
+import type { MarketState } from './state'
+import type { BreadthCondition, BreadthConfirmation } from './breadth'
+import type { MaStatus, RotationSignal, SignalStatus } from './signal'
+import type { RankScope } from './types'
+import { getBreadthCondition, getBreadthConfirmation } from './breadth'
+
+export interface MarketRotationMonitorRow {
+  symbol: string
+  name: string
+  groupType: 'sector' | 'index' | 'core'
+  sectorName: string | null
+  lastPrice: number | null
+  rsi14: number | null
+  above20d: boolean | null
+  above50d: boolean | null
+  maStatus: MaStatus
+  percentFromHigh: number | null
+  rotationScore: number | null
+  rotationScoreDelta2W: number | null
+  rotationRank: number | null
+  rankDelta2W: number | null
+  rsiDelta2W: number | null
+  twoWeekPerformancePct: number | null
+  signal: RotationSignal | null
+  signalStatus: SignalStatus
+}
+
+export interface MarketRotationMonitorInput {
+  asOfDate: string
+  comparisonDate: string | null
+  rankScope: RankScope
+  marketState: MarketState
+  rows: MarketRotationMonitorRow[]
+}
+
+export interface RatioMetric {
+  count: number
+  total: number
+  ratio: number | null
+}
+
+export interface MarketRotationMonitorSummary {
+  marketState: MarketState
+  breadthCondition: BreadthCondition
+  breadthConfirmation: BreadthConfirmation
+  above20d: RatioMetric
+  above50d: RatioMetric
+  averageRsi: number | null
+}
+
+export interface MarketRotationMonitorDataQuality {
+  asOfDate: string
+  comparisonDate: string | null
+  rankScope: RankScope
+  rowCount: number
+  completeSignalCount: number
+}
+
+export interface MarketRotationMonitorPayload {
+  summary: MarketRotationMonitorSummary
+  rows: MarketRotationMonitorRow[]
+  topImproving: MarketRotationMonitorRow[]
+  bottomWeakening: MarketRotationMonitorRow[]
+  dataQuality: MarketRotationMonitorDataQuality
+}
+
+function roundMetric(value: number): number {
+  return Math.round(value * 10000) / 10000
+}
+
+function buildRatio(rows: MarketRotationMonitorRow[], field: 'above20d' | 'above50d'): RatioMetric {
+  const eligible = rows.filter(row => row[field] != null)
+  const count = eligible.filter(row => row[field] === true).length
+
+  return {
+    count,
+    total: eligible.length,
+    ratio: eligible.length > 0 ? roundMetric(count / eligible.length) : null,
+  }
+}
+
+function calculateAverageRsi(rows: MarketRotationMonitorRow[]): number | null {
+  const values = rows
+    .map(row => row.rsi14)
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value))
+
+  if (values.length === 0) return null
+
+  return roundMetric(values.reduce((sum, value) => sum + value, 0) / values.length)
+}
+
+function compareLeadershipChange(a: MarketRotationMonitorRow, b: MarketRotationMonitorRow): number {
+  return (b.rankDelta2W ?? Number.NEGATIVE_INFINITY) - (a.rankDelta2W ?? Number.NEGATIVE_INFINITY)
+    || (b.rotationScoreDelta2W ?? Number.NEGATIVE_INFINITY) - (a.rotationScoreDelta2W ?? Number.NEGATIVE_INFINITY)
+    || (b.twoWeekPerformancePct ?? Number.NEGATIVE_INFINITY) - (a.twoWeekPerformancePct ?? Number.NEGATIVE_INFINITY)
+    || (b.rsiDelta2W ?? Number.NEGATIVE_INFINITY) - (a.rsiDelta2W ?? Number.NEGATIVE_INFINITY)
+    || (a.rotationRank ?? Number.POSITIVE_INFINITY) - (b.rotationRank ?? Number.POSITIVE_INFINITY)
+}
+
+function compareRowsByRank(a: MarketRotationMonitorRow, b: MarketRotationMonitorRow): number {
+  return (a.rotationRank ?? Number.POSITIVE_INFINITY) - (b.rotationRank ?? Number.POSITIVE_INFINITY)
+    || a.symbol.localeCompare(b.symbol)
+}
+
+export function buildMarketRotationMonitorPayload(input: MarketRotationMonitorInput): MarketRotationMonitorPayload {
+  const rows = [...input.rows].sort(compareRowsByRank)
+  const above20d = buildRatio(rows, 'above20d')
+  const above50d = buildRatio(rows, 'above50d')
+  const improvingRows = rows
+    .filter(row => row.rankDelta2W != null && row.rankDelta2W > 0)
+    .sort(compareLeadershipChange)
+    .slice(0, 3)
+  const weakeningRows = rows
+    .filter(row => row.rankDelta2W != null && row.rankDelta2W < 0)
+    .sort(compareLeadershipChange)
+    .slice(-3)
+    .reverse()
+
+  return {
+    summary: {
+      marketState: input.marketState,
+      breadthCondition: getBreadthCondition(above50d.ratio),
+      breadthConfirmation: getBreadthConfirmation(input.marketState, above50d.ratio),
+      above20d,
+      above50d,
+      averageRsi: calculateAverageRsi(rows),
+    },
+    rows,
+    topImproving: improvingRows,
+    bottomWeakening: weakeningRows,
+    dataQuality: {
+      asOfDate: input.asOfDate,
+      comparisonDate: input.comparisonDate,
+      rankScope: input.rankScope,
+      rowCount: rows.length,
+      completeSignalCount: rows.filter(row => row.signalStatus === 'complete').length,
+    },
+  }
+}

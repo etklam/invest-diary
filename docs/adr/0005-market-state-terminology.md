@@ -1,0 +1,13 @@
+# ADR-0005: Use Market State Terminology
+
+Market Rotation Monitor uses **Market State** as the product and internal concept name for the main market condition label. The dashboard should own its terminology instead of inheriting copied external product language, and Market State is clearer for Trade Basic users.
+
+The canonical `marketState` values are `risk_on`, `neutral`, `defensive`, `risk_off`, and `unknown`. Sector breadth supports the main state through `breadthCondition` and `breadthConfirmation`; it is supporting evidence, not a competing state engine.
+
+This terminology change is a hard migration. Product copy, code, API paths, response fields, schema fields, tests, scripts, and documentation should move to Market State naming without exposing public legacy aliases. Public endpoints should use `/api/market/state/snapshot` and `/api/market/state/history`; response fields should use `marketState`, `breadthCondition`, and `breadthConfirmation`.
+
+Existing internal state values map into the simplified user-facing `marketState` field as follows: `BULLISH_THRUST -> risk_on`, `RISK_ON -> risk_on`, `NEUTRAL -> neutral`, `RISK_OFF -> defensive`, `CAPITULATION_WATCH -> risk_off`, and missing or unknown values -> `unknown`. Internal state values are not exposed directly as the main dashboard label. Thrust details may appear in summary text or supporting evidence, but the main state remains `risk_on`; `RISK_OFF` maps to `defensive` because it represents a weaker posture rather than full panic, while `CAPITULATION_WATCH` maps to `risk_off`.
+
+`breadthCondition` describes absolute sector breadth using only the sectors universe. Its canonical values are `broad_participation`, `constructive`, `narrowing`, `weak_breadth`, and `unknown`. It is based on the sectors-above-50d ratio: `>= 70%` is `broad_participation`, `>= 50% and < 70%` is `constructive`, `>= 35% and < 50%` is `narrowing`, `< 35%` is `weak_breadth`, and insufficient data is `unknown`.
+
+`breadthConfirmation` describes whether sector breadth supports the current `marketState`. Its canonical values are `confirming`, `mixed`, `warning`, and `unknown`. For `risk_on`, breadth is `confirming` at 50% or more above 50d, `mixed` at 35%-50%, and `warning` below 35%. For `neutral`, middle-range participation is `confirming`, while unusually strong or weak breadth is `mixed`. For `defensive`, breadth is `confirming` below 50%, `mixed` at 50%-70%, and `warning` at 70% or more. For `risk_off`, breadth is `confirming` below 35%, `mixed` at 35%-50%, and `warning` at 50% or more. If `marketState` or breadth data is unknown, `breadthConfirmation` is `unknown`.
