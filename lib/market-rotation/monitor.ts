@@ -21,8 +21,14 @@ export interface MarketRotationMonitorRow {
   rankDelta2W: number | null
   rsiDelta2W: number | null
   twoWeekPerformancePct: number | null
+  twoWeekTrend: MarketRotationTrendPoint[]
   signal: RotationSignal | null
   signalStatus: SignalStatus
+}
+
+export interface MarketRotationTrendPoint {
+  date: string
+  value: number | null
 }
 
 export interface MarketRotationMonitorInput {
@@ -31,6 +37,7 @@ export interface MarketRotationMonitorInput {
   rankScope: RankScope
   marketState: MarketState
   rows: MarketRotationMonitorRow[]
+  summaryRows?: MarketRotationMonitorRow[]
 }
 
 export interface RatioMetric {
@@ -57,7 +64,23 @@ export interface MarketRotationMonitorDataQuality {
 }
 
 export interface MarketRotationMonitorPayload {
+  asOfDate: string
+  comparisonDate: string | null
+  rankScope: RankScope
+  marketState: MarketState
+  breadthCondition: BreadthCondition
+  breadthConfirmation: BreadthConfirmation
   summary: MarketRotationMonitorSummary
+  summaryCards: {
+    above20d: RatioMetric
+    above50d: RatioMetric
+    averageRsi: number | null
+    marketState: MarketState
+  }
+  charts: {
+    topImproving: MarketRotationMonitorRow[]
+    bottomWeakening: MarketRotationMonitorRow[]
+  }
   rows: MarketRotationMonitorRow[]
   topImproving: MarketRotationMonitorRow[]
   bottomWeakening: MarketRotationMonitorRow[]
@@ -104,8 +127,12 @@ function compareRowsByRank(a: MarketRotationMonitorRow, b: MarketRotationMonitor
 
 export function buildMarketRotationMonitorPayload(input: MarketRotationMonitorInput): MarketRotationMonitorPayload {
   const rows = [...input.rows].sort(compareRowsByRank)
-  const above20d = buildRatio(rows, 'above20d')
-  const above50d = buildRatio(rows, 'above50d')
+  const summaryRows = [...(input.summaryRows ?? input.rows)].sort(compareRowsByRank)
+  const above20d = buildRatio(summaryRows, 'above20d')
+  const above50d = buildRatio(summaryRows, 'above50d')
+  const breadthCondition = getBreadthCondition(above50d.ratio)
+  const breadthConfirmation = getBreadthConfirmation(input.marketState, above50d.ratio)
+  const averageRsi = calculateAverageRsi(summaryRows)
   const improvingRows = rows
     .filter(row => row.rankDelta2W != null && row.rankDelta2W > 0)
     .sort(compareLeadershipChange)
@@ -117,13 +144,29 @@ export function buildMarketRotationMonitorPayload(input: MarketRotationMonitorIn
     .reverse()
 
   return {
+    asOfDate: input.asOfDate,
+    comparisonDate: input.comparisonDate,
+    rankScope: input.rankScope,
+    marketState: input.marketState,
+    breadthCondition,
+    breadthConfirmation,
     summary: {
       marketState: input.marketState,
-      breadthCondition: getBreadthCondition(above50d.ratio),
-      breadthConfirmation: getBreadthConfirmation(input.marketState, above50d.ratio),
+      breadthCondition,
+      breadthConfirmation,
       above20d,
       above50d,
-      averageRsi: calculateAverageRsi(rows),
+      averageRsi,
+    },
+    summaryCards: {
+      above20d,
+      above50d,
+      averageRsi,
+      marketState: input.marketState,
+    },
+    charts: {
+      topImproving: improvingRows,
+      bottomWeakening: weakeningRows,
     },
     rows,
     topImproving: improvingRows,

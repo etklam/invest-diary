@@ -13,6 +13,7 @@ describe('tools Market Rotation Monitor ui contract', () => {
     expect(content).toContain('RANK')
     expect(content).toContain('MA Status')
     expect(content).toContain('Signal')
+    expect(content).toContain('2W Trend')
     expect(content).toContain('Export PNG')
     expect(content).toContain('Copy Table')
     expect(content).toContain('Current Market Summary')

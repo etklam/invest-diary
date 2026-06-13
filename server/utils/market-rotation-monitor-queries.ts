@@ -10,7 +10,7 @@
  */
 
 import type { PrismaClient } from '@prisma/client'
-import type { MarketRotationMonitorRow } from '~/lib/market-rotation/monitor'
+import type { MarketRotationMonitorRow, MarketRotationTrendPoint } from '~/lib/market-rotation/monitor'
 import type { MarketState } from '~/lib/market-rotation/state'
 import { toMarketState } from '~/lib/market-rotation/state'
 import type { MaStatus, RotationSignal, SignalStatus } from '~/lib/market-rotation/signal'
@@ -37,6 +37,10 @@ function toNumber(value: DecimalLike): number | null {
 
 function toDateString(date: Date): string {
   return date.toISOString().slice(0, 10)
+}
+
+function roundTrendValue(value: number): number {
+  return Math.round(value * 10000) / 10000
 }
 
 // ─── Prisma interface (structural typing for DI) ───────────────────────────
@@ -111,6 +115,7 @@ function toMonitorRow(
     rankDelta2W: (raw.rankDelta2W as number | null) ?? null,
     rsiDelta2W: toNumber(raw.rsiDelta2W as DecimalLike),
     twoWeekPerformancePct: toNumber(raw.twoWeekPerformancePct as DecimalLike),
+    twoWeekTrend: [],
     signal: (raw.signal as RotationSignal | null) ?? null,
     signalStatus: (raw.signalStatus as SignalStatus) ?? 'insufficient_data',
   }
@@ -236,4 +241,71 @@ export async function getMonitorComparisonDate(
   }
 
   return toDateString(comparisonDate)
+}
+
+/**
+ * getMonitorTrendSeries
+ *
+ * Builds comparison-date-normalized 2W sparkline series from persisted
+ * snapshots. It uses one qualified date sequence for the whole rank scope.
+ */
+export async function getMonitorTrendSeries(
+  prisma: MonitorPrisma,
+  rankScope: 'sectors' | 'indexes' | 'core',
+  comparisonDate: Date,
+  asOfDate: Date,
+): Promise<Map<string, MarketRotationTrendPoint[]>> {
+  const universe = getUniverseForScope(rankScope)
+  const threshold = Math.ceil(universe.length * 0.9)
+  const groups = await prisma.marketRotationSnapshot.groupBy({
+    by: ['date'],
+    where: { rankScope },
+    _count: { symbol: true },
+    orderBy: { date: 'desc' },
+  })
+  const qualifiedDates = groups
+    .filter(group => group._count.symbol >= threshold)
+    .map(group => group.date)
+    .filter(date => date >= comparisonDate && date <= asOfDate)
+    .sort((a, b) => a.getTime() - b.getTime())
+
+  if (qualifiedDates.length === 0) {
+    return new Map()
+  }
+
+  const rawRows = await prisma.marketRotationSnapshot.findMany({
+    where: {
+      rankScope,
+      date: { in: qualifiedDates },
+    },
+    select: {
+      symbol: true,
+      date: true,
+      adjustedClose: true,
+      lastPrice: true,
+    },
+  } as any)
+  const priceBySymbolDate = new Map<string, number | null>()
+
+  for (const raw of rawRows as Array<Record<string, unknown>>) {
+    const symbol = raw.symbol as string
+    const date = raw.date as Date
+    const adjustedClose = toNumber(raw.adjustedClose as DecimalLike)
+    const lastPrice = toNumber(raw.lastPrice as DecimalLike)
+    priceBySymbolDate.set(`${symbol}:${toDateString(date)}`, adjustedClose ?? lastPrice)
+  }
+
+  const result = new Map<string, MarketRotationTrendPoint[]>()
+  for (const entry of universe) {
+    const base = priceBySymbolDate.get(`${entry.symbol}:${toDateString(comparisonDate)}`)
+    const series = qualifiedDates.map((date) => {
+      const dateString = toDateString(date)
+      const price = priceBySymbolDate.get(`${entry.symbol}:${dateString}`)
+      const value = base && price ? roundTrendValue((price / base) * 100) : null
+      return { date: dateString, value }
+    })
+    result.set(entry.symbol, series)
+  }
+
+  return result
 }

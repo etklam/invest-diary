@@ -216,6 +216,29 @@ function maStatusLabel(status: MaStatus): string {
   return status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
 
+function sparklinePoints(row: MarketRotationMonitorRow): string {
+  const values = row.twoWeekTrend.map(point => point.value)
+  const numericValues = values.filter((value): value is number => value != null && Number.isFinite(value))
+  if (numericValues.length < 2) return ''
+
+  const min = Math.min(...numericValues)
+  const max = Math.max(...numericValues)
+  const range = max - min || 1
+  const width = 96
+  const height = 28
+  const lastIndex = Math.max(values.length - 1, 1)
+
+  return values
+    .map((value, index) => {
+      if (value == null || !Number.isFinite(value)) return null
+      const x = (index / lastIndex) * width
+      const y = height - ((value - min) / range) * height
+      return `${x.toFixed(1)},${y.toFixed(1)}`
+    })
+    .filter((point): point is string => Boolean(point))
+    .join(' ')
+}
+
 function getSortValue(row: MarketRotationMonitorRow, field: SortField): string | number {
   if (field === 'symbol' || field === 'sectorName') {
     return row[field] ?? ''
@@ -291,7 +314,7 @@ function downloadText(filename: string, content: string, type: string): void {
 }
 
 function exportCsv(): void {
-  const headers = ['Ticker', 'Sector', 'Last', 'RSI', 'RSI Delta 2W', 'Rank', 'Rank Delta 2W', '2W %', '% From High', 'MA Status', 'Signal']
+  const headers = ['Ticker', 'Sector', 'Last', 'RSI', 'RSI Delta 2W', 'Rank', 'Rank Delta 2W', '2W %', '2W Trend', '% From High', 'MA Status', 'Signal']
   const body = filteredRows.value.map(row => [
     row.symbol,
     row.sectorName ?? row.name,
@@ -301,6 +324,7 @@ function exportCsv(): void {
     row.rotationRank ?? '--',
     row.rankDelta2W != null ? formatPercent(row.rankDelta2W) : '--',
     formatPercent(row.twoWeekPerformancePct),
+    row.twoWeekTrend.map(point => point.value == null ? '--' : formatNumber(point.value, 2)).join(' '),
     formatPercent(row.percentFromHigh),
     maStatusLabel(row.maStatus),
     signalLabel(row.signal),
@@ -337,6 +361,7 @@ function exportPng(): void {
       <td>${row.rotationRank ?? '--'}</td>
       <td>${row.rankDelta2W != null ? formatPercent(row.rankDelta2W) : '--'}</td>
       <td>${formatPercent(row.twoWeekPerformancePct)}</td>
+      <td>${row.twoWeekTrend.map(point => point.value == null ? '--' : formatNumber(point.value, 1)).join(' ')}</td>
       <td>${formatPercent(row.percentFromHigh)}</td>
       <td>${maStatusLabel(row.maStatus)}</td>
       <td>${signalLabel(row.signal)}</td>
@@ -352,7 +377,7 @@ function exportPng(): void {
       <div style="font-size:15px;color:#94a3b8;margin-bottom:22px;">${activeScope.value} (${dateLabel}) &middot; Sorted by ${sortBy.value.toUpperCase()}</div>
       <table style="width:100%;border-collapse:collapse;background:#111827;font-size:18px;">
         <thead><tr>
-          ${['Ticker', 'Sector', 'Last', 'RSI', 'RSI Δ2W', 'Rank', 'Rank Δ2W', '2W %', '% High', 'MA Status', 'Signal'].map(label => `<th style="border:1px solid #475569;background:#d9d9d9;color:#111827;padding:9px;text-align:center;">${label}</th>`).join('')}
+          ${['Ticker', 'Sector', 'Last', 'RSI', 'RSI Δ2W', 'Rank', 'Rank Δ2W', '2W %', '2W Trend', '% High', 'MA Status', 'Signal'].map(label => `<th style="border:1px solid #475569;background:#d9d9d9;color:#111827;padding:9px;text-align:center;">${label}</th>`).join('')}
         </tr></thead>
         <tbody>${rowsMarkup}</tbody>
       </table>
@@ -665,23 +690,30 @@ definePageMeta({
                   </caption>
                   <thead class="sticky top-0 z-10 bg-dt-surface-muted text-dt-text">
                     <tr>
-                      <th
-                        v-for="column in columns"
-                        :key="column.key"
-                        scope="col"
-                        class="sticky top-0 z-10 cursor-pointer border border-dt-border-strong bg-dt-surface-muted px-3 py-2 text-xs font-black uppercase tracking-[0.04em] transition hover:bg-dt-surface-strong"
-                        :class="column.align === 'right' ? 'text-right' : column.align === 'center' ? 'text-center' : 'text-left'"
-                        @click="handleSort(column.key)"
-                      >
-                        <span class="inline-flex items-center gap-1">
-                          {{ column.label }}
-                          <Icon
-                            v-if="sortBy === column.key"
-                            :name="sortOrder === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
-                            class="h-3.5 w-3.5"
-                          />
-                        </span>
-                      </th>
+                      <template v-for="column in columns" :key="column.key">
+                        <th
+                          scope="col"
+                          class="sticky top-0 z-10 cursor-pointer border border-dt-border-strong bg-dt-surface-muted px-3 py-2 text-xs font-black uppercase tracking-[0.04em] transition hover:bg-dt-surface-strong"
+                          :class="column.align === 'right' ? 'text-right' : column.align === 'center' ? 'text-center' : 'text-left'"
+                          @click="handleSort(column.key)"
+                        >
+                          <span class="inline-flex items-center gap-1">
+                            {{ column.label }}
+                            <Icon
+                              v-if="sortBy === column.key"
+                              :name="sortOrder === 'asc' ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+                              class="h-3.5 w-3.5"
+                            />
+                          </span>
+                        </th>
+                        <th
+                          v-if="column.key === 'twoWeekPerformancePct'"
+                          scope="col"
+                          class="sticky top-0 z-10 border border-dt-border-strong bg-dt-surface-muted px-3 py-2 text-center text-xs font-black uppercase tracking-[0.04em]"
+                        >
+                          2W Trend
+                        </th>
+                      </template>
                       <th scope="col" class="sticky top-0 z-10 border border-dt-border-strong bg-dt-surface-muted px-3 py-2 text-center text-xs font-black uppercase tracking-[0.04em]">
                         MA Status
                       </th>
@@ -716,6 +748,26 @@ definePageMeta({
                       </td>
                       <td class="border border-dt-border px-3 py-2 text-right font-mono font-bold" :class="deltaClass(row.twoWeekPerformancePct)">
                         {{ formatPercent(row.twoWeekPerformancePct) }}
+                      </td>
+                      <td class="border border-dt-border px-3 py-2 text-center">
+                        <svg
+                          v-if="sparklinePoints(row)"
+                          viewBox="0 0 96 28"
+                          class="mx-auto h-7 w-24 overflow-visible"
+                          role="img"
+                          :aria-label="`${row.symbol} 2W normalized trend`"
+                        >
+                          <polyline
+                            :points="sparklinePoints(row)"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            :class="deltaClass(row.twoWeekPerformancePct)"
+                          />
+                        </svg>
+                        <span v-else class="text-xs text-dt-text-muted">--</span>
                       </td>
                       <td class="border border-dt-border px-3 py-2 text-right font-mono font-bold" :class="fromHighClass(row.percentFromHigh)">
                         {{ formatPercent(row.percentFromHigh) }}

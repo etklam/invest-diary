@@ -31,6 +31,7 @@ import {
   getLatestMonitorRows,
   resolveMarketState,
   getMonitorComparisonDate,
+  getMonitorTrendSeries,
 } from '~/server/utils/market-rotation-monitor-queries'
 
 // --- Helpers ---
@@ -391,6 +392,51 @@ describe('server/utils/market-rotation-monitor-queries', () => {
       const result = await getMonitorComparisonDate(prisma as any, 'sectors')
 
       expect(result).toBeNull()
+    })
+  })
+
+  // ─── getMonitorTrendSeries ───────────────────────────────────────────────
+
+  describe('getMonitorTrendSeries', () => {
+    it('builds comparison-date-normalized sparklines on qualified scope dates', async () => {
+      mockSnapshotGroupBy.mockResolvedValue([
+        { date: new Date('2026-06-15'), _count: { symbol: 11 } },
+        { date: new Date('2026-06-14'), _count: { symbol: 9 } },
+        { date: new Date('2026-06-13'), _count: { symbol: 10 } },
+      ])
+      mockSnapshotFindMany.mockResolvedValue([
+        { symbol: 'XLK', date: new Date('2026-06-13'), adjustedClose: dec(100), lastPrice: dec(101) },
+        { symbol: 'XLK', date: new Date('2026-06-15'), adjustedClose: dec(110), lastPrice: dec(111) },
+        { symbol: 'XLF', date: new Date('2026-06-13'), adjustedClose: dec(50), lastPrice: dec(50) },
+      ])
+
+      const result = await getMonitorTrendSeries(
+        prisma as any,
+        'sectors',
+        new Date('2026-06-13'),
+        new Date('2026-06-15'),
+      )
+
+      expect(result.get('XLK')).toEqual([
+        { date: '2026-06-13', value: 100 },
+        { date: '2026-06-15', value: 110 },
+      ])
+      expect(result.get('XLF')).toEqual([
+        { date: '2026-06-13', value: 100 },
+        { date: '2026-06-15', value: null },
+      ])
+      expect(mockSnapshotFindMany).toHaveBeenCalledWith({
+        where: {
+          rankScope: 'sectors',
+          date: { in: [new Date('2026-06-13'), new Date('2026-06-15')] },
+        },
+        select: {
+          symbol: true,
+          date: true,
+          adjustedClose: true,
+          lastPrice: true,
+        },
+      })
     })
   })
 })

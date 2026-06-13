@@ -9,6 +9,9 @@
  * for testability and batch job usage.
  */
 
+import { isRankScope } from '~/lib/market-rotation/types'
+import { getUniverseForScope } from '~/lib/market-rotation/universe'
+
 // ─── Type helpers ──────────────────────────────────────────────────────────
 
 /** Decimal-like value that Prisma might return */
@@ -211,8 +214,14 @@ export async function getComparisonDate(
   rankScope: string,
   offset: number,
 ): Promise<Date | null> {
-  // Get all dates with any snapshot, check which are "qualified" (>=90% coverage)
-  // For simplicity, we use groupBy and pick the offset-th date that has full coverage
+  const canonicalUniverseSize = isRankScope(rankScope)
+    ? getUniverseForScope(rankScope).length
+    : 0
+  const threshold = canonicalUniverseSize > 0
+    ? Math.ceil(canonicalUniverseSize * 0.9)
+    : 1
+
+  // Get all dates with snapshots, then pick the offset-th qualified date.
   const groups = await prisma.marketRotationSnapshot.groupBy({
     by: ['date'],
     where: {
@@ -222,14 +231,16 @@ export async function getComparisonDate(
     orderBy: { date: 'desc' },
   })
 
-  // Get all unique dates sorted desc — we need the offset-th one
-  // For comparison date, we want dates that have reasonable coverage
-  // Simple approach: just pick the offset-th date from all available dates
-  if (offset >= groups.length) {
+  const qualifiedDates = groups
+    .filter(group => group._count.symbol >= threshold)
+    .map(group => group.date)
+
+  const comparisonDate = qualifiedDates[offset]
+  if (!comparisonDate) {
     return null
   }
 
-  return groups[offset].date
+  return comparisonDate
 }
 
 /**

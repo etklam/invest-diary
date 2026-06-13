@@ -28,29 +28,26 @@ const formattedDate = computed(() => {
 })
 
 const badgeClass = computed(() => {
-  if (props.regime === 'BULLISH_THRUST') {
+  if (props.regime === 'risk_on') {
     return 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/15 dark:text-emerald-200'
   }
-  if (props.regime === 'RISK_ON') {
-    return 'border-green-200 bg-green-100 text-green-800 dark:border-green-400/20 dark:bg-green-400/15 dark:text-green-200'
-  }
-  if (props.regime === 'NEUTRAL') {
+  if (props.regime === 'neutral') {
     return 'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-400/20 dark:bg-amber-400/15 dark:text-amber-200'
   }
-  if (props.regime === 'RISK_OFF') {
+  if (props.regime === 'defensive') {
     return 'border-orange-200 bg-orange-100 text-orange-800 dark:border-orange-400/20 dark:bg-orange-400/15 dark:text-orange-200'
   }
-  if (props.regime === 'CAPITULATION_WATCH') {
+  if (props.regime === 'risk_off') {
     return 'border-red-200 bg-red-100 text-red-800 dark:border-red-400/20 dark:bg-red-400/15 dark:text-red-200'
   }
   return 'border-slate-200 bg-slate-100 text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300'
 })
 
 const progressClass = computed(() => {
-  if (props.regime === 'BULLISH_THRUST' || props.regime === 'RISK_ON') return 'bg-emerald-500'
-  if (props.regime === 'NEUTRAL') return 'bg-amber-500'
-  if (props.regime === 'RISK_OFF') return 'bg-orange-500'
-  if (props.regime === 'CAPITULATION_WATCH') return 'bg-red-500'
+  if (props.regime === 'risk_on') return 'bg-emerald-500'
+  if (props.regime === 'neutral') return 'bg-amber-500'
+  if (props.regime === 'defensive') return 'bg-orange-500'
+  if (props.regime === 'risk_off') return 'bg-red-500'
   return 'bg-slate-500'
 })
 </script>

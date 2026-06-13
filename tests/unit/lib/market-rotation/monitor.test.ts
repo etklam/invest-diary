@@ -20,6 +20,7 @@ function makeRow(overrides: Partial<MarketRotationMonitorRow> & { symbol: string
     rankDelta2W: null,
     rsiDelta2W: null,
     twoWeekPerformancePct: null,
+    twoWeekTrend: [],
     signal: null,
     signalStatus: 'insufficient_data',
     ...overrides,
@@ -51,6 +52,7 @@ describe('buildMarketRotationMonitorPayload', () => {
           rankDelta2W: 3,
           rsiDelta2W: 6.2,
           twoWeekPerformancePct: 4.8,
+          twoWeekTrend: [],
           signal: 'strong_but_extended',
           signalStatus: 'complete',
         },
@@ -71,6 +73,7 @@ describe('buildMarketRotationMonitorPayload', () => {
           rankDelta2W: 1,
           rsiDelta2W: 1.1,
           twoWeekPerformancePct: 1.9,
+          twoWeekTrend: [],
           signal: 'neutral',
           signalStatus: 'complete',
         },
@@ -91,6 +94,7 @@ describe('buildMarketRotationMonitorPayload', () => {
           rankDelta2W: -2,
           rsiDelta2W: -7.5,
           twoWeekPerformancePct: -3.2,
+          twoWeekTrend: [],
           signal: 'breaking_down',
           signalStatus: 'complete',
         },
@@ -105,6 +109,16 @@ describe('buildMarketRotationMonitorPayload', () => {
       above50d: { count: 2, total: 3, ratio: 0.6667 },
       averageRsi: 56,
     })
+    expect(payload).toMatchObject({
+      asOfDate: '2026-06-09',
+      comparisonDate: '2026-05-22',
+      rankScope: 'sectors',
+      marketState: 'risk_on',
+      breadthCondition: 'constructive',
+      breadthConfirmation: 'confirming',
+    })
+    expect(payload.summaryCards.marketState).toBe('risk_on')
+    expect(payload.charts.topImproving.map(row => row.symbol)).toEqual(['XLK', 'XLF'])
 
     expect(payload.rows.map(row => row.symbol)).toEqual(['XLK', 'XLF', 'XLU'])
     expect(payload.rows[0]).toMatchObject({
@@ -153,6 +167,28 @@ describe('buildMarketRotationMonitorPayload', () => {
     })
 
     expect(payload.dataQuality.comparisonDate).toBeNull()
+  })
+
+  it('uses sector summary rows for breadth cards when active rank scope is not sectors', () => {
+    const payload = buildMarketRotationMonitorPayload({
+      asOfDate: '2026-06-09',
+      comparisonDate: '2026-05-22',
+      rankScope: 'indexes',
+      marketState: 'risk_on',
+      rows: [
+        makeRow({ symbol: 'SPY', groupType: 'index', rotationRank: 1, above50d: false, rsi14: 40 }),
+        makeRow({ symbol: 'QQQ', groupType: 'index', rotationRank: 2, above50d: false, rsi14: 42 }),
+      ],
+      summaryRows: [
+        makeRow({ symbol: 'XLK', above20d: true, above50d: true, rsi14: 70 }),
+        makeRow({ symbol: 'XLF', above20d: true, above50d: true, rsi14: 60 }),
+        makeRow({ symbol: 'XLU', above20d: false, above50d: false, rsi14: 50 }),
+      ],
+    })
+
+    expect(payload.rows.map(row => row.symbol)).toEqual(['SPY', 'QQQ'])
+    expect(payload.summary.above50d).toEqual({ count: 2, total: 3, ratio: 0.6667 })
+    expect(payload.summary.averageRsi).toBe(60)
   })
 
   // --- Boundary: rows with null rotationRank (and null rankDelta2W) excluded from topImproving / bottomWeakening ---

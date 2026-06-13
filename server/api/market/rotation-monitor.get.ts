@@ -25,6 +25,7 @@ import {
   getLatestMonitorRows,
   resolveMarketState,
   getMonitorComparisonDate,
+  getMonitorTrendSeries,
 } from '~/server/utils/market-rotation-monitor-queries'
 
 const VALID_SCOPES = ['sectors', 'indexes', 'core'] as const
@@ -49,6 +50,9 @@ export default defineEventHandler(async (event) => {
 
     // Step 1: Load latest monitor rows for the requested scope
     const { rows, asOfDate } = await getLatestMonitorRows(prisma, scopeRaw)
+    const { rows: sectorSummaryRows } = scopeRaw === 'sectors'
+      ? { rows }
+      : await getLatestMonitorRows(prisma, 'sectors')
 
     if (rows.length === 0) {
       log.warn('No rotation snapshots found', { scope: scopeRaw })
@@ -61,13 +65,22 @@ export default defineEventHandler(async (event) => {
     // Step 3: Get comparison date (null if no 2W comparison data)
     const comparisonDate = await getMonitorComparisonDate(prisma, scopeRaw)
 
+    const trendSeries = comparisonDate
+      ? await getMonitorTrendSeries(prisma, scopeRaw, new Date(comparisonDate), asOfDate!)
+      : new Map()
+    const rowsWithTrend = rows.map(row => ({
+      ...row,
+      twoWeekTrend: trendSeries.get(row.symbol) ?? [],
+    }))
+
     // Step 4: Build the dashboard payload (summary, rows, improving/weakening, dataQuality)
     const payload = buildMarketRotationMonitorPayload({
       asOfDate: toDateString(asOfDate!),
       comparisonDate,
       rankScope: scopeRaw,
       marketState,
-      rows,
+      rows: rowsWithTrend,
+      summaryRows: sectorSummaryRows.length > 0 ? sectorSummaryRows : rowsWithTrend,
     })
 
     // Step 5: Generate deterministic current market summary

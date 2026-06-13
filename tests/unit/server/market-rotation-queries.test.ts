@@ -219,26 +219,40 @@ describe('server/utils/market-rotation-queries', () => {
   describe('getComparisonDate', () => {
     it('returns the date at offset position from qualified dates (desc)', async () => {
       // offset=10 means get the 11th most recent qualified date
-      // With 5 symbols, threshold = ceil(5*0.9) = 5
+      // sectors has 11 canonical symbols, threshold = ceil(11*0.9) = 10
       const dates = Array.from({ length: 15 }, (_, i) => ({
         date: new Date(`2026-06-${String(15 - i).padStart(2, '0')}`),
-        _count: { symbol: 5 },
+        _count: { symbol: 11 },
       }))
       mockMarketRotationSnapshotGroupBy.mockResolvedValue(dates)
 
-      const result = await getComparisonDate(prisma as any, 'SP500', 10)
+      const result = await getComparisonDate(prisma as any, 'sectors', 10)
 
       // offset=10 → 11th item (0-indexed), which is 2026-06-05
       expect(result).toEqual(new Date('2026-06-05'))
     })
 
-    it('returns null when offset exceeds available dates', async () => {
+    it('skips dates below 90% scope coverage when selecting the offset date', async () => {
       mockMarketRotationSnapshotGroupBy.mockResolvedValue([
-        { date: new Date('2026-06-10'), _count: { symbol: 5 } },
-        { date: new Date('2026-06-09'), _count: { symbol: 5 } },
+        { date: new Date('2026-06-15'), _count: { symbol: 11 } },
+        { date: new Date('2026-06-14'), _count: { symbol: 9 } },
+        { date: new Date('2026-06-13'), _count: { symbol: 10 } },
+        { date: new Date('2026-06-12'), _count: { symbol: 8 } },
+        { date: new Date('2026-06-11'), _count: { symbol: 11 } },
       ])
 
-      const result = await getComparisonDate(prisma as any, 'SP500', 5)
+      const result = await getComparisonDate(prisma as any, 'sectors', 2)
+
+      expect(result).toEqual(new Date('2026-06-11'))
+    })
+
+    it('returns null when offset exceeds available dates', async () => {
+      mockMarketRotationSnapshotGroupBy.mockResolvedValue([
+        { date: new Date('2026-06-10'), _count: { symbol: 11 } },
+        { date: new Date('2026-06-09'), _count: { symbol: 11 } },
+      ])
+
+      const result = await getComparisonDate(prisma as any, 'sectors', 5)
 
       expect(result).toBeNull()
     })
@@ -246,18 +260,18 @@ describe('server/utils/market-rotation-queries', () => {
     it('returns null when no qualified dates', async () => {
       mockMarketRotationSnapshotGroupBy.mockResolvedValue([])
 
-      const result = await getComparisonDate(prisma as any, 'SP500', 0)
+      const result = await getComparisonDate(prisma as any, 'sectors', 0)
 
       expect(result).toBeNull()
     })
 
     it('offset=0 returns the most recent qualified date', async () => {
       mockMarketRotationSnapshotGroupBy.mockResolvedValue([
-        { date: new Date('2026-06-10'), _count: { symbol: 5 } },
-        { date: new Date('2026-06-09'), _count: { symbol: 5 } },
+        { date: new Date('2026-06-10'), _count: { symbol: 11 } },
+        { date: new Date('2026-06-09'), _count: { symbol: 11 } },
       ])
 
-      const result = await getComparisonDate(prisma as any, 'SP500', 0)
+      const result = await getComparisonDate(prisma as any, 'sectors', 0)
 
       expect(result).toEqual(new Date('2026-06-10'))
     })

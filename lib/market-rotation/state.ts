@@ -1,16 +1,23 @@
 export type MarketState = 'risk_on' | 'neutral' | 'defensive' | 'risk_off' | 'unknown'
 
-export type InternalRegime =
-  | 'BULLISH_THRUST'
-  | 'RISK_ON'
-  | 'NEUTRAL'
-  | 'RISK_OFF'
-  | 'CAPITULATION_WATCH'
-
+/**
+ * Compatibility layer: converts old regime values to canonical MarketState.
+ *
+ * After DB migration, this can be simplified to just validate the value.
+ * Handles both old SCREAMING_SNAKE_CASE regime values and new lowercase values.
+ */
 export function toMarketState(regime: string | null | undefined): MarketState {
-  if (regime === 'BULLISH_THRUST' || regime === 'RISK_ON') return 'risk_on'
-  if (regime === 'NEUTRAL') return 'neutral'
-  if (regime === 'RISK_OFF') return 'defensive'
-  if (regime === 'CAPITULATION_WATCH') return 'risk_off'
+  if (regime === 'risk_on' || regime === 'RISK_ON' || regime === 'BULLISH_THRUST') {
+    return 'risk_on'
+  }
+  if (regime === 'neutral' || regime === 'NEUTRAL') {
+    return 'neutral'
+  }
+  if (regime === 'defensive' || regime === 'RISK_OFF') {
+    return 'defensive'
+  }
+  if (regime === 'risk_off' || regime === 'CAPITULATION_WATCH') {
+    return 'risk_off'
+  }
   return 'unknown'
 }

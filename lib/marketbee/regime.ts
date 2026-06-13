@@ -1,3 +1,5 @@
+import type { MarketState } from '~/lib/market-rotation/state'
+
 export interface BreadthInput {
   up4Count: number
   down4Count: number
@@ -6,10 +8,11 @@ export interface BreadthInput {
   ratio10d: number
 }
 
-export type Regime = 'BULLISH_THRUST' | 'RISK_ON' | 'NEUTRAL' | 'RISK_OFF' | 'CAPITULATION_WATCH'
+export type Regime = MarketState
 
 export interface RegimeResult {
   regime: Regime
+  isThrust: boolean
   score: number
   up4Pct: number
   down4Pct: number
@@ -37,20 +40,24 @@ export function determineRegime(input: BreadthInput): RegimeResult {
   const up4Pct = calcPct(input.up4Count, input.universeCount)
   const down4Pct = calcPct(input.down4Count, input.universeCount)
   const score = calcScore({ ratio10d: input.ratio10d, above40dPct: input.above40dPct, up4Pct })
-  let regime: Regime = 'NEUTRAL'
+
+  let regime: Regime = 'neutral'
+  let isThrust = false
 
   if (down4Pct >= 15 || input.above40dPct < 20) {
-    regime = 'CAPITULATION_WATCH'
+    regime = 'risk_off'
   } else if (input.ratio10d <= 0.7 || down4Pct >= up4Pct * 2 || input.above40dPct < 35) {
-    regime = 'RISK_OFF'
+    regime = 'defensive'
   } else if (input.ratio10d >= 2 && up4Pct > down4Pct && input.above40dPct >= 50) {
-    regime = 'BULLISH_THRUST'
+    regime = 'risk_on'
+    isThrust = true
   } else if (input.ratio10d >= 1.2 && input.above40dPct >= 55) {
-    regime = 'RISK_ON'
+    regime = 'risk_on'
   }
 
   return {
     regime,
+    isThrust,
     score,
     up4Pct,
     down4Pct,

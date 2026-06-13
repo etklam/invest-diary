@@ -1,4 +1,5 @@
 import type { Regime } from '~/lib/marketbee/regime'
+import { toMarketState } from '~/lib/market-rotation/state'
 
 const DEFAULT_UNIVERSE_KEY = 'SP500_NDX'
 
@@ -75,17 +76,7 @@ function toDateString(date: Date): string {
 }
 
 function toRegime(value: string | null): Regime {
-  if (
-    value === 'BULLISH_THRUST'
-    || value === 'RISK_ON'
-    || value === 'NEUTRAL'
-    || value === 'RISK_OFF'
-    || value === 'CAPITULATION_WATCH'
-  ) {
-    return value
-  }
-
-  return 'NEUTRAL'
+  return toMarketState(value) as Regime
 }
 
 function toSnapshotResult(row: MarketBreadthDailyRow): SnapshotResult {
@@ -149,26 +140,30 @@ export async function getBreadthHistory(
 
 export function getRegimeGuidance(regime: Regime): { suggestedExposure: string; message: string } {
   switch (regime) {
-    case 'BULLISH_THRUST':
-    case 'RISK_ON':
+    case 'risk_on':
       return {
         suggestedExposure: '80-100%',
-        message: 'Bullish thrust confirmed. Favor leading ETFs.',
+        message: 'Risk-on confirmed. Favor leading ETFs.',
       }
-    case 'NEUTRAL':
+    case 'neutral':
       return {
         suggestedExposure: '40-60%',
         message: 'Market breadth is mixed. Keep exposure balanced.',
       }
-    case 'RISK_OFF':
+    case 'defensive':
       return {
         suggestedExposure: '20-40%',
-        message: 'Risk-off conditions. Reduce laggards and protect capital.',
+        message: 'Defensive conditions. Reduce laggards and protect capital.',
       }
-    case 'CAPITULATION_WATCH':
+    case 'risk_off':
       return {
         suggestedExposure: '0-20%',
         message: 'Capitulation risk elevated. Wait for breadth repair.',
+      }
+    default:
+      return {
+        suggestedExposure: '40-60%',
+        message: 'Market state unknown. Use caution.',
       }
   }
 }

@@ -25,6 +25,7 @@ function buildRow(overrides: Partial<MarketRotationMonitorRow> = {}): MarketRota
     rankDelta2W: 2,
     rsiDelta2W: 4.5,
     twoWeekPerformancePct: 3.2,
+    twoWeekTrend: [],
     signal: 'turning_strong',
     signalStatus: 'complete',
     ...overrides,
