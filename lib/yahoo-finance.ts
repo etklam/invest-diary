@@ -11,6 +11,7 @@ import {
   type HistoricalQuote,
   type IntradayQuote,
 } from '~/lib/market-data/yahoo'
+import { runYahooRequest } from '~/lib/market-data/yahoo-request-queue'
 
 type YahooChartInterval = '1m' | '2m' | '5m' | '15m' | '30m' | '60m' | '90m' | '1h' | '1d' | '5d' | '1wk' | '1mo' | '3mo'
 
@@ -33,14 +34,18 @@ export type {
  * @param symbol ETF symbol (e.g., "SPY", "QQQ", "0050.TW")
  */
 export async function fetchQuote(symbol: string): Promise<QuoteResponse> {
-  const quote = await yahooFinance.quote(normalizeYahooSymbol(symbol))
-  const parsed = parseYahooLibraryQuote(quote as YahooLibraryQuoteInput)
+  const normalized = normalizeYahooSymbol(symbol)
 
-  if (!parsed) {
-    throw new Error('Yahoo quote unavailable')
-  }
+  return runYahooRequest(`quote:${normalized}`, async () => {
+    const quote = await yahooFinance.quote(normalized)
+    const parsed = parseYahooLibraryQuote(quote as YahooLibraryQuoteInput)
 
-  return parsed
+    if (!parsed) {
+      throw new Error('Yahoo quote unavailable')
+    }
+
+    return parsed
+  })
 }
 
 export async function fetchHistoricalData(
@@ -48,14 +53,19 @@ export async function fetchHistoricalData(
   range: string = '1y',
   interval: string = '1d'
 ): Promise<HistoricalQuote[]> {
-  const quotes = await yahooFinance.chart(normalizeYahooSymbol(symbol), {
-    period1: resolveYahooRangeStart(range),
-    period2: new Date(),
-    interval: interval as YahooChartInterval,
-    return: 'array',
-  })
+  const normalized = normalizeYahooSymbol(symbol)
+  const key = `historical:${normalized}:${range}:${interval}`
 
-  return parseYahooLibraryDailyQuotes(quotes.quotes)
+  return runYahooRequest(key, async () => {
+    const quotes = await yahooFinance.chart(normalized, {
+      period1: resolveYahooRangeStart(range),
+      period2: new Date(),
+      interval: interval as YahooChartInterval,
+      return: 'array',
+    })
+
+    return parseYahooLibraryDailyQuotes(quotes.quotes)
+  })
 }
 
 export async function fetchIntradayData(
@@ -63,17 +73,22 @@ export async function fetchIntradayData(
   days = 3,
   interval: string = '5m'
 ): Promise<IntradayQuote[]> {
-  const start = new Date()
-  start.setDate(start.getDate() - days)
+  const normalized = normalizeYahooSymbol(symbol)
+  const key = `intraday:${normalized}:${days}:${interval}`
 
-  const quotes = await yahooFinance.chart(normalizeYahooSymbol(symbol), {
-    period1: start,
-    period2: new Date(),
-    interval: interval as YahooChartInterval,
-    return: 'array',
+  return runYahooRequest(key, async () => {
+    const start = new Date()
+    start.setDate(start.getDate() - days)
+
+    const quotes = await yahooFinance.chart(normalized, {
+      period1: start,
+      period2: new Date(),
+      interval: interval as YahooChartInterval,
+      return: 'array',
+    })
+
+    return parseYahooLibraryIntradayQuotes(quotes.quotes)
   })
-
-  return parseYahooLibraryIntradayQuotes(quotes.quotes)
 }
 
 /**
@@ -82,21 +97,26 @@ export async function fetchIntradayData(
  * @param years Number of years of history to fetch (default: 5)
  */
 export async function fetchMonthlyData(symbol: string, years = 5): Promise<YahooMonthlyQuote[]> {
-  const start = new Date()
-  start.setFullYear(start.getFullYear() - years)
+  const normalized = normalizeYahooSymbol(symbol)
+  const key = `monthly:${normalized}:${years}`
 
-  const quotes = await yahooFinance.chart(normalizeYahooSymbol(symbol), {
-    period1: start,
-    period2: new Date(),
-    interval: '1mo',
-    return: 'array',
+  return runYahooRequest(key, async () => {
+    const start = new Date()
+    start.setFullYear(start.getFullYear() - years)
+
+    const quotes = await yahooFinance.chart(normalized, {
+      period1: start,
+      period2: new Date(),
+      interval: '1mo',
+      return: 'array',
+    })
+
+    const parsed = parseYahooLibraryMonthlyQuotes(quotes.quotes)
+    if (parsed.length === 0) {
+      throw new Error('Yahoo historical data unavailable')
+    }
+    return parsed
   })
-
-  const parsed = parseYahooLibraryMonthlyQuotes(quotes.quotes)
-  if (parsed.length === 0) {
-    throw new Error('Yahoo historical data unavailable')
-  }
-  return parsed
 }
 
 /**

@@ -3,12 +3,21 @@ import { fetchQuote, type QuoteResponse } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import { requireUser } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
+import {
+  buildMarketQuoteCacheKey,
+  getMarketDataCacheTtlSeconds,
+  getOrSetCached,
+} from '~/lib/market-data/cache'
 
 type Body = {
   symbols: string[]
 }
 
 const MAX_SYMBOLS_PER_REQUEST = 25
+// Bounds pending-promise count at the handler level. The Yahoo request queue
+// already caps actual upstream concurrency at 2; this keeps the handler from
+// spinning up 25 promises at once for a full portfolio refresh.
+const FETCH_CONCURRENCY = 3
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -31,26 +40,55 @@ export default defineEventHandler(async (event) => {
     throw Errors.rateLimited().toH3Error()
   }
 
+  // dedupe + trim, preserving first-seen order. Normalisation matches the
+  // quote cache key (uppercase) so case-variant tickers collapse to one fetch
+  // and never race on the same cache slot.
+  const seen = new Set<string>()
+  const uniqueSymbols: string[] = []
+  for (const raw of body.symbols) {
+    const symbol = typeof raw === 'string' ? raw.trim() : ''
+    if (!symbol) continue
+    const dedupKey = symbol.toUpperCase()
+    if (seen.has(dedupKey)) continue
+    seen.add(dedupKey)
+    uniqueSymbols.push(symbol)
+  }
+
+  const ttlSeconds = getMarketDataCacheTtlSeconds('quote')
+
   const result: Record<string, QuoteResponse> = {}
   const errors: string[] = []
 
-  // Process symbols in parallel
-  await Promise.all(
-    body.symbols.map(async (symbol) => {
-      try {
-        const quote = await fetchQuote(symbol)
+  // bounded-concurrency pool — each symbol goes through the shared quote cache
+  // so duplicate symbols (and repeated requests within TTL) never hit Yahoo twice
+  const queue = [...uniqueSymbols]
+  const workers = Array.from(
+    { length: Math.min(FETCH_CONCURRENCY, queue.length) },
+    async () => {
+      while (queue.length > 0) {
+        const symbol = queue.shift()
+        if (symbol === undefined) break
+        try {
+          const quote = await getOrSetCached(
+            buildMarketQuoteCacheKey(symbol),
+            ttlSeconds,
+            () => fetchQuote(symbol),
+          )
 
-        if (quote) {
-          result[symbol] = quote
-        } else {
+          if (quote) {
+            result[symbol] = quote
+          } else {
+            errors.push(symbol)
+          }
+        } catch (error) {
+          log.warn('Failed to process stock price', { symbol, error })
           errors.push(symbol)
         }
-      } catch (error) {
-        log.warn('Failed to process stock price', { symbol, error })
-        errors.push(symbol)
       }
-    })
+    },
   )
+
+  await Promise.all(workers)
 
   if (Object.keys(result).length === 0) {
     throw Errors.externalServiceError(`Failed to fetch prices for all symbols. Errors: ${errors.join(', ')}`).toH3Error()
