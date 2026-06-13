@@ -66,6 +66,90 @@ _避免：日記、筆記、新聞_
 獨立計算工具，與日常日記流程無關。包含 ETF 分析、部位計算、FIRE 計算、相對價值分析、季節性分析。
 _避免：功能、模組_
 
+**Market Rotation Monitor（市場輪動監控）**：
+ETF 研究工具的新可見名稱，用 Market State、Sector Breadth 與 sector ETF ranking 判斷市場輪動方向。
+_避免：ETF Analysis、ETF Sector Trend Board、Market 平台_
+
+**Market Rotation Snapshot（市場輪動快照）**：
+某個交易日、某個 ETF/sector symbol 的輪動狀態摘要，由已持久化每日 OHLCV 價格資料計算而來，包含 RSI、均線狀態、MA score、rotation score 和 rank。
+_避免：即時 ETF row、原始價格資料、完整歷史重算結果_
+
+**MA Score（均線分數）**：
+Market Rotation Snapshot 中衡量 ETF 是否站上 10d EMA、20d EMA 和 50d SMA 的 0-100 分數。
+_避免：200d market-state score、三條均線的純文字 badge_
+
+**MA Status（均線狀態）**：
+Market Rotation Snapshot 中基於 10d EMA、20d EMA 和 50d SMA 的 canonical trend label。
+_避免：任意 UI 文案、三個布林值自行解讀_
+
+**Distance From High（距離高點）**：
+Market Rotation Snapshot 中 close 相對 rolling 252 trading day high 的百分比距離與衍生分數。
+_避免：YTD high distance、calendar-year high、global percentile_
+
+**Rotation Score（輪動分數）**：
+Market Rotation Snapshot 中由同一 Rank Scope 內的 RSI、2 週表現、MA score 和 Distance From High percentile 組成的相對強弱分數。
+_避免：global score、mixed ranking score、unknown 補 0_
+
+**Rotation Signal（輪動訊號）**：
+Market Rotation Snapshot 中基於均線狀態、rank delta、RSI delta 和 2 週表現產生的 canonical signal label。
+_避免：任意 UI 標籤、missing data 當 neutral_
+
+**Sector Breadth（產業廣度）**：
+Market Rotation Monitor 中由 Sectors Rank Scope 聚合出的市場參與度指標，例如 Above 20d EMA、Above 50d SMA 和 Average RSI。
+_避免：混入 benchmark index ETFs、core ETFs、Market State engine_
+
+**Market State（市場狀態）**：
+Market Rotation Monitor 的主市場狀態標籤，由既有內部 market-state logic 產生。
+_避免：外部產品命名、sector breadth 替代主狀態_
+
+**Breadth Condition（廣度條件）**：
+由 Sector Breadth 衍生、描述 sectors universe 參與度寬窄的輔助狀態。
+_避免：主市場狀態、獨立 market-state engine_
+
+**Breadth Confirmation（廣度確認）**：
+用 Sector Breadth 判斷是否支持或背離 Market State 的輔助判讀。
+_避免：覆蓋 Market State、和 Market State 競爭_
+
+**Market Rotation Universe（市場輪動標的範圍）**：
+系統定義、會產生每日市場輪動快照的 ETF symbol 範圍，包含 US sector ETFs、benchmark index ETFs 和 app-defined core ETF list。
+_避免：任意 custom symbols、一次性輸入、冷門 ticker、未知 ticker_
+
+**Rank Scope（排名範圍）**：
+Market Rotation Monitor 計算 rotation rank、percentile 和 qualified snapshot date 時使用的 canonical symbol 分組。
+_避免：全域混排、custom symbols、單一 symbol 自訂比較範圍_
+
+**Sectors Rank Scope（產業排名範圍）**：
+由 US sector ETFs 組成的 Rank Scope，用於主要 Sector Rotation Matrix。
+_避免：benchmark ETFs、core ETFs、全域混排_
+
+**Indexes Rank Scope（指數排名範圍）**：
+由 benchmark index ETFs 組成的 Rank Scope，用於 market snapshot、Market State 和 benchmark comparison。
+_避免：sector ETFs、core ETFs、全域混排_
+
+**Core Rank Scope（核心 ETF 排名範圍）**：
+由 app-defined core ETF list 組成的 Rank Scope，保留給較廣 ETF monitoring 和未來 All Core ETFs 視圖。
+_避免：任意 custom symbols、一次性輸入、全域混排_
+
+**Qualified Snapshot Date（合格快照日）**：
+某個 Rank Scope 的 canonical universe 中，至少 90% active symbols 成功產生 Market Rotation Snapshot 的交易日。
+_避免：任意有資料日期、單一 symbol 有資料日期、全域固定日期_
+
+**2W Comparison Date（雙週比較日）**：
+Market Rotation Monitor 用來和最新市場輪動快照比較的歷史日期，為 latest qualified snapshot date 往前數第 10 個 qualified snapshot date。
+_避免：14 個 calendar days 前、單一 symbol 自己往前找第 10 筆_
+
+**2W Trend Sparkline（雙週趨勢迷你圖）**：
+以 2W Comparison Date 的價格設為 100 的 normalized performance series，用於顯示同一 Rank Scope 內 symbol 的 2 週相對走勢。
+_避免：min-max normalization、z-score normalization、per-symbol first-available-date normalization_
+
+**Rank Delta 2W（雙週排名變化）**：
+同一 Rank Scope 中 comparison rank 與 current rank 的差值，用於衡量 sector leadership 的改善或轉弱。
+_避免：純 2 週漲跌幅排序、跨 scope 排名變化_
+
+**Current Market Summary（當前市場摘要）**：
+Market Rotation Monitor 根據 Market State、Sector Breadth、Breadth Confirmation 和 leadership changes 產生的 deterministic text summary。
+_避免：LLM-generated summary、主觀投資建議、和 dashboard 數據不同源_
+
 ### 頻道
 
 **Quick Note（快速記錄）**：
@@ -90,6 +174,29 @@ _避免：速記、草稿_
 - **Post** 獨立於日記系統，是公開內容，僅 admin 可撰寫
 - **ETF** 系統與 **Stock** 系統完全分離，無資料關聯
 - **Tool** 獨立運作，不與日記或交易資料整合
+- **Market Rotation Monitor** 是 **Tool** 中的 **ETF** 研究視圖，不代表新的限界上下文
+- 一個 **Market Rotation Monitor** 顯示多個 **Market Rotation Snapshot**；每個 **Market Rotation Snapshot** 屬於一個交易日和一個 ETF/sector symbol
+- **Market Rotation Snapshot** 只為 **Market Rotation Universe** 中的 canonical symbols 產生；custom symbols 可以即時查看，但不自動持久化
+- **Market Rotation Snapshot** 由持久化每日 OHLCV 價格資料計算，不直接依賴 live provider response
+- **MA Score** 使用 10d EMA、20d EMA 和 50d SMA 計算；200d SMA 可儲存供未來 **Market State** analysis，但不納入 v1 **MA Score**
+- **MA Status** canonical labels 為 `bullish_stack`、`healthy_pullback`、`short_term_weakness`、`recovering`、`breakdown`、`unknown`
+- **Distance From High** 使用 rolling 252 trading day high；若不足 252 筆但至少 60 筆，使用可用歷史最高點；少於 60 筆則標為 unknown
+- **Rotation Score** 只由同一 **Rank Scope** 內的 percentile components 組成；任何 component unknown 時，**Rotation Score** 也為 unknown
+- **Rotation Signal** canonical labels 為 `turning_strong`、`strong_but_extended`、`losing_momentum`、`breaking_down`、`early_recovery`、`neutral`
+- **Rotation Signal** 缺必要資料時為 `null` 且 `signal_status = insufficient_data`；不得把 missing data 分類為 `neutral`
+- **Market State** canonical values 為 `risk_on`、`neutral`、`defensive`、`risk_off`、`unknown`
+- **Market State** 是使用者可見的主 dashboard label；內部較細狀態不得直接暴露為主 label
+- **Sector Breadth** 只從 **Sectors Rank Scope** 的 active canonical symbols 聚合；indexes 用於 benchmark trend 和 **Market State** confirmation，不作為主 breadth constituents
+- **Breadth Condition** 和 **Breadth Confirmation** 是 **Market State** 的 supporting evidence，不是另一套 competing state engine
+- **Breadth Condition** canonical values 為 `broad_participation`、`constructive`、`narrowing`、`weak_breadth`、`unknown`
+- **Breadth Confirmation** canonical values 為 `confirming`、`mixed`、`warning`、`unknown`
+- 一個 **Rank Scope** 定義一組 canonical symbols；**Qualified Snapshot Date** 按 **Rank Scope** 分別判定
+- 第一版 **Rank Scope** 只有 **Sectors Rank Scope**、**Indexes Rank Scope** 和 **Core Rank Scope**；不提供 all、global 或 mixed rank scope
+- 所有 percentile calculation 和 rotation rank 都限定在同一 **Rank Scope** 內，不提供 cross-scope percentile 或 global percentile
+- **2W Comparison Date** 以同一 **Rank Scope** 的 **Qualified Snapshot Date** 為準，不由各 symbol 分別決定
+- **2W Trend Sparkline** 使用同一 **Rank Scope** 的 qualified snapshot date sequence；第一點為 100，最後一點對應 latest qualified snapshot date
+- **Rank Delta 2W** 公式為 `comparisonRank - currentRank`；正數代表排名上升，負數代表排名下降
+- **Current Market Summary** v1 使用 deterministic template 產生，不使用 LLM
 
 ---
 
@@ -119,6 +226,27 @@ _避免：速記、草稿_
 - **PortfolioSnapshot（已清理的歷史設計債）**：曾設計為每日持倉快照，但使用者交易頻率極低（一個月不一定有一筆），實際上用不到。現行 schema、API 和程式碼已移除；歷史 migration 和規劃文件仍保留脈絡。
 - **"Stock" 一詞的重載**：在程式碼中 "stock" 同時指「實際交易的股票」和「關注清單中的標的」。目前透過 `Stock`（主表）、`StockNote`（觀點）、`StockWatchlist`（關注）區分，但新手使用者可能混淆。
 - **Telegram Bot**：目前為半成品，有 bug 無法正常使用。定位為「交易快速記錄入口」，與 Quick Note（日記入口）互補。
+- **"Market Rotation Monitor" 的邊界**：這是 ETF 研究工具的新可見名稱，不是新的 Market 限界上下文；Stock 與 ETF 仍依 ADR-0002 保持分離。
+- **"Market Rotation Snapshot" 與即時計算的界線**：2 週比較層以持久化每日快照為核心，不在每次開頁時即時計完整 1y history、RSI、rank、percentile 和 2W delta。
+- **"Market Rotation Universe" 的邊界**：每日快照只涵蓋系統定義的 canonical ETF symbols；任意 custom symbols、一次性輸入、冷門 ticker、未知或無效 ticker 不自動持久化。
+- **"Market Rotation Snapshot" 的價格來源**：batch job 可以從 Yahoo 或其他 provider 補抓缺失 OHLCV，但必須先持久化每日價格，再由持久化價格計算 snapshot。
+- **"MA Score" 的公式**：v1 使用 `20 * above_10d + 30 * above_20d + 50 * above_50d`；200d SMA 只儲存，不納入 v1 score。
+- **"MA Status" 的標籤**：資料層使用 snake_case canonical labels；UI 可以轉成人類可讀文字，但不得創造新的狀態值。
+- **"Distance From High" 的公式**：`percent_from_high = (close / rolling_252d_high - 1) * 100`；raw score 為 `clamp(100 + percent_from_high * 5, 0, 100)`，rotation score 使用同一 Rank Scope 內的 percentile。
+- **"Rotation Score" 的公式**：v1 使用 `0.30 * rsi_percentile + 0.30 * two_week_performance_percentile + 0.20 * ma_score_percentile + 0.20 * distance_from_high_score_percentile`；任何 component unknown 時不補 0，rotation score 也為 unknown。
+- **"Rotation Signal" 的優先順序**：v1 signal priority 為 `breaking_down > strong_but_extended > turning_strong > early_recovery > losing_momentum > neutral`；`neutral` 只代表完整資料下未觸發其他規則。
+- **"Market State" 的命名邊界**：產品、程式碼、API、schema 和文件都使用 **Market State**；不使用外部產品式命名或其他核心概念名。
+- **"Market State" 的映射**：內部 `BULLISH_THRUST` 和 `RISK_ON` 對應 `risk_on`；`NEUTRAL` 對應 `neutral`；`RISK_OFF` 對應 `defensive`；`CAPITULATION_WATCH` 對應 `risk_off`；missing 對應 `unknown`。
+- **"Sector Breadth" 的邊界**：v1 summary breadth cards 只聚合 sectors universe；benchmark index ETFs 用於趨勢與 **Market State** confirmation，core ETFs 保留給未來 core-specific view。
+- **"Breadth Condition" 的門檻**：以 sectors above 50d ratio 判定；`>=70%` 為 `broad_participation`，`50%-70%` 為 `constructive`，`35%-50%` 為 `narrowing`，`<35%` 為 `weak_breadth`。
+- **"Breadth Confirmation" 的語意**：描述 Sector Breadth 是否支持 **Market State**；unknown marketState 或 unknown breadth data 時為 `unknown`，不得改寫主 **Market State**。
+- **"Rank Scope" 的邊界**：第一版只支援 sectors、indexes 和 core；不實作 all、global 或 mixed 排名，避免把 sector exposure、broad market beta、industry ETFs、bond proxies 和 commodity ETFs 混成語義薄弱的排名。
+- **"Percentile" 的邊界**：所有 percentile calculation 和 rotation rank 都 scoped by rank_scope；不提供 cross-scope percentile、global percentile 或 mixed ranking。
+- **"Qualified Snapshot Date" 的門檻**：某個 Rank Scope 的 canonical universe 中，至少 90% active symbols 成功產生 Market Rotation Snapshot，該交易日才算 qualified。
+- **"2W Comparison Date" 的定義**：雙週比較日是同一 Rank Scope 的 latest qualified Market Rotation Snapshot date 往前數第 10 個 qualified snapshot date，不是 14 個 calendar days 前，也不是每個 symbol 各自往前找第 10 筆。
+- **"2W Trend Sparkline" 的公式**：`normalized_value = price_on_date / price_on_comparison_date * 100`；`twoWeekPerformancePct = latestNormalizedValue - 100`；缺 comparison date 時 sparkline 和 2W performance unavailable，中間缺點回 `null` 不插值。
+- **"Top/Bottom Rotation Chart" 的排序**：improving 和 weakening chart 以 **Rank Delta 2W** 為主排序；2W performance 不是主排序，避免把純報酬榜誤當 leadership 變化。
+- **"Current Market Summary" 的生成方式**：v1 使用 deterministic template，輸入來自同一 dashboard payload；不使用 LLM 或另一路資料來源。
 
 ---
 

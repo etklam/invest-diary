@@ -2,20 +2,22 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-describe('tools ETF sector trend board ui contract', () => {
-  it('renders sector matrix controls and indicator columns', () => {
+describe('tools Market Rotation Monitor ui contract', () => {
+  it('renders rotation monitor controls and indicator columns', () => {
     const filePath = resolve(process.cwd(), 'pages/tools/etf.vue')
     const content = readFileSync(filePath, 'utf8')
 
-    expect(content).toContain('ETF Sector Trend Board')
+    expect(content).toContain('Market Rotation Monitor')
     expect(content).toContain('US Sectors')
     expect(content).toContain('RSI')
-    expect(content).toContain('10d EMA')
-    expect(content).toContain('20d EMA')
-    expect(content).toContain('50d SMA')
+    expect(content).toContain('RANK')
+    expect(content).toContain('MA Status')
+    expect(content).toContain('Signal')
     expect(content).toContain('Export PNG')
     expect(content).toContain('Copy Table')
-    expect(content).toContain('Mini Chart')
+    expect(content).toContain('Current Market Summary')
+    expect(content).toContain('Top Improving')
+    expect(content).toContain('Bottom Weakening')
     expect(content).toContain('sticky top-0')
   })
 })
