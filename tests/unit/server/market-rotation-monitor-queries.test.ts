@@ -359,27 +359,29 @@ describe('server/utils/market-rotation-monitor-queries', () => {
   // ─── getMonitorComparisonDate ────────────────────────────────────────────
 
   describe('getMonitorComparisonDate', () => {
-    it('returns date string when comparison data exists (rankDelta2W non-null)', async () => {
-      // Step 1: findFirst returns the latest date
-      mockSnapshotFindFirst.mockResolvedValue({ date: new Date('2026-06-10') })
-      // Step 2: findMany returns rows with non-null rankDelta2W
+    it('checks comparison data on the provided asOfDate instead of latest raw date', async () => {
       mockSnapshotFindMany.mockResolvedValue([
         buildSectorRawRow({ rankDelta2W: -2 }),
         buildSectorRawRow({ id: 2n, symbol: 'XLF', rankDelta2W: 1 }),
       ])
-      // Step 3: groupBy for comparison date lookup — needs >= 11 dates for offset=10
       const groupDates = Array.from({ length: 15 }, (_, i) => ({
         date: new Date(`2026-${String(6).padStart(2, '0')}-${String(15 - i).padStart(2, '0')}`),
         _count: { symbol: 11 },
       }))
       mockSnapshotGroupBy.mockResolvedValue(groupDates)
 
-      const result = await getMonitorComparisonDate(prisma as any, 'sectors')
+      const result = await getMonitorComparisonDate(prisma as any, 'sectors', new Date('2026-06-10'))
 
       expect(result).not.toBeNull()
       expect(typeof result).toBe('string')
-      // offset=10 → 11th item (0-indexed) = 2026-06-05
       expect(result).toBe('2026-06-05')
+      expect(mockSnapshotFindMany).toHaveBeenCalledWith({
+        where: {
+          rankScope: 'sectors',
+          date: new Date('2026-06-10'),
+        },
+      })
+      expect(mockSnapshotFindFirst).not.toHaveBeenCalled()
     })
 
     it('returns null when no comparison data exists (all rankDelta2W null)', async () => {
@@ -389,21 +391,12 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         buildSectorRawRow({ id: 2n, symbol: 'XLF', rankDelta2W: null }),
       ])
 
-      const result = await getMonitorComparisonDate(prisma as any, 'sectors')
-
-      expect(result).toBeNull()
-    })
-
-    it('returns null when no snapshots exist', async () => {
-      mockSnapshotFindFirst.mockResolvedValue(null)
-
-      const result = await getMonitorComparisonDate(prisma as any, 'sectors')
+      const result = await getMonitorComparisonDate(prisma as any, 'sectors', new Date('2026-06-10'))
 
       expect(result).toBeNull()
     })
 
     it('returns null when comparison date lookup finds insufficient dates', async () => {
-      mockSnapshotFindFirst.mockResolvedValue({ date: new Date('2026-06-10') })
       mockSnapshotFindMany.mockResolvedValue([
         buildSectorRawRow({ rankDelta2W: -2 }),
       ])
@@ -412,7 +405,7 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         { date: new Date('2026-06-10'), _count: { symbol: 11 } },
       ])
 
-      const result = await getMonitorComparisonDate(prisma as any, 'sectors')
+      const result = await getMonitorComparisonDate(prisma as any, 'sectors', new Date('2026-06-10'))
 
       expect(result).toBeNull()
     })
@@ -460,6 +453,35 @@ describe('server/utils/market-rotation-monitor-queries', () => {
           lastPrice: true,
         },
       })
+    })
+
+    it('returns null trend values when base is zero or price is null', async () => {
+      mockSnapshotGroupBy.mockResolvedValue([
+        { date: new Date('2026-06-15'), _count: { symbol: 11 } },
+        { date: new Date('2026-06-13'), _count: { symbol: 11 } },
+      ])
+      mockSnapshotFindMany.mockResolvedValue([
+        { symbol: 'XLK', date: new Date('2026-06-13'), adjustedClose: dec(0), lastPrice: dec(0) },
+        { symbol: 'XLK', date: new Date('2026-06-15'), adjustedClose: dec(110), lastPrice: dec(111) },
+        { symbol: 'XLF', date: new Date('2026-06-13'), adjustedClose: dec(50), lastPrice: dec(50) },
+        { symbol: 'XLF', date: new Date('2026-06-15'), adjustedClose: null, lastPrice: null },
+      ])
+
+      const result = await getMonitorTrendSeries(
+        prisma as any,
+        'sectors',
+        new Date('2026-06-13'),
+        new Date('2026-06-15'),
+      )
+
+      expect(result.get('XLK')).toEqual([
+        { date: '2026-06-13', value: null },
+        { date: '2026-06-15', value: null },
+      ])
+      expect(result.get('XLF')).toEqual([
+        { date: '2026-06-13', value: 100 },
+        { date: '2026-06-15', value: null },
+      ])
     })
   })
 })

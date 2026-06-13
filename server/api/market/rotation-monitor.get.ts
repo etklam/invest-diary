@@ -29,6 +29,7 @@ import {
 } from '~/server/utils/market-rotation-monitor-queries'
 
 const VALID_SCOPES = ['sectors', 'indexes', 'core'] as const
+const SUPPORTED_SCOPES = ['sectors', 'indexes'] as const
 const DEFAULT_SCOPE = 'sectors'
 
 function toDateString(date: Date): string {
@@ -47,9 +48,15 @@ export default defineEventHandler(async (event) => {
         { field: 'scope', message: `Must be one of: ${VALID_SCOPES.join(', ')}` },
       ]).toH3Error()
     }
+    if (!SUPPORTED_SCOPES.includes(scopeRaw as typeof SUPPORTED_SCOPES[number])) {
+      throw Errors.validationError([
+        { field: 'scope', message: 'core is reserved until the app defines a real core ETF universe.' },
+      ]).toH3Error()
+    }
 
     // Step 1: Load latest monitor rows for the requested scope
-    const { rows, asOfDate } = await getLatestMonitorRows(prisma, scopeRaw)
+    const supportedScope = scopeRaw as typeof SUPPORTED_SCOPES[number]
+    const { rows, asOfDate } = await getLatestMonitorRows(prisma, supportedScope)
     const { rows: sectorSummaryRows } = scopeRaw === 'sectors'
       ? { rows }
       : await getLatestMonitorRows(prisma, 'sectors')
@@ -63,10 +70,10 @@ export default defineEventHandler(async (event) => {
     const marketState = await resolveMarketState(prisma)
 
     // Step 3: Get comparison date (null if no 2W comparison data)
-    const comparisonDate = await getMonitorComparisonDate(prisma, scopeRaw)
+    const comparisonDate = await getMonitorComparisonDate(prisma, supportedScope, asOfDate!)
 
     const trendSeries = comparisonDate
-      ? await getMonitorTrendSeries(prisma, scopeRaw, new Date(comparisonDate), asOfDate!)
+      ? await getMonitorTrendSeries(prisma, supportedScope, new Date(comparisonDate), asOfDate!)
       : new Map()
     const rowsWithTrend = rows.map(row => ({
       ...row,
@@ -77,7 +84,7 @@ export default defineEventHandler(async (event) => {
     const payload = buildMarketRotationMonitorPayload({
       asOfDate: toDateString(asOfDate!),
       comparisonDate,
-      rankScope: scopeRaw,
+      rankScope: supportedScope,
       marketState,
       rows: rowsWithTrend,
       summaryRows: sectorSummaryRows.length > 0 ? sectorSummaryRows : rowsWithTrend,

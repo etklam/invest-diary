@@ -40,8 +40,8 @@ describe('runScopeBatch', () => {
     // Mock: each symbol returns 60 days of price data
     vi.mocked(getHistoricalPrices).mockImplementation(async () => {
       const prices = []
-      for (let i = 0; i < 60; i++) {
-        const d = new Date('2026-04-01')
+      for (let i = 0; i < 260; i++) {
+        const d = new Date('2099-01-01')
         d.setDate(d.getDate() + i)
         prices.push({ date: d, close: 100 + i, adjustedClose: 100 + i })
       }
@@ -135,7 +135,7 @@ describe('runScopeBatch', () => {
 
     // Verify pipeline was called with symbol prices
     expect(runSnapshotPipeline).toHaveBeenCalled()
-    expect(getHistoricalPrices).toHaveBeenCalledWith(prisma, 'XLK', 1)
+    expect(getHistoricalPrices).toHaveBeenCalledWith(prisma, 'XLK', 252)
     const [symbolPrices, comparisonSnaps] = vi.mocked(runSnapshotPipeline).mock.calls[0]
     expect(symbolPrices.length).toBeGreaterThan(0)
     expect(comparisonSnaps).toBeDefined()
@@ -149,7 +149,11 @@ describe('runScopeBatch', () => {
 
     vi.mocked(getHistoricalPrices).mockImplementation(async (_p, symbol) => {
       if (symbol === 'XLU') throw new Error('DB error')
-      return [{ date: new Date('2026-05-30'), close: 100, adjustedClose: 100 }]
+      return Array.from({ length: 260 }, (_, i) => {
+        const d = new Date('2099-01-01')
+        d.setDate(d.getDate() + i)
+        return { date: d, close: 100 + i, adjustedClose: 100 + i }
+      })
     })
 
     vi.mocked(getComparisonDate).mockResolvedValue(null)
@@ -170,7 +174,11 @@ describe('runScopeBatch', () => {
     const prisma = makePrisma()
 
     vi.mocked(getHistoricalPrices).mockResolvedValue([
-      { date: new Date('2026-05-30'), close: 100, adjustedClose: 100 },
+      ...Array.from({ length: 260 }, (_, i) => {
+        const d = new Date('2099-01-01')
+        d.setDate(d.getDate() + i)
+        return { date: d, close: 100 + i, adjustedClose: 100 + i }
+      }),
     ])
     vi.mocked(getComparisonDate).mockResolvedValue(null)
     vi.mocked(runSnapshotPipeline).mockReturnValue({
@@ -247,16 +255,63 @@ describe('ensureCanonicalPrices', () => {
     })
   })
 
-  it('does not fetch when a symbol already has market_daily_price rows', async () => {
+  it('backfills when existing prices have insufficient lookback', async () => {
     const prisma = makePrisma()
-    vi.mocked(getHistoricalPrices).mockResolvedValue([
-      { date: new Date('2026-06-10'), close: 100, adjustedClose: 100 },
-    ])
+    vi.mocked(getHistoricalPrices).mockResolvedValue(
+      Array.from({ length: 40 }, (_, i) => {
+        const d = new Date('2026-05-01')
+        d.setDate(d.getDate() + i)
+        return { date: d, close: 100 + i, adjustedClose: 100 + i }
+      }),
+    )
+    const yahooClient = {
+      chart: vi.fn().mockResolvedValue({ quotes: [] }),
+    }
+
+    await ensureCanonicalPrices(prisma, ['XLK'], yahooClient, {
+      now: new Date('2026-06-13T00:00:00.000Z'),
+    })
+
+    expect(yahooClient.chart).toHaveBeenCalled()
+  })
+
+  it('backfills when existing prices are stale', async () => {
+    const prisma = makePrisma()
+    vi.mocked(getHistoricalPrices).mockResolvedValue(
+      Array.from({ length: 260 }, (_, i) => {
+        const d = new Date('2025-08-01')
+        d.setDate(d.getDate() + i)
+        return { date: d, close: 100 + i, adjustedClose: 100 + i }
+      }),
+    )
+    const yahooClient = {
+      chart: vi.fn().mockResolvedValue({ quotes: [] }),
+    }
+
+    await ensureCanonicalPrices(prisma, ['XLK'], yahooClient, {
+      now: new Date('2026-06-13T00:00:00.000Z'),
+      staleAfterDays: 7,
+    })
+
+    expect(yahooClient.chart).toHaveBeenCalled()
+  })
+
+  it('does not fetch when a symbol has enough fresh market_daily_price rows', async () => {
+    const prisma = makePrisma()
+    vi.mocked(getHistoricalPrices).mockResolvedValue(
+      Array.from({ length: 260 }, (_, i) => {
+        const d = new Date('2025-09-24')
+        d.setDate(d.getDate() + i)
+        return { date: d, close: 100 + i, adjustedClose: 100 + i }
+      }),
+    )
     const yahooClient = {
       chart: vi.fn(),
     }
 
-    await ensureCanonicalPrices(prisma, ['XLK'], yahooClient)
+    await ensureCanonicalPrices(prisma, ['XLK'], yahooClient, {
+      now: new Date('2026-06-13T00:00:00.000Z'),
+    })
 
     expect(yahooClient.chart).not.toHaveBeenCalled()
     expect(prisma.marketDailyPrice.upsert).not.toHaveBeenCalled()
@@ -268,7 +323,11 @@ describe('runFullBatch', () => {
     const prisma = makePrisma()
 
     vi.mocked(getHistoricalPrices).mockResolvedValue([
-      { date: new Date('2026-05-30'), close: 100, adjustedClose: 100 },
+      ...Array.from({ length: 260 }, (_, i) => {
+        const d = new Date('2099-01-01')
+        d.setDate(d.getDate() + i)
+        return { date: d, close: 100 + i, adjustedClose: 100 + i }
+      }),
     ])
     vi.mocked(getComparisonDate).mockResolvedValue(null)
     vi.mocked(runSnapshotPipeline).mockReturnValue({

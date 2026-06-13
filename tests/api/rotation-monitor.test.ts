@@ -221,6 +221,7 @@ describe('GET /api/market/rotation-monitor', () => {
 
     mockSnapshotGroupBy
       .mockResolvedValueOnce([{ date: SNAPSHOT_DATE, _count: { symbol: rows.length } }])
+      .mockResolvedValueOnce([{ date: SNAPSHOT_DATE, _count: { symbol: rows.length } }])
       .mockResolvedValue([])
 
     const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
@@ -235,6 +236,14 @@ describe('GET /api/market/rotation-monitor', () => {
     const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
 
     await expect(handler(makeEvent({ scope: 'invalid' }))).rejects.toMatchObject({
+      statusCode: 400,
+    })
+  })
+
+  it('core scope 暫時拒絕，避免 placeholder universe 誤導', async () => {
+    const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
+
+    await expect(handler(makeEvent({ scope: 'core' }))).rejects.toMatchObject({
       statusCode: 400,
     })
   })

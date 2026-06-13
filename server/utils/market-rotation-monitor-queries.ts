@@ -203,27 +203,15 @@ export async function resolveMarketState(
 export async function getMonitorComparisonDate(
   prisma: MonitorPrisma,
   rankScope: string,
+  asOfDate: Date,
 ): Promise<string | null> {
-  // Step 1: Find the latest snapshot date
-  const latest = await prisma.marketRotationSnapshot.findFirst({
-    where: { rankScope },
-    orderBy: { date: 'desc' },
-    select: { date: true },
-  })
-
-  if (!latest) {
-    return null
-  }
-
-  // Step 2: Read latest rows to check for comparison data
   const rawRows = await prisma.marketRotationSnapshot.findMany({
     where: {
       rankScope,
-      date: latest.date,
+      date: asOfDate,
     },
   })
 
-  // Step 3: Check if any row has non-null rankDelta2W
   const hasComparisonData = rawRows.some(
     row => row.rankDelta2W != null,
   )
@@ -232,7 +220,6 @@ export async function getMonitorComparisonDate(
     return null
   }
 
-  // Step 4: Get comparison date via getComparisonDate at offset 10
   const comparisonDate = await getComparisonDate(prisma as any, rankScope, 10)
 
   if (!comparisonDate) {
@@ -300,7 +287,9 @@ export async function getMonitorTrendSeries(
     const series = qualifiedDates.map((date) => {
       const dateString = toDateString(date)
       const price = priceBySymbolDate.get(`${entry.symbol}:${dateString}`)
-      const value = base && price ? roundTrendValue((price / base) * 100) : null
+      const value = base != null && base > 0 && price != null
+        ? roundTrendValue((price / base) * 100)
+        : null
       return { date: dateString, value }
     })
     result.set(entry.symbol, series)

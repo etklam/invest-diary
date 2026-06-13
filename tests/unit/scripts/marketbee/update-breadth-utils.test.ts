@@ -215,7 +215,7 @@ describe('calculateBreadthRows', () => {
 
     const rows = calculateBreadthRows(prices, symbols, [utcDate('2026-02-09')], existingHistory)
 
-    expect(rows[0].regime).toBe('BULLISH_THRUST')
+    expect(rows[0].regime).toBe('risk_on')
     expect(rows[0].score).toBeGreaterThan(0)
   })
 

@@ -59,9 +59,18 @@ export interface FullBatchResult {
   totalErrors: number
 }
 
+export interface EnsureCanonicalPricesOptions {
+  minLookbackDays?: number
+  staleAfterDays?: number
+  now?: Date
+}
+
 interface YahooFinanceClient {
   chart: (symbol: string, options: Record<string, unknown>) => Promise<{ quotes: unknown[] }>
 }
+
+const DEFAULT_MIN_LOOKBACK_DAYS = 252
+const DEFAULT_STALE_AFTER_DAYS = 7
 
 let yahooFinanceClient: YahooFinanceClient | null = null
 
@@ -110,16 +119,26 @@ export async function ensureCanonicalPrices(
   prisma: PrismaClient,
   symbols: string[],
   client?: YahooFinanceClient,
+  options: EnsureCanonicalPricesOptions = {},
 ): Promise<void> {
+  const minLookbackDays = options.minLookbackDays ?? DEFAULT_MIN_LOOKBACK_DAYS
+  const staleAfterDays = options.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS
+  const now = options.now ?? new Date()
+
   for (const symbol of symbols) {
     let existing: Awaited<ReturnType<typeof getHistoricalPrices>>
     try {
-      existing = await getHistoricalPrices(prisma, symbol, 1)
+      existing = await getHistoricalPrices(prisma, symbol, minLookbackDays)
     } catch {
       continue
     }
 
-    if (existing.length > 0) {
+    const latest = existing.at(-1)
+    const latestAgeMs = latest ? now.getTime() - latest.date.getTime() : Number.POSITIVE_INFINITY
+    const isFresh = latestAgeMs <= staleAfterDays * 24 * 60 * 60 * 1000
+    const hasEnoughLookback = existing.length >= minLookbackDays
+
+    if (hasEnoughLookback && isFresh) {
       continue
     }
 
