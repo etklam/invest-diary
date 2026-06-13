@@ -1,5 +1,5 @@
 import prisma from '~/lib/prisma'
-import { getBreadthHistory } from '~/server/utils/marketbee-queries'
+import { getBreadthHistory } from '~/server/utils/market-state-queries'
 
 const DEFAULT_DAYS = 120
 const MAX_DAYS = 365

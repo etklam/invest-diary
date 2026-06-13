@@ -76,6 +76,7 @@ export function buildSnapshot(
   if (prices.length === 0) return null
 
   const latest = prices[prices.length - 1]
+  if (!latest) return null
 
   // Close prices for indicator calculations (traditional: use close, not adjustedClose)
   const closePrices = prices.map(p => p.close)
@@ -87,14 +88,18 @@ export function buildSnapshot(
   let dailyChangePct: number | null = null
   if (prices.length >= 2) {
     const prev = prices[prices.length - 2]
-    dailyChangePct = calculatePerformance(prev.close, latest.close)
+    if (prev) {
+      dailyChangePct = calculatePerformance(prev.close, latest.close)
+    }
   }
 
   // Weekly change: 5 trading days ago → today
   let weeklyChangePct: number | null = null
   if (prices.length >= 6) {
     const fiveDaysAgo = prices[prices.length - 6]
-    weeklyChangePct = calculatePerformance(fiveDaysAgo.close, latest.close)
+    if (fiveDaysAgo) {
+      weeklyChangePct = calculatePerformance(fiveDaysAgo.close, latest.close)
+    }
   }
 
   // Indicators (all use close prices)

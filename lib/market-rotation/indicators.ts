@@ -21,17 +21,24 @@ export function calculateRsi(prices: number[], period = 14): number | null {
   // Compute price changes
   const changes: number[] = []
   for (let i = 1; i < prices.length; i++) {
-    changes.push(prices[i] - prices[i - 1])
+    const current = prices[i]
+    const previous = prices[i - 1]
+    if (current === undefined || previous === undefined) continue
+
+    changes.push(current - previous)
   }
 
   // Initial average gain / loss from first `period` changes
   let avgGain = 0
   let avgLoss = 0
   for (let i = 0; i < period; i++) {
-    if (changes[i] >= 0) {
-      avgGain += changes[i]
+    const change = changes[i]
+    if (change === undefined) continue
+
+    if (change >= 0) {
+      avgGain += change
     } else {
-      avgLoss += Math.abs(changes[i])
+      avgLoss += Math.abs(change)
     }
   }
   avgGain /= period
@@ -39,8 +46,11 @@ export function calculateRsi(prices: number[], period = 14): number | null {
 
   // Wilder's smoothing for the rest
   for (let i = period; i < changes.length; i++) {
-    const gain = changes[i] >= 0 ? changes[i] : 0
-    const loss = changes[i] < 0 ? Math.abs(changes[i]) : 0
+    const change = changes[i]
+    if (change === undefined) continue
+
+    const gain = change >= 0 ? change : 0
+    const loss = change < 0 ? Math.abs(change) : 0
     avgGain = (avgGain * (period - 1) + gain) / period
     avgLoss = (avgLoss * (period - 1) + loss) / period
   }
@@ -70,13 +80,16 @@ export function calculateEma(prices: number[], period: number): number | null {
   // Seed with SMA of first `period` prices
   let ema = 0
   for (let i = 0; i < period; i++) {
-    ema += prices[i]
+    ema += prices[i] ?? 0
   }
   ema /= period
 
   // Iterate remaining prices
   for (let i = period; i < prices.length; i++) {
-    ema = prices[i] * k + ema * (1 - k)
+    const price = prices[i]
+    if (price === undefined) continue
+
+    ema = price * k + ema * (1 - k)
   }
 
   return ema
@@ -96,7 +109,7 @@ export function calculateSma(prices: number[], period: number): number | null {
 
   let sum = 0
   for (let i = prices.length - period; i < prices.length; i++) {
-    sum += prices[i]
+    sum += prices[i] ?? 0
   }
   return sum / period
 }
@@ -116,8 +129,11 @@ export function calculateRollingHigh(prices: number[], lookback: number): number
 
   const start = Math.max(0, prices.length - lookback)
   let max = prices[start]
+  if (max === undefined) return null
+
   for (let i = start + 1; i < prices.length; i++) {
-    if (prices[i] > max) max = prices[i]
+    const price = prices[i]
+    if (price !== undefined && price > max) max = price
   }
   return max
 }

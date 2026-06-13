@@ -12,7 +12,7 @@ import {
   type DailyPriceInput,
   type PricePoint,
   type YahooChartQuote,
-} from '../../lib/marketbee/update-breadth-utils'
+} from '../../lib/market-state/update-breadth-utils'
 import { normalizeYahooSymbol } from '../../lib/market-data/yahoo'
 
 const require = createRequire(import.meta.url)
@@ -163,7 +163,7 @@ async function upsertBreadthRows(rows: BreadthDayResult[]): Promise<void> {
 }
 
 async function main() {
-  console.log(`開始更新 Marketbee breadth，模式：${isBackfill ? 'Backfill' : '增量'}`)
+  console.log(`開始更新 MarketState breadth，模式：${isBackfill ? 'Backfill' : '增量'}`)
 
   const universe = await prisma.marketUniverse.findMany({
     where: {
@@ -261,7 +261,7 @@ async function main() {
   await upsertBreadthRows(breadthRows)
 
   const latest = breadthRows.length > 0 ? breadthRows[breadthRows.length - 1] : undefined
-  console.log('Marketbee breadth 更新完成')
+  console.log('MarketState breadth 更新完成')
   console.log(`成功股票：${successfulSymbols.size}，失敗股票：${failedCount}，價格筆數：${fetchedPriceCount}，breadth 日期數：${breadthRows.length}`)
   if (latest) {
     console.log(
@@ -272,7 +272,7 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error('Marketbee breadth 更新失敗：', error)
+    console.error('MarketState breadth 更新失敗：', error)
     process.exit(1)
   })
   .finally(async () => {

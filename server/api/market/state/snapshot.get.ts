@@ -1,6 +1,6 @@
 import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
-import { getLatestBreadthSnapshot, getRegimeGuidance } from '~/server/utils/marketbee-queries'
+import { getLatestBreadthSnapshot, getRegimeGuidance } from '~/server/utils/market-state-queries'
 
 export default defineEventHandler(async () => {
   const snapshot = await getLatestBreadthSnapshot(prisma)

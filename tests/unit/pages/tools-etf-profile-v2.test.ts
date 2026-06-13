@@ -20,7 +20,7 @@ describe('tools Market Rotation Monitor ui contract', () => {
     expect(content).toContain('Top Improving')
     expect(content).toContain('Bottom Weakening')
     expect(content).toContain('sticky top-0')
-    expect(content).not.toContain('<MarketbeeSection')
+    expect(content).not.toContain('<MarketStateSection')
     expect(content).not.toContain("label: 'Core ETFs'")
     expect(content).toContain('formatRankDelta')
     expect(content).toContain('formatPointDelta')

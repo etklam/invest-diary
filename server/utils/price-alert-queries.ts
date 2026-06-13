@@ -28,7 +28,7 @@ export const CreatePriceAlertSchema = z.object({
   type: AlertTypeEnum.refine((v) => isSupportedPriceAlertType(v), {
     message: 'Alert type is not supported yet',
   }),
-  threshold: z.number({ required_error: 'Required' }),
+  threshold: z.number('Required'),
   message: z.string().max(500).optional(),
 })
 

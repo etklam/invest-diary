@@ -72,7 +72,10 @@ export function runSnapshotPipeline(
   // Step 3: 2W comparison enrichment
   let latest: FinalSnapshot[]
   if (comparisonSnapshots && comparisonSnapshots.length > 0) {
-    latest = enrichWithComparison(enriched, comparisonSnapshots)
+    latest = enrichWithComparison(
+      enriched.map((snapshot): EnrichedSnapshotInput => ({ ...snapshot })),
+      comparisonSnapshots,
+    )
   }
   else {
     // No comparison data — wrap enriched as-is (2W fields all null)

@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const diary = await findDiaryByDate(dateStr, user.id)
+    const diary = await findDiaryByDate(dateStr, BigInt(user.id))
 
     log.debug('Loaded diary by date', {
       userId: user.id,

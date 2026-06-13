@@ -6,8 +6,9 @@ describe('article content rendering contract', () => {
   it('parses markdown before rendering instead of delegating article content to nested MDC async state', () => {
     const content = readFileSync(resolve(process.cwd(), 'pages/articles/[slug].vue'), 'utf8')
 
-    expect(content).toContain("import { useArticleMarkdown } from '~/composables/useArticleMarkdown'")
-    expect(content).toContain('useArticleMarkdown(articleContent, isHtmlContent)')
+    expect(content).toContain("import { parseMarkdown } from '@nuxtjs/mdc/runtime'")
+    expect(content).toContain('useAsyncData(')
+    expect(content).toContain('return parseMarkdown(articleContent.value')
     expect(content).toContain('v-else-if="articleMarkdown?.body"')
     expect(content).toContain(':body="articleMarkdown.body"')
     expect(content).not.toMatch(/<MDC(\s|>)/)

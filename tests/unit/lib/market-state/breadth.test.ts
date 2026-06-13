@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcAboveMaPct, calcRatioNDaily, countMove4Pct } from '~/lib/marketbee/breadth'
+import { calcAboveMaPct, calcRatioNDaily, countMove4Pct } from '~/lib/market-state/breadth'
 
 describe('countMove4Pct', () => {
   it('正確計算單日上漲與下跌超過 4% 的數量', () => {

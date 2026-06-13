@@ -1,4 +1,4 @@
-import type { Regime } from '~/lib/marketbee/regime'
+import type { Regime } from '~/lib/market-state/regime'
 import { toMarketState } from '~/lib/market-rotation/state'
 
 const DEFAULT_UNIVERSE_KEY = 'SP500_NDX'
@@ -20,7 +20,7 @@ interface MarketBreadthDailyRow {
   isStale: boolean
 }
 
-interface MarketbeePrisma {
+interface MarketStatePrisma {
   marketBreadthDaily: {
     findFirst: (args: {
       where: { universeKey: string }
@@ -113,7 +113,7 @@ function toHistoryResult(row: MarketBreadthDailyRow): HistoryResult {
 }
 
 export async function getLatestBreadthSnapshot(
-  prisma: MarketbeePrisma,
+  prisma: MarketStatePrisma,
   universeKey = DEFAULT_UNIVERSE_KEY,
 ): Promise<SnapshotResult | null> {
   const row = await prisma.marketBreadthDaily.findFirst({
@@ -125,7 +125,7 @@ export async function getLatestBreadthSnapshot(
 }
 
 export async function getBreadthHistory(
-  prisma: MarketbeePrisma,
+  prisma: MarketStatePrisma,
   days: number,
   universeKey = DEFAULT_UNIVERSE_KEY,
 ): Promise<HistoryResult[]> {

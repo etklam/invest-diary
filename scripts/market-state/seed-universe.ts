@@ -3,7 +3,7 @@ import 'dotenv/config'
 
 import { createRequire } from 'node:module'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
-import { uniqueSymbols } from '../../lib/marketbee/seed-universe-utils'
+import { uniqueSymbols } from '../../lib/market-state/seed-universe-utils'
 import { normalizeYahooSymbol } from '../../lib/market-data/yahoo'
 
 const require = createRequire(import.meta.url)
@@ -135,7 +135,7 @@ async function upsertUniverseItem(item: UniverseSeedItem): Promise<void> {
 
 async function main() {
   const symbols = uniqueSymbols([...NASDAQ_100_SYMBOLS, ...SP500_LARGE_CAP_SYMBOLS])
-  console.log(`開始初始化 Marketbee universe：${UNIVERSE_KEY}`)
+  console.log(`開始初始化 MarketState universe：${UNIVERSE_KEY}`)
   console.log(`候選股票數：${symbols.length}，併發：${CONCURRENCY_LIMIT}`)
 
   let successCount = 0
@@ -154,13 +154,13 @@ async function main() {
     }
   })
 
-  console.log('Marketbee universe 初始化完成')
+  console.log('MarketState universe 初始化完成')
   console.log(`universeKey：${UNIVERSE_KEY}，成功：${successCount}，失敗：${failedCount}`)
 }
 
 main()
   .catch((error) => {
-    console.error('Marketbee universe 初始化失敗：', error)
+    console.error('MarketState universe 初始化失敗：', error)
     process.exit(1)
   })
   .finally(async () => {

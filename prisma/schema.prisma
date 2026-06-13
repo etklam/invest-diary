@@ -496,7 +496,7 @@ model PriceAlert {
   @@map("price_alerts")
 }
 
-// ─── Marketbee Regime Monitor ────────────────────────────────────────────────
+// ─── Market State Regime Monitor ───────────────────────────────────────────────
 
 model MarketUniverse {
   id        BigInt   @id @default(autoincrement())
@@ -555,6 +555,26 @@ model MarketDailyPrice {
   @@index([symbol, date], map: "market_daily_price_symbol_date_idx")
   @@index([date], map: "market_daily_price_date_idx")
   @@map("market_daily_price")
+}
+
+model MarketRotationSnapshotRun {
+  id                   BigInt    @id @default(autoincrement())
+  rankScope            String    @map("rank_scope") @db.VarChar(20)
+  snapshotDate         DateTime? @map("snapshot_date") @db.Date
+  status               String    @db.VarChar(32)
+  symbolCount          Int       @default(0) @map("symbol_count")
+  qualifiedSymbolCount Int       @default(0) @map("qualified_symbol_count")
+  upsertedCount        Int       @default(0) @map("upserted_count")
+  errorCount           Int       @default(0) @map("error_count")
+  errorMessage         String?   @map("error_message") @db.Text
+  startedAt            DateTime  @default(now()) @map("started_at")
+  finishedAt           DateTime? @map("finished_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@index([rankScope, startedAt(sort: Desc)], map: "market_rotation_snapshot_run_scope_started_idx")
+  @@index([snapshotDate], map: "market_rotation_snapshot_run_snapshot_date_idx")
+  @@map("market_rotation_snapshot_run")
 }
 
 model MarketRotationSnapshot {

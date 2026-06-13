@@ -13,11 +13,11 @@ export default defineEventHandler(async (event) => {
 
   try {
     const alertId = parsePositiveBigIntParam(event, 'id')
-    await deletePriceAlert(alertId, user.id)
+    await deletePriceAlert(alertId, BigInt(user.id))
 
     return { success: true }
   } catch (error) {
     const { handleApiError } = await import('~/server/utils/error-handler')
-    handleApiError(error, log)
+    return handleApiError(error, log)
   }
 })

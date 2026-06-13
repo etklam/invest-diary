@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const body = await readBody(event)
-    const alert = await createPriceAlert(user.id, body)
+    const alert = await createPriceAlert(BigInt(user.id), body)
 
     return serialize({
       id: alert.id,
@@ -24,6 +24,6 @@ export default defineEventHandler(async (event) => {
     })
   } catch (error) {
     const { handleApiError } = await import('~/server/utils/error-handler')
-    handleApiError(error)
+    return handleApiError(error)
   }
 })

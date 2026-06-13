@@ -78,12 +78,18 @@ export function isFinitePrice(value: unknown): value is number {
 
 export function parseDailyPrices(symbol: string, quotes: YahooChartQuote[]): DailyPriceInput[] {
   return quotes
-    .filter((quote): quote is Required<Pick<YahooChartQuote, 'date' | 'open' | 'high' | 'low' | 'close'>> & YahooChartQuote =>
+    .filter((quote): quote is YahooChartQuote & {
+      date: Date
+      open: number
+      high: number
+      low: number
+      close: number
+    } =>
       quote.date instanceof Date
-      && isFinitePrice(quote.open)
-      && isFinitePrice(quote.high)
-      && isFinitePrice(quote.low)
-      && isFinitePrice(quote.close),
+        && isFinitePrice(quote.open)
+        && isFinitePrice(quote.high)
+        && isFinitePrice(quote.low)
+        && isFinitePrice(quote.close),
     )
     .map((quote) => {
       const adjustedClose = isFinitePrice(quote.adjclose) ? quote.adjclose : quote.close
@@ -152,6 +158,8 @@ export function calculateBreadthRows(
       if (index < 0) continue
 
       const current = symbolPrices[index]
+      if (!current) continue
+
       coveredCount += 1
 
       const previous = symbolPrices[index - 1]

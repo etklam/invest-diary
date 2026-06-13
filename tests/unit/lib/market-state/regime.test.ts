@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { determineRegime } from '~/lib/marketbee/regime'
+import { determineRegime } from '~/lib/market-state/regime'
 
 describe('determineRegime', () => {
   it('down4Pct 達 15% 時觸發 risk_off', () => {

@@ -9,7 +9,7 @@ import {
   toDateOnly,
   type PricePoint,
   type YahooChartQuote,
-} from '~/lib/marketbee/update-breadth-utils'
+} from '~/lib/market-state/update-breadth-utils'
 
 function date(key: string): Date {
   return new Date(`${key}T12:34:56.789Z`)
@@ -32,7 +32,7 @@ function sequentialPrices(symbol: string, startKey: string, closes: number[]): P
   })
 }
 
-describe('Marketbee update breadth date helpers', () => {
+describe('MarketState update breadth date helpers', () => {
   it('toDateOnly 回傳 UTC 零點日期', () => {
     const result = toDateOnly(date('2026-03-15'))
 

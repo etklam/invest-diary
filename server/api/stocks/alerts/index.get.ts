@@ -7,14 +7,16 @@ import { logger } from '~/lib/logger'
 import { serialize } from '~/server/utils/serialize'
 import { listPriceAlerts } from '~/server/utils/price-alert-queries'
 
+type PriceAlertRow = Awaited<ReturnType<typeof listPriceAlerts>>[number]
+
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   try {
-    const alerts = await listPriceAlerts(user.id)
+    const alerts = await listPriceAlerts(BigInt(user.id))
 
-    return serialize(alerts.map((alert) => ({
+    return serialize(alerts.map((alert: PriceAlertRow) => ({
       id: alert.id,
       symbol: alert.symbol,
       type: alert.type,
@@ -27,6 +29,6 @@ export default defineEventHandler(async (event) => {
     })))
   } catch (error) {
     const { handleApiError } = await import('~/server/utils/error-handler')
-    handleApiError(error, log)
+    return handleApiError(error, log)
   }
 })
