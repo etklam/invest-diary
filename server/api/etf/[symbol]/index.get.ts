@@ -9,6 +9,12 @@ import { rateLimiters } from '~/lib/rate-limiter'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
+import {
+  buildMarketHistoricalCacheKey,
+  buildMarketQuoteCacheKey,
+  getMarketDataCacheTtlSeconds,
+  getOrSetCached,
+} from '~/lib/market-data/cache'
 
 export default defineEventHandler(async (event) => {
   const log = logger.etf.withRequestId(event.context.requestId)
@@ -41,7 +47,11 @@ export default defineEventHandler(async (event) => {
 
     if (etf) {
       const quote = etf.prices.length > 0
-        ? await fetchQuote(etf.symbol).catch(() => null)
+        ? await getOrSetCached(
+            buildMarketQuoteCacheKey(etf.symbol),
+            getMarketDataCacheTtlSeconds('quote'),
+            () => fetchQuote(etf.symbol),
+          ).catch(() => null)
         : null
 
       const prices = etf.prices.map((p: any) => ({
@@ -62,8 +72,16 @@ export default defineEventHandler(async (event) => {
   // Fallback: on-demand analysis from Yahoo monthly data,
   // so the tool still works without admin seeding.
   const [monthlyData, quote] = await Promise.all([
-    fetchMonthlyData(normalizedSymbol, 5),
-    fetchQuote(normalizedSymbol).catch(() => null),
+    getOrSetCached(
+      buildMarketHistoricalCacheKey(normalizedSymbol, 'monthly-5y'),
+      getMarketDataCacheTtlSeconds('historical'),
+      () => fetchMonthlyData(normalizedSymbol, 5),
+    ),
+    getOrSetCached(
+      buildMarketQuoteCacheKey(normalizedSymbol),
+      getMarketDataCacheTtlSeconds('quote'),
+      () => fetchQuote(normalizedSymbol),
+    ).catch(() => null),
   ])
 
   if (monthlyData.length === 0) {

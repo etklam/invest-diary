@@ -15,6 +15,7 @@ import type { EnrichedSnapshotInput } from '~/lib/market-rotation/comparison-enr
 import { runSnapshotPipeline, type SymbolPrices } from '~/lib/market-rotation/pipeline'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
 import { normalizeYahooSymbol } from '~/lib/market-data/yahoo'
+import { runYahooRequest } from '~/lib/market-data/yahoo-request-queue'
 import { parseDailyPrices, resolveRangeStart, type DailyPriceInput, type YahooChartQuote } from '~/lib/market-state/update-breadth-utils'
 import {
   getHistoricalPrices,
@@ -83,12 +84,16 @@ async function getYahooFinanceClient(): Promise<YahooFinanceClient> {
 }
 
 async function fetchCanonicalPrices(symbol: string, client: YahooFinanceClient): Promise<DailyPriceInput[]> {
-  const chart = await client.chart(normalizeYahooSymbol(symbol), {
-    period1: resolveRangeStart('1y'),
-    period2: new Date(),
-    interval: '1d',
-    return: 'array',
-  })
+  const normalized = normalizeYahooSymbol(symbol)
+  const chart = await runYahooRequest(
+    `canonical:${normalized}`,
+    () => client.chart(normalized, {
+      period1: resolveRangeStart('1y'),
+      period2: new Date(),
+      interval: '1d',
+      return: 'array',
+    }),
+  )
 
   return parseDailyPrices(symbol, chart.quotes as YahooChartQuote[])
 }
@@ -143,8 +148,17 @@ export async function ensureCanonicalPrices(
     }
 
     const yahooFinance = client ?? await getYahooFinanceClient()
-    const prices = await fetchCanonicalPrices(symbol, yahooFinance)
-    await upsertCanonicalPrices(prisma, prices)
+    try {
+      const prices = await fetchCanonicalPrices(symbol, yahooFinance)
+      await upsertCanonicalPrices(prisma, prices)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      const lower = message.toLowerCase()
+      if (lower.includes('rate') || lower.includes('429') || lower.includes('too many')) {
+        console.warn(`[market-rotation] ${symbol} Yahoo rate-limit：${message}`)
+      }
+      throw error
+    }
   }
 }
 

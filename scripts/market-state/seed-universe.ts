@@ -5,6 +5,7 @@ import { createRequire } from 'node:module'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { uniqueSymbols } from '../../lib/market-state/seed-universe-utils'
 import { normalizeYahooSymbol } from '../../lib/market-data/yahoo'
+import { runYahooRequest } from '../../lib/market-data/yahoo-request-queue'
 
 const require = createRequire(import.meta.url)
 const { PrismaClient } = require('@prisma/client')
@@ -20,7 +21,7 @@ const prisma = new PrismaClient({
 })
 
 const UNIVERSE_KEY = 'SP500_NDX'
-const CONCURRENCY_LIMIT = 4
+const CONCURRENCY_LIMIT = Number(process.env.MARKET_DATA_CONCURRENCY) || 2
 
 interface YahooQuoteRaw {
   symbol?: string
@@ -104,7 +105,11 @@ async function mapLimit<T, R>(
 
 async function fetchUniverseItem(symbol: string): Promise<UniverseSeedItem> {
   const yahooFinance = await getYahooFinanceClient()
-  const rawQuote = await yahooFinance.quote(normalizeYahooSymbol(symbol))
+  const normalized = normalizeYahooSymbol(symbol)
+  const rawQuote = await runYahooRequest(
+    `seed:${normalized}`,
+    () => yahooFinance.quote(normalized),
+  )
 
   return {
     symbol,
@@ -150,7 +155,12 @@ async function main() {
     } catch (error) {
       failedCount += 1
       const message = error instanceof Error ? error.message : String(error)
-      console.error(`[${index + 1}/${symbols.length}] ${symbol} 失敗：${message}`)
+      const lower = message.toLowerCase()
+      if (lower.includes('rate') || lower.includes('429') || lower.includes('too many')) {
+        console.warn(`[${index + 1}/${symbols.length}] ${symbol} Yahoo rate-limit：${message}`)
+      } else {
+        console.error(`[${index + 1}/${symbols.length}] ${symbol} 失敗：${message}`)
+      }
     }
   })
 

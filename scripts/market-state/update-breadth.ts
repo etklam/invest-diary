@@ -14,6 +14,7 @@ import {
   type YahooChartQuote,
 } from '../../lib/market-state/update-breadth-utils'
 import { normalizeYahooSymbol } from '../../lib/market-data/yahoo'
+import { runYahooRequest } from '../../lib/market-data/yahoo-request-queue'
 
 const require = createRequire(import.meta.url)
 const { PrismaClient } = require('@prisma/client')
@@ -29,7 +30,7 @@ const prisma = new PrismaClient({
 })
 
 const UNIVERSE_KEY = 'SP500_NDX'
-const CONCURRENCY_LIMIT = 4
+const CONCURRENCY_LIMIT = Number(process.env.MARKET_DATA_CONCURRENCY) || 2
 const INCREMENTAL_RANGE = '1mo'
 const BACKFILL_RANGE = '1y'
 const BACKFILL_DAYS = 260
@@ -76,14 +77,23 @@ async function mapLimit<T, R>(
 
 async function fetchSymbolPrices(symbol: string): Promise<DailyPriceInput[]> {
   const yahooFinance = await getYahooFinanceClient()
-  const chart = await yahooFinance.chart(normalizeYahooSymbol(symbol), {
-    period1: resolveRangeStart(fetchRange),
-    period2: new Date(),
-    interval: '1d' as YahooChartInterval,
-    return: 'array',
-  })
+  const normalized = normalizeYahooSymbol(symbol)
+  const chart = await runYahooRequest(
+    `breadth:${normalized}:${fetchRange}`,
+    () => yahooFinance.chart(normalized, {
+      period1: resolveRangeStart(fetchRange),
+      period2: new Date(),
+      interval: '1d' as YahooChartInterval,
+      return: 'array',
+    }),
+  )
 
   return parseDailyPrices(symbol, chart.quotes as YahooChartQuote[])
+}
+
+function isRateLimitError(message: string): boolean {
+  const lower = message.toLowerCase()
+  return lower.includes('rate') || lower.includes('429') || lower.includes('too many')
 }
 
 async function upsertPrices(prices: DailyPriceInput[]): Promise<void> {
@@ -194,7 +204,11 @@ async function main() {
     } catch (error) {
       failedCount += 1
       const message = error instanceof Error ? error.message : String(error)
-      console.error(`[${index + 1}/${symbols.length}] ${symbol} 失敗：${message}`)
+      if (isRateLimitError(message)) {
+        console.warn(`[${index + 1}/${symbols.length}] ${symbol} Yahoo rate-limit：${message}`)
+      } else {
+        console.error(`[${index + 1}/${symbols.length}] ${symbol} 失敗：${message}`)
+      }
       return { symbol, ok: false, prices: [] as DailyPriceInput[] }
     }
   })

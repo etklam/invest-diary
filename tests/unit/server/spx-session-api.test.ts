@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { clearCache } from '~/lib/market-data/cache'
 
 const mockRequireUser = vi.fn()
 const mockYahooFinanceLimiter = vi.fn()
@@ -26,6 +27,7 @@ vi.mock('~/lib/yahoo-finance', () => ({
 describe('GET /api/market/spx-session', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    clearCache()
     mockRequireUser.mockReturnValue({ id: '1' })
     mockGetRequestIP.mockReturnValue('127.0.0.1')
     mockYahooFinanceLimiter.mockResolvedValue(undefined)
@@ -77,5 +79,15 @@ describe('GET /api/market/spx-session', () => {
     await expect(handler({ context: {} } as any)).rejects.toMatchObject({
       statusCode: 502,
     })
+  })
+
+  it('serves the second call from cache without re-hitting Yahoo', async () => {
+    const { default: handler } = await import('~/server/api/market/spx-session.get')
+
+    await handler({ context: {} } as any)
+    await handler({ context: {} } as any)
+
+    expect(mockFetchQuote).toHaveBeenCalledTimes(1)
+    expect(mockFetchIntradayData).toHaveBeenCalledTimes(1)
   })
 })

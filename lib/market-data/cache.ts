@@ -30,6 +30,7 @@ export {
 export {
   buildMarketQuoteCacheKey,
   buildMarketHistoricalCacheKey,
+  buildMarketIntradayCacheKey,
   buildEtfResearchCacheKey,
 } from '~/lib/etf-profile/cache'
 

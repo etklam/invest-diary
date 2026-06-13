@@ -95,6 +95,10 @@ export function buildMarketHistoricalCacheKey(symbol: string, range: string): st
   return `market:historical:${normalizeMarketCachePart(symbol)}:${normalizeMarketCachePart(range).toLowerCase()}`
 }
 
+export function buildMarketIntradayCacheKey(symbol: string, days: number, interval: string): string {
+  return `market:intraday:${normalizeMarketCachePart(symbol)}:${days}:${interval.toLowerCase()}`
+}
+
 export function buildEtfResearchCacheKey(symbol: string, benchmark: string, period: string): string {
   return `etf-profile:${normalizeMarketCachePart(symbol)}:${normalizeMarketCachePart(benchmark)}:${normalizeMarketCachePart(period).toLowerCase()}`
 }
