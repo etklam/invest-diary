@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { runScopeBatch, runFullBatch } from '~/server/utils/market-rotation-batch'
+import { ensureCanonicalPrices, runScopeBatch, runFullBatch } from '~/server/utils/market-rotation-batch'
 
 // ─── Mock setup ─────────────────────────────────────────────────────
 
@@ -20,7 +20,11 @@ import { getHistoricalPrices, getComparisonDate, getComparisonSnapshots, upsertS
 import { runSnapshotPipeline } from '~/lib/market-rotation/pipeline'
 
 function makePrisma() {
-  return {} as any
+  return {
+    marketDailyPrice: {
+      upsert: vi.fn().mockResolvedValue({ id: 1n }),
+    },
+  } as any
 }
 
 // ─── Tests ──────────────────────────────────────────────────────────
@@ -34,7 +38,7 @@ describe('runScopeBatch', () => {
     const prisma = makePrisma()
 
     // Mock: each symbol returns 60 days of price data
-    vi.mocked(getHistoricalPrices).mockImplementation(async (_p, symbol) => {
+    vi.mocked(getHistoricalPrices).mockImplementation(async () => {
       const prices = []
       for (let i = 0; i < 60; i++) {
         const d = new Date('2026-04-01')
@@ -131,6 +135,7 @@ describe('runScopeBatch', () => {
 
     // Verify pipeline was called with symbol prices
     expect(runSnapshotPipeline).toHaveBeenCalled()
+    expect(getHistoricalPrices).toHaveBeenCalledWith(prisma, 'XLK', 1)
     const [symbolPrices, comparisonSnaps] = vi.mocked(runSnapshotPipeline).mock.calls[0]
     expect(symbolPrices.length).toBeGreaterThan(0)
     expect(comparisonSnaps).toBeDefined()
@@ -142,9 +147,7 @@ describe('runScopeBatch', () => {
   it('continues when some symbols fail to load prices', async () => {
     const prisma = makePrisma()
 
-    let callCount = 0
     vi.mocked(getHistoricalPrices).mockImplementation(async (_p, symbol) => {
-      callCount++
       if (symbol === 'XLU') throw new Error('DB error')
       return [{ date: new Date('2026-05-30'), close: 100, adjustedClose: 100 }]
     })
@@ -183,6 +186,80 @@ describe('runScopeBatch', () => {
     // Pipeline should have been called with empty comparison array
     const [, comparisonSnaps] = vi.mocked(runSnapshotPipeline).mock.calls[0]
     expect(comparisonSnaps).toEqual([])
+  })
+})
+
+describe('ensureCanonicalPrices', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('backfills canonical prices for symbols missing market_daily_price before pipeline can read them', async () => {
+    const prisma = makePrisma()
+    vi.mocked(getHistoricalPrices).mockResolvedValue([])
+    const yahooClient = {
+      chart: vi.fn().mockResolvedValue({
+        quotes: [
+          {
+            date: new Date('2026-06-10T00:00:00.000Z'),
+            open: 100,
+            high: 105,
+            low: 99,
+            close: 104,
+            adjclose: 103,
+            volume: 1234,
+          },
+        ],
+      }),
+    }
+
+    await ensureCanonicalPrices(prisma, ['XLK'], yahooClient)
+
+    expect(yahooClient.chart).toHaveBeenCalledWith('XLK', expect.objectContaining({
+      interval: '1d',
+      return: 'array',
+    }))
+    expect(prisma.marketDailyPrice.upsert).toHaveBeenCalledWith({
+      where: {
+        symbol_date: {
+          symbol: 'XLK',
+          date: new Date('2026-06-10T00:00:00.000Z'),
+        },
+      },
+      update: {
+        open: 100,
+        high: 105,
+        low: 99,
+        close: 104,
+        adjustedClose: 103,
+        volume: 1234n,
+      },
+      create: {
+        symbol: 'XLK',
+        date: new Date('2026-06-10T00:00:00.000Z'),
+        open: 100,
+        high: 105,
+        low: 99,
+        close: 104,
+        adjustedClose: 103,
+        volume: 1234n,
+      },
+    })
+  })
+
+  it('does not fetch when a symbol already has market_daily_price rows', async () => {
+    const prisma = makePrisma()
+    vi.mocked(getHistoricalPrices).mockResolvedValue([
+      { date: new Date('2026-06-10'), close: 100, adjustedClose: 100 },
+    ])
+    const yahooClient = {
+      chart: vi.fn(),
+    }
+
+    await ensureCanonicalPrices(prisma, ['XLK'], yahooClient)
+
+    expect(yahooClient.chart).not.toHaveBeenCalled()
+    expect(prisma.marketDailyPrice.upsert).not.toHaveBeenCalled()
   })
 })
 

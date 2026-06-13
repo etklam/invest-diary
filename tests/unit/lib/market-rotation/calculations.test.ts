@@ -9,34 +9,21 @@ import {
 } from '~/lib/market-rotation/calculations'
 
 describe('calculateMaStatus', () => {
-  it('classifies bullish_stack when above 10d, 20d, and 50d', () => {
+  it('applies canonical MA status rules for every complete MA combination', () => {
     expect(calculateMaStatus({ above10d: true, above20d: true, above50d: true })).toBe('bullish_stack')
-  })
-
-  it('classifies breakdown when nothing is above', () => {
+    expect(calculateMaStatus({ above10d: false, above20d: true, above50d: true })).toBe('healthy_pullback')
+    expect(calculateMaStatus({ above10d: true, above20d: false, above50d: true })).toBe('short_term_weakness')
+    expect(calculateMaStatus({ above10d: false, above20d: false, above50d: true })).toBe('short_term_weakness')
+    expect(calculateMaStatus({ above10d: true, above20d: true, above50d: false })).toBe('recovering')
+    expect(calculateMaStatus({ above10d: true, above20d: false, above50d: false })).toBe('recovering')
+    expect(calculateMaStatus({ above10d: false, above20d: true, above50d: false })).toBe('recovering')
     expect(calculateMaStatus({ above10d: false, above20d: false, above50d: false })).toBe('breakdown')
   })
 
-  it('classifies healthy_pullback when above 50d but not above 10d or 20d', () => {
-    expect(calculateMaStatus({ above10d: false, above20d: false, above50d: true })).toBe('healthy_pullback')
-  })
-
-  it('classifies recovering when above 10d and 20d but not 50d', () => {
-    expect(calculateMaStatus({ above10d: true, above20d: true, above50d: false })).toBe('recovering')
-  })
-
-  it('classifies short_term_weakness when above 10d but not 20d or 50d', () => {
-    expect(calculateMaStatus({ above10d: true, above20d: false, above50d: false })).toBe('short_term_weakness')
-  })
-
-  it('classifies short_term_weakness when above 20d but not 10d or 50d', () => {
-    expect(calculateMaStatus({ above10d: false, above20d: true, above50d: false })).toBe('short_term_weakness')
-  })
-
-  it('classifies short_term_weakness when above 10d and 20d combo but not 50d... wait recovering takes priority', () => {
-    // above10d=true + above20d=true + above50d=false = recovering (covered above)
-    // This tests the remaining combo: above10d=true + above20d=false + above50d=true
-    expect(calculateMaStatus({ above10d: true, above20d: false, above50d: true })).toBe('healthy_pullback')
+  it('returns unknown when any MA input is missing', () => {
+    expect(calculateMaStatus({ above10d: null, above20d: true, above50d: true })).toBe('unknown')
+    expect(calculateMaStatus({ above10d: true, above20d: null, above50d: true })).toBe('unknown')
+    expect(calculateMaStatus({ above10d: true, above20d: true, above50d: null })).toBe('unknown')
   })
 })
 

@@ -95,11 +95,10 @@ describe('server/utils/market-rotation-monitor-queries', () => {
 
   describe('getLatestMonitorRows', () => {
     it('reads the latest date snapshots and returns monitor rows', async () => {
-      // Step 1: findFirst returns the latest date
-      mockSnapshotFindFirst.mockResolvedValue({
-        date: new Date('2026-06-10'),
-      })
-      // Step 2: findMany returns rows for that date
+      mockSnapshotGroupBy.mockResolvedValue([
+        { date: new Date('2026-06-11'), _count: { symbol: 9 } },
+        { date: new Date('2026-06-10'), _count: { symbol: 10 } },
+      ])
       mockSnapshotFindMany.mockResolvedValue([
         buildSectorRawRow({ symbol: 'XLK', sectorName: 'Technology', rotationRank: 1 }),
         buildSectorRawRow({
@@ -113,13 +112,17 @@ describe('server/utils/market-rotation-monitor-queries', () => {
 
       const result = await getLatestMonitorRows(prisma as any, 'sectors')
 
-      // Verify findFirst was called to get latest date
-      expect(mockSnapshotFindFirst).toHaveBeenCalledWith({
-        where: { rankScope: 'sectors' },
+      expect(mockSnapshotGroupBy).toHaveBeenCalledWith({
+        by: ['date'],
+        where: {
+          rankScope: 'sectors',
+          symbol: {
+            in: ['XLK', 'XLF', 'XLE', 'XLU', 'XLP', 'XLY', 'XLI', 'XLV', 'XLB', 'XLC', 'XLRE'],
+          },
+        },
+        _count: { symbol: true },
         orderBy: { date: 'desc' },
-        select: { date: true },
       })
-      // Verify findMany was called with that date
       expect(mockSnapshotFindMany).toHaveBeenCalledWith({
         where: {
           rankScope: 'sectors',
@@ -131,8 +134,28 @@ describe('server/utils/market-rotation-monitor-queries', () => {
       expect(result.asOfDate).toEqual(new Date('2026-06-10'))
     })
 
+    it('uses the latest qualified snapshot date instead of the latest raw date', async () => {
+      mockSnapshotGroupBy.mockResolvedValue([
+        { date: new Date('2026-06-12'), _count: { symbol: 1 } },
+        { date: new Date('2026-06-11'), _count: { symbol: 9 } },
+        { date: new Date('2026-06-10'), _count: { symbol: 10 } },
+      ])
+      mockSnapshotFindMany.mockResolvedValue([buildSectorRawRow()])
+
+      const result = await getLatestMonitorRows(prisma as any, 'sectors')
+
+      expect(result.asOfDate).toEqual(new Date('2026-06-10'))
+      expect(mockSnapshotFindMany).toHaveBeenCalledWith({
+        where: {
+          rankScope: 'sectors',
+          date: new Date('2026-06-10'),
+        },
+      })
+      expect(mockSnapshotFindFirst).not.toHaveBeenCalled()
+    })
+
     it('converts Decimal fields to number', async () => {
-      mockSnapshotFindFirst.mockResolvedValue({ date: new Date('2026-06-10') })
+      mockSnapshotGroupBy.mockResolvedValue([{ date: new Date('2026-06-10'), _count: { symbol: 11 } }])
       mockSnapshotFindMany.mockResolvedValue([buildSectorRawRow()])
 
       const result = await getLatestMonitorRows(prisma as any, 'sectors')
@@ -148,7 +171,7 @@ describe('server/utils/market-rotation-monitor-queries', () => {
     })
 
     it('adds name from universe mapping (XLK -> Technology)', async () => {
-      mockSnapshotFindFirst.mockResolvedValue({ date: new Date('2026-06-10') })
+      mockSnapshotGroupBy.mockResolvedValue([{ date: new Date('2026-06-10'), _count: { symbol: 11 } }])
       mockSnapshotFindMany.mockResolvedValue([
         buildSectorRawRow({ symbol: 'XLK' }),
         buildSectorRawRow({ id: 2n, symbol: 'XLF', sectorName: 'Financials' }),
@@ -163,7 +186,7 @@ describe('server/utils/market-rotation-monitor-queries', () => {
     })
 
     it('returns empty rows and null asOfDate for empty database', async () => {
-      mockSnapshotFindFirst.mockResolvedValue(null)
+      mockSnapshotGroupBy.mockResolvedValue([])
 
       const result = await getLatestMonitorRows(prisma as any, 'sectors')
 
@@ -174,7 +197,7 @@ describe('server/utils/market-rotation-monitor-queries', () => {
     })
 
     it('correctly maps groupType from DB row', async () => {
-      mockSnapshotFindFirst.mockResolvedValue({ date: new Date('2026-06-10') })
+      mockSnapshotGroupBy.mockResolvedValue([{ date: new Date('2026-06-10'), _count: { symbol: 11 } }])
       mockSnapshotFindMany.mockResolvedValue([
         buildSectorRawRow({ symbol: 'XLK', groupType: 'sector' }),
         buildSectorRawRow({ id: 2n, symbol: 'SPY', groupType: 'index', rankScope: 'indexes' }),
@@ -187,7 +210,7 @@ describe('server/utils/market-rotation-monitor-queries', () => {
     })
 
     it('handles indexes scope with correct name mapping', async () => {
-      mockSnapshotFindFirst.mockResolvedValue({ date: new Date('2026-06-10') })
+      mockSnapshotGroupBy.mockResolvedValue([{ date: new Date('2026-06-10'), _count: { symbol: 11 } }])
       mockSnapshotFindMany.mockResolvedValue([
         buildSectorRawRow({
           symbol: 'SPY',
@@ -206,7 +229,7 @@ describe('server/utils/market-rotation-monitor-queries', () => {
     })
 
     it('handles null Decimal fields correctly', async () => {
-      mockSnapshotFindFirst.mockResolvedValue({ date: new Date('2026-06-10') })
+      mockSnapshotGroupBy.mockResolvedValue([{ date: new Date('2026-06-10'), _count: { symbol: 11 } }])
       mockSnapshotFindMany.mockResolvedValue([
         buildSectorRawRow({
           lastPrice: null,
@@ -360,7 +383,7 @@ describe('server/utils/market-rotation-monitor-queries', () => {
     })
 
     it('returns null when no comparison data exists (all rankDelta2W null)', async () => {
-      mockSnapshotFindFirst.mockResolvedValue({ date: new Date('2026-06-10') })
+      mockSnapshotGroupBy.mockResolvedValue([{ date: new Date('2026-06-10'), _count: { symbol: 11 } }])
       mockSnapshotFindMany.mockResolvedValue([
         buildSectorRawRow({ rankDelta2W: null }),
         buildSectorRawRow({ id: 2n, symbol: 'XLF', rankDelta2W: null }),

@@ -21,6 +21,12 @@ function formatPercent(value: number | null | undefined, decimals = 2): string {
   return `${sign}${value.toFixed(decimals)}%`
 }
 
+function formatPointDelta(value: number | null | undefined, decimals = 1): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return '--'
+  const sign = value > 0 ? '+' : ''
+  return `${sign}${value.toFixed(decimals)} pts`
+}
+
 function changeColor(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return 'text-dt-text-muted'
   return value > 0
@@ -108,7 +114,7 @@ function maStatusTone(status: MaStatus): 'success' | 'warning' | 'danger' | 'neu
       <div>
         <p class="text-dt-text-muted">RSI &Delta;</p>
         <p data-testid="rsi-delta" class="font-mono font-semibold" :class="changeColor(props.row.rsiDelta2W)">
-          {{ formatPercent(props.row.rsiDelta2W, 1) }}
+          {{ formatPointDelta(props.row.rsiDelta2W) }}
         </p>
       </div>
       <div>

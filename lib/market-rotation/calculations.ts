@@ -19,8 +19,8 @@ export function calculateMaStatus(input: MaStatusInput): MaStatus {
 
   if (above10d && above20d && above50d) return 'bullish_stack'
   if (!above10d && !above20d && !above50d) return 'breakdown'
-  if (above50d) return 'healthy_pullback'
-  if (above10d && above20d) return 'recovering'
+  if (!above50d && (above10d || above20d)) return 'recovering'
+  if (above20d && above50d) return 'healthy_pullback'
   return 'short_term_weakness'
 }
 
@@ -135,7 +135,10 @@ export function assignRotationRanks(rows: RankableRow[]): RankedRow[] {
   })
 
   scored.forEach((entry, rank) => {
-    result[entry.index].rotationRank = rank + 1
+    const row = result[entry.index]
+    if (row) {
+      row.rotationRank = rank + 1
+    }
   })
 
   return result

@@ -80,7 +80,7 @@ describe('EtfMobileCard', () => {
     const wrapper = mount(EtfMobileCard, { props: { row } })
 
     const el = wrapper.find('[data-testid="rsi-delta"]')
-    expect(el.text()).toContain('+5.3%')
+    expect(el.text()).toContain('+5.3 pts')
     expect(el.classes()).toContain('text-emerald-600')
   })
 
@@ -89,7 +89,7 @@ describe('EtfMobileCard', () => {
     const wrapper = mount(EtfMobileCard, { props: { row } })
 
     const el = wrapper.find('[data-testid="rsi-delta"]')
-    expect(el.text()).toContain('-3.1%')
+    expect(el.text()).toContain('-3.1 pts')
     expect(el.classes()).toContain('text-red-600')
   })
 

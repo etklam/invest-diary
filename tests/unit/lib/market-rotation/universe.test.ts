@@ -6,14 +6,13 @@ import {
   getUniverseForScope,
   getAllSymbols,
 } from '~/lib/market-rotation/universe'
-import type { UniverseEntry } from '~/lib/market-rotation/universe'
 
 // ─── Helpers ────────────────────────────────────────────────────
 
 const EXCLUDED_FROM_SECTORS = ['SPY', 'MAGS', 'QQQE', 'RSP'] as const
 
 const EXPECTED_SECTOR_SYMBOLS = [
-  'XLK', 'XLF', 'XLE', 'XLU', 'XLP', 'XLY', 'XLI', 'XLV', 'XLB', 'XLC', 'VNQ',
+  'XLK', 'XLF', 'XLE', 'XLU', 'XLP', 'XLY', 'XLI', 'XLV', 'XLB', 'XLC', 'XLRE',
 ] as const
 
 const EXPECTED_INDEX_SYMBOLS = [
@@ -30,12 +29,16 @@ describe('getSectorsUniverse', () => {
     }
   })
 
-  it('contains all 11 SPDR sector ETFs + VNQ', () => {
+  it('contains the 11 SPDR sector ETFs with XLRE as Real Estate', () => {
     const universe = getSectorsUniverse()
     const symbols = universe.map(e => e.symbol)
     for (const symbol of EXPECTED_SECTOR_SYMBOLS) {
       expect(symbols).toContain(symbol)
     }
+  })
+
+  it('does not use VNQ as the sector canonical Real Estate ETF', () => {
+    expect(getSectorsUniverse().map(e => e.symbol)).not.toContain('VNQ')
   })
 
   it('has 11 entries', () => {

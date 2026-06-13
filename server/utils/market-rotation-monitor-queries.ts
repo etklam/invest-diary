@@ -9,13 +9,12 @@
  * for testability, consistent with market-rotation-queries.ts.
  */
 
-import type { PrismaClient } from '@prisma/client'
 import type { MarketRotationMonitorRow, MarketRotationTrendPoint } from '~/lib/market-rotation/monitor'
 import type { MarketState } from '~/lib/market-rotation/state'
 import { toMarketState } from '~/lib/market-rotation/state'
 import type { MaStatus, RotationSignal, SignalStatus } from '~/lib/market-rotation/signal'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
-import { getComparisonDate } from '~/server/utils/market-rotation-queries'
+import { getComparisonDate, getLatestQualifiedDate } from '~/server/utils/market-rotation-queries'
 
 // ─── Type helpers ──────────────────────────────────────────────────────────
 
@@ -139,14 +138,14 @@ export async function getLatestMonitorRows(
   prisma: MonitorPrisma,
   rankScope: string,
 ): Promise<{ rows: MarketRotationMonitorRow[]; asOfDate: Date | null }> {
-  // Step 1: Find the latest snapshot date for this scope
-  const latest = await prisma.marketRotationSnapshot.findFirst({
-    where: { rankScope },
-    orderBy: { date: 'desc' },
-    select: { date: true },
-  })
+  const universe = getUniverseForScope(rankScope as 'sectors' | 'indexes' | 'core')
+  const latestDate = await getLatestQualifiedDate(
+    prisma as any,
+    rankScope,
+    universe.map(entry => entry.symbol),
+  )
 
-  if (!latest) {
+  if (!latestDate) {
     return { rows: [], asOfDate: null }
   }
 
@@ -154,7 +153,7 @@ export async function getLatestMonitorRows(
   const rawRows = await prisma.marketRotationSnapshot.findMany({
     where: {
       rankScope,
-      date: latest.date,
+      date: latestDate,
     },
   })
 
@@ -162,7 +161,7 @@ export async function getLatestMonitorRows(
   const nameMap = buildNameMap(rankScope)
   const rows = rawRows.map(raw => toMonitorRow(raw, nameMap))
 
-  return { rows, asOfDate: latest.date }
+  return { rows, asOfDate: latestDate }
 }
 
 /**

@@ -3,6 +3,9 @@ import type { BreadthCondition, BreadthConfirmation } from './breadth'
 import type { MaStatus, RotationSignal, SignalStatus } from './signal'
 import type { RankScope } from './types'
 import { getBreadthCondition, getBreadthConfirmation } from './breadth'
+import { getUniverseForScope } from './universe'
+
+const SCORE_VERSION = 'v1'
 
 export interface MarketRotationMonitorRow {
   symbol: string
@@ -61,6 +64,11 @@ export interface MarketRotationMonitorDataQuality {
   rankScope: RankScope
   rowCount: number
   completeSignalCount: number
+  coverageRatio: number
+  isQualified: boolean
+  expectedSymbolCount: number
+  actualSymbolCount: number
+  scoreVersion: string
 }
 
 export interface MarketRotationMonitorPayload {
@@ -142,6 +150,11 @@ export function buildMarketRotationMonitorPayload(input: MarketRotationMonitorIn
     .sort(compareLeadershipChange)
     .slice(-3)
     .reverse()
+  const expectedSymbolCount = getUniverseForScope(input.rankScope).length
+  const actualSymbolCount = rows.length
+  const coverageRatio = expectedSymbolCount > 0
+    ? roundMetric(actualSymbolCount / expectedSymbolCount)
+    : 0
 
   return {
     asOfDate: input.asOfDate,
@@ -177,6 +190,11 @@ export function buildMarketRotationMonitorPayload(input: MarketRotationMonitorIn
       rankScope: input.rankScope,
       rowCount: rows.length,
       completeSignalCount: rows.filter(row => row.signalStatus === 'complete').length,
+      coverageRatio,
+      isQualified: coverageRatio >= 0.9,
+      expectedSymbolCount,
+      actualSymbolCount,
+      scoreVersion: SCORE_VERSION,
     },
   }
 }

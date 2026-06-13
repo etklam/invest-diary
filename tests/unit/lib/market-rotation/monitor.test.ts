@@ -134,6 +134,11 @@ describe('buildMarketRotationMonitorPayload', () => {
       rankScope: 'sectors',
       rowCount: 3,
       completeSignalCount: 3,
+      coverageRatio: 0.2727,
+      isQualified: false,
+      expectedSymbolCount: 11,
+      actualSymbolCount: 3,
+      scoreVersion: 'v1',
     })
   })
 

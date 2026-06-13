@@ -13,7 +13,9 @@
 
 import type { EnrichedSnapshotInput } from '~/lib/market-rotation/comparison-enrichment'
 import { runSnapshotPipeline, type SymbolPrices } from '~/lib/market-rotation/pipeline'
-import { getUniverseForScope, getAllSymbols } from '~/lib/market-rotation/universe'
+import { getUniverseForScope } from '~/lib/market-rotation/universe'
+import { normalizeYahooSymbol } from '~/lib/market-data/yahoo'
+import { parseDailyPrices, resolveRangeStart, type DailyPriceInput, type YahooChartQuote } from '~/lib/marketbee/update-breadth-utils'
 import {
   getHistoricalPrices,
   getComparisonDate,
@@ -26,7 +28,20 @@ import type { DailyPrice } from '~/lib/market-rotation/snapshot-builder'
 // ─── Types ──────────────────────────────────────────────────────────
 
 interface PrismaClient {
-  marketDailyPrice: Parameters<typeof getHistoricalPrices>[0]['marketDailyPrice']
+  marketDailyPrice: Parameters<typeof getHistoricalPrices>[0]['marketDailyPrice'] & {
+    upsert: (args: {
+      where: { symbol_date: { symbol: string; date: Date } }
+      update: {
+        open: number
+        high: number
+        low: number
+        close: number
+        adjustedClose: number
+        volume: bigint
+      }
+      create: DailyPriceInput
+    }) => Promise<unknown>
+  }
   marketRotationSnapshot: Parameters<typeof getComparisonDate>[0]['marketRotationSnapshot']
 }
 
@@ -42,6 +57,76 @@ export interface FullBatchResult {
   results: BatchJobResult[]
   totalUpserted: number
   totalErrors: number
+}
+
+interface YahooFinanceClient {
+  chart: (symbol: string, options: Record<string, unknown>) => Promise<{ quotes: unknown[] }>
+}
+
+let yahooFinanceClient: YahooFinanceClient | null = null
+
+async function getYahooFinanceClient(): Promise<YahooFinanceClient> {
+  if (yahooFinanceClient) return yahooFinanceClient
+
+  const module = await import('yahoo-finance2')
+  yahooFinanceClient = new module.default() as unknown as YahooFinanceClient
+  return yahooFinanceClient
+}
+
+async function fetchCanonicalPrices(symbol: string, client: YahooFinanceClient): Promise<DailyPriceInput[]> {
+  const chart = await client.chart(normalizeYahooSymbol(symbol), {
+    period1: resolveRangeStart('1y'),
+    period2: new Date(),
+    interval: '1d',
+    return: 'array',
+  })
+
+  return parseDailyPrices(symbol, chart.quotes as YahooChartQuote[])
+}
+
+async function upsertCanonicalPrices(prisma: PrismaClient, prices: DailyPriceInput[]): Promise<void> {
+  for (const price of prices) {
+    await prisma.marketDailyPrice.upsert({
+      where: {
+        symbol_date: {
+          symbol: price.symbol,
+          date: price.date,
+        },
+      },
+      update: {
+        open: price.open,
+        high: price.high,
+        low: price.low,
+        close: price.close,
+        adjustedClose: price.adjustedClose,
+        volume: price.volume,
+      },
+      create: price,
+    })
+  }
+}
+
+export async function ensureCanonicalPrices(
+  prisma: PrismaClient,
+  symbols: string[],
+  client?: YahooFinanceClient,
+): Promise<void> {
+  for (const symbol of symbols) {
+    let existing: Awaited<ReturnType<typeof getHistoricalPrices>>
+    try {
+      existing = await getHistoricalPrices(prisma, symbol, 1)
+    } catch {
+      continue
+    }
+
+    if (existing.length > 0) {
+      continue
+    }
+
+    const yahooFinance = client ?? await getYahooFinanceClient()
+    const prices = await fetchCanonicalPrices(symbol, yahooFinance)
+    await upsertCanonicalPrices(prisma, prices)
+  }
 }
 
 // ─── Scope-level batch ──────────────────────────────────────────────
@@ -62,6 +147,8 @@ export async function runScopeBatch(
   const universe = getUniverseForScope(rankScope)
   const symbols = universe.map(u => u.symbol)
   const errors: Array<{ symbol: string; error: string }> = []
+
+  await ensureCanonicalPrices(prisma, symbols)
 
   // Step 1: Load historical prices for all symbols
   const symbolPrices: SymbolPrices[] = []

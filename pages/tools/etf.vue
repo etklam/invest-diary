@@ -11,7 +11,6 @@ type SortField = 'symbol' | 'sectorName' | 'lastPrice' | 'rsi14' | 'rsiDelta2W' 
 const scopeOptions: Array<{ key: RankScope; label: string; icon: string }> = [
   { key: 'sectors', label: 'US Sectors', icon: 'heroicons:squares-2x2' },
   { key: 'indexes', label: 'Index ETFs', icon: 'heroicons:chart-bar-square' },
-  { key: 'core', label: 'Core ETFs', icon: 'heroicons:circle-stack' },
 ]
 
 const filters: Array<{ key: FilterKey; label: string }> = [
@@ -100,6 +99,21 @@ function formatPercent(value: number | null | undefined, decimals = 2): string {
   if (normalized === null) return '--'
   const sign = normalized > 0 ? '+' : ''
   return `${sign}${normalized.toFixed(decimals)}%`
+}
+
+function formatPointDelta(value: number | null | undefined, decimals = 1): string {
+  const normalized = normalizeNumber(value)
+  if (normalized === null) return '--'
+  const sign = normalized > 0 ? '+' : ''
+  return `${sign}${normalized.toFixed(decimals)} pts`
+}
+
+function formatRankDelta(value: number | null | undefined): string {
+  const normalized = normalizeNumber(value)
+  if (normalized === null) return '--'
+  if (normalized > 0) return `+${normalized.toFixed(0)} ranks`
+  if (normalized < 0) return `${normalized.toFixed(0)} ranks`
+  return '0 ranks'
 }
 
 function formatRatio(ratio: number | null | undefined): string {
@@ -314,22 +328,31 @@ function downloadText(filename: string, content: string, type: string): void {
 }
 
 function exportCsv(): void {
+  const metadataRows = [
+    ['Market Summary', currentMarketSummary.value],
+    ['Market State', summary.value ? marketStateLabel(summary.value.marketState) : '--'],
+    ['Breadth Condition', summary.value ? breadthConditionLabel(summary.value.breadthCondition) : '--'],
+    ['Breadth Confirmation', summary.value ? breadthConfirmationLabel(summary.value.breadthConfirmation) : '--'],
+    ['As Of Date', dataQuality.value?.asOfDate ?? '--'],
+    ['Comparison Date', dataQuality.value?.comparisonDate ?? '--'],
+    ['Rank Scope', dataQuality.value?.rankScope ?? activeScope.value],
+  ]
   const headers = ['Ticker', 'Sector', 'Last', 'RSI', 'RSI Delta 2W', 'Rank', 'Rank Delta 2W', '2W %', '2W Trend', '% From High', 'MA Status', 'Signal']
   const body = filteredRows.value.map(row => [
     row.symbol,
     row.sectorName ?? row.name,
     formatNumber(row.lastPrice),
     formatNumber(row.rsi14, 1),
-    formatPercent(row.rsiDelta2W, 1),
+    formatPointDelta(row.rsiDelta2W),
     row.rotationRank ?? '--',
-    row.rankDelta2W != null ? formatPercent(row.rankDelta2W) : '--',
+    formatRankDelta(row.rankDelta2W),
     formatPercent(row.twoWeekPerformancePct),
     row.twoWeekTrend.map(point => point.value == null ? '--' : formatNumber(point.value, 2)).join(' '),
     formatPercent(row.percentFromHigh),
     maStatusLabel(row.maStatus),
     signalLabel(row.signal),
   ])
-  const csv = [headers, ...body]
+  const csv = [...metadataRows, [], headers, ...body]
     .map(line => line.map(value => `"${String(value).replaceAll('"', '""')}"`).join(','))
     .join('\n')
 
@@ -357,9 +380,9 @@ function exportPng(): void {
       <td>${row.sectorName ?? row.name}</td>
       <td>${formatNumber(row.lastPrice)}</td>
       <td>${formatNumber(row.rsi14, 1)}</td>
-      <td>${formatPercent(row.rsiDelta2W, 1)}</td>
+      <td>${formatPointDelta(row.rsiDelta2W)}</td>
       <td>${row.rotationRank ?? '--'}</td>
-      <td>${row.rankDelta2W != null ? formatPercent(row.rankDelta2W) : '--'}</td>
+      <td>${formatRankDelta(row.rankDelta2W)}</td>
       <td>${formatPercent(row.twoWeekPerformancePct)}</td>
       <td>${row.twoWeekTrend.map(point => point.value == null ? '--' : formatNumber(point.value, 1)).join(' ')}</td>
       <td>${formatPercent(row.percentFromHigh)}</td>
@@ -369,12 +392,23 @@ function exportPng(): void {
   `).join('')
 
   const width = 1400
-  const height = Math.max(720, 150 + filteredRows.value.length * 42)
+  const height = Math.max(760, 250 + filteredRows.value.length * 42)
   const dateLabel = dataQuality.value ? formatDate(dataQuality.value.asOfDate) : '--'
+  const metadataMarkup = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 18px 0;font-size:15px;">
+      <div style="background:#111827;border:1px solid #334155;padding:10px;"><b>Market State</b><br/>${summary.value ? marketStateLabel(summary.value.marketState) : '--'}</div>
+      <div style="background:#111827;border:1px solid #334155;padding:10px;"><b>Breadth Condition</b><br/>${summary.value ? breadthConditionLabel(summary.value.breadthCondition) : '--'}</div>
+      <div style="background:#111827;border:1px solid #334155;padding:10px;"><b>Breadth Confirmation</b><br/>${summary.value ? breadthConfirmationLabel(summary.value.breadthConfirmation) : '--'}</div>
+      <div style="background:#111827;border:1px solid #334155;padding:10px;"><b>Rank Scope</b><br/>${dataQuality.value?.rankScope ?? activeScope.value}</div>
+    </div>
+    <div style="font-size:16px;line-height:1.5;color:#cbd5e1;margin-bottom:16px;"><b>Market Summary:</b> ${currentMarketSummary.value || '--'}</div>
+    <div style="font-size:14px;color:#94a3b8;margin-bottom:18px;">As Of Date ${dataQuality.value?.asOfDate ?? '--'} &middot; Comparison Date ${dataQuality.value?.comparisonDate ?? '--'}</div>
+  `
   const html = `
     <div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;background:#0b1220;color:#f8fafc;font-family:Arial,'Noto Sans TC',sans-serif;padding:34px;box-sizing:border-box;">
       <div style="font-size:32px;font-weight:800;margin-bottom:6px;">Market Rotation Monitor</div>
       <div style="font-size:15px;color:#94a3b8;margin-bottom:22px;">${activeScope.value} (${dateLabel}) &middot; Sorted by ${sortBy.value.toUpperCase()}</div>
+      ${metadataMarkup}
       <table style="width:100%;border-collapse:collapse;background:#111827;font-size:18px;">
         <thead><tr>
           ${['Ticker', 'Sector', 'Last', 'RSI', 'RSI Δ2W', 'Rank', 'Rank Δ2W', '2W %', '2W Trend', '% High', 'MA Status', 'Signal'].map(label => `<th style="border:1px solid #475569;background:#d9d9d9;color:#111827;padding:9px;text-align:center;">${label}</th>`).join('')}
@@ -460,8 +494,6 @@ definePageMeta({
           </LedgerCard>
         </div>
       </section>
-
-      <MarketbeeSection />
 
       <!-- No data state -->
       <div v-if="noData" class="rounded-dt-lg border border-amber-300 bg-amber-50 p-6 text-center dark:border-amber-400/20 dark:bg-amber-400/10">
@@ -738,13 +770,13 @@ definePageMeta({
                         </span>
                       </td>
                       <td class="border border-dt-border px-3 py-2 text-right font-mono font-bold" :class="deltaClass(row.rsiDelta2W)">
-                        {{ formatPercent(row.rsiDelta2W, 1) }}
+                        {{ formatPointDelta(row.rsiDelta2W) }}
                       </td>
                       <td class="border border-dt-border px-3 py-2 text-right font-mono font-black text-dt-text">
                         {{ row.rotationRank != null ? `#${row.rotationRank}` : '--' }}
                       </td>
                       <td class="border border-dt-border px-3 py-2 text-right font-mono font-bold" :class="deltaClass(row.rankDelta2W)">
-                        {{ row.rankDelta2W != null ? formatPercent(row.rankDelta2W) : '--' }}
+                        {{ formatRankDelta(row.rankDelta2W) }}
                       </td>
                       <td class="border border-dt-border px-3 py-2 text-right font-mono font-bold" :class="deltaClass(row.twoWeekPerformancePct)">
                         {{ formatPercent(row.twoWeekPerformancePct) }}
@@ -858,11 +890,11 @@ definePageMeta({
             </LedgerCard>
             <LedgerCard>
               <p class="text-xs text-dt-text-muted">RSI Delta 2W</p>
-              <p class="mt-1 text-xl font-black" :class="deltaClass(selectedRow.rsiDelta2W)">{{ formatPercent(selectedRow.rsiDelta2W, 1) }}</p>
+              <p class="mt-1 text-xl font-black" :class="deltaClass(selectedRow.rsiDelta2W)">{{ formatPointDelta(selectedRow.rsiDelta2W) }}</p>
             </LedgerCard>
             <LedgerCard>
               <p class="text-xs text-dt-text-muted">Rank Delta 2W</p>
-              <p class="mt-1 text-xl font-black" :class="deltaClass(selectedRow.rankDelta2W)">{{ selectedRow.rankDelta2W != null ? formatPercent(selectedRow.rankDelta2W) : '--' }}</p>
+              <p class="mt-1 text-xl font-black" :class="deltaClass(selectedRow.rankDelta2W)">{{ formatRankDelta(selectedRow.rankDelta2W) }}</p>
             </LedgerCard>
             <LedgerCard>
               <p class="text-xs text-dt-text-muted">2W Performance</p>

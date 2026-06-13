@@ -92,7 +92,7 @@ const SECTOR_SYMBOLS = [
   { symbol: 'XLV', name: 'Health Care', sectorName: 'Health Care' },
   { symbol: 'XLB', name: 'Materials', sectorName: 'Materials' },
   { symbol: 'XLC', name: 'Communication Services', sectorName: 'Communication Services' },
-  { symbol: 'VNQ', name: 'Real Estate', sectorName: 'Real Estate' },
+  { symbol: 'XLRE', name: 'Real Estate', sectorName: 'Real Estate' },
 ]
 
 const INDEX_SYMBOLS = [
@@ -149,21 +149,12 @@ function makeEvent(query: Record<string, string> = {}) {
  *   groupBy       → getComparisonDate (returns date list for offset)
  */
 function setupFullFlowMocks(rows: ReturnType<typeof makeSnapshotRow>[], breadthRegime = 'RISK_ON', groupByDates: Date[] = [SNAPSHOT_DATE, COMPARISON_DATE]) {
-  let findFirstCall = 0
-  let findManyCall = 0
+  mockSnapshotFindFirst.mockResolvedValue({ date: SNAPSHOT_DATE })
 
-  mockSnapshotFindFirst.mockImplementation(() => {
-    findFirstCall++
-    return Promise.resolve({ date: SNAPSHOT_DATE })
-  })
-
-  mockSnapshotFindMany.mockImplementation(() => {
-    findManyCall++
-    return Promise.resolve(rows)
-  })
+  mockSnapshotFindMany.mockResolvedValue(rows)
 
   mockSnapshotGroupBy.mockResolvedValue(
-    groupByDates.map((date, i) => ({
+    groupByDates.map(date => ({
       date,
       _count: { symbol: rows.length },
     })),
@@ -211,8 +202,7 @@ describe('GET /api/market/rotation-monitor', () => {
   // ── Case 2: No snapshot data → 404 ────────────────────────────────
 
   it('無 snapshot 資料時拋 404', async () => {
-    // getLatestMonitorRows findFirst returns null
-    mockSnapshotFindFirst.mockResolvedValue(null)
+    mockSnapshotGroupBy.mockResolvedValue([])
     mockBreadthFindFirst.mockResolvedValue({ regime: 'RISK_ON' })
 
     const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
@@ -229,8 +219,9 @@ describe('GET /api/market/rotation-monitor', () => {
     const rows = makeSectorRows().map(r => ({ ...r, rankDelta2W: null }))
     setupFullFlowMocks(rows, 'RISK_ON', [])
 
-    // groupBy returns empty → getComparisonDate returns null
-    mockSnapshotGroupBy.mockResolvedValue([])
+    mockSnapshotGroupBy
+      .mockResolvedValueOnce([{ date: SNAPSHOT_DATE, _count: { symbol: rows.length } }])
+      .mockResolvedValue([])
 
     const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
     const result = await handler(makeEvent({ scope: 'sectors' }))

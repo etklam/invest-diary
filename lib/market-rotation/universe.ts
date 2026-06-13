@@ -2,7 +2,7 @@
  * Universe configuration — defines which symbols belong to each rank scope.
  *
  * V1 has three scopes: sectors, indexes, core.
- *   - sectors: 11 US sector ETFs (SPDR Select Sector + VNQ)
+ *   - sectors: 11 US sector ETFs (SPDR Select Sector)
  *   - indexes: 8 benchmark index ETFs
  *   - core:    identical to indexes (future expansion point)
  */
@@ -26,7 +26,7 @@ const SECTORS_UNIVERSE: UniverseEntry[] = [
   { symbol: 'XLV', name: 'Health Care', rankScope: 'sectors', groupType: 'sector', sectorName: 'Health Care' },
   { symbol: 'XLB', name: 'Materials', rankScope: 'sectors', groupType: 'sector', sectorName: 'Materials' },
   { symbol: 'XLC', name: 'Communication Services', rankScope: 'sectors', groupType: 'sector', sectorName: 'Communication Services' },
-  { symbol: 'VNQ', name: 'Real Estate', rankScope: 'sectors', groupType: 'sector', sectorName: 'Real Estate' },
+  { symbol: 'XLRE', name: 'Real Estate', rankScope: 'sectors', groupType: 'sector', sectorName: 'Real Estate' },
 ]
 
 // ─── Indexes: 8 benchmark index ETFs ───────────────────────────
