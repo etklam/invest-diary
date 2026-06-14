@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mockGetQuery, mockReadBody, mockGetRouterParam } from '../vi-setup'
+import { mockGetQuery, mockReadBody, mockGetRouterParam, mockSetHeader } from '../vi-setup'
 
 // Create mock functions
 const mockPostFindMany = vi.fn()
@@ -325,6 +325,11 @@ describe('Blog API', () => {
       expect(result).toHaveProperty('id')
       expect(mockPostFindFirst).toHaveBeenCalled()
       expect(mockBlogWithRequestId).toHaveBeenCalledWith('req-blog-slug')
+      expect(mockSetHeader).toHaveBeenCalledWith(
+        mockEvent,
+        'Cache-Control',
+        'public, s-maxage=900, stale-while-revalidate=900'
+      )
     })
 
     it('should serialize bigint ids in slug response', async () => {
@@ -372,6 +377,11 @@ describe('Blog API', () => {
         statusCode: 404,
       })
       expect(mockBlogWithRequestId).toHaveBeenCalledWith('req-blog-404')
+      expect(mockSetHeader).not.toHaveBeenCalledWith(
+        mockEvent,
+        'Cache-Control',
+        expect.stringContaining('public')
+      )
     })
     it('should log unexpected failures when fetching by slug', async () => {
       mockPostFindFirst.mockRejectedValue(new Error('database failure'))
@@ -395,6 +405,11 @@ describe('Blog API', () => {
           slug: 'error-post',
           error: expect.stringContaining('database failure'),
         })
+      )
+      expect(mockSetHeader).toHaveBeenCalledWith(
+        mockEvent,
+        'Cache-Control',
+        'no-store'
       )
     })
 

@@ -209,6 +209,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import DOMPurify from 'dompurify'
 import type { Config as DOMPurifyConfig } from 'dompurify'
 import { parseMarkdown } from '@nuxtjs/mdc/runtime'
+import type { MDCParserResult } from '@nuxtjs/mdc'
 import { calculateReadingTime, looksLikeHtmlContent, parseTags } from '~/lib/blog'
 import { usePerformance } from '~/composables/usePerformance'
 import { normalizeCategory } from '~/types/blog'
@@ -226,8 +227,59 @@ const toast = useToast()
 const router = useRouter()
 const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').replace(/\/+$/, '')
 
-const { data: post, pending, error, refresh } = await useAsyncData(`blog-${route.params.slug}`, () =>
-  $fetch<any>(`/api/blog/${route.params.slug}`)
+const normalizeRouteSlug = (value: unknown) => {
+  const rawSlug = Array.isArray(value) ? value[0] : value
+  return typeof rawSlug === 'string' ? rawSlug.trim() : ''
+}
+
+const getErrorStatusCode = (value: unknown): number | null => {
+  if (!value || typeof value !== 'object') return null
+  const candidate = value as {
+    statusCode?: number
+    status?: number
+    response?: { status?: number }
+    data?: { statusCode?: number }
+    cause?: { statusCode?: number }
+  }
+  return candidate.statusCode
+    ?? candidate.status
+    ?? candidate.response?.status
+    ?? candidate.data?.statusCode
+    ?? candidate.cause?.statusCode
+    ?? null
+}
+
+const isRetriableFetchError = (value: unknown) => {
+  const statusCode = getErrorStatusCode(value)
+  return statusCode === null || statusCode >= 500
+}
+
+const fetchBlogPostWithRetry = async (slug: string) => {
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: 'Slug is required' })
+  }
+
+  try {
+    return await $fetch<any>(`/api/blog/${encodeURIComponent(slug)}`)
+  } catch (err) {
+    if (!isRetriableFetchError(err)) {
+      throw err
+    }
+
+    return await $fetch<any>(`/api/blog/${encodeURIComponent(slug)}`)
+  }
+}
+
+const normalizedSlug = computed(() => normalizeRouteSlug(route.params.slug))
+const blogPostCacheKey = computed(() => `blog-${normalizedSlug.value || 'missing'}`)
+
+const { data: post, pending, error, refresh } = await useAsyncData(
+  blogPostCacheKey,
+  () => fetchBlogPostWithRetry(normalizedSlug.value),
+  {
+    watch: [normalizedSlug],
+    dedupe: 'defer',
+  },
 )
 
 usePerformance()
@@ -252,22 +304,12 @@ onUnmounted(() => {
 
 const articleContent = computed(() => typeof post.value?.content === 'string' ? post.value.content : '')
 const articleContentCacheKey = computed(() => {
-  const id = post.value?.id ? String(post.value.id) : String(route.params.slug || 'unknown')
+  const id = post.value?.id ? String(post.value.id) : (normalizedSlug.value || 'unknown')
   const updatedAt = post.value?.updatedAt ? String(post.value.updatedAt) : ''
   return `article-mdc-${id}-${updatedAt || articleContent.value.length}`
 })
 const readingTime = computed(() => (articleContent.value ? calculateReadingTime(articleContent.value) : 0))
 const parsedTags = computed(() => (post.value ? parseTags(post.value.tags) : []))
-const getErrorStatusCode = (value: unknown): number | null => {
-  if (!value || typeof value !== 'object') return null
-  const candidate = value as {
-    statusCode?: number
-    status?: number
-    data?: { statusCode?: number }
-    cause?: { statusCode?: number }
-  }
-  return candidate.statusCode ?? candidate.status ?? candidate.data?.statusCode ?? candidate.cause?.statusCode ?? null
-}
 const isNotFoundError = computed(() => getErrorStatusCode(error.value) === 404)
 const articleErrorTitle = computed(() =>
   isNotFoundError.value ? t('blog.postNotFound') : t('blog.loadFailed')
@@ -314,22 +356,36 @@ const isHtmlContent = computed(() => {
   return looksLikeHtmlContent(articleContent.value)
 })
 
+const emptyMarkdownDocument: MDCParserResult = {
+  data: {
+    title: '',
+    description: '',
+  },
+  body: {
+    type: 'root',
+    children: [],
+  },
+  excerpt: undefined,
+  toc: undefined,
+}
+
 // Use useAsyncData so markdown parsing is awaited during SSR
 const {
   data: articleMarkdown,
   pending: articleMarkdownPending,
   error: articleMarkdownError,
-} = useAsyncData(
+} = await useAsyncData(
   articleContentCacheKey,
   async () => {
-    if (!articleContent.value || isHtmlContent.value) return null
-    return parseMarkdown(articleContent.value, {
+    if (!articleContent.value || isHtmlContent.value) return emptyMarkdownDocument
+    return await parseMarkdown(articleContent.value, {
       toc: false,
       contentHeading: false,
-    })
+    }) || emptyMarkdownDocument
   },
   {
     watch: [articleContentCacheKey],
+    dedupe: 'defer',
   },
 )
 
@@ -342,7 +398,7 @@ const sanitizedContent = computed(() => {
 })
 
 const canonicalUrl = computed(() => {
-  const slug = String(post.value?.slug || route.params.slug || '').trim()
+  const slug = String(post.value?.slug || normalizedSlug.value || '').trim()
   if (!slug) return `${siteUrl}/articles`
   return `${siteUrl}/articles/${encodeURIComponent(slug)}`
 })
@@ -355,7 +411,7 @@ injectBlogPostingSchema({
   get coverImage() { return post.value?.coverImage || undefined },
   get publishedAt() { return post.value?.publishedAt },
   get updatedAt() { return post.value?.updatedAt },
-  get slug() { return String(post.value?.slug || route.params.slug || '') },
+  get slug() { return String(post.value?.slug || normalizedSlug.value || '') },
   get author() { return post.value?.author },
 })
 injectBreadcrumbSchema([
