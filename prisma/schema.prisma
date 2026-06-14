@@ -600,7 +600,7 @@ model MarketRotationSnapshot {
   above20d                        Boolean?
   above50d                        Boolean?
   above200d                       Boolean?
-  maScore                         Int?
+  maScore                         Int?     @map("ma_score")
   maScorePercentile               Decimal? @map("ma_score_percentile") @db.Decimal(8, 4)
   maStatus                        String?  @map("ma_status") @db.VarChar(32)
   rolling252dHigh                 Decimal? @map("rolling_252d_high") @db.Decimal(18, 6)
