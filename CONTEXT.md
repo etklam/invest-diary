@@ -431,8 +431,24 @@ _避免：速記、草稿_
 
 ---
 
-### 已知技術債（2026-07 期間記錄但未擴大處理）
+### 2026-07 架構深化（技術債清理 3 項）
 
-- **`roundMetric` 在 `lib/market-rotation/` 三處重複**：`calculations.ts`、`monitor.ts`、`trend-series.ts` 各有一份 `Math.round(value * 10000) / 10000`，後續可收斂到單一 utility。
-- **monitor 的 groupBy 不篩 symbol**：與 `getLatestQualifiedDate` 的歷史行為差異，強行統一會破壞既有測試。
-- **`lib/disciplineShare.ts` 的 `DisciplineItem.id?: number`**：與 query layer 回傳的 `bigint` 不合，靠 handler 末端 `Number(d.id)` 適配。
+延續同一輪審計，處理期間記錄的三項技術債：
+
+#### 1. `roundMetric` 收斂為單一 utility — `lib/market-rotation/round.ts`
+
+**問題**：三處重複的 `Math.round(value * 10000) / 10000`，未來精度策略調整需要同步改三個地方。
+
+**解法**：新建 `lib/market-rotation/round.ts` export `roundMetric`。`calculations.ts`、`monitor.ts`、`trend-series.ts` 改為 import；`trend-series.ts` 的 `roundTrendValue`（其實是同一份邏輯）拿掉，caller 改用 `roundMetric`。+4 unit tests on `round.ts`（原 `trend-series.test.ts` 內 3 個 `roundTrendValue` 測試淘汰，因為精度契約已由 `buildNormalizedTrendSeries` 的「rounds to 4 decimal places」測試覆蓋）。
+
+#### 2. Monitor groupBy 加 canonical symbol filter（ADR-0004 對齊修正）
+
+**問題**：`getMonitorTrendSeries` 的 Prisma `groupBy` 只用 `where: { rankScope }` 不篩 symbol——但 ADR-0004 明文要求 Qualified Snapshot Date 是「至少 90% **canonical** symbols 有 snapshot」。先前 subagent 註解寫「intentionally does NOT filter — matching pre-refactor behavior」，但 pre-refactor behavior 本身就是與 ADR 不符的 bug：DB 內若殘留非 canonical symbol（如歷史資料、过時 ticker），會錯誤膨脹 coverage ratio。
+
+**解法**：`groupBy` 加 `symbol: { in: universeSymbols }`，與 `getLatestQualifiedDate` 對齊。+1 unit test 用 `mockImplementation` 模擬「DB 有非 canonical symbol 時仍應按 canonical universe 計算 90%」，舊行為會誤判 2026-06-14 qualified（9 canonical + 5 stale = 14 ≥ 10），新行為正確判定為不 qualified。`getMonitorTrendSeries` 第一個既有測試也加上 `groupBy` args 斷言驗證 symbol filter 存在。
+
+#### 3. `DisciplineItem.id` 與 `createdAt` 拿掉 — `lib/disciplineShare.ts`
+
+**問題**：`DisciplineItem.id?: number` 與 `createdAt?: string` 是無用約束——`exportDisciplines` 第 51 行 `map(({ content, order }) => ({ content, order }))` 直接 strip 掉這兩個欄位，從不寫入 share data。但 query layer 回傳 Prisma raw row（id 為 `bigint`、createdAt 為 `Date`），導致 `export.get.ts` handler 末端得做 `Number(d.id)` 與 `d.createdAt.toISOString()` 適配，純粹為了通過型別檢查。
+
+**解法**：`DisciplineItem` 簡化為 `{ content: string; order: number }`。`DisciplineShareData.disciplines` 與 `DisciplineImportPreview.disciplines` 從 `Omit<DisciplineItem, 'id' | 'createdAt'>[]` 改為 `DisciplineItem[]`。`export.get.ts` 移除 `normalized = disciplines.map(...)` 與 `Number(d.id)` / `toISOString()` 適配層，直接傳 raw Prisma row 給 `exportDisciplines`（structural typing 允許多餘欄位）。零 runtime 行為變更，純型別重構。
