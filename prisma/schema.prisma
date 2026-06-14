@@ -609,7 +609,7 @@ model MarketRotationSnapshot {
   distanceFromHighScorePercentile Decimal? @map("distance_from_high_score_percentile") @db.Decimal(8, 4)
   rotationScore                   Decimal? @map("rotation_score") @db.Decimal(8, 4)
   rotationScoreDelta2W            Decimal? @map("rotation_score_delta_2w") @db.Decimal(8, 4)
-  rotationRank                    Int?
+  rotationRank                    Int?     @map("rotation_rank")
   rankDelta2W                     Int?     @map("rank_delta_2w")
   signal                          String?  @db.VarChar(32)
   signalStatus                    String   @map("signal_status") @db.VarChar(32)
