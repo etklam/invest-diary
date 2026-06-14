@@ -1,3 +1,5 @@
+import { roundMetric } from './round'
+
 export interface MaStatusInput {
   above10d: boolean | null
   above20d: boolean | null
@@ -58,10 +60,6 @@ export interface RotationScoreInput {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
-}
-
-function roundMetric(value: number): number {
-  return Math.round(value * 10000) / 10000
 }
 
 export function calculateMaScore(input: MaScoreInput): number {

@@ -4,6 +4,7 @@ import type { MaStatus, RotationSignal, SignalStatus } from './signal'
 import type { RankScope } from './types'
 import { getBreadthCondition, getBreadthConfirmation } from './breadth'
 import { getUniverseForScope } from './universe'
+import { roundMetric } from './round'
 
 const SCORE_VERSION = 'v1'
 
@@ -93,10 +94,6 @@ export interface MarketRotationMonitorPayload {
   topImproving: MarketRotationMonitorRow[]
   bottomWeakening: MarketRotationMonitorRow[]
   dataQuality: MarketRotationMonitorDataQuality
-}
-
-function roundMetric(value: number): number {
-  return Math.round(value * 10000) / 10000
 }
 
 function buildRatio(rows: MarketRotationMonitorRow[], field: 'above20d' | 'above50d'): RatioMetric {

@@ -15,6 +15,8 @@
  * Pure function — no Prisma, no IO, no side effects.
  */
 
+import { roundMetric } from './round'
+
 // ─── Types ──────────────────────────────────────────────────────
 
 export interface TrendPoint {
@@ -38,18 +40,6 @@ export interface BuildTrendSeriesInput {
 }
 
 // ─── Helpers ────────────────────────────────────────────────────
-
-/**
- * Round to 4 decimal places, matching the existing monitor sparkline contract.
- *
- * This is functionally identical to `roundMetric` in calculations.ts and
- * monitor.ts, but kept here as the canonical export for trend-series
- * consumers.  See "roundTrendValue / roundMetric duplication" note in
- * the refactor report.
- */
-export function roundTrendValue(value: number): number {
-  return Math.round(value * 10000) / 10000
-}
 
 function buildKey(symbol: string, date: string): string {
   return `${symbol}:${date}`
@@ -89,6 +79,6 @@ export function buildNormalizedTrendSeries(
       return { date, value: null }
     }
 
-    return { date, value: roundTrendValue((price / base) * 100) }
+    return { date, value: roundMetric((price / base) * 100) }
   })
 }

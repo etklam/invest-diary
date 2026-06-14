@@ -1,24 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildNormalizedTrendSeries,
-  roundTrendValue,
 } from '~/lib/market-rotation/trend-series'
-
-// ─── roundTrendValue ─────────────────────────────────────────────
-
-describe('roundTrendValue', () => {
-  it('rounds to 4 decimal places', () => {
-    expect(roundTrendValue(110.123456789)).toBe(110.1235)
-  })
-
-  it('preserves integers', () => {
-    expect(roundTrendValue(100)).toBe(100)
-  })
-
-  it('handles values that need no rounding', () => {
-    expect(roundTrendValue(105.5)).toBe(105.5)
-  })
-})
 
 // ─── buildNormalizedTrendSeries ──────────────────────────────────
 
