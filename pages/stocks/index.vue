@@ -115,6 +115,56 @@
         </div>
       </div>
 
+      <section class="panel-dashboard p-6 mb-6">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
+              <Icon name="heroicons:shield-exclamation" class="text-amber-500" />
+              {{ t('stock.riskSummary.title') }}
+            </h2>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              {{ t('stock.riskSummary.description') }}
+            </p>
+          </div>
+          <span
+            class="rounded-full px-3 py-1 text-xs font-bold"
+            :class="concentrationWarning ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'"
+          >
+            {{ concentrationWarning ? t('stock.riskSummary.warning') : t('stock.riskSummary.balanced') }}
+          </span>
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div class="risk-metric">
+            <span>{{ t('stock.riskSummary.largestPosition') }}</span>
+            <strong>{{ largestPositionPct.toFixed(1) }}%</strong>
+            <small>{{ largestPositionSymbol || t('stock.riskSummary.noPosition') }}</small>
+          </div>
+          <div class="risk-metric">
+            <span>{{ t('stock.riskSummary.top3Concentration') }}</span>
+            <strong>{{ top3ConcentrationPct.toFixed(1) }}%</strong>
+            <small>{{ t('stock.riskSummary.byValue') }}</small>
+          </div>
+          <div class="risk-metric">
+            <span>{{ t('stock.riskSummary.activePositionCount') }}</span>
+            <strong>{{ activePositionCount }}</strong>
+            <small>{{ t('stock.dashboard.positions') }}</small>
+          </div>
+          <div class="risk-metric">
+            <span>{{ t('stock.riskSummary.unrealizedPnl') }}</span>
+            <strong :class="unrealizedAmount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+              {{ unrealizedAmount >= 0 ? '+' : '' }}{{ formatCurrency(unrealizedAmount) }}
+            </strong>
+            <small>{{ totalUnrealizedPct >= 0 ? '+' : '' }}{{ totalUnrealizedPct.toFixed(2) }}%</small>
+          </div>
+          <div class="risk-metric">
+            <span>{{ t('stock.riskSummary.priceBasis') }}</span>
+            <strong>{{ t('stock.riskSummary.costFallback') }}</strong>
+            <small>{{ t('stock.riskSummary.costFallbackHint') }}</small>
+          </div>
+        </div>
+      </section>
+
       <!-- Main Layout Grid: Holdings Table (Left) + Portfolio Analysis (Right) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Holdings Table Section -->
@@ -590,6 +640,11 @@ const unrealizedAmount = computed(() => stats.value.unrealizedAmount)
 const totalUnrealizedPct = computed(() => stats.value.unrealizedPct)
 const totalDayChange = computed(() => stats.value.totalDayChange)
 const totalDayChangePercent = computed(() => stats.value.totalDayChangePercent)
+const largestPositionPct = computed(() => stats.value.largestPositionPct)
+const top3ConcentrationPct = computed(() => stats.value.top3ConcentrationPct)
+const activePositionCount = computed(() => stats.value.activePositionCount)
+const concentrationWarning = computed(() => stats.value.concentrationWarning)
+const largestPositionSymbol = computed(() => stats.value.largestPositionSymbol)
 
 // Formatting
 const formatQuantity = (qty: number) => formatHoldingQuantity(qty)
@@ -996,6 +1051,39 @@ useHead({
 
 .stats-card:hover {
   box-shadow: var(--shadow-md);
+}
+
+.risk-metric {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-surface-strong) 70%, transparent);
+  padding: 1rem;
+}
+
+.risk-metric span {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.risk-metric strong {
+  display: block;
+  margin-top: 0.45rem;
+  overflow-wrap: anywhere;
+  font-family: var(--font-data);
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.risk-metric small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--color-text-muted);
 }
 
 .action-btn-dashboard {

@@ -38,6 +38,8 @@ function makeTx(overrides: {
   quantity: number
   price: number
   tradeDate?: Date
+  strategy?: string | null
+  emotion?: string | null
 }) {
   return {
     id: overrides.id ?? 1n,
@@ -46,6 +48,8 @@ function makeTx(overrides: {
     quantity: { valueOf: () => overrides.quantity },  // Decimal-like
     price: { valueOf: () => overrides.price },
     tradeDate: overrides.tradeDate ?? now,
+    strategy: overrides.strategy ?? null,
+    emotion: overrides.emotion ?? null,
   }
 }
 
@@ -185,5 +189,28 @@ describe('GET /api/stats/performance', () => {
 
     expect(result.topWins.every((t: any) => t.realizedPnL > 0)).toBe(true)
     expect(result.topLosses.every((t: any) => t.realizedPnL < 0)).toBe(true)
+  })
+
+  it('按 strategy 和 emotion 彙總已關閉交易績效', async () => {
+    mockTransactionFindMany.mockResolvedValue([
+      makeTx({ id: 1n, symbol: 'AAPL', type: 'BUY', quantity: 10, price: 100, tradeDate: new Date('2024-01-01'), strategy: 'Breakout', emotion: 'calm' }),
+      makeTx({ id: 2n, symbol: 'AAPL', type: 'SELL', quantity: 10, price: 120, tradeDate: new Date('2024-02-01') }),
+      makeTx({ id: 3n, symbol: 'TSLA', type: 'BUY', quantity: 5, price: 200, tradeDate: new Date('2024-01-10'), strategy: 'Pullback', emotion: 'fomo' }),
+      makeTx({ id: 4n, symbol: 'TSLA', type: 'SELL', quantity: 5, price: 180, tradeDate: new Date('2024-02-10') }),
+    ])
+
+    const { default: handler } = await import('~/server/api/stats/performance.get')
+    const result = await handler({ context: { user: { id: '1' }, requestId: 'req-strategy' } } as any)
+
+    expect(result.strategyBreakdown).toEqual([
+      expect.objectContaining({ name: 'Breakout', tradeCount: 1, realizedPnL: 200, winRate: 100 }),
+      expect.objectContaining({ name: 'Pullback', tradeCount: 1, realizedPnL: -100, winRate: 0 }),
+    ])
+    expect(result.emotionBreakdown).toEqual([
+      expect.objectContaining({ name: 'calm', realizedPnL: 200 }),
+      expect.objectContaining({ name: 'fomo', realizedPnL: -100 }),
+    ])
+    expect(result.bestStrategy.name).toBe('Breakout')
+    expect(result.worstStrategy.name).toBe('Pullback')
   })
 })

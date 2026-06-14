@@ -61,7 +61,10 @@
     "financialFreedom": "财务自由计算器",
     "etf": "ETF 分析",
     "relativeValue": "相对价值计算器",
-    "partners": "合作伙伴"
+    "partners": "合作伙伴",
+    "reviewQueue": "复盘队列",
+    "tradePlans": "交易计划",
+    "strategyPerformance": "策略表现"
   },
   "auth": {
     "login": "登录",
@@ -566,6 +569,21 @@
       "logNewTrade": "记录新交易",
       "portfolioUpdated": "投资组合已更新至最新市场资料",
       "couldNotRefresh": "无法更新市场价格"
+    },
+    "riskSummary": {
+      "title": "投资组合风险摘要",
+      "description": "有即时价格就用市值；没有价格就用成本基础计算集中度。",
+      "warning": "集中度警告",
+      "balanced": "分散尚可",
+      "largestPosition": "最大持仓",
+      "top3Concentration": "前三大集中度",
+      "activePositionCount": "活跃持仓数",
+      "unrealizedPnl": "未实现 P/L",
+      "priceBasis": "价格基准",
+      "costFallback": "成本 fallback",
+      "costFallbackHint": "即时价格不可用时采用",
+      "byValue": "按价值计算",
+      "noPosition": "无持仓"
     }
   },
   "settings": {
@@ -1238,6 +1256,21 @@
       "copied": "已复制",
       "copySuccess": "已复制到剪贴板",
       "copyFailed": "复制失败",
+      "diaryTitle": "建仓计划",
+      "createTradePlan": "建立交易计划",
+      "saveToDiary": {
+        "button": "保存到 Diary",
+        "kicker": "保存输出",
+        "title": "保存建仓计算",
+        "description": "把这份确定性的 markdown 输出接进 diary workflow，或只复制内容。",
+        "appendToday": "追加到今日日记",
+        "createNew": "建立新日记",
+        "copyOnly": "只复制",
+        "appendSuccess": "已追加到今日日记",
+        "createSuccess": "已建立新的建仓日记",
+        "failed": "保存建仓计算失败",
+        "loginRequired": "请先登录，再把这份输出保存到日记"
+      },
       "overBudgetWarning": "因进位导致超额投入 {amount}，已自动调整最后一批股数",
       "shares": "股",
       "markdown": {
@@ -1867,6 +1900,130 @@
       "executionPlaceholder": "实际怎么执行的？",
       "reviewDue": "复盘期限",
       "reviewNotes": "复盘笔记"
+    },
+    "queue": {
+      "kicker": "复盘流程",
+      "title": "复盘队列",
+      "description": "集中查看逾期、今日到期、未来排程与已完成的 diary 复盘。",
+      "openCount": "待处理",
+      "overdueCount": "逾期",
+      "todayCount": "今日",
+      "loadFailed": "复盘加载失败",
+      "markedReviewed": "已标记为已复盘",
+      "markReviewedFailed": "标记复盘失败",
+      "sections": {
+        "unscheduled": "待排程复盘",
+        "unscheduledDesc": "已标记待复盘，但还没设定期限的 diary。",
+        "overdue": "逾期复盘",
+        "overdueDesc": "已过期限、需要补上的决策回顾。",
+        "today": "今日到期",
+        "todayDesc": "今天就该处理的复盘。",
+        "upcoming": "即将到期",
+        "upcomingDesc": "已排程、未来要回看的复盘。",
+        "completed": "已完成复盘",
+        "completedDesc": "最近已经处理完的 diary。"
+      },
+      "empty": {
+        "unscheduled": "没有待排程复盘。",
+        "overdue": "没有逾期复盘。",
+        "today": "今天没有到期复盘。",
+        "upcoming": "没有即将到期的复盘。",
+        "completed": "还没有已完成的复盘。"
+      }
+    }
+  },
+  "strategyPerformance": {
+    "kicker": "策略反馈",
+    "title": "策略表现",
+    "description": "用已实现 P/L 和胜率检查策略与情绪表现。没有预测，只有你的交易记录。",
+    "loadFailed": "策略表现加载失败",
+    "totalPnl": "总 P/L",
+    "winRate": "胜率",
+    "bestStrategy": "最佳策略",
+    "worstStrategy": "最差策略",
+    "none": "无",
+    "strategyTable": "按策略看 P/L",
+    "emotionTable": "按情绪看 P/L",
+    "emptyStrategy": "已有已关闭交易，但没有记录 strategy 标签。",
+    "emptyEmotion": "已有已关闭交易，但没有记录 emotion 标签。",
+    "emptyTitle": "还没有已关闭交易",
+    "emptyDescription": "先记录 BUY 和 SELL 交易。策略表现只使用已关闭交易的已实现 P/L。",
+    "recordTrade": "记录交易",
+    "period": {
+      "month": "月",
+      "quarter": "季",
+      "year": "年"
+    },
+    "columns": {
+      "name": "名称",
+      "trades": "交易数",
+      "pnl": "P/L",
+      "winRate": "胜率"
+    }
+  },
+  "tradePlan": {
+    "kicker": "交易规划",
+    "title": "交易计划",
+    "description": "进场前先写好的手动计划。没有生成，没有借口。",
+    "loadFailed": "交易计划加载失败",
+    "noSetupType": "未填策略形态",
+    "linkedTo": "链接 diary：",
+    "fields": {
+      "symbol": "标的",
+      "setupType": "策略形态",
+      "entryPrice": "进场价",
+      "entryZone": "进场区间",
+      "entryZoneLow": "进场区间下缘",
+      "entryZoneHigh": "进场区间上缘",
+      "stopLoss": "止损价",
+      "targetPrice": "目标价",
+      "maxPositionSize": "最大仓位",
+      "invalidationCondition": "失效条件",
+      "notes": "笔记",
+      "linkedDiary": "链接 diary",
+      "status": "状态"
+    },
+    "status": {
+      "draft": "草稿",
+      "active": "执行中",
+      "closed": "已结束",
+      "cancelled": "已取消"
+    },
+    "filters": {
+      "symbol": "按标的筛选",
+      "status": "按状态筛选"
+    },
+    "actions": {
+      "new": "新增交易计划",
+      "create": "建立计划",
+      "save": "保存计划",
+      "backToList": "返回计划列表"
+    },
+    "empty": {
+      "title": "尚无交易计划",
+      "description": "市场逼你即兴发挥前，先把进场、风险、目标和失效条件写清楚。"
+    },
+    "form": {
+      "sections": {
+        "core": "核心设置",
+        "levels": "价格与仓位",
+        "context": "上下文"
+      },
+      "noLinkedDiary": "不链接 diary"
+    },
+    "placeholders": {
+      "setupType": "突破、回踩、均值回归……",
+      "invalidationCondition": "什么情况代表这个计划错了？",
+      "notes": "决策背景、检查清单、仓位笔记……"
+    },
+    "messages": {
+      "created": "交易计划已建立",
+      "createFailed": "建立交易计划失败",
+      "saved": "交易计划已保存",
+      "saveFailed": "保存交易计划失败",
+      "deleted": "交易计划已删除",
+      "deleteFailed": "删除交易计划失败",
+      "deleteConfirm": "确定删除这个交易计划？"
     }
   }
 }

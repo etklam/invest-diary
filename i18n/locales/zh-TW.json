@@ -61,7 +61,10 @@
     "financialFreedom": "財務自由計算機",
     "etf": "ETF 分析",
     "relativeValue": "相對價值計算器",
-    "partners": "合作夥伴"
+    "partners": "合作夥伴",
+    "reviewQueue": "複盤佇列",
+    "tradePlans": "交易計畫",
+    "strategyPerformance": "策略表現"
   },
   "auth": {
     "login": "登入",
@@ -443,6 +446,21 @@
       "logNewTrade": "記錄新交易",
       "portfolioUpdated": "投資組合已更新至最新市場資料",
       "couldNotRefresh": "無法更新市場價格"
+    },
+    "riskSummary": {
+      "title": "投資組合風險摘要",
+      "description": "有即時價格就用市值；沒有價格就用成本基礎計算集中度。",
+      "warning": "集中度警告",
+      "balanced": "分散尚可",
+      "largestPosition": "最大持倉",
+      "top3Concentration": "前三大集中度",
+      "activePositionCount": "活躍持倉數",
+      "unrealizedPnl": "未實現 P/L",
+      "priceBasis": "價格基準",
+      "costFallback": "成本 fallback",
+      "costFallbackHint": "即時價格不可用時採用",
+      "byValue": "按價值計算",
+      "noPosition": "無持倉"
     }
   },
   "settings": {
@@ -1248,6 +1266,21 @@
       "copied": "已複製",
       "copySuccess": "已複製到剪貼簿",
       "copyFailed": "複製失敗",
+      "diaryTitle": "建倉計畫",
+      "createTradePlan": "建立交易計畫",
+      "saveToDiary": {
+        "button": "儲存到 Diary",
+        "kicker": "保存輸出",
+        "title": "儲存建倉計算",
+        "description": "把這份確定性的 markdown 輸出接進 diary workflow，或只複製內容。",
+        "appendToday": "追加到今日日記",
+        "createNew": "建立新日記",
+        "copyOnly": "只複製",
+        "appendSuccess": "已追加到今日日記",
+        "createSuccess": "已建立新的建倉日記",
+        "failed": "儲存建倉計算失敗",
+        "loginRequired": "請先登入，再把這份輸出儲存到日記"
+      },
       "overBudgetWarning": "因進位導致超額投入 {amount}，已自動調整最後一批股數",
       "shares": "股",
       "markdown": {
@@ -1964,6 +1997,130 @@
       "executionPlaceholder": "實際怎麼執行的？",
       "reviewDue": "複盤期限",
       "reviewNotes": "複盤筆記"
+    },
+    "queue": {
+      "kicker": "複盤流程",
+      "title": "複盤佇列",
+      "description": "集中查看逾期、今日到期、未來排程與已完成的 diary 複盤。",
+      "openCount": "待處理",
+      "overdueCount": "逾期",
+      "todayCount": "今日",
+      "loadFailed": "複盤載入失敗",
+      "markedReviewed": "已標記為已複盤",
+      "markReviewedFailed": "標記複盤失敗",
+      "sections": {
+        "unscheduled": "待排程複盤",
+        "unscheduledDesc": "已標記待複盤，但還沒設定期限的 diary。",
+        "overdue": "逾期複盤",
+        "overdueDesc": "已過期限、需要補上的決策回顧。",
+        "today": "今日到期",
+        "todayDesc": "今天就該處理的複盤。",
+        "upcoming": "即將到期",
+        "upcomingDesc": "已排程、未來要回看的複盤。",
+        "completed": "已完成複盤",
+        "completedDesc": "最近已經處理完的 diary。"
+      },
+      "empty": {
+        "unscheduled": "沒有待排程複盤。",
+        "overdue": "沒有逾期複盤。",
+        "today": "今天沒有到期複盤。",
+        "upcoming": "沒有即將到期的複盤。",
+        "completed": "還沒有已完成的複盤。"
+      }
+    }
+  },
+  "strategyPerformance": {
+    "kicker": "策略回饋",
+    "title": "策略表現",
+    "description": "用已實現 P/L 和勝率檢查策略與情緒表現。沒有預測，只有你的交易紀錄。",
+    "loadFailed": "策略表現載入失敗",
+    "totalPnl": "總 P/L",
+    "winRate": "勝率",
+    "bestStrategy": "最佳策略",
+    "worstStrategy": "最差策略",
+    "none": "無",
+    "strategyTable": "依策略看 P/L",
+    "emotionTable": "依情緒看 P/L",
+    "emptyStrategy": "已有已關閉交易，但沒有記錄 strategy 標籤。",
+    "emptyEmotion": "已有已關閉交易，但沒有記錄 emotion 標籤。",
+    "emptyTitle": "還沒有已關閉交易",
+    "emptyDescription": "先記錄 BUY 和 SELL 交易。策略表現只使用已關閉交易的已實現 P/L。",
+    "recordTrade": "記錄交易",
+    "period": {
+      "month": "月",
+      "quarter": "季",
+      "year": "年"
+    },
+    "columns": {
+      "name": "名稱",
+      "trades": "交易數",
+      "pnl": "P/L",
+      "winRate": "勝率"
+    }
+  },
+  "tradePlan": {
+    "kicker": "交易規劃",
+    "title": "交易計畫",
+    "description": "進場前先寫好的手動計畫。沒有生成，沒有藉口。",
+    "loadFailed": "交易計畫載入失敗",
+    "noSetupType": "未填策略型態",
+    "linkedTo": "連結 diary：",
+    "fields": {
+      "symbol": "標的",
+      "setupType": "策略型態",
+      "entryPrice": "進場價",
+      "entryZone": "進場區間",
+      "entryZoneLow": "進場區間下緣",
+      "entryZoneHigh": "進場區間上緣",
+      "stopLoss": "停損價",
+      "targetPrice": "目標價",
+      "maxPositionSize": "最大部位",
+      "invalidationCondition": "失效條件",
+      "notes": "筆記",
+      "linkedDiary": "連結 diary",
+      "status": "狀態"
+    },
+    "status": {
+      "draft": "草稿",
+      "active": "執行中",
+      "closed": "已結束",
+      "cancelled": "已取消"
+    },
+    "filters": {
+      "symbol": "依標的篩選",
+      "status": "依狀態篩選"
+    },
+    "actions": {
+      "new": "新增交易計畫",
+      "create": "建立計畫",
+      "save": "儲存計畫",
+      "backToList": "返回計畫列表"
+    },
+    "empty": {
+      "title": "尚無交易計畫",
+      "description": "市場逼你即興發揮前，先把進場、風險、目標和失效條件寫清楚。"
+    },
+    "form": {
+      "sections": {
+        "core": "核心設定",
+        "levels": "價格與倉位",
+        "context": "上下文"
+      },
+      "noLinkedDiary": "不連結 diary"
+    },
+    "placeholders": {
+      "setupType": "突破、回踩、均值回歸……",
+      "invalidationCondition": "什麼情況代表這個計畫錯了？",
+      "notes": "決策背景、檢查清單、倉位筆記……"
+    },
+    "messages": {
+      "created": "交易計畫已建立",
+      "createFailed": "建立交易計畫失敗",
+      "saved": "交易計畫已儲存",
+      "saveFailed": "儲存交易計畫失敗",
+      "deleted": "交易計畫已刪除",
+      "deleteFailed": "刪除交易計畫失敗",
+      "deleteConfirm": "確定刪除這個交易計畫？"
     }
   }
 }

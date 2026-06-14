@@ -19,6 +19,8 @@ export interface RawTransaction {
   quantity: { valueOf(): number } | number
   price: { valueOf(): number } | number
   tradeDate: Date | string
+  strategy?: string | null
+  emotion?: string | null
 }
 
 // ─── 輸出類型 ────────────────────────────────────────────────────────────────
@@ -33,6 +35,8 @@ export interface ClosedTrade {
   avgCostBasis: number      // 賣出時的平均成本
   realizedPnL: number       // 已實現損益（稅前）
   realizedPnLPct: number    // 已實現損益百分比
+  strategy: string | null
+  emotion: string | null
 }
 
 export interface WinRateResult {
@@ -110,6 +114,7 @@ export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
   })
 
   const symbolState = new Map<string, SymbolPosition>()
+  const symbolMeta = new Map<string, { strategy: string | null; emotion: string | null }>()
   const closed: ClosedTrade[] = []
 
   for (const tx of sorted) {
@@ -121,6 +126,11 @@ export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
     if (tx.type === 'BUY') {
       applyBuy(pos, qty, price)
       symbolState.set(sym, pos)
+      const existingMeta = symbolMeta.get(sym) ?? { strategy: null, emotion: null }
+      symbolMeta.set(sym, {
+        strategy: tx.strategy?.trim() || existingMeta.strategy,
+        emotion: tx.emotion?.trim() || existingMeta.emotion,
+      })
     } else if (tx.type === 'SELL') {
       if (pos.totalQuantity <= 0) {
         // 無持倉卻賣出（資料問題），跳過
@@ -134,6 +144,7 @@ export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
       const proceeds = matchedQty * price
       const realizedPnL = proceeds - costBasis
       const realizedPnLPct = costBasis > 0 ? (realizedPnL / costBasis) * 100 : 0
+      const existingMeta = symbolMeta.get(sym) ?? { strategy: null, emotion: null }
 
       closed.push({
         id: String(tx.id),
@@ -144,6 +155,8 @@ export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
         avgCostBasis: avgCost,
         realizedPnL,
         realizedPnLPct,
+        strategy: tx.strategy?.trim() || existingMeta.strategy,
+        emotion: tx.emotion?.trim() || existingMeta.emotion,
       })
 
       // 更新持倉（matchTrades 容忍截斷，不拋錯）
@@ -151,6 +164,7 @@ export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
       pos.totalCost -= matchedQty * avgCost
       if (isPositionClosed(pos)) {
         symbolState.delete(sym)
+        symbolMeta.delete(sym)
       } else {
         symbolState.set(sym, pos)
       }

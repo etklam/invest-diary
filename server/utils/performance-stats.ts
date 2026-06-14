@@ -27,6 +27,8 @@ export interface RawTransactionRecord {
   quantity: { valueOf(): number } | number
   price: { valueOf(): number } | number
   tradeDate: Date
+  strategy?: string | null
+  emotion?: string | null
 }
 
 export interface PerformanceConfig {
@@ -44,10 +46,19 @@ export interface FormattedTrade {
   avgCostBasis: number
   realizedPnL: number
   realizedPnLPct: number
+  strategy: string | null
+  emotion: string | null
 }
 
 export interface SymbolBreakdownEntry {
   symbol: string
+  tradeCount: number
+  realizedPnL: number
+  winRate: number
+}
+
+export interface AttributeBreakdownEntry {
+  name: string
   tradeCount: number
   realizedPnL: number
   winRate: number
@@ -70,6 +81,10 @@ export interface PerformanceResult {
   topWins: FormattedTrade[]
   topLosses: FormattedTrade[]
   symbolBreakdown: SymbolBreakdownEntry[]
+  strategyBreakdown: AttributeBreakdownEntry[]
+  emotionBreakdown: AttributeBreakdownEntry[]
+  bestStrategy: AttributeBreakdownEntry | null
+  worstStrategy: AttributeBreakdownEntry | null
 }
 
 // ─── 空結果 ────────────────────────────────────────────────────────────────────
@@ -89,6 +104,10 @@ const EMPTY_RESULT: PerformanceResult = {
   topWins: [],
   topLosses: [],
   symbolBreakdown: [],
+  strategyBreakdown: [],
+  emotionBreakdown: [],
+  bestStrategy: null,
+  worstStrategy: null,
 }
 
 // ─── Helper ────────────────────────────────────────────────────────────────────
@@ -103,7 +122,38 @@ function formatTrade(t: ClosedTrade): FormattedTrade {
     avgCostBasis: t.avgCostBasis,
     realizedPnL: t.realizedPnL,
     realizedPnLPct: t.realizedPnLPct,
+    strategy: t.strategy,
+    emotion: t.emotion,
   }
+}
+
+function buildAttributeBreakdown(
+  closedTrades: ClosedTrade[],
+  attribute: 'strategy' | 'emotion',
+): AttributeBreakdownEntry[] {
+  const groups = new Map<string, { realizedPnL: number; trades: ClosedTrade[] }>()
+
+  for (const trade of closedTrades) {
+    const name = trade[attribute]?.trim()
+    if (!name) continue
+
+    const existing = groups.get(name) ?? { realizedPnL: 0, trades: [] }
+    existing.realizedPnL += trade.realizedPnL
+    existing.trades.push(trade)
+    groups.set(name, existing)
+  }
+
+  return Array.from(groups.entries())
+    .map(([name, data]) => {
+      const winRate = calcWinRate(data.trades)
+      return {
+        name,
+        tradeCount: data.trades.length,
+        realizedPnL: data.realizedPnL,
+        winRate: winRate.winRate,
+      }
+    })
+    .sort((a, b) => b.realizedPnL - a.realizedPnL || b.tradeCount - a.tradeCount || a.name.localeCompare(b.name))
 }
 
 // ─── 主函數 ────────────────────────────────────────────────────────────────────
@@ -164,6 +214,8 @@ export function computePerformanceStats(
       }
     })
     .sort((a, b) => b.realizedPnL - a.realizedPnL)
+  const strategyBreakdown = buildAttributeBreakdown(closedTrades, 'strategy')
+  const emotionBreakdown = buildAttributeBreakdown(closedTrades, 'emotion')
 
   return {
     summary: {
@@ -180,5 +232,11 @@ export function computePerformanceStats(
     topWins: topWins.map(formatTrade),
     topLosses: topLosses.map(formatTrade),
     symbolBreakdown,
+    strategyBreakdown,
+    emotionBreakdown,
+    bestStrategy: strategyBreakdown[0] ?? null,
+    worstStrategy: strategyBreakdown.length
+      ? [...strategyBreakdown].sort((a, b) => a.realizedPnL - b.realizedPnL || b.tradeCount - a.tradeCount || a.name.localeCompare(b.name))[0]!
+      : null,
   }
 }

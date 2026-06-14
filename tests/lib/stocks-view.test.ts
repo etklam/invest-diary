@@ -137,6 +137,25 @@ describe('computePortfolioAggregations', () => {
     expect(result.unrealizedPct).toBe(0)
   })
 
+  it('calculates portfolio risk summary with cost fallback for missing prices', () => {
+    const result = computePortfolioAggregations(holdings)
+
+    expect(result.activePositionCount).toBe(3)
+    expect(result.largestPositionSymbol).toBe('AAPL')
+    expect(result.largestPositionPct).toBeCloseTo(42.857, 2)
+    expect(result.top3ConcentrationPct).toBe(100)
+    expect(result.concentrationWarning).toBe(true)
+  })
+
+  it('uses market value when live prices are available for concentration', () => {
+    const result = computePortfolioAggregations(holdingsWithDayChange)
+
+    expect(result.currentMarketValue).toBe(2410)
+    expect(result.largestPositionSymbol).toBe('AAPL')
+    expect(result.largestPositionPct).toBeCloseTo(62.24, 2)
+    expect(result.top3ConcentrationPct).toBe(100)
+  })
+
   it('calculates day change aggregations', () => {
     const result = computePortfolioAggregations(holdingsWithDayChange)
 

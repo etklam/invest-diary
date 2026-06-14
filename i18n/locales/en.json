@@ -61,7 +61,10 @@
     "financialFreedom": "Financial Freedom Calculator",
     "etf": "ETF Analysis",
     "relativeValue": "Relative Value Calculator",
-    "partners": "Partners"
+    "partners": "Partners",
+    "reviewQueue": "Review Queue",
+    "tradePlans": "Trade Plans",
+    "strategyPerformance": "Strategy Performance"
   },
   "auth": {
     "login": "Login",
@@ -443,6 +446,21 @@
       "logNewTrade": "Log New Trade",
       "portfolioUpdated": "Portfolio updated with latest market data",
       "couldNotRefresh": "Could not refresh market prices"
+    },
+    "riskSummary": {
+      "title": "Portfolio Risk Summary",
+      "description": "Concentration uses live market value when prices exist, otherwise cost basis.",
+      "warning": "Concentration warning",
+      "balanced": "Balanced",
+      "largestPosition": "Largest position",
+      "top3Concentration": "Top 3 concentration",
+      "activePositionCount": "Active positions",
+      "unrealizedPnl": "Unrealized P/L",
+      "priceBasis": "Price basis",
+      "costFallback": "Cost fallback",
+      "costFallbackHint": "Used when live prices are unavailable",
+      "byValue": "by value",
+      "noPosition": "No position"
     }
   },
   "settings": {
@@ -1248,6 +1266,21 @@
       "copied": "Copied",
       "copySuccess": "Copied to clipboard",
       "copyFailed": "Copy failed",
+      "diaryTitle": "Position sizing plan",
+      "createTradePlan": "Create Trade Plan",
+      "saveToDiary": {
+        "button": "Save to Diary",
+        "kicker": "Save output",
+        "title": "Save position sizing",
+        "description": "Store this deterministic markdown output in your diary workflow, or copy it only.",
+        "appendToday": "Append to today's diary",
+        "createNew": "Create new diary",
+        "copyOnly": "Copy only",
+        "appendSuccess": "Position sizing appended to today's diary",
+        "createSuccess": "Position sizing saved as a new diary",
+        "failed": "Failed to save position sizing",
+        "loginRequired": "Please log in before saving this output to your diary"
+      },
       "overBudgetWarning": "Rounding caused an extra {amount} to be allocated, so the final batch share count was adjusted automatically",
       "shares": "shares",
       "markdown": {
@@ -1964,6 +1997,130 @@
       "executionPlaceholder": "How did you actually execute?",
       "reviewDue": "Review due",
       "reviewNotes": "Review notes"
+    },
+    "queue": {
+      "kicker": "Review workflow",
+      "title": "Review Queue",
+      "description": "One place for overdue, due today, upcoming, and completed diary reviews.",
+      "openCount": "Open",
+      "overdueCount": "Overdue",
+      "todayCount": "Today",
+      "loadFailed": "Failed to load reviews",
+      "markedReviewed": "Diary marked as reviewed",
+      "markReviewedFailed": "Failed to mark diary as reviewed",
+      "sections": {
+        "unscheduled": "Needs scheduling",
+        "unscheduledDesc": "Pending reviews without a due date yet.",
+        "overdue": "Overdue reviews",
+        "overdueDesc": "Past due decisions that need follow-up.",
+        "today": "Due today",
+        "todayDesc": "Reviews scheduled for today.",
+        "upcoming": "Upcoming reviews",
+        "upcomingDesc": "Future reviews already scheduled.",
+        "completed": "Completed reviews",
+        "completedDesc": "Recently reviewed diaries."
+      },
+      "empty": {
+        "unscheduled": "No unscheduled pending reviews.",
+        "overdue": "No overdue reviews.",
+        "today": "No reviews due today.",
+        "upcoming": "No upcoming reviews.",
+        "completed": "No completed reviews yet."
+      }
+    }
+  },
+  "strategyPerformance": {
+    "kicker": "Strategy feedback",
+    "title": "Strategy Performance",
+    "description": "Check realized P/L and win rate by strategy and emotion. No prediction, only your trade record.",
+    "loadFailed": "Failed to load strategy performance",
+    "totalPnl": "Total P/L",
+    "winRate": "Win rate",
+    "bestStrategy": "Best strategy",
+    "worstStrategy": "Worst strategy",
+    "none": "None",
+    "strategyTable": "P/L by strategy",
+    "emotionTable": "P/L by emotion",
+    "emptyStrategy": "Closed trades exist, but no strategy labels were recorded.",
+    "emptyEmotion": "Closed trades exist, but no emotion labels were recorded.",
+    "emptyTitle": "No closed trades yet",
+    "emptyDescription": "Record BUY and SELL transactions first. Strategy performance only uses realized P/L from closed trades.",
+    "recordTrade": "Record a trade",
+    "period": {
+      "month": "Month",
+      "quarter": "Quarter",
+      "year": "Year"
+    },
+    "columns": {
+      "name": "Name",
+      "trades": "Trades",
+      "pnl": "P/L",
+      "winRate": "Win rate"
+    }
+  },
+  "tradePlan": {
+    "kicker": "Trade planning",
+    "title": "Trade Plans",
+    "description": "Manual, deterministic plans before the trade. No generation, no excuses.",
+    "loadFailed": "Failed to load trade plans",
+    "noSetupType": "No setup type",
+    "linkedTo": "Linked diary:",
+    "fields": {
+      "symbol": "Symbol",
+      "setupType": "Setup type",
+      "entryPrice": "Entry price",
+      "entryZone": "Entry zone",
+      "entryZoneLow": "Entry zone low",
+      "entryZoneHigh": "Entry zone high",
+      "stopLoss": "Stop loss",
+      "targetPrice": "Target price",
+      "maxPositionSize": "Max position size",
+      "invalidationCondition": "Invalidation condition",
+      "notes": "Notes",
+      "linkedDiary": "Linked diary",
+      "status": "Status"
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "filters": {
+      "symbol": "Filter by symbol",
+      "status": "Filter by status"
+    },
+    "actions": {
+      "new": "New Trade Plan",
+      "create": "Create Plan",
+      "save": "Save Plan",
+      "backToList": "Back to plans"
+    },
+    "empty": {
+      "title": "No trade plans yet",
+      "description": "Plan entry, risk, target, and invalidation before the market makes you improvise."
+    },
+    "form": {
+      "sections": {
+        "core": "Core setup",
+        "levels": "Prices and sizing",
+        "context": "Context"
+      },
+      "noLinkedDiary": "No linked diary"
+    },
+    "placeholders": {
+      "setupType": "Breakout, pullback, mean reversion...",
+      "invalidationCondition": "What proves this plan wrong?",
+      "notes": "Decision context, checklist, sizing notes..."
+    },
+    "messages": {
+      "created": "Trade plan created",
+      "createFailed": "Failed to create trade plan",
+      "saved": "Trade plan saved",
+      "saveFailed": "Failed to save trade plan",
+      "deleted": "Trade plan deleted",
+      "deleteFailed": "Failed to delete trade plan",
+      "deleteConfirm": "Delete this trade plan?"
     }
   }
 }

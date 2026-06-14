@@ -6,6 +6,7 @@
  * - 按月分群的損益時間序列（用於圖表）
  * - 最佳/最差的前 5 筆交易
  * - 按 symbol 彙總的績效
+ * - 按 strategy / emotion 彙總的績效
  *
  * Query params:
  *   period?: 'month' | 'quarter' | 'year'  (預設 'month')
@@ -50,6 +51,8 @@ export default defineEventHandler(async (event) => {
         quantity: true,
         price: true,
         tradeDate: true,
+        strategy: true,
+        emotion: true,
       },
       orderBy: { tradeDate: 'asc' },
     })

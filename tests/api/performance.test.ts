@@ -26,6 +26,8 @@ function makeTx(overrides: {
   quantity: number
   price: number
   tradeDate?: Date
+  strategy?: string | null
+  emotion?: string | null
 }) {
   return {
     id: overrides.id ?? 1n,
@@ -34,6 +36,8 @@ function makeTx(overrides: {
     quantity: { valueOf: () => overrides.quantity },
     price: { valueOf: () => overrides.price },
     tradeDate: overrides.tradeDate ?? new Date('2026-01-15T12:00:00.000Z'),
+    strategy: overrides.strategy ?? null,
+    emotion: overrides.emotion ?? null,
   }
 }
 

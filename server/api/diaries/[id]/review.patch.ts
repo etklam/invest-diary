@@ -1,14 +1,19 @@
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
-import { Errors } from '~/lib/errors/factory'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { findDiaryForUser } from '~/server/utils/diary-read'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
+import { z } from 'zod'
 
 const VALID_REVIEW_STATUSES = ['none', 'pending', 'reviewed'] as const
-type ReviewStatus = (typeof VALID_REVIEW_STATUSES)[number]
+
+const reviewUpdateSchema = z.object({
+  reviewStatus: z.enum(VALID_REVIEW_STATUSES),
+  reviewedAt: z.string().datetime().optional(),
+  reviewDueAt: z.string().datetime().nullable().optional(),
+})
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -18,27 +23,22 @@ export default defineEventHandler(async (event) => {
   const diaryId = parsePositiveBigIntParam(event, 'id')
 
   try {
-    const body = await readBody(event)
-    const reviewStatus: string | undefined = body?.reviewStatus
-
-    if (!reviewStatus || !VALID_REVIEW_STATUSES.includes(reviewStatus as ReviewStatus)) {
-      throw Errors.validationError([{
-        field: 'reviewStatus',
-        message: `reviewStatus must be one of: ${VALID_REVIEW_STATUSES.join(', ')}`,
-        value: reviewStatus,
-      }])
-    }
+    const body = reviewUpdateSchema.parse(await readBody(event))
 
     // Ownership check
     await findDiaryForUser(diaryId, userId)
 
     // Build update data
-    const updateData: Record<string, unknown> = { reviewStatus }
+    const updateData: Record<string, unknown> = { reviewStatus: body.reviewStatus }
+
+    if (body.reviewDueAt !== undefined) {
+      updateData.reviewDueAt = body.reviewDueAt ? new Date(body.reviewDueAt) : null
+    }
 
     // Auto-set reviewedAt when marking as reviewed
-    if (reviewStatus === 'reviewed') {
-      updateData.reviewedAt = new Date()
-    } else if (reviewStatus === 'none' || reviewStatus === 'pending') {
+    if (body.reviewStatus === 'reviewed') {
+      updateData.reviewedAt = body.reviewedAt ? new Date(body.reviewedAt) : new Date()
+    } else if (body.reviewStatus === 'none' || body.reviewStatus === 'pending') {
       // Clear reviewedAt when reverting status
       updateData.reviewedAt = null
     }
@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
 
     log.info('Diary review status updated', {
       diaryId: String(diaryId),
-      reviewStatus,
+      reviewStatus: body.reviewStatus,
       userId: user.id,
     })
 

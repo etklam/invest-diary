@@ -1,0 +1,241 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockReadBody } from '../vi-setup'
+
+const mockDiaryFindMany = vi.fn()
+const mockDiaryFindFirst = vi.fn()
+const mockDiaryUpdate = vi.fn()
+const mockUserFindUnique = vi.fn()
+const mockDiaryLogInfo = vi.fn()
+const mockDiaryLogWarn = vi.fn()
+const mockDiaryLogError = vi.fn()
+const mockParsePositiveBigIntParam = vi.fn()
+
+vi.mock('~/lib/prisma', () => ({
+  default: {
+    diary: {
+      findMany: mockDiaryFindMany,
+      findFirst: mockDiaryFindFirst,
+      update: mockDiaryUpdate,
+    },
+    user: {
+      findUnique: mockUserFindUnique,
+    },
+  },
+}))
+
+vi.mock('~/lib/logger', () => ({
+  logger: {
+    diary: {
+      withRequestId: vi.fn(() => ({
+        info: mockDiaryLogInfo,
+        warn: mockDiaryLogWarn,
+        error: mockDiaryLogError,
+      })),
+    },
+  },
+}))
+
+vi.mock('~/server/utils/validation', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('~/server/utils/validation')>()
+  return {
+    ...actual,
+    parsePositiveBigIntParam: mockParsePositiveBigIntParam,
+  }
+})
+
+describe('Review API Routes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.useRealTimers()
+    mockReadBody.mockResolvedValue(null)
+    mockParsePositiveBigIntParam.mockReturnValue(10n)
+    mockUserFindUnique.mockResolvedValue({ timezone: 'Asia/Taipei' })
+  })
+
+  describe('GET /api/reviews', () => {
+    it('returns grouped review items for the authenticated user', async () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-06-14T12:00:00.000Z'))
+
+      const unscheduled = [{
+        id: 5n,
+        title: 'Pending without date',
+        date: new Date('2026-06-11T09:00:00.000Z'),
+        thesis: 'Needs a schedule',
+        risk: null,
+        reviewDueAt: null,
+        reviewStatus: 'pending',
+        reviewedAt: null,
+      }]
+      const overdue = [{
+        id: 1n,
+        title: 'Overdue diary',
+        date: new Date('2026-06-01T12:00:00.000Z'),
+        thesis: 'Breakout thesis',
+        risk: 'False breakout',
+        reviewDueAt: new Date('2026-06-13T10:00:00.000Z'),
+        reviewStatus: 'pending',
+        reviewedAt: null,
+      }]
+      const today = [{
+        id: 2n,
+        title: 'Today diary',
+        date: new Date('2026-06-14T09:00:00.000Z'),
+        thesis: null,
+        risk: null,
+        reviewDueAt: new Date('2026-06-14T15:00:00.000Z'),
+        reviewStatus: null,
+        reviewedAt: null,
+      }]
+      const upcoming = [{
+        id: 3n,
+        title: 'Upcoming diary',
+        date: new Date('2026-06-15T09:00:00.000Z'),
+        thesis: 'Wait for pullback',
+        risk: null,
+        reviewDueAt: new Date('2026-06-20T09:00:00.000Z'),
+        reviewStatus: 'pending',
+        reviewedAt: null,
+      }]
+      const completed = [{
+        id: 4n,
+        title: 'Completed diary',
+        date: new Date('2026-06-10T09:00:00.000Z'),
+        thesis: null,
+        risk: 'Sizing too large',
+        reviewDueAt: new Date('2026-06-12T09:00:00.000Z'),
+        reviewStatus: 'reviewed',
+        reviewedAt: new Date('2026-06-14T08:00:00.000Z'),
+      }]
+
+      mockDiaryFindMany
+        .mockResolvedValueOnce(unscheduled)
+        .mockResolvedValueOnce(overdue)
+        .mockResolvedValueOnce(today)
+        .mockResolvedValueOnce(upcoming)
+        .mockResolvedValueOnce(completed)
+
+      const { default: handler } = await import('~/server/api/reviews.get')
+      const result = await handler({ context: { user: { id: '7' }, requestId: 'req-reviews' } } as any)
+
+      expect(mockUserFindUnique).toHaveBeenCalledWith({
+        where: { id: 7n },
+        select: { timezone: true },
+      })
+      expect(mockDiaryFindMany).toHaveBeenCalledTimes(5)
+      expect(mockDiaryFindMany.mock.calls[0]?.[0].where).toMatchObject({
+        userId: 7n,
+        reviewDueAt: null,
+        reviewStatus: 'pending',
+        NOT: { reviewStatus: 'reviewed' },
+      })
+      expect(mockDiaryFindMany.mock.calls[1]?.[0].where).toMatchObject({
+        userId: 7n,
+        reviewDueAt: { lt: new Date('2026-06-13T16:00:00.000Z') },
+        NOT: { reviewStatus: 'reviewed' },
+      })
+      expect(mockDiaryFindMany.mock.calls[2]?.[0].where).toMatchObject({
+        reviewDueAt: {
+          gte: new Date('2026-06-13T16:00:00.000Z'),
+          lte: new Date('2026-06-14T15:59:59.999Z'),
+        },
+      })
+      expect(result.unscheduled[0].id).toBe('5')
+      expect(result.overdue[0].id).toBe('1')
+      expect(result.today[0].reviewStatus).toBe('none')
+      expect(result.upcoming[0].id).toBe('3')
+      expect(result.completed[0].id).toBe('4')
+    })
+
+    it('uses the viewer timezone when grouping reviews due today', async () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-06-14T16:30:00.000Z'))
+      mockUserFindUnique.mockResolvedValue({ timezone: 'Asia/Taipei' })
+
+      mockDiaryFindMany
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+
+      const { default: handler } = await import('~/server/api/reviews.get')
+      await handler({ context: { user: { id: '7' }, requestId: 'req-reviews-tz' } } as any)
+
+      expect(mockDiaryFindMany.mock.calls[1]?.[0].where.reviewDueAt).toEqual({
+        lt: new Date('2026-06-14T16:00:00.000Z'),
+      })
+      expect(mockDiaryFindMany.mock.calls[2]?.[0].where.reviewDueAt).toEqual({
+        gte: new Date('2026-06-14T16:00:00.000Z'),
+        lte: new Date('2026-06-15T15:59:59.999Z'),
+      })
+    })
+  })
+
+  describe('PATCH /api/diaries/:id/review', () => {
+    it('updates review status, reviewedAt, and reviewDueAt for an owned diary', async () => {
+      mockReadBody.mockResolvedValue({
+        reviewStatus: 'reviewed',
+        reviewedAt: '2026-06-14T10:00:00.000Z',
+        reviewDueAt: '2026-06-20T10:00:00.000Z',
+      })
+      mockDiaryFindFirst.mockResolvedValue({ id: 10n, userId: 7n, transactions: [], alerts: [] })
+      mockDiaryUpdate.mockResolvedValue({
+        id: 10n,
+        userId: 7n,
+        title: 'Reviewed diary',
+        reviewStatus: 'reviewed',
+        reviewedAt: new Date('2026-06-14T10:00:00.000Z'),
+        reviewDueAt: new Date('2026-06-20T10:00:00.000Z'),
+        transactions: [],
+        alerts: [],
+      })
+
+      const { default: handler } = await import('~/server/api/diaries/[id]/review.patch')
+      const result = await handler({ context: { user: { id: '7' }, requestId: 'req-review-patch' } } as any)
+
+      expect(mockDiaryFindFirst).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: 10n },
+      }))
+      expect(mockDiaryUpdate).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: 10n },
+        data: {
+          reviewStatus: 'reviewed',
+          reviewDueAt: new Date('2026-06-20T10:00:00.000Z'),
+          reviewedAt: new Date('2026-06-14T10:00:00.000Z'),
+        },
+      }))
+      expect(result.id).toBe('10')
+      expect(result.reviewStatus).toBe('reviewed')
+    })
+
+    it('clears reviewedAt when reverting to pending', async () => {
+      mockReadBody.mockResolvedValue({
+        reviewStatus: 'pending',
+        reviewDueAt: null,
+      })
+      mockDiaryFindFirst.mockResolvedValue({ id: 10n, userId: 7n, transactions: [], alerts: [] })
+      mockDiaryUpdate.mockResolvedValue({
+        id: 10n,
+        userId: 7n,
+        title: 'Pending diary',
+        reviewStatus: 'pending',
+        reviewedAt: null,
+        reviewDueAt: null,
+        transactions: [],
+        alerts: [],
+      })
+
+      const { default: handler } = await import('~/server/api/diaries/[id]/review.patch')
+      await handler({ context: { user: { id: '7' }, requestId: 'req-review-pending' } } as any)
+
+      expect(mockDiaryUpdate).toHaveBeenCalledWith(expect.objectContaining({
+        data: {
+          reviewStatus: 'pending',
+          reviewDueAt: null,
+          reviewedAt: null,
+        },
+      }))
+    })
+  })
+})

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { calculatePositionSizing, validateRatios } from '~/lib/positionSizing'
 import { formatCurrency as formatCurrencyUtil, formatNumber as formatNumberUtil } from '~/lib/format'
+import { isAuthSessionError } from '~/lib/auth/session-error'
 import type { RoundingMode, PositionResult, CalculationSummary } from '~/lib/positionSizing'
 import type { VueMessageType } from 'vue-i18n'
 
 const { t, rt, tm } = useI18n()
 const toast = useToast()
+const router = useRouter()
+const { runWithAuthRecovery } = useAuthRecovery()
 
 interface Strategy {
   id: string
@@ -97,6 +100,8 @@ const formatCurrency = (value: number) => formatCurrencyUtil(value, { decimals: 
 const formatNumber = formatNumberUtil
 
 const copySuccess = ref(false)
+const showSaveToDiaryModal = ref(false)
+const savingToDiary = ref(false)
 
 const generateMarkdown = () => {
   if (!calculationResults.value.length || !summary.value || !effectiveCapital.value || !stockPrice.value) return ''
@@ -174,6 +179,70 @@ const copyToClipboard = async () => {
   } catch {
     toast.error(t('tools.positionSizing.copyFailed'))
   }
+}
+
+const buildDiaryTitle = () => {
+  const symbol = stockName.value?.trim()
+  return symbol
+    ? `${t('tools.positionSizing.diaryTitle')} - ${symbol}`
+    : t('tools.positionSizing.diaryTitle')
+}
+
+const savePositionSizingToDiary = async (appendToToday: boolean) => {
+  const markdown = generateMarkdown()
+  if (!markdown || savingToDiary.value) return
+
+  savingToDiary.value = true
+  try {
+    await runWithAuthRecovery(() => $fetch('/api/diaries', {
+      method: 'POST',
+      body: {
+        title: buildDiaryTitle(),
+        content: markdown,
+        appendToToday,
+        tags: ['position-sizing'],
+      },
+    }))
+    showSaveToDiaryModal.value = false
+    toast.success(appendToToday
+      ? t('tools.positionSizing.saveToDiary.appendSuccess')
+      : t('tools.positionSizing.saveToDiary.createSuccess'))
+  } catch (error) {
+    if (isAuthSessionError(error)) {
+      showSaveToDiaryModal.value = false
+      toast.error(t('tools.positionSizing.saveToDiary.loginRequired'))
+      await router.push('/auth/login')
+      return
+    }
+
+    toast.error(t('tools.positionSizing.saveToDiary.failed'))
+  } finally {
+    savingToDiary.value = false
+  }
+}
+
+const copyOnlyFromDiaryModal = async () => {
+  await copyToClipboard()
+  showSaveToDiaryModal.value = false
+}
+
+const createTradePlanFromPositionSizing = async () => {
+  const markdown = generateMarkdown()
+  if (!markdown || !summary.value) return
+
+  const prefill = {
+    symbol: stockName.value?.trim().toUpperCase() || '',
+    entryPrice: stockPrice.value ? String(stockPrice.value) : '',
+    maxPositionSize: summary.value.totalInvested ? String(summary.value.totalInvested.toFixed(2)) : '',
+    notes: markdown,
+    status: 'draft',
+  }
+
+  if (process.client) {
+    sessionStorage.setItem('tradePlanPrefill', JSON.stringify(prefill))
+  }
+
+  await router.push('/trade-plans/new?prefill=position-sizing')
 }
 
 useHead({
@@ -355,6 +424,14 @@ definePageMeta({
                 <Icon :name="copySuccess ? 'heroicons:check' : 'heroicons:clipboard-document'" class="mr-2 h-4 w-4" />
                 {{ copySuccess ? t('tools.positionSizing.copied') : t('tools.positionSizing.copyToClipboard') }}
               </BaseButton>
+              <BaseButton variant="secondary" class="!border-white/30 !bg-white/10 !text-white hover:!bg-white/20 w-full sm:w-auto" @click="showSaveToDiaryModal = true">
+                <Icon name="heroicons:document-plus" class="mr-2 h-4 w-4" />
+                {{ t('tools.positionSizing.saveToDiary.button') }}
+              </BaseButton>
+              <BaseButton variant="secondary" class="!border-white/30 !bg-white/10 !text-white hover:!bg-white/20 w-full sm:w-auto" @click="createTradePlanFromPositionSizing">
+                <Icon name="heroicons:clipboard-document-list" class="mr-2 h-4 w-4" />
+                {{ t('tools.positionSizing.createTradePlan') }}
+              </BaseButton>
             </div>
 
             <div class="mt-6 grid gap-3 sm:grid-cols-3">
@@ -525,6 +602,40 @@ definePageMeta({
         </p>
       </div>
     </section>
+
+    <div v-if="showSaveToDiaryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div class="w-full max-w-lg rounded-xl border border-dt-border bg-dt-surface p-6 shadow-xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
+              {{ t('tools.positionSizing.saveToDiary.kicker') }}
+            </p>
+            <h2 class="mt-1 font-display text-2xl tracking-tight text-dt-text">
+              {{ t('tools.positionSizing.saveToDiary.title') }}
+            </h2>
+            <p class="mt-2 text-sm leading-6 text-dt-text-muted">
+              {{ t('tools.positionSizing.saveToDiary.description') }}
+            </p>
+          </div>
+          <button class="rounded-md p-1 text-dt-text-muted hover:text-dt-text" type="button" @click="showSaveToDiaryModal = false">
+            <Icon name="heroicons:x-mark" class="h-5 w-5" />
+          </button>
+        </div>
+
+        <div class="mt-6 grid gap-3">
+          <BaseButton :disabled="savingToDiary" @click="savePositionSizingToDiary(true)">
+            <Icon v-if="savingToDiary" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4" />
+            {{ t('tools.positionSizing.saveToDiary.appendToday') }}
+          </BaseButton>
+          <BaseButton variant="secondary" :disabled="savingToDiary" @click="savePositionSizingToDiary(false)">
+            {{ t('tools.positionSizing.saveToDiary.createNew') }}
+          </BaseButton>
+          <BaseButton variant="ghost" :disabled="savingToDiary" @click="copyOnlyFromDiaryModal">
+            {{ t('tools.positionSizing.saveToDiary.copyOnly') }}
+          </BaseButton>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
