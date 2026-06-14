@@ -1,24 +1,19 @@
 import { defineEventHandler } from 'h3'
-import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
 import { serialize } from '~/server/utils/serialize'
+import { handleApiError } from '~/server/utils/error-handler'
+import { listDisciplines } from '~/server/utils/discipline-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.discipline.withRequestId(event.context.requestId)
-  const user = await requireUser(event)
+  try {
+    const user = await requireUser(event)
 
-  // @ts-ignore prisma client type may be stale
-  const disciplines = await prisma.discipline.findMany({
-    where: { userId: user.id },
-    orderBy: { order: 'asc' },
-    select: {
-      id: true,
-      content: true,
-      order: true,
-      createdAt: true,
-    },
-  })
+    const disciplines = await listDisciplines(BigInt(user.id))
 
-  return serialize(disciplines)
+    return serialize(disciplines)
+  } catch (error) {
+    handleApiError(error, log)
+  }
 })

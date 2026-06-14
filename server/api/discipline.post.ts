@@ -1,43 +1,17 @@
-import { defineEventHandler, readBody } from 'h3'
-import prisma from '~/lib/prisma'
+import { defineEventHandler } from 'h3'
 import { requireUser } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
-import { Errors } from '~/lib/errors/factory'
-import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
+import { handleApiError } from '~/server/utils/error-handler'
+import { createDiscipline } from '~/server/utils/discipline-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.discipline.withRequestId(event.context.requestId)
   try {
     const user = await requireUser(event)
-    const body = await readBody<{ content?: string }>(event)
+    const body = await readBody(event)
 
-    if (!body?.content || !body.content.trim()) {
-      throw Errors.validationError([{ field: 'content', message: 'Content is required' }]).toH3Error()
-    }
-
-    // Get the current max order value for the user
-    const maxOrderDiscipline = await prisma.discipline.findFirst({
-      where: { userId: user.id },
-      orderBy: { order: 'desc' },
-      select: { order: true }
-    })
-
-    const nextOrder = (maxOrderDiscipline?.order ?? -1) + 1
-
-    const discipline = await prisma.discipline.create({
-      data: {
-        content: body.content.trim(),
-        userId: user.id,
-        order: nextOrder,
-      },
-      select: {
-        id: true,
-        content: true,
-        order: true,
-        createdAt: true,
-      },
-    })
+    const discipline = await createDiscipline(BigInt(user.id), body)
 
     log.info('Discipline created', { disciplineId: String(discipline.id), order: discipline.order, userId: String(user.id) })
     return serialize(discipline)
