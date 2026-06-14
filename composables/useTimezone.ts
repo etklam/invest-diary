@@ -1,6 +1,8 @@
 /**
  * Timezone composable for managing user timezone preferences
  */
+import { getUserTodayYmd } from '~/lib/dates/user-tz'
+
 export const useTimezone = () => {
   // Common timezones for stock market users
   const commonTimezones = [
@@ -116,11 +118,7 @@ export const useTimezone = () => {
 
   // Get today's date in user's timezone as YYYY-MM-DD string
   const getTodayDateString = (): string => {
-    const dateInTz = getDateInTimezone()
-    const year = dateInTz.getFullYear()
-    const month = String(dateInTz.getMonth() + 1).padStart(2, '0')
-    const day = String(dateInTz.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
+    return getUserTodayYmd(getTimezone())
   }
 
   // Format date using user's locale and timezone

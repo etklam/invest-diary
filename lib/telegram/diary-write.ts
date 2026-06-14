@@ -1,4 +1,5 @@
 import { logger } from '~/lib/logger'
+import { formatShortDate } from '~/lib/dates'
 
 const log = logger.telegram
 
@@ -24,7 +25,7 @@ export async function createBuySellDiary(
     const timezone = user?.timezone ?? 'Asia/Taipei'
 
     const now = new Date()
-    const dateStr = now.toLocaleDateString('zh-TW', { timeZone: timezone })
+    const dateStr = formatShortDate(now, timezone)
     const direction = type === 'BUY' ? '買入' : '賣出'
     const title = `${direction} ${symbol} x${quantity} - ${dateStr}`
     const total = quantity * price
@@ -72,7 +73,7 @@ export async function createNoteDiary(ctx: any, userId: bigint, content: string)
     const timezone = user?.timezone ?? 'Asia/Taipei'
 
     const now = new Date()
-    const dateStr = now.toLocaleDateString('zh-TW', { timeZone: timezone })
+    const dateStr = formatShortDate(now, timezone)
     const title = `日記 - ${dateStr}`
 
     await createDiaryForUser({

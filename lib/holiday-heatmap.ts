@@ -1,35 +1,15 @@
 import type { Diary } from '~/types/diary'
+import { resolveCountryCodeFromTimezone, getUserYmdInTimezone } from '~/lib/dates/user-tz'
 
-const TIMEZONE_COUNTRY_MAP: Record<string, string> = {
-  'Asia/Taipei': 'TW',
-  'Asia/Hong_Kong': 'HK',
-  'Asia/Shanghai': 'CN',
-  'Asia/Singapore': 'SG',
-  'Asia/Tokyo': 'JP',
-  'Asia/Seoul': 'KR',
-  'America/New_York': 'US',
-  'America/Chicago': 'US',
-  'America/Los_Angeles': 'US',
-  'America/Toronto': 'CA',
-  'Europe/London': 'GB',
-  'Europe/Paris': 'FR',
-  'Europe/Berlin': 'DE',
-  'Australia/Sydney': 'AU'
-}
+// Re-export 維持向後相容（callers 可直接從 holiday-heatmap 匯入）
+export { resolveCountryCodeFromTimezone }
 
-export const resolveCountryCodeFromTimezone = (timezone: string): string | null => {
-  return TIMEZONE_COUNTRY_MAP[timezone] || null
-}
-
+/**
+ * @deprecated 改用 `~/lib/dates/user-tz` 的 `getUserYmdInTimezone`。
+ * 此函數保留作為薄 wrapper，行為完全等價。
+ */
 export const toDateKeyInTimezone = (date: Date | string, timezone: string): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  })
-  return formatter.format(dateObj)
+  return getUserYmdInTimezone(date, timezone)
 }
 
 export const buildDailyActivityMap = (diaries: Diary[], timezone: string): Set<string> => {

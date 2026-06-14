@@ -137,7 +137,7 @@ describe('Review API Routes', () => {
       expect(mockDiaryFindMany.mock.calls[2]?.[0].where).toMatchObject({
         reviewDueAt: {
           gte: new Date('2026-06-13T16:00:00.000Z'),
-          lte: new Date('2026-06-14T15:59:59.999Z'),
+          lt: new Date('2026-06-14T16:00:00.000Z'),
         },
       })
       expect(result.unscheduled[0].id).toBe('5')
@@ -167,7 +167,7 @@ describe('Review API Routes', () => {
       })
       expect(mockDiaryFindMany.mock.calls[2]?.[0].where.reviewDueAt).toEqual({
         gte: new Date('2026-06-14T16:00:00.000Z'),
-        lte: new Date('2026-06-15T15:59:59.999Z'),
+        lt: new Date('2026-06-15T16:00:00.000Z'),
       })
     })
   })
