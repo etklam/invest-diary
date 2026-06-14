@@ -1,68 +1,35 @@
-import prisma from '~/lib/prisma'
-import { Errors } from '~/lib/errors/factory'
-import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
 import { buildCompareDays } from '~/server/utils/partner-compare'
-import { findUserPartnerLinks } from '~/server/utils/partner-queries'
+import { loadCompareContext } from '~/server/utils/partner-queries'
 import { serializePartnerLink } from '~/server/utils/partner-response'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
+import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
   try {
     const user = requireUser(event)
-    const currentUserId = BigInt(user.id)
     const query = getQuery(event)
     const requestedPartnerId = typeof query.partnerId === 'string' ? query.partnerId : undefined
     const limit = Math.min(Math.max(Number(query.limit) || 20, 1), 60)
 
-    const [viewer, links] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: currentUserId },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          timezone: true,
-        },
-      }),
-      findUserPartnerLinks(currentUserId),
-    ])
+    const ctx = await loadCompareContext(BigInt(user.id), {
+      partnerId: requestedPartnerId,
+      limit,
+    })
 
-    if (!viewer) {
-      throw Errors.userNotFound()
-    }
+    const serializedLinks = ctx.links.map((link) =>
+      serializePartnerLink(link, user.id),
+    )
 
-    const serializedLinks = links.map((link: (typeof links)[number]) => serializePartnerLink(link as PartnerLinkRecord, user.id))
-    const acceptedLinks = links.filter((link: (typeof links)[number]) => Boolean(link.acceptedAt))
-
-    let selectedLink = acceptedLinks[0] as (typeof links)[number] | undefined
-    if (requestedPartnerId) {
-      selectedLink = acceptedLinks.find((link: (typeof acceptedLinks)[number]) =>
-        getPartnerSide(link as PartnerLinkRecord, user.id).partner.id.toString() === requestedPartnerId,
-      )
-
-      if (!selectedLink) {
-        const pendingLink = links.find((link: (typeof links)[number]) =>
-          getPartnerSide(link as PartnerLinkRecord, user.id).partner.id.toString() === requestedPartnerId,
-        )
-
-        if (pendingLink) {
-          throw Errors.partnerLinkPending()
-        }
-
-        throw Errors.partnerLinkNotFound()
-      }
-    }
-
-    if (!selectedLink) {
+    if (!ctx.selectedLink) {
       return serialize({
         owner: {
-          id: viewer.id,
-          email: viewer.email,
-          name: viewer.name,
+          id: ctx.viewer.id,
+          email: ctx.viewer.email,
+          name: ctx.viewer.name,
         },
         partner: null,
         selectedPartnerId: null,
@@ -71,60 +38,21 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const side = getPartnerSide(selectedLink as PartnerLinkRecord, user.id)
-    const timeZone = viewer.timezone || 'Asia/Taipei'
-
-    const [ownerDiaries, partnerDiaries] = await Promise.all([
-      prisma.diary.findMany({
-        where: { userId: currentUserId },
-        orderBy: { date: 'desc' },
-        take: limit,
-        select: {
-          id: true,
-          userId: true,
-          title: true,
-          content: true,
-          tagsString: true,
-          createdVia: true,
-          createdByLabel: true,
-          date: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      }),
-      side.partnerSharesDiaries
-        ? prisma.diary.findMany({
-            where: { userId: side.partner.id },
-            orderBy: { date: 'desc' },
-            take: limit,
-            select: {
-              id: true,
-              userId: true,
-              title: true,
-              content: true,
-              tagsString: true,
-              createdVia: true,
-              createdByLabel: true,
-              date: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          })
-        : Promise.resolve([]),
-    ])
+    const side = getPartnerSide(ctx.selectedLink as PartnerLinkRecord, user.id)
+    const timeZone = ctx.viewer.timezone || 'Asia/Taipei'
 
     const compareDays = buildCompareDays(
-      ownerDiaries as any[],
-      partnerDiaries as any[],
+      ctx.ownerDiaries as any[],
+      ctx.partnerDiaries as any[],
       timeZone,
       limit,
     )
 
     return serialize({
       owner: {
-        id: viewer.id,
-        email: viewer.email,
-        name: viewer.name,
+        id: ctx.viewer.id,
+        email: ctx.viewer.email,
+        name: ctx.viewer.name,
       },
       partner: {
         id: side.partner.id,
