@@ -11,6 +11,10 @@
 
 import { isRankScope } from '~/lib/market-rotation/types'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
+import {
+  loadQualifiedDatesForScope,
+  pickComparisonDate,
+} from '~/lib/market-rotation/qualified-date'
 
 // ─── Type helpers ──────────────────────────────────────────────────────────
 
@@ -163,6 +167,10 @@ export async function getHistoricalPrices(
  * Finds the most recent date where at least 90% of the given symbols
  * have snapshot records in market_rotation_snapshot.
  *
+ * The qualification logic (90% threshold + groupBy shape) lives in
+ * `lib/market-rotation/qualified-date.ts` — this function is a thin
+ * Prisma adapter that returns the head of the desc-sorted qualified list.
+ *
  * @param prisma - Prisma client instance
  * @param rankScope - The ranking scope (e.g., 'SP500')
  * @param symbols - Array of canonical symbols to check coverage against
@@ -173,26 +181,13 @@ export async function getLatestQualifiedDate(
   rankScope: string,
   symbols: string[],
 ): Promise<Date | null> {
-  const threshold = Math.ceil(symbols.length * 0.9)
-
-  const groups = await prisma.marketRotationSnapshot.groupBy({
-    by: ['date'],
-    where: {
-      rankScope,
-      symbol: { in: symbols },
-    },
-    _count: { symbol: true },
-    orderBy: { date: 'desc' },
-  })
-
-  // Find first date (most recent) with >= threshold count
-  for (const group of groups) {
-    if (group._count.symbol >= threshold) {
-      return group.date
-    }
-  }
-
-  return null
+  const qualifiedDates = await loadQualifiedDatesForScope(
+    prisma,
+    rankScope,
+    symbols.length,
+    symbols,
+  )
+  return qualifiedDates[0] ?? null
 }
 
 /**
@@ -203,6 +198,10 @@ export async function getLatestQualifiedDate(
  *
  * offset=0 → most recent qualified date
  * offset=10 → 11th most recent qualified date (approximately 2 weeks back)
+ *
+ * The qualification logic (90% threshold + groupBy shape) lives in
+ * `lib/market-rotation/qualified-date.ts`. This function is a thin Prisma
+ * adapter that picks the offset-th qualified date.
  *
  * @param prisma - Prisma client instance
  * @param rankScope - The ranking scope
@@ -217,30 +216,14 @@ export async function getComparisonDate(
   const canonicalUniverseSize = isRankScope(rankScope)
     ? getUniverseForScope(rankScope).length
     : 0
-  const threshold = canonicalUniverseSize > 0
-    ? Math.ceil(canonicalUniverseSize * 0.9)
-    : 1
 
-  // Get all dates with snapshots, then pick the offset-th qualified date.
-  const groups = await prisma.marketRotationSnapshot.groupBy({
-    by: ['date'],
-    where: {
-      rankScope,
-    },
-    _count: { symbol: true },
-    orderBy: { date: 'desc' },
-  })
+  const qualifiedDates = await loadQualifiedDatesForScope(
+    prisma,
+    rankScope,
+    canonicalUniverseSize,
+  )
 
-  const qualifiedDates = groups
-    .filter(group => group._count.symbol >= threshold)
-    .map(group => group.date)
-
-  const comparisonDate = qualifiedDates[offset]
-  if (!comparisonDate) {
-    return null
-  }
-
-  return comparisonDate
+  return pickComparisonDate(qualifiedDates, offset)
 }
 
 /**

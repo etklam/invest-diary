@@ -14,6 +14,8 @@ import type { MarketState } from '~/lib/market-rotation/state'
 import { toMarketState } from '~/lib/market-rotation/state'
 import type { MaStatus, RotationSignal, SignalStatus } from '~/lib/market-rotation/signal'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
+import { buildNormalizedTrendSeries } from '~/lib/market-rotation/trend-series'
+import { filterQualifiedDates } from '~/lib/market-rotation/qualified-date'
 import { getComparisonDate, getLatestQualifiedDate } from '~/server/utils/market-rotation-queries'
 
 // ─── Type helpers ──────────────────────────────────────────────────────────
@@ -36,10 +38,6 @@ function toNumber(value: DecimalLike): number | null {
 
 function toDateString(date: Date): string {
   return date.toISOString().slice(0, 10)
-}
-
-function roundTrendValue(value: number): number {
-  return Math.round(value * 10000) / 10000
 }
 
 // ─── Prisma interface (structural typing for DI) ───────────────────────────
@@ -234,6 +232,11 @@ export async function getMonitorComparisonDate(
  *
  * Builds comparison-date-normalized 2W sparkline series from persisted
  * snapshots. It uses one qualified date sequence for the whole rank scope.
+ *
+ * The 90% qualification threshold is computed via the shared deep module
+ * `lib/market-rotation/qualified-date.ts`. Only the groupBy call itself
+ * lives here (the monitor variant intentionally does NOT filter by symbol
+ * list — it relies on rankScope alone, matching the pre-refactor behavior).
  */
 export async function getMonitorTrendSeries(
   prisma: MonitorPrisma,
@@ -242,16 +245,16 @@ export async function getMonitorTrendSeries(
   asOfDate: Date,
 ): Promise<Map<string, MarketRotationTrendPoint[]>> {
   const universe = getUniverseForScope(rankScope)
-  const threshold = Math.ceil(universe.length * 0.9)
   const groups = await prisma.marketRotationSnapshot.groupBy({
     by: ['date'],
     where: { rankScope },
     _count: { symbol: true },
     orderBy: { date: 'desc' },
   })
-  const qualifiedDates = groups
-    .filter(group => group._count.symbol >= threshold)
-    .map(group => group.date)
+  const qualifiedDates = filterQualifiedDates(
+    groups.map(g => ({ date: g.date, count: g._count.symbol })),
+    universe.length,
+  )
     .filter(date => date >= comparisonDate && date <= asOfDate)
     .sort((a, b) => a.getTime() - b.getTime())
 
@@ -283,14 +286,11 @@ export async function getMonitorTrendSeries(
 
   const result = new Map<string, MarketRotationTrendPoint[]>()
   for (const entry of universe) {
-    const base = priceBySymbolDate.get(`${entry.symbol}:${toDateString(comparisonDate)}`)
-    const series = qualifiedDates.map((date) => {
-      const dateString = toDateString(date)
-      const price = priceBySymbolDate.get(`${entry.symbol}:${dateString}`)
-      const value = base != null && base > 0 && price != null
-        ? roundTrendValue((price / base) * 100)
-        : null
-      return { date: dateString, value }
+    const series = buildNormalizedTrendSeries({
+      symbol: entry.symbol,
+      qualifiedDates: qualifiedDates.map(d => toDateString(d)),
+      priceBySymbolDate,
+      comparisonDate: toDateString(comparisonDate),
     })
     result.set(entry.symbol, series)
   }
