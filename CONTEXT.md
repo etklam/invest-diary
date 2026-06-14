@@ -365,3 +365,74 @@ _避免：速記、草稿_
 **解法**：新建 `types/common.ts`，定義 `type SerializedId = string`。所有 post-serialization 的 API 回應型別統一使用 `SerializedId` 替代 `bigint | string`。Server-side 內部函數（query layers、Prisma 參數）刻意保持 `bigint | string`，因為它們在 serialize 之前運作。
 
 更新 `types/diary.ts`、`types/websocket.ts`、`pages/alerts/index.vue`、`composables/useQuickNoteComposer.ts`。純型別重構，零 runtime 變更。+3 新測試。
+
+### 2026-07 架構深化（6 項重構）
+
+延續兩輪架構審計，針對 client/server 介面對齊、Market Rotation 計算收斂、對稱 query layer、前置流程深化、時區單一真相源與排程任務型別安全進行深化。
+
+#### 1. Client BigInt 防禦清除 — `composables/useAlerts.ts`
+
+**問題**：Server handler 早就走 `serialize()`，client side 卻保留 5 處 `alert.id.toString()` / `alert.diary.id.toString()` 過時防禦。根因是 `AlertApiResponse.id` 型別寬鬆為 `string | number | bigint`，下游每個 caller 都得防禦。
+
+**解法**：把 `AlertApiResponse.id` 與 `AlertApiResponse.diary.id` 收窄為 `string`（與 `types/common.ts` 的 `SerializedId` 對齊），移除 5 處 `.toString()`。新增 API 契約測試斷言 id 為 string 且 `JSON.stringify` 不會丟 BigInt 錯誤。
+
+#### 2. Market Rotation 計算收斂 — `lib/market-rotation/trend-series.ts` + `qualified-date.ts`
+
+**問題**：兩個 CONTEXT.md 一級概念沒有對應的 deep module：
+
+- **2W Trend Sparkline** 公式 `normalized_value = price_on_date / price_on_comparison_date * 100` 在 `market-rotation-monitor-queries.ts` inline 計算，與 batch pipeline 的 `calculatePerformance` 各自維護
+- **Qualified Snapshot Date** 的 90% 門檻與 Prisma groupBy 邏輯散在 `getLatestQualifiedDate`、`getComparisonDate`、`getMonitorTrendSeries` 三處，`Math.ceil(N * 0.9)` magic number 重複
+
+**解法**：抽兩個純函數 deep module：
+
+- `buildNormalizedTrendSeries`：給定 qualified dates、price map、comparison date，輸出 normalized series。缺點回 `null`，不插值
+- `filterQualifiedDates` + `pickComparisonDate`：把 90% 門檻與 offset=10 收為 exported constants `QUALIFICATION_THRESHOLD_RATIO`、`COMPARISON_OFFSET`
+
+三個 query layer caller 改為呼叫純函數。Batch pipeline 透過 `getComparisonDate` 自動受惠。+35 unit tests。
+
+**保留的歷史行為**：monitor 的 groupBy 故意只用 `rankScope` 不篩 symbol（與 `getLatestQualifiedDate` 的 `where: { rankScope, symbol: { in: [...] } }` 不同）。強行統一會破壞既有測試，保留為 documented behavior。`lib/market-rotation/monitor.ts` 內 `coverageRatio >= 0.9` 是 runtime row coverage 顯示用，語意與 Qualified Snapshot Date 不同，刻意不整合。
+
+#### 3. Discipline Query Layer + Zod — `server/utils/discipline-queries.ts`
+
+**問題**：**Discipline（交易紀律）** 是 CONTEXT.md 一級概念，有 8 個 handler，但與同期完成的 **Price Alert** 對稱性缺失——後者已有 query layer + Zod + 35 個測試，前者零 query layer、零 API 測試。`discipline/export.get.ts` 還有手動 BigInt → Number 轉換違反 CLAUDE.md。
+
+**解法**：新建 `discipline-queries.ts`，提供 4 個 Zod schema（`CreateDisciplineSchema`、`UpdateDisciplineSchema`、`ReorderDisciplineSchema`、`ImportDisciplineSchema`）與 8 個 CRUD 函數（含 `getRandomDiscipline` 對應「隨機抽取一條」核心使用場景）。Ownership check 統一 `notFound` 不洩漏存在性。8 個 handler 從 345 行縮到 178 行 (-48%)。
+
++64 query-layer unit tests, +8 API smoke tests。
+
+**未收斂的邊界**：`lib/disciplineShare.ts` 的 `DisciplineItem.id?: number` interface 與 query layer 回傳的 `bigint` 不合，目前靠 `export.get.ts` 末端 `Number(d.id)` 適配。根治需要動 `lib/disciplineShare` 的 interface。
+
+#### 4. PartnerLink 讀取深化 — `server/utils/partner-queries.ts`
+
+**問題**：**PartnerLink** 是一級概念，純比較邏輯已抽到 `partner-compare.ts`，但 `compare.get.ts`（141 行）仍內含 link selection、pending 判定、雙 user diary 載入等前置流程。
+
+**解法**：擴充 `partner-queries.ts`，加入 `loadCompareContext(viewerId, opts)` deep module，一次回傳 `{ viewer, links, selectedLink, ownerDiaries, partnerDiaries }`。Handler 從 141 行縮至 69 行 (-51%)，對外 API 形狀不變。+13 unit tests 覆蓋 happy path、permission denial、pending/missing links、limit clamping。
+
+#### 5. 時區轉換單一真相源 — `lib/dates/user-tz.ts`
+
+**問題**：CLAUDE.md 規定「日期存 UTC，使用者 timezone 在 `User.timezone`」。但時區轉換散在 `composables/useTimezone.ts`、`lib/dates/format.ts`、`lib/holiday-heatmap.ts`、`lib/telegram/diary-write.ts` 四處。`reviews.get.ts`（168 行）handler 內 inline `getTimeZoneParts` / `zonedDateTimeToUtc` 計算「給我 user 當天日記」的時間窗口。
+
+**解法**：新建 `lib/dates/user-tz.ts` 為時區運算的單一真相源：
+
+- `getUserDayRange(date, tz)`：half-open `[start, end)` UTC 區間，兩段式 DST offset 修正
+- `getUserTodayYmd(tz, now?)`：user timezone 今天 YMD
+- `getUserYmdInTimezone`：re-export `formatYmdInTimezone`
+- `resolveCountryCodeFromTimezone`：從 `holiday-heatmap.ts` 搬入
+
+`reviews.get.ts` 從 168 行縮到 111 行 (-34%)，區間語意從 inclusive 改為 half-open `[start, end)`（更精確不漏毫秒）。`useTimezone` composable 介面保留（17 個 caller 不受影響），內部呼叫新 module。+20 unit tests 涵蓋 Asia/Taipei、America/Los_Angeles DST、跨年/月邊界。
+
+#### 6. Market Rotation CronJob 抽出 TypeScript script — `scripts/market-rotation/run-batch.ts`
+
+**問題**：`k8s/cron-market-rotation.yaml` 把 100+ 行 JavaScript 內嵌在 `node -e` 內，重新實作 JWT 簽發、HTTP client、auth flow——這些已經在 `lib/jwt.ts` 跑過。違反 ADR-0003「Agent 走標準 User 路徑」精神（雖然這是 cron 不是 agent），且無型別安全、無測試。
+
+**解法**：抽 `scripts/market-rotation/run-batch.ts`，直接呼叫 `runFullBatch(prisma)`（與 `scripts/market-state/update-breadth.ts` 先例一致；batch 函數只需要 PrismaClient，不需要 event context，HTTP 繞路是多餘）。YAML 從 103 行縮到 26 行。env 從 `JWT_SECRET` 改為 `DATABASE_URL`（cron pod 直連 DB，與 app deployment 同模式）。CronJob schedule、resources、backoffLimit 不動。
+
++9 unit tests 涵蓋 `executeBatch` scope 解析、錯誤傳播、timing metadata。
+
+---
+
+### 已知技術債（2026-07 期間記錄但未擴大處理）
+
+- **`roundMetric` 在 `lib/market-rotation/` 三處重複**：`calculations.ts`、`monitor.ts`、`trend-series.ts` 各有一份 `Math.round(value * 10000) / 10000`，後續可收斂到單一 utility。
+- **monitor 的 groupBy 不篩 symbol**：與 `getLatestQualifiedDate` 的歷史行為差異，強行統一會破壞既有測試。
+- **`lib/disciplineShare.ts` 的 `DisciplineItem.id?: number`**：與 query layer 回傳的 `bigint` 不合，靠 handler 末端 `Number(d.id)` 適配。
