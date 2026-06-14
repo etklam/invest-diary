@@ -3,10 +3,8 @@
  */
 
 export interface DisciplineItem {
-  id?: number
   content: string
   order: number
-  createdAt?: string
 }
 
 export interface DisciplineShareData {
@@ -15,7 +13,7 @@ export interface DisciplineShareData {
   author?: string
   title?: string
   description?: string
-  disciplines: Omit<DisciplineItem, 'id' | 'createdAt'>[]
+  disciplines: DisciplineItem[]
   exportedAt: string
   count: number
 }
@@ -24,7 +22,7 @@ export interface DisciplineImportPreview {
   title: string
   author?: string
   description?: string
-  disciplines: Omit<DisciplineItem, 'id' | 'createdAt'>[]
+  disciplines: DisciplineItem[]
   count: number
   isValid: boolean
 }

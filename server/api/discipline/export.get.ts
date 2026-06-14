@@ -41,17 +41,11 @@ export default defineEventHandler(async (event) => {
       author = userRow?.name || 'Anonymous'
     }
 
-    // Build share data — normalize BigInt/Date for the share lib
+    // Build share data — DisciplineItem only carries content and order,
+    // so raw Prisma rows can be passed through without id/createdAt adapter.
     const { exportDisciplines, shareDataToJSON } = await import('~/lib/disciplineShare')
 
-    const normalized = disciplines.map((d: { id: bigint; userId: bigint; content: string; order: number; createdAt: Date }) => ({
-      ...d,
-      id: Number(d.id),
-      userId: Number(d.userId),
-      createdAt: d.createdAt.toISOString()
-    }))
-
-    const shareData = exportDisciplines(normalized, {
+    const shareData = exportDisciplines(disciplines, {
       author,
       title: title as string | undefined,
       description: description as string | undefined
