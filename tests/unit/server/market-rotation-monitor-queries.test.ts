@@ -453,6 +453,16 @@ describe('server/utils/market-rotation-monitor-queries', () => {
           lastPrice: true,
         },
       })
+      // Per ADR-0004, qualification is computed against the canonical
+      // universe only — groupBy must filter by `symbol: { in: universe }`
+      // so stale or non-canonical rows do not inflate coverage.
+      const groupByArgs = mockSnapshotGroupBy.mock.calls[0][0] as {
+        where: { rankScope: string; symbol?: { in: string[] } }
+      }
+      expect(groupByArgs.where.rankScope).toBe('sectors')
+      expect(groupByArgs.where.symbol?.in).toBeInstanceOf(Array)
+      expect(groupByArgs.where.symbol?.in).toContain('XLK')
+      expect(groupByArgs.where.symbol?.in).toContain('XLF')
     })
 
     it('returns null trend values when base is zero or price is null', async () => {
@@ -482,6 +492,43 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         { date: '2026-06-13', value: 100 },
         { date: '2026-06-15', value: null },
       ])
+    })
+
+    it('excludes non-canonical symbols from qualified-date coverage (ADR-0004)', async () => {
+      // Simulate a DB where 2026-06-14 has only 9 of 11 canonical symbols
+      // but also 5 stale 'OLD' rows. Pre-fix this would have counted as
+      // 14 snapshots, falsely crossing the 90% threshold (ceil(11*0.9)=10)
+      // and qualifying the date. With the symbol filter, only canonical
+      // rows count, so 2026-06-14 stays unqualified.
+      mockSnapshotGroupBy.mockImplementation(async (args: { where?: { symbol?: { in?: string[] } } }) => {
+        const filterSymbols = args.where?.symbol?.in
+        // Return different counts depending on whether the filter is applied
+        const wide = !filterSymbols
+        return [
+          { date: new Date('2026-06-15'), _count: { symbol: wide ? 16 : 11 } },
+          { date: new Date('2026-06-14'), _count: { symbol: wide ? 14 : 9 } },
+          { date: new Date('2026-06-13'), _count: { symbol: wide ? 16 : 11 } },
+        ]
+      })
+      mockSnapshotFindMany.mockResolvedValue([
+        { symbol: 'XLK', date: new Date('2026-06-13'), adjustedClose: dec(100), lastPrice: dec(100) },
+        { symbol: 'XLK', date: new Date('2026-06-15'), adjustedClose: dec(110), lastPrice: dec(110) },
+      ])
+
+      const result = await getMonitorTrendSeries(
+        prisma as any,
+        'sectors',
+        new Date('2026-06-13'),
+        new Date('2026-06-15'),
+      )
+
+      // 2026-06-14 should NOT appear in qualified dates — its 9 canonical
+      // snapshots are below the 90% threshold even though the DB has 14
+      // total rows for that date.
+      const xlkSeries = result.get('XLK') ?? []
+      const seriesDates = xlkSeries.map(p => p.date)
+      expect(seriesDates).toEqual(['2026-06-13', '2026-06-15'])
+      expect(seriesDates).not.toContain('2026-06-14')
     })
   })
 })

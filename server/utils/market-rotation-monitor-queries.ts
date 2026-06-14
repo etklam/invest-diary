@@ -54,7 +54,7 @@ interface MonitorPrisma {
     }) => Promise<Array<Record<string, unknown>>>
     groupBy: (args: {
       by: ['date']
-      where: { rankScope: string }
+      where: { rankScope: string; symbol?: { in: string[] } }
       _count: { symbol: true }
       orderBy: { date: 'desc' }
     }) => Promise<Array<{ date: Date; _count: { symbol: number } }>>
@@ -233,10 +233,10 @@ export async function getMonitorComparisonDate(
  * Builds comparison-date-normalized 2W sparkline series from persisted
  * snapshots. It uses one qualified date sequence for the whole rank scope.
  *
- * The 90% qualification threshold is computed via the shared deep module
- * `lib/market-rotation/qualified-date.ts`. Only the groupBy call itself
- * lives here (the monitor variant intentionally does NOT filter by symbol
- * list — it relies on rankScope alone, matching the pre-refactor behavior).
+ * Per ADR-0004, qualification is computed against the canonical universe
+ * only — the groupBy filters by `symbol: { in: universe }` so stale or
+ * non-canonical symbols in the snapshot table do not inflate coverage.
+ * The 90% threshold itself lives in `lib/market-rotation/qualified-date.ts`.
  */
 export async function getMonitorTrendSeries(
   prisma: MonitorPrisma,
@@ -245,9 +245,10 @@ export async function getMonitorTrendSeries(
   asOfDate: Date,
 ): Promise<Map<string, MarketRotationTrendPoint[]>> {
   const universe = getUniverseForScope(rankScope)
+  const universeSymbols = universe.map(entry => entry.symbol)
   const groups = await prisma.marketRotationSnapshot.groupBy({
     by: ['date'],
-    where: { rankScope },
+    where: { rankScope, symbol: { in: universeSymbols } },
     _count: { symbol: true },
     orderBy: { date: 'desc' },
   })
