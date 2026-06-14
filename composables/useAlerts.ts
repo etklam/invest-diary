@@ -4,7 +4,7 @@ import { POLLING } from '~/lib/constants'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 
 export interface AlertItem {
-  id: string | number
+  id: string
   message: string
   trigger_at: string
   is_dismissed: boolean
@@ -15,12 +15,12 @@ export interface AlertItem {
 }
 
 interface AlertApiResponse {
-  id: string | number | bigint
+  id: string
   message: string
   triggerAt: string
   isDismissed: boolean
   diary?: {
-    id: string | number | bigint
+    id: string
     title: string
   }
 }
@@ -89,12 +89,12 @@ export const useAlerts = () => {
     try {
       const response = await runWithAuthRecovery(() => $fetch<AlertApiResponse[]>('/api/alerts'))
       return response.map(alert => ({
-        id: alert.id.toString(),
+        id: alert.id,
         message: alert.message,
         trigger_at: alert.triggerAt,
         is_dismissed: alert.isDismissed,
         diary: alert.diary ? {
-          id: alert.diary.id.toString(),
+          id: alert.diary.id,
           title: alert.diary.title
         } : undefined
       }))
@@ -156,7 +156,7 @@ export const useAlerts = () => {
     const nowTimestamp = Date.now()
     alerts.forEach(alert => {
       const triggerTime = new Date(alert.trigger_at)
-      const key = alert.id.toString()
+      const key = alert.id
 
       if (
         triggerTime <= now &&
@@ -174,7 +174,7 @@ export const useAlerts = () => {
   }
 
   const enqueueSingleAlert = (alert: AlertPayload) => {
-    const key = alert.id.toString()
+    const key = alert.id
 
     if (processedAlerts.value.has(key)) {
       return // 已處理過
@@ -227,7 +227,7 @@ export const useAlerts = () => {
     try {
       // 優先使用 WebSocket
       if (isConnected.value) {
-        const success = await wsDismissAlert(alert.id.toString())
+        const success = await wsDismissAlert(alert.id)
         if (!success) {
           // WebSocket 失敗，使用 HTTP fallback
           await runWithAuthRecovery(() => $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' }))
