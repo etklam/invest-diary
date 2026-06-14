@@ -18,85 +18,9 @@ spec:
               image: git.913555.xyz/etklam/invest-diary:latest
               imagePullPolicy: IfNotPresent
               env:
-                - name: JWT_SECRET
-                  valueFrom:
-                    secretKeyRef:
-                      name: diary-vue-app-secrets
-                      key: JWT_SECRET
+                - name: DATABASE_URL
+                  value: "mysql://diaryvue:puvCjALat7da1aBYz4ILuLqo@diary-vue-db.diary-vue.svc.cluster.local:3306/invest_diary"
               command:
-                - node
-                - -e
-                - |
-                  const crypto = require('crypto');
-                  const http = require('http');
-
-                  const BASE = 'http://diary-vue-app:3000';
-                  const SECRET = process.env.JWT_SECRET;
-
-                  // 1. Generate admin JWT
-                  const h = Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url');
-                  const p = Buffer.from(JSON.stringify({
-                    userId:'4', email:'mail@kwunlam.com', role:'ADMIN',
-                    tokenVersion:1, type:'access',
-                    iat:Math.floor(Date.now()/1000), exp:Math.floor(Date.now()/1000)+3600
-                  })).toString('base64url');
-                  const sig = crypto.createHmac('sha256', SECRET).update(h+'.'+p).digest('base64url');
-                  const JWT = h+'.'+p+'.'+sig;
-
-                  function httpGet(path) {
-                    return new Promise((resolve, reject) => {
-                      http.get(BASE+path, res => {
-                        const setCookie = res.headers['set-cookie'] || [];
-                        const csrfCookie = setCookie.find(c => c.startsWith('csrf-token='));
-                        resolve(csrfCookie ? csrfCookie.split(';')[0].split('=')[1] : null);
-                      }).on('error', reject);
-                    });
-                  }
-
-                  function httpPost(path, body, jwt, csrf) {
-                    return new Promise((resolve, reject) => {
-                      const data = JSON.stringify(body);
-                      const url = new URL(BASE+path);
-                      const req = http.request({
-                        hostname: url.hostname,
-                        port: url.port,
-                        path: url.pathname,
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'Content-Length': Buffer.byteLength(data),
-                          'Cookie': `access-token=${jwt}; csrf-token=${csrf}`,
-                          'X-CSRF-Token': csrf,
-                        },
-                      }, res => {
-                        let buf = '';
-                        res.on('data', c => buf += c);
-                        res.on('end', () => resolve({status: res.statusCode, body: buf}));
-                      });
-                      req.on('error', reject);
-                      req.write(data);
-                      req.end();
-                    });
-                  }
-
-                  (async () => {
-                    console.log('1. Getting CSRF token...');
-                    const csrf = await httpGet('/api/blog');
-                    if (!csrf) throw new Error('Failed to get CSRF token');
-                    console.log('   CSRF:', csrf.slice(0,16) + '...');
-
-                    console.log('2. Triggering rotation batch (scope=all)...');
-                    const res = await httpPost('/api/admin/market/rotation-batch', {scope:'all'}, JWT, csrf);
-                    console.log('   Status:', res.status);
-                    console.log('   Response:', res.body);
-
-                    const parsed = JSON.parse(res.body);
-                    if (!parsed.success) {
-                      console.error('BATCH FAILED');
-                      process.exit(1);
-                    }
-                    console.log(`✅ ${parsed.totalUpserted} symbols upserted, ${parsed.totalErrors} errors`);
-                  })().catch(err => {
-                    console.error('Error:', err.message);
-                    process.exit(1);
-                  });
+                - npx
+                - tsx
+                - scripts/market-rotation/run-batch.ts

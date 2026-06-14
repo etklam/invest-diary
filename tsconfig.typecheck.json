@@ -25,6 +25,7 @@
     "pages/**/*",
     "plugins/**/*",
     "scripts/health-check.ts",
+    "scripts/market-rotation/**/*",
     "server/**/*",
     "stores/**/*",
     "types/**/*.ts",

@@ -26,7 +26,8 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.typecheck.json",
     "health:check": "tsx scripts/health-check.ts",
     "health:full": "tsx scripts/health-check.ts && npm run build",
-    "health:quick": "npm test && npx prisma validate"
+    "health:quick": "npm test && npx prisma validate",
+    "market-rotation:batch": "tsx scripts/market-rotation/run-batch.ts"
   },
   "dependencies": {
     "@grammyjs/conversations": "^2.1.1",
