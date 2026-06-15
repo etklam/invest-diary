@@ -154,9 +154,7 @@
             <div class="h-4 w-4/5 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
             <div class="h-4 w-2/3 animate-pulse rounded-lg" style="background: var(--color-surface-strong)" />
           </div>
-          <p v-else-if="articleMarkdownError" class="leading-relaxed" style="color: var(--color-text-muted)">
-            {{ $t('blog.loadFailedDescription') }}
-          </p>
+          <pre v-else-if="articleMarkdownError" class="whitespace-pre-wrap break-words font-sans text-base leading-relaxed" style="color: var(--color-text-muted)">{{ articleContent }}</pre>
           <p v-else class="leading-relaxed" style="color: var(--color-text-muted)">
             {{ $t('blog.contentUnavailable') }}
           </p>
@@ -378,10 +376,19 @@ const {
   articleContentCacheKey,
   async () => {
     if (!articleContent.value || isHtmlContent.value) return emptyMarkdownDocument
-    return await parseMarkdown(articleContent.value, {
-      toc: false,
-      contentHeading: false,
-    }) || emptyMarkdownDocument
+    try {
+      return await parseMarkdown(articleContent.value, {
+        toc: false,
+        contentHeading: false,
+      }) || emptyMarkdownDocument
+    } catch (parseError) {
+      // Shiki/rehype-pretty-code uses WebAssembly. If WASM is blocked
+      // (CSP, browser support), the error is caught here so the template
+      // can fall back to showing raw markdown text instead of crashing.
+      if (process.server) throw parseError
+      console.error('[article-mdc] client-side markdown parse failed', parseError)
+      throw parseError
+    }
   },
   {
     watch: [articleContentCacheKey],
