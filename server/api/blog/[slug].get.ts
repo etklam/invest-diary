@@ -62,7 +62,7 @@ export default defineEventHandler(async (event: H3Event) => {
       throw Errors.blogNotFound(slug).toH3Error()
     }
 
-    setHeader(event, 'Cache-Control', 'public, s-maxage=900, stale-while-revalidate=900')
+    setHeader(event, 'Cache-Control', 'no-store')
     return serializeBlogPost(post)
   } catch (error: any) {
     if (error?.statusCode) {

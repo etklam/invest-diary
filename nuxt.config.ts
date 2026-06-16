@@ -25,7 +25,7 @@ export default defineNuxtConfig({
       '/api/blog': {
         cors: true,
         headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=300'
+          'Cache-Control': 'no-store'
         }
       },
       '/api/blog/admin': {
@@ -41,7 +41,7 @@ export default defineNuxtConfig({
       '/api/blog/**': {
         cors: true,
         headers: {
-          'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=900'
+          'Cache-Control': 'no-store'
         }
       },
       '/api/**': { headers: { 'Cache-Control': 'no-store' } },
@@ -291,9 +291,6 @@ export default defineNuxtConfig({
       skipWaiting: true,
       // 客戶端聲明：新版本時自動重新載入
       clientsClaim: true,
-      // 導航失敗時的回退策略 (SSR mode - no index.html)
-      navigateFallback: '/',
-      navigateFallbackDenylist: [/^\/api\//],
       // 執行時快取策略
       runtimeCaching: [
         {
