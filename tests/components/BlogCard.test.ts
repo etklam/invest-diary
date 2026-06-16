@@ -38,8 +38,9 @@ const postBase = {
 
 const stubs = {
   NuxtLink: {
-    template: '<a><slot /></a>',
+    template: '<a v-bind="$attrs"><slot /></a>',
     props: ['to'],
+    inheritAttrs: false,
   },
   NuxtImg: {
     template: '<img />',
@@ -160,5 +161,47 @@ describe('BlogCard Component', () => {
     })
 
     expect(wrapper.text()).toContain('作者')
+  })
+
+  it('exposes the full title via title attribute on the title link for tooltip on truncation', () => {
+    const wrapper = mount(BlogCard, {
+      props: { post: { ...postBase } },
+      global: {
+        stubs,
+        config: {
+          globalProperties: {
+            $t: (key: string) => key,
+          },
+        },
+      },
+    })
+
+    const titleLink = wrapper.findAll('a').find((a) => a.text() === postBase.title)
+    expect(titleLink).toBeTruthy()
+    expect(titleLink!.attributes('title')).toBe(postBase.title)
+  })
+
+  it('reveals admin buttons on keyboard focus inside the card, not only on hover', () => {
+    mockUseAuth.mockReturnValue({
+      isAdmin: ref(true),
+      user: ref(null),
+    })
+
+    const wrapper = mount(BlogCard, {
+      props: { post: { ...postBase } },
+      global: {
+        stubs,
+        config: {
+          globalProperties: {
+            $t: (key: string) => key,
+          },
+        },
+      },
+    })
+
+    // The admin button container must include group-focus-within so keyboard
+    // users can reach the edit/delete buttons without first hovering.
+    const adminSection = wrapper.find('[class*="admin-btn"]').element.parentElement
+    expect(adminSection?.className ?? '').toContain('group-focus-within:opacity-100')
   })
 })

@@ -38,11 +38,11 @@
         v-if="isAuthenticated"
         @click="showQuickDiaryModal = true"
         :aria-label="$t('diary.quickDiary')"
-        class="fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-all duration-300 group xl:bottom-6"
+        class="fixed right-6 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-all duration-300 group xl:bottom-[calc(1.5rem+env(safe-area-inset-bottom))]"
         style="background: var(--color-accent); box-shadow: 0 18px 34px color-mix(in srgb, var(--color-accent) 30%, transparent);"
         :title="$t('diary.quickDiary')"
       >
-        <Icon name="heroicons:bolt" class="h-6 w-6 group-hover:scale-110 transition-transform" />
+        <Icon name="heroicons:pencil-square" class="h-6 w-6 group-hover:scale-110 transition-transform" />
       </button>
       <!-- Quick Diary Modal -->
       <QuickDiaryModal

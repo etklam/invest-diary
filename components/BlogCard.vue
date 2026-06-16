@@ -3,7 +3,7 @@
     class="blog-card group flex h-full flex-col"
     @mouseenter="prefetchDetail"
   >
-    <div v-if="isAdmin" class="absolute right-3 top-3 z-30 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+    <div v-if="isAdmin" class="absolute right-3 top-3 z-30 flex gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
       <NuxtLink
         :to="`/admin/blog/${post.id}/edit`"
         class="admin-btn h-9 w-9 flex items-center justify-center rounded-xl shadow-sm backdrop-blur-sm"
@@ -58,7 +58,7 @@
       </div>
 
       <h3 class="card-title mb-3 text-xl font-bold leading-tight transition-colors" style="color: var(--color-text)">
-        <NuxtLink :to="`/articles/${post.slug}`" class="line-clamp-2 focus:outline-none">
+        <NuxtLink :to="`/articles/${post.slug}`" class="line-clamp-2 focus:outline-none" :title="post.title">
           {{ post.title }}
         </NuxtLink>
       </h3>
