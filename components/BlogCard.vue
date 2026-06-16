@@ -136,7 +136,8 @@ const publishedAtLabel = computed(() => {
   return new Intl.DateTimeFormat(locale.value === 'zh-TW' ? 'zh-TW' : 'en', {
     month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'UTC'
   }).format(new Date(props.post.publishedAt))
 })
 
