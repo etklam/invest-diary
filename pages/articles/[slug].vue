@@ -1,8 +1,8 @@
 <template>
   <main class="fintech-article-detail min-h-screen pb-24" style="color: var(--color-text)">
     <div class="bg-grid absolute inset-0 -z-10 opacity-[0.08]" aria-hidden="true" />
-    <div class="orb orb-cyan" aria-hidden="true" />
-    <div class="orb orb-amber" aria-hidden="true" />
+    <div class="orb orb-cyan hidden sm:block" aria-hidden="true" />
+    <div class="orb orb-amber hidden sm:block" aria-hidden="true" />
 
     <!-- Progress Bar -->
     <div
@@ -324,7 +324,8 @@ const publishedDateLabel = computed(() => {
   return new Intl.DateTimeFormat(locale.value === 'zh-TW' ? 'zh-TW' : 'en', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    timeZone: 'UTC'
   }).format(new Date(post.value.publishedAt))
 })
 

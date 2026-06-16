@@ -3,8 +3,8 @@
     <!-- Hero Section -->
     <section class="relative overflow-hidden px-4 pb-16 pt-12 sm:px-6 sm:pt-20 lg:pb-24 lg:pt-24">
       <div class="bg-grid absolute inset-0 opacity-[0.15]" aria-hidden="true" />
-      <div class="orb orb-cyan" aria-hidden="true" />
-      <div class="orb orb-amber" aria-hidden="true" />
+      <div class="orb orb-cyan hidden sm:block" aria-hidden="true" />
+      <div class="orb orb-amber hidden sm:block" aria-hidden="true" />
 
       <div class="relative mx-auto max-w-7xl">
         <header class="reveal rounded-3xl">
