@@ -291,7 +291,7 @@ throw Errors.etfNotFound(symbol).toH3Error()
 
 - **DESIGN.md** — Design system（必讀，改 UI 前先看）
 - **DEPLOYMENT.md** — 部署詳解
-- **IMPROVEMENTS.md** — 功能路線圖
+- **docs/plans/active/improvements.md** — 功能路線圖
 - **docs/TESTING.md** — 測試指南
 - **docs/HEALTH_CHECK.md** — Health check 文件
 

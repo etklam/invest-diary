@@ -27,6 +27,7 @@
     "health:check": "tsx scripts/health-check.ts",
     "health:full": "tsx scripts/health-check.ts && npm run build",
     "health:quick": "npm test && npx prisma validate",
+    "docs:check": "tsx scripts/docs-health-check.ts",
     "market-rotation:batch": "tsx scripts/market-rotation/run-batch.ts"
   },
   "dependencies": {
