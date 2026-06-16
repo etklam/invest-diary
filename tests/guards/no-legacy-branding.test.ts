@@ -2,6 +2,18 @@ import { describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 
+/**
+ * Legacy-branding guard.
+ *
+ * Moved here from tests/unit/market-state-terminology.test.ts to keep
+ * repo-wide source-grep guards together under tests/guards/. The semantics
+ * are unchanged: no occurrence of the legacy external product name or its
+ * component/composable variants may appear in source outside of migration
+ * history.
+ *
+ * Blocked terms are constructed from fragments so this file itself does not
+ * contain the literal legacy name and trip its own assertion.
+ */
 const rootDir = path.resolve('.')
 const legacyProductName = ['market', 'bee'].join('')
 const legacyComponentName = ['Market', 'bee', 'Section'].join('')
@@ -46,7 +58,7 @@ function walk(dir: string): string[] {
   return files
 }
 
-describe('market state terminology', () => {
+describe('no legacy branding in source tree', () => {
   it('does not keep legacy external naming outside migration history', () => {
     const offenders = walk(rootDir).flatMap((file) => {
       const relativePath = path.relative(rootDir, file)

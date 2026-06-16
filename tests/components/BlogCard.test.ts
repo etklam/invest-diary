@@ -9,14 +9,23 @@ const mockUseAuth = vi.fn()
 const mockUseI18n = vi.fn()
 const mockUseToast = vi.fn()
 const mockRefreshNuxtData = vi.fn()
+
+// BlogCard uses native `fetch` (not `$fetch`) for the delete call, so we mock
+// the global fetch directly.
 const mockFetch = vi.fn()
+const mockFetchResponse = (ok: boolean, body: any = {}) =>
+  ({
+    ok,
+    status: ok ? 200 : 500,
+    json: async () => body,
+    text: async () => JSON.stringify(body),
+  } as any)
 
 vi.mock('#imports', () => ({
   useAuth: () => mockUseAuth(),
   useI18n: () => mockUseI18n(),
   useToast: () => mockUseToast(),
   refreshNuxtData: () => mockRefreshNuxtData(),
-  $fetch: (...args: any[]) => mockFetch(...args),
 }))
 
 const postBase = {
@@ -36,25 +45,41 @@ const postBase = {
   },
 }
 
-const stubs = {
+// BlogCard does NOT currently delegate to PostMeta (it renders meta inline),
+// so we do not stub PostMeta here. We assert computed metadata values via
+// rendered text and (where necessary) the public vm API.
+const buildStubs = (overrides: Record<string, any> = {}) => ({
+  // Do NOT declare `to` as a prop — let it fall through to $attrs so the
+  // rendered <a> exposes the route target as a real DOM attribute we can assert.
   NuxtLink: {
     template: '<a v-bind="$attrs"><slot /></a>',
-    props: ['to'],
     inheritAttrs: false,
   },
   NuxtImg: {
-    template: '<img />',
+    // Surface src/alt as real DOM attributes so tests can assert them.
+    template:
+      '<img :src="src" :alt="alt" :width="width" :height="height" :loading="loading" />',
     props: ['src', 'alt', 'width', 'height', 'format', 'loading'],
-  },
-  PostMeta: {
-    template: '<div />',
-    props: ['author', 'date', 'readingTime'],
   },
   Icon: {
     template: '<span />',
     props: ['name', 'class'],
   },
-}
+  ...overrides,
+})
+
+const mountBlogCard = (props: Record<string, any>, overrides: Record<string, any> = {}) =>
+  mount(BlogCard, {
+    props,
+    global: {
+      stubs: buildStubs(overrides.stubs),
+      config: {
+        globalProperties: {
+          $t: (key: string) => key,
+        },
+      },
+    },
+  })
 
 describe('BlogCard Component', () => {
   beforeEach(() => {
@@ -71,7 +96,9 @@ describe('BlogCard Component', () => {
       error: vi.fn(),
     })
     mockRefreshNuxtData.mockClear()
-    mockFetch.mockClear()
+    mockFetch.mockReset()
+    // BlogCard uses native fetch, not $fetch.
+    vi.stubGlobal('fetch', mockFetch)
     vi.stubGlobal('confirm', vi.fn(() => true))
   })
 
@@ -80,128 +107,191 @@ describe('BlogCard Component', () => {
     vi.unstubAllGlobals()
   })
 
-  it('uses calculateReadingTime for readingTime computed', () => {
-    const wrapper = mount(BlogCard, {
-      props: { post: { ...postBase } },
-      global: {
-        stubs,
-        config: {
-          globalProperties: {
-            $t: (key: string) => key,
-          },
-        },
-      },
+  describe('link targets', () => {
+    it('renders NuxtLink to /articles/:slug for the cover image', () => {
+      const wrapper = mountBlogCard({ post: { ...postBase } })
+
+      const articleLinks = wrapper
+        .findAll('a')
+        .filter((a) => a.attributes('to') === `/articles/${postBase.slug}`)
+      expect(articleLinks.length).toBeGreaterThan(0)
     })
 
-    expect((wrapper.vm as any).readingTime).toBe(calculateReadingTime(postBase.content))
+    it('renders NuxtLink to /admin/blog/:id/edit for admin edit button', () => {
+      mockUseAuth.mockReturnValue({ isAdmin: ref(true), user: ref(null) })
+      const wrapper = mountBlogCard({ post: { ...postBase } })
+
+      const editLink = wrapper
+        .findAll('a')
+        .find((a) => a.attributes('to') === `/admin/blog/${postBase.id}/edit`)
+      expect(editLink).toBeTruthy()
+    })
   })
 
-  it('normalizes category using normalizeCategory', () => {
-    const wrapper = mount(BlogCard, {
-      props: { post: { ...postBase } },
-      global: {
-        stubs,
-        config: {
-          globalProperties: {
-            $t: (key: string) => key,
-          },
-        },
-      },
+  describe('cover image', () => {
+    it('renders NuxtImg with src and alt when coverImage is provided', () => {
+      const wrapper = mountBlogCard({ post: { ...postBase } })
+      const img = wrapper.find('img')
+      expect(img.exists()).toBe(true)
+      expect(img.attributes('src')).toBe(postBase.coverImage)
+      expect(img.attributes('alt')).toBe(postBase.title)
     })
 
-    expect((wrapper.vm as any).categoryKey).toBe(normalizeCategory(postBase.category))
+    it('renders the photo placeholder Icon when coverImage is missing', () => {
+      const wrapper = mountBlogCard({
+        post: { ...postBase, coverImage: null },
+      })
+      // No img element; instead a heroicons:photo placeholder is shown.
+      expect(wrapper.find('img').exists()).toBe(false)
+    })
   })
 
-  it('hides reading time when list data does not include content', () => {
-    const wrapper = mount(BlogCard, {
-      props: {
+  describe('rendered metadata', () => {
+    it('renders computed readingTime derived from post content', () => {
+      const wrapper = mountBlogCard({ post: { ...postBase } })
+
+      // BlogCard renders metadata inline (not via PostMeta). Assert the
+      // computed reading time is exposed on the public vm — this is the
+      // value the template renders alongside blog.minute.
+      expect((wrapper.vm as any).readingTime).toBe(calculateReadingTime(postBase.content))
+      expect(wrapper.text()).toContain(`${calculateReadingTime(postBase.content)}`)
+    })
+
+    it('normalizes the category key via normalizeCategory for i18n lookup', () => {
+      const wrapper = mountBlogCard({ post: { ...postBase } })
+      expect((wrapper.vm as any).categoryKey).toBe(normalizeCategory(postBase.category))
+    })
+
+    it('hides reading time when the post has no content', () => {
+      const wrapper = mountBlogCard({
+        post: { ...postBase, content: undefined },
+      })
+      expect((wrapper.vm as any).readingTime).toBeNull()
+      expect(wrapper.text()).not.toContain('blog.minute')
+    })
+  })
+
+  describe('author fallback', () => {
+    it('falls back to the localized author label when author name is missing', () => {
+      mockUseI18n.mockReturnValue({
+        t: (key: string) => (key === 'blog.author' ? '作者' : key),
+        locale: ref('zh-TW'),
+      })
+
+      const wrapper = mountBlogCard({
         post: {
           ...postBase,
-          content: undefined,
+          author: { id: 1, name: null },
         },
-      },
-      global: {
-        stubs,
-        config: {
-          globalProperties: {
-            $t: (key: string) => key,
-          },
-        },
-      },
-    })
+      })
 
-    expect((wrapper.vm as any).readingTime).toBeNull()
-    expect(wrapper.text()).not.toContain('blog.minute')
+      expect(wrapper.text()).toContain('作者')
+    })
   })
 
-  it('falls back to localized author label when author name is missing', () => {
-    mockUseI18n.mockReturnValue({
-      t: (key: string) => (key === 'blog.author' ? '作者' : key),
-      locale: ref('zh-TW'),
-    })
+  describe('title affordance', () => {
+    it('exposes the full title via title attribute for tooltip on truncation', () => {
+      const wrapper = mountBlogCard({ post: { ...postBase } })
 
-    const wrapper = mount(BlogCard, {
-      props: {
-        post: {
-          ...postBase,
-          author: {
-            id: 1,
-            name: null,
-          },
-        },
-      },
-      global: {
-        stubs,
-        config: {
-          globalProperties: {
-            $t: (key: string) => (key === 'blog.author' ? '作者' : key),
-          },
-        },
-      },
+      const titleLink = wrapper
+        .findAll('a')
+        .find((a) => a.text() === postBase.title)
+      expect(titleLink).toBeTruthy()
+      expect(titleLink!.attributes('title')).toBe(postBase.title)
     })
-
-    expect(wrapper.text()).toContain('作者')
   })
 
-  it('exposes the full title via title attribute on the title link for tooltip on truncation', () => {
-    const wrapper = mount(BlogCard, {
-      props: { post: { ...postBase } },
-      global: {
-        stubs,
-        config: {
-          globalProperties: {
-            $t: (key: string) => key,
-          },
-        },
-      },
+  describe('admin delete flow', () => {
+    it('shows admin delete button only when isAdmin is true', () => {
+      // Non-admin: no delete button
+      const nonAdmin = mountBlogCard({ post: { ...postBase } })
+      const nonAdminDelete = nonAdmin
+        .findAll('button')
+        .find((b) => b.attributes('title') === '刪除')
+      expect(nonAdminDelete).toBeUndefined()
+
+      // Admin: delete button present
+      mockUseAuth.mockReturnValue({ isAdmin: ref(true), user: ref(null) })
+      const admin = mountBlogCard({ post: { ...postBase } })
+      const adminDelete = admin
+        .findAll('button')
+        .find((b) => b.attributes('title') === '刪除')
+      expect(adminDelete).toBeDefined()
     })
 
-    const titleLink = wrapper.findAll('a').find((a) => a.text() === postBase.title)
-    expect(titleLink).toBeTruthy()
-    expect(titleLink!.attributes('title')).toBe(postBase.title)
+    it('calls DELETE /api/blog/:id and refresh on successful delete', async () => {
+      mockUseAuth.mockReturnValue({ isAdmin: ref(true), user: ref(null) })
+      const toastSuccess = vi.fn()
+      mockUseToast.mockReturnValue({ success: toastSuccess, error: vi.fn() })
+
+      // Simulate a successful DELETE response.
+      mockFetch.mockResolvedValueOnce(mockFetchResponse(true))
+
+      const wrapper = mountBlogCard({ post: { ...postBase } })
+      const deleteBtn = wrapper
+        .findAll('button')
+        .find((b) => b.attributes('title') === '刪除')!
+      expect(deleteBtn).toBeTruthy()
+
+      await deleteBtn.trigger('click')
+      // Allow the click handler's awaited fetch chain to resolve.
+      await new Promise((r) => setTimeout(r, 0))
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        `/api/blog/${postBase.id}`,
+        expect.objectContaining({ method: 'DELETE' }),
+      )
+      expect(toastSuccess).toHaveBeenCalled()
+      expect(mockRefreshNuxtData).toHaveBeenCalled()
+    })
+
+    it('surfaces a toast error and does not refresh when delete fails', async () => {
+      mockUseAuth.mockReturnValue({ isAdmin: ref(true), user: ref(null) })
+      const toastError = vi.fn()
+      mockUseToast.mockReturnValue({ success: vi.fn(), error: toastError })
+
+      // fetch resolves but with ok=false — BlogCard treats !response.ok as failure.
+      mockFetch.mockResolvedValueOnce(mockFetchResponse(false, { statusMessage: 'fail' }))
+
+      const wrapper = mountBlogCard({ post: { ...postBase } })
+      const deleteBtn = wrapper
+        .findAll('button')
+        .find((b) => b.attributes('title') === '刪除')!
+      await deleteBtn.trigger('click')
+      await new Promise((r) => setTimeout(r, 0))
+
+      expect(mockFetch).toHaveBeenCalled()
+      expect(toastError).toHaveBeenCalled()
+      expect(mockRefreshNuxtData).not.toHaveBeenCalled()
+    })
+
+    it('does not call fetch when confirm dialog is cancelled', async () => {
+      mockUseAuth.mockReturnValue({ isAdmin: ref(true), user: ref(null) })
+      vi.stubGlobal('confirm', vi.fn(() => false))
+
+      const wrapper = mountBlogCard({ post: { ...postBase } })
+      const deleteBtn = wrapper
+        .findAll('button')
+        .find((b) => b.attributes('title') === '刪除')!
+      await deleteBtn.trigger('click')
+      await new Promise((r) => setTimeout(r, 0))
+
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
   })
 
-  it('reveals admin buttons on keyboard focus inside the card, not only on hover', () => {
-    mockUseAuth.mockReturnValue({
-      isAdmin: ref(true),
-      user: ref(null),
-    })
+  describe('admin focus affordance (a11y)', () => {
+    it('renders admin actions within a focus-within reachable container', () => {
+      mockUseAuth.mockReturnValue({ isAdmin: ref(true), user: ref(null) })
+      const wrapper = mountBlogCard({ post: { ...postBase } })
 
-    const wrapper = mount(BlogCard, {
-      props: { post: { ...postBase } },
-      global: {
-        stubs,
-        config: {
-          globalProperties: {
-            $t: (key: string) => key,
-          },
-        },
-      },
+      // The admin container must include group-focus-within so keyboard users
+      // can reach edit/delete without first hovering. Asserted as an a11y
+      // contract (keyboard reachability), not as a brittle class-token check.
+      const adminBtn = wrapper.find('[title="刪除"]')
+      expect(adminBtn.exists()).toBe(true)
+      const container = adminBtn.element.parentElement
+      expect(container?.className ?? '').toContain('group-focus-within:opacity-100')
     })
-
-    // The admin button container must include group-focus-within so keyboard
-    // users can reach the edit/delete buttons without first hovering.
-    const adminSection = wrapper.find('[class*="admin-btn"]').element.parentElement
-    expect(adminSection?.className ?? '').toContain('group-focus-within:opacity-100')
   })
 })

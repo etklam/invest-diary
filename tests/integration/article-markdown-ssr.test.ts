@@ -1,164 +1,229 @@
 /**
- * Regression test for: article body shows skeleton/loading instead of parsed markdown
+ * Behavior regression test for article SSR rendering.
  *
- * Root cause: The original `useArticleMarkdown` composable used `watch` + `void refresh()`
- * (fire-and-forget). During SSR, Vue does not await fire-and-forget promises, so the
- * markdown was never parsed before the HTML was sent — the page only ever rendered
- * the skeleton loading state.
+ * Root cause being guarded against: an earlier version of the article page used
+ * a fire-and-forget `watch` + `void refresh()` in the `useArticleMarkdown`
+ * composable. Vue does not await fire-and-forget promises during SSR, so the
+ * markdown was never parsed before the HTML was streamed — the page only ever
+ * rendered the loading skeleton.
  *
- * Fix: Use `useAsyncData` in the page component so Nuxt's SSR engine properly awaits
- * the markdown parsing before rendering.
+ * The fix routes markdown parsing through `useAsyncData` on the page component
+ * so Nuxt's SSR engine awaits it.
  *
- * This file verifies:
- * 1. parseMarkdown correctly handles article content with YAML frontmatter
- * 2. The parse result has a `.body` that a renderer can use
- * 3. parseMarkdown does not throw on typical article content
+ * This file verifies the *behavior* by mounting the real `pages/articles/[slug].vue`
+ * (wrapped in <Suspense>) and asserting:
+ *   1. the parsed article title + body are visible in the DOM
+ *   2. the page is NOT stuck on the loading skeleton
+ *   3. when the fetch rejects with a 404, the not-found UI is shown
+ *   4. when the fetch rejects with a 5xx, the retry path runs once before rendering
  */
-import { describe, expect, it } from 'vitest'
-import { parseMarkdown } from '@nuxtjs/mdc/runtime'
+import { describe, expect, it, afterEach, vi } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import { ref, defineComponent, h, defineAsyncComponent, Suspense } from 'vue'
+import type { Component } from 'vue'
 
-const ARTICLE_WITH_FRONTMATTER = `---
-title: "Thinking in Beta × Time"
----
+// ---- MDCRenderer stub: renders AST nodes to a real DOM tree ---------------
 
-# Thinking in Beta × Time
+function textOf(node: any): string {
+  if (!node) return ''
+  if (typeof node.value === 'string') return node.value
+  if (Array.isArray(node.children)) return node.children.map(textOf).join('')
+  return ''
+}
 
-When people talk about investing, they often split themselves into two camps.
+function astToVNodes(node: any): any {
+  if (!node) return ''
+  if (typeof node.value === 'string') return node.value
+  if (node.tag) {
+    const kids = (node.children ?? []).map(astToVNodes)
+    return h(node.tag, {}, kids)
+  }
+  return ''
+}
 
-## The Problem
+const MDCRendererStub = defineComponent({
+  name: 'MDCRenderer',
+  props: ['body', 'data'],
+  render() {
+    const children = (this.body?.children ?? []).map(astToVNodes)
+    return h('div', { class: 'mdc-rendered' }, children)
+  },
+})
 
-Most investors try to **time the market**. This rarely works.
+const baseStubs = {
+  NuxtLink: {
+    template: '<a v-bind="$attrs"><slot /></a>',
+    props: ['to'],
+    inheritAttrs: false,
+  },
+  NuxtImg: {
+    template: '<img />',
+    props: ['src', 'alt', 'width', 'height', 'loading'],
+  },
+  Icon: {
+    template: '<span />',
+    props: ['name', 'class'],
+  },
+  AppSkeleton: {
+    template: '<div data-testid="skeleton">loading</div>',
+    props: ['variant'],
+  },
+  MDCRenderer: MDCRendererStub,
+}
 
-> The best time to plant a tree was 20 years ago.
+// ---- Helper: install globals, mount the real page inside <Suspense> -------
 
-### Sub-section
+const SAMPLE_POST = {
+  id: 1,
+  title: 'Thinking in Beta',
+  slug: 'thinking-in-beta',
+  excerpt: 'A short excerpt.',
+  content: '# Thinking in Beta\n\nMost investors try to time the market.',
+  category: '市場觀察',
+  tags: 'beta',
+  coverImage: null,
+  publishedAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-02T00:00:00.000Z',
+  author: { id: 1, name: 'Author Name' },
+}
 
-- Bullet point one
-- Bullet point two
+async function mountArticlePage({
+  fetchImpl,
+  isAdmin = false,
+}: {
+  fetchImpl: (url: string, opts?: any) => Promise<any>
+  isAdmin?: boolean
+}) {
+  const mockFetch = vi.fn(fetchImpl) as any
 
-\`\`\`typescript
-const beta = 1.2
-console.log(beta)
-\`\`\`
-`
-
-const ARTICLE_PLAIN_MARKDOWN = `# Simple Article
-
-This is a plain markdown article without any frontmatter.
-
-## Section One
-
-Some content here with **bold** and *italic* text.
-
-- List item 1
-- List item 2
-`
-
-describe('Article markdown parsing (SSR regression)', () => {
-  it('parses article with YAML frontmatter and produces a renderable body', async () => {
-    const result = await parseMarkdown(ARTICLE_WITH_FRONTMATTER, {
-      toc: false,
-      contentHeading: false,
-    })
-
-    // Must have a body for MDCRenderer to render
-    expect(result.body).toBeDefined()
-    expect(result.body.type).toBe('root')
-    expect(result.body.children.length).toBeGreaterThan(0)
-
-    // Frontmatter data should be extracted
-    expect(result.data).toBeDefined()
-
-    // Body should contain heading elements (not empty)
-    const hasHeading = result.body.children.some(
-      (child: any) => child.tag === 'h1' || child.tag === 'h2' || child.tag === 'h3',
-    )
-    expect(hasHeading).toBe(true)
-  })
-
-  it('parses plain markdown article without frontmatter', async () => {
-    const result = await parseMarkdown(ARTICLE_PLAIN_MARKDOWN, {
-      toc: false,
-      contentHeading: false,
-    })
-
-    expect(result.body).toBeDefined()
-    expect(result.body.type).toBe('root')
-    expect(result.body.children.length).toBeGreaterThan(0)
-  })
-
-  it('does not throw on empty content', async () => {
-    const result = await parseMarkdown('', {
-      toc: false,
-      contentHeading: false,
-    })
-
-    expect(result.body).toBeDefined()
-    expect(result.data).toBeDefined()
-  })
-
-  it('parse result body is structured for MDCRenderer consumption', async () => {
-    const result = await parseMarkdown(ARTICLE_WITH_FRONTMATTER, {
-      toc: false,
-      contentHeading: false,
-    })
-
-    // MDCRenderer expects body with type 'root' containing children
-    const { body } = result
-    expect(body).toHaveProperty('type', 'root')
-    expect(body).toHaveProperty('children')
-    expect(Array.isArray(body.children)).toBe(true)
-
-    // Each child should have a type or tag property
-    for (const child of body.children) {
-      expect(child).toHaveProperty('type')
+  // useAsyncData must run the handler synchronously inside setup so the
+  // returned `data` ref resolves before <Suspense> releases the component.
+  const useAsyncData = async (_key: any, handler: any) => {
+    try {
+      const result = await handler()
+      return {
+        data: ref(result),
+        pending: ref(false),
+        error: ref(null),
+        refresh: () => Promise.resolve(),
+      }
+    } catch (err: any) {
+      return {
+        data: ref(null),
+        pending: ref(false),
+        error: ref(err),
+        refresh: () => Promise.resolve(),
+      }
     }
+  }
+
+  Object.assign(globalThis, {
+    useAuth: () => ({ isAdmin: ref(isAdmin), user: ref(null) }),
+    useI18n: () => ({ t: (key: string) => key, locale: ref('zh-TW') }),
+    useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
+    useRouter: () => ({ push: vi.fn() }),
+    useRoute: () => ({ params: { slug: 'thinking-in-beta' } }),
+    useRuntimeConfig: () => ({ public: { siteUrl: 'https://example.test' } }),
+    useAsyncData,
+    $fetch: mockFetch,
+    useHead: () => {},
+    definePageMeta: () => {},
+    usePerformance: () => ({ startMonitoring: () => {}, stopMonitoring: () => {} }),
+    useStructuredData: () => ({
+      injectBlogPostingSchema: () => {},
+      injectBreadcrumbSchema: () => {},
+    }),
   })
 
-  it('handles real-world article content with mixed formatting', async () => {
-    const realWorldContent = `---
-title: "Gold Analysis"
----
+  // Import after globals are installed so the page's auto-imports resolve.
+  const pageModule = await import('~/pages/articles/[slug].vue')
+  const ArticlePage: Component = pageModule.default
 
-# Why Gold Became the Ultimate Symbol of Wealth
+  // Wrap in Suspense because the page uses top-level await on useAsyncData.
+  const Wrapper = defineComponent({
+    render() {
+      return h(
+        'div',
+        { id: 'test-root' },
+        [
+          h(
+            Suspense,
+            {},
+            {
+              default: () => h(ArticlePage),
+              fallback: () => h('div', { 'data-testid': 'suspense-fallback' }, 'suspended'),
+            },
+          ),
+        ],
+      )
+    },
+  })
 
-A Systematic Analysis from Physical Laws to Digital Assets.
+  const wrapper = mount(Wrapper as any, {
+    global: {
+      stubs: baseStubs,
+      config: {
+        globalProperties: {
+          $t: (key: string) => key,
+        },
+      },
+    },
+  })
 
-## Physical Properties
+  // Allow async setup + async component to resolve.
+  await flushPromises()
+  return wrapper
+}
 
-| Property | Value |
-|----------|-------|
-| Atomic Number | 79 |
-| Density | 19.32 g/cm³ |
+describe('Article page SSR markdown rendering (behavior)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
 
-Gold's scarcity is not accidental — it results from [nuclear physics](https://example.com).
+  it('renders parsed article title and body content to the DOM', async () => {
+    const wrapper = await mountArticlePage({ fetchImpl: async () => SAMPLE_POST })
 
-> Gold is money. Everything else is credit.
+    expect(wrapper.text()).toContain('Thinking in Beta')
+    // Body content from parsed markdown — the regression guard.
+    expect(wrapper.text()).toContain('Most investors try to time the market.')
+  })
 
-### Supply Constraints
+  it('does NOT remain stuck on the loading skeleton when data resolves', async () => {
+    const wrapper = await mountArticlePage({ fetchImpl: async () => SAMPLE_POST })
 
-1. **Above-ground stock**: ~200,000 tonnes
-2. **Annual mining**: ~3,000 tonnes
-3. Growth rate: ~1.5% per year
+    expect(wrapper.find('[data-testid="skeleton"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="suspense-fallback"]').exists()).toBe(false)
+  })
 
-\`\`\`python
-def gold_scarcity(stock, annual_mining):
-    return annual_mining / stock * 100
-\`\`\`
-`
-
-    const result = await parseMarkdown(realWorldContent, {
-      toc: false,
-      contentHeading: false,
+  it('shows the not-found UI when the fetch rejects with a 404 (non-retriable)', async () => {
+    const fetchImpl = vi.fn(async () => {
+      const err: any = new Error('Not Found')
+      err.statusCode = 404
+      throw err
     })
 
-    expect(result.body).toBeDefined()
-    expect(result.body.children.length).toBeGreaterThan(0)
+    const wrapper = await mountArticlePage({ fetchImpl: fetchImpl as any })
 
-    // Should contain varied element types
-    const tags = new Set(
-      result.body.children.map((c: any) => c.tag).filter(Boolean),
-    )
-    expect(tags.size).toBeGreaterThan(1)
+    expect(wrapper.text()).toContain('blog.postNotFound')
+    expect(wrapper.text()).not.toContain('Most investors try to time the market.')
+  })
+
+  it('retries once on a transient 5xx error and then renders content', async () => {
+    let calls = 0
+    const fetchImpl = vi.fn(async () => {
+      calls++
+      if (calls === 1) {
+        const err: any = new Error('Server Error')
+        err.statusCode = 503
+        throw err
+      }
+      return SAMPLE_POST
+    })
+
+    const wrapper = await mountArticlePage({ fetchImpl: fetchImpl as any })
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+    expect(wrapper.text()).toContain('Thinking in Beta')
+    expect(wrapper.text()).toContain('Most investors try to time the market.')
   })
 })
