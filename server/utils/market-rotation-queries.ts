@@ -9,31 +9,13 @@
  * for testability and batch job usage.
  */
 
+import { toNumber, type DecimalLike } from '~/lib/market-rotation/decimal'
 import { isRankScope } from '~/lib/market-rotation/types'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
 import {
   loadQualifiedDatesForScope,
   pickComparisonDate,
 } from '~/lib/market-rotation/qualified-date'
-
-// ─── Type helpers ──────────────────────────────────────────────────────────
-
-/** Decimal-like value that Prisma might return */
-type DecimalLike =
-  | number
-  | string
-  | { toNumber?: () => number; valueOf?: () => unknown }
-  | null
-  | undefined
-
-function toNumber(value: DecimalLike): number | null {
-  if (value === null || value === undefined) return null
-  if (typeof value === 'number') return value
-  if (typeof value === 'string') return Number(value)
-  if (typeof value.toNumber === 'function') return value.toNumber()
-  const primitive = value.valueOf?.()
-  return typeof primitive === 'number' ? primitive : Number(primitive)
-}
 
 // ─── Interfaces ────────────────────────────────────────────────────────────
 

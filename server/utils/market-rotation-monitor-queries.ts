@@ -13,28 +13,11 @@ import type { MarketRotationMonitorRow, MarketRotationTrendPoint } from '~/lib/m
 import type { MarketState } from '~/lib/market-rotation/state'
 import { toMarketState } from '~/lib/market-rotation/state'
 import type { MaStatus, RotationSignal, SignalStatus } from '~/lib/market-rotation/signal'
+import { toNumber, type DecimalLike } from '~/lib/market-rotation/decimal'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
 import { buildNormalizedTrendSeries } from '~/lib/market-rotation/trend-series'
 import { filterQualifiedDates } from '~/lib/market-rotation/qualified-date'
 import { getComparisonDate, getLatestQualifiedDate } from '~/server/utils/market-rotation-queries'
-
-// ─── Type helpers ──────────────────────────────────────────────────────────
-
-type DecimalLike =
-  | number
-  | string
-  | { toNumber?: () => number; valueOf?: () => unknown }
-  | null
-  | undefined
-
-function toNumber(value: DecimalLike): number | null {
-  if (value === null || value === undefined) return null
-  if (typeof value === 'number') return value
-  if (typeof value === 'string') return Number(value)
-  if (typeof value.toNumber === 'function') return value.toNumber()
-  const primitive = value.valueOf?.()
-  return typeof primitive === 'number' ? primitive : Number(primitive)
-}
 
 function toDateString(date: Date): string {
   return date.toISOString().slice(0, 10)
