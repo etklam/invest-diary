@@ -1,46 +1,20 @@
-import prisma from '../../../../lib/prisma'
-import { Errors } from '~/lib/errors/factory'
-import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
-import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { serialize } from '~/server/utils/serialize'
+import { handleApiError } from '~/server/utils/error-handler'
+import { logger } from '~/lib/logger'
+import { dismissAlert } from '~/server/utils/alert-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.alert.withRequestId(event.context.requestId)
-  const user = requireUser(event)
-
-  const alertId = parsePositiveBigIntParam(event, 'id')
-
   try {
-    // Verify ownership via diary relation
-    const alert = await prisma.alert.findFirst({
-      where: {
-        id: alertId,
-        diary: {
-          userId: user.id
-        }
-      }
-    })
+    const user = requireUser(event)
+    const id = parsePositiveBigIntParam(event, 'id')
 
-    if (!alert) {
-      throw Errors.alertNotFound(alertId.toString()).toH3Error()
-    }
+    const updated = await dismissAlert(id, BigInt(user.id))
 
-    const updatedAlert = await prisma.alert.update({
-      where: {
-        id: alertId,
-      },
-      data: {
-        isDismissed: true,
-      },
-    })
-
-    log.info('Dismissed alert', {
-      userId: user.id,
-      alertId: String(alertId),
-    })
-    return serialize(updatedAlert)
+    log.info('Dismissed alert', { userId: String(user.id), alertId: String(id) })
+    return serialize(updated)
   } catch (error) {
     handleApiError(error, log)
   }

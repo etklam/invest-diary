@@ -1,34 +1,14 @@
-import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
-import prisma from '~/lib/prisma'
-import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
+import { serialize } from '~/server/utils/serialize'
+import { handleApiError } from '~/server/utils/error-handler'
+import { logger } from '~/lib/logger'
+import { listActiveAlerts } from '~/server/utils/alert-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.alert.withRequestId(event.context.requestId)
-  const user = requireUser(event)
-
   try {
-    const alerts = await prisma.alert.findMany({
-      where: {
-        diary: {
-          userId: user.id
-        },
-        isDismissed: false
-      },
-      include: {
-        diary: {
-          select: {
-            id: true,
-            title: true
-          }
-        }
-      },
-      orderBy: {
-        triggerAt: 'asc'
-      }
-    })
-
+    const user = requireUser(event)
+    const alerts = await listActiveAlerts(BigInt(user.id))
     return serialize(alerts)
   } catch (error) {
     handleApiError(error, log)
