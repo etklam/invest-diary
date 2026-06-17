@@ -31,7 +31,6 @@ export default defineConfig({
         'lib/jwt.ts',
         'lib/logger.ts',
         'lib/prisma.ts',
-        'lib/transactions/validate.ts',
         'lib/market-data/**/*.ts',
         'lib/market-rotation/**/*.ts',
         'composables/useAuth.ts',

@@ -250,7 +250,6 @@ The `include` list is an explicit allow-list — only files listed there count t
 - `server/websocket/connectionManager.ts`
 - `server/plugins/alert-scheduler.ts`
 - `lib/blog.ts`, `lib/diary-date.ts`, `lib/jwt.ts`, `lib/logger.ts`, `lib/prisma.ts`
-- `lib/transactions/validate.ts`
 - `lib/market-data/**`, `lib/market-rotation/**`
 - `composables/useAuth.ts`, `composables/useToast.ts`, `composables/useAlerts.ts`, `composables/useAuthRecovery.ts`, `composables/useDiscipline.ts`, `composables/useErrorI18n.ts`, `composables/useTimezone.ts`
 

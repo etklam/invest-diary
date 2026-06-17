@@ -4,7 +4,6 @@ import type { DiaryInput, Diary, TransactionInput } from '~/types/diary'
 import { getUtcDayRange, toUtcNoonDate } from '~/lib/diary-date'
 import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'
-import { validateTransactions } from '~/lib/transactions/validate'
 import { attachDiaryTags } from '~/server/utils/diary-response'
 import { persistAlerts, replaceAlerts } from '~/server/utils/alert-persistence'
 
@@ -17,6 +16,57 @@ export function toInputDate(value: string | Date): Date {
 }
 
 // ---- Shared validation ----
+
+/**
+ * Validate a list of transactions for buy/sell consistency.
+ *
+ * For each symbol the running balance is tracked:
+ * - BUY increases holdings
+ * - SELL decreases holdings; must not exceed running balance.
+ *
+ * Inlined from lib/transactions/validate.ts (the only production caller).
+ * Accepts the shared TransactionInput shape from ~/types/diary; missing
+ * or empty fields are tolerated the same way the legacy validator did
+ * (via optional chaining and numeric coercion of Decimal).
+ *
+ * Returns the first error message, or null when valid.
+ */
+function validateTransactions(
+  transactions?: TransactionInput[],
+): string | null {
+  if (!transactions || transactions.length === 0) return null
+
+  const holdings = new Map<string, number>()
+
+  for (const tx of transactions) {
+    if (!tx?.symbol?.trim()) continue
+
+    const symbol = tx.symbol.trim().toUpperCase()
+    const current = holdings.get(symbol) ?? 0
+    const quantity =
+      typeof tx.quantity === 'object' && tx.quantity !== null
+        ? Number(tx.quantity.toString())
+        : (tx.quantity ?? 0)
+
+    if (tx.type === 'BUY') {
+      holdings.set(symbol, current + quantity)
+      continue
+    }
+
+    if (tx.type === 'SELL') {
+      const available = holdings.get(symbol) ?? 0
+      if (available <= 0) {
+        return `股票 ${symbol} 沒有持股可賣，請先添加買入記錄`
+      }
+      if (quantity > available) {
+        return `股票 ${symbol} 賣出數量 (${quantity}) 超過持股數量 (${available})`
+      }
+      holdings.set(symbol, available - quantity)
+    }
+  }
+
+  return null
+}
 
 /**
  * Validate diary input shared by both create and update.
@@ -275,17 +325,15 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
   validateDiaryInput(body.title, body.transactions)
 
   // --- Ownership check ---
+  // SQL-level ownership filter collapses not-found and not-owned into a
+  // single notFound response, preventing resource existence leakage.
 
   const existingDiary = await prisma.diary.findFirst({
-    where: { id: diaryId },
+    where: { id: diaryId, userId },
   })
 
   if (!existingDiary) {
-    throw Errors.diaryNotFound(diaryId.toString())
-  }
-
-  if (existingDiary.userId?.toString() !== userId.toString()) {
-    throw Errors.diaryAccessDenied()
+    throw Errors.diaryNotFound(String(diaryId))
   }
 
   // --- Diff transactions ---
@@ -323,4 +371,28 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
   })
 
   return attachDiaryTags(diary as Diary)
+}
+
+// ---- Delete diary ----
+
+/**
+ * Delete a diary owned by `userId`.
+ *
+ * Uses a SQL-level ownership filter so that not-found and not-owned
+ * collapse into a single diaryNotFound error — no resource existence
+ * leakage via 404 vs 403 distinction. Mirrors the discipline/price-alert
+ * query layer pattern.
+ */
+export async function deleteDiaryForUser(
+  diaryId: string | bigint,
+  userId: string | bigint,
+): Promise<void> {
+  const id = typeof diaryId === 'bigint' ? diaryId : BigInt(diaryId)
+  const uid = typeof userId === 'bigint' ? userId : BigInt(userId)
+
+  const existing = await prisma.diary.findFirst({ where: { id, userId: uid } })
+  if (!existing) {
+    throw Errors.diaryNotFound(String(id))
+  }
+  await prisma.diary.delete({ where: { id } })
 }

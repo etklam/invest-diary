@@ -285,13 +285,10 @@ describe('Diary Workflow Integration', () => {
     })
 
     it('should only allow users to access their own diaries', async () => {
-      const otherUserDiary = {
-        id: 1n,
-        content: 'Other user diary',
-        userId: 2n,
-      }
-
-      mockDiaryFindFirst.mockResolvedValueOnce(otherUserDiary)
+      // SQL-level ownership filter: findFirst({ where: { id, userId } }) returns
+      // null for someone else's diary. Caller sees the same 404 as a missing
+      // diary, so resource existence cannot be enumerated.
+      mockDiaryFindFirst.mockResolvedValueOnce(null)
 
       const { default: handler } = await import('~/server/api/diaries/[id].get')
 
@@ -301,7 +298,7 @@ describe('Diary Workflow Integration', () => {
           params: { id: '1' },
         },
       } as any)).rejects.toMatchObject({
-        statusCode: 403,
+        statusCode: 404,
       })
     })
   })

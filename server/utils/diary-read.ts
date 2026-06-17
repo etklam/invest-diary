@@ -31,6 +31,11 @@ const DIARY_FULL_INCLUDE = {
  * - Returns the raw Prisma result (BigInt fields intact).
  * - Handlers should wrap the result with serialize().
  *
+ * Uses a SQL-level ownership filter so that not-found and not-owned
+ * collapse into a single diaryNotFound response. This prevents resource
+ * existence leakage (404 vs 403) and mirrors the discipline/price-alert
+ * query layer pattern.
+ *
  * @param id       Diary primary key (bigint or string representation)
  * @param userId   Owner's user ID (bigint or string representation)
  */
@@ -42,16 +47,12 @@ export async function findDiaryForUser(
   const uid = typeof userId === 'bigint' ? userId : BigInt(userId)
 
   const diary = await prisma.diary.findFirst({
-    where: { id: diaryId },
+    where: { id: diaryId, userId: uid },
     include: DIARY_FULL_INCLUDE,
   })
 
   if (!diary) {
     throw Errors.diaryNotFound(String(diaryId))
-  }
-
-  if (diary.userId?.toString() !== uid.toString()) {
-    throw Errors.diaryAccessDenied()
   }
 
   return diary

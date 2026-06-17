@@ -46,7 +46,7 @@ describe('findDiaryForUser', () => {
 
     expect(result).toEqual(baseDiary)
     expect(mockPrismaDiaryFindFirst).toHaveBeenCalledWith({
-      where: { id: 1n },
+      where: { id: 1n, userId: 42n },
       include: { transactions: true, alerts: true },
     })
   })
@@ -58,7 +58,7 @@ describe('findDiaryForUser', () => {
 
     expect(result).toEqual(baseDiary)
     expect(mockPrismaDiaryFindFirst).toHaveBeenCalledWith({
-      where: { id: 1n },
+      where: { id: 1n, userId: 42n },
       include: { transactions: true, alerts: true },
     })
   })
@@ -71,25 +71,25 @@ describe('findDiaryForUser', () => {
     })
   })
 
-  it('should throw diaryAccessDenied when diary belongs to different user', async () => {
-    mockPrismaDiaryFindFirst.mockResolvedValue(baseDiary)
+  it('should throw diaryNotFound (not accessDenied) when diary belongs to different user', async () => {
+    // SQL-level ownership filter: findFirst({ where: { id, userId } }) returns
+    // null when the diary is owned by someone else. We collapse this to a
+    // single notFound response to avoid leaking resource existence.
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
 
-    // Diary belongs to userId 42n, but we pass 99n
     await expect(findDiaryForUser(1n, 99n)).rejects.toMatchObject({
-      code: 'DIARY_ACCESS_DENIED',
+      code: 'DIARY_NOT_FOUND',
     })
   })
 
   it('should not leak diary existence to unauthorized user (same error as not found)', async () => {
-    // When diary belongs to another user, we throw diaryAccessDenied (403),
-    // not diaryNotFound. This is consistent with the existing handler pattern
-    // which checks ownership separately and uses DIARY_ACCESS_DENIED.
-    const otherUsersDiary = { ...baseDiary, userId: 99n }
-    mockPrismaDiaryFindFirst.mockResolvedValue(otherUsersDiary)
+    // SQL-level ownership filter collapses not-found and not-owned into a
+    // single diaryNotFound response — no 404 vs 403 distinction.
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
 
     await expect(findDiaryForUser(1n, 42n)).rejects.toMatchObject({
-      code: 'DIARY_ACCESS_DENIED',
-      statusCode: 403,
+      code: 'DIARY_NOT_FOUND',
+      statusCode: 404,
     })
   })
 

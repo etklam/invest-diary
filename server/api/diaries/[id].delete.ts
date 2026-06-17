@@ -1,43 +1,19 @@
-import prisma from '../../../lib/prisma'
-import { logger } from '~/lib/logger'
-import { Errors } from '~/lib/errors/factory'
+import { defineEventHandler } from 'h3'
+import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { deleteDiaryForUser } from '~/server/utils/diary-write'
+import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
-  const userId = event.context.user?.id
-
-  if (!userId) {
-    throw Errors.unauthorized().toH3Error()
-  }
-
-  const diaryId = parsePositiveBigIntParam(event, 'id')
-  const diaryIdString = diaryId.toString()
-
   try {
-    // First verify ownership
-    const diary = await prisma.diary.findFirst({
-      where: {
-        id: diaryId,
-      }
-    })
+    const user = requireUser(event)
+    const id = parsePositiveBigIntParam(event, 'id')
 
-    if (!diary) {
-      throw Errors.diaryNotFound(diaryIdString)
-    }
+    await deleteDiaryForUser(id, user.id)
 
-    if (diary.userId?.toString() !== userId.toString()) {
-      throw Errors.diaryAccessDenied()
-    }
-
-    await prisma.diary.delete({
-      where: {
-        id: diaryId,
-      },
-    })
-
-    log.info('Diary deleted', { diaryId: diaryIdString, userId })
+    log.info('Diary deleted', { diaryId: String(id), userId: String(user.id) })
     return { success: true }
   } catch (error) {
     handleApiError(error, log)

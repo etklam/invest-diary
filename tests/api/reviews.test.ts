@@ -195,7 +195,7 @@ describe('Review API Routes', () => {
       const result = await handler({ context: { user: { id: '7' }, requestId: 'req-review-patch' } } as any)
 
       expect(mockDiaryFindFirst).toHaveBeenCalledWith(expect.objectContaining({
-        where: { id: 10n },
+        where: { id: 10n, userId: 7n },
       }))
       expect(mockDiaryUpdate).toHaveBeenCalledWith(expect.objectContaining({
         where: { id: 10n },

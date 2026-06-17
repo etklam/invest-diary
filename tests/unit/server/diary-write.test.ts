@@ -695,8 +695,11 @@ describe('updateDiaryForUser', () => {
     })
   })
 
-  it('should throw diaryAccessDenied when user does not own the diary', async () => {
-    mockPrismaDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 2n })
+  it('should throw diaryNotFound (not accessDenied) when user does not own the diary', async () => {
+    // SQL-level ownership filter: findFirst({ where: { id, userId } }) returns
+    // null for both "does not exist" and "owned by someone else", collapsing
+    // to a single notFound response (no resource existence leakage).
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
 
     await expect(
       updateDiaryForUser({
@@ -705,7 +708,7 @@ describe('updateDiaryForUser', () => {
         body: { title: 'Title', content: 'Content' },
       })
     ).rejects.toMatchObject({
-      code: 'DIARY_ACCESS_DENIED',
+      code: 'DIARY_NOT_FOUND',
     })
   })
 

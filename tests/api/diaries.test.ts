@@ -387,19 +387,17 @@ describe('Diary API Routes', () => {
       })
     })
 
-    it('should return 403 when accessing a diary owned by another user', async () => {
+    it('should return 404 when accessing a diary owned by another user (no existence leakage)', async () => {
+      // SQL-level ownership filter: findFirst({ where: { id, userId } }) returns
+      // null when the diary is owned by someone else. We collapse this to a
+      // single 404 (diaryNotFound) so callers cannot enumerate resource IDs.
       mockGetRouterParam.mockReturnValue('9')
-      mockDiaryFindFirst.mockResolvedValue({
-        id: 9n,
-        userId: 2n,
-        transactions: [],
-        alerts: [],
-      })
+      mockDiaryFindFirst.mockResolvedValue(null)
 
       const { default: handler } = await import('~/server/api/diaries/[id].get')
 
       await expect(handler({ context: { user: { id: '1' } } } as any)).rejects.toMatchObject({
-        statusCode: 403,
+        statusCode: 404,
       })
     })
 
