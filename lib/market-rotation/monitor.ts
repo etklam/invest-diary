@@ -11,7 +11,13 @@ const SCORE_VERSION = 'v1'
 export interface MarketRotationMonitorRow {
   symbol: string
   name: string
-  groupType: 'sector' | 'index' | 'core'
+  groupType:
+    | 'sector'
+    | 'index'
+    | 'core'
+    | 'core_etf'
+    | 'mega_cap'
+    | 'single_stock'
   sectorName: string | null
   lastPrice: number | null
   rsi14: number | null

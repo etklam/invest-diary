@@ -16,14 +16,19 @@ import type { DailyPrice, SnapshotData } from './snapshot-builder'
 import { buildSnapshot } from './snapshot-builder'
 import { enrichScopes, type EnrichedSnapshot } from './scope-enrichment'
 import { enrichWithComparison, type EnrichedSnapshotInput, type FinalSnapshot } from './comparison-enrichment'
+import type { BetaBucket, GroupType, RankScope } from './types'
 
 // ─── Universe config ─────────────────────────────────────────────
 
 export interface UniverseSymbol {
   symbol: string
-  rankScope: 'sectors' | 'indexes' | 'core'
-  groupType: 'sector' | 'index' | 'core'
+  rankScope: RankScope
+  groupType: GroupType
   sectorName: string | null
+  /** Thematic tag (e.g. "AI / Semi", "Defensive"). Optional for legacy V1 entries. */
+  theme?: string
+  /** Beta / risk bucket used by allocation layers. Optional for legacy V1 entries. */
+  betaBucket?: BetaBucket
 }
 
 // ─── Pipeline input / output ─────────────────────────────────────

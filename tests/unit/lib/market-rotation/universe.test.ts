@@ -114,13 +114,43 @@ describe('getIndexesUniverse', () => {
   })
 })
 
-// ─── Core (V1 === indexes) ─────────────────────────────────────
+// ─── Core (T2: split into core_etf + mega_cap/single_stock pools) ──
+
+const EXPECTED_CORE_ETF_SYMBOLS = [
+  'SPY', 'VOO', 'QQQ', 'QQQM', 'SOXX', 'SMH', 'XLK', 'IGV',
+  'XLP', 'XLU', 'TLT', 'BIL', 'SGOV',
+] as const
+
+const EXPECTED_MEGA_CAP_SYMBOLS = [
+  'NVDA', 'MSFT', 'AAPL', 'GOOGL', 'AMZN', 'META', 'TSLA',
+] as const
+
+const EXPECTED_SINGLE_STOCK_SYMBOLS = ['MU', 'PLTR', 'CRWV'] as const
 
 describe('getCoreUniverse', () => {
-  it('has the same symbols as getIndexesUniverse (V1)', () => {
-    const coreSymbols = getCoreUniverse().map(e => e.symbol)
-    const indexSymbols = getIndexesUniverse().map(e => e.symbol)
-    expect(coreSymbols).toEqual(indexSymbols)
+  it('has 23 entries (13 core ETF + 7 mega cap + 3 single stock)', () => {
+    expect(getCoreUniverse()).toHaveLength(23)
+  })
+
+  it('contains all 13 core ETF pool symbols', () => {
+    const symbols = getCoreUniverse().map(e => e.symbol)
+    for (const symbol of EXPECTED_CORE_ETF_SYMBOLS) {
+      expect(symbols).toContain(symbol)
+    }
+  })
+
+  it('contains all 7 mega cap symbols', () => {
+    const symbols = getCoreUniverse().map(e => e.symbol)
+    for (const symbol of EXPECTED_MEGA_CAP_SYMBOLS) {
+      expect(symbols).toContain(symbol)
+    }
+  })
+
+  it('contains all 3 single stock symbols', () => {
+    const symbols = getCoreUniverse().map(e => e.symbol)
+    for (const symbol of EXPECTED_SINGLE_STOCK_SYMBOLS) {
+      expect(symbols).toContain(symbol)
+    }
   })
 
   it('every entry has rankScope="core"', () => {
@@ -129,10 +159,71 @@ describe('getCoreUniverse', () => {
     }
   })
 
-  it('every entry has groupType="core"', () => {
+  it('every entry has a groupType in {core_etf, mega_cap, single_stock}', () => {
+    const allowed = ['core_etf', 'mega_cap', 'single_stock'] as const
     for (const entry of getCoreUniverse()) {
-      expect(entry.groupType).toBe('core')
+      expect(allowed).toContain(entry.groupType)
     }
+  })
+
+  it('assigns core_etf groupType to the 13 ETF pool entries', () => {
+    const universe = getCoreUniverse()
+    for (const symbol of EXPECTED_CORE_ETF_SYMBOLS) {
+      const entry = universe.find(e => e.symbol === symbol)
+      expect(entry, `expected ${symbol} in core universe`).toBeDefined()
+      expect(entry!.groupType).toBe('core_etf')
+    }
+  })
+
+  it('assigns mega_cap groupType to the mega cap entries', () => {
+    const universe = getCoreUniverse()
+    for (const symbol of EXPECTED_MEGA_CAP_SYMBOLS) {
+      const entry = universe.find(e => e.symbol === symbol)
+      expect(entry, `expected ${symbol} in core universe`).toBeDefined()
+      expect(entry!.groupType).toBe('mega_cap')
+    }
+  })
+
+  it('assigns single_stock groupType to MU/PLTR/CRWV', () => {
+    const universe = getCoreUniverse()
+    for (const symbol of EXPECTED_SINGLE_STOCK_SYMBOLS) {
+      const entry = universe.find(e => e.symbol === symbol)
+      expect(entry, `expected ${symbol} in core universe`).toBeDefined()
+      expect(entry!.groupType).toBe('single_stock')
+    }
+  })
+
+  it('every entry has a non-empty theme', () => {
+    for (const entry of getCoreUniverse()) {
+      expect(entry.theme.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('every entry has a betaBucket from the allowed union', () => {
+    const allowed = [
+      'core_index', 'high_beta', 'mega_cap', 'single_stock',
+      'defensive', 'cash_proxy',
+    ] as const
+    for (const entry of getCoreUniverse()) {
+      expect(allowed).toContain(entry.betaBucket)
+    }
+  })
+
+  it('core ETF pool count = 13', () => {
+    const pool = getCoreUniverse().filter(e => e.groupType === 'core_etf')
+    expect(pool).toHaveLength(13)
+  })
+
+  it('mega cap + single stock pool count = 10', () => {
+    const pool = getCoreUniverse().filter(e =>
+      e.groupType === 'mega_cap' || e.groupType === 'single_stock',
+    )
+    expect(pool).toHaveLength(10)
+  })
+
+  it('has no duplicate symbols', () => {
+    const symbols = getCoreUniverse().map(e => e.symbol)
+    expect(new Set(symbols).size).toBe(symbols.length)
   })
 })
 
@@ -177,9 +268,13 @@ describe('getAllSymbols', () => {
     expect(new Set(symbols).size).toBe(symbols.length)
   })
 
-  it('returns the correct total count (11 sectors + 8 indexes - 0 overlap = 19)', () => {
+  it('returns the correct total count (11 sectors + 8 indexes + 23 core - shared symbols)', () => {
     const all = getAllSymbols()
-    // sectors (11) + indexes (8) = 19, no overlap since sectors excludes SPY/RSP
-    expect(all).toHaveLength(19)
+    // sectors (11) + indexes (8) + core (23) = 42, minus overlaps
+    // (XLK, XLP, XLU appear in both sectors and core_etf; SPY, QQQ in indexes and core_etf)
+    // first-occurrence wins: sectors takes XLK/XLP/XLU, indexes takes SPY/QQQ
+    // → core adds 23 - 5 = 18 new symbols
+    // total = 11 + 8 + 18 = 37
+    expect(all).toHaveLength(37)
   })
 })

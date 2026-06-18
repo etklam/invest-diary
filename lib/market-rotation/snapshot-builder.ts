@@ -30,7 +30,13 @@ export interface DailyPrice {
 export interface SnapshotMeta {
   symbol: string
   rankScope: 'sectors' | 'indexes' | 'core'
-  groupType: 'sector' | 'index' | 'core'
+  groupType:
+    | 'sector'
+    | 'index'
+    | 'core'
+    | 'core_etf'
+    | 'mega_cap'
+    | 'single_stock'
   sectorName: string | null
 }
 

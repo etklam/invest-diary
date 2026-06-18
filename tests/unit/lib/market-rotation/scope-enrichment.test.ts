@@ -212,4 +212,96 @@ describe('enrichScopes', () => {
     expect(enriched.percentFromHigh).toBe(-3.65)
     expect(enriched.distanceFromHighScore).toBe(81.75)
   })
+
+  // ─── T2: core scope splits into core_etf vs mega_cap/single_stock pools ──
+
+  describe('core scope pool splitting (T2)', () => {
+    it('computes percentiles independently for core_etf vs mega_cap pools within core scope', () => {
+      // core_etf pool: SPY=80, QQQ=60
+      // mega_cap pool: NVDA=95, MSFT=50
+      // calculatePercentile = below / total * 100 (total includes self)
+      // Pools split → SPY pool = [80, 60]; SPY below = 1 (QQQ), total = 2 → 50
+      //              NVDA pool = [95, 50]; NVDA below = 1 (MSFT), total = 2 → 50
+      // Legacy single pool (4 entries): SPY below = 2 (QQQ, MSFT), total = 4 → 50
+      // The split is observable when ETF vs stock outliers differ — see next test.
+      const snapshots: SnapshotData[] = [
+        makeSnapshot({ symbol: 'SPY', rankScope: 'core', groupType: 'core_etf', rsi14: 80, maScore: 90, distanceFromHighScore: 80 }),
+        makeSnapshot({ symbol: 'QQQ', rankScope: 'core', groupType: 'core_etf', rsi14: 60, maScore: 70, distanceFromHighScore: 70 }),
+        makeSnapshot({ symbol: 'NVDA', rankScope: 'core', groupType: 'mega_cap', rsi14: 95, maScore: 100, distanceFromHighScore: 95 }),
+        makeSnapshot({ symbol: 'MSFT', rankScope: 'core', groupType: 'mega_cap', rsi14: 50, maScore: 60, distanceFromHighScore: 60 }),
+      ]
+
+      const result = enrichScopes(snapshots)
+
+      const spy = result.find(r => r.symbol === 'SPY')!
+      const nvda = result.find(r => r.symbol === 'NVDA')!
+
+      // Split pool: SPY top of 2-entry core_etf pool → 1/2 = 50
+      expect(spy.rsiPercentile).toBe(50)
+      // Split pool: NVDA top of 2-entry mega_cap pool → 1/2 = 50
+      expect(nvda.rsiPercentile).toBe(50)
+    })
+
+    it('observable split effect: low ETF vs high stock without cross-contamination', () => {
+      // Legacy single pool (4 entries): XLP rsi=40, XLU rsi=35, NVDA rsi=90, TSLA rsi=85
+      //   XLP below = 2 (XLU only below, but NVDA/TSLA are above) → wait recalc.
+      //   values=[40,35,90,85]; XLP(40): below=1 (XLU), total=4 → 25
+      // Split pools: core_etf=[40,35]; mega_cap_stock=[90,85]
+      //   XLP: below=1 (XLU), total=2 → 50  ← higher than legacy 25
+      //   NVDA: below=1 (TSLA), total=2 → 50  ← lower than legacy 75
+      // The pool split changes relative position: defensive ETF is no longer
+      // dragged down by mega-cap outliers.
+      const snapshots: SnapshotData[] = [
+        makeSnapshot({ symbol: 'XLP', rankScope: 'core', groupType: 'core_etf', rsi14: 40, maScore: 50, distanceFromHighScore: 40 }),
+        makeSnapshot({ symbol: 'XLU', rankScope: 'core', groupType: 'core_etf', rsi14: 35, maScore: 40, distanceFromHighScore: 35 }),
+        makeSnapshot({ symbol: 'NVDA', rankScope: 'core', groupType: 'mega_cap', rsi14: 90, maScore: 100, distanceFromHighScore: 90 }),
+        makeSnapshot({ symbol: 'TSLA', rankScope: 'core', groupType: 'mega_cap', rsi14: 85, maScore: 90, distanceFromHighScore: 85 }),
+      ]
+
+      const result = enrichScopes(snapshots)
+
+      const xlp = result.find(r => r.symbol === 'XLP')!
+      const nvda = result.find(r => r.symbol === 'NVDA')!
+
+      // Split pool: XLP top of 2-entry core_etf pool → 1/2 = 50
+      expect(xlp.rsiPercentile).toBe(50)
+      // Split pool: NVDA top of 2-entry mega_cap pool → 1/2 = 50
+      expect(nvda.rsiPercentile).toBe(50)
+    })
+
+    it('treats mega_cap and single_stock as the same pool', () => {
+      // mega_cap + single_stock combined pool: NVDA=90, PLTR=70
+      // NVDA: below=1 (PLTR), total=2 → 50
+      // PLTR: below=0, total=2 → 0
+      const snapshots: SnapshotData[] = [
+        makeSnapshot({ symbol: 'NVDA', rankScope: 'core', groupType: 'mega_cap', rsi14: 90, maScore: 100, distanceFromHighScore: 90 }),
+        makeSnapshot({ symbol: 'PLTR', rankScope: 'core', groupType: 'single_stock', rsi14: 70, maScore: 80, distanceFromHighScore: 75 }),
+      ]
+
+      const result = enrichScopes(snapshots)
+      const nvda = result.find(r => r.symbol === 'NVDA')!
+      const pltr = result.find(r => r.symbol === 'PLTR')!
+
+      expect(nvda.rsiPercentile).toBe(50)
+      expect(pltr.rsiPercentile).toBe(0)
+    })
+
+    it('keeps sectors / indexes scopes unaffected (no pool splitting)', () => {
+      const snapshots: SnapshotData[] = [
+        makeSnapshot({ symbol: 'XLK', rankScope: 'sectors', groupType: 'sector', rsi14: 80 }),
+        makeSnapshot({ symbol: 'XLU', rankScope: 'sectors', groupType: 'sector', rsi14: 40 }),
+        makeSnapshot({ symbol: 'XLF', rankScope: 'sectors', groupType: 'sector', rsi14: 60 }),
+      ]
+
+      const result = enrichScopes(snapshots)
+      const xlk = result.find(r => r.symbol === 'XLK')!
+
+      // Legacy single-pool behavior: 2 out of 3 below → 66.67
+      expect(xlk.rsiPercentile).toBeCloseTo(66.67, 1)
+    })
+
+    it('returns empty array for empty core scope input', () => {
+      expect(enrichScopes([])).toEqual([])
+    })
+  })
 })
