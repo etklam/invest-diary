@@ -5,10 +5,11 @@
  *
  * Returns the full dashboard payload for the Market Rotation Monitor page:
  *   - summary cards (market state, breadth, above-MA ratios, average RSI)
- *   - current market summary (deterministic template text)
+ *   - current market summary (deterministic template text, includes beta suggestion)
  *   - snapshot-backed rows with comparison deltas
  *   - top improving / bottom weakening rows
  *   - data-quality metadata
+ *   - betaAllocation (decideBetaAllocation() output: mode, levels, warnings)
  *
  * Reads from persisted market_rotation_snapshot rows. No live Yahoo calls.
  */
@@ -19,8 +20,10 @@ import { serialize } from '~/server/utils/serialize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { isRankScope } from '~/lib/market-rotation/types'
+import type { RankScope } from '~/lib/market-rotation/types'
 import { buildMarketRotationMonitorPayload } from '~/lib/market-rotation/monitor'
 import { generateMarketSummary } from '~/lib/market-rotation/summary'
+import { decideBetaAllocation } from '~/lib/beta-allocation/policy'
 import {
   getLatestMonitorRows,
   resolveMarketState,
@@ -29,7 +32,6 @@ import {
 } from '~/server/utils/market-rotation-monitor-queries'
 
 const VALID_SCOPES = ['sectors', 'indexes', 'core'] as const
-const SUPPORTED_SCOPES = ['sectors', 'indexes'] as const
 const DEFAULT_SCOPE = 'sectors'
 
 function toDateString(date: Date): string {
@@ -48,16 +50,11 @@ export default defineEventHandler(async (event) => {
         { field: 'scope', message: `Must be one of: ${VALID_SCOPES.join(', ')}` },
       ]).toH3Error()
     }
-    if (!SUPPORTED_SCOPES.includes(scopeRaw as typeof SUPPORTED_SCOPES[number])) {
-      throw Errors.validationError([
-        { field: 'scope', message: 'core is reserved until the app defines a real core ETF universe.' },
-      ]).toH3Error()
-    }
 
     // Step 1: Load latest monitor rows for the requested scope
-    const supportedScope = scopeRaw as typeof SUPPORTED_SCOPES[number]
-    const { rows, asOfDate } = await getLatestMonitorRows(prisma, supportedScope)
-    const { rows: sectorSummaryRows } = scopeRaw === 'sectors'
+    const rankScope: RankScope = scopeRaw
+    const { rows, asOfDate } = await getLatestMonitorRows(prisma, rankScope)
+    const { rows: sectorSummaryRows } = rankScope === 'sectors'
       ? { rows }
       : await getLatestMonitorRows(prisma, 'sectors')
 
@@ -70,10 +67,10 @@ export default defineEventHandler(async (event) => {
     const marketState = await resolveMarketState(prisma)
 
     // Step 3: Get comparison date (null if no 2W comparison data)
-    const comparisonDate = await getMonitorComparisonDate(prisma, supportedScope, asOfDate!)
+    const comparisonDate = await getMonitorComparisonDate(prisma, rankScope, asOfDate!)
 
     const trendSeries = comparisonDate
-      ? await getMonitorTrendSeries(prisma, supportedScope, new Date(comparisonDate), asOfDate!)
+      ? await getMonitorTrendSeries(prisma, rankScope, new Date(comparisonDate), asOfDate!)
       : new Map()
     const rowsWithTrend = rows.map(row => ({
       ...row,
@@ -84,13 +81,25 @@ export default defineEventHandler(async (event) => {
     const payload = buildMarketRotationMonitorPayload({
       asOfDate: toDateString(asOfDate!),
       comparisonDate,
-      rankScope: supportedScope,
+      rankScope,
       marketState,
       rows: rowsWithTrend,
       summaryRows: sectorSummaryRows.length > 0 ? sectorSummaryRows : rowsWithTrend,
     })
 
-    // Step 5: Generate deterministic current market summary
+    // Step 5: Decide beta allocation via pure function (decideBetaAllocation)
+    const betaAllocation = decideBetaAllocation({
+      marketState: payload.summary.marketState,
+      breadthConfirmation: payload.summary.breadthConfirmation,
+      above50dRatio: payload.summary.above50d.ratio,
+      averageRsi: payload.summary.averageRsi,
+      leadership: {
+        topImproving: payload.topImproving.map(row => row.sectorName ?? row.symbol),
+        bottomWeakening: payload.bottomWeakening.map(row => row.sectorName ?? row.symbol),
+      },
+    })
+
+    // Step 6: Generate deterministic current market summary (now includes beta suggestion)
     const currentMarketSummary = generateMarketSummary({
       marketState: payload.summary.marketState,
       breadthCondition: payload.summary.breadthCondition,
@@ -110,6 +119,7 @@ export default defineEventHandler(async (event) => {
     return serialize({
       ...payload,
       currentMarketSummary,
+      betaAllocation,
     })
   }
   catch (error) {

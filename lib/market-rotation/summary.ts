@@ -1,5 +1,7 @@
 import type { MarketState } from './state'
 import type { BreadthCondition, BreadthConfirmation } from './breadth'
+import { decideBetaAllocation } from '~/lib/beta-allocation/policy'
+import type { BetaAllocationResult } from '~/lib/beta-allocation/policy'
 
 export interface SummaryInput {
   marketState: MarketState
@@ -64,6 +66,24 @@ function formatRsi(averageRsi: number | null): string | null {
   return `Average RSI at ${Math.round(averageRsi)}.`
 }
 
+/**
+ * Build the beta suggestion sentence that integrates decideBetaAllocation()
+ * explanation + warnings into a single human-readable English sentence
+ * intended for API consumers.
+ *
+ * Keeps the summary a pure function (no I/O); mirrors the explanation
+ * produced by decideBetaAllocation, with explicit posture + mode keywords
+ * so downstream callers can grep for them.
+ */
+function formatBetaSuggestion(beta: BetaAllocationResult): string {
+  // Extract the leading posture verb from the explanation if present,
+  // otherwise fall back to the suggested mode label.
+  const modeLabel = beta.suggestedMode.replace(/_/g, ' ')
+  const sentence = `Suggested posture is ${modeLabel}: ${beta.explanation}`
+
+  return sentence
+}
+
 export function generateMarketSummary(input: SummaryInput): string {
   const parts: string[] = []
 
@@ -96,6 +116,19 @@ export function generateMarketSummary(input: SummaryInput): string {
   if (rsi) {
     parts.push(rsi)
   }
+
+  // 7. Beta suggestion — integrate decideBetaAllocation() explanation + warnings
+  const beta = decideBetaAllocation({
+    marketState: input.marketState,
+    breadthConfirmation: input.breadthConfirmation,
+    above50dRatio: input.above50dRatio,
+    averageRsi: input.averageRsi,
+    leadership: {
+      topImproving: input.topImproving.map((e) => e.sectorName ?? e.symbol),
+      bottomWeakening: input.bottomWeakening.map((e) => e.sectorName ?? e.symbol),
+    },
+  })
+  parts.push(formatBetaSuggestion(beta))
 
   return parts.join(' ')
 }

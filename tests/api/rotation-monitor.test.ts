@@ -240,12 +240,93 @@ describe('GET /api/market/rotation-monitor', () => {
     })
   })
 
-  it('core scope 暫時拒絕，避免 placeholder universe 誤導', async () => {
-    const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
+  it('core scope 回 200 + 真實 core universe 資料', async () => {
+    // Use real core universe symbols (from lib/market-rotation/universe.ts):
+    // core_etf (13) + mega_cap (10) = 23 entries
+    const CORE_ETF_SYMBOLS = [
+      'SPY', 'VOO', 'QQQ', 'QQQM', 'SOXX', 'SMH', 'XLK', 'IGV',
+      'XLP', 'XLU', 'TLT', 'BIL', 'SGOV',
+    ]
+    const MEGA_CAP_SYMBOLS = [
+      'NVDA', 'MSFT', 'AAPL', 'GOOGL', 'AMZN', 'META', 'TSLA',
+      'MU', 'PLTR', 'CRWV',
+    ]
+    const coreRows = [
+      ...CORE_ETF_SYMBOLS.map((symbol, i) =>
+        makeSnapshotRow({
+          id: BigInt(i + 1),
+          symbol,
+          rankScope: 'core',
+          groupType: 'core_etf',
+          rotationRank: i + 1,
+          rankDelta2W: i < 3 ? i + 1 : -(i - 2),
+        }),
+      ),
+      ...MEGA_CAP_SYMBOLS.map((symbol, i) =>
+        makeSnapshotRow({
+          id: BigInt(i + 14),
+          symbol,
+          rankScope: 'core',
+          groupType: 'mega_cap',
+          rotationRank: i + 14,
+          rankDelta2W: i < 3 ? i + 1 : -(i - 2),
+        }),
+      ),
+    ]
+    // Reset previous mock implementations (sticky mockResolvedValue from earlier tests)
+    mockSnapshotFindFirst.mockReset()
+    mockSnapshotFindMany.mockReset()
+    mockSnapshotGroupBy.mockReset()
+    mockBreadthFindFirst.mockReset()
+    setupFullFlowMocks(coreRows, 'RISK_ON')
 
-    await expect(handler(makeEvent({ scope: 'core' }))).rejects.toMatchObject({
-      statusCode: 400,
-    })
+    const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
+    const result = await handler(makeEvent({ scope: 'core' }))
+
+    expect(result.dataQuality.rankScope).toBe('core')
+    expect(result.rows).toHaveLength(23)
+  })
+
+  // ── Case 4b: betaAllocation 欄位在 response 中 ─────────────────
+
+  it('sectors scope payload 含 betaAllocation 欄位（含配置與 mode）', async () => {
+    const rows = makeSectorRows()
+    // Reset previous mock implementations
+    mockSnapshotFindFirst.mockReset()
+    mockSnapshotFindMany.mockReset()
+    mockSnapshotGroupBy.mockReset()
+    mockBreadthFindFirst.mockReset()
+    setupFullFlowMocks(rows, 'RISK_ON')
+
+    const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
+    const result = await handler(makeEvent({ scope: 'sectors' }))
+
+    expect(result.betaAllocation).toBeDefined()
+    expect(result.betaAllocation.suggestedMode).toBe('aggressive')
+    expect(result.betaAllocation.suggestedBetaLevel).toBe(1.3)
+    expect(result.betaAllocation.highBetaTargetPct).toBe(60)
+    expect(result.betaAllocation.coreIndexTargetPct).toBe(30)
+    expect(result.betaAllocation.cashTargetPct).toBe(10)
+    expect(result.betaAllocation.explanation).toBeTypeOf('string')
+    expect(result.betaAllocation.explanation.length).toBeGreaterThan(10)
+    expect(Array.isArray(result.betaAllocation.warnings)).toBe(true)
+  })
+
+  it('currentMarketSummary 含 beta suggestion 段落文字', async () => {
+    const rows = makeSectorRows()
+    // Reset previous mock implementations
+    mockSnapshotFindFirst.mockReset()
+    mockSnapshotFindMany.mockReset()
+    mockSnapshotGroupBy.mockReset()
+    mockBreadthFindFirst.mockReset()
+    setupFullFlowMocks(rows, 'RISK_ON')
+
+    const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
+    const result = await handler(makeEvent({ scope: 'sectors' }))
+
+    // 新增：currentMarketSummary 應含 beta suggestion 關鍵字
+    expect(result.currentMarketSummary).toContain('aggressive')
+    expect(result.currentMarketSummary.toLowerCase()).toMatch(/beta|posture|exposure/)
   })
 
   // ── Case 5: Default scope = sectors ───────────────────────────────
