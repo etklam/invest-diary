@@ -22,7 +22,7 @@ import 'dotenv/config'
 
 import { createRequire } from 'node:module'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
-import { runFullBatch, type FullBatchResult } from '~/server/utils/market-rotation-batch'
+import { runFullBatch, runScopeBatch, type BatchJobResult, type FullBatchResult } from '~/server/utils/market-rotation-batch'
 
 const require = createRequire(import.meta.url)
 const { PrismaClient } = require('@prisma/client')
@@ -91,28 +91,36 @@ export async function executeBatch(options: ExecuteBatchOptions): Promise<BatchO
   const startMs = Date.now()
 
   try {
-    const fullResult = await runFullBatch(prisma as Parameters<typeof runFullBatch>[0])
+    // Dispatch: scope='all' runs the full batch (all 3 scopes + aggregation);
+    // any specific scope runs ONLY that scope, avoiding wasted canonical price
+    // fetches for the other two scopes' symbols.
+    if (scope === 'all') {
+      const fullResult = await runFullBatch(prisma as Parameters<typeof runFullBatch>[0])
+      return {
+        success: true,
+        scope,
+        startedAt,
+        durationMs: Date.now() - startMs,
+        totalUpserted: fullResult.totalUpserted,
+        totalErrors: fullResult.totalErrors,
+        results: fullResult.results,
+      }
+    }
 
-    const filteredResults = scope === 'all'
-      ? fullResult.results
-      : fullResult.results.filter(r => r.rankScope === scope)
-
-    const totalUpserted = scope === 'all'
-      ? fullResult.totalUpserted
-      : filteredResults.reduce((sum, r) => sum + r.upsertedCount, 0)
-
-    const totalErrors = scope === 'all'
-      ? fullResult.totalErrors
-      : filteredResults.reduce((sum, r) => sum + r.errors.length, 0)
+    const scopeResult = await runScopeBatch(
+      prisma as Parameters<typeof runScopeBatch>[0],
+      scope,
+    )
+    const results: BatchJobResult[] = [scopeResult]
 
     return {
       success: true,
       scope,
       startedAt,
       durationMs: Date.now() - startMs,
-      totalUpserted,
-      totalErrors,
-      results: filteredResults,
+      totalUpserted: scopeResult.upsertedCount,
+      totalErrors: scopeResult.errors.length,
+      results,
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
