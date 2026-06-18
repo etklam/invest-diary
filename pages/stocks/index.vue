@@ -165,6 +165,18 @@
         </div>
       </section>
 
+      <!-- ── Portfolio Exposure vs Suggested Allocation (T7) ── -->
+      <section class="mb-6">
+        <PortfolioExposurePanel
+          :exposure="portfolioExposure"
+          :gaps="portfolioExposureGaps"
+          :beta-allocation="portfolioBetaAllocation"
+          :market-state="portfolioExposureMarketState"
+          :last-updated="portfolioExposureLastUpdated"
+          :pending="portfolioExposurePending"
+        />
+      </section>
+
       <!-- Main Layout Grid: Holdings Table (Left) + Portfolio Analysis (Right) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Holdings Table Section -->
@@ -556,6 +568,7 @@ import {
 import type { QuoteResponse } from '~/lib/market-data/yahoo'
 import { formatCurrency } from '~/lib/utils'
 import { watchDebounced } from '@vueuse/core'
+import { usePortfolioExposure } from '~/composables/usePortfolioExposure'
 
 ChartJS.register(BarElement, LinearScale, CategoryScale, Tooltip, Legend, LineElement, PointElement, Filler)
 
@@ -645,6 +658,16 @@ const top3ConcentrationPct = computed(() => stats.value.top3ConcentrationPct)
 const activePositionCount = computed(() => stats.value.activePositionCount)
 const concentrationWarning = computed(() => stats.value.concentrationWarning)
 const largestPositionSymbol = computed(() => stats.value.largestPositionSymbol)
+
+// ── Portfolio Exposure panel (T7) ──────────────────────────────────
+const {
+  exposure: portfolioExposure,
+  gaps: portfolioExposureGaps,
+  betaAllocation: portfolioBetaAllocation,
+  marketState: portfolioExposureMarketState,
+  lastUpdated: portfolioExposureLastUpdated,
+  pending: portfolioExposurePending,
+} = usePortfolioExposure()
 
 // Formatting
 const formatQuantity = (qty: number) => formatHoldingQuantity(qty)

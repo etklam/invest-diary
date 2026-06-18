@@ -2028,5 +2028,53 @@
       "deleteFailed": "删除交易计划失败",
       "deleteConfirm": "确定删除这个交易计划？"
     }
+  },
+  "portfolioExposure": {
+    "title": "投资组合曝险 vs 建议配置",
+    "current": "当前",
+    "suggested": "建议",
+    "status": "状态",
+    "explanation": "说明",
+    "lastUpdated": "最后更新",
+    "empty": "尚无持仓。新增一笔交易以查看投资组合曝险。",
+    "noMarketData": "查无市场状态数据。仅显示当前曝险。",
+    "overweightWarning": "相对于当前市场状态，高 Beta 曝险过高。",
+    "buckets": {
+      "highBeta": "高 Beta",
+      "coreIndex": "核心指数",
+      "cash": "现金"
+    },
+    "statuses": {
+      "underweight": "低配",
+      "balanced": "均衡",
+      "overweight": "超配"
+    }
+  },
+  "betaCockpit": {
+    "title": "Beta 驾驶舱",
+    "marketState": "市场状态",
+    "suggestedMode": "建议模式",
+    "suggestedBetaLevel": "建议 Beta 水位",
+    "suggestedAllocation": "建议配置",
+    "highBeta": "高 Beta",
+    "coreIndex": "核心指数",
+    "cash": "现金",
+    "warnings": "警示",
+    "lastUpdated": "最后更新",
+    "explanation": "说明",
+    "modes": {
+      "aggressive": "积极进攻",
+      "balanced": "平衡",
+      "defensive": "防守",
+      "capital_preservation": "资本保全",
+      "unknown": "未知"
+    },
+    "marketStates": {
+      "risk_on": "Risk On",
+      "neutral": "中性",
+      "defensive": "防守",
+      "risk_off": "Risk Off",
+      "unknown": "未知"
+    }
   }
 }

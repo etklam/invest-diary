@@ -2125,5 +2125,53 @@
       "deleteFailed": "刪除交易計畫失敗",
       "deleteConfirm": "確定刪除這個交易計畫？"
     }
+  },
+  "portfolioExposure": {
+    "title": "投資組合曝險 vs 建議配置",
+    "current": "目前",
+    "suggested": "建議",
+    "status": "狀態",
+    "explanation": "說明",
+    "lastUpdated": "最後更新",
+    "empty": "尚無持倉。新增一筆交易以檢視投資組合曝險。",
+    "noMarketData": "查無市場狀態資料。僅顯示目前曝險。",
+    "overweightWarning": "相對於目前市場狀態，高 Beta 曝險過高。",
+    "buckets": {
+      "highBeta": "高 Beta",
+      "coreIndex": "核心指數",
+      "cash": "現金"
+    },
+    "statuses": {
+      "underweight": "低配",
+      "balanced": "均衡",
+      "overweight": "超配"
+    }
+  },
+  "betaCockpit": {
+    "title": "Beta 駕駛艙",
+    "marketState": "市場狀態",
+    "suggestedMode": "建議模式",
+    "suggestedBetaLevel": "建議 Beta 水位",
+    "suggestedAllocation": "建議配置",
+    "highBeta": "高 Beta",
+    "coreIndex": "核心指數",
+    "cash": "現金",
+    "warnings": "警示",
+    "lastUpdated": "最後更新",
+    "explanation": "說明",
+    "modes": {
+      "aggressive": "積極進攻",
+      "balanced": "平衡",
+      "defensive": "防守",
+      "capital_preservation": "資本保全",
+      "unknown": "未知"
+    },
+    "marketStates": {
+      "risk_on": "Risk On",
+      "neutral": "中性",
+      "defensive": "防守",
+      "risk_off": "Risk Off",
+      "unknown": "未知"
+    }
   }
 }

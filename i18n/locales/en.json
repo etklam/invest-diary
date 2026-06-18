@@ -2125,5 +2125,53 @@
       "deleteFailed": "Failed to delete trade plan",
       "deleteConfirm": "Delete this trade plan?"
     }
+  },
+  "portfolioExposure": {
+    "title": "Portfolio Exposure vs Suggested Allocation",
+    "current": "Current",
+    "suggested": "Suggested",
+    "status": "Status",
+    "explanation": "Explanation",
+    "lastUpdated": "Last updated",
+    "empty": "No holdings yet. Add a transaction to see your portfolio exposure.",
+    "noMarketData": "No market regime data available. Showing current exposure only.",
+    "overweightWarning": "You are overweight high beta relative to current market regime.",
+    "buckets": {
+      "highBeta": "High Beta",
+      "coreIndex": "Core Index",
+      "cash": "Cash"
+    },
+    "statuses": {
+      "underweight": "Underweight",
+      "balanced": "Balanced",
+      "overweight": "Overweight"
+    }
+  },
+  "betaCockpit": {
+    "title": "Beta Cockpit",
+    "marketState": "Market State",
+    "suggestedMode": "Suggested Mode",
+    "suggestedBetaLevel": "Suggested Beta Level",
+    "suggestedAllocation": "Suggested Allocation",
+    "highBeta": "High Beta",
+    "coreIndex": "Core Index",
+    "cash": "Cash",
+    "warnings": "Warnings",
+    "lastUpdated": "Last updated",
+    "explanation": "Explanation",
+    "modes": {
+      "aggressive": "Aggressive",
+      "balanced": "Balanced",
+      "defensive": "Defensive",
+      "capital_preservation": "Capital Preservation",
+      "unknown": "Unknown"
+    },
+    "marketStates": {
+      "risk_on": "Risk On",
+      "neutral": "Neutral",
+      "defensive": "Defensive",
+      "risk_off": "Risk Off",
+      "unknown": "Unknown"
+    }
   }
 }

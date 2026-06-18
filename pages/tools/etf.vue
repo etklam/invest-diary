@@ -84,6 +84,8 @@ const bottomWeakening = computed(() => payload.value?.bottomWeakening ?? [])
 const summary = computed(() => payload.value?.summary ?? null)
 const currentMarketSummary = computed(() => payload.value?.currentMarketSummary ?? '')
 const dataQuality = computed(() => payload.value?.dataQuality ?? null)
+const betaAllocation = computed(() => (payload.value as any)?.betaAllocation ?? null)
+const betaMarketState = computed(() => payload.value?.marketState ?? null)
 
 function normalizeNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
@@ -494,6 +496,13 @@ definePageMeta({
           </LedgerCard>
         </div>
       </section>
+
+      <!-- Beta Cockpit Card -->
+      <BetaCockpitCard
+        :beta-allocation="betaAllocation"
+        :market-state="betaMarketState"
+        :last-updated="lastRefreshAt"
+      />
 
       <!-- No data state -->
       <div v-if="noData" class="rounded-dt-lg border border-amber-300 bg-amber-50 p-6 text-center dark:border-amber-400/20 dark:bg-amber-400/10">
