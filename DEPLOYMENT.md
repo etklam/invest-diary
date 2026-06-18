@@ -477,6 +477,18 @@ docker system prune -a --volumes
 
 ---
 
+## Batch CronJobs | 排程任務
+
+Market Rotation snapshot batch 採用 K8s CronJob，每日美東收盤後跑一次。詳細排程、scope 隔離、staleness contract 與 YAML 範例請參考 [docs/BETA_COCKPIT.md#batch-cron-schedule](docs/BETA_COCKPIT.md#batch-cron-schedule)。
+
+- **Manifest**: [`k8s/cron-market-rotation.yaml`](k8s/cron-market-rotation.yaml)
+- **Entry point**: `scripts/market-rotation/run-batch.ts`
+- **Schedule**: `30 21 * * 0-5` (21:30 UTC, Sunday–Friday)
+
+若以 Docker / CapRover 部署而非 K8s，需自備 cron 或外部排程器觸發同一支 script；`docs/BETA_COCKPIT.md` 的失敗處理與 staleness 契約仍然適用。
+
+---
+
 ## 健康檢查 | Health Check
 
 應用程式提供健康檢查端點：

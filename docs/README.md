@@ -30,6 +30,7 @@
 | [plans/active/improvement-plan-20260501.md](plans/active/improvement-plan-20260501.md) | 2026-05-01 improvement plan |
 | [plans/active/trade-basic-enhance-plan-v2.md](plans/active/trade-basic-enhance-plan-v2.md) | Trade Basic UI/UX enhancement v2 |
 | [plans/active/market-rotation-monitor-design.md](plans/active/market-rotation-monitor-design.md) | Market rotation monitor design |
+| [plans/active/beta-cockpit-plan.md](plans/active/beta-cockpit-plan.md) | Beta Cockpit upgrade — core universe, beta allocation engine, portfolio exposure |
 | [plans/active/ui-color-system-refactor.md](plans/active/ui-color-system-refactor.md) | UI color system refactor |
 | [plans/active/partner-shared-diary/](plans/active/partner-shared-diary/) | Partner shared diary |
 

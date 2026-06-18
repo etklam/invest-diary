@@ -64,6 +64,14 @@ Open http://localhost:3000.
 | [DESIGN.md](DESIGN.md) | Design system |
 | [PRODUCT.md](PRODUCT.md) | Product positioning |
 
+## Beta Cockpit
+
+The Market Rotation Monitor upgrade produces a Beta allocation recommendation
+from market state + breadth + rotation ranks. Design, cron schedule, exposure
+buckets, and limitations are documented in
+[docs/BETA_COCKPIT.md](docs/BETA_COCKPIT.md). The source plan lives at
+[docs/plans/active/beta-cockpit-plan.md](docs/plans/active/beta-cockpit-plan.md).
+
 ## License
 
 Private project, no open-source license.
