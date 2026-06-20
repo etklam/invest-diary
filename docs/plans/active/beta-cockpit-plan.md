@@ -2,7 +2,12 @@
 
 ## 狀態
 
-Accepted for planning. 待執行。
+**已實作（2026-06-21）。** 9 個 commit 已落地（見 `git log --grep=beta-cockpit` 與相關 feat/refactor commits），原 plan 8 個 phase + Eng Review 14 個 findings 全數吸收。
+
+唯一待收尾的 critical gap（NaN quantity 無測試無處理）於 2026-06-21 修復：
+- `lib/portfolio-exposure/exposure.ts` 的 `resolveMarketValue` 加 `Number.isFinite` guard，並在 `PortfolioExposure` 加 `skippedCount: number` 暴露異常持股數
+- `tests/unit/lib/portfolio-exposure/exposure.test.ts` 加 6 個 regression case
+- `components/PortfolioExposurePanel.vue` 顯示 `portfolioExposure.skippedWarning`，使用者不再「看到錯誤 % 而不知」
 
 本計畫是 `market-rotation-monitor-design.md` 的延伸：把 Market Rotation Monitor 從「觀測市場狀態」升級成「給出 Beta 配置建議」的 Beta Cockpit，並串接既有 Portfolio 資料做 Exposure Analysis。
 
@@ -891,10 +896,10 @@ monitor.ts、universe.ts 同步更新。若 prisma schema 的 `groupType` 欄位
 | Yahoo rate-limit 時 core batch 掛掉 | `ensureCanonicalPrices` | 無 | warn log + throw | batch 靜默失敗，UI 顯示 stale |
 | Core universe 的 single stock split（如 TSLA 2022 split） | pipeline snapshot-builder | 無 | 無 | rotationRank 突變，使用者困惑 |
 | Beta allocation 收到 `marketState='unknown'` + `breadth='confirming'`（plan 未定義組合） | policy.ts | 將被 C1 新測試覆蓋 | fallback to `unknown` mode | 看到「unknown」配置建議 |
-| Holdings 出現 NaN quantity（Decimal parse 邊界） | `lib/utils.ts:40` `Number(tx.quantity)` | 無 | 無 | exposure % 失真，可能顯示 Infinity |
+| Holdings 出現 NaN quantity（Decimal parse 邊界） | `lib/utils.ts:40` `Number(tx.quantity)` | ✅ 已修（2026-06-21） | ✅ `exposure.ts` `Number.isFinite` guard + `skippedCount` + UI 警告 | `skippedCount` 顯示於 Portfolio Exposure Panel |
 | `betaAllocation` payload 在 prisma serialize 時 BigInt crash | API handler | 無 | 既有 `serialize()` 處理 | 應自動處理，需加測試驗證 |
 
-**Critical gap：** 第 4 項（NaN quantity）目前無測試無處理，使用者會看到錯誤 % 而不知。
+**Critical gap：** ~~第 4 項（NaN quantity）目前無測試無處理，使用者會看到錯誤 % 而不知。~~ **已修復（2026-06-21）** — 見上方狀態欄與 `tests/unit/lib/portfolio-exposure/exposure.test.ts` 的 `invalid holdings (NaN / Infinity guard)` 區塊。
 
 ## Worktree parallelization strategy
 
@@ -1000,5 +1005,5 @@ git log 顯示最近五個 commit 與本 plan 範圍無重疊（皆為 nav group
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | not run |
 
 - **UNRESOLVED:** 0 (所有 14 個 AskUserQuestion 已獲使用者明確回答)
-- **CRITICAL GAPS:** 1 (NaN quantity 無測試無處理，已列入 Failure modes 表)
-- **VERDICT:** ENG CLEARED — plan 已吸收全部 review findings，可進入實作。建議在下階段（Phase 4+6 UI 實作前）跑 `/plan-design-review` 補設計審查。實作完成後跑 `/review` 做最終 diff 審查。
+- **CRITICAL GAPS:** 0 (NaN quantity 已於 2026-06-21 修復 — `exposure.ts` guard + `skippedCount` + UI warning + 6 個 regression test)
+- **VERDICT:** ENG CLEARED & IMPLEMENTED — plan 已吸收全部 review findings 並實作落地。建議下階段（如有 UI 視覺強化需求）跑 `/plan-design-review`，並在每次改動 `lib/portfolio-exposure/*` 後跑 `npx vitest run tests/unit/lib/portfolio-exposure/`。

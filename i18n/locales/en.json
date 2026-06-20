@@ -2136,6 +2136,7 @@
     "empty": "No holdings yet. Add a transaction to see your portfolio exposure.",
     "noMarketData": "No market regime data available. Showing current exposure only.",
     "overweightWarning": "You are overweight high beta relative to current market regime.",
+    "skippedWarning": "{count} holding(s) have invalid market data (NaN / Infinity) and were excluded from exposure calculation. Please review the source transactions.",
     "buckets": {
       "highBeta": "High Beta",
       "coreIndex": "Core Index",

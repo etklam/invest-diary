@@ -19,6 +19,13 @@ export interface PortfolioExposure {
   largestTheme: string | null
   concentrationWarning: boolean
   totalValue: number
+  /**
+   * Number of holdings whose resolved market value was NaN / Infinity /
+   * non-numeric (e.g. corrupted Decimal parse from `Number(tx.quantity)`).
+   * Those holdings are excluded from bucket totals so the displayed
+   * percentages stay finite; UI should warn the user when > 0.
+   */
+  skippedCount: number
 }
 
 export interface ExposureGap {
@@ -46,6 +53,7 @@ const EMPTY_EXPOSURE: PortfolioExposure = {
   largestTheme: null,
   concentrationWarning: false,
   totalValue: 0,
+  skippedCount: 0,
 }
 
 /**
@@ -54,15 +62,26 @@ const EMPTY_EXPOSURE: PortfolioExposure = {
  * Precedence: explicit `marketValue` > `price * quantity` > `totalCost`.
  * A marketValue of 0 is treated as missing (falls through to the next source),
  * matching the semantics used elsewhere in the codebase.
+ *
+ * Returns `null` when every fallback resolves to NaN / Infinity / non-numeric
+ * (e.g. when upstream `Number(tx.quantity)` was fed a malformed Decimal).
+ * Caller must skip + count these so the percentages shown to the user stay
+ * finite instead of silently producing Infinity.
  */
-function resolveMarketValue(h: HoldingView): number {
-  if (typeof h.marketValue === 'number' && h.marketValue !== 0) {
+function resolveMarketValue(h: HoldingView): number | null {
+  if (typeof h.marketValue === 'number' && h.marketValue !== 0 && Number.isFinite(h.marketValue)) {
     return h.marketValue
   }
-  if (typeof h.price === 'number' && h.price !== 0 && typeof h.quantity === 'number') {
+  if (
+    typeof h.price === 'number' && h.price !== 0 && Number.isFinite(h.price) &&
+    typeof h.quantity === 'number' && Number.isFinite(h.quantity)
+  ) {
     return h.price * h.quantity
   }
-  return h.totalCost
+  if (typeof h.totalCost === 'number' && Number.isFinite(h.totalCost)) {
+    return h.totalCost
+  }
+  return null
 }
 
 /**
@@ -77,15 +96,22 @@ export function computePortfolioExposure(holdings: HoldingView[]): PortfolioExpo
 
   const bucketTotals = new Map<BetaBucket, number>()
   let totalValue = 0
+  let skippedCount = 0
 
   for (const h of holdings) {
     const value = resolveMarketValue(h)
+    if (value === null) {
+      skippedCount++
+      continue
+    }
     const bucket = classifyBetaBucket(h.symbol)
     bucketTotals.set(bucket, (bucketTotals.get(bucket) ?? 0) + value)
     totalValue += value
   }
 
-  if (totalValue === 0) return { ...EMPTY_EXPOSURE }
+  if (totalValue === 0) {
+    return { ...EMPTY_EXPOSURE, skippedCount }
+  }
 
   const pct = (bucket: BetaBucket): number => {
     const v = bucketTotals.get(bucket) ?? 0
@@ -137,6 +163,7 @@ export function computePortfolioExposure(holdings: HoldingView[]): PortfolioExpo
     largestTheme,
     concentrationWarning,
     totalValue,
+    skippedCount,
   }
 }
 

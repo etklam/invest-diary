@@ -226,6 +226,17 @@ function formatGap(gap: ExposureGap): string {
           </p>
         </div>
 
+        <!-- Skipped holdings warning (NaN / Infinity market data) -->
+        <div
+          v-if="exposure && exposure.skippedCount > 0"
+          class="flex items-start gap-2 rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 dark:border-amber-500/30 dark:bg-amber-500/10"
+        >
+          <Icon name="heroicons:exclamation-circle" class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
+          <p class="text-sm leading-5 text-amber-800 dark:text-amber-200">
+            {{ t('portfolioExposure.skippedWarning', { count: exposure.skippedCount }) }}
+          </p>
+        </div>
+
         <!-- Beta allocation explanation -->
         <div
           v-if="betaAllocation && betaAllocation.explanation"

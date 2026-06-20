@@ -2039,6 +2039,7 @@
     "empty": "尚无持仓。新增一笔交易以查看投资组合曝险。",
     "noMarketData": "查无市场状态数据。仅显示当前曝险。",
     "overweightWarning": "相对于当前市场状态，高 Beta 曝险过高。",
+    "skippedWarning": "{count} 笔持仓的市价数据异常（NaN / Infinity），已自曝险计算中排除。请检查来源交易记录。",
     "buckets": {
       "highBeta": "高 Beta",
       "coreIndex": "核心指数",

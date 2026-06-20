@@ -54,6 +54,7 @@ const ALL_ZERO: PortfolioExposure = {
   largestTheme: null,
   concentrationWarning: false,
   totalValue: 0,
+  skippedCount: 0,
 }
 
 // ─── computePortfolioExposure ────────────────────────────────────────────
@@ -226,6 +227,90 @@ describe('computePortfolioExposure', () => {
       expect(result.totalValue).toBeCloseTo(2000, 2)
     })
   })
+
+  // ─── Critical gap from eng review (2026-06-18) ────────────────────────
+  // Source: `Number(tx.quantity)` in lib/utils.ts can emit NaN when a Decimal
+  // is malformed; downstream `HoldingView` may then carry NaN/Infinity values.
+  // Those holdings must be skipped + counted, never silently allowed to
+  // produce Infinity in the resulting percentages.
+  describe('invalid holdings (NaN / Infinity guard)', () => {
+    it('NaN marketValue falls back to price * quantity when finite', () => {
+      const holdings: HoldingView[] = [
+        makeHolding('QQQ', 0, { marketValue: NaN, price: 100, quantity: 5 }),
+      ]
+      const result = computePortfolioExposure(holdings)
+      expect(result.coreIndexPct).toBeCloseTo(100, 2)
+      expect(result.totalValue).toBeCloseTo(500, 2)
+      expect(result.skippedCount).toBe(0)
+    })
+
+    it('NaN marketValue falls back to totalCost when price/quantity also NaN', () => {
+      const holdings: HoldingView[] = [
+        makeHolding('QQQ', 1000, { marketValue: NaN, price: NaN, quantity: NaN }),
+      ]
+      const result = computePortfolioExposure(holdings)
+      expect(result.coreIndexPct).toBeCloseTo(100, 2)
+      expect(result.totalValue).toBeCloseTo(1000, 2)
+      expect(result.skippedCount).toBe(0)
+    })
+
+    it('Infinity marketValue does not leak — falls back to finite price * quantity', () => {
+      const holdings: HoldingView[] = [
+        makeHolding('QQQ', 0, { marketValue: Infinity, price: 100, quantity: 5 }),
+      ]
+      const result = computePortfolioExposure(holdings)
+      expect(Number.isFinite(result.totalValue)).toBe(true)
+      expect(result.totalValue).toBeCloseTo(500, 2)
+      expect(result.coreIndexPct).toBeCloseTo(100, 2)
+      expect(result.skippedCount).toBe(0)
+    })
+
+    it('all-invalid holdings → ALL_ZERO with skippedCount = N', () => {
+      const holdings: HoldingView[] = [
+        makeHolding('QQQ', NaN, { marketValue: NaN, price: NaN, quantity: NaN }),
+        makeHolding('SOXX', Infinity, { marketValue: Infinity, price: undefined, quantity: undefined }),
+      ]
+      const result = computePortfolioExposure(holdings)
+      expect(result.totalValue).toBe(0)
+      expect(result.highBetaPct).toBe(0)
+      expect(result.coreIndexPct).toBe(0)
+      expect(result.unknownPct).toBe(0)
+      expect(result.concentrationWarning).toBe(false)
+      expect(Number.isFinite(result.totalValue)).toBe(true)
+      expect(result.skippedCount).toBe(2)
+    })
+
+    it('mixed valid + invalid: valid holdings determine percentages, invalid counted', () => {
+      const holdings: HoldingView[] = [
+        makeHolding('QQQ', 1000), // valid → core_index
+        makeHolding('SOXX', 1000), // valid → high_beta
+        makeHolding('NVDA', NaN, { marketValue: NaN, price: NaN, quantity: NaN }), // invalid
+      ]
+      const result = computePortfolioExposure(holdings)
+      expect(result.totalValue).toBeCloseTo(2000, 2)
+      expect(result.coreIndexPct).toBeCloseTo(50, 2)
+      expect(result.highBetaPct).toBeCloseTo(50, 2)
+      expect(result.megaCapPct).toBe(0)
+      expect(result.skippedCount).toBe(1)
+    })
+
+    it('result is always finite even when every numeric source is NaN', () => {
+      const holdings: HoldingView[] = [
+        makeHolding('QQQ', NaN, {
+          marketValue: NaN, price: NaN, quantity: NaN, avgCost: NaN,
+        }),
+      ]
+      const result = computePortfolioExposure(holdings)
+      const allPcts = [
+        result.highBetaPct, result.coreIndexPct, result.megaCapPct,
+        result.singleStockPct, result.defensivePct, result.cashProxyPct,
+        result.unknownPct,
+      ]
+      expect(allPcts.every(Number.isFinite)).toBe(true)
+      expect(Number.isFinite(result.totalValue)).toBe(true)
+      expect(result.skippedCount).toBe(1)
+    })
+  })
 })
 
 // ─── compareExposureToTarget ──────────────────────────────────────────────
@@ -248,6 +333,7 @@ describe('compareExposureToTarget', () => {
       largestTheme: null,
       concentrationWarning: false,
       totalValue: 0,
+      skippedCount: 0,
       ...partial,
     }
   }

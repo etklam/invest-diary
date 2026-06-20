@@ -2136,6 +2136,7 @@
     "empty": "尚無持倉。新增一筆交易以檢視投資組合曝險。",
     "noMarketData": "查無市場狀態資料。僅顯示目前曝險。",
     "overweightWarning": "相對於目前市場狀態，高 Beta 曝險過高。",
+    "skippedWarning": "{count} 筆持股的市價資料異常（NaN / Infinity），已自曝險計算中排除。請檢查來源交易紀錄。",
     "buckets": {
       "highBeta": "高 Beta",
       "coreIndex": "核心指數",
