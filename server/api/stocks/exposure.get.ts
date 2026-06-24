@@ -17,7 +17,7 @@ import { serialize } from '~/server/utils/serialize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
-import { calculateHoldings } from '~/lib/utils'
+import { calculateHoldings } from '~/lib/position-state'
 import type { HoldingView } from '~/lib/stocks-view'
 import {
   computePortfolioExposure,

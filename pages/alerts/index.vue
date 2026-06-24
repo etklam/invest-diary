@@ -83,7 +83,7 @@
 <script setup lang="ts">
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
-import { formatDate, formatShortDate } from '~/lib/utils'
+import { formatDate, formatShortDate } from '~/lib/dates'
 import type { SerializedId } from '~/types/common'
 
 const { t } = useI18n()

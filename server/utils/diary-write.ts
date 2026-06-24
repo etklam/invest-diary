@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import prisma from '~/lib/prisma'
 import type { DiaryInput, Diary, TransactionInput } from '~/types/diary'
-import { getUtcDayRange, toUtcNoonDate } from '~/lib/diary-date'
+import { getUtcDayRange, toUtcNoonDate } from '~/lib/dates/normalize'
 import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'
 import { attachDiaryTags } from '~/server/utils/diary-response'

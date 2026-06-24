@@ -1,6 +1,5 @@
 import { computed, onMounted, ref, watch } from 'vue'
-import { formatDateWithWeekday } from '~/lib/utils'
-import { formatYmdInTimezone } from '~/lib/diary-date'
+import { formatDateWithWeekday, formatYmdInTimezone } from '~/lib/dates'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import type {
   Diary,

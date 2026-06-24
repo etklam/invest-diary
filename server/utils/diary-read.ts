@@ -11,7 +11,7 @@
  */
 
 import prisma from '~/lib/prisma'
-import { getUtcDayRange } from '~/lib/diary-date'
+import { getUtcDayRange } from '~/lib/dates/normalize'
 import { Errors } from '~/lib/errors/factory'
 
 /**

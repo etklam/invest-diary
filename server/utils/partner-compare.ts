@@ -1,4 +1,4 @@
-import { formatYmdInTimezone } from '~/lib/diary-date'
+import { formatYmdInTimezone } from '~/lib/dates/format'
 import { parseDiaryTags } from '~/lib/diary-tags'
 
 // ─── Types ────────────────────────────────────────────────────────────────────

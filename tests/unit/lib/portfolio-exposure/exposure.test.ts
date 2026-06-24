@@ -229,7 +229,7 @@ describe('computePortfolioExposure', () => {
   })
 
   // ─── Critical gap from eng review (2026-06-18) ────────────────────────
-  // Source: `Number(tx.quantity)` in lib/utils.ts can emit NaN when a Decimal
+  // Source: `Number(tx.quantity)` in lib/position-state.ts can emit NaN when a Decimal
   // is malformed; downstream `HoldingView` may then carry NaN/Infinity values.
   // Those holdings must be skipped + counted, never silently allowed to
   // produce Infinity in the resulting percentages.

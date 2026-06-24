@@ -2,7 +2,7 @@ import type { H3Event } from 'h3'
 import prisma from '~/lib/prisma'
 import { PostStatus } from '@prisma/client'
 import { logger } from '~/lib/logger'
-import { serializeBlogPost } from '~/server/utils/blog-response'
+import { serialize } from '~/server/utils/serialize'
 import { Errors } from '~/lib/errors/factory'
 
 const resolveSlug = (event: H3Event) => {
@@ -63,7 +63,7 @@ export default defineEventHandler(async (event: H3Event) => {
     }
 
     setHeader(event, 'Cache-Control', 'no-store')
-    return serializeBlogPost(post)
+    return serialize(post)
   } catch (error: any) {
     if (error?.statusCode) {
       throw error

@@ -5,7 +5,6 @@ import { clearAuthCookies } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
-import { enforceRateLimit } from '~/server/utils/rate-limit'
 import { handleApiError } from '~/server/utils/error-handler'
 
 const passwordSchema = z.object({
@@ -23,21 +22,19 @@ export default defineEventHandler(async (event) => {
     }
 
     const ipIdentifier = getRateLimitIdentifier(event)
-    await enforceRateLimit(
-      rateLimiters.authPasswordIp,
-      ipIdentifier,
-      log,
-      'Password change rate limited',
-      { ip: ipIdentifier }
-    )
+    try {
+      await rateLimiters.authPasswordIp(ipIdentifier)
+    } catch {
+      log.warn('Password change rate limited', { ip: ipIdentifier })
+      throw Errors.rateLimited(60).toH3Error()
+    }
 
-    await enforceRateLimit(
-      rateLimiters.authPasswordIdentity,
-      String(userId),
-      log,
-      'Password change rate limited',
-      { ip: ipIdentifier, userId: String(userId) }
-    )
+    try {
+      await rateLimiters.authPasswordIdentity(String(userId))
+    } catch {
+      log.warn('Password change rate limited', { ip: ipIdentifier, userId: String(userId) })
+      throw Errors.rateLimited(60).toH3Error()
+    }
 
     const body = await readBody(event)
 

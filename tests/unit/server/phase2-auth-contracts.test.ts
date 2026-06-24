@@ -83,7 +83,7 @@ describe('Phase 2 auth and error contracts', () => {
         },
       },
     }))
-    vi.doMock('~/lib/utils', () => ({
+    vi.doMock('~/lib/position-state', () => ({
       calculateHoldings: mockCalculateHoldings,
     }))
     vi.doMock('~/lib/logger', () => ({

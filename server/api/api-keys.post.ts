@@ -5,7 +5,7 @@ import { requireUser } from '~/server/utils/auth'
 import { generateApiKey } from '~/server/utils/api-key'
 import { normalizedRequiredString } from '~/server/utils/validation'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
-import { enforceRateLimit } from '~/server/utils/rate-limit'
+import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
 
@@ -19,13 +19,12 @@ export default defineEventHandler(async (event) => {
   try {
     const user = requireUser(event)
 
-    await enforceRateLimit(
-      rateLimiters.generalApi,
-      getRateLimitIdentifier(event),
-      log,
-      'API key create rate limited',
-      { userId: user.id }
-    )
+    try {
+      await rateLimiters.generalApi(getRateLimitIdentifier(event))
+    } catch {
+      log.warn('API key create rate limited', { userId: user.id })
+      throw Errors.rateLimited(60).toH3Error()
+    }
 
     const body = await readBody(event)
     const validated = createApiKeySchema.parse(body)

@@ -7,7 +7,7 @@ import {
   toggleSelectAllIds,
 } from '~/lib/admin/blog-management'
 import { resolveReloadPageAfterDelete } from '~/lib/admin/user-management'
-import { formatDate } from '~/lib/utils'
+import { formatDate } from '~/lib/dates'
 import { CATEGORY_OPTIONS } from '~/types/blog'
 
 const { t } = useI18n()

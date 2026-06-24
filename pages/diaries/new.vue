@@ -165,7 +165,7 @@
 
 <script setup lang="ts">
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
-import { toDateTimeLocalValue } from '~/lib/diary-date'
+import { toDateTimeLocalValue } from '~/lib/dates/normalize'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 

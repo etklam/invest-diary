@@ -5,8 +5,17 @@ import { parseDiaryTags } from '~/lib/diary-tags'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
-import { parsePagination, parsePositiveInt, parseSearchQuery, parseDiarySortOption } from '~/server/utils/query-params'
 import { serialize } from '~/server/utils/serialize'
+
+// ponytail: local helpers — only this endpoint uses them, inlined from deleted query-params.ts
+const MAX_LIMIT = 100
+const DEFAULT_LIMIT = 20
+const DIARY_SORT_OPTIONS: Record<string, Record<string, 'asc' | 'desc'>> = {
+  'date-desc': { createdAt: 'desc' },
+  'date-asc': { createdAt: 'asc' },
+  'title-asc': { title: 'asc' },
+  'title-desc': { title: 'desc' },
+}
 
 type DiaryListItem = Awaited<ReturnType<typeof prisma.diary.findMany>>[number]
 type DiaryAlertItem = DiaryListItem['alerts'][number]
@@ -20,10 +29,33 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const userId = BigInt(user.id)
 
     const query = getQuery(event)
-    const { page, limit, skip } = parsePagination(query)
-    const days = parsePositiveInt(query.days)
-    const search = parseSearchQuery(query.search)
-    const orderBy = parseDiarySortOption(query.sortBy)
+
+    // Pagination
+    const rawPage = Number(query.page)
+    const rawLimit = Number(query.limit)
+    const page = Number.isFinite(rawPage) && rawPage >= 1 ? Math.floor(rawPage) : 1
+    const limit = Number.isFinite(rawLimit) && rawLimit >= 1 && rawLimit <= MAX_LIMIT
+      ? Math.floor(rawLimit)
+      : DEFAULT_LIMIT
+    const skip = (page - 1) * limit
+
+    // Days (positive int)
+    const rawDays = Number(query.days)
+    const days = Number.isFinite(rawDays) && rawDays >= 1 ? Math.floor(rawDays) : undefined
+
+    // Search (trimmed, capped at 500)
+    let search: string | undefined
+    if (query.search !== undefined && query.search !== null) {
+      const trimmed = String(query.search).trim()
+      if (trimmed) search = trimmed.slice(0, 500)
+    }
+
+    // Sort option (whitelist of Prisma orderBy)
+    const sortBy = typeof query.sortBy === 'string' && query.sortBy
+      ? DIARY_SORT_OPTIONS[query.sortBy]
+      : undefined
+    const orderBy: Record<string, 'asc' | 'desc'> = sortBy ?? { createdAt: 'desc' }
+
     const reviewStatusFilter = typeof query.reviewStatus === 'string' ? query.reviewStatus : undefined
 
     // Parse date range (YYYY-MM-DD → UTC day boundaries)

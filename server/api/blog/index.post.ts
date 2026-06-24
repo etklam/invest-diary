@@ -4,7 +4,7 @@ import { generateSlug } from '~/lib/blog'
 import adminMiddleware from '~/server/middleware/admin'
 import { handleApiError } from '~/server/utils/error-handler'
 import { blogPostInputSchema, resolveExcerpt } from '~/server/utils/blog-schemas'
-import { serializeBlogPost } from '~/server/utils/blog-response'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
     })
 
     log.info('Post created', { postId: String(post.id), userId: String(userId) })
-    return serializeBlogPost(post)
+    return serialize(post)
   } catch (error) {
     handleApiError(error, log)
   }

@@ -80,12 +80,6 @@ export const Errors = {
     message: 'Token not found',
   }),
 
-  tokenRevoked: () => new AppError({
-    statusCode: 401,
-    code: ErrorCodes.AUTH_TOKEN_REVOKED,
-    message: 'Token has been revoked',
-  }),
-
   rateLimited: (retryAfter?: number) => new AppError({
     statusCode: 429,
     code: ErrorCodes.AUTH_RATE_LIMITED,
@@ -159,12 +153,6 @@ export const Errors = {
     statusCode: 404,
     code: ErrorCodes.ALERT_NOT_FOUND,
     message: `Alert ${id} not found`,
-  }),
-
-  alertAccessDenied: () => new AppError({
-    statusCode: 403,
-    code: ErrorCodes.ALERT_ACCESS_DENIED,
-    message: 'Alert access denied',
   }),
 
   // ETF

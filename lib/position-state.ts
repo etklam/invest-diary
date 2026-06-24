@@ -11,6 +11,8 @@
  * - 持倉歸零時自動從結果移除
  */
 
+import type { Prisma } from '@prisma/client'
+
 export interface PositionStateInput {
   symbol: string
   type: 'BUY' | 'SELL'
@@ -24,6 +26,43 @@ export interface PositionState {
   totalQuantity: number
   totalCost: number
   avgCost: number
+}
+
+// ─── 高階包裝：從 Prisma Decimal 交易記錄計算持股 ─────────────────────────────
+// ponytail: calculateHoldings 只是 computePositionState 的 map in/out 包裝，
+// 无独立逻辑。原本住在 lib/utils.ts，現在落地到真相源旁邊。
+
+export interface Holding {
+  symbol: string
+  quantity: number
+  avgCost: number
+  totalCost: number
+}
+
+// 最小化的交易記錄類型，只用於計算持股
+export interface TransactionForHolding {
+  symbol: string
+  type: 'BUY' | 'SELL'
+  quantity: Prisma.Decimal | number
+  price: Prisma.Decimal | number
+  tradeDate: Date | string
+}
+
+export function calculateHoldings(transactions: TransactionForHolding[]): Holding[] {
+  const inputs: PositionStateInput[] = transactions.map((tx) => ({
+    symbol: tx.symbol,
+    type: tx.type,
+    quantity: Number(tx.quantity),
+    price: Number(tx.price),
+    tradeDate: tx.tradeDate,
+  }))
+
+  return computePositionState(inputs).map((pos) => ({
+    symbol: pos.symbol,
+    quantity: pos.totalQuantity,
+    avgCost: pos.avgCost,
+    totalCost: pos.totalCost,
+  }))
 }
 
 // ─── 共享的正規化與排序 ──────────────────────────────────────────────────────

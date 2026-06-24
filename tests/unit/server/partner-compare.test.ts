@@ -27,7 +27,7 @@ interface CompareDay {
 
 const mockFormatYmd = vi.fn()
 
-vi.mock('~/lib/diary-date', () => ({
+vi.mock('~/lib/dates/format', () => ({
   formatYmdInTimezone: (...args: any[]) => mockFormatYmd(...args),
 }))
 

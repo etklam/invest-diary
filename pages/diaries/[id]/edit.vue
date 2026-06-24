@@ -146,7 +146,7 @@
 <script setup lang="ts">
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
-import { formatYmdInTimezone, toDateTimeLocalValue } from '~/lib/diary-date'
+import { formatYmdInTimezone, toDateTimeLocalValue } from '~/lib/dates'
 
 definePageMeta({
   middleware: 'auth'

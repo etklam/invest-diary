@@ -4,7 +4,6 @@ import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
-import { enforceRateLimit } from '~/server/utils/rate-limit'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
 
@@ -18,26 +17,24 @@ export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
   try {
     const ipIdentifier = getRateLimitIdentifier(event)
-    await enforceRateLimit(
-      rateLimiters.authRegisterIp,
-      ipIdentifier,
-      log,
-      'Registration rate limited',
-      { ip: ipIdentifier }
-    )
+    try {
+      await rateLimiters.authRegisterIp(ipIdentifier)
+    } catch {
+      log.warn('Registration rate limited', { ip: ipIdentifier })
+      throw Errors.rateLimited(60).toH3Error()
+    }
     const body = await readBody(event)
 
     // Validate input
     const validatedData = registerSchema.parse(body)
 
     const emailIdentity = validatedData.email.trim().toLowerCase()
-    await enforceRateLimit(
-      rateLimiters.authRegisterIdentity,
-      emailIdentity,
-      log,
-      'Registration rate limited',
-      { ip: ipIdentifier, identity: validatedData.email }
-    )
+    try {
+      await rateLimiters.authRegisterIdentity(emailIdentity)
+    } catch {
+      log.warn('Registration rate limited', { ip: ipIdentifier, identity: validatedData.email })
+      throw Errors.rateLimited(60).toH3Error()
+    }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({

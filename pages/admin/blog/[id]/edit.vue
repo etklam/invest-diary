@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
 import { useDebounceFn, useLocalStorage } from '@vueuse/core'
-import { formatDate } from '~/lib/utils'
+import { formatDate } from '~/lib/dates'
 const toast = useToast()
 const router = useRouter()
 const route = useRoute()

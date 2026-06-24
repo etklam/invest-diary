@@ -1,7 +1,7 @@
 import prisma from '~/lib/prisma'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
-import { calculateHoldings } from '~/lib/utils'
+import { calculateHoldings } from '~/lib/position-state'
 import { requireUser } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {

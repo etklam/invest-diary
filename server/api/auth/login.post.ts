@@ -8,7 +8,6 @@ import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { hashToken } from '~/server/utils/auth-session'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
-import { enforceRateLimit } from '~/server/utils/rate-limit'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
 
@@ -21,24 +20,22 @@ export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
   try {
     const ipIdentifier = getRateLimitIdentifier(event)
-    await enforceRateLimit(
-      rateLimiters.authLoginIp,
-      ipIdentifier,
-      log,
-      'Login rate limited',
-      { ip: ipIdentifier }
-    )
+    try {
+      await rateLimiters.authLoginIp(ipIdentifier)
+    } catch {
+      log.warn('Login rate limited', { ip: ipIdentifier })
+      throw Errors.rateLimited(60).toH3Error()
+    }
     const body = await readBody(event)
     const validatedData = loginSchema.parse(body)
 
     const emailIdentity = validatedData.email.trim().toLowerCase()
-    await enforceRateLimit(
-      rateLimiters.authLoginIdentity,
-      emailIdentity,
-      log,
-      'Login rate limited',
-      { ip: ipIdentifier, identity: validatedData.email }
-    )
+    try {
+      await rateLimiters.authLoginIdentity(emailIdentity)
+    } catch {
+      log.warn('Login rate limited', { ip: ipIdentifier, identity: validatedData.email })
+      throw Errors.rateLimited(60).toH3Error()
+    }
 
     // Find user
     const user = await prisma.user.findUnique({ where: { email: validatedData.email } })

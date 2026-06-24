@@ -1,6 +1,5 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import type { AlertPayload } from '../types/websocket'
-import { POLLING } from '~/lib/constants'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 
 export interface AlertItem {
@@ -26,9 +25,9 @@ interface AlertApiResponse {
 }
 
 // Polling 設定（作為 WebSocket 的 fallback）
-const BASE_POLL_INTERVAL = POLLING.BASE_INTERVAL
-const MAX_POLL_INTERVAL = POLLING.MAX_INTERVAL
-const BACKOFF_MULTIPLIER = POLLING.BACKOFF_MULTIPLIER
+const BASE_POLL_INTERVAL = 60_000
+const MAX_POLL_INTERVAL = 300_000
+const BACKOFF_MULTIPLIER = 1.5
 
 const devLog = (...args: unknown[]) => {
   if (import.meta.dev) {

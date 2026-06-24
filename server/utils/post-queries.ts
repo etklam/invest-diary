@@ -1,5 +1,5 @@
 import prisma from '~/lib/prisma'
-import { serializeBlogPosts } from '~/server/utils/blog-response'
+import { serialize } from '~/server/utils/serialize'
 import { Errors } from '~/lib/errors/factory'
 
 const DEFAULT_PAGE = 1
@@ -69,7 +69,8 @@ export interface PostQueryConfig {
 }
 
 export interface PostListResult {
-  data: ReturnType<typeof serializeBlogPosts>
+  // ponytail: posts are Prisma results shape-shifted by serialize(); precise type adds no value here
+  data: any[]
   pagination: {
     page: number
     limit: number
@@ -224,7 +225,7 @@ export async function queryPosts(config: PostQueryConfig = {}): Promise<PostList
   ])
 
   return {
-    data: serializeBlogPosts(posts),
+    data: posts.map(serialize),
     pagination: {
       page,
       limit,

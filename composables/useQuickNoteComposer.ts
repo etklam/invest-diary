@@ -1,6 +1,6 @@
 import { computed, getCurrentInstance, onUnmounted, reactive, ref, toRef, watch } from 'vue'
 import { useDebounceFn, useLocalStorage } from '@vueuse/core'
-import { toUtcNoonDate } from '~/lib/diary-date'
+import { toUtcNoonDate } from '~/lib/dates/normalize'
 import { generateTemplateDraft } from '~/lib/quicknote/generate-template-draft'
 import { resolveQuickReminderTime } from '~/lib/quicknote/quick-reminders'
 import { useQuickNoteTemplates } from '~/composables/useQuickNoteTemplates'

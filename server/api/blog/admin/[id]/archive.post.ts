@@ -1,7 +1,7 @@
 import prisma from '~/lib/prisma'
 import adminMiddleware from '~/server/middleware/admin'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
-import { serializeBlogPost } from '~/server/utils/blog-response'
+import { serialize } from '~/server/utils/serialize'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     })
 
     log.info('Post archived', { postId: String(post.id) })
-    return serializeBlogPost(post)
+    return serialize(post)
   } catch (error) {
     handleApiError(error, log)
   }

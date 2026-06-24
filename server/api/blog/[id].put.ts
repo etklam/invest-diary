@@ -6,7 +6,7 @@ import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 import { blogPostInputSchema, resolveExcerpt } from '~/server/utils/blog-schemas'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
-import { serializeBlogPost } from '~/server/utils/blog-response'
+import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {
   await adminMiddleware(event)
@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
     })
 
     log.info('Post updated', { postId: String(post.id) })
-    return serializeBlogPost(post)
+    return serialize(post)
   } catch (error) {
     handleApiError(error, log)
   }

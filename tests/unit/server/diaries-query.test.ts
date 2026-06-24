@@ -31,76 +31,8 @@ vi.mock('~/lib/logger', () => ({
   },
 }))
 
-// ============================================================
-// Tests for parseSearchQuery (existing utility, verify behavior)
-// ============================================================
-import { parseSearchQuery } from '~/server/utils/query-params'
-
-describe('parseSearchQuery', () => {
-  it('returns undefined for undefined input', () => {
-    expect(parseSearchQuery(undefined)).toBeUndefined()
-  })
-
-  it('returns undefined for null input', () => {
-    expect(parseSearchQuery(null)).toBeUndefined()
-  })
-
-  it('returns undefined for empty string', () => {
-    expect(parseSearchQuery('')).toBeUndefined()
-  })
-
-  it('returns undefined for whitespace-only string', () => {
-    expect(parseSearchQuery('   ')).toBeUndefined()
-  })
-
-  it('returns trimmed string for valid input', () => {
-    expect(parseSearchQuery('  hello  ')).toBe('hello')
-  })
-
-  it('truncates string exceeding maxLength', () => {
-    const long = 'a'.repeat(600)
-    expect(parseSearchQuery(long)).toBe('a'.repeat(500))
-  })
-})
-
-// ============================================================
-// Tests for parseDiarySortOption (new function to be added)
-// ============================================================
-import { parseDiarySortOption } from '~/server/utils/query-params'
-
-describe('parseDiarySortOption', () => {
-  it('returns default sort { createdAt: desc } for undefined', () => {
-    expect(parseDiarySortOption(undefined)).toEqual({ createdAt: 'desc' })
-  })
-
-  it('returns default sort for empty string', () => {
-    expect(parseDiarySortOption('')).toEqual({ createdAt: 'desc' })
-  })
-
-  it('returns default sort for invalid value', () => {
-    expect(parseDiarySortOption('invalid')).toEqual({ createdAt: 'desc' })
-  })
-
-  it('maps date-desc to { createdAt: desc }', () => {
-    expect(parseDiarySortOption('date-desc')).toEqual({ createdAt: 'desc' })
-  })
-
-  it('maps date-asc to { createdAt: asc }', () => {
-    expect(parseDiarySortOption('date-asc')).toEqual({ createdAt: 'asc' })
-  })
-
-  it('maps title-asc to { title: asc }', () => {
-    expect(parseDiarySortOption('title-asc')).toEqual({ title: 'asc' })
-  })
-
-  it('maps title-desc to { title: desc }', () => {
-    expect(parseDiarySortOption('title-desc')).toEqual({ title: 'desc' })
-  })
-})
-
-// ============================================================
-// Integration-style tests for GET /api/diaries handler
-// ============================================================
+// ponytail: parseSearchQuery / parseDiarySortOption inlined into diaries.get.ts;
+// their behavior is now covered by the handler integration tests below.
 describe('GET /api/diaries handler — filter/sort integration', () => {
   const baseDiaries = [
     {

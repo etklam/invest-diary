@@ -114,7 +114,7 @@
 <script setup lang="ts">
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
-import { formatShortDate } from '~/lib/utils'
+import { formatShortDate } from '~/lib/dates'
 
 definePageMeta({
   middleware: 'auth'
