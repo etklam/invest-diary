@@ -39,15 +39,16 @@ if (process.client) {
   <div v-if="isAuthenticated" class="relative z-40" ref="menuRef">
     <button
       @click="userMenuOpen = !userMenuOpen"
-      class="flex cursor-pointer items-center rounded-xl border border-cyan-100/80 bg-white/70 py-1.5 pl-3 pr-2 transition-colors duration-200 hover:border-cyan-200 hover:bg-cyan-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
+      class="flex cursor-pointer items-center rounded-xl border py-1.5 pl-3 pr-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary focus-visible:ring-offset-2"
+      style="border-color: var(--color-border); background: var(--color-surface);"
     >
       <div class="mr-3 text-right">
-        <p class="max-w-[180px] truncate text-sm text-slate-900 dark:text-slate-100">{{ user?.name || user?.email }}</p>
-        <p class="text-xs text-slate-500 dark:text-slate-300">{{ user?.role === 'ADMIN' ? t('nav.admin') : t('nav.users') }}</p>
-        <p class="text-xs text-slate-400 dark:text-slate-400">{{ currentTimezone.label }}</p>
+        <p class="max-w-[180px] truncate text-sm text-dt-text">{{ user?.name || user?.email }}</p>
+        <p class="text-xs text-dt-text-muted">{{ user?.role === 'ADMIN' ? t('nav.admin') : t('nav.users') }}</p>
+        <p class="text-xs text-dt-text-soft">{{ currentTimezone.label }}</p>
       </div>
       <div class="mr-2">
-        <div class="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-600 dark:bg-cyan-500">
+        <div class="flex h-9 w-9 items-center justify-center rounded-full" style="background: var(--color-primary);">
           <span class="text-white font-medium">
             {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
           </span>
@@ -55,7 +56,7 @@ if (process.client) {
       </div>
       <Icon
         name="heroicons:chevron-down"
-        class="h-3 w-3 text-slate-500 dark:text-slate-300"
+        class="h-3 w-3 text-dt-text-soft"
       />
     </button>
 
@@ -70,11 +71,12 @@ if (process.client) {
     >
       <div
         v-if="userMenuOpen"
-        class="absolute right-0 z-[80] mt-2 w-52 rounded-xl border border-cyan-100 bg-white/95 py-1 shadow-lg shadow-cyan-100/50 backdrop-blur dark:border-slate-700 dark:bg-slate-800/95"
+        class="absolute right-0 z-[80] mt-2 w-52 rounded-xl border py-1 shadow-dt-md"
+        style="border-color: var(--color-border); background: var(--color-surface);"
       >
         <NuxtLink
           to="/settings"
-          class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
+          class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-dt-text transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-primary)_12%,transparent)] hover:text-dt-primary"
           @click="userMenuOpen = false"
         >
           <Icon name="heroicons:cog-6-tooth" class="h-4 w-4" />
@@ -83,12 +85,12 @@ if (process.client) {
 
         <!-- Admin Section -->
         <template v-if="user?.role === 'ADMIN'">
-          <div class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400">
+          <div class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-dt-text-soft">
             Admin
           </div>
           <NuxtLink
             to="/admin"
-            class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
+            class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-dt-text transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-primary)_12%,transparent)] hover:text-dt-primary"
             @click="userMenuOpen = false"
           >
             <Icon name="heroicons:cog" class="h-4 w-4" />
@@ -96,7 +98,7 @@ if (process.client) {
           </NuxtLink>
           <NuxtLink
             to="/admin/blog"
-            class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-cyan-50 dark:text-slate-200 dark:hover:bg-slate-700"
+            class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-dt-text transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-primary)_12%,transparent)] hover:text-dt-primary"
             @click="userMenuOpen = false"
           >
             <Icon name="heroicons:pencil" class="h-4 w-4" />
@@ -104,11 +106,11 @@ if (process.client) {
           </NuxtLink>
         </template>
 
-        <div class="my-1 border-t border-slate-200 dark:border-slate-700"></div>
+        <div class="my-1 border-t" style="border-color: var(--color-border);"></div>
 
         <button
           @click="handleLogout"
-          class="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-700"
+          class="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm text-dt-danger transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-danger)_12%,transparent)]"
         >
           <Icon name="heroicons:arrow-left-on-rectangle" class="h-4 w-4" />
           <span>{{ t('nav.logout') }}</span>

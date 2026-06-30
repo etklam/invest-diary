@@ -21,7 +21,7 @@ const variantClass = computed(() => {
     ghost:
       'border-transparent bg-transparent text-dt-text-muted hover:text-dt-text',
     danger:
-      'border-red-600 bg-red-600 text-white hover:opacity-90',
+      'border-dt-danger bg-dt-danger text-white hover:opacity-90',
   }[props.variant]
 })
 </script>

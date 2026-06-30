@@ -37,16 +37,13 @@ watch(() => route.path, () => {
     <!-- Backdrop -->
     <div
       @click="emit('close')"
-      class="fixed inset-0 bg-slate-900/25 backdrop-blur-[1px]"
+      class="fixed inset-0 bg-black/40"
     />
 
     <!-- Mobile Nav Content -->
     <nav
-      class="relative flex h-full w-full flex-col overflow-y-auto border-r pb-8 pt-5 shadow-2xl backdrop-blur-xl sm:pt-6"
-      :class="isHomeRoute
-        ? ''
-        : ''"
-      style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-background) 90%, transparent);"
+      class="relative flex h-full w-full flex-col overflow-y-auto border-r pb-8 pt-5 shadow-dt-lg sm:pt-6"
+      style="border-color: var(--color-border); background: var(--color-surface);"
     >
       <div
         class="mb-5 flex w-full items-center border-b px-5 pb-5 sm:px-6 sm:pb-6"

@@ -52,7 +52,7 @@ const titleSizeClass = computed(() => {
 })
 
 const iconColorClass = computed(() => {
-  return props.iconColor || 'text-sky-700 dark:text-sky-400'
+  return props.iconColor || 'text-dt-primary'
 })
 
 const revealDelayClass = computed(() => {
@@ -67,21 +67,12 @@ const revealDelayClass = computed(() => {
 .landing-card {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 88%, transparent), color-mix(in srgb, var(--color-surface-strong) 82%, transparent));
-  backdrop-filter: blur(10px);
+  background: var(--color-surface);
   padding: 1.35rem;
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: transform var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
-}
-
-:global(.dark .landing-card),
-:global(.dark-mode .landing-card) {
-  border-color: var(--color-border);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 95%, transparent));
+  transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
 }
 
 .feature-card::after {
@@ -89,42 +80,32 @@ const revealDelayClass = computed(() => {
   position: absolute;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-info));
+  background: var(--color-primary);
 }
 
 .feature-card:hover {
-  transform: translateY(-2px);
   border-color: var(--color-border-strong);
   box-shadow: var(--shadow-md);
 }
 
 .feature-card-featured {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 32%),
-    linear-gradient(145deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 85%, transparent));
-}
-
-:global(.dark .feature-card-featured),
-:global(.dark-mode .feature-card-featured) {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 20%, transparent), transparent 30%),
-    linear-gradient(145deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 100%, transparent));
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
 }
 
 .feature-card-quiet {
-  background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  background: var(--color-surface);
   box-shadow: none;
 }
 
 .feature-card-quiet::after {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--color-info) 36%, transparent), transparent);
+  background: color-mix(in srgb, var(--color-info) 50%, transparent);
 }
 
 .metric-card {
   padding: 1rem;
   box-shadow: none;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 82%, transparent), color-mix(in srgb, var(--color-surface-strong) 78%, transparent));
+  background: var(--color-surface);
 }
 
 .number-chip {

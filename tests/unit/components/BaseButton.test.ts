@@ -48,8 +48,8 @@ describe('BaseButton', () => {
       props: { variant: 'danger' },
     })
     const classes = wrapper.classes()
-    expect(classes).toContain('border-red-600')
-    expect(classes).toContain('bg-red-600')
+    expect(classes).toContain('border-dt-danger')
+    expect(classes).toContain('bg-dt-danger')
     expect(classes).toContain('text-white')
   })
 
@@ -77,9 +77,9 @@ describe('BaseButton', () => {
     expect(wrapper.emitted('click')).toHaveLength(1)
   })
 
-  // 9. Has min-h-10 for touch target (40px)
-  it('has min-h-10 class for 40px touch target', () => {
+  // 9. Has min-h-11 for touch target (44px)
+  it('has min-h-11 class for 44px touch target', () => {
     const wrapper = mount(BaseButton)
-    expect(wrapper.classes()).toContain('min-h-10')
+    expect(wrapper.classes()).toContain('min-h-11')
   })
 })

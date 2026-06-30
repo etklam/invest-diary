@@ -256,7 +256,7 @@ definePageMeta({
                 {{ t('tools.financialFreedom.inputParams') }}
               </h2>
             </div>
-            <div class="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-300">
+            <div class="rounded-dt-pill border border-dt-info/30 bg-dt-info/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-dt-info">
               {{ t(`tools.financialFreedom.returnRateLevels.${returnRateLevel}.label`) }}
             </div>
           </div>
@@ -375,7 +375,7 @@ definePageMeta({
           <div class="bg-dt-primary rounded-t-xl p-6 sm:p-7">
             <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/80">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
                   {{ t('tools.financialFreedom.fireNumber') }}
                 </p>
                 <div class="mt-2 text-4xl font-semibold tracking-tight text-white">
@@ -389,7 +389,7 @@ definePageMeta({
             </div>
 
             <div class="mt-6">
-              <div class="mb-2 flex items-center justify-between text-sm text-sky-100/90">
+              <div class="mb-2 flex items-center justify-between text-sm text-white/90">
                 <span>{{ t('tools.financialFreedom.progress', { percent: result.currentProgress.toFixed(1) }) }}</span>
                 <span>{{ result.currentProgress.toFixed(1) }}%</span>
               </div>
@@ -520,7 +520,7 @@ definePageMeta({
                 </div>
                 <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
                   <span class="data-label">{{ t('tools.financialFreedom.returns') }}</span>
-                  <span class="data-value" :class="year.returns >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+                  <span class="data-value" :class="year.returns >= 0 ? 'text-dt-success' : 'text-dt-danger'">
                     {{ year.returns >= 0 ? '+' : '' }}{{ formatCompactValue(year.returns) }}
                   </span>
                 </div>

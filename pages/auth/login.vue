@@ -1,5 +1,5 @@
 <template>
-  <div class="login-shell mx-auto w-full max-w-5xl self-start overflow-hidden rounded-[28px] border shadow-2xl backdrop-blur md:grid md:grid-cols-2">
+  <div class="login-shell mx-auto w-full max-w-5xl self-start overflow-hidden rounded-[28px] border shadow-2xl md:grid md:grid-cols-2">
     <section class="login-aside hidden p-8 md:flex md:flex-col md:justify-between lg:p-10">
       <div class="space-y-6">
         <p class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.16em] uppercase">
@@ -152,14 +152,12 @@ const handleLogin = async () => {
 <style scoped>
 .login-shell {
   border-color: var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  background: var(--color-surface);
   box-shadow: var(--shadow-lg);
 }
 
 .login-aside {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-secondary) 20%, transparent), transparent 32%),
-    linear-gradient(160deg, #11263a, #1c3145 52%, #233948);
+  background: var(--color-panel-ink);
   color: #f3eee6;
 }
 
@@ -193,7 +191,7 @@ const handleLogin = async () => {
 }
 
 .login-form-panel {
-  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  background: var(--color-surface);
 }
 
 .login-form-panel h2 {
@@ -202,7 +200,7 @@ const handleLogin = async () => {
 
 .login-input {
   border-color: var(--color-border);
-  background: color-mix(in srgb, var(--color-surface-strong) 66%, transparent);
+  background: var(--color-surface-strong);
   color: var(--color-text);
 }
 
@@ -217,7 +215,7 @@ const handleLogin = async () => {
 
 .login-submit {
   background: var(--color-primary);
-  box-shadow: 0 16px 28px color-mix(in srgb, var(--color-primary) 28%, transparent);
+  box-shadow: var(--shadow-sm);
 }
 
 .login-submit:hover {

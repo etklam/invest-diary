@@ -15,7 +15,7 @@
         :class="getToastWrapperClass(toast.type)"
         :role="toast.type === 'error' || toast.type === 'warning' ? 'alert' : 'status'"
       >
-        <div class="backdrop-blur-xl rounded-2xl shadow-xl border" style="background: color-mix(in srgb, var(--color-surface) 92%, transparent); border-color: color-mix(in srgb, var(--color-border) 40%, transparent);">
+        <div class="rounded-2xl shadow-dt-lg border" style="background: var(--color-surface); border-color: var(--color-border);">
           <div class="p-4">
             <div class="flex items-start gap-3">
               <!-- Icon with animated background -->

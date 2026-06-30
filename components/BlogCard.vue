@@ -6,14 +6,14 @@
     <div v-if="isAdmin" class="absolute right-3 top-3 z-30 flex gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
       <NuxtLink
         :to="`/admin/blog/${post.id}/edit`"
-        class="admin-btn h-9 w-9 flex items-center justify-center rounded-xl shadow-sm backdrop-blur-sm"
+        class="admin-btn h-9 w-9 flex items-center justify-center rounded-xl shadow-sm"
         style="background: var(--color-surface)"
         title="編輯"
       >
         <Icon name="heroicons:pencil" class="h-4 w-4" style="color: var(--color-secondary)" />
       </NuxtLink>
       <button
-        class="admin-btn h-9 w-9 flex items-center justify-center rounded-xl shadow-sm backdrop-blur-sm"
+        class="admin-btn h-9 w-9 flex items-center justify-center rounded-xl shadow-sm"
         style="background: var(--color-surface)"
         title="刪除"
         @click="handleDelete"
@@ -39,7 +39,7 @@
 
       <div class="absolute left-4 top-4">
         <span
-          class="inline-flex items-center rounded-lg border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md"
+          class="inline-flex items-center rounded-lg bg-black/55 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white"
         >
           {{ $t(`blog.categories.${categoryKey}`) || post.category }}
         </span>
@@ -174,7 +174,7 @@ const prefetchDetail = async () => {
 }
 
 .card-overlay {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.15), transparent);
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .group:hover .card-title {

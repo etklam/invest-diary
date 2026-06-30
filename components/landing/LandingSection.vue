@@ -49,8 +49,7 @@ const revealDelayClass = computed(() => {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 76%, transparent), color-mix(in srgb, var(--color-surface-strong) 82%, transparent));
+  background: var(--color-surface);
   box-shadow: var(--shadow-md);
 }
 
@@ -58,14 +57,6 @@ const revealDelayClass = computed(() => {
   .section-panel {
     padding: 2rem;
   }
-}
-
-:global(.dark .section-panel),
-:global(.dark-mode .section-panel) {
-  border-color: var(--color-border);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface-strong) 100%, transparent));
-  box-shadow: var(--shadow-md);
 }
 
 .section-title {
@@ -83,7 +74,7 @@ const revealDelayClass = computed(() => {
   width: 4px;
   height: 1.2em;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--color-primary), var(--color-info));
+  background: var(--color-primary);
 }
 
 .section-subtitle {

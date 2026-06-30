@@ -17,17 +17,17 @@
       >
         <div class="flex min-h-screen items-end justify-center px-4 pb-20 text-center sm:items-center sm:p-0">
           <Transition
-            enter-active-class="transition-all duration-300 ease-out"
-            enter-from-class="opacity-0 backdrop-blur-none"
-            enter-to-class="opacity-100 backdrop-blur-sm"
-            leave-active-class="transition-all duration-200 ease-in"
-            leave-from-class="opacity-100 backdrop-blur-sm"
-            leave-to-class="opacity-0 backdrop-blur-none"
+            enter-active-class="transition-opacity duration-300 ease-out"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity duration-200 ease-in"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
           >
             <div
               v-if="show"
-              class="fixed inset-0 transition-all"
-              style="background: color-mix(in srgb, var(--color-panel-ink) 68%, transparent); backdrop-filter: blur(12px);"
+              class="fixed inset-0"
+              style="background: rgba(0, 0, 0, 0.5);"
               @click="close"
             />
           </Transition>
@@ -45,8 +45,8 @@
               class="relative inline-block w-full transform overflow-hidden text-left align-bottom transition-all sm:mx-auto sm:max-w-4xl sm:align-middle"
             >
               <div
-                class="flex h-screen flex-col sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-[28px] sm:border"
-                style="backdrop-filter: blur(20px); background: color-mix(in srgb, var(--color-surface) 92%, white); border-color: color-mix(in srgb, var(--color-border) 70%, white); box-shadow: var(--shadow-lg);"
+                class="flex h-screen flex-col sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-2xl sm:border"
+                style="background: var(--color-surface); border-color: var(--color-border); box-shadow: var(--shadow-lg);"
               >
                 <div class="flex items-center justify-between border-b px-4 py-4 sm:px-6 sm:py-5" style="border-color: var(--color-border);">
                   <div>

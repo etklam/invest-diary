@@ -213,7 +213,7 @@
       </div>
 
       <button
-        class="group relative overflow-hidden rounded-2xl px-8 py-4 text-sm font-bold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        class="group relative overflow-hidden rounded-2xl px-8 py-4 text-sm font-bold text-white transition-colors duration-200 hover:opacity-90 active:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
         style="background: var(--color-primary); box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 25%, transparent);"
         :disabled="saving"
         @click="emit('save')"
@@ -222,7 +222,6 @@
           <Icon v-if="saving" name="heroicons:arrow-path" class="h-4 w-4 animate-spin" />
           {{ saving ? (savingLabel || t('common.loading')) : (saveLabel || t('common.save')) }}
         </span>
-        <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
       </button>
     </div>
 

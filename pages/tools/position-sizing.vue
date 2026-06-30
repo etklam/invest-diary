@@ -502,7 +502,7 @@ definePageMeta({
                 <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-soft">{{ t('tools.positionSizing.markdown.cons') }}</div>
                 <ul class="mt-3 space-y-2">
                   <li v-for="con in selectedStrategy.cons" :key="con" class="flex items-start gap-2.5">
-                    <Icon name="heroicons:minus-circle" class="h-4 w-4 shrink-0 text-amber-500" />
+                    <Icon name="heroicons:minus-circle" class="h-4 w-4 shrink-0 text-dt-warning" />
                     <span>{{ con }}</span>
                   </li>
                 </ul>
@@ -580,13 +580,13 @@ definePageMeta({
         </div>
 
         <div v-if="warnings.length > 0 || (summary && summary.isOverBudget)" class="mt-6 space-y-3">
-          <div v-for="(warning, index) in warnings" :key="index" class="flex items-start gap-2.5 rounded-dt-sm border border-yellow-500/30 bg-yellow-500/5 px-4 py-3">
-            <Icon name="heroicons:exclamation-triangle" class="h-5 w-5 shrink-0 text-amber-500" />
-            <span class="text-sm text-amber-900 dark:text-amber-200">{{ warning }}</span>
+          <div v-for="(warning, index) in warnings" :key="index" class="flex items-start gap-2.5 rounded-dt-sm border border-dt-warning/30 bg-dt-warning/10 px-4 py-3">
+            <Icon name="heroicons:exclamation-triangle" class="h-5 w-5 shrink-0 text-dt-warning" />
+            <span class="text-sm text-dt-warning">{{ warning }}</span>
           </div>
-          <div v-if="summary && summary.isOverBudget" class="flex items-start gap-2.5 rounded-dt-sm border border-red-500/30 bg-red-500/5 px-4 py-3">
-            <Icon name="heroicons:exclamation-circle" class="h-5 w-5 shrink-0 text-rose-500" />
-            <span class="text-sm text-rose-900 dark:text-rose-200">
+          <div v-if="summary && summary.isOverBudget" class="flex items-start gap-2.5 rounded-dt-sm border border-dt-danger/30 bg-dt-danger/10 px-4 py-3">
+            <Icon name="heroicons:exclamation-circle" class="h-5 w-5 shrink-0 text-dt-danger" />
+            <span class="text-sm text-dt-danger">
               {{ t('tools.positionSizing.overBudgetWarning', { amount: formatCurrency(summary.overBudgetAmount) }) }}
             </span>
           </div>

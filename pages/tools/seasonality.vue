@@ -335,7 +335,7 @@ definePageMeta({
               <p class="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary">{{ t('tools.seasonality.worstMonths') }}</p>
               <h3 class="text-xl font-semibold text-dt-text">{{ t('tools.seasonality.worstMonths') }}</h3>
             </div>
-            <Icon name="heroicons:arrow-trending-down" class="h-5 w-5 text-rose-500" />
+            <Icon name="heroicons:arrow-trending-down" class="h-5 w-5 text-dt-danger" />
           </div>
 
           <div class="space-y-3">
@@ -363,7 +363,7 @@ definePageMeta({
 
             <div class="min-w-0 rounded-lg border border-dt-border bg-dt-bg p-4">
               <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('tools.seasonality.weakSixMonths') }}</div>
-              <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight" :class="weakPeriodReturn >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'">
+              <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight" :class="weakPeriodReturn >= 0 ? 'text-dt-warning' : 'text-dt-danger'">
                 {{ formatReturn(weakPeriodReturn) }}
               </div>
               <p class="mt-3 text-sm leading-6 text-dt-text-muted">{{ t(analysis.weakPeriod.strategyKey) }}</p>
@@ -391,7 +391,7 @@ definePageMeta({
 
         <!-- Disclaimer -->
         <div class="flex gap-3 rounded-xl border border-dt-border bg-dt-surface p-4">
-          <Icon name="heroicons:exclamation-triangle" class="h-5 w-5 shrink-0 text-amber-500" />
+          <Icon name="heroicons:exclamation-triangle" class="h-5 w-5 shrink-0 text-dt-warning" />
           <div>
             <p class="text-sm font-semibold text-dt-text">{{ t('tools.seasonality.disclaimerTitle') }}</p>
             <p class="mt-2 text-sm leading-6 text-dt-text-muted">{{ t('tools.seasonality.disclaimer') }}</p>

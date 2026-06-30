@@ -40,24 +40,21 @@ const handleDismiss = () => {
       v-if="showPrompt"
       class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-50"
     >
-      <div class="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl shadow-blue-500/10 border border-white/40 dark:border-white/10 overflow-hidden">
-        <!-- Header with gradient accent -->
-        <div class="h-1 bg-gradient-to-r from-blue-600 to-cyan-500"></div>
+      <div class="bg-dt-surface rounded-dt-md shadow-dt-lg border border-dt-border overflow-hidden">
+        <!-- Header accent -->
+        <div class="h-1 bg-dt-primary"></div>
 
         <div class="p-4">
           <div class="flex items-start gap-4">
-            <!-- Icon with gradient background -->
-            <div class="flex-shrink-0 relative">
-              <div class="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl blur-lg opacity-40"></div>
-              <div class="relative w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center">
-                <Icon name="heroicons:arrow-path-solid" class="w-6 h-6 text-white animate-spin-slow" />
-              </div>
+            <!-- Icon -->
+            <div class="flex-shrink-0 w-12 h-12 bg-dt-primary rounded-dt-sm flex items-center justify-center">
+              <Icon name="heroicons:arrow-path-solid" class="w-6 h-6 text-white animate-spin-slow" />
             </div>
 
             <!-- Content -->
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-gray-900 dark:text-white text-sm">{{ t('pwa.update.title') }}</p>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('pwa.update.description') }}</p>
+              <p class="font-semibold text-dt-text text-sm">{{ t('pwa.update.title') }}</p>
+              <p class="text-sm text-dt-text-muted mt-1">{{ t('pwa.update.description') }}</p>
             </div>
           </div>
 
@@ -65,13 +62,13 @@ const handleDismiss = () => {
           <div class="flex items-center gap-2 mt-4">
             <button
               @click="handleDismiss"
-              class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 rounded-xl transition-all duration-200 cursor-pointer"
+              class="flex-1 px-4 py-2.5 text-sm font-medium text-dt-text hover:bg-dt-surface-strong rounded-dt-sm transition-colors duration-200 cursor-pointer"
             >
               {{ t('pwa.update.later') }}
             </button>
             <button
               @click="handleUpdate"
-              class="flex-1 px-4 py-2.5 text-sm font-medium bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:from-blue-700 hover:to-cyan-600 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-2"
+              class="flex-1 px-4 py-2.5 text-sm font-medium bg-dt-primary text-white hover:opacity-90 rounded-dt-sm transition-opacity duration-200 cursor-pointer flex items-center justify-center gap-2"
             >
               <Icon name="heroicons:arrow-path-solid" class="w-4 h-4" />
               {{ t('pwa.update.refresh') }}

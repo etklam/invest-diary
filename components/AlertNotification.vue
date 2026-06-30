@@ -11,24 +11,24 @@
       v-if="show"
       class="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-50 pointer-events-auto"
     >
-      <div class="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-xl shadow-indigo-500/10 border border-white/40 dark:border-white/10 overflow-hidden">
+      <div class="rounded-2xl border shadow-dt-md overflow-hidden" style="background: var(--color-surface); border-color: var(--color-border);">
         <div class="p-4">
           <div class="flex items-start gap-3">
-            <!-- Animated bell icon -->
+            <!-- Bell icon -->
             <div class="flex-shrink-0 relative">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                <Icon name="heroicons:bell-solid" class="h-5 w-5 text-white animate-pulse" />
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: color-mix(in srgb, var(--color-primary) 14%, transparent);">
+                <Icon name="heroicons:bell-solid" class="h-5 w-5 text-dt-primary" />
               </div>
               <!-- Notification dot -->
-              <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+              <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2" style="background: var(--color-danger); border-color: var(--color-surface);"></span>
             </div>
 
             <!-- Content -->
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">
+              <p class="text-sm font-semibold text-dt-text">
                 {{ $t('alert.title') || '提醒通知' }}
               </p>
-              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              <p class="mt-1 text-sm text-dt-text-muted">
                 {{ message }}
               </p>
             </div>
@@ -36,7 +36,8 @@
             <!-- Close button -->
             <button
               @click="close"
-              class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
+              class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer"
+              :style="{ color: 'var(--color-text-soft)' }"
               :aria-label="$t('common.close') || '關閉'"
             >
               <Icon name="heroicons:x-mark" class="h-4 w-4" />
@@ -45,11 +46,11 @@
         </div>
 
         <!-- Progress bar for auto-dismiss -->
-        <div class="h-1 bg-gray-100 dark:bg-gray-800">
+        <div class="h-1" style="background: var(--color-surface-strong);">
           <div
             ref="progressBar"
-            class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-100 ease-linear"
-            :style="{ width: `${progress}%` }"
+            class="h-full transition-all duration-100 ease-linear"
+            :style="{ width: `${progress}%`, background: 'var(--color-primary)' }"
           ></div>
         </div>
       </div>

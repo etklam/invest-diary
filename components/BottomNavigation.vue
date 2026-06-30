@@ -8,7 +8,7 @@ const getIconName = (icon: string) => `heroicons:${icon}`
 </script>
 
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 z-50 border-t pb-safe backdrop-blur-xl" style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface) 95%, transparent);">
+  <nav class="fixed bottom-0 left-0 right-0 z-50 border-t pb-safe" style="border-color: var(--color-border); background: var(--color-surface);">
     <div class="mx-auto flex h-16 max-w-md items-center justify-around px-2">
       <NuxtLink
         v-for="item in navigationItems"

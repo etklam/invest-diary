@@ -22,10 +22,7 @@ const getIconName = (icon: string) => `heroicons:${icon}`
   <div class="mx-auto w-full max-w-7xl">
     <!-- Primary Navigation Bar -->
     <div
-      class="relative z-30 flex items-center rounded-2xl px-4 py-2.5 backdrop-blur-xl sm:px-5 sm:py-3"
-      :class="isHomeRoute
-        ? 'border shadow-lg'
-        : 'border shadow-lg'"
+      class="relative z-30 flex items-center rounded-2xl border px-4 py-2.5 sm:px-5 sm:py-3"
       style="border-color: var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);"
     >
       <NavLogo />
@@ -91,11 +88,8 @@ const getIconName = (icon: string) => `heroicons:${icon}`
           <li>
             <NuxtLink
               to="/auth/register"
-              class="inline-flex min-h-[44px] items-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:text-slate-950 dark:focus:ring-offset-slate-900"
-              :class="isHomeRoute
-                ? 'focus:ring-[color:var(--color-secondary)]'
-                : 'focus:ring-[color:var(--color-secondary)]'"
-              style="background: var(--color-secondary); box-shadow: 0 14px 24px color-mix(in srgb, var(--color-secondary) 28%, transparent);"
+              class="inline-flex min-h-[44px] items-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-dt-sm transition-colors duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dt-primary"
+              style="background: var(--color-primary);"
             >
               {{ t('auth.register') }}
             </NuxtLink>

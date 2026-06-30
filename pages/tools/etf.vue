@@ -141,25 +141,25 @@ function formatDate(value: string | null | undefined): string {
 function deltaClass(value: number | null | undefined): string {
   const normalized = normalizeNumber(value)
   if (normalized === null) return 'text-dt-text-muted'
-  if (normalized > 0) return 'text-emerald-700 dark:text-emerald-300'
-  if (normalized < 0) return 'text-rose-700 dark:text-rose-300'
+  if (normalized > 0) return 'text-dt-success'
+  if (normalized < 0) return 'text-dt-danger'
   return 'text-dt-text-soft'
 }
 
 function rsiClass(value: number | null | undefined): string {
   const normalized = normalizeNumber(value)
   if (normalized === null) return 'bg-dt-surface-strong text-dt-text-muted'
-  if (normalized > 70) return 'bg-amber-100 text-amber-800 dark:bg-amber-400/15 dark:text-amber-200'
-  if (normalized >= 50) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-200'
-  if (normalized >= 30) return 'bg-rose-100 text-rose-800 dark:bg-rose-400/15 dark:text-rose-200'
-  return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-400/15 dark:text-indigo-200'
+  if (normalized > 70) return 'bg-dt-warning/15 text-dt-warning'
+  if (normalized >= 50) return 'bg-dt-success/15 text-dt-success'
+  if (normalized >= 30) return 'bg-dt-danger/15 text-dt-danger'
+  return 'bg-dt-primary/15 text-dt-primary'
 }
 
 function fromHighClass(value: number | null | undefined): string {
   const normalized = normalizeNumber(value)
   if (normalized === null) return 'text-dt-text-muted'
-  if (normalized >= -3) return 'text-emerald-700 dark:text-emerald-300'
-  if (normalized < -10) return 'text-rose-700 dark:text-rose-300'
+  if (normalized >= -3) return 'text-dt-success'
+  if (normalized < -10) return 'text-dt-danger'
   return 'text-dt-text-soft'
 }
 
@@ -505,9 +505,9 @@ definePageMeta({
       />
 
       <!-- No data state -->
-      <div v-if="noData" class="rounded-dt-lg border border-amber-300 bg-amber-50 p-6 text-center dark:border-amber-400/20 dark:bg-amber-400/10">
-        <Icon name="heroicons:exclamation-triangle" class="mx-auto h-8 w-8 text-amber-600 dark:text-amber-400" />
-        <p class="mt-3 text-sm font-semibold text-amber-800 dark:text-amber-200">
+      <div v-if="noData" class="rounded-dt-lg border border-dt-warning/30 bg-dt-warning/10 p-6 text-center">
+        <Icon name="heroicons:exclamation-triangle" class="mx-auto h-8 w-8 text-dt-warning" />
+        <p class="mt-3 text-sm font-semibold text-dt-warning">
           No rotation snapshots found for scope "{{ activeScope }}". Run the batch job first.
         </p>
       </div>
@@ -588,7 +588,7 @@ definePageMeta({
 
           <LedgerCard>
             <div class="mb-4 flex items-center gap-2">
-              <Icon name="heroicons:arrow-trending-down" class="h-5 w-5 text-rose-600 dark:text-rose-400" />
+              <Icon name="heroicons:arrow-trending-down" class="h-5 w-5 text-dt-danger" />
               <h2 class="text-sm font-bold uppercase tracking-[0.08em] text-dt-text-muted">
                 Bottom Weakening
               </h2>
@@ -605,7 +605,7 @@ definePageMeta({
                   <p class="truncate text-xs text-dt-text-muted">{{ row.sectorName ?? row.name }}</p>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="font-mono text-sm font-bold text-rose-700 dark:text-rose-300">
+                  <span class="font-mono text-sm font-bold text-dt-danger">
                     {{ row.rankDelta2W }}
                   </span>
                   <span class="text-xs text-dt-text-muted">Rank #{{ row.rotationRank }}</span>
@@ -846,7 +846,7 @@ definePageMeta({
     <!-- Detail modal -->
     <div
       v-if="selectedRow"
-      class="fixed inset-0 z-40 bg-dt-bg/60 p-4 backdrop-blur-sm"
+      class="fixed inset-0 z-40 bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
       @click.self="selectedRow = null"

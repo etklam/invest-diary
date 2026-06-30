@@ -24,7 +24,7 @@ describe('StatusBadge', () => {
     })
     const span = wrapper.find('span')
     expect(span.classes()).toContain('border-dt-border')
-    expect(span.classes()).toContain('bg-dt-bg')
+    expect(span.classes()).toContain('bg-dt-surface-strong')
     expect(span.classes()).toContain('text-dt-text-muted')
   })
 
@@ -34,9 +34,9 @@ describe('StatusBadge', () => {
       slots: { default: 'OK' },
     })
     const span = wrapper.find('span')
-    expect(span.classes()).toContain('border-green-500/30')
-    expect(span.classes()).toContain('bg-green-500/10')
-    expect(span.classes()).toContain('text-green-600')
+    expect(span.classes()).toContain('border-dt-success/30')
+    expect(span.classes()).toContain('bg-dt-success/10')
+    expect(span.classes()).toContain('text-dt-success')
   })
 
   it('applies danger tone classes when tone="danger"', () => {
@@ -45,9 +45,9 @@ describe('StatusBadge', () => {
       slots: { default: 'Error' },
     })
     const span = wrapper.find('span')
-    expect(span.classes()).toContain('border-red-500/30')
-    expect(span.classes()).toContain('bg-red-500/10')
-    expect(span.classes()).toContain('text-red-600')
+    expect(span.classes()).toContain('border-dt-danger/30')
+    expect(span.classes()).toContain('bg-dt-danger/10')
+    expect(span.classes()).toContain('text-dt-danger')
   })
 
   it('applies warning tone classes when tone="warning"', () => {
@@ -56,9 +56,9 @@ describe('StatusBadge', () => {
       slots: { default: 'Caution' },
     })
     const span = wrapper.find('span')
-    expect(span.classes()).toContain('border-yellow-500/30')
-    expect(span.classes()).toContain('bg-yellow-500/10')
-    expect(span.classes()).toContain('text-yellow-700')
+    expect(span.classes()).toContain('border-dt-warning/30')
+    expect(span.classes()).toContain('bg-dt-warning/10')
+    expect(span.classes()).toContain('text-dt-warning')
   })
 
   it('applies accent tone classes when tone="accent"', () => {
@@ -67,8 +67,8 @@ describe('StatusBadge', () => {
       slots: { default: 'Featured' },
     })
     const span = wrapper.find('span')
-    expect(span.classes()).toContain('border-amber-500/30')
-    expect(span.classes()).toContain('bg-amber-500/10')
-    expect(span.classes()).toContain('text-amber-700')
+    expect(span.classes()).toContain('border-dt-success/30')
+    expect(span.classes()).toContain('bg-dt-success/10')
+    expect(span.classes()).toContain('text-dt-success')
   })
 })

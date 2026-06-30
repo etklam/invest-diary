@@ -151,8 +151,8 @@ const setItemRef = (el: unknown, index: number) => {
     >
       <div
         v-if="isOpen"
-        class="absolute left-0 z-[80] mt-2 w-64 rounded-xl border bg-white/95 py-1 shadow-lg backdrop-blur dark:bg-slate-800/95"
-        style="border-color: var(--color-border);"
+        class="absolute left-0 z-[80] mt-2 w-64 rounded-xl border py-1 shadow-dt-md"
+        style="border-color: var(--color-border); background: var(--color-surface);"
         role="menu"
         :aria-label="group.label"
       >
@@ -165,8 +165,8 @@ const setItemRef = (el: unknown, index: number) => {
           @keydown="onItemKeydown($event, idx)"
           class="flex min-h-[44px] cursor-pointer items-center gap-2 px-4 py-2.5 text-sm outline-none transition-colors"
           :class="idx === focusedIndex
-            ? 'bg-cyan-50 text-cyan-700 dark:bg-slate-700 dark:text-cyan-200'
-            : 'text-slate-700 hover:bg-cyan-50 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-slate-700'"
+            ? 'bg-[color:color-mix(in_srgb,var(--color-primary)_14%,transparent)] text-dt-primary'
+            : 'text-dt-text-muted hover:bg-[color:color-mix(in_srgb,var(--color-primary)_12%,transparent)] hover:text-dt-primary'"
           role="menuitem"
           :aria-current="active && idx === focusedIndex ? 'page' : undefined"
         >

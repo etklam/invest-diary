@@ -258,40 +258,16 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 
 <style scoped>
 .fintech-home {
-  --home-primary: var(--color-primary);
-  --home-secondary: var(--color-info);
-  --home-cta: var(--color-primary);
-  --home-bg: var(--color-background);
-  --home-text: var(--color-text);
   font-family: var(--font-body);
-  background:
-    radial-gradient(1200px 700px at 12% -10%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 58%),
-    radial-gradient(1100px 620px at 95% -5%, color-mix(in srgb, var(--color-info) 12%, transparent), transparent 62%),
-    var(--home-bg);
+  background: var(--color-background);
 }
 
-:global(.dark .fintech-home),
-:global(.dark-mode .fintech-home) {
-  background:
-    radial-gradient(1100px 640px at 10% -10%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 58%),
-    radial-gradient(900px 520px at 95% -8%, color-mix(in srgb, var(--color-info) 12%, transparent), transparent 62%),
-    var(--color-background);
-}
-
-.bg-grid {
-  background-image: radial-gradient(circle at 1px 1px, var(--color-grid-dot) 1px, transparent 0);
-  background-size: 34px 34px;
-}
-
-:global(.dark .bg-grid),
-:global(.dark-mode .bg-grid) {
-  opacity: 0.22;
-}
+/* ponytail: Phase 8 — removed decorative radial gradients + grid-dot.
+   Surfaces stay solid per Calm Institutional Ledger direction. */
 
 .editorial-panel-wrapper :deep(.section-panel) {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 34%),
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 88%, transparent), color-mix(in srgb, var(--color-surface-strong) 84%, transparent));
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 .fintech-home :is(h1, h2, h3) {
@@ -299,99 +275,12 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   letter-spacing: -0.025em;
 }
 
-.action-btn {
-  min-height: 52px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 999px;
-  padding: 0.8rem 1.4rem;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: all 200ms ease;
-}
-
-.action-btn-primary {
-  color: #fff;
-  background: var(--home-primary);
-  box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 35%, transparent), 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.action-btn-primary:hover {
-  transform: translateY(-2px);
-  background: var(--color-primary-active);
-  box-shadow: 0 0 28px color-mix(in srgb, var(--color-primary) 44%, transparent), 0 6px 16px rgba(0, 0, 0, 0.35);
-}
-
-.action-btn-secondary {
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
-  backdrop-filter: blur(6px);
-}
-
-:global(.dark .action-btn-secondary),
-:global(.dark-mode .action-btn-secondary) {
-  border-color: var(--color-border);
-  color: var(--color-text);
-  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
-}
-
-.terminal-panel {
-  border: 1px solid color-mix(in srgb, var(--color-border) 36%, transparent);
-  border-radius: 1.35rem;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 30%),
-    var(--color-surface);
-  box-shadow: var(--shadow-md);
-  color: var(--color-text);
-}
-
-:global(.dark .terminal-panel),
-:global(.dark-mode .terminal-panel) {
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 30%),
-    rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--color-on-ink);
-}
-
-.terminal-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
-  color: var(--color-text);
-}
-
-:global(.dark .terminal-head),
-:global(.dark-mode .terminal-head) {
-  color: var(--color-on-ink);
-}
-
-.row-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  font-size: 0.95rem;
-}
-
 .trust-strip {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: linear-gradient(120deg, color-mix(in srgb, var(--color-surface) 82%, transparent), color-mix(in srgb, var(--color-surface-strong) 76%, transparent));
-  backdrop-filter: blur(8px);
+  background: var(--color-surface);
   padding: 1.25rem;
   box-shadow: var(--shadow-sm);
-}
-
-:global(.dark .trust-strip),
-:global(.dark-mode .trust-strip) {
-  border-color: var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
 }
 
 .trust-pill {
@@ -417,24 +306,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 1.5rem;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 90%, transparent), color-mix(in srgb, var(--color-surface-strong) 82%, transparent));
-}
-
-:global(.dark .subpanel),
-:global(.dark-mode .subpanel) {
-  border-color: var(--color-border);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface-strong) 100%, transparent));
-}
-
-:global(.dark .workflow-lead),
-:global(.dark .workflow-tool),
-:global(.dark .workflow-footnote),
-:global(.dark-mode .workflow-lead),
-:global(.dark-mode .workflow-tool),
-:global(.dark-mode .workflow-footnote) {
-  border-color: var(--color-border);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 96%, transparent), color-mix(in srgb, var(--color-surface-strong) 100%, transparent));
+  background: var(--color-surface);
 }
 
 .subpanel-kicker {
@@ -454,8 +326,7 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 .workflow-footnote {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 90%, transparent), color-mix(in srgb, var(--color-surface-strong) 84%, transparent));
+  background: var(--color-surface);
 }
 
 .workflow-lead {
@@ -541,22 +412,18 @@ const promisePills = ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']
 }
 
 .story-panel {
-  border: 1px solid color-mix(in srgb, var(--color-border) 28%, transparent);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 1.6rem;
-  background:
-    radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 60%),
-    var(--color-surface);
+  background: var(--color-surface);
   box-shadow: var(--shadow-lg);
   color: var(--color-text);
 }
 
 :global(.dark .story-panel),
 :global(.dark-mode .story-panel) {
-  background:
-    radial-gradient(900px 200px at 0% 0%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 60%),
-    rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-surface);
+  border-color: var(--color-border);
   color: var(--color-text);
 }
 

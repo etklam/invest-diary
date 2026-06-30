@@ -73,40 +73,37 @@ const handleDismiss = () => {
       class="fixed top-0 left-0 right-0 z-50 p-3 sm:p-4"
     >
       <div class="max-w-7xl mx-auto">
-        <div class="backdrop-blur-xl bg-gradient-to-r from-blue-600/90 to-cyan-500/90 dark:from-blue-700/90 dark:to-cyan-600/90 rounded-2xl shadow-xl shadow-blue-500/25 border border-white/20">
+        <div class="rounded-2xl border shadow-dt-md" style="background: var(--color-primary); border-color: var(--color-primary-active);">
           <div class="flex items-center justify-between gap-3 sm:gap-4">
             <div class="flex items-center gap-3 min-w-0 flex-1">
-              <!-- App icon with glow effect -->
               <div class="relative flex-shrink-0">
-                <div class="absolute inset-0 bg-white/20 rounded-xl blur-md"></div>
                 <img
                   src="/icon-192x192.png"
                   :alt="t('pwa.install.title')"
-                  class="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl border-2 border-white/30"
+                  class="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl border border-white/30"
                 >
-                <!-- Install badge -->
-                <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-lg flex items-center justify-center shadow-lg">
-                  <Icon name="heroicons:arrow-down-solid" class="w-3 h-3 text-blue-600" />
+                <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-lg flex items-center justify-center shadow-dt-sm">
+                  <Icon name="heroicons:arrow-down-solid" class="w-3 h-3 text-dt-primary" />
                 </div>
               </div>
 
               <div class="min-w-0">
                 <p class="font-semibold text-white text-sm sm:text-base">{{ t('pwa.install.title') }}</p>
-                <p class="text-xs sm:text-sm text-white/80 truncate">{{ t('pwa.install.description') }}</p>
+                <p class="text-xs sm:text-sm text-white/85 truncate">{{ t('pwa.install.description') }}</p>
               </div>
             </div>
 
             <div class="flex items-center gap-2 shrink-0">
               <button
                 @click="handleDismiss"
-                class="px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-white hover:bg-white/10 rounded-xl transition-all duration-200 cursor-pointer"
+                class="px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-white hover:bg-white/15 rounded-dt-sm transition-colors duration-200 cursor-pointer"
               >
                 {{ t('pwa.install.later') }}
               </button>
               <button
                 @click="handleInstall"
                 :disabled="isInstalling"
-                class="px-4 py-2 sm:px-5 text-xs sm:text-sm font-medium bg-white text-blue-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-200 shadow-lg cursor-pointer flex items-center gap-2"
+                class="px-4 py-2 sm:px-5 text-xs sm:text-sm font-medium bg-white text-dt-primary hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-dt-sm transition-colors duration-200 shadow-dt-sm cursor-pointer flex items-center gap-2"
               >
                 <Icon v-if="isInstalling" name="svg-spinners:180-ring" class="w-4 h-4" />
                 <Icon v-else name="heroicons:download-solid" class="w-4 h-4" />

@@ -51,8 +51,8 @@ watch(() => props.isEditing, (newVal) => {
   >
     <!-- Premium序號標記 -->
     <div class="absolute top-4 left-4 flex items-center gap-2">
-      <div class="w-6 h-px bg-gradient-to-r from-[#C9A962]/40 dark:from-[#C9A962]/60 to-transparent"></div>
-      <span class="text-[10px] tracking-[0.25em] text-[#C9A962]/50 dark:text-[#C9A962]/60 uppercase font-medium">Rule {{ String(index + 1).padStart(2, '0') }}</span>
+      <div class="w-6 h-px" style="background: color-mix(in srgb, var(--color-primary) 40%, transparent);"></div>
+      <span class="text-[10px] tracking-[0.25em] uppercase font-medium" style="color: color-mix(in srgb, var(--color-primary) 70%, transparent);">Rule {{ String(index + 1).padStart(2, '0') }}</span>
     </div>
 
     <!-- Premium操作按鈕 -->
@@ -166,7 +166,7 @@ watch(() => props.isEditing, (newVal) => {
             </svg>
             {{ formatLocaleDate(item.createdAt) }}
           </div>
-          <div class="w-px h-3 bg-[#C9A962]/10 dark:bg-[#C9A962]/20"></div>
+          <div class="w-px h-3" style="background: var(--color-border);"></div>
           <div class="flex items-center" style="color: var(--color-text-soft);">
             <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -224,8 +224,8 @@ watch(() => props.isEditing, (newVal) => {
   color: var(--color-text-soft);
 }
 .dc-btn-move:hover {
-  color: #C9A962;
-  background: color-mix(in srgb, #C9A962 10%, transparent);
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 .dc-btn-edit:hover {
   color: var(--color-info);

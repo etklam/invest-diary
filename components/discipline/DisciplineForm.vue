@@ -26,16 +26,16 @@ defineExpose({ reset })
 </script>
 
 <template>
-  <div class="bg-white dark:bg-gradient-to-br dark:from-[#1A1F2C] dark:to-[#121722] rounded-lg dark:rounded-sm border border-slate-200 dark:border-[#C9A962]/20 p-8 mt-12 mb-16 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
+  <div class="rounded-lg border p-8 mt-12 mb-16 shadow-sm" style="background: var(--color-surface); border-color: var(--color-border);">
     <div class="flex items-center mb-6">
-      <div class="w-12 h-12 bg-gradient-to-br from-[#C9A962] to-[#A68B4B] rounded-sm flex items-center justify-center mr-4">
-        <svg class="w-6 h-6 text-white dark:text-[#0A1628]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-12 h-12 rounded-sm flex items-center justify-center mr-4" style="background: var(--color-primary); color: white;">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
         </svg>
       </div>
       <div>
-        <h2 class="text-xl font-semibold text-slate-900 dark:text-[#F5F1E8]" style="font-family: 'Playfair Display', serif;">{{ t('discipline.createSection.title') }}</h2>
-        <p class="text-sm text-slate-600 dark:text-[#B8B4AE]">{{ t('discipline.createSection.description') }}</p>
+        <h2 class="text-xl font-semibold" style="color: var(--color-text); font-family: var(--font-display);">{{ t('discipline.createSection.title') }}</h2>
+        <p class="text-sm" style="color: var(--color-text-muted);">{{ t('discipline.createSection.description') }}</p>
       </div>
     </div>
 
@@ -44,12 +44,14 @@ defineExpose({ reset })
         <textarea
           v-model="content"
           rows="4"
-          class="w-full px-4 py-3 bg-slate-50 dark:bg-[#0A1628] border border-slate-200 dark:border-[#C9A962]/20 rounded-sm text-slate-900 dark:text-[#F5F1E8] placeholder-slate-400 dark:placeholder-[#6B7280] focus:border-[#C9A962] focus:outline-none focus:ring-1 focus:ring-[#C9A962]/50 transition-all duration-200 resize-none"
+          class="w-full px-4 py-3 border rounded-sm focus:outline-none focus:ring-1 transition-colors duration-200 resize-none"
+          style="background: var(--color-surface-muted); border-color: var(--color-border); color: var(--color-text);"
           :placeholder="t('discipline.createSection.placeholder')"
         />
       </div>
       <button
-        class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-[#C9A962] to-[#A68B4B] hover:from-[#B89B56] hover:to-[#937842] text-white dark:text-[#0A1628] font-medium rounded-sm shadow-sm hover:shadow-md dark:shadow-[0_4px_16px_-4px_rgba(201,169,98,0.4)] dark:hover:shadow-[0_6px_20px_-4px_rgba(201,169,98,0.5)] transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        class="w-full sm:w-auto px-8 py-3 text-white font-medium rounded-sm transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        style="background: var(--color-primary);"
         :disabled="loading || !content.trim()"
         @click="handleSubmit"
       >
