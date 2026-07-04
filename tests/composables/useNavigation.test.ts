@@ -110,7 +110,7 @@ describe('useNavigation composable', () => {
       ])
     })
 
-    it('routes Portfolio children (incl. etf/relative-value/strategy-performance)', async () => {
+    it('routes Portfolio children (incl. market-rotation/relative-value/strategy-performance)', async () => {
       const { useNavigation } = await import('~/composables/useNavigation')
       const { desktopNavGroups } = useNavigation()
       const portfolio = desktopNavGroups.value.find(g => g.id === 'portfolio')!
@@ -119,7 +119,7 @@ describe('useNavigation composable', () => {
       expect(paths).toEqual([
         '/stocks',
         '/stocks/watchlist',
-        '/tools/etf',
+        '/tools/market-rotation',
         '/tools/relative-value',
         '/strategy-performance',
       ])
@@ -137,7 +137,7 @@ describe('useNavigation composable', () => {
         '/tools/seasonality',
         '/discipline',
       ])
-      expect(paths).not.toContain('/tools/etf')
+      expect(paths).not.toContain('/tools/market-rotation')
       expect(paths).not.toContain('/tools/relative-value')
     })
 
@@ -200,8 +200,8 @@ describe('useNavigation composable', () => {
       expect(activeIds).toEqual(['portfolio'])
     })
 
-    it('marks Portfolio (not Tools) active on /tools/etf', async () => {
-      vi.stubGlobal('useRoute', () => ({ path: '/tools/etf' }))
+    it('marks Portfolio (not Tools) active on /tools/market-rotation', async () => {
+      vi.stubGlobal('useRoute', () => ({ path: '/tools/market-rotation' }))
 
       const { useNavigation } = await import('~/composables/useNavigation')
       const { desktopNavGroups, isGroupActive } = useNavigation()

@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 const toolPages = [
   '/tools/position-sizing',
   '/tools/seasonality',
-  '/tools/etf',
+  '/tools/market-rotation',
   '/tools/financial-freedom',
 ]
 

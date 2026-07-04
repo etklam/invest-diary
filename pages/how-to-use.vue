@@ -312,7 +312,7 @@ const tools = {
   positionSizing: { link: '/tools/position-sizing', img: '/screenshots/how-to-use-features/10-position-sizing.png', kicker: 'nav.positionSizing' },
   financialFreedom: { link: '/tools/financial-freedom', img: '/screenshots/how-to-use-features/11-financial-freedom.png', kicker: 'nav.financialFreedom' },
   relativeValue: { link: '/tools/relative-value', img: '/screenshots/how-to-use-features/12-relative-value.png', kicker: 'nav.relativeValue' },
-  etf: { link: '/tools/etf', img: '/screenshots/how-to-use-features/13-etf.png', kicker: 'nav.etf' },
+  etf: { link: '/tools/market-rotation', img: '/screenshots/how-to-use-features/13-etf.png', kicker: 'nav.marketRotation' },
   seasonality: { link: '/tools/seasonality', img: '/screenshots/how-to-use-features/14-seasonality.png', kicker: 'nav.seasonality' }
 }
 

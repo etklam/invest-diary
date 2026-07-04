@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 
 describe('tools Market Rotation Monitor ui contract', () => {
   it('renders rotation monitor controls and indicator columns', () => {
-    const filePath = resolve(process.cwd(), 'pages/tools/etf.vue')
+    const filePath = resolve(process.cwd(), 'pages/tools/market-rotation.vue')
     const content = readFileSync(filePath, 'utf8')
 
     expect(content).toContain('Market Rotation Monitor')

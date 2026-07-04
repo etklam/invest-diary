@@ -57,7 +57,7 @@ export const useNavigation = () => {
       { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
       { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
       { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
-      { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' },
+      { label: t('nav.marketRotation'), to: '/tools/market-rotation', icon: 'chart-bar' },
       { label: t('nav.relativeValue'), to: '/tools/relative-value', icon: 'chart-bar' }
     ]
 
@@ -103,7 +103,7 @@ export const useNavigation = () => {
         items: [
           { label: t('nav.stocks'), to: '/stocks', icon: 'chart-bar' },
           { label: t('nav.watchlist'), to: '/stocks/watchlist', icon: 'eye' },
-          { label: t('nav.etf'), to: '/tools/etf', icon: 'chart-bar' },
+          { label: t('nav.marketRotation'), to: '/tools/market-rotation', icon: 'chart-bar' },
           { label: t('nav.relativeValue'), to: '/tools/relative-value', icon: 'chart-bar' },
           { label: t('nav.strategyPerformance'), to: '/strategy-performance', icon: 'chart-pie' },
         ],
