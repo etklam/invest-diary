@@ -452,3 +452,83 @@ _避免：速記、草稿_
 **問題**：`DisciplineItem.id?: number` 與 `createdAt?: string` 是無用約束——`exportDisciplines` 第 51 行 `map(({ content, order }) => ({ content, order }))` 直接 strip 掉這兩個欄位，從不寫入 share data。但 query layer 回傳 Prisma raw row（id 為 `bigint`、createdAt 為 `Date`），導致 `export.get.ts` handler 末端得做 `Number(d.id)` 與 `d.createdAt.toISOString()` 適配，純粹為了通過型別檢查。
 
 **解法**：`DisciplineItem` 簡化為 `{ content: string; order: number }`。`DisciplineShareData.disciplines` 與 `DisciplineImportPreview.disciplines` 從 `Omit<DisciplineItem, 'id' | 'createdAt'>[]` 改為 `DisciplineItem[]`。`export.get.ts` 移除 `normalized = disciplines.map(...)` 與 `Number(d.id)` / `toISOString()` 適配層，直接傳 raw Prisma row 給 `exportDisciplines`（structural typing 允許多餘欄位）。零 runtime 行為變更，純型別重構。
+
+---
+
+### 2026-07 架構深化（系統性審計：8 項深化 + 3 項 bug）
+
+由 `/improve-codebase-architecture` skill 走查驅動：5 個 Explore agent 識別候選後以平行程工實作。共 8 項深化 + 3 條審計期間發現的 bug；「#9 統一資料層」依 YAGNI 排除。驗收：typecheck 乾淨、1836 測試全綠（2 skip 為刻意標注的 Map/Set 潛在 bug）。淨 −1915 行（多為 ETF 死碼）。
+
+#### 1. ETF 分析管線死碼清除 — `lib/etf-analyzer.ts` + `lib/etf-profile/*`（刪除）
+
+**問題**：兩條獨立的 ETF 研究 Implementation（etf-analyzer 算週期報酬 + MA、etf-profile 算 52w / volatility / drawdown / RS）概念重疊、介面不交集，且 `lib/etf-profile/providers/` 是假 seam（provider 回空，真正計算在 `research.ts` 繞過 provider）。`/api/etf/[symbol]/*` 與 `/api/etf/all` 共 7 個分析端點在前端零 caller——Market Rotation Monitor 頁面走的是 `/api/market/rotation-monitor`，完全不碰這條管線。
+
+**解法**：先確認 `server/api/admin/etf/*` 與 `server/api/etf/watchlist/*` 對 etf-analyzer / etf-profile **零依賴**（admin/etf 只用 prisma / yahoo-finance / auth，watchlist 有自家 query layer）。再把 `lib/etf-profile/cache.ts` 內 market handler 依賴的 market-data 通用快取邏輯（in-memory Map、TTL、紐約盤中時段、`buildMarketQuoteCacheKey` 等）**實體遷移**進 `lib/market-data/cache.ts`（從 re-export 升格為真 owner），`server/plugins/etf-cache-cleaner.ts` 改從 market-data/cache import。然後刪除：`lib/etf-analyzer.ts`、整包 `lib/etf-profile/*`、`server/api/etf/[symbol]/*`、`server/api/etf/all.get.ts`，連同對應測試。共 −1906 行。
+
+**保留**：watchlist（`server/api/etf/watchlist/*` + `etf-watchlist-queries.ts`）、admin etf 管理頁（`pages/admin/etf.vue` + `server/api/admin/etf/*`）完整保留，不依賴已刪模組。
+
+#### 2. i18n 三語契約統一 — `tests/unit/i18n-parity.test.ts`（新建）
+
+**問題**：i18n catalog 有三個 implementation（en / zh-TW / zh-CN）卻沒契約測試保證 key set 一致——`zh-CN.json` 靜默缺 89 個 key（含整個 `tools.etf.*`、`tags.*`、`about.badge`、`diary.quickDiary`）。同時 `errorCodeToI18nKey` 測試只斷言 `length === 35` 與 `toLowerCase()` 拼寫，不檢查 locale 檔真的有那個 key；`error-consistency.test.ts` 等回歸測試 `readFileSync` 原始碼再 grep 字串，測的是 implementation 拼寫而非行為。
+
+**解法**：新建 `tests/unit/i18n-parity.test.ts`，兩個守護：(a) 三語 key tree 深度相等；(b) 每個 `ErrorCodes` 對應的 `error.code.*` key 在三語 locale 都存在。補齊 zh-CN 89 個缺 key，三語對齊在 1659 leaf keys。`error-i18n-mapping.test.ts` 收掉 11 個重複 `converts X to Y` case。刪除純 source-scrape 的 `error-consistency.test.ts`（其守護的行為已由 `tests/api/*.test.ts` 實際驅動 handler 覆蓋）。其餘回歸測試（csp / auth-client / api-docs / pwa）加 `ponytail:` 註解標明刻意保留——它們守護的反模式（client 偷讀 httpOnly cookie、CSP 擋 WASM、markdown fallback）沒有便宜的行為測試 proxy。
+
+#### 3. 死模組與假 seam 清理 — `composables/useArticleMarkdown.ts`、`composables/useWebSocket.ts`、`stores/navigation.ts`
+
+**問題**：三個「一個 adapter ＝ 假 seam」。`useArticleMarkdown`（64 行）零 production caller——`pages/articles/[slug].vue` 直接 `import { parseMarkdown } from '@nuxtjs/mdc/runtime'` 繞過它，只剩自己的 unit test 在測一個無人使用的 module。`useWebSocket`（39 行）純 re-export plugin 已提供的 `$websocket`，唯一 caller 是 useAlerts。`stores/navigation.ts` 14+ method 只用 4 個，且 `provide: { navigationStore }` 全專案無人 inject。
+
+**解法**：刪 `useArticleMarkdown.ts` + 其測試。刪 `useWebSocket.ts`，把它的兩個職責（取用 `$websocket` + SSR / plugin-not-ready fallback）內聯進唯一 caller `useAlerts.ts`，對外介面不變。`stores/navigation.ts` 砍到 4 個 used method（init / setNavigating / setCurrentPath / setNavigationDirection）+ 其 internal deps，移除 dead `provide: { navigationStore }`。
+
+#### 4. User / API Key / Admin query layer — `server/utils/user-queries.ts` + `api-key-queries.ts`（新建）
+
+**問題**：全系統 13 個 query layer，這三個 context 完全沒有。User 寫入（login refresh token、register create user、密碼改 `$transaction`）inline 在 handler；`server/utils/api-key.ts` 看似 query layer 其實只有 auth helper，CRUD 與 scope 定義（`'DIARY_CREATE' | 'AGENT_WRITE'`）在 handler 與 schema 兩處重複；Admin 10 個 handler 零 query-layer import，跨 entity 直打 Prisma。同時 `api-key.ts:hashApiKey` 與 `auth-session.ts:hashToken` 是同一份 sha256-hex 重複實作。
+
+**解法**：照 `discipline-queries.ts` 範本新建 `user-queries.ts`（login / register / password change 含 tokenVersion++ / settings）與 `api-key-queries.ts`（CRUD + scope 單一真相源）。新建 `server/utils/hash.ts` 收斂 sha256-hex，api-key / auth-session 與 `tests/api/auth.test.ts` 的 inline `createHash` 改 import 它。14 個 handler（auth / user / api-keys / admin 非 etf）改走 query layer，handler 收斂成 auth → Zod → call → serialize → return 樣板。密碼改的 tokenVersion 失效規則集中。
+
+#### 5. Diary 讀取側 query layer 對稱 — `server/utils/diary-read.ts`
+
+**問題**：Diary 寫入側是深 module（`diary-write.ts`，web + agent + telegram 三路徑共用），讀取側 `diary-read.ts` 只有 `findDiaryForUser(id)` 與 `findDiaryByDate(date)`。list、review dashboard 的多 bucket 日期運算（overdue / today / upcoming / unscheduled / completed）、latest diary 都 inline 在 handler。
+
+**解法**：擴充 `diary-read.ts`（89 → 411 行），加 `listDiariesForUser(userId, filters)`（分頁 / 搜尋 / 排序 / tag 過濾）、`findLatestDiaryForUser(userId)`、`buildReviewBuckets(userId, tz)`（5 個 findMany 並發，搭配 `lib/dates/user-tz.ts` 的 half-open `[start, end)` DST-safe 區間）。3 個 handler 合計 −179 行（diaries.get −93、reviews.get −81、latest −5），收斂成 auth → parse → call → serialize 樣板。+50 unit tests 涵蓋 list 過濾、review buckets DST spring-forward / fall-back、跨日跨月。
+
+#### 6. Market Rotation caller-assembly 局部性 + B3 — `lib/market-rotation/summary.ts` + `market-rotation-queries.ts`
+
+**問題**：純函數化已做兩輪，但 bug 藏在呼叫端組裝：(a) **B3**——`getComparisonDate` 呼叫 `loadQualifiedDatesForScope` 沒傳 symbols，groupBy 不套 canonical universe filter，與 `getMonitorTrendSeries`（已修）不一致，ADR-0004 修一半；(b) `decideBetaAllocation` 在同路徑被算兩次（handler 一次、`summary.ts` 又算一次）；(c) `getMonitorComparisonDate` 是淺 module——handler 已有 rows，它卻再 findMany 一次只為 `.some(r => r.rankDelta2W != null)`。
+
+**解法**：B3——`getComparisonDate` 內部 derive canonical universe symbols 並傳入（簽名不變，batch 不受影響），+2 ADR-0004 測試。`summary.ts` 的 `SummaryInput` 加必填 `beta: BetaAllocationResult`，移除內部 `decideBetaAllocation` 呼叫；handler 把已算好的 beta 傳入，整個 request 只算一次。刪 `getMonitorComparisonDate`，handler 改 `rows.some(r => r.rankDelta2W != null)` 衍生 hasComparisonData，連 groupBy 都省。cross-scope summaryRows / trend merge 收進 builder 評估後**跳過**（會改 `MarketRotationMonitorInput` contract 且讓 pure builder 承擔 I/O 組裝，無淨抽象收益）。
+
+#### 7. 概念收斂：format.ts SSOT + bucket 聚合 — `lib/format.ts` + `lib/portfolio-exposure/exposure.ts`
+
+**問題**：`lib/format.ts` 名義是 SSOT 但 tool context 內多處自己 hand-roll formatter（`.toFixed` / `Math.round` / `new Intl.NumberFormat`）；`PortfolioExposurePanel.vue` 的 bucket 聚合 `highBeta = highBetaPct + megaCapPct + singleStockPct` 與 `exposure.ts` 的 `compareExposureToTarget` 同公式兩處。審計另指 toNumber / maxDrawdown / volatility 多處重複。
+
+**解法**：`lib/format.ts` 加 `formatSignedPercent`、`formatCompactCurrency`，`financial-freedom.vue` 與 `PortfolioExposurePanel.vue` 改用 SSOT。bucket 聚合收進 `exposure.ts` 共用。**toNumber / maxDrawdown / volatility 重複經候選 1 刪除 etf-analyzer / etf-profile 後已自然消除**——僅剩 `lib/trade-analytics.ts` 一份，無 dup 可收。
+
+**未收斂（低價值尾）**：`position-sizing.vue`、`relative-value.vue`、`seasonality.vue`、`BetaCockpitCard.vue`、`lib/relativeValue.ts`、`utils/stockSeasonality.ts` 內 ad-hoc `.toFixed` 替換為純美化，format.ts SSOT 已就位、無 locality / leverage 額外收益，暫緩。
+
+#### 8. 信任邊界 deep module 補測 + B1 CSRF prefix — `server/middleware/csrf.ts` + `server/utils/{error-handler,serialize}.ts`
+
+**問題**：這些是全系統最深的 cross-cutting module，卻只被 handler 測試間接覆蓋（而 handler 測試把上游全 mock 掉）。**(B1)** `csrf.ts:isApiKeyAuth` 比對 `Bearer sk_` 但實際 API key 前綴是 `dva_`（`api-key.ts:API_KEY_TOKEN_PREFIX`）——Bearer 分支永不命中，只有 `x-api-key` 路徑過 CSRF；前綴寫死兩處會漂移。`handleApiError` 的 4 路分派（ZodError / AppError / H3Error / unknown）零直測。`serialize()` 無 cycle 防護。`auth.ts` 的 Telegram webhook bypass 是安全關鍵一行，無測試 pin 住。
+
+**解法**：B1——csrf.ts 改 `import { API_KEY_TOKEN_PREFIX }` 比對，未來不漂移。新建 `csrf.middleware.test.ts`（16 case，含 B1 regression：`Bearer dva_` 過、`Bearer sk_` 拒）、`error-handler.test.ts`（12 case，4 路分派 + pass-through 同 reference）、擴充 `serialize.test.ts`（+9 case：self / mutual cycle、深度 1000、`BigInt 0n`）。serialize 加 `WeakMap` cycle 防護（cycle 時回傳已轉好的 result 而非原物）。`auth.middleware.test.ts` +5 case pin 住 Telegram bypass 的 exact-match 不變量。
+
+**通報未修的潛在點**：(1) serialize 對 Map / Set 靜默丟 entry（`Object.entries(Map)` 回空）——Prisma 不出 Map 故無炸點，測試標 `.skip`，一句話可修；(2) `requireUser`（401 強制）值得直測；(3) 既有測試 `clearAllMocks` 不清 implementation 的陷阱。
+
+#### 9. financialFreedom currentAge 焊死修復（B2） — `lib/financialFreedom.ts`
+
+**問題**：`calculateFinancialFreedom` 內 `const currentAge = 30` 焊死——純函數 `generateYearlyProjection` 介面接受 currentAge，但 orchestrator 把它固定成 30，非 30 歲使用者的退休年齡預測全錯。bug 被埋在 orchestrator，純函數測試全綠也看不到。
+
+**解法**：`FinancialFreedomInput.currentAge?: number | null`（可選，不傳為 null）。關鍵設計：不傳時 `yearlyProjection.age` 全為 null——**不再偽造 30 歲，bug 被 type + null 語意逼出而非掩蓋**。composable 預設 30 維持歷史 UI 行為，page 加年齡 input（0–120）並在投影片段顯示年齡。+9 測試，含關鍵回歸（25 歲 vs 40 歲的 `yearlyProjection[0].age` 必須不同——正是純函數測試看不到的盲點）。
+
+**長期建議（未做）**：加 `User.birthDate`（Date）讓多工具共用，需 schema migration + 設定頁。
+
+#### 整合驗證期間的 inline 修正
+
+平行程工產出後整合驗收時，由主執行緒 inline 修了三處 agent 未捕捉的問題：
+
+- **serialize `.map(serialize)` 地雷**：候選 8 加 `seen` 參數後，`post-queries.ts` 的 `posts.map(serialize)` 會把 array index 塞進 `seen`（map callback 傳 `(value, index, array)`）炸掉 3 個 blog 測試。在 serialize source 加 `seen instanceof WeakMap` 守衛（root cause 修法，idiomatic `.map(serialize)` 恢復可用），而非在每個呼叫端閃。
+- **diaries.get.ts 型別落差**：候選 5 把 `DiaryListItem` 從 `Awaited<ReturnType<typeof prisma.diary.findMany>>[number]`（因 Prisma 泛型未實例化塌成 `any`）改成真實 interface（`id: bigint`），暴露 bigint ↔ SerializedId 落差。拿掉 `Promise<DiariesApiResponse>` 標注（跟 `[id].get.ts` 一致；serialize 是 type-opaque 邊界）。
+- **diary-read.ts `(d)` 隱式 any**：`DIARY_LIST_SELECT` 雖 `satisfies Prisma.DiarySelect`，但 `Promise.all` 解構 + 寬鬆 where 讓 `rawItems` 推導失效；map callback 補 `Prisma.DiaryGetPayload<{ select: typeof DIARY_LIST_SELECT }>` 型別。
+
+#### 排除項
+
+- **#9 統一資料層**：每個 composable / page 各自 `$fetch` + try/catch + toast 的樣板重複，沒有對應的散落 bug。抽象資料層會引進不必要的間接與介面，依 YAGNI 排除——除非未來出現明確痛點。
