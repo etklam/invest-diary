@@ -1,9 +1,8 @@
 import adminMiddleware from '~/server/middleware/admin'
-import prisma from '~/lib/prisma'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { logger } from '~/lib/logger'
-import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
+import { deleteUserAdmin } from '~/server/utils/user-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.admin.withRequestId(event.context.requestId)
@@ -11,30 +10,14 @@ export default defineEventHandler(async (event) => {
 
   try {
     const userId = parsePositiveBigIntParam(event, 'id')
+    const adminId = event.context.user?.id ?? ''
 
-    // Prevent self-deletion
-    if (userId.toString() === event.context.user?.id) {
-      throw Errors.accountSelfModification('delete your own account').toH3Error()
-    }
-
-    // Check if user exists
-    const existingUser = await prisma.user.findUnique({
-      where: { id: userId }
-    })
-
-    if (!existingUser) {
-      throw Errors.userNotFound().toH3Error()
-    }
-
-    // Delete user (cascade deletes will handle diaries, alerts, transactions)
-    await prisma.user.delete({
-      where: { id: userId }
-    })
+    const deleted = await deleteUserAdmin(userId, adminId)
 
     log.info('Deleted user', {
       adminId: event.context.user?.id,
       deletedUserId: String(userId),
-      deletedUserEmail: existingUser.email
+      deletedUserEmail: deleted.email,
     })
 
     return {

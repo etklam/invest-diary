@@ -24,10 +24,10 @@ import type { RankScope } from '~/lib/market-rotation/types'
 import { buildMarketRotationMonitorPayload } from '~/lib/market-rotation/monitor'
 import { generateMarketSummary } from '~/lib/market-rotation/summary'
 import { decideBetaAllocation } from '~/lib/beta-allocation/policy'
+import { getComparisonDate } from '~/server/utils/market-rotation-queries'
 import {
   getLatestMonitorRows,
   resolveMarketState,
-  getMonitorComparisonDate,
   getMonitorTrendSeries,
 } from '~/server/utils/market-rotation-monitor-queries'
 
@@ -66,8 +66,16 @@ export default defineEventHandler(async (event) => {
     // Step 2: Resolve market state (from market_breadth_daily regime)
     const marketState = await resolveMarketState(prisma)
 
-    // Step 3: Get comparison date (null if no 2W comparison data)
-    const comparisonDate = await getMonitorComparisonDate(prisma, rankScope, asOfDate!)
+    // Step 3: Derive comparison date from the rows we already loaded.
+    // getMonitorComparisonDate used to re-query the same rows just to check
+    // for non-null rankDelta2W; we read it off `rows` instead and only pay
+    // for the qualified-date groupBy when comparison data actually exists.
+    const hasComparisonData = rows.some(r => r.rankDelta2W != null)
+    let comparisonDate: string | null = null
+    if (hasComparisonData) {
+      const comparisonDateRaw = await getComparisonDate(prisma, rankScope, 10)
+      comparisonDate = comparisonDateRaw ? toDateString(comparisonDateRaw) : null
+    }
 
     const trendSeries = comparisonDate
       ? await getMonitorTrendSeries(prisma, rankScope, new Date(comparisonDate), asOfDate!)
@@ -99,7 +107,9 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    // Step 6: Generate deterministic current market summary (now includes beta suggestion)
+    // Step 6: Generate deterministic current market summary.
+    // Pass the already-computed betaAllocation so decideBetaAllocation runs
+    // exactly once per request (summary.ts no longer re-invokes it).
     const currentMarketSummary = generateMarketSummary({
       marketState: payload.summary.marketState,
       breadthCondition: payload.summary.breadthCondition,
@@ -114,6 +124,7 @@ export default defineEventHandler(async (event) => {
       })),
       above50dRatio: payload.summary.above50d.ratio,
       averageRsi: payload.summary.averageRsi,
+      beta: betaAllocation,
     })
 
     return serialize({

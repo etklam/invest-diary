@@ -1,41 +1,17 @@
-import prisma from '../../../lib/prisma'
+import { requireUser } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
-import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
+import { getUserSettings } from '~/server/utils/user-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
-  const userId = event.context.user?.id
+  try {
+    const user = requireUser(event)
 
-  if (!userId) {
-    throw Errors.unauthorized().toH3Error()
-  }
+    const settings = await getUserSettings(BigInt(user.id))
 
-  const user = await prisma.user.findUnique({
-    where: { id: BigInt(userId) },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      expectedMonthlyTrades: true,
-      expectedProfit: true,
-      expectedAvgHolding: true,
-      timezone: true,
-      createdAt: true
-    }
-  })
-
-  if (!user) {
-    throw Errors.userNotFound().toH3Error()
-  }
-
-  return {
-    success: true,
-    settings: {
-      name: user.name,
-      expectedMonthlyTrades: user.expectedMonthlyTrades,
-      expectedProfit: user.expectedProfit,
-      expectedAvgHolding: user.expectedAvgHolding,
-      timezone: user.timezone
-    }
+    return { success: true, settings }
+  } catch (error) {
+    handleApiError(error, log)
   }
 })

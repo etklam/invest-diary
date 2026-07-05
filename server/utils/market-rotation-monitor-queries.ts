@@ -17,7 +17,7 @@ import { toNumber, type DecimalLike } from '~/lib/market-rotation/decimal'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
 import { buildNormalizedTrendSeries } from '~/lib/market-rotation/trend-series'
 import { filterQualifiedDates } from '~/lib/market-rotation/qualified-date'
-import { getComparisonDate, getLatestQualifiedDate } from '~/server/utils/market-rotation-queries'
+import { getLatestQualifiedDate } from '~/server/utils/market-rotation-queries'
 
 function toDateString(date: Date): string {
   return date.toISOString().slice(0, 10)
@@ -168,46 +168,6 @@ export async function resolveMarketState(
   }
 
   return toMarketState(row.regime)
-}
-
-/**
- * getMonitorComparisonDate
- *
- * Checks if the latest snapshots have comparison data (non-null rankDelta2W).
- * If they do, returns the comparison date string (10 trading days back).
- * Otherwise returns null.
- *
- * @param prisma - Prisma client instance (DI)
- * @param rankScope - The ranking scope
- * @returns Comparison date string (YYYY-MM-DD), or null if no comparison data
- */
-export async function getMonitorComparisonDate(
-  prisma: MonitorPrisma,
-  rankScope: string,
-  asOfDate: Date,
-): Promise<string | null> {
-  const rawRows = await prisma.marketRotationSnapshot.findMany({
-    where: {
-      rankScope,
-      date: asOfDate,
-    },
-  })
-
-  const hasComparisonData = rawRows.some(
-    row => row.rankDelta2W != null,
-  )
-
-  if (!hasComparisonData) {
-    return null
-  }
-
-  const comparisonDate = await getComparisonDate(prisma as any, rankScope, 10)
-
-  if (!comparisonDate) {
-    return null
-  }
-
-  return toDateString(comparisonDate)
 }
 
 /**

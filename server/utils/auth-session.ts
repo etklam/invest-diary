@@ -1,7 +1,7 @@
-import { createHash } from 'node:crypto'
 import prisma from '~/lib/prisma'
 import type { TokenPayload } from '~/lib/jwt'
 import { verifyToken } from '~/lib/jwt'
+import { sha256Hex } from '~/server/utils/hash'
 
 export interface SessionUser {
   id: string
@@ -47,7 +47,7 @@ async function findSessionUser(userId: string): Promise<SessionUserRecord | null
 }
 
 async function findRefreshTokenRecord(token: string): Promise<RefreshTokenRecord | null> {
-  const tokenHash = hashToken(token)
+  const tokenHash = sha256Hex(token)
   const include = {
     user: {
       select: {
@@ -86,10 +86,6 @@ async function findRefreshTokenRecord(token: string): Promise<RefreshTokenRecord
     ...legacyRecord,
     token: tokenHash,
   }
-}
-
-export function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex')
 }
 
 export async function authenticateAccessToken(token: string): Promise<SessionUser | null> {
@@ -135,7 +131,7 @@ export async function authenticateRefreshToken(token: string): Promise<{
 }
 
 export async function deleteStoredRefreshToken(token: string, userId?: bigint) {
-  const tokenHash = hashToken(token)
+  const tokenHash = sha256Hex(token)
 
   return prisma.refreshToken.deleteMany({
     where: {

@@ -1,20 +1,16 @@
-import { Prisma } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-import { z } from 'zod'
-import { signAccessToken, signRefreshToken, REFRESH_TOKEN_MAX_AGE_SECONDS } from '~/lib/jwt'
-import prisma from '~/lib/prisma'
+import { signAccessToken, signRefreshToken } from '~/lib/jwt'
 import { setAuthCookies } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
-import { hashToken } from '~/server/utils/auth-session'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
-
-const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(1, 'Password is required')
-})
+import {
+  loginUserSchema,
+  findUserByEmail,
+  createRefreshToken,
+} from '~/server/utils/user-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
@@ -27,7 +23,7 @@ export default defineEventHandler(async (event) => {
       throw Errors.rateLimited(60).toH3Error()
     }
     const body = await readBody(event)
-    const validatedData = loginSchema.parse(body)
+    const validatedData = loginUserSchema.parse(body)
 
     const emailIdentity = validatedData.email.trim().toLowerCase()
     try {
@@ -38,7 +34,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Find user
-    const user = await prisma.user.findUnique({ where: { email: validatedData.email } })
+    const user = await findUserByEmail(validatedData.email)
 
     if (!user) {
       log.warn('Login failed: user not found', { email: validatedData.email })
@@ -57,32 +53,7 @@ export default defineEventHandler(async (event) => {
     const accessToken = await signAccessToken(user.id.toString(), user.email, role, tokenVersion)
     const refreshToken = await signRefreshToken(user.id.toString(), user.email, role, tokenVersion)
 
-    const hashedRefreshToken = hashToken(refreshToken)
-    const refreshExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_SECONDS * 1000)
-
-    try {
-      await prisma.refreshToken.create({
-        data: {
-          token: hashedRefreshToken,
-          userId: user.id,
-          expiresAt: refreshExpiresAt,
-        }
-      })
-    } catch (error) {
-      if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') {
-        throw error
-      }
-
-      await prisma.refreshToken.update({
-        where: {
-          token: hashedRefreshToken,
-        },
-        data: {
-          userId: user.id,
-          expiresAt: refreshExpiresAt,
-        }
-      })
-    }
+    await createRefreshToken(user.id, refreshToken)
 
     setAuthCookies(event, accessToken, refreshToken)
 

@@ -1649,6 +1649,9 @@
       "monthlyContributionPlaceholder": "e.g., 20000",
       "expectedReturn": "Target Annual Return",
       "expectedReturnHint": "Target annual return of your portfolio, recommend 6-10%",
+      "currentAge": "Current Age",
+      "currentAgePlaceholder": "e.g., 30",
+      "currentAgeHint": "Used to project your age in each future year. Leave blank to skip age display.",
       "returnRateLevels": {
         "conservative": {
           "label": "Too Conservative",
@@ -1688,13 +1691,15 @@
       "units": {
         "currency": "$",
         "perYearCurrency": "$/year",
-        "perMonthCurrency": "$/month"
+        "perMonthCurrency": "$/month",
+        "yearsOld": "yrs"
       },
       "fireNumber": "FIRE Number",
       "progress": "{percent}% Complete",
       "amountNeeded": "Amount Needed",
       "yearsToFreedom": "Years to Freedom",
       "years": "years",
+      "yearsOld": "years old",
       "alreadyFree": "Achieved!",
       "freedomDate": "Target Date",
       "now": "Now",

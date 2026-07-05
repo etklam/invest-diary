@@ -13,6 +13,7 @@ export interface FinancialFreedomInput {
   withdrawalRatePreset: WithdrawalRatePreset
   customWithdrawalRate: number
   inflationRate: number
+  currentAge: number | null
 }
 
 export function useFinancialFreedomCalculator(initial?: Partial<FinancialFreedomInput>) {
@@ -24,6 +25,8 @@ export function useFinancialFreedomCalculator(initial?: Partial<FinancialFreedom
   const withdrawalRatePreset = ref<WithdrawalRatePreset>(initial?.withdrawalRatePreset ?? 'moderate')
   const customWithdrawalRate = ref<number>(initial?.customWithdrawalRate ?? 4)
   const inflationRate = ref<number>(initial?.inflationRate ?? 2)
+  // 預設 30 維持歷史行為；User schema 沒 age/birthDate，由 page local state 提供
+  const currentAge = ref<number | null>(initial?.currentAge ?? 30)
 
   // Computed: Return rate level
   const returnRateLevel = computed(() => {
@@ -82,7 +85,8 @@ export function useFinancialFreedomCalculator(initial?: Partial<FinancialFreedom
       expectedReturn: expectedReturn.value,
       withdrawalRate: withdrawalRate.value,
       inflationRate: inflationRate.value,
-      yearsToRetirement: null
+      yearsToRetirement: null,
+      currentAge: currentAge.value
     })
   })
 
@@ -119,6 +123,9 @@ export function useFinancialFreedomCalculator(initial?: Partial<FinancialFreedom
       case 'inflationRate':
         inflationRate.value = value
         break
+      case 'currentAge':
+        currentAge.value = value
+        break
     }
   }
 
@@ -130,6 +137,7 @@ export function useFinancialFreedomCalculator(initial?: Partial<FinancialFreedom
     withdrawalRatePreset.value = 'moderate'
     customWithdrawalRate.value = 4
     inflationRate.value = 2
+    currentAge.value = 30
   }
 
   return {
@@ -141,6 +149,7 @@ export function useFinancialFreedomCalculator(initial?: Partial<FinancialFreedom
     withdrawalRatePreset,
     customWithdrawalRate,
     inflationRate,
+    currentAge,
     copySuccess: ref(false),
 
     // Computed

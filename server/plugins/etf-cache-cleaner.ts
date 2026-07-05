@@ -1,4 +1,4 @@
-import { clearExpired, getCacheSize } from '~/lib/etf-profile/cache'
+import { clearExpired, getCacheSize } from '~/lib/market-data/cache'
 
 /**
  * ETF 快取清理器

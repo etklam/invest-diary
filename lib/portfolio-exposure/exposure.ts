@@ -167,13 +167,31 @@ export function computePortfolioExposure(holdings: HoldingView[]): PortfolioExpo
   }
 }
 
+export interface CombinedBuckets {
+  highBeta: number
+  coreIndex: number
+  cash: number
+}
+
+/**
+ * Collapse the six raw beta buckets into the three displayed in the UI:
+ *   highBeta  = high_beta + mega_cap + single_stock
+ *   coreIndex = core_index
+ *   cash      = defensive + cash_proxy
+ *
+ * Single source of truth — `compareExposureToTarget` and the UI panel both
+ * consume this so the bucket aggregation can't drift between them.
+ */
+export function combineBetaBuckets(exposure: PortfolioExposure): CombinedBuckets {
+  return {
+    highBeta: exposure.highBetaPct + exposure.megaCapPct + exposure.singleStockPct,
+    coreIndex: exposure.coreIndexPct,
+    cash: exposure.defensivePct + exposure.cashProxyPct,
+  }
+}
+
 /**
  * Compare computed exposure against a target allocation.
- *
- * Buckets are mapped:
- *   highBeta = high_beta + mega_cap + single_stock
- *   coreIndex = core_index
- *   cash = defensive + cash_proxy
  *
  * Status: |gap| <= 5 → balanced; gap > 5 → overweight; gap < -5 → underweight.
  * Unknown exposure is intentionally not compared.
@@ -182,10 +200,10 @@ export function compareExposureToTarget(
   exposure: PortfolioExposure,
   target: SuggestedAllocation
 ): ExposureGap[] {
-  const highBetaCurrent =
-    exposure.highBetaPct + exposure.megaCapPct + exposure.singleStockPct
-  const coreIndexCurrent = exposure.coreIndexPct
-  const cashCurrent = exposure.defensivePct + exposure.cashProxyPct
+  const combined = combineBetaBuckets(exposure)
+  const highBetaCurrent = combined.highBeta
+  const coreIndexCurrent = combined.coreIndex
+  const cashCurrent = combined.cash
 
   const computeStatus = (gap: number): ExposureGap['status'] => {
     if (gap > 5) return 'overweight'

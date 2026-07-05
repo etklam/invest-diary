@@ -1,6 +1,7 @@
 import crypto from 'node:crypto'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
+import { API_KEY_TOKEN_PREFIX } from '~/server/utils/api-key'
 
 const CSRF_COOKIE = 'csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
@@ -22,7 +23,7 @@ function generateToken(): string {
  */
 function isApiKeyAuth(event: Parameters<typeof getRequestURL>[0]): boolean {
   const authHeader = getHeader(event, 'authorization')
-  if (authHeader && authHeader.startsWith('Bearer sk_')) return true
+  if (authHeader && authHeader.startsWith(`Bearer ${API_KEY_TOKEN_PREFIX}`)) return true
   const apiKeyHeader = getHeader(event, 'x-api-key')
   return !!apiKeyHeader
 }

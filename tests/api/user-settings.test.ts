@@ -40,8 +40,6 @@ describe('User settings API', () => {
       name: 'New Name',
     })
     mockUserUpdate.mockResolvedValue({
-      id: 1n,
-      email: 'user@example.com',
       name: 'New Name',
       expectedMonthlyTrades: 5,
       expectedProfit: 1200,

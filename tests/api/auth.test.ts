@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mockReadBody, mockGetCookie, mockSetCookie, mockDeleteCookie } from '../vi-setup'
-import { createHash } from 'node:crypto'
+import { sha256Hex } from '~/server/utils/hash'
 
 // Create mock functions
 const mockUserFindUnique = vi.fn()
@@ -164,7 +164,7 @@ describe('Auth API', () => {
       expect(mockSetCookie).toHaveBeenCalledTimes(2)
       expect(mockRefreshTokenCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          token: createHash('sha256').update('mock-refresh-token').digest('hex'),
+          token: sha256Hex('mock-refresh-token'),
         }),
       })
       expect(mockRateLimitersAuthLoginIp).toHaveBeenCalledWith('127.0.0.1')
@@ -430,8 +430,6 @@ describe('Auth API', () => {
         email: 'test@example.com',
         name: 'Test User',
         role: 'USER',
-        password: 'hashed-password',
-        tokenVersion: 3,
         expectedMonthlyTrades: 10,
         expectedProfit: 1000,
         expectedAvgHolding: 5,
@@ -511,7 +509,7 @@ describe('Auth API', () => {
         type: 'refresh',
       })
       mockRefreshTokenFindUnique.mockResolvedValue({
-        token: createHash('sha256').update('valid-refresh-token').digest('hex'),
+        token: sha256Hex('valid-refresh-token'),
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
         user: {
           id: 1n,

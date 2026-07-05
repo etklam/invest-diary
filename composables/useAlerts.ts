@@ -2,6 +2,12 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import type { AlertPayload } from '../types/websocket'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 
+// ponytail: SSR / pre-plugin safe fallback — $websocket only exists on client.
+const emptyIsConnected = ref(false)
+const noopUnsubscribe = () => {}
+const noopUnsubscribeAlert = (_cb: (alert: AlertPayload) => void) => noopUnsubscribe
+const noopDismissAlert = async (_alertId: string) => false
+
 export interface AlertItem {
   id: string
   message: string
@@ -53,7 +59,15 @@ export const useAlerts = () => {
 
   const { t } = useI18n()
   const toast = useToast()
-  const { isConnected, onAlert, dismissAlert: wsDismissAlert } = useWebSocket()
+  // ponytail: read $websocket directly — plugins/websocket.client.ts owns the singleton.
+  const ws = useNuxtApp().$websocket
+  const isConnected = ws ? ws.isConnected : emptyIsConnected
+  const onAlert = ws
+    ? (cb: (alert: AlertPayload) => void) => ws.subscribeAlert(cb)
+    : noopUnsubscribeAlert
+  const wsDismissAlert = ws
+    ? (alertId: string) => ws.dismissAlert(alertId)
+    : noopDismissAlert
   const { runWithAuthRecovery } = useAuthRecovery()
   const { isAuthenticated } = useAuth()
 

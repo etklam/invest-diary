@@ -322,12 +322,16 @@ export function getWorstMonths(count: number = 3): MonthData[] {
     .slice(0, count)
 }
 
+import { formatSignedPercent } from '~/lib/format'
+
 /**
- * 格式化回報百分比
+ * 格式化回報百分比（帶正負號）
+ *
+ * Domain alias — kept so callers in seasonality.vue 表達「回報率」語意；
+ * 實際格式化邏輯統一在 `lib/format.ts` 的 `formatSignedPercent`。
  */
 export function formatReturn(value: number): string {
-  const sign = value >= 0 ? '+' : ''
-  return `${sign}${value.toFixed(2)}%`
+  return formatSignedPercent(value)
 }
 
 /**

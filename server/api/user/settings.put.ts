@@ -1,21 +1,7 @@
-import { z } from 'zod'
-import prisma from '../../../lib/prisma'
+import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
-import { isValidIanaTimezone, normalizeInput, optionalNormalizedString } from '~/server/utils/validation'
-import { requireUser } from '~/server/utils/auth'
-
-const settingsSchema = z.object({
-  name: optionalNormalizedString(100),
-  expectedMonthlyTrades: z.coerce.number().int().min(0).optional(),
-  expectedProfit: z.coerce.number().optional(),
-  expectedAvgHolding: z.coerce.number().optional(),
-  timezone: z.union([z.string(), z.undefined()])
-    .transform((value) => value ? normalizeInput(value) : undefined)
-    .refine((value) => value === undefined || isValidIanaTimezone(value), {
-      message: 'Invalid timezone',
-    }),
-})
+import { updateUserSettings } from '~/server/utils/user-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
@@ -23,34 +9,12 @@ export default defineEventHandler(async (event) => {
     const user = requireUser(event)
 
     const body = await readBody(event)
-    const validatedData = settingsSchema.parse(body)
 
-    const updatedUser = await prisma.user.update({
-      where: { id: BigInt(user.id) },
-      data: validatedData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        expectedMonthlyTrades: true,
-        expectedProfit: true,
-        expectedAvgHolding: true,
-        timezone: true
-      }
-    })
+    const settings = await updateUserSettings(BigInt(user.id), body)
 
     log.info('User settings updated', { userId: user.id })
 
-    return {
-      success: true,
-      settings: {
-        name: updatedUser.name,
-        expectedMonthlyTrades: updatedUser.expectedMonthlyTrades,
-        expectedProfit: updatedUser.expectedProfit,
-        expectedAvgHolding: updatedUser.expectedAvgHolding,
-        timezone: updatedUser.timezone
-      }
-    }
+    return { success: true, settings }
   } catch (error) {
     handleApiError(error, log)
   }

@@ -2,6 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+// ponytail: source-scrape only, kept deliberately. The behaviors guarded
+// here (httpOnly access-token must NOT be read via useCookie in the
+// websocket plugin, public-route skip, 401 → refresh before logout) are
+// security/correctness invariants. Behavioral tests in tests/api/auth.test.ts
+// and tests/integration/auth-flow.test.ts cover the runtime side; these
+// source checks catch the specific anti-patterns that behavioral tests
+// would not flag (e.g. cookies leaking to client JS, duplicate inline
+// 401 cleanup instead of shared recovery).
 describe('auth client regressions', () => {
   it('websocket plugin should not read httpOnly access-token cookie from client JS', () => {
     const source = readFileSync(resolve(process.cwd(), 'plugins/websocket.client.ts'), 'utf-8')

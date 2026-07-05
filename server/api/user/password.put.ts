@@ -1,25 +1,14 @@
-import bcrypt from 'bcryptjs'
-import { z } from 'zod'
-import prisma from '../../../lib/prisma'
-import { clearAuthCookies } from '~/server/utils/auth'
+import { clearAuthCookies, requireUser } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
-
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'New password must be at least 8 characters')
-})
+import { changeUserPassword } from '~/server/utils/user-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
   try {
-    const userId = event.context.user?.id
-
-    if (!userId) {
-      throw Errors.unauthorized()
-    }
+    const user = requireUser(event)
 
     const ipIdentifier = getRateLimitIdentifier(event)
     try {
@@ -30,61 +19,23 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-      await rateLimiters.authPasswordIdentity(String(userId))
+      await rateLimiters.authPasswordIdentity(user.id)
     } catch {
-      log.warn('Password change rate limited', { ip: ipIdentifier, userId: String(userId) })
+      log.warn('Password change rate limited', { ip: ipIdentifier, userId: user.id })
       throw Errors.rateLimited(60).toH3Error()
     }
 
     const body = await readBody(event)
 
-    // Validate input
-    const validatedData = passwordSchema.parse(body)
-
-    // Get user with password
-    const user = await prisma.user.findUnique({
-      where: { id: BigInt(userId) },
-      select: {
-        id: true,
-        password: true
-      }
-    })
-
-    if (!user) {
-      throw Errors.userNotFound()
-    }
-
-    // Verify current password
-    const isValidPassword = await bcrypt.compare(validatedData.currentPassword, user.password)
-
-    if (!isValidPassword) {
-      log.warn('Password change failed: incorrect current password', { userId: String(userId) })
-      throw Errors.invalidCredentials()
-    }
-
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(validatedData.newPassword, 10)
-
-    const userIdBigInt = BigInt(userId)
-
-    // Update password and revoke all tokens atomically
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: userIdBigInt },
-        data: {
-          password: hashedPassword,
-          tokenVersion: { increment: 1 }
-        }
-      }),
-      prisma.refreshToken.deleteMany({
-        where: { userId: userIdBigInt }
-      })
-    ])
+    // changeUserPassword validates input, verifies current password, hashes
+    // the new password, and runs the password update + tokenVersion increment
+    // + refresh-token wipe in a single $transaction.
+    await changeUserPassword(BigInt(user.id), body)
 
     // Clear current session cookies as well
     clearAuthCookies(event)
 
-    log.info('Password changed', { userId: String(userId) })
+    log.info('Password changed', { userId: user.id })
 
     return {
       success: true,

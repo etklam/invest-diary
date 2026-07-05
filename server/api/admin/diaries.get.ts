@@ -1,8 +1,8 @@
 import adminMiddleware from '~/server/middleware/admin'
-import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
+import { listAllDiariesAdmin } from '~/server/utils/user-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.admin.withRequestId(event.context.requestId)
@@ -10,49 +10,11 @@ export default defineEventHandler(async (event) => {
 
   try {
     const query = getQuery(event)
-    const page = Number(query.page) || 1
-    const limit = Number(query.limit) || 20
-    const skip = (page - 1) * limit
-
-    // Get total count
-    const total = await prisma.diary.count()
-
-    // Get all diaries with user info
-    const diaries = await prisma.diary.findMany({
-      skip,
-      take: limit,
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true
-          }
-        },
-        _count: {
-          select: {
-            alerts: true,
-            transactions: true
-          }
-        }
-      },
-      orderBy: {
-        date: 'desc'
-      }
-    })
+    const { diaries, pagination } = await listAllDiariesAdmin(query)
 
     log.info('Listed all diaries', { userId: event.context.user?.id, count: diaries.length })
 
-    return serialize({
-      success: true,
-      data: diaries,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
-      }
-    })
+    return serialize({ success: true, data: diaries, pagination })
   } catch (error) {
     handleApiError(error, log)
   }

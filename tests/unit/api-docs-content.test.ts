@@ -106,6 +106,11 @@ vi.mock('~/server/utils/rate-limit', () => ({
 
 // ---- Tests --------------------------------------------------------------
 
+// ponytail: this file is already mostly behavioral (drives the real
+// POST /api/auth/login handler with mocked Prisma/bcrypt/JWT). The two
+// lightweight doc-structure checks below are intentional — they only
+// verify section headings exist, not body wording, so they survive doc
+// rewording while catching deleted sections.
 describe('API documentation contract', () => {
   beforeEach(() => {
     vi.clearAllMocks()

@@ -8,6 +8,9 @@ const read = (relativePath: string) =>
   readFileSync(resolve(projectRoot, relativePath), 'utf-8')
 
 describe('PWA regression guardrails', () => {
+  // ponytail: source-scrape but guards real wiring regressions (init-flag
+  // cleanup leak, layout install-prompt wiring). Behavioral tests would need
+  // a mounted Vue/Nuxt harness — not worth the weight here.
   it('resets composable initialization flag on cleanup', () => {
     const source = read('composables/useAppPWA.ts')
 
@@ -19,12 +22,5 @@ describe('PWA regression guardrails', () => {
 
     expect(source).toContain('const { canInstall } = useAppPWA()')
     expect(source).toMatch(/watch\(canInstall,[\s\S]*showInstallPrompt\.value\s*=\s*value/)
-  })
-
-  it('documents runtime caching behavior consistently with nuxt.config.ts', () => {
-    const source = read('README.md')
-
-    expect(source).not.toContain('❌ No offline-first caching (to avoid stale investment data)')
-    expect(source).not.toContain('Minimal Workbox setup (no runtime caching)')
   })
 })

@@ -2,7 +2,6 @@ import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import {
   buildMarketHistoricalCacheKey,
   buildMarketQuoteCacheKey,
-  buildEtfResearchCacheKey,
   clearCache,
   getCached,
   getOrSetCached,
@@ -99,10 +98,6 @@ describe('market-data/cache (unified seam)', () => {
     it('builds historical cache keys with normalized symbol and range', () => {
       expect(buildMarketHistoricalCacheKey(' spy ', ' 1y ')).toBe('market:historical:SPY:1y')
       expect(buildMarketHistoricalCacheKey('AAPL', '3m')).toBe('market:historical:AAPL:3m')
-    })
-
-    it('builds ETF research cache keys with all parameters', () => {
-      expect(buildEtfResearchCacheKey('qqq', 'spy', '6m')).toBe('etf-profile:QQQ:SPY:6m')
     })
   })
 

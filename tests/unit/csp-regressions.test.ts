@@ -7,6 +7,11 @@ const projectRoot = resolve(__dirname, '../..')
 const read = (relativePath: string) =>
   readFileSync(resolve(projectRoot, relativePath), 'utf-8')
 
+// ponytail: these are source-scrape guards for regressions that have no
+// cheap behavioral proxy — the CSP wasm-unsafe-eval header only surfaces
+// when running production Nuxt against a real browser, and the article
+// fallback / catch branches are Vue template wiring. Rewriting as E2E
+// would not pull its weight. Kept deliberately.
 describe('CSP regression guardrails', () => {
   // Regression: SPA navigation to /articles/:slug showed "load failed" because
   // Shiki (via rehype-pretty-code) calls WebAssembly.instantiate() during

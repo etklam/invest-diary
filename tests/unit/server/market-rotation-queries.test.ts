@@ -275,6 +275,56 @@ describe('server/utils/market-rotation-queries', () => {
 
       expect(result).toEqual(new Date('2026-06-10'))
     })
+
+    it('passes the canonical universe symbols into the groupBy filter (ADR-0004)', async () => {
+      // sectors scope has 11 canonical symbols; threshold = ceil(11*0.9) = 10.
+      mockMarketRotationSnapshotGroupBy.mockResolvedValue([
+        { date: new Date('2026-06-10'), _count: { symbol: 11 } },
+      ])
+
+      await getComparisonDate(prisma as any, 'sectors', 0)
+
+      // The groupBy must filter by symbol: { in: canonicalUniverse } so
+      // stale / non-canonical rows cannot inflate coverage.
+      expect(mockMarketRotationSnapshotGroupBy).toHaveBeenCalledWith({
+        by: ['date'],
+        where: {
+          rankScope: 'sectors',
+          symbol: {
+            in: [
+              'XLK', 'XLF', 'XLE', 'XLU', 'XLP', 'XLY', 'XLI',
+              'XLV', 'XLB', 'XLC', 'XLRE',
+            ],
+          },
+        },
+        _count: { symbol: true },
+        orderBy: { date: 'desc' },
+      })
+    })
+
+    it('excludes non-canonical symbols from qualified-date coverage (ADR-0004)', async () => {
+      // DB has 9 canonical rows + 5 stale 'OLD' rows on 2026-06-14.
+      // Without the symbol filter, groupBy would count 14 rows ≥ 10
+      // (threshold for 11-symbol universe) and falsely qualify the date.
+      // With the filter, only 9 canonical rows count → below threshold.
+      mockMarketRotationSnapshotGroupBy.mockImplementation(async (args: { where?: { symbol?: { in?: string[] } } }) => {
+        const filtered = !!args.where?.symbol?.in
+        return [
+          { date: new Date('2026-06-15'), _count: { symbol: filtered ? 11 : 16 } },
+          { date: new Date('2026-06-14'), _count: { symbol: filtered ? 9 : 14 } },
+          { date: new Date('2026-06-13'), _count: { symbol: filtered ? 11 : 16 } },
+        ]
+      })
+
+      // offset=1 → second qualified date. Without the canonical filter,
+      // 2026-06-14 would qualify (14 rows ≥ 10 threshold) and offset=1
+      // would return 2026-06-14. With the filter, only 2026-06-15 and
+      // 2026-06-13 qualify, so offset=1 returns 2026-06-13 — proving
+      // 2026-06-14 is excluded.
+      const result = await getComparisonDate(prisma as any, 'sectors', 1)
+
+      expect(result).toEqual(new Date('2026-06-13'))
+    })
   })
 
   // ─── getComparisonSnapshots ─────────────────────────────────────────────

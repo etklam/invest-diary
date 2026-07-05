@@ -1,14 +1,16 @@
-import { createHash, randomBytes } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
+import { sha256Hex } from '~/server/utils/hash'
+import type { ApiKeyScope } from '@prisma/client'
 
-const API_KEY_TOKEN_PREFIX = 'dva_'
+export const API_KEY_TOKEN_PREFIX = 'dva_'
 const API_KEY_VISIBLE_PREFIX_LENGTH = 12
 
 export interface ApiKeyAuthResult {
   apiKeyId: string
   label: string
-  scope: 'DIARY_CREATE' | 'AGENT_WRITE'
+  scope: ApiKeyScope
   user: {
     id: string
     email: string
@@ -25,24 +27,20 @@ function extractApiKeyFromHeader(value?: string | null) {
   return value.trim()
 }
 
-export function hashApiKey(rawKey: string) {
-  return createHash('sha256').update(rawKey).digest('hex')
-}
-
 export function generateApiKey() {
   const secret = randomBytes(24).toString('hex')
   const rawKey = `${API_KEY_TOKEN_PREFIX}${secret}`
 
   return {
     rawKey,
-    keyHash: hashApiKey(rawKey),
+    keyHash: sha256Hex(rawKey),
     keyPrefix: rawKey.slice(0, API_KEY_VISIBLE_PREFIX_LENGTH),
   }
 }
 
 export async function requireApiKey(
   event: any,
-  allowedScopes: Array<'DIARY_CREATE' | 'AGENT_WRITE'>
+  allowedScopes: Array<ApiKeyScope>
 ): Promise<ApiKeyAuthResult> {
   const headerValue = getHeader(event, 'x-api-key') || getHeader(event, 'authorization')
   const rawKey = extractApiKeyFromHeader(headerValue)
@@ -51,7 +49,7 @@ export async function requireApiKey(
     throw Errors.apiKeyInvalid().toH3Error()
   }
 
-  const keyHash = hashApiKey(rawKey)
+  const keyHash = sha256Hex(rawKey)
   const credential = await prisma.apiKeyCredential.findUnique({
     where: { keyHash },
     include: {

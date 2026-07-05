@@ -1649,6 +1649,9 @@
       "monthlyContributionPlaceholder": "例如：20000",
       "expectedReturn": "目標年化報酬率",
       "expectedReturnHint": "投資組合的目標年報酬率，建議 6-10%",
+      "currentAge": "目前年齡",
+      "currentAgePlaceholder": "例如：30",
+      "currentAgeHint": "用於預測各年度的年齡，留空則不顯示年齡。",
       "returnRateLevels": {
         "conservative": {
           "label": "太保守",
@@ -1688,13 +1691,15 @@
       "units": {
         "currency": "$",
         "perYearCurrency": "$/年",
-        "perMonthCurrency": "$/月"
+        "perMonthCurrency": "$/月",
+        "yearsOld": "歲"
       },
       "fireNumber": "財務自由金額 (FIRE Number)",
       "progress": "已完成 {percent}%",
       "amountNeeded": "還需要",
       "yearsToFreedom": "距離財務自由",
       "years": "年",
+      "yearsOld": "歲",
       "alreadyFree": "已達成！",
       "freedomDate": "預計達成日期",
       "now": "現在",

@@ -22,6 +22,9 @@ export interface FinancialFreedomInput {
   withdrawalRate: number // 提領率 (%)
   inflationRate: number // 通膨率 (%)
   yearsToRetirement: number | null // 預計幾年後退休 (null = 計算所需年數)
+  // 目前年齡，僅用於 yearlyProjection.age 顯示；null 表示不顯示年齡
+  // ponytail: 不再焊死 30，由 caller 傳入（composable 預設 30 維持歷史行為）
+  currentAge?: number | null
 }
 
 export interface FinancialFreedomResult {
@@ -292,14 +295,13 @@ export function calculateFinancialFreedom(input: FinancialFreedomInput): Financi
     freedomDate = new Date()
   }
 
-  // 生成年度預測（假設目前年齡30歲作為預設）
-  const currentAge = 30 // 可以由 UI 傳入
+  // 生成年度預測；currentAge 由 caller 傳入（null 表示不顯示年齡）
   const yearlyProjection = generateYearlyProjection(
     currentAssets,
     monthlyContribution,
     expectedReturn,
     fireNumber,
-    currentAge
+    input.currentAge ?? null
   )
 
   // 計算提領金額

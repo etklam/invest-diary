@@ -30,7 +30,6 @@ function createMockPrisma() {
 import {
   getLatestMonitorRows,
   resolveMarketState,
-  getMonitorComparisonDate,
   getMonitorTrendSeries,
 } from '~/server/utils/market-rotation-monitor-queries'
 
@@ -353,61 +352,6 @@ describe('server/utils/market-rotation-monitor-queries', () => {
       const result = await resolveMarketState(prisma as any)
 
       expect(result).toBe('unknown')
-    })
-  })
-
-  // ─── getMonitorComparisonDate ────────────────────────────────────────────
-
-  describe('getMonitorComparisonDate', () => {
-    it('checks comparison data on the provided asOfDate instead of latest raw date', async () => {
-      mockSnapshotFindMany.mockResolvedValue([
-        buildSectorRawRow({ rankDelta2W: -2 }),
-        buildSectorRawRow({ id: 2n, symbol: 'XLF', rankDelta2W: 1 }),
-      ])
-      const groupDates = Array.from({ length: 15 }, (_, i) => ({
-        date: new Date(`2026-${String(6).padStart(2, '0')}-${String(15 - i).padStart(2, '0')}`),
-        _count: { symbol: 11 },
-      }))
-      mockSnapshotGroupBy.mockResolvedValue(groupDates)
-
-      const result = await getMonitorComparisonDate(prisma as any, 'sectors', new Date('2026-06-10'))
-
-      expect(result).not.toBeNull()
-      expect(typeof result).toBe('string')
-      expect(result).toBe('2026-06-05')
-      expect(mockSnapshotFindMany).toHaveBeenCalledWith({
-        where: {
-          rankScope: 'sectors',
-          date: new Date('2026-06-10'),
-        },
-      })
-      expect(mockSnapshotFindFirst).not.toHaveBeenCalled()
-    })
-
-    it('returns null when no comparison data exists (all rankDelta2W null)', async () => {
-      mockSnapshotGroupBy.mockResolvedValue([{ date: new Date('2026-06-10'), _count: { symbol: 11 } }])
-      mockSnapshotFindMany.mockResolvedValue([
-        buildSectorRawRow({ rankDelta2W: null }),
-        buildSectorRawRow({ id: 2n, symbol: 'XLF', rankDelta2W: null }),
-      ])
-
-      const result = await getMonitorComparisonDate(prisma as any, 'sectors', new Date('2026-06-10'))
-
-      expect(result).toBeNull()
-    })
-
-    it('returns null when comparison date lookup finds insufficient dates', async () => {
-      mockSnapshotFindMany.mockResolvedValue([
-        buildSectorRawRow({ rankDelta2W: -2 }),
-      ])
-      // Only 1 date available, offset=10 exceeds it
-      mockSnapshotGroupBy.mockResolvedValue([
-        { date: new Date('2026-06-10'), _count: { symbol: 11 } },
-      ])
-
-      const result = await getMonitorComparisonDate(prisma as any, 'sectors', new Date('2026-06-10'))
-
-      expect(result).toBeNull()
     })
   })
 

@@ -1,6 +1,5 @@
 import type { MarketState } from './state'
 import type { BreadthCondition, BreadthConfirmation } from './breadth'
-import { decideBetaAllocation } from '~/lib/beta-allocation/policy'
 import type { BetaAllocationResult } from '~/lib/beta-allocation/policy'
 
 export interface SummaryInput {
@@ -11,6 +10,12 @@ export interface SummaryInput {
   bottomWeakening: Array<{ symbol: string; sectorName: string | null }>
   above50dRatio: number | null
   averageRsi: number | null
+  /**
+   * Pre-computed beta allocation. Callers (e.g. the rotation-monitor handler)
+   * already invoke `decideBetaAllocation` for the `betaAllocation` response
+   * field, so we accept the result here instead of recomputing it.
+   */
+  beta: BetaAllocationResult
 }
 
 const MARKET_STATE_DESCRIPTIONS: Record<MarketState, string> = {
@@ -117,18 +122,8 @@ export function generateMarketSummary(input: SummaryInput): string {
     parts.push(rsi)
   }
 
-  // 7. Beta suggestion — integrate decideBetaAllocation() explanation + warnings
-  const beta = decideBetaAllocation({
-    marketState: input.marketState,
-    breadthConfirmation: input.breadthConfirmation,
-    above50dRatio: input.above50dRatio,
-    averageRsi: input.averageRsi,
-    leadership: {
-      topImproving: input.topImproving.map((e) => e.sectorName ?? e.symbol),
-      bottomWeakening: input.bottomWeakening.map((e) => e.sectorName ?? e.symbol),
-    },
-  })
-  parts.push(formatBetaSuggestion(beta))
+  // 7. Beta suggestion — caller passes the already-computed beta allocation
+  parts.push(formatBetaSuggestion(input.beta))
 
   return parts.join(' ')
 }

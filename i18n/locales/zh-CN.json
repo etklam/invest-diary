@@ -315,6 +315,7 @@
     "saveFailed": "保存失败",
     "titleRequired": "请输入标题",
     "contentRequired": "请输入内容",
+    "quickDiary": "快速日记",
     "backToList": "返回日记列表",
     "createdAt": "创建于",
     "updatedAt": "更新于",
@@ -778,6 +779,14 @@
       "user_self_modification": "无法修改自己的账号"
     }
   },
+  "tags": {
+    "profit": "盈利",
+    "loss": "亏损",
+    "watch": "观察",
+    "hold": "持有",
+    "learning": "学习",
+    "mistake": "失误"
+  },
   "home": {
     "badge": "交易复盘同行平台",
     "hero": {
@@ -928,6 +937,7 @@
     }
   },
   "about": {
+    "badge": "创建者笔记",
     "hero": {
       "title": "关于我",
       "subtitle": "一个交易者与过去经验同行的创建者笔记"
@@ -1516,6 +1526,9 @@
       "monthlyContributionPlaceholder": "例如：20000",
       "expectedReturn": "目标年化报酬率",
       "expectedReturnHint": "投资组合的目标年报酬率，建议 6-10%",
+      "currentAge": "目前年龄",
+      "currentAgePlaceholder": "例如：30",
+      "currentAgeHint": "用于预测各年度的年龄，留空则不显示年龄。",
       "returnRateLevels": {
         "conservative": {
           "label": "太保守",
@@ -1555,13 +1568,15 @@
       "units": {
         "currency": "$",
         "perYearCurrency": "$/年",
-        "perMonthCurrency": "$/月"
+        "perMonthCurrency": "$/月",
+        "yearsOld": "岁"
       },
       "fireNumber": "财务自由金额 (FIRE Number)",
       "progress": "已完成 {percent}%",
       "amountNeeded": "还需要",
       "yearsToFreedom": "距离财务自由",
       "years": "年",
+      "yearsOld": "岁",
       "alreadyFree": "已达成！",
       "freedomDate": "预计达成日期",
       "now": "现在",
@@ -1606,11 +1621,107 @@
       "title": "ETF 趋势分析",
       "subtitle": "追踪和分析 ETF 价格变化，提供多维度比较",
       "developmentNotice": "此功能仍在开发中",
+      "symbol": "ETF 代码",
+      "symbolPlaceholder": "例如：SPY, QQQ, IWM, VTI...",
+      "analyze": "分析",
+      "refresh": "刷新",
+      "marketState": "市场状态",
+      "lastUpdate": "最后更新",
       "tabs": {
+        "all": "全部 ETF",
+        "overview": "总览",
+        "comparison": "同比比较",
+        "technical": "技术指标",
         "risk": "风险",
         "valuation": "估值",
         "rs": "相对强弱"
       },
+      "fields": {
+        "symbol": "代码",
+        "currentPrice": "价格",
+        "dailyChange": "日涨跌",
+        "monthlyChange": "月涨跌",
+        "quarterlyChange": "季涨跌",
+        "ytdChange": "年初至今",
+        "ma20": "MA20",
+        "ma60": "MA60",
+        "trend": "趋势",
+        "actions": "操作"
+      },
+      "monthlyComparison": "月度比较",
+      "previousMonth": "上个月",
+      "twoMonthsAgo": "两个月前",
+      "quarterlyChange": "季度变化",
+      "vsPreviousQuarter": "相较上季",
+      "yearlyComparison": "同比分析",
+      "lastYear": "去年",
+      "thisYear": "今年",
+      "difference": "差异",
+      "improved": "较去年改善",
+      "declined": "较去年衰退",
+      "noYearlyData": "没有同比数据",
+      "technicalIndicators": "技术指标",
+      "trend": "趋势",
+      "trends": {
+        "bullish": "多头",
+        "bearish": "空头",
+        "neutral": "中性"
+      },
+      "watchlist": {
+        "title": "我的追踪清单",
+        "add": "加入",
+        "addSuccess": "已加入追踪清单",
+        "addFailed": "加入追踪清单失败",
+        "removeSuccess": "已从追踪清单移除",
+        "removeFailed": "移除失败",
+        "empty": "追踪清单是空的，加入一些 ETF 来追踪吧"
+      },
+      "board": {
+        "loading": "正在加载 sector data...",
+        "fetchFailed": "ETF sector board 加载失败",
+        "partialFetchFailed": "{count} 个 ticker 暂时取不到数据",
+        "failedSymbols": "{symbols} 暂时无法加载，通常是 Yahoo Finance 响应慢或 rate limit。",
+        "copySuccess": "已复制 sector table",
+        "copyFailed": "浏览器拒绝剪贴板权限",
+        "noChartData": "没有足够数据绘制 mini chart"
+      },
+      "admin": {
+        "title": "ETF 管理",
+        "subtitle": "管理 ETF 并初始化历史数据",
+        "addEtf": "新增 ETF",
+        "addNewEtf": "新增 ETF",
+        "symbolRequired": "代码为必填",
+        "symbolPlaceholder": "例如：SPY, QQQ, IWM",
+        "namePlaceholder": "例如：SPDR S&P 500 ETF",
+        "addHint": "代码将在新增前通过 Yahoo Finance 验证。",
+        "addSuccess": "ETF {symbol} 新增成功",
+        "addFailed": "新增 ETF 失败",
+        "confirmDelete": "确定要删除 {symbol} 吗？这将同时删除所有相关的价格、提醒和追踪清单。",
+        "deleteSuccess": "ETF 已删除",
+        "deleteFailed": "删除 ETF 失败",
+        "confirmInitialize": "初始化 {symbol} 的历史数据？这将从 Yahoo Finance 获取最多 5 年的月度数据。",
+        "initialize": "初始化数据",
+        "initializeSuccess": "已为 {symbol} 初始化 {count} 笔数据",
+        "initializeFailed": "初始化历史数据失败",
+        "fetchFailed": "获取数据失败，请稍后再试",
+        "noEtfs": "没有 ETF。新增第一个 ETF 开始使用。",
+        "priceCount": "价格数据",
+        "createdAt": "创建时间",
+        "infoTitle": "管理 ETF",
+        "infoPoint1": "使用代码新增 ETF（例如：SPY, QQQ, IWM）",
+        "infoPoint2": "初始化历史数据以填充价格历史供分析使用",
+        "infoPoint3": "删除 ETF 会级联删除所有相关的价格和追踪清单",
+        "adminOnly": "需要管理员权限",
+        "rateLimitExceeded": "Yahoo Finance API 请求过多，请稍后再试或跳过验证",
+        "skipValidation": "跳过 Yahoo Finance 验证",
+        "skipValidationHint": "勾选后将不验证代码是否有效，直接新增到数据库",
+        "seed": "快速新增常用 ETF",
+        "confirmSeed": "这将新增 25 个常用美股 ETF，确定要继续吗？",
+        "seedSuccess": "成功新增 {added} 个 ETF，总共 {total} 个",
+        "seedFailed": "新增 ETF 失败"
+      },
+      "name": "名称",
+      "fetchFailed": "获取数据失败，请稍后再试。",
       "profile": {
         "riskTitle": "风险画像",
         "riskHint": "先看波动、回撤与 52 周位置，再决定仓位大小。",
@@ -1627,15 +1738,6 @@
         "benchmark": "比较基准",
         "relativeReturn": "相对收益",
         "rsTrend": "RS 趋势"
-      },
-      "board": {
-        "loading": "正在加载 sector data...",
-        "fetchFailed": "ETF sector board 加载失败",
-        "partialFetchFailed": "{count} 个 ticker 暂时取不到数据",
-        "failedSymbols": "{symbols} 暂时无法加载，通常是 Yahoo Finance 响应慢或 rate limit。",
-        "copySuccess": "已复制 sector table",
-        "copyFailed": "浏览器拒绝剪贴板权限",
-        "noChartData": "没有足够数据绘制 mini chart"
       }
     },
     "relativeValue": {

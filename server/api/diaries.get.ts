@@ -1,31 +1,21 @@
-import prisma from '../../lib/prisma'
-import type { Prisma } from '@prisma/client'
-import type { DiariesApiResponse } from '~/types/diary'
-import { parseDiaryTags } from '~/lib/diary-tags'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { serialize } from '~/server/utils/serialize'
+import {
+  listDiariesForUser,
+  type DiaryListFilters,
+} from '~/server/utils/diary-read'
 
-// ponytail: local helpers — only this endpoint uses them, inlined from deleted query-params.ts
+// ponytail: query parsing stays in the handler — listDiariesForUser takes a
+// already-shaped filters object so it stays a pure query function.
 const MAX_LIMIT = 100
 const DEFAULT_LIMIT = 20
-const DIARY_SORT_OPTIONS: Record<string, Record<string, 'asc' | 'desc'>> = {
-  'date-desc': { createdAt: 'desc' },
-  'date-asc': { createdAt: 'asc' },
-  'title-asc': { title: 'asc' },
-  'title-desc': { title: 'desc' },
-}
 
-type DiaryListItem = Awaited<ReturnType<typeof prisma.diary.findMany>>[number]
-type DiaryAlertItem = DiaryListItem['alerts'][number]
-type DiaryTransactionItem = DiaryListItem['transactions'][number]
-
-export default defineEventHandler(async (event): Promise<DiariesApiResponse> => {
+export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
   try {
     const user = requireUser(event)
-
     const userId = BigInt(user.id)
 
     const query = getQuery(event)
@@ -37,7 +27,6 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
     const limit = Number.isFinite(rawLimit) && rawLimit >= 1 && rawLimit <= MAX_LIMIT
       ? Math.floor(rawLimit)
       : DEFAULT_LIMIT
-    const skip = (page - 1) * limit
 
     // Days (positive int)
     const rawDays = Number(query.days)
@@ -50,15 +39,11 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
       if (trimmed) search = trimmed.slice(0, 500)
     }
 
-    // Sort option (whitelist of Prisma orderBy)
-    const sortBy = typeof query.sortBy === 'string' && query.sortBy
-      ? DIARY_SORT_OPTIONS[query.sortBy]
-      : undefined
-    const orderBy: Record<string, 'asc' | 'desc'> = sortBy ?? { createdAt: 'desc' }
+    // Sort + reviewStatus — pass through; listDiariesForUser whitelists sort
+    const sortBy = typeof query.sortBy === 'string' && query.sortBy ? query.sortBy : undefined
+    const reviewStatus = typeof query.reviewStatus === 'string' ? query.reviewStatus : undefined
 
-    const reviewStatusFilter = typeof query.reviewStatus === 'string' ? query.reviewStatus : undefined
-
-    // Parse date range (YYYY-MM-DD → UTC day boundaries)
+    // Date range (YYYY-MM-DD → UTC day boundaries)
     let dateFrom: Date | undefined
     let dateTo: Date | undefined
     if (typeof query.dateFrom === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(query.dateFrom)) {
@@ -70,100 +55,21 @@ export default defineEventHandler(async (event): Promise<DiariesApiResponse> => 
       dateTo = new Date(Date.UTC(y!, m! - 1, d!, 23, 59, 59, 999))
     }
 
-    const where: Prisma.DiaryWhereInput = { userId }
-
-    // Days filter (legacy — uses createdAt)
-    if (days !== undefined && days > 0) {
-      const since = new Date()
-      since.setDate(since.getDate() - days)
-      where.createdAt = { gte: since }
+    const filters: DiaryListFilters = {
+      page,
+      limit,
+      days,
+      search,
+      sortBy,
+      reviewStatus,
+      dateFrom,
+      dateTo,
     }
 
-    // Search filter (case-insensitive contains on title + content)
-    if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { content: { contains: search } },
-      ]
-    }
-
-    // Date range filter (uses diary date field)
-    if (dateFrom || dateTo) {
-      where.date = {
-        ...(dateFrom ? { gte: dateFrom } : {}),
-        ...(dateTo ? { lte: dateTo } : {}),
-      }
-    }
-
-    // Review status filter
-    if (reviewStatusFilter) {
-      if (reviewStatusFilter === 'pending') {
-        // "pending" means reviewStatus='pending' AND reviewDueAt <= now (overdue or due)
-        where.reviewStatus = 'pending'
-        where.reviewDueAt = { lte: new Date() }
-      } else {
-        where.reviewStatus = reviewStatusFilter
-      }
-    }
-
-    //效能優化：使用 select 只選擇必要欄位
-    // - transactions 只選擇必要欄位（不需要 diaryId, createdAt）
-    // - diary 不載入完整 content（列表頁不需要）
-    const [diaries, total] = await Promise.all([
-      prisma.diary.findMany({
-        where,
-        orderBy,
-        select: {
-          id: true,
-          userId: true,
-          title: true,
-          content: true,
-          tagsString: true,
-          createdVia: true,
-          createdByLabel: true,
-          date: true,
-          createdAt: true,
-          updatedAt: true,
-          thesis: true,
-          risk: true,
-          execution: true,
-          reviewDueAt: true,
-          reviewStatus: true,
-          reviewedAt: true,
-          alerts: {
-            where: { isDismissed: false },
-            select: {
-              id: true,
-              message: true,
-              triggerAt: true,
-              isDismissed: true
-            }
-          },
-          transactions: {
-            select: {
-              id: true,
-              symbol: true,
-              type: true,
-              quantity: true,
-              price: true,
-              tradeDate: true,
-            }
-          }
-        },
-        skip,
-        take: limit,
-      }),
-      prisma.diary.count({ where })
-    ])
-
-    // Attach parsed tags (BigInt handled by serialize)
-    const shapedDiaries = diaries.map((d: DiaryListItem) => ({
-      ...d,
-      tags: parseDiaryTags(d.tagsString),
-    }))
+    const { items, total } = await listDiariesForUser(userId, filters)
 
     return serialize({
-      data: shapedDiaries,
+      data: items,
       pagination: {
         page,
         limit,

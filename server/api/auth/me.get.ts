@@ -1,48 +1,18 @@
-import prisma from '~/lib/prisma'
 import { requireUser } from '~/server/utils/auth'
-import { Errors } from '~/lib/errors/factory'
-import { logger } from '~/lib/logger'
 import { serialize } from '~/server/utils/serialize'
+import { handleApiError } from '~/server/utils/error-handler'
+import { logger } from '~/lib/logger'
+import { getUserProfile } from '~/server/utils/user-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
-  const auth = requireUser(event)
+  try {
+    const auth = requireUser(event)
 
-  const user = await prisma.user.findUnique({
-    where: { id: BigInt(auth.id) },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      expectedMonthlyTrades: true,
-      expectedProfit: true,
-      expectedAvgHolding: true,
-      timezone: true,
-      favoriteTagsString: true,
-      createdAt: true,
-      updatedAt: true
-    }
-  })
+    const user = await getUserProfile(BigInt(auth.id))
 
-  if (!user) {
-    throw Errors.userNotFound().toH3Error()
+    return serialize({ ok: true, data: user })
+  } catch (error) {
+    handleApiError(error, log)
   }
-
-  return serialize({
-    ok: true,
-    data: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      expectedMonthlyTrades: user.expectedMonthlyTrades,
-      expectedProfit: user.expectedProfit,
-      expectedAvgHolding: user.expectedAvgHolding,
-      timezone: user.timezone,
-      favoriteTagsString: user.favoriteTagsString,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt
-    }
-  })
 })

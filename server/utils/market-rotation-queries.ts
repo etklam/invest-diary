@@ -176,10 +176,17 @@ export async function getLatestQualifiedDate(
  * getComparisonDate
  *
  * Gets the date at `offset` position from the list of fully qualified dates
- * (dates where all canonical symbols have snapshots), ordered descending.
+ * (dates where at least 90% of canonical symbols have snapshots), ordered
+ * descending.
  *
  * offset=0 → most recent qualified date
  * offset=10 → 11th most recent qualified date (approximately 2 weeks back)
+ *
+ * Per ADR-0004 the groupBy filters by `symbol: { in: canonicalUniverse }`
+ * so stale or non-canonical rows in the snapshot table do not inflate
+ * coverage. This aligns with `getLatestQualifiedDate` and
+ * `getMonitorTrendSeries` — the canonical universe is derived once here so
+ * callers (batch job, monitor handler) do not have to pass it in.
  *
  * The qualification logic (90% threshold + groupBy shape) lives in
  * `lib/market-rotation/qualified-date.ts`. This function is a thin Prisma
@@ -195,14 +202,14 @@ export async function getComparisonDate(
   rankScope: string,
   offset: number,
 ): Promise<Date | null> {
-  const canonicalUniverseSize = isRankScope(rankScope)
-    ? getUniverseForScope(rankScope).length
-    : 0
+  const universe = isRankScope(rankScope) ? getUniverseForScope(rankScope) : []
+  const universeSymbols = universe.map(entry => entry.symbol)
 
   const qualifiedDates = await loadQualifiedDatesForScope(
     prisma,
     rankScope,
-    canonicalUniverseSize,
+    universe.length,
+    universeSymbols,
   )
 
   return pickComparisonDate(qualifiedDates, offset)

@@ -2,48 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { ErrorCodes } from '~/lib/errors/codes'
 import { ALL_ERROR_CODES, errorCodeToI18nKey } from '~/lib/errors/i18n-mapping'
 
+// ponytail: parity of codes → locale keys is enforced by i18n-parity.test.ts.
+// Here we only document the function's contract (lowercase dotted key shape)
+// and lock the ErrorCode count so adding a code without updating locales fails fast.
+
 describe('errorCodeToI18nKey', () => {
-  it('converts AUTH_UNAUTHORIZED to lowercase dotted key', () => {
+  it('lowercases the code and namespaces it under error.code', () => {
     expect(errorCodeToI18nKey(ErrorCodes.AUTH_UNAUTHORIZED)).toBe('error.code.auth_unauthorized')
-  })
-
-  it('converts AUTH_LOGIN_INVALID_CREDENTIALS', () => {
-    expect(errorCodeToI18nKey(ErrorCodes.AUTH_LOGIN_INVALID_CREDENTIALS)).toBe('error.code.auth_login_invalid_credentials')
-  })
-
-  it('converts AUTH_TOKEN_EXPIRED', () => {
-    expect(errorCodeToI18nKey(ErrorCodes.AUTH_TOKEN_EXPIRED)).toBe('error.code.auth_token_expired')
-  })
-
-  it('converts SYS_INTERNAL_ERROR', () => {
     expect(errorCodeToI18nKey(ErrorCodes.SYS_INTERNAL_ERROR)).toBe('error.code.sys_internal_error')
   })
 
-  it('converts DIARY_NOT_FOUND', () => {
-    expect(errorCodeToI18nKey(ErrorCodes.DIARY_NOT_FOUND)).toBe('error.code.diary_not_found')
-  })
-
-  it('converts ETF_ALREADY_IN_WATCHLIST', () => {
-    expect(errorCodeToI18nKey(ErrorCodes.ETF_ALREADY_IN_WATCHLIST)).toBe('error.code.etf_already_in_watchlist')
-  })
-
-  it('converts new AUTH_FORBIDDEN', () => {
-    expect(errorCodeToI18nKey(ErrorCodes.AUTH_FORBIDDEN)).toBe('error.code.auth_forbidden')
-  })
-
-  it('converts new CSRF_FAILED', () => {
-    expect(errorCodeToI18nKey(ErrorCodes.CSRF_FAILED)).toBe('error.code.csrf_failed')
-  })
-
-  it('converts new SYS_EXTERNAL_SERVICE_ERROR', () => {
-    expect(errorCodeToI18nKey(ErrorCodes.SYS_EXTERNAL_SERVICE_ERROR)).toBe('error.code.sys_external_service_error')
-  })
-
-  it('converts new STOCK_NOTE_NOT_FOUND', () => {
-    expect(errorCodeToI18nKey(ErrorCodes.STOCK_NOTE_NOT_FOUND)).toBe('error.code.stock_note_not_found')
-  })
-
-  it('always produces lowercase keys for any code', () => {
+  it('every defined ErrorCode produces a lowercase error.code.* key', () => {
+    expect(ALL_ERROR_CODES.length, 'ErrorCodes went empty — check lib/errors/codes.ts').toBeGreaterThan(0)
     for (const code of ALL_ERROR_CODES) {
       const key = errorCodeToI18nKey(code)
       expect(key).toBe(key.toLowerCase())
@@ -52,76 +22,14 @@ describe('errorCodeToI18nKey', () => {
   })
 })
 
-describe('ALL_ERROR_CODES', () => {
-  it('contains exactly 35 error codes', () => {
+describe('ALL_ERROR_CODES sanity', () => {
+  // Locks the count so new ErrorCodes go through i18n-parity intentionally.
+  // Update this number when adding/removing a code.
+  it('contains the expected number of codes (bump intentionally when codes change)', () => {
     expect(ALL_ERROR_CODES).toHaveLength(35)
   })
 
-  it('includes all auth codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_UNAUTHORIZED)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_LOGIN_INVALID_CREDENTIALS)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_TOKEN_EXPIRED)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_TOKEN_INVALID)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_TOKEN_NOT_FOUND)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_TOKEN_REVOKED)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_NO_REFRESH_TOKEN)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_RATE_LIMITED)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_API_KEY_INVALID)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_API_KEY_REVOKED)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_API_KEY_SCOPE_DENIED)
-  })
-
-  it('includes all diary codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.DIARY_NOT_FOUND)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.DIARY_ACCESS_DENIED)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.DIARY_ALREADY_EXISTS)
-  })
-
-  it('includes all partner codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.PARTNER_LINK_NOT_FOUND)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.PARTNER_LINK_ACCESS_DENIED)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.PARTNER_LINK_ALREADY_EXISTS)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.PARTNER_LINK_PENDING)
-  })
-
-  it('includes all alert codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.ALERT_NOT_FOUND)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.ALERT_ACCESS_DENIED)
-  })
-
-  it('includes all ETF codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.ETF_NOT_FOUND)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.ETF_ALREADY_IN_WATCHLIST)
-  })
-
-  it('includes all user codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.USER_NOT_FOUND)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.USER_EMAIL_EXISTS)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.USER_SELF_MODIFICATION)
-  })
-
-  it('includes blog code', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.BLOG_NOT_FOUND)
-  })
-
-  it('includes system codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.SYS_INTERNAL_ERROR)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.SYS_VALIDATION_ERROR)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.SYS_EXTERNAL_SERVICE_ERROR)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.SYS_NOT_FOUND)
-  })
-
-  it('includes discipline codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.DISCIPLINE_NOT_FOUND)
-  })
-
-  it('includes stock note codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.STOCK_NOTE_NOT_FOUND)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.STOCK_NOTE_ACCESS_DENIED)
-  })
-
-  it('includes generic codes', () => {
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.AUTH_FORBIDDEN)
-    expect(ALL_ERROR_CODES).toContain(ErrorCodes.CSRF_FAILED)
+  it('each ErrorCodes value is unique', () => {
+    expect(new Set(ALL_ERROR_CODES).size).toBe(ALL_ERROR_CODES.length)
   })
 })

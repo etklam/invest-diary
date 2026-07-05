@@ -2,7 +2,7 @@
 import {
   withdrawalRatePresets,
 } from '~/lib/financialFreedom'
-import { formatCurrency, formatPercent } from '~/lib/format'
+import { formatCurrency, formatPercent, formatCompactCurrency } from '~/lib/format'
 import { formatYearMonth as formatDate } from '~/lib/dates'
 import { useFinancialFreedomCalculator } from '~/composables/useFinancialFreedomCalculator'
 import LedgerCard from '~/components/LedgerCard.vue'
@@ -18,6 +18,7 @@ const {
   monthlyContribution,
   expectedReturn,
   withdrawalRatePreset,
+  currentAge,
   copySuccess,
   returnRateLevel,
   returnRateIndicator,
@@ -295,6 +296,15 @@ definePageMeta({
               </div>
               <p class="mt-1.5 text-xs text-dt-text-muted">{{ t('tools.financialFreedom.expectedReturnHint') }}</p>
             </div>
+
+            <div>
+              <label class="data-label">{{ t('tools.financialFreedom.currentAge') }}</label>
+              <div class="relative mt-1.5">
+                <input v-model.number="currentAge" type="number" min="0" max="120" step="1" :placeholder="t('tools.financialFreedom.currentAgePlaceholder')" class="w-full border border-dt-border rounded-lg bg-dt-surface px-3 py-2.5 text-dt-text focus:border-dt-primary focus:outline-none">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold font-mono text-dt-text-muted">{{ t('tools.financialFreedom.units.yearsOld') }}</span>
+              </div>
+              <p class="mt-1.5 text-xs text-dt-text-muted">{{ t('tools.financialFreedom.currentAgeHint') }}</p>
+            </div>
           </div>
 
           <div class="mt-6 min-w-0 border border-dt-border rounded-lg bg-dt-surface-raised p-4">
@@ -503,6 +513,7 @@ definePageMeta({
                 <div>
                   <div class="text-sm font-semibold text-dt-text">
                     {{ t('tools.financialFreedom.yearN', { n: year.year }) }}
+                    <span v-if="year.age !== null && year.age !== undefined" class="ml-2 font-normal text-dt-text-muted">· {{ year.age }} {{ t('tools.financialFreedom.yearsOld') }}</span>
                   </div>
                   <div class="mt-1 text-xs text-dt-text-muted">
                     {{ t('tools.financialFreedom.startingAssets') }} {{ formatCompactValue(year.startingAssets) }}

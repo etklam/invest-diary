@@ -1,17 +1,14 @@
 import bcrypt from 'bcryptjs'
-import { z } from 'zod'
-import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
 import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
-
-const registerSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  name: z.string().optional()
-})
+import {
+  registerUserSchema,
+  findUserByEmail,
+  createUserForRegistration,
+} from '~/server/utils/user-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
@@ -26,7 +23,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
     // Validate input
-    const validatedData = registerSchema.parse(body)
+    const validatedData = registerUserSchema.parse(body)
 
     const emailIdentity = validatedData.email.trim().toLowerCase()
     try {
@@ -37,9 +34,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email }
-    })
+    const existingUser = await findUserByEmail(validatedData.email)
 
     if (existingUser) {
       throw Errors.userEmailExists(validatedData.email)
@@ -49,23 +44,10 @@ export default defineEventHandler(async (event) => {
     const hashedPassword = await bcrypt.hash(validatedData.password, 10)
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        email: validatedData.email,
-        password: hashedPassword,
-        name: validatedData.name,
-        role: 'USER'
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        expectedMonthlyTrades: true,
-        expectedProfit: true,
-        expectedAvgHolding: true,
-        createdAt: true
-      }
+    const user = await createUserForRegistration({
+      email: validatedData.email,
+      hashedPassword,
+      name: validatedData.name,
     })
 
     log.info('User registered', { userId: String(user.id) })

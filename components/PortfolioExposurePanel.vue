@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { PortfolioExposure, ExposureGap } from '~/lib/portfolio-exposure/exposure'
+import { combineBetaBuckets, type PortfolioExposure, type ExposureGap } from '~/lib/portfolio-exposure/exposure'
+import { formatSignedPercent } from '~/lib/format'
 import type { BetaAllocationResult } from '~/lib/beta-allocation/policy'
 import type { MarketState } from '~/lib/market-rotation/state'
 
@@ -28,14 +29,13 @@ const currentBars = computed(() => {
       { key: 'cash', label: t('portfolioExposure.buckets.cash'), pct: 0 },
     ]
   }
-  // highBeta = high_beta + mega_cap + single_stock (matches compareExposureToTarget)
-  const highBeta = ex.highBetaPct + ex.megaCapPct + ex.singleStockPct
-  const coreIndex = ex.coreIndexPct
-  const cash = ex.defensivePct + ex.cashProxyPct
+  // Bucket aggregation lives in exposure.ts (combineBetaBuckets) — single source
+  // of truth shared with compareExposureToTarget so the UI and gap math agree.
+  const combined = combineBetaBuckets(ex)
   return [
-    { key: 'highBeta', label: t('portfolioExposure.buckets.highBeta'), pct: roundPct(highBeta) },
-    { key: 'coreIndex', label: t('portfolioExposure.buckets.coreIndex'), pct: roundPct(coreIndex) },
-    { key: 'cash', label: t('portfolioExposure.buckets.cash'), pct: roundPct(cash) },
+    { key: 'highBeta', label: t('portfolioExposure.buckets.highBeta'), pct: roundPct(combined.highBeta) },
+    { key: 'coreIndex', label: t('portfolioExposure.buckets.coreIndex'), pct: roundPct(combined.coreIndex) },
+    { key: 'cash', label: t('portfolioExposure.buckets.cash'), pct: roundPct(combined.cash) },
   ]
 })
 
@@ -97,8 +97,7 @@ function barTone(key: string): string {
 }
 
 function formatGap(gap: ExposureGap): string {
-  const sign = gap.gapPct > 0 ? '+' : ''
-  return `${sign}${roundPct(gap.gapPct)}%`
+  return formatSignedPercent(roundPct(gap.gapPct), 1)
 }
 </script>
 
