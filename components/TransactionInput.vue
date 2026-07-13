@@ -204,17 +204,16 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-interface Transaction {
-  symbol: string
-  type: 'BUY' | 'SELL'
-  quantity: number
-  price: number
-  trade_date: string
-  // 柔性提示欄位（選填）
-  notes?: string
-  strategy?: string
-  emotion?: string
-}
+import {
+  calculateLedgerHoldings,
+  holdingBeforeTransaction,
+} from '~/lib/diary-authoring/validation'
+import type {
+  DiaryAuthoringLedgerContext,
+  DiaryAuthoringTransaction,
+} from '~/lib/diary-authoring/types'
+
+type Transaction = DiaryAuthoringTransaction
 
 interface Holding {
   symbol: string
@@ -223,6 +222,7 @@ interface Holding {
 
 const props = defineProps<{
   modelValue: Transaction[]
+  ledgerContext?: DiaryAuthoringLedgerContext
 }>()
 
 const emit = defineEmits<{
@@ -257,32 +257,30 @@ const updateField = (index: number, field: 'notes' | 'strategy' | 'emotion', val
   ;(tx as any)[field] = value || undefined
 }
 
-// Calculate holdings from current transactions (excluding the one being validated)
-const calculateHoldings = (excludeIndex: number = -1): Holding[] => {
-  const holdingMap = new Map<string, number>()
+// A missing context means the portfolio baseline is unknown, not empty.
+const ledgerContext = computed<DiaryAuthoringLedgerContext>(() => (
+  props.ledgerContext ?? { available: false }
+))
 
-  transactions.value.forEach((tx, idx) => {
-    if (idx === excludeIndex) return // Skip the transaction being validated
-    if (!tx.symbol) return
+const calculateHoldings = (): Holding[] => {
+  if (!ledgerContext.value.available) return []
 
-    // Symbol should already be uppercase due to the updateSymbol function
-    const symbol = tx.symbol.trim()
-    const current = holdingMap.get(symbol) || 0
-
-    if (tx.type === 'BUY') {
-      holdingMap.set(symbol, current + (tx.quantity || 0))
-    } else if (tx.type === 'SELL') {
-      holdingMap.set(symbol, current - (tx.quantity || 0))
-    }
-  })
-
-  return Array.from(holdingMap.entries())
-    .filter(([_, quantity]) => quantity > 0.0001)
-    .map(([symbol, quantity]) => ({ symbol, quantity }))
+  try {
+    return Array.from(calculateLedgerHoldings(
+      ledgerContext.value.holdings,
+      transactions.value,
+    ).entries())
+      .filter(([, quantity]) => quantity > 0.0001)
+      .map(([symbol, quantity]) => ({ symbol, quantity }))
+  } catch {
+    // The server remains the authority for invalid ledgers. The component
+    // should not turn an unknown/legacy baseline into a false blocking error.
+    return []
+  }
 }
 
 // Holdings for display
-const holdings = computed(() => calculateHoldings(-1))
+const holdings = computed(() => calculateHoldings())
 
 // Get current holding for a symbol
 const getCurrentHolding = (symbol: string): number => {
@@ -311,14 +309,19 @@ const validateTransaction = (index: number) => {
     if (!symbol) {
       errors.push('賣出時必須輸入股票代碼')
     } else {
-      // Calculate holdings BEFORE this transaction
-      const availableHoldings = calculateHoldings(index)
-      const holding = availableHoldings.find(h => h.symbol === symbol)
+      // Only enforce holdings when the server-provided baseline is known.
+      if (ledgerContext.value.available) {
+        const available = holdingBeforeTransaction(
+          transactions.value,
+          index,
+          ledgerContext.value,
+        )
 
-      if (!holding || holding.quantity <= 0) {
-        errors.push(`沒有 ${symbol} 的持股可賣`)
-      } else if ((tx.quantity || 0) > holding.quantity) {
-        errors.push(`賣出數量 (${formatQuantity(tx.quantity)}) 超過持股數量 (${formatQuantity(holding.quantity)})`)
+        if (available <= 0) {
+          errors.push(`沒有 ${symbol} 的持股可賣`)
+        } else if ((tx.quantity || 0) > available) {
+          errors.push(`賣出數量 (${formatQuantity(tx.quantity)}) 超過持股數量 (${formatQuantity(available)})`)
+        }
       }
     }
   }

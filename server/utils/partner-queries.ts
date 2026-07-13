@@ -1,6 +1,7 @@
 import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
-import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
+import { getPartnerLinkStatus, getPartnerSide } from '~/lib/partners/policy'
+import type { PartnerLinkRecord } from '~/types/partner'
 
 export const PARTICIPANT_SELECT = {
   id: true,
@@ -150,7 +151,9 @@ export async function loadCompareContext(
   }
 
   const typedLinks = links as PartnerLinkRecord[]
-  const acceptedLinks = typedLinks.filter((link) => Boolean(link.acceptedAt))
+  const acceptedLinks = typedLinks.filter(
+    link => getPartnerLinkStatus(link, viewer.id) === 'connected',
+  )
 
   let selectedLink: PartnerLinkRecord | null = acceptedLinks[0] ?? null
 

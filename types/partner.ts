@@ -1,5 +1,29 @@
 import type { Diary } from '~/types/diary'
 
+export type PartnerLinkStatus = 'pending_incoming' | 'pending_outgoing' | 'connected'
+
+export interface PartnerParticipant {
+  id: bigint
+  email: string
+  name: string | null
+}
+
+export interface PartnerLinkRecord {
+  id: bigint
+  userAId: bigint
+  userBId: bigint
+  initiatedByUserId: bigint
+  acceptedAt: Date | null
+  userASharesDiaries: boolean
+  userBSharesDiaries: boolean
+  userASharesStockNotes: boolean
+  userBSharesStockNotes: boolean
+  createdAt: Date
+  updatedAt: Date
+  userA: PartnerParticipant
+  userB: PartnerParticipant
+}
+
 export interface PartnerAccountSummary {
   id: string
   email: string
@@ -11,6 +35,7 @@ export interface PartnerLinkSummary {
   acceptedAt: string | null
   createdAt: string
   partner: PartnerAccountSummary
+  status: PartnerLinkStatus
   selfSharesDiaries: boolean
   partnerSharesDiaries: boolean
   selfSharesStockNotes: boolean

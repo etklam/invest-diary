@@ -20,8 +20,8 @@ export interface TransactionInput {
   id?: bigint | string | number  // pre-serialization input — accepts raw DB ID for updates
   symbol: string
   type: 'BUY' | 'SELL'
-  quantity: Prisma.Decimal | number
-  price: Prisma.Decimal | number
+  quantity: Prisma.Decimal | number | string
+  price: Prisma.Decimal | number | string
   tradeDate?: Date | string
   trade_date?: Date | string
   // 交易後填寫欄位（Phase 1 新增，柔性提示）
@@ -31,6 +31,7 @@ export interface TransactionInput {
 }
 
 export interface AlertInput {
+  id?: bigint | string | number
   message: string
   triggerAt?: Date | string
   trigger_at?: Date | string

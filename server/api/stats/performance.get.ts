@@ -12,12 +12,12 @@
  *   period?: 'month' | 'quarter' | 'year'  (預設 'month')
  *   symbol?: string                          (可選，只分析指定股票)
  */
-import prisma from '~/lib/prisma'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { computePerformanceStats, type PerformanceConfig } from '~/server/utils/performance-stats'
 import type { GroupPeriod } from '~/lib/trade-analytics'
+import { readPerformanceTransactions } from '~/server/utils/transaction-read'
 
 const VALID_PERIODS: GroupPeriod[] = ['month', 'quarter', 'year']
 
@@ -36,26 +36,7 @@ export default defineEventHandler(async (event) => {
   try {
     const userId = BigInt(user.id)
 
-    const rawTxs = await prisma.transaction.findMany({
-      where: {
-        OR: [
-          { userId },
-          { diary: { userId } },
-        ],
-        ...(symbolFilter ? { symbol: symbolFilter } : {}),
-      },
-      select: {
-        id: true,
-        symbol: true,
-        type: true,
-        quantity: true,
-        price: true,
-        tradeDate: true,
-        strategy: true,
-        emotion: true,
-      },
-      orderBy: { tradeDate: 'asc' },
-    })
+    const rawTxs = await readPerformanceTransactions(userId, symbolFilter)
 
     const result = computePerformanceStats(rawTxs, { period } as PerformanceConfig)
 

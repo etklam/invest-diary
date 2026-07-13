@@ -1,16 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// ── Prisma mock ──────────────────────────────────────────────────────────
-const mockAlertFindFirst = vi.fn()
-const mockAlertUpdate = vi.fn()
+const mockDismissAlert = vi.fn()
 
-vi.mock('~/lib/prisma', () => ({
-  default: {
-    alert: {
-      findFirst: mockAlertFindFirst,
-      update: mockAlertUpdate,
-    },
-  },
+vi.mock('~/server/utils/alert-queries', () => ({
+  dismissAlert: mockDismissAlert,
 }))
 
 // ── Helpers ──────────────────────────────────────────────────────────────
@@ -40,26 +33,14 @@ describe('setupAlertHandlers', () => {
       const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
-      mockAlertFindFirst.mockResolvedValue({
+      mockDismissAlert.mockResolvedValue({
         id: BigInt(42),
-        diary: { userId: BigInt(1) },
       })
-      mockAlertUpdate.mockResolvedValue({ id: BigInt(42), isDismissed: true })
 
       // Simulate client emitting 'alert:dismiss'
       await socket._handlers['alert:dismiss']('42')
 
-      expect(mockAlertFindFirst).toHaveBeenCalledWith({
-        where: {
-          id: BigInt('42'),
-          diary: { userId: BigInt('1') },
-        },
-        include: { diary: { select: { userId: true } } },
-      })
-      expect(mockAlertUpdate).toHaveBeenCalledWith({
-        where: { id: BigInt('42') },
-        data: { isDismissed: true },
-      })
+      expect(mockDismissAlert).toHaveBeenCalledWith('42', BigInt('1'))
       expect(socket.emit).toHaveBeenCalledWith('alert:dismissed', { alertId: '42' })
     })
 
@@ -68,7 +49,7 @@ describe('setupAlertHandlers', () => {
       const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
-      mockAlertFindFirst.mockResolvedValue(null)
+      mockDismissAlert.mockRejectedValue({ statusCode: 404 })
 
       await socket._handlers['alert:dismiss']('99')
 
@@ -76,7 +57,7 @@ describe('setupAlertHandlers', () => {
         message: 'Alert not found or not authorized',
         alertId: '99',
       })
-      expect(mockAlertUpdate).not.toHaveBeenCalled()
+      expect(mockDismissAlert).toHaveBeenCalledWith('99', BigInt('1'))
     })
 
     it('sends alert:error when alert belongs to another user (diary ownership check)', async () => {
@@ -84,17 +65,11 @@ describe('setupAlertHandlers', () => {
       const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
-      // findFirst returns null because the diary.userId doesn't match
-      mockAlertFindFirst.mockResolvedValue(null)
+      mockDismissAlert.mockRejectedValue({ statusCode: 404 })
 
       await socket._handlers['alert:dismiss']('42')
 
-      expect(mockAlertFindFirst).toHaveBeenCalledWith(expect.objectContaining({
-        where: expect.objectContaining({
-          id: BigInt('42'),
-          diary: { userId: BigInt('1') },
-        }),
-      }))
+      expect(mockDismissAlert).toHaveBeenCalledWith('42', BigInt('1'))
       expect(socket.emit).toHaveBeenCalledWith('alert:error', {
         message: 'Alert not found or not authorized',
         alertId: '42',
@@ -106,11 +81,7 @@ describe('setupAlertHandlers', () => {
       const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
-      mockAlertFindFirst.mockResolvedValue({
-        id: BigInt(42),
-        diary: { userId: BigInt(1) },
-      })
-      mockAlertUpdate.mockRejectedValue(new Error('DB connection lost'))
+      mockDismissAlert.mockRejectedValue(new Error('DB connection lost'))
 
       await socket._handlers['alert:dismiss']('42')
 
@@ -125,22 +96,11 @@ describe('setupAlertHandlers', () => {
       const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
       setupAlertHandlers(socket as any)
 
-      mockAlertFindFirst.mockResolvedValue({
-        id: BigInt(10),
-        diary: { userId: BigInt(2) },
-      })
-      mockAlertUpdate.mockResolvedValue({ id: BigInt(10), isDismissed: true })
+      mockDismissAlert.mockResolvedValue({ id: BigInt(10) })
 
       await socket._handlers['alert:dismiss']('10')
 
-      // Should find the alert since diary.userId matches socket.data.userId (2)
-      expect(mockAlertFindFirst).toHaveBeenCalledWith(expect.objectContaining({
-        where: expect.objectContaining({
-          id: BigInt('10'),
-          diary: { userId: BigInt('2') },
-        }),
-      }))
-      expect(mockAlertUpdate).toHaveBeenCalled()
+      expect(mockDismissAlert).toHaveBeenCalledWith('10', BigInt('2'))
       expect(socket.emit).toHaveBeenCalledWith('alert:dismissed', { alertId: '10' })
     })
   })
@@ -154,11 +114,7 @@ describe('setupAlertHandlers', () => {
       setupAlertHandlers(socketB as any)
 
       // User A dismisses their alert
-      mockAlertFindFirst.mockResolvedValue({
-        id: BigInt(1),
-        diary: { userId: BigInt(1) },
-      })
-      mockAlertUpdate.mockResolvedValue({ id: BigInt(1), isDismissed: true })
+      mockDismissAlert.mockResolvedValue({ id: BigInt(1) })
       await socketA._handlers['alert:dismiss']('1')
 
       expect(socketA.emit).toHaveBeenCalledWith('alert:dismissed', { alertId: '1' })
@@ -167,11 +123,7 @@ describe('setupAlertHandlers', () => {
       vi.clearAllMocks()
 
       // User B dismisses their alert
-      mockAlertFindFirst.mockResolvedValue({
-        id: BigInt(2),
-        diary: { userId: BigInt(2) },
-      })
-      mockAlertUpdate.mockResolvedValue({ id: BigInt(2), isDismissed: true })
+      mockDismissAlert.mockResolvedValue({ id: BigInt(2) })
       await socketB._handlers['alert:dismiss']('2')
 
       expect(socketB.emit).toHaveBeenCalledWith('alert:dismissed', { alertId: '2' })

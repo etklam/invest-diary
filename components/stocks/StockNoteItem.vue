@@ -11,17 +11,18 @@
             <span class="text-xs text-slate-300 dark:text-slate-600">·</span>
             <span
               class="inline-flex items-center gap-1 text-xs font-medium"
-              :class="note.isOwnedByViewer === false ? 'text-emerald-600 dark:text-emerald-400' : note.createdVia === 'AGENT' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'"
+              :class="note.authorKind === 'agent' ? 'text-emerald-600 dark:text-emerald-400' : note.ownership === 'partner' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'"
             >
               <Icon
-                :name="note.isOwnedByViewer === false || note.createdVia === 'AGENT' ? 'heroicons:cpu-chip' : 'heroicons:user'"
+                data-testid="stock-note-author-icon"
+                :name="note.authorKind === 'agent' ? 'heroicons:cpu-chip' : 'heroicons:user'"
                 class="w-3 h-3"
               />
-              {{ note.createdByLabel || (note.isOwnedByViewer === false ? t('stock.notes.createdByPartner') : note.createdVia === 'AGENT' ? t('stock.notes.createdByAgent') : t('stock.notes.createdByUser')) }}
+              {{ note.authorLabel || (note.ownership === 'partner' ? t('stock.notes.createdByPartner') : note.authorKind === 'agent' ? t('stock.notes.createdByAgent') : t('stock.notes.createdByUser')) }}
             </span>
           </div>
         </div>
-        <div v-if="note.isOwnedByViewer !== false" class="flex items-center gap-1 flex-shrink-0">
+        <div v-if="note.canEdit" class="flex items-center gap-1 flex-shrink-0">
           <button
             class="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
             :title="t('common.edit')"
@@ -46,27 +47,15 @@
 </template>
 
 <script setup lang="ts">
-interface StockNoteData {
-  id: string
-  symbol: string
-  name?: string | null
-  title: string
-  content: string
-  date: string
-  createdVia: string
-  createdByLabel?: string | null
-  createdAt: string
-  updatedAt: string
-  isOwnedByViewer?: boolean
-}
+import type { StockNoteView } from '~/types/stock-note'
 
 defineProps<{
-  note: StockNoteData
+  note: StockNoteView
 }>()
 
 defineEmits<{
-  edit: [note: StockNoteData]
-  delete: [note: StockNoteData]
+  edit: [note: StockNoteView]
+  delete: [note: StockNoteView]
 }>()
 
 const { t, locale } = useI18n()

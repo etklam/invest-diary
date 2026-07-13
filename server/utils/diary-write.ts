@@ -6,6 +6,11 @@ import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/di
 import { Errors } from '~/lib/errors/factory'
 import { attachDiaryTags } from '~/server/utils/diary-response'
 import { persistAlerts, replaceAlerts } from '~/server/utils/alert-persistence'
+import {
+  calculateLedgerHoldings,
+  validateTransactionLedger,
+  type HoldingsInput,
+} from '~/lib/diary-authoring/validation'
 
 /**
  * Normalize a string-or-Date input into a native Date.
@@ -17,55 +22,11 @@ export function toInputDate(value: string | Date): Date {
 
 // ---- Shared validation ----
 
-/**
- * Validate a list of transactions for buy/sell consistency.
- *
- * For each symbol the running balance is tracked:
- * - BUY increases holdings
- * - SELL decreases holdings; must not exceed running balance.
- *
- * Inlined from lib/transactions/validate.ts (the only production caller).
- * Accepts the shared TransactionInput shape from ~/types/diary; missing
- * or empty fields are tolerated the same way the legacy validator did
- * (via optional chaining and numeric coercion of Decimal).
- *
- * Returns the first error message, or null when valid.
- */
-function validateTransactions(
-  transactions?: TransactionInput[],
-): string | null {
-  if (!transactions || transactions.length === 0) return null
-
-  const holdings = new Map<string, number>()
-
-  for (const tx of transactions) {
-    if (!tx?.symbol?.trim()) continue
-
-    const symbol = tx.symbol.trim().toUpperCase()
-    const current = holdings.get(symbol) ?? 0
-    const quantity =
-      typeof tx.quantity === 'object' && tx.quantity !== null
-        ? Number(tx.quantity.toString())
-        : (tx.quantity ?? 0)
-
-    if (tx.type === 'BUY') {
-      holdings.set(symbol, current + quantity)
-      continue
-    }
-
-    if (tx.type === 'SELL') {
-      const available = holdings.get(symbol) ?? 0
-      if (available <= 0) {
-        return `股票 ${symbol} 沒有持股可賣，請先添加買入記錄`
-      }
-      if (quantity > available) {
-        return `股票 ${symbol} 賣出數量 (${quantity}) 超過持股數量 (${available})`
-      }
-      holdings.set(symbol, available - quantity)
-    }
-  }
-
-  return null
+export interface DiaryValidationOptions {
+  /** Baseline holdings at the target diary date. */
+  initialHoldings?: HoldingsInput
+  /** False means the caller deliberately has no reliable ledger context. */
+  baselineAvailable?: boolean
 }
 
 /**
@@ -75,14 +36,88 @@ function validateTransactions(
 export function validateDiaryInput(
   title: string | undefined,
   transactions: TransactionInput[] | undefined,
+  options: DiaryValidationOptions = {},
 ): void {
   if (!title) {
     throw Errors.validationError([{ field: 'title', message: 'Title is required' }])
   }
-  const transactionError = validateTransactions(transactions)
+  if (options.baselineAvailable === false) return
+
+  const transactionError = validateTransactionLedger(
+    options.initialHoldings,
+    transactions ?? [],
+  )?.message
   if (transactionError) {
     throw Errors.validationError([{ field: 'transactions', message: transactionError }])
   }
+}
+
+export interface DiaryLedgerBaselineTransaction {
+  id: bigint
+  symbol: string
+  type: 'BUY' | 'SELL'
+  quantity: Prisma.Decimal | number | string
+  price: Prisma.Decimal | number | string
+  tradeDate: Date
+}
+
+/**
+ * Read the cross-Diary ledger baseline. Ownership is deliberately expressed
+ * through `diary.userId`; Transaction.userId is only a denormalized copy.
+ *
+ * Option A uses the target Diary date as the ledger cutoff. The current
+ * Diary's old rows are excluded on update so a draft is not counted twice.
+ */
+export async function readDiaryLedgerBaseline(
+  userId: bigint,
+  targetDiaryDate: Date,
+  excludeDiaryId?: bigint,
+): Promise<DiaryLedgerBaselineTransaction[]> {
+  const { endOfDayUtc } = getUtcDayRange(targetDiaryDate)
+
+  return await prisma.transaction.findMany({
+    where: {
+      diary: {
+        userId,
+        date: { lte: targetDiaryDate },
+      },
+      tradeDate: { lte: endOfDayUtc },
+      ...(excludeDiaryId !== undefined ? { diaryId: { not: excludeDiaryId } } : {}),
+    },
+    select: {
+      id: true,
+      symbol: true,
+      type: true,
+      quantity: true,
+      price: true,
+      tradeDate: true,
+    },
+    orderBy: [{ tradeDate: 'asc' }, { id: 'asc' }],
+  }) as DiaryLedgerBaselineTransaction[]
+}
+
+async function validateDiaryTransactionsForUser(
+  userId: bigint,
+  targetDiaryDate: Date,
+  transactions: TransactionInput[] | undefined,
+  excludeDiaryId?: bigint,
+): Promise<void> {
+  if (!transactions?.length) return
+
+  const baselineRows = await readDiaryLedgerBaseline(userId, targetDiaryDate, excludeDiaryId)
+  let baselineHoldings: Map<string, number>
+
+  try {
+    baselineHoldings = calculateLedgerHoldings({}, baselineRows)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '既有交易帳本無效'
+    throw Errors.validationError([{ field: 'transactions', message }])
+  }
+
+  validateDiaryInput('valid', transactions, {
+    initialHoldings: baselineHoldings,
+    baselineAvailable: true,
+  })
 }
 
 // ---- Transaction diff types and pure function ----
@@ -96,6 +131,20 @@ export interface TransactionWriteData {
   notes: string | null
   strategy: string | null
   emotion: string | null
+}
+
+function normalizeDecimalWrite(
+  value: Prisma.Decimal | number | string,
+  field: 'quantity' | 'price',
+): Prisma.Decimal | number {
+  if (typeof value !== 'string') return value
+
+  const numberValue = Number(value)
+  if (!Number.isFinite(numberValue)) {
+    throw Errors.validationError([{ field: `transactions.${field}`, message: `${field} must be a finite number` }])
+  }
+
+  return numberValue
 }
 
 export interface ResolvedTransactionUpdate {
@@ -116,8 +165,8 @@ export function mapTransactionWriteData(t: TransactionInput): TransactionWriteDa
   return {
     symbol: t.symbol?.trim().toUpperCase(),
     type: t.type,
-    quantity: t.quantity,
-    price: t.price,
+    quantity: normalizeDecimalWrite(t.quantity, 'quantity'),
+    price: normalizeDecimalWrite(t.price, 'price'),
     tradeDate: toInputDate(t.trade_date ?? t.tradeDate ?? new Date()),
     notes: t.notes ?? null,
     strategy: t.strategy ?? null,
@@ -175,7 +224,9 @@ async function persistTransactionDiff(
   for (const { id, data } of diff.toUpdate) {
     const updated = await tx.transaction.updateMany({
       where: { id, diaryId },
-      data,
+      // Diary ownership was checked before this transaction. Re-write the
+      // denormalized copy on every update so it cannot drift from diary.userId.
+      data: { ...data, userId },
     })
     if (updated.count === 0) {
       throw Errors.validationError([
@@ -209,11 +260,6 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
 
   if (!body.content) {
     throw Errors.validationError([{ field: 'content', message: 'Content is required' }])
-  }
-
-  const transactionError = validateTransactions(body.transactions)
-  if (transactionError) {
-    throw Errors.validationError([{ field: 'transactions', message: transactionError }])
   }
 
   const { title, content, date, transactions, alerts, appendToToday, tags, thesis, risk, execution, reviewDueAt } = body
@@ -256,6 +302,10 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
     const errorDate = date ? (typeof date === 'string' ? date : date.toISOString()) : diaryDate.toISOString()
     throw Errors.diaryAlreadyExists(errorDate)
   }
+
+  // Server-side ledger validation is authoritative. The baseline includes
+  // earlier Diaries owned by this user, then validates the current draft.
+  await validateDiaryTransactionsForUser(userId, diaryDate, transactions)
 
   const diaryCreateArgs = {
     data: {
@@ -320,9 +370,9 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
   const diaryId = typeof input.diaryId === 'bigint' ? input.diaryId : BigInt(input.diaryId)
   const { body } = input
 
-  // --- Validation ---
+  // --- Scalar validation ---
 
-  validateDiaryInput(body.title, body.transactions)
+  validateDiaryInput(body.title, undefined, { baselineAvailable: false })
 
   // --- Ownership check ---
   // SQL-level ownership filter collapses not-found and not-owned into a
@@ -335,6 +385,11 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
   if (!existingDiary) {
     throw Errors.diaryNotFound(String(diaryId))
   }
+
+  const targetDiaryDate = body.date
+    ? toUtcNoonDate(body.date)
+    : (existingDiary.date ?? new Date())
+  await validateDiaryTransactionsForUser(userId, targetDiaryDate, body.transactions, diaryId)
 
   // --- Diff transactions ---
 

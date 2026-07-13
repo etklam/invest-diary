@@ -18,6 +18,7 @@ import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { calculateHoldings } from '~/lib/position-state'
+import { readPortfolioTransactions } from '~/server/utils/transaction-read'
 import type { HoldingView } from '~/lib/stocks-view'
 import {
   computePortfolioExposure,
@@ -86,17 +87,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // ── Step 1: Holdings ────────────────────────────────────────────
-    const transactions = await prisma.transaction.findMany({
-      where: { diary: { userId: BigInt(user.id) } },
-      select: {
-        symbol: true,
-        type: true,
-        quantity: true,
-        price: true,
-        tradeDate: true,
-      },
-      orderBy: { tradeDate: 'asc' },
-    })
+    const transactions = await readPortfolioTransactions(BigInt(user.id))
 
     const rawHoldings = calculateHoldings(transactions)
     const holdings: HoldingView[] = rawHoldings.map(toHoldingView)

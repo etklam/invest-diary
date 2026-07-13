@@ -3,28 +3,37 @@
  *
  * 共用的交易查詢與準備邏輯，供 stats endpoints 重複使用。
  *
- * 兩個 stats API（recent-trades、export-trades）共享完全相同的
- * Prisma 查詢 + 資料轉換 pipeline，抽出至此避免重複。
+ * 這個檔案保留舊 stats 呼叫端的相容名稱；實際 ownership/read contract
+ * 已下沉到 transaction-read.ts，避免呼叫端自行拼 Prisma authorization。
  */
-import prisma from '~/lib/prisma'
+import {
+  readExportTransactions,
+  readRecentTradeTransactions,
+  mapTransactionReadRow,
+  type TransactionReadRow,
+} from '~/server/utils/transaction-read'
+import { normalizeSymbol } from '~/lib/position-state'
 
 // ─── 型別定義 ─────────────────────────────────────────────────────────────
 
-/** Prisma 回傳的原始交易列（id 為 BigInt） */
+/** Legacy raw-row shape accepted by the matching preparation adapter. */
 export interface RawTransactionRow {
-  id: bigint
+  id: bigint | number | string
   symbol: string
   type: 'BUY' | 'SELL'
   quantity: { valueOf(): number } | number
   price: { valueOf(): number } | number
   tradeDate: Date
+  strategy?: string | null
+  emotion?: string | null
 }
 
 // ─── 查詢函數 ─────────────────────────────────────────────────────────────
 
 /**
  * findUserRawTransactions
- * 查詢指定用戶的所有交易紀錄（直接持有 + 透過 diary 關聯）。
+ * Legacy compatibility wrapper. New code should call the purpose-specific
+ * read functions in transaction-read.ts directly.
  *
  * @param userId - 用戶 ID（BigInt）
  * @param options.symbol - 可選，只查特定股票代碼
@@ -34,24 +43,10 @@ export async function findUserRawTransactions(
   userId: bigint,
   options?: { symbol?: string },
 ): Promise<RawTransactionRow[]> {
-  return prisma.transaction.findMany({
-    where: {
-      OR: [
-        { userId },
-        { diary: { userId } },
-      ],
-      ...(options?.symbol ? { symbol: options.symbol } : {}),
-    },
-    select: {
-      id: true,
-      symbol: true,
-      type: true,
-      quantity: true,
-      price: true,
-      tradeDate: true,
-    },
-    orderBy: { tradeDate: 'asc' },
-  })
+  const symbol = options?.symbol?.trim() ? normalizeSymbol(options.symbol) : null
+  return (symbol
+    ? await readExportTransactions(userId, symbol)
+    : await readRecentTradeTransactions(userId)) as RawTransactionRow[]
 }
 
 // ─── 轉換函數 ─────────────────────────────────────────────────────────────
@@ -67,9 +62,5 @@ export async function findUserRawTransactions(
  * @returns matchTrades() 可用的交易陣列
  */
 export function prepareTransactionsForMatching(rawTxs: RawTransactionRow[]) {
-  return rawTxs.map(tx => ({
-    ...tx,
-    id: tx.id.toString(),
-    type: tx.type as 'BUY' | 'SELL',
-  }))
+  return rawTxs.map(tx => mapTransactionReadRow(tx as TransactionReadRow))
 }

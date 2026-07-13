@@ -16,6 +16,7 @@ const mockDiaryCreate = vi.fn()
 const mockDiaryUpdate = vi.fn()
 const mockDiaryDelete = vi.fn()
 const mockDiaryCount = vi.fn()
+const mockTransactionFindMany = vi.fn()
 const mockTransactionDeleteMany = vi.fn()
 const mockAlertDeleteMany = vi.fn()
 const mockPrismaTransaction = vi.fn(async (callback: any) => callback({
@@ -37,7 +38,7 @@ vi.mock('~/lib/prisma', () => ({
     },
     transaction: {
       create: vi.fn(),
-      findMany: vi.fn(),
+      findMany: mockTransactionFindMany,
     },
     $transaction: mockPrismaTransaction,
     $connect: vi.fn(),
@@ -60,6 +61,7 @@ describe('Diary Workflow Integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockTransactionFindMany.mockResolvedValue([])
     mockGetQuery.mockReturnValue({})
   })
 

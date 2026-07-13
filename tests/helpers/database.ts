@@ -140,6 +140,7 @@ export async function createTestTransaction(overrides: TestTransactionInput = {}
   return prisma.transaction.create({
     data: {
       diaryId: diary.id,
+      userId: diary.userId,
       symbol: overrides.symbol || '2330.TW',
       type: overrides.type || TransactionType.BUY,
       quantity: overrides.quantity || 10,

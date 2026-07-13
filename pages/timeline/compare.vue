@@ -214,7 +214,7 @@ const { data, pending, error, refresh } = await useFetch<PartnerCompareResponse>
   watch: [query],
 })
 
-const acceptedLinks = computed(() => data.value?.links.filter(link => !link.pendingIncoming && !link.pendingOutgoing) ?? [])
+const acceptedLinks = computed(() => data.value?.links.filter(link => link.status === 'connected') ?? [])
 const selectedLink = computed(() => {
   const candidateId = data.value?.selectedPartnerId || selectedPartnerId.value
   if (!candidateId) return null

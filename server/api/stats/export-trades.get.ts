@@ -14,7 +14,8 @@ import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { matchTrades } from '~/lib/trade-analytics'
 import { logger } from '~/lib/logger'
-import { findUserRawTransactions, prepareTransactionsForMatching } from '~/server/utils/trade-queries'
+import { prepareTransactionsForMatching } from '~/server/utils/trade-queries'
+import { readExportTransactions } from '~/server/utils/transaction-read'
 
 /** 轉義 CSV 欄位：若含逗號、換行或雙引號則用雙引號包圍 */
 function csvEscape(value: string | number | null | undefined): string {
@@ -40,10 +41,7 @@ export default defineEventHandler(async (event) => {
     : null
 
   try {
-    const rawTxs = await findUserRawTransactions(
-      userId,
-      symbolFilter ? { symbol: symbolFilter } : undefined,
-    )
+    const rawTxs = await readExportTransactions(userId, symbolFilter)
 
     const closedTrades = matchTrades(prepareTransactionsForMatching(rawTxs))
 

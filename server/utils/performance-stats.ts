@@ -21,7 +21,7 @@ import {
 // ─── 輸入型別 ──────────────────────────────────────────────────────────────────
 
 export interface RawTransactionRecord {
-  id: bigint
+  id: bigint | string | number
   symbol: string
   type: string
   quantity: { valueOf(): number } | number

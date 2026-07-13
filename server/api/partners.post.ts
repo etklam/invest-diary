@@ -2,8 +2,10 @@ import { z } from 'zod'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { normalizeInput } from '~/server/utils/validation'
-import { createPartnerLink, getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
+import { getPartnerSide } from '~/lib/partners/policy'
+import { createPartnerLink } from '~/server/utils/partner'
 import { serializePartnerLink } from '~/server/utils/partner-response'
+import type { PartnerLinkRecord } from '~/types/partner'
 import { handleApiError } from '~/server/utils/error-handler'
 
 const createPartnerSchema = z.object({

@@ -70,13 +70,15 @@
 </template>
 
 <script setup lang="ts">
+import type { StockNoteDraft } from '~/types/stock-note'
+
 const props = defineProps<{
   showCancel?: boolean
   saving?: boolean
 }>()
 
 const emit = defineEmits<{
-  save: [data: { title: string; content: string; date: string }]
+  save: [data: StockNoteDraft]
   cancel: []
 }>()
 

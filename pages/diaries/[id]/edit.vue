@@ -69,7 +69,7 @@
         </div>
       </div>
 
-      <TransactionInput v-model="form.transactions" :disciplines="disciplines" />
+      <TransactionInput v-model="form.transactions" />
 
       <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
         <div class="flex items-center justify-between mb-4">
@@ -146,7 +146,13 @@
 <script setup lang="ts">
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
-import { formatYmdInTimezone, toDateTimeLocalValue } from '~/lib/dates'
+import {
+  createEmptyDiaryAuthoringForm,
+  hydrateDiaryAuthoring,
+} from '~/lib/diary-authoring/hydration'
+import { buildDiaryAuthoringPayload } from '~/lib/diary-authoring/payload'
+import type { DiaryAuthoringForm } from '~/lib/diary-authoring/types'
+import { validateDiaryDraft } from '~/lib/diary-authoring/validation'
 
 definePageMeta({
   middleware: 'auth'
@@ -161,37 +167,16 @@ const { runWithAuthRecovery } = useAuthRecovery()
 const { getTodayDateString, getTimezone } = useTimezone()
 
 // Fetch disciplines for trade discipline checking
-const { data: disciplines } = useFetch<Array<{ id: string; content: string }>>('/api/discipline')
-
 // Use lazy fetch to avoid calling API during SSR before auth check
 const { data: diary, pending, error } = await useLazyFetch<any>(`/api/diaries/${id}`)
 
-const form = reactive({
-  date: getTodayDateString(),
-  title: '',
-  content: '',
-  thesis: '',
-  risk: '',
-  transactions: [] as any[],
-  alerts: [] as any[]
-})
+const form = reactive<DiaryAuthoringForm>(createEmptyDiaryAuthoringForm(getTodayDateString()))
 
 watch(diary, (newDiary) => {
   if (newDiary) {
-    form.date = newDiary.date
-      ? formatYmdInTimezone(newDiary.date, getTimezone())
-      : getTodayDateString()
-    form.title = newDiary.title
-    form.content = newDiary.content || ''
-    form.thesis = newDiary.thesis || ''
-    form.risk = newDiary.risk || ''
-    form.transactions = newDiary.transactions.map((t: any) => ({
-      ...t,
-      trade_date: toDateTimeLocalValue(t.tradeDate)
-    }))
-    form.alerts = newDiary.alerts.map((a: any) => ({
-      ...a,
-      trigger_at: formatYmdInTimezone(a.triggerAt, getTimezone())
+    Object.assign(form, hydrateDiaryAuthoring(newDiary, {
+      timeZone: getTimezone(),
+      fallbackDate: getTodayDateString(),
     }))
   }
 }, { immediate: true })
@@ -209,63 +194,23 @@ const removeAlert = (index: number) => {
   form.alerts.splice(index, 1)
 }
 
-// Validate transactions before saving
-const validateTransactions = (): string | null => {
-  const holdings = new Map<string, number>()
-
-  for (const tx of form.transactions) {
-    if (!tx.symbol?.trim()) continue
-
-    const symbol = tx.symbol.trim() // Already uppercase from input
-    const current = holdings.get(symbol) || 0
-
-    if (tx.type === 'BUY') {
-      holdings.set(symbol, current + (tx.quantity || 0))
-    } else if (tx.type === 'SELL') {
-      const available = holdings.get(symbol) || 0
-      if (available <= 0) {
-        return `股票 ${symbol} 沒有持股可賣，請先添加買入記錄`
-      }
-      if ((tx.quantity || 0) > available) {
-        return `股票 ${symbol} 賣出數量 (${tx.quantity}) 超過持股數量 (${available})`
-      }
-      holdings.set(symbol, available - (tx.quantity || 0))
-    }
-  }
-
-  return null
-}
-
 const saveDiary = async () => {
   if (!form.title) {
     toast.error('請輸入標題')
     return
   }
 
-  // Validate transactions
-  const validationError = validateTransactions()
+  // The server owns the portfolio baseline. Without a fetched baseline the
+  // client must not mistake this diary's draft for the whole portfolio.
+  const validationError = validateDiaryDraft(form.transactions, { available: false })
   if (validationError) {
-    toast.error('交易記錄驗證失敗：' + validationError)
+    toast.error('交易記錄驗證失敗：' + validationError.message)
     return
   }
 
   saving.value = true
   try {
-    const payload = {
-      title: form.title,
-      content: form.content,
-      thesis: form.thesis || undefined,
-      risk: form.risk || undefined,
-      date: `${form.date}T12:00:00.000Z`,
-      transactions: form.transactions.map(t => ({
-        ...t,
-        trade_date: new Date(t.trade_date).toISOString()
-      })),
-      alerts: form.alerts.map(a => ({
-        ...a,
-        trigger_at: `${a.trigger_at}T12:00:00.000Z`
-      }))
-    }
+    const payload = buildDiaryAuthoringPayload(form)
 
     await runWithAuthRecovery(async (): Promise<void> => {
       await $fetch(`/api/diaries/${id}` as string, {

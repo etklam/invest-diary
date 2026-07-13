@@ -91,28 +91,11 @@
 </template>
 
 <script setup lang="ts">
+import { canDisplayPartnerStockNotes, toStockNotesView } from '~/lib/stocks/note-view'
+import type { StockNoteDraft, StockNoteView, StockNotesResponse } from '~/types/stock-note'
+import type { PartnerLinkSummary, PartnerLinksResponse } from '~/types/partner'
+
 definePageMeta({ middleware: 'auth' })
-
-interface StockNoteData {
-  id: string
-  symbol: string
-  name?: string | null
-  title: string
-  content: string
-  date: string
-  createdVia: string
-  createdByLabel?: string | null
-  createdAt: string
-  updatedAt: string
-  isOwnedByViewer?: boolean
-}
-
-interface NotesResponse {
-  notes: StockNoteData[]
-  total: number
-  page: number
-  limit: number
-}
 
 const { t } = useI18n()
 const toast = useToast()
@@ -125,33 +108,40 @@ const isSaving = ref(false)
 const activeFilter = ref<string>('all')
 const currentPage = ref(1)
 
-import type { PartnerLinkSummary, PartnerLinksResponse } from '~/types/partner'
+const partnerLinks = ref<PartnerLinkSummary[]>([])
 
-const acceptedPartnerLinks = ref<PartnerLinkSummary[]>([])
+const visiblePartnerLinks = computed(() => partnerLinks.value.filter(
+  canDisplayPartnerStockNotes,
+))
 
 const filters = computed(() => {
   const base: Array<{ value: string; label: string }> = [
     { value: 'all', label: t('stock.notes.filterAll') },
     { value: 'USER', label: t('stock.notes.filterMine') },
   ]
-  for (const link of acceptedPartnerLinks.value) {
-    if (link.partnerSharesStockNotes) {
-      const name = link.partner?.name || link.partner?.email || t('stock.notes.filterPartner')
-      base.push({
-        value: `partner:${link.partner.id}`,
-        label: name,
-      })
-    }
+  for (const link of visiblePartnerLinks.value) {
+    const name = link.partner?.name || link.partner?.email || t('stock.notes.filterPartner')
+    base.push({
+      value: `partner:${link.partner.id}`,
+      label: name,
+    })
   }
   return base
+})
+
+const selectedPartnerId = computed(() => {
+  if (!activeFilter.value.startsWith('partner:')) return null
+
+  const partnerId = activeFilter.value.replace('partner:', '')
+  return visiblePartnerLinks.value.some(link => link.partner.id === partnerId) ? partnerId : null
 })
 
 const queryParams = computed(() => {
   const params: Record<string, string | number> = { page: currentPage.value, limit: 20 }
   if (activeFilter.value === 'USER') {
     params.createdVia = 'USER'
-  } else if (activeFilter.value.startsWith('partner:')) {
-    params.partnerId = activeFilter.value.replace('partner:', '')
+  } else if (selectedPartnerId.value) {
+    params.partnerId = selectedPartnerId.value
   }
   return params
 })
@@ -159,9 +149,7 @@ const queryParams = computed(() => {
 const fetchPartners = async () => {
   try {
     const response = await $fetch<PartnerLinksResponse>('/api/partners')
-    acceptedPartnerLinks.value = response.links.filter(
-      (l: any) => !l.pendingIncoming && !l.pendingOutgoing,
-    )
+    partnerLinks.value = response.links
   } catch {
     // Partners not critical — silently fail
   }
@@ -169,7 +157,7 @@ const fetchPartners = async () => {
 
 await fetchPartners()
 
-const { data, pending, error, refresh } = await useLazyFetch<NotesResponse>(
+const { data, pending, error, refresh } = await useLazyFetch<StockNotesResponse>(
   () => `/api/stocks/${encodeURIComponent(String(route.params.symbol))}/notes`,
   {
     server: false,
@@ -178,11 +166,11 @@ const { data, pending, error, refresh } = await useLazyFetch<NotesResponse>(
   },
 )
 
-const displayNotes = computed(() => data.value?.notes ?? [])
+const displayNotes = computed(() => data.value ? toStockNotesView(data.value).notes : [])
 const totalNotes = computed(() => data.value?.total ?? 0)
-const stockName = computed(() => data.value?.notes.find(n => n.name)?.name ?? null)
+const stockName = computed(() => displayNotes.value.find(note => note.name)?.name ?? null)
 
-const handleSave = async (noteData: { title: string; content: string; date: string }) => {
+const handleSave = async (noteData: StockNoteDraft) => {
   if (isSaving.value) return
   isSaving.value = true
   try {
@@ -201,7 +189,9 @@ const handleSave = async (noteData: { title: string; content: string; date: stri
   }
 }
 
-const handleEdit = async (note: StockNoteData) => {
+const handleEdit = async (note: StockNoteView) => {
+  if (!note.canEdit) return
+
   const newTitle = prompt(t('diary.title'), note.title)
   if (!newTitle) return
   const newContent = prompt(t('diary.content'), note.content)
@@ -219,7 +209,9 @@ const handleEdit = async (note: StockNoteData) => {
   }
 }
 
-const handleDelete = async (note: StockNoteData) => {
+const handleDelete = async (note: StockNoteView) => {
+  if (!note.canEdit) return
+
   if (!confirm(t('stock.notes.deleteConfirm'))) return
 
   try {
@@ -239,6 +231,12 @@ const handlePageChange = (page: number) => {
 
 watch(activeFilter, () => {
   currentPage.value = 1
+})
+
+watch(visiblePartnerLinks, (links) => {
+  if (activeFilter.value.startsWith('partner:') && !links.some(link => `partner:${link.partner.id}` === activeFilter.value)) {
+    activeFilter.value = 'all'
+  }
 })
 
 useHead({

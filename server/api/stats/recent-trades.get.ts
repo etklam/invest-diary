@@ -13,7 +13,8 @@ import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { matchTrades } from '~/lib/trade-analytics'
 import { serialize } from '~/server/utils/serialize'
-import { findUserRawTransactions, prepareTransactionsForMatching } from '~/server/utils/trade-queries'
+import { prepareTransactionsForMatching } from '~/server/utils/trade-queries'
+import { readRecentTradeTransactions } from '~/server/utils/transaction-read'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
     cutoff.setDate(cutoff.getDate() - days)
 
     // 查詢所有交易（計算用，不限時間範圍）
-    const rawTxs = await findUserRawTransactions(userId)
+    const rawTxs = await readRecentTradeTransactions(userId)
 
     if (!rawTxs.length) {
       return { trades: [] }

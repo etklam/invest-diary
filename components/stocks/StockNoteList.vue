@@ -69,22 +69,10 @@
 </template>
 
 <script setup lang="ts">
-interface StockNoteData {
-  id: string
-  symbol: string
-  name?: string | null
-  title: string
-  content: string
-  date: string
-  createdVia: string
-  createdByLabel?: string | null
-  createdAt: string
-  updatedAt: string
-  isOwnedByViewer?: boolean
-}
+import type { StockNoteView } from '~/types/stock-note'
 
 const props = defineProps<{
-  notes: StockNoteData[]
+  notes: StockNoteView[]
   loading: boolean
   page: number
   limit: number
@@ -93,8 +81,8 @@ const props = defineProps<{
 
 defineEmits<{
   write: []
-  edit: [note: StockNoteData]
-  delete: [note: StockNoteData]
+  edit: [note: StockNoteView]
+  delete: [note: StockNoteView]
   'page-change': [page: number]
 }>()
 

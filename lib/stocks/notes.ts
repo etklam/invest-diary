@@ -1,7 +1,6 @@
 import prisma from '~/lib/prisma'
 import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
-
-type StockNoteCreatedVia = 'USER' | 'AGENT'
+import type { StockNoteCreatedVia, StockNoteResponse } from '~/types/stock-note'
 
 export interface CreateStockNoteInput {
   symbol: string
@@ -132,12 +131,12 @@ export function toStockNoteResponse(item: {
   title: string
   content: string
   date: Date
-  createdVia: string
+  createdVia: StockNoteCreatedVia
   createdByLabel: string | null
   createdAt: Date
   updatedAt: Date
   stock: { symbol: string; name: string | null }
-}) {
+}): Omit<StockNoteResponse, 'isOwnedByViewer'> {
   return {
     id: item.id.toString(),
     symbol: item.stock.symbol,

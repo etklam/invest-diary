@@ -98,15 +98,15 @@
           :key="link.id"
           class="partner-card"
           :class="{
-            'partner-pending': link.pendingIncoming || link.pendingOutgoing,
-            'partner-connected': !link.pendingIncoming && !link.pendingOutgoing
+            'partner-pending': link.status !== 'connected',
+            'partner-connected': link.status === 'connected'
           }"
         >
           <div class="partner-card-top">
             <div class="partner-info">
               <div class="partner-avatar">
-                <Icon v-if="link.pendingIncoming" name="heroicons:arrow-left-on-rectangle" class="w-5 h-5" />
-                <Icon v-else-if="link.pendingOutgoing" name="heroicons:paper-airplane" class="w-5 h-5" />
+                <Icon v-if="link.status === 'pending_incoming'" name="heroicons:arrow-left-on-rectangle" class="w-5 h-5" />
+                <Icon v-else-if="link.status === 'pending_outgoing'" name="heroicons:paper-airplane" class="w-5 h-5" />
                 <Icon v-else name="heroicons:user-circle" class="w-5 h-5" />
               </div>
               <div>
@@ -122,7 +122,7 @@
 
             <div class="partner-actions">
               <NuxtLink
-                v-if="!link.pendingIncoming && !link.pendingOutgoing"
+                v-if="link.status === 'connected'"
                 :to="`/timeline/compare?partnerId=${link.partner.id}`"
                 class="action-btn-sm"
               >
@@ -131,7 +131,7 @@
               </NuxtLink>
 
               <button
-                v-if="link.pendingIncoming"
+                v-if="link.status === 'pending_incoming'"
                 type="button"
                 class="action-btn-primary action-btn-sm"
                 @click="acceptLink(link.id)"
@@ -152,7 +152,7 @@
           </div>
 
           <!-- Sharing Toggles (only for accepted links) -->
-          <div v-if="!link.pendingIncoming && !link.pendingOutgoing" class="partner-card-bottom">
+          <div v-if="link.status === 'connected'" class="partner-card-bottom">
             <div class="sharing-summary">
               <span class="sharing-pill" :class="link.selfSharesDiaries ? 'pill-on' : 'pill-off'">
                 <Icon :name="link.selfSharesDiaries ? 'heroicons:eye' : 'heroicons:eye-slash'" class="w-3.5 h-3.5" />
@@ -333,9 +333,9 @@ const isKeysLoading = ref(true)
 const isKeySubmitting = ref(false)
 
 // ---- Computed Stats ----
-const connectedCount = computed(() => links.value.filter(l => !l.pendingIncoming && !l.pendingOutgoing).length)
-const pendingCount = computed(() => links.value.filter(l => l.pendingIncoming).length)
-const sharingCount = computed(() => links.value.filter(l => !l.pendingIncoming && !l.pendingOutgoing && l.selfSharesDiaries).length)
+const connectedCount = computed(() => links.value.filter(l => l.status === 'connected').length)
+const pendingCount = computed(() => links.value.filter(l => l.status === 'pending_incoming').length)
+const sharingCount = computed(() => links.value.filter(l => l.status === 'connected' && l.selfSharesDiaries).length)
 const activeKeyCount = computed(() => keys.value.filter(k => !k.revokedAt).length)
 
 // ---- Partner Methods ----
@@ -353,14 +353,14 @@ const loadLinks = async () => {
 onMounted(loadLinks)
 
 const statusLabel = (link: PartnerLinkSummary) => {
-  if (link.pendingIncoming) return t('settings.partnerPendingIncoming')
-  if (link.pendingOutgoing) return t('settings.partnerPendingOutgoing')
+  if (link.status === 'pending_incoming') return t('settings.partnerPendingIncoming')
+  if (link.status === 'pending_outgoing') return t('settings.partnerPendingOutgoing')
   return t('settings.partnerConnected')
 }
 
 const statusClass = (link: PartnerLinkSummary) => {
-  if (link.pendingIncoming) return 'badge-pending-incoming'
-  if (link.pendingOutgoing) return 'badge-pending-outgoing'
+  if (link.status === 'pending_incoming') return 'badge-pending-incoming'
+  if (link.status === 'pending_outgoing') return 'badge-pending-outgoing'
   return 'badge-connected'
 }
 

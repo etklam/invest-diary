@@ -5,6 +5,7 @@ const {
   mockPrismaDiaryFindFirst,
   mockPrismaDiaryCreate,
   mockPrismaDiaryUpdate,
+  mockPrismaTransactionFindMany,
   mockPrismaTransaction,
   mockTxDiaryCreate,
   mockTxDiaryUpdate,
@@ -19,6 +20,7 @@ const {
   mockPrismaDiaryFindFirst: vi.fn(),
   mockPrismaDiaryCreate: vi.fn(),
   mockPrismaDiaryUpdate: vi.fn(),
+  mockPrismaTransactionFindMany: vi.fn(),
   mockPrismaTransaction: vi.fn(),
   mockTxDiaryCreate: vi.fn(),
   mockTxDiaryUpdate: vi.fn(),
@@ -37,6 +39,9 @@ vi.mock('~/lib/prisma', () => ({
       findFirst: mockPrismaDiaryFindFirst,
       create: mockPrismaDiaryCreate,
       update: mockPrismaDiaryUpdate,
+    },
+    transaction: {
+      findMany: mockPrismaTransactionFindMany,
     },
     $transaction: mockPrismaTransaction,
   },
@@ -253,6 +258,7 @@ import { createDiaryForUser } from '~/server/utils/diary-write'
 describe('createDiaryForUser', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockPrismaTransactionFindMany.mockResolvedValue([])
   })
 
   const baseCreatedDiary = {
@@ -395,6 +401,52 @@ describe('createDiaryForUser', () => {
     )
   })
 
+  it('allows a SELL in a later diary when the owned ledger has prior holdings', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
+    mockPrismaTransactionFindMany.mockResolvedValue([{
+      id: 10n,
+      symbol: 'AAPL',
+      type: 'BUY',
+      quantity: 10,
+      price: 100,
+      tradeDate: new Date('2026-05-17T12:00:00.000Z'),
+    }])
+    mockPrismaDiaryCreate.mockResolvedValue(baseCreatedDiary)
+
+    await expect(createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Later diary',
+        content: 'Sell from the prior diary holding',
+        date: '2026-05-18',
+        transactions: [{ symbol: 'AAPL', type: 'SELL', quantity: 4, price: 110 }],
+      },
+    })).resolves.toBeDefined()
+
+    expect(mockPrismaTransactionFindMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        diary: expect.objectContaining({ userId: 1n }),
+      }),
+    }))
+  })
+
+  it('still rejects a SELL when the owned ledger has no holdings', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
+    mockPrismaTransactionFindMany.mockResolvedValue([])
+
+    await expect(createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Invalid sell',
+        content: 'No position',
+        date: '2026-05-18',
+        transactions: [{ symbol: 'AAPL', type: 'SELL', quantity: 1, price: 110 }],
+      },
+    })).rejects.toMatchObject({ code: 'SYS_VALIDATION_ERROR' })
+
+    expect(mockPrismaDiaryCreate).not.toHaveBeenCalled()
+  })
+
   it('should create diary with alerts', async () => {
     mockPrismaDiaryFindFirst.mockResolvedValue(null)
     mockTxDiaryCreate.mockResolvedValue(baseCreatedDiary)
@@ -525,6 +577,7 @@ import { updateDiaryForUser } from '~/server/utils/diary-write'
 describe('updateDiaryForUser', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockPrismaTransactionFindMany.mockResolvedValue([])
 
     mockTxTransactionUpdateMany.mockResolvedValue({ count: 1 })
     mockTxDiaryUpdate.mockResolvedValue({
@@ -596,7 +649,7 @@ describe('updateDiaryForUser', () => {
     expect(mockTxTransactionUpdateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 100n, diaryId: 12n },
-        data: expect.objectContaining({ symbol: 'AAPL' }),
+        data: expect.objectContaining({ symbol: 'AAPL', userId: 1n }),
       })
     )
     expect(mockTxTransactionCreate).not.toHaveBeenCalled()
@@ -635,7 +688,7 @@ describe('updateDiaryForUser', () => {
     // New transaction without id => create
     expect(mockTxTransactionCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ symbol: 'MSFT', diaryId: 12n }),
+        data: expect.objectContaining({ symbol: 'MSFT', diaryId: 12n, userId: 1n }),
       })
     )
     expect(mockTxTransactionUpdateMany).not.toHaveBeenCalled()

@@ -7,6 +7,7 @@ const mockDiaryFindFirst = vi.fn()
 const mockDiaryCreate = vi.fn()
 const mockDiaryUpdate = vi.fn()
 const mockDiaryDelete = vi.fn()
+const mockTransactionFindMany = vi.fn()
 const mockTransaction = vi.fn()
 const mockTxTransactionDeleteMany = vi.fn()
 const mockTxTransactionCreate = vi.fn()
@@ -33,6 +34,9 @@ vi.mock('~/lib/prisma', () => ({
       update: mockDiaryUpdate,
       delete: mockDiaryDelete,
     },
+    transaction: {
+      findMany: mockTransactionFindMany,
+    },
     $transaction: mockTransaction,
   },
 }))
@@ -47,6 +51,7 @@ vi.mock('~/lib/logger', () => ({
 describe('Diary API Routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockTransactionFindMany.mockResolvedValue([])
     mockGetQuery.mockReturnValue({})
     mockReadBody.mockResolvedValue(null)
     mockGetRouterParam.mockReturnValue(null)

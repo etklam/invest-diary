@@ -79,6 +79,7 @@ async function main() {
       transactions: {
         create: [
           {
+            userId: user1.id,
             symbol: 'AAPL',
             type: TransactionType.BUY,
             quantity: 100,
@@ -86,6 +87,7 @@ async function main() {
             tradeDate: new Date('2025-02-01T09:30:00Z')
           },
           {
+            userId: user1.id,
             symbol: 'TSLA',
             type: TransactionType.BUY,
             quantity: 50,
@@ -115,6 +117,7 @@ async function main() {
       transactions: {
         create: [
           {
+            userId: user1.id,
             symbol: 'NVDA',
             type: TransactionType.BUY,
             quantity: 30,
@@ -122,6 +125,7 @@ async function main() {
             tradeDate: new Date('2025-02-05T09:30:00Z')
           },
           {
+            userId: user1.id,
             symbol: 'MSFT',
             type: TransactionType.BUY,
             quantity: 40,
@@ -151,6 +155,7 @@ async function main() {
       transactions: {
         create: [
           {
+            userId: user1.id,
             symbol: 'TSLA',
             type: TransactionType.SELL,
             quantity: 25,
@@ -171,6 +176,7 @@ async function main() {
       transactions: {
         create: [
           {
+            userId: user2.id,
             symbol: 'GOOGL',
             type: TransactionType.BUY,
             quantity: 20,

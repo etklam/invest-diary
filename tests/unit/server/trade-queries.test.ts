@@ -20,7 +20,7 @@ describe('server/utils/trade-queries', () => {
   // ─── findUserRawTransactions ────────────────────────────────────────────
 
   describe('findUserRawTransactions', () => {
-    it('calls prisma.transaction.findMany with correct WHERE (OR: userId direct + diary relation)', async () => {
+    it('uses diary.userId as the only ownership predicate with stable ordering', async () => {
       mockTransactionFindMany.mockResolvedValue([])
 
       const { findUserRawTransactions } = await import('~/server/utils/trade-queries')
@@ -31,10 +31,7 @@ describe('server/utils/trade-queries', () => {
       expect(mockTransactionFindMany).toHaveBeenCalledTimes(1)
       expect(mockTransactionFindMany).toHaveBeenCalledWith({
         where: {
-          OR: [
-            { userId },
-            { diary: { userId } },
-          ],
+          diary: { userId },
         },
         select: {
           id: true,
@@ -44,7 +41,7 @@ describe('server/utils/trade-queries', () => {
           price: true,
           tradeDate: true,
         },
-        orderBy: { tradeDate: 'asc' },
+        orderBy: [{ tradeDate: 'asc' }, { id: 'asc' }],
       })
     })
 
@@ -73,7 +70,28 @@ describe('server/utils/trade-queries', () => {
 
       const result = await findUserRawTransactions(42n)
 
-      expect(result).toEqual(fakeTxs)
+      expect(result).toEqual([
+        {
+          id: '1',
+          symbol: 'AAPL',
+          type: 'BUY',
+          quantity: 10,
+          price: 150.5,
+          tradeDate: new Date('2026-01-15'),
+          strategy: null,
+          emotion: null,
+        },
+        {
+          id: '2',
+          symbol: 'AAPL',
+          type: 'SELL',
+          quantity: 10,
+          price: 160,
+          tradeDate: new Date('2026-02-20'),
+          strategy: null,
+          emotion: null,
+        },
+      ])
       expect(result).toHaveLength(2)
     })
 
@@ -97,10 +115,7 @@ describe('server/utils/trade-queries', () => {
 
       expect(mockTransactionFindMany).toHaveBeenCalledWith({
         where: {
-          OR: [
-            { userId },
-            { diary: { userId } },
-          ],
+          diary: { userId },
           symbol: 'AAPL',
         },
         select: {
@@ -111,7 +126,7 @@ describe('server/utils/trade-queries', () => {
           price: true,
           tradeDate: true,
         },
-        orderBy: { tradeDate: 'asc' },
+        orderBy: [{ tradeDate: 'asc' }, { id: 'asc' }],
       })
     })
   })

@@ -1,8 +1,9 @@
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
-import { acceptPartnerLink, type PartnerLinkRecord } from '~/server/utils/partner'
+import { acceptPartnerLink } from '~/server/utils/partner'
 import { serializePartnerLink } from '~/server/utils/partner-response'
+import type { PartnerLinkRecord } from '~/types/partner'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
 

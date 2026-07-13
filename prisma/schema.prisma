@@ -244,8 +244,8 @@ model Discipline {
 model Transaction {
   id        BigInt          @id @default(autoincrement())
   diaryId   BigInt          @map("diary_id")
-  // 去正規化 FK，避免每次都要 JOIN diary 表，優化績效查詢
-  userId    BigInt?         @map("user_id")
+  // 去正規化的 owner copy；授權真相永遠是 diary.userId
+  userId    BigInt          @map("user_id")
   symbol    String          @db.VarChar(20)
   type      TransactionType
   quantity  Decimal         @db.Decimal(15, 4)

@@ -88,6 +88,7 @@ describe('Partner API routes', () => {
       }),
     }))
     expect(result.link.partner.email).toBe('partner@example.com')
+    expect(result.link.status).toBe('pending_outgoing')
     expect(result.link.pendingOutgoing).toBe(true)
   })
 
@@ -136,6 +137,7 @@ describe('Partner API routes', () => {
       where: { id: 9n },
       data: { acceptedAt: expect.any(Date) },
     }))
+    expect(result.link.status).toBe('connected')
     expect(result.link.pendingIncoming).toBe(false)
   })
 

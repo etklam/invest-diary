@@ -3,17 +3,9 @@
  */
 
 import type { SerializedId } from './common'
+import type { AlertPayload } from './alert'
 
-// Alert 推播 payload
-export interface AlertPayload {
-  id: string
-  message: string
-  triggerAt: string
-  diary?: {
-    id: string
-    title: string
-  }
-}
+export type { AlertPayload } from './alert'
 
 // 連線成功回應
 export interface ConnectionSuccessPayload {

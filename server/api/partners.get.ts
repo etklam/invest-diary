@@ -1,7 +1,7 @@
 import { requireUser } from '~/server/utils/auth'
 import { serializePartnerLink } from '~/server/utils/partner-response'
-import type { PartnerLinkRecord } from '~/server/utils/partner'
 import { findUserPartnerLinks } from '~/server/utils/partner-queries'
+import type { PartnerLinkRecord } from '~/types/partner'
 import { serialize } from '~/server/utils/serialize'
 
 export default defineEventHandler(async (event) => {

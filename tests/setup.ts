@@ -63,7 +63,10 @@ export async function createTestDiary(overrides: any = {}) {
       date: overrides.date || new Date('2024-01-01'),
       transactions: overrides.transactions
         ? {
-            create: overrides.transactions,
+            create: overrides.transactions.map((transaction: Record<string, unknown>) => ({
+              ...transaction,
+              userId: user.id,
+            })),
           }
         : undefined,
       alerts: overrides.alerts

@@ -2,12 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockDiaryFindFirst = vi.fn()
 const mockDiaryCreate = vi.fn()
+const mockTransactionFindMany = vi.fn()
 
 vi.mock('~/lib/prisma', () => ({
   default: {
     diary: {
       findFirst: mockDiaryFindFirst,
       create: mockDiaryCreate,
+    },
+    transaction: {
+      findMany: mockTransactionFindMany,
     },
   },
 }))
@@ -16,6 +20,7 @@ describe('createDiaryForUser symbol normalization', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockDiaryFindFirst.mockResolvedValue(null)
+    mockTransactionFindMany.mockResolvedValue([])
     mockDiaryCreate.mockResolvedValue({
       id: 1n,
       title: 'T',

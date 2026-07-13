@@ -1,34 +1,14 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import type { AlertPayload } from '../types/websocket'
+import { normalizeAlert, type AlertApiResponse, type AlertItem, type AlertPayload } from '~/types/alert'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
+
+export type { AlertItem } from '~/types/alert'
 
 // ponytail: SSR / pre-plugin safe fallback — $websocket only exists on client.
 const emptyIsConnected = ref(false)
 const noopUnsubscribe = () => {}
 const noopUnsubscribeAlert = (_cb: (alert: AlertPayload) => void) => noopUnsubscribe
 const noopDismissAlert = async (_alertId: string) => false
-
-export interface AlertItem {
-  id: string
-  message: string
-  trigger_at: string
-  is_dismissed: boolean
-  diary?: {
-    id: string
-    title: string
-  }
-}
-
-interface AlertApiResponse {
-  id: string
-  message: string
-  triggerAt: string
-  isDismissed: boolean
-  diary?: {
-    id: string
-    title: string
-  }
-}
 
 // Polling 設定（作為 WebSocket 的 fallback）
 const BASE_POLL_INTERVAL = 60_000
@@ -56,6 +36,7 @@ export const useAlerts = () => {
 
   // WebSocket 相關
   let unsubscribeAlert: (() => void) | null = null
+  let dismissInFlight = false
 
   const { t } = useI18n()
   const toast = useToast()
@@ -101,16 +82,7 @@ export const useAlerts = () => {
 
     try {
       const response = await runWithAuthRecovery(() => $fetch<AlertApiResponse[]>('/api/alerts'))
-      return response.map(alert => ({
-        id: alert.id,
-        message: alert.message,
-        trigger_at: alert.triggerAt,
-        is_dismissed: alert.isDismissed,
-        diary: alert.diary ? {
-          id: alert.diary.id,
-          title: alert.diary.title
-        } : undefined
-      }))
+      return response.map(normalizeAlert)
     } catch {
       return []
     }
@@ -164,17 +136,23 @@ export const useAlerts = () => {
 
   // ============ Alert 佇列管理 ============
 
+  const isAlertKnown = (alertId: string) => (
+    processedAlerts.value.has(alertId) ||
+    currentAlert.value?.id === alertId ||
+    alertQueue.value.some(alert => alert.id === alertId)
+  )
+
   const enqueueAlerts = (alerts: AlertItem[]) => {
     const now = new Date()
     const nowTimestamp = Date.now()
     alerts.forEach(alert => {
-      const triggerTime = new Date(alert.trigger_at)
+      const triggerTime = new Date(alert.triggerAt)
       const key = alert.id
 
       if (
         triggerTime <= now &&
-        !alert.is_dismissed &&
-        !processedAlerts.value.has(key)
+        !alert.isDismissed &&
+        !isAlertKnown(key)
       ) {
         processedAlerts.value.set(key, nowTimestamp)
         alertQueue.value.push(alert)
@@ -187,20 +165,15 @@ export const useAlerts = () => {
   }
 
   const enqueueSingleAlert = (alert: AlertPayload) => {
-    const key = alert.id
+    const normalizedAlert = normalizeAlert(alert)
+    const key = normalizedAlert.id
 
-    if (processedAlerts.value.has(key)) {
+    if (isAlertKnown(key)) {
       return // 已處理過
     }
 
     processedAlerts.value.set(key, Date.now())
-    alertQueue.value.push({
-      id: alert.id,
-      message: alert.message,
-      trigger_at: alert.triggerAt,
-      is_dismissed: false,
-      diary: alert.diary
-    })
+    alertQueue.value.push(normalizedAlert)
 
     if (!currentAlert.value) {
       showNextAlert()
@@ -232,31 +205,47 @@ export const useAlerts = () => {
   // ============ 關閉 Alert ============
 
   const dismissCurrentAlert = async () => {
-    if (!currentAlert.value) return
+    if (!currentAlert.value || dismissInFlight) return false
 
     const alert = currentAlert.value
-    showAlert.value = false
+    dismissInFlight = true
 
     try {
-      // 優先使用 WebSocket
+      let persisted = false
+
+      // 優先使用 WebSocket；事件錯誤與明確 false 都走 HTTP fallback。
       if (isConnected.value) {
-        const success = await wsDismissAlert(alert.id)
-        if (!success) {
-          // WebSocket 失敗，使用 HTTP fallback
-          await runWithAuthRecovery(() => $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' }))
+        try {
+          persisted = await wsDismissAlert(alert.id)
+        } catch {
+          persisted = false
         }
-      } else {
-        // WebSocket 未連線，使用 HTTP
-        await runWithAuthRecovery(() => $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' }))
       }
+
+      if (!persisted) {
+        await runWithAuthRecovery(() => $fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'PUT' }))
+        persisted = true
+      }
+
+      // 只有 persistence 成功才允許佇列前進。
+      processedAlerts.value.delete(alert.id)
+      currentAlert.value = null
+      showAlert.value = false
+
+      if (alertQueue.value.length > 0) {
+        showNextAlert()
+      }
+
+      return true
     } catch {
+      // persistence 失敗時保留目前提醒，並解除 marker 讓後續重試可重新入列。
+      currentAlert.value = alert
+      showAlert.value = true
+      processedAlerts.value.delete(alert.id)
       toast.error(t('alert.dismissFailed'))
-    }
-
-    currentAlert.value = null
-
-    if (alertQueue.value.length > 0) {
-      showNextAlert()
+      return false
+    } finally {
+      dismissInFlight = false
     }
   }
 

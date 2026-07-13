@@ -1,11 +1,12 @@
 import { requireUser } from '~/server/utils/auth'
-import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
+import { getPartnerSide } from '~/lib/partners/policy'
 import { buildCompareDays } from '~/server/utils/partner-compare'
 import { loadCompareContext } from '~/server/utils/partner-queries'
 import { serializePartnerLink } from '~/server/utils/partner-response'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
 import { logger } from '~/lib/logger'
+import type { PartnerLinkRecord } from '~/types/partner'
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)

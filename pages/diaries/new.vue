@@ -165,9 +165,16 @@
 
 <script setup lang="ts">
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
-import { toDateTimeLocalValue } from '~/lib/dates/normalize'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
+import {
+  createEmptyDiaryAuthoringForm,
+  hydrateDiaryAuthoring,
+  hydrateTransaction,
+} from '~/lib/diary-authoring/hydration'
+import { buildDiaryAuthoringPayload } from '~/lib/diary-authoring/payload'
+import type { DiaryAuthoringForm } from '~/lib/diary-authoring/types'
+import { validateDiaryDraft } from '~/lib/diary-authoring/validation'
 
 definePageMeta({
   middleware: 'auth'
@@ -188,15 +195,7 @@ const { getTodayDateString, formatLocaleDate, getTimezone } = useTimezone()
 // Get date from URL query parameter or use today
 const initialDate = (route.query.date as string) || getTodayDateString()
 
-const form = reactive({
-  date: initialDate,
-  title: '',
-  content: '',
-  thesis: '',
-  risk: '',
-  transactions: [] as any[],
-  alerts: [] as any[]
-})
+const form = reactive<DiaryAuthoringForm>(createEmptyDiaryAuthoringForm(initialDate))
 
 // Watch for date changes and check if diary exists
 watch(() => form.date, async (newDate) => {
@@ -210,46 +209,15 @@ watch(() => form.date, async (newDate) => {
       isEditing.value = true
       existingDiaryId.value = existingDiary.id.toString()
 
-      // Load diary data into form
-      form.title = existingDiary.title
-      form.content = existingDiary.content || ''
-      form.thesis = existingDiary.thesis || ''
-      form.risk = existingDiary.risk || ''
-
-      // Load transactions
-      form.transactions = existingDiary.transactions?.map((tx: any) => ({
-        id: tx.id.toString(),
-        symbol: tx.symbol,
-        type: tx.type,
-        quantity: parseFloat(tx.quantity),
-        price: parseFloat(tx.price),
-        trade_date: toDateTimeLocalValue(tx.tradeDate),
-        notes: tx.notes ?? undefined,
-        strategy: tx.strategy ?? undefined,
-        emotion: tx.emotion ?? undefined,
-      })) || []
-
-      // Load alerts
-      form.alerts = existingDiary.alerts?.map((a: any) => ({
-        id: a.id.toString(),
-        message: a.message,
-        trigger_at: new Intl.DateTimeFormat('en-CA', {
-          timeZone: getTimezone(),
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        }).format(new Date(a.triggerAt))
-      })) || []
+      Object.assign(form, hydrateDiaryAuthoring(existingDiary, {
+        timeZone: getTimezone(),
+        fallbackDate: newDate,
+      }))
     } else {
       // No diary exists for this date, reset form for new entry
       isEditing.value = false
       existingDiaryId.value = null
-      form.title = ''
-      form.content = ''
-      form.thesis = ''
-      form.risk = ''
-      form.transactions = []
-      form.alerts = []
+      Object.assign(form, createEmptyDiaryAuthoringForm(newDate))
     }
   } catch (error: any) {
     if (isAuthSessionError(error)) return
@@ -272,7 +240,7 @@ const addAlert = () => {
   })
 }
 
-const getRecurringDescription = (mode: string) => {
+const getRecurringDescription = (mode?: string) => {
   if (mode === 'WEEK') return '每個工作日提醒，直到本週五'
   if (mode === 'MONTH') return '每個工作日提醒，直到本月底'
   return '僅提醒一次'
@@ -284,19 +252,15 @@ const removeAlert = (index: number) => {
 
 // Copy transactions from latest diary
 const copyFromLatest = async () => {
-  const toast = useToast()
   loadingLatest.value = true
   try {
     const latest = await runWithAuthRecovery(() => $fetch<any>('/api/transactions/latest'))
 
     if (latest && latest.transactions && latest.transactions.length > 0) {
       // Add transactions to form
-      const newTransactions = latest.transactions.map((tx: any) => ({
-        symbol: tx.symbol.toUpperCase(),
-        type: tx.type,
-        quantity: parseFloat(tx.quantity),
-        price: parseFloat(tx.price),
-        trade_date: getTodayDateString() // Use today's date in user's timezone
+      const newTransactions = latest.transactions.map((tx: any) => hydrateTransaction({
+        ...tx,
+        trade_date: `${getTodayDateString()}T12:00:00`,
       }))
 
       // Append to existing transactions or replace if empty
@@ -321,76 +285,23 @@ const copyFromLatest = async () => {
   }
 }
 
-// Validate transactions before saving
-const validateTransactions = (): string | null => {
-  const holdings = new Map<string, number>()
-
-  for (const tx of form.transactions) {
-    if (!tx.symbol?.trim()) continue
-
-    const symbol = tx.symbol.trim() // Already uppercase from input
-    const current = holdings.get(symbol) || 0
-
-    if (tx.type === 'BUY') {
-      holdings.set(symbol, current + (tx.quantity || 0))
-    } else if (tx.type === 'SELL') {
-      const available = holdings.get(symbol) || 0
-      if (available <= 0) {
-        return `股票 ${symbol} 沒有持股可賣，請先添加買入記錄`
-      }
-      if ((tx.quantity || 0) > available) {
-        return `股票 ${symbol} 賣出數量 (${tx.quantity}) 超過持股數量 (${available})`
-      }
-      holdings.set(symbol, available - (tx.quantity || 0))
-    }
-  }
-
-  return null
-}
-
 const saveDiary = async () => {
-  const toast = useToast()
-
   if (!form.title) {
     toast.error('請輸入標題')
     return
   }
 
-  // Validate transactions
-  const validationError = validateTransactions()
+  // No baseline is loaded on this page. The client may provide UX hints only;
+  // it must not treat the current table as the whole portfolio.
+  const validationError = validateDiaryDraft(form.transactions, { available: false })
   if (validationError) {
-    toast.error('交易記錄驗證失敗：' + validationError)
+    toast.error('交易記錄驗證失敗：' + validationError.message)
     return
   }
 
   saving.value = true
   try {
-    // Store date-only fields at UTC noon for timezone-stable day semantics
-    const toApiDayNoon = (dateStr: string) => {
-      return `${dateStr}T12:00:00.000Z`
-    }
-
-    // Keep transaction datetime precision
-    const toApiDateTime = (dateTimeStr: string) => {
-      return new Date(dateTimeStr).toISOString()
-    }
-
-    const payload = {
-      title: form.title,
-      content: form.content,
-      thesis: form.thesis || undefined,
-      risk: form.risk || undefined,
-      date: toApiDayNoon(form.date),
-      transactions: form.transactions.map(t => ({
-        ...t,
-        trade_date: toApiDateTime(t.trade_date)
-      })),
-      alerts: form.alerts.map(a => ({
-        ...a,
-        trigger_at: toApiDayNoon(a.trigger_at),
-        recurring_mode: a.recurring_mode || undefined
-      }))
-    }
+    const payload = buildDiaryAuthoringPayload(form)
 
     if (isEditing.value && existingDiaryId.value) {
       // Update existing diary
@@ -403,7 +314,7 @@ const saveDiary = async () => {
       toast.success('日記更新成功！')
     } else {
       // Create new diary
-      const newDiary = await runWithAuthRecovery(async () => {
+      await runWithAuthRecovery(async () => {
         return await $fetch('/api/diaries', {
           method: 'POST',
           body: payload

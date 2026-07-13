@@ -1,5 +1,6 @@
 import { attachDiaryTags } from '~/server/utils/diary-response'
-import { getPartnerSide, type PartnerLinkRecord } from '~/server/utils/partner'
+import { getPartnerSide } from '~/lib/partners/policy'
+import type { PartnerLinkRecord } from '~/types/partner'
 import type { Diary } from '~/types/diary'
 
 export function serializeDiaryForPartnerView<T extends Diary>(diary: T | null) {
@@ -24,6 +25,7 @@ export function serializePartnerLink(link: PartnerLinkRecord, currentUserId: str
       email: side.partner.email,
       name: side.partner.name,
     },
+    status: side.status,
     selfSharesDiaries: side.selfSharesDiaries,
     partnerSharesDiaries: side.partnerSharesDiaries,
     selfSharesStockNotes: side.selfSharesStockNotes,

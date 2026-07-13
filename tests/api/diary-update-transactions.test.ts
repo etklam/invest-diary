@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockReadBody } from '../vi-setup'
 
 const mockDiaryFindFirst = vi.fn()
+const mockTransactionFindMany = vi.fn()
 const mockDiaryUpdate = vi.fn()
 const mockTransactionDeleteMany = vi.fn()
 const mockTransactionUpdateMany = vi.fn()
@@ -19,6 +20,9 @@ vi.mock('~/lib/prisma', () => ({
   default: {
     diary: {
       findFirst: mockDiaryFindFirst,
+    },
+    transaction: {
+      findMany: mockTransactionFindMany,
     },
     $transaction: mockPrismaTransaction,
   },
@@ -45,6 +49,7 @@ describe('PUT /api/diaries/:id transaction diff upsert', () => {
     vi.clearAllMocks()
     mockParsePositiveBigIntParam.mockReturnValue(12n)
     mockDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n })
+    mockTransactionFindMany.mockResolvedValue([])
     mockTransactionUpdateMany.mockResolvedValue({ count: 1 })
     mockDiaryUpdate.mockResolvedValue({
       id: 12n,
@@ -87,7 +92,7 @@ describe('PUT /api/diaries/:id transaction diff upsert', () => {
     })
     expect(mockTransactionUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: 100n, diaryId: 12n },
-      data: expect.objectContaining({ symbol: 'AAPL' }),
+      data: expect.objectContaining({ symbol: 'AAPL', userId: 1n }),
     }))
     expect(mockTransactionCreate).not.toHaveBeenCalled()
   })
@@ -113,7 +118,7 @@ describe('PUT /api/diaries/:id transaction diff upsert', () => {
       },
     })
     expect(mockTransactionCreate).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ symbol: 'MSFT', diaryId: 12n }),
+      data: expect.objectContaining({ symbol: 'MSFT', diaryId: 12n, userId: 1n }),
     }))
   })
 

@@ -1,0 +1,119 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const mockTransactionFindMany = vi.fn()
+
+vi.mock('~/lib/prisma', () => ({
+  default: {
+    transaction: {
+      findMany: mockTransactionFindMany,
+    },
+  },
+}))
+
+const BASE_SELECT = {
+  id: true,
+  symbol: true,
+  type: true,
+  quantity: true,
+  price: true,
+  tradeDate: true,
+}
+
+const STABLE_ORDER = [{ tradeDate: 'asc' }, { id: 'asc' }]
+
+function decimal(value: number) {
+  return { toNumber: () => value }
+}
+
+describe('server/utils/transaction-read', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('reads null/mismatch copy rows through diary ownership and maps scalar wrappers', async () => {
+    mockTransactionFindMany.mockResolvedValue([
+      {
+        id: 20n,
+        userId: null,
+        symbol: ' aapl ',
+        type: 'BUY',
+        quantity: decimal(2.5),
+        price: decimal(100),
+        tradeDate: new Date('2026-01-01'),
+      },
+      {
+        id: 21n,
+        userId: 999n,
+        symbol: 'AAPL',
+        type: 'SELL',
+        quantity: decimal(1),
+        price: decimal(120),
+        tradeDate: new Date('2026-01-02'),
+      },
+    ])
+
+    const { readPortfolioTransactions } = await import('~/server/utils/transaction-read')
+    const rows = await readPortfolioTransactions(7n)
+
+    expect(rows).toMatchObject([
+      { id: '20', symbol: 'AAPL', quantity: 2.5, price: 100 },
+      { id: '21', symbol: 'AAPL', quantity: 1, price: 120 },
+    ])
+    expect(mockTransactionFindMany).toHaveBeenCalledWith({
+      where: { diary: { userId: 7n } },
+      select: BASE_SELECT,
+      orderBy: STABLE_ORDER,
+    })
+
+    const query = mockTransactionFindMany.mock.calls[0][0]
+    expect(query.where).not.toHaveProperty('OR')
+    expect(query.where).not.toHaveProperty('userId')
+    expect(query.select).not.toHaveProperty('userId')
+  })
+
+  it('keeps performance strategy/emotion projection while preserving the same ownership set', async () => {
+    mockTransactionFindMany.mockResolvedValue([])
+
+    const { readPerformanceTransactions } = await import('~/server/utils/transaction-read')
+    await readPerformanceTransactions(7n, null)
+
+    expect(mockTransactionFindMany).toHaveBeenCalledWith({
+      where: { diary: { userId: 7n } },
+      select: { ...BASE_SELECT, strategy: true, emotion: true },
+      orderBy: STABLE_ORDER,
+    })
+  })
+
+  it('applies normalized symbol filter alongside ownership, never instead of ownership', async () => {
+    mockTransactionFindMany.mockResolvedValue([])
+
+    const { readPerformanceTransactions } = await import('~/server/utils/transaction-read')
+    await readPerformanceTransactions(7n, ' aapl ')
+
+    expect(mockTransactionFindMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { diary: { userId: 7n }, symbol: 'AAPL' },
+    }))
+    const query = mockTransactionFindMany.mock.calls[0][0]
+    expect(query.where).not.toHaveProperty('OR')
+    expect(query.where).not.toHaveProperty('userId')
+  })
+
+  it('portfolio and recent reads share the same base ownership collection and ordering', async () => {
+    mockTransactionFindMany.mockResolvedValue([])
+
+    const {
+      readPortfolioTransactions,
+      readRecentTradeTransactions,
+    } = await import('~/server/utils/transaction-read')
+
+    await readPortfolioTransactions(7n)
+    await readRecentTradeTransactions(7n)
+
+    expect(mockTransactionFindMany).toHaveBeenCalledTimes(2)
+    for (const [query] of mockTransactionFindMany.mock.calls) {
+      expect(query.where).toEqual({ diary: { userId: 7n } })
+      expect(query.select).toEqual(BASE_SELECT)
+      expect(query.orderBy).toEqual(STABLE_ORDER)
+    }
+  })
+})
