@@ -506,6 +506,8 @@ definePageMeta({
             <div
               v-for="year in result.yearlyProjection"
               :key="year.year"
+              role="group"
+              :aria-label="t('tools.financialFreedom.yearN', { n: year.year })"
               class="min-w-0 border border-dt-border rounded-lg bg-dt-surface-raised p-4"
               :class="year.isFreed ? 'border-dt-accent bg-dt-surface' : ''"
             >
@@ -525,17 +527,17 @@ definePageMeta({
               </div>
 
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+                <div role="group" :aria-label="t('tools.financialFreedom.contribution')" class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
                   <span class="data-label">{{ t('tools.financialFreedom.contribution') }}</span>
                   <span class="data-value">+{{ formatCompactValue(year.contribution) }}</span>
                 </div>
-                <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+                <div role="group" :aria-label="t('tools.financialFreedom.returns')" class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
                   <span class="data-label">{{ t('tools.financialFreedom.returns') }}</span>
                   <span class="data-value" :class="year.returns >= 0 ? 'text-dt-success' : 'text-dt-danger'">
                     {{ year.returns >= 0 ? '+' : '' }}{{ formatCompactValue(year.returns) }}
                   </span>
                 </div>
-                <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
+                <div role="group" :aria-label="t('tools.financialFreedom.endingAssets')" class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
                   <span class="data-label">{{ t('tools.financialFreedom.endingAssets') }}</span>
                   <span class="data-value">{{ formatCompactValue(year.endingAssets) }}</span>
                 </div>

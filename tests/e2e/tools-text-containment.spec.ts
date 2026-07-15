@@ -62,11 +62,11 @@ test('financial freedom yearly projection stats keep long English labels inside 
   await numericInputs.nth(2).fill('20000')
   await numericInputs.nth(3).fill('8')
 
-  const firstProjectionRow = page.locator('.projection-row').first()
+  const firstProjectionRow = page.getByRole('group', { name: /^Year 1(?:\s|$)/ })
   await expect(firstProjectionRow).toBeVisible()
 
   await expectNoHorizontalOverflow(
-    firstProjectionRow.locator('.projection-stat'),
+    firstProjectionRow.getByRole('group', { name: /^(Contribution|Returns|Ending Assets)$/ }),
     'financial freedom yearly projection stats',
   )
 })
