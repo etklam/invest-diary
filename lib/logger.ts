@@ -143,4 +143,5 @@ export const logger = {
   stocks: createLogger('Stocks'),
   etf: createLogger('ETF'),
   telegram: createLogger('TG'),
+  sec: createLogger('SEC'),
 }

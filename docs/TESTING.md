@@ -154,6 +154,8 @@ Examples: `recurring-alerts`, `blog`, `position-state`, `format`, `utils`, `mark
 
 **`tests/e2e/`** — 7 Playwright specs + helpers. See section 9.
 
+SEC Filings Downloader tests use only local fixtures under `tests/fixtures/sec/` and mocked server/browser routes. Never add a test that calls `sec.gov` or `data.sec.gov`; queue, retry, stale-cache, download, and ZIP behavior must be exercised through deterministic mocked responses.
+
 ---
 
 ## 4. What should be tested as behavior

@@ -230,7 +230,8 @@
         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <NuxtLink v-for="(tool, key, i) in tools" :key="key" :to="tool.link" class="tool-card reveal group" :class="`reveal-${(i%4)+1}`">
             <div class="relative overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900 aspect-video">
-              <img :src="tool.img" :alt="$t(`howToUse.tools.${key}.title`)" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
+              <img v-if="tool.img" :src="tool.img" :alt="$t(`howToUse.tools.${key}.title`)" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
+              <div v-else class="grid h-full place-items-center bg-dt-surface"><Icon name="heroicons:document-arrow-down" class="h-16 w-16 text-dt-primary" /></div>
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                 <span class="text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                   {{ $t('blog.readMore') }}
@@ -313,7 +314,8 @@ const tools = {
   financialFreedom: { link: '/tools/financial-freedom', img: '/screenshots/how-to-use-features/11-financial-freedom.png', kicker: 'nav.financialFreedom' },
   relativeValue: { link: '/tools/relative-value', img: '/screenshots/how-to-use-features/12-relative-value.png', kicker: 'nav.relativeValue' },
   etf: { link: '/tools/market-rotation', img: '/screenshots/how-to-use-features/13-etf.png', kicker: 'nav.marketRotation' },
-  seasonality: { link: '/tools/seasonality', img: '/screenshots/how-to-use-features/14-seasonality.png', kicker: 'nav.seasonality' }
+  seasonality: { link: '/tools/seasonality', img: '/screenshots/how-to-use-features/14-seasonality.png', kicker: 'nav.seasonality' },
+  secFilings: { link: '/tools/sec-filings', img: null, kicker: 'nav.secFilings' }
 }
 
 useHead(() => ({

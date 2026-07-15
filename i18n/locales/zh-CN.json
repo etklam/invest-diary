@@ -64,6 +64,7 @@
     "financialFreedom": "财务自由计算器",
     "marketRotation": "市场轮动监控",
     "relativeValue": "相对价值计算器",
+    "secFilings": "SEC 申报文件下载器",
     "partners": "合作伙伴",
     "reviewQueue": "复盘队列",
     "tradePlans": "交易计划",
@@ -457,6 +458,10 @@
       "seasonality": {
         "title": "季节性分析",
         "description": "用历史数据看哪些月份的胜率最高、哪些月份该保守。不保证未来，但能帮你建立参考基准。"
+      },
+      "secFilings": {
+        "title": "SEC 申报文件下载器",
+        "description": "搜索 EDGAR 官方申报，下载原始文件或 ZIP 压缩包。"
       }
     },
     "cta": {
@@ -776,7 +781,8 @@
       "stock_note_access_denied": "无法修改 agent 创建的股票笔记",
       "auth_forbidden": "访问被拒绝",
       "csrf_failed": "CSRF 令牌验证失败",
-      "user_self_modification": "无法修改自己的账号"
+      "user_self_modification": "无法修改自己的账号",
+      "sec_config_missing": "尚未设置 SEC 访问信息", "sec_validation_error": "SEC 申报文件请求无效", "sec_company_not_found": "找不到 SEC 公司", "sec_filing_not_found": "找不到 SEC 申报文件", "sec_document_not_found": "找不到 SEC 文件", "sec_upstream_rate_limited": "SEC EDGAR 暂时限制请求频率", "sec_upstream_unavailable": "SEC EDGAR 暂时无法使用", "sec_upstream_invalid_response": "SEC EDGAR 返回无效数据", "sec_queue_full": "SEC 请求队列忙碌中", "sec_unsafe_redirect": "SEC 返回了不安全的重定向", "sec_file_too_large": "此 SEC 文件超过下载大小限制", "sec_package_limit_exceeded": "此申报文件压缩包超过限制", "sec_rate_limited": "SEC 申报文件请求过多，请稍后再试"
     }
   },
   "tags": {
@@ -2152,6 +2158,16 @@
       "balanced": "均衡",
       "overweight": "超配"
     }
+  },
+  "secFilings": {
+    "kicker": "SEC EDGAR 官方文件", "title": "SEC 申报文件下载器", "subtitle": "使用股票代码、公司名称或 CIK 搜索，浏览近期与历史申报，查看所有提交文件并下载 SEC 原始文件。",
+    "searchLabel": "搜索公司", "searchPlaceholder": "AAPL、Apple 或 0000320193", "selectedCompany": "已选公司",
+    "filedFrom": "申报日起", "filedTo": "申报日至", "periodFrom": "报告期间起", "amendments": "修正申报", "include": "包含", "exclude": "排除", "only": "仅修正申报", "applyFilters": "应用筛选",
+    "select": "选择", "form": "表格", "filingDate": "申报日期", "reportPeriod": "报告期间", "accession": "申报编号", "open": "打开申报",
+    "selectedCount": "已选 {count}／10 份申报", "primaryDocuments": "主要文件", "completeSubmissions": "完整申报 TXT", "batchDownload": "下载批量 ZIP",
+    "loading": "正在加载 SEC 申报数据…", "emptyFilings": "没有符合筛选条件的申报。", "initial": "先搜索公司，再浏览其 SEC 申报文件。", "stale": "SEC 暂时无法使用，目前显示最近的缓存数据。", "previous": "上一页", "next": "下一页",
+    "back": "返回 SEC 申报搜索", "detailSubtitle": "此 SEC EDGAR 申报随附的官方原始文件。", "amendment": "修正申报", "filed": "申报于", "downloadZip": "下载申报 ZIP", "download": "下载", "noPdf": "此申报未包含原始 PDF 附件，系统不会自行生成 PDF。", "documents": "提交文件（{count}）",
+    "documentClasses": { "primary": "主要文件", "complete-submission": "完整 TXT", "xbrl": "XBRL", "exhibit": "附件", "pdf": "原始 PDF", "other": "其他" }
   },
   "betaCockpit": {
     "title": "Beta 驾驶舱",

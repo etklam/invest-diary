@@ -94,6 +94,7 @@ NUXT_PUBLIC_SITE_URL="https://your-domain.com"
 NUXT_PUBLIC_TELEGRAM_BOT_USERNAME="your_bot_username"
 TELEGRAM_BOT_TOKEN="123456789:ABCdef..."
 TELEGRAM_WEBHOOK_SECRET="use-a-random-secret-with-letters-numbers-underscore-or-dash"
+SEC_USER_AGENT="Trade Basic SEC Filings monitored-contact@example.com"
 ```
 
 ### 3. 生成安全的 JWT_SECRET

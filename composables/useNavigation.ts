@@ -57,6 +57,7 @@ export const useNavigation = () => {
       { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
       { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
       { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
+      { label: t('nav.secFilings'), to: '/tools/sec-filings', icon: 'document-arrow-down' },
       { label: t('nav.marketRotation'), to: '/tools/market-rotation', icon: 'chart-bar' },
       { label: t('nav.relativeValue'), to: '/tools/relative-value', icon: 'chart-bar' }
     ]
@@ -116,6 +117,7 @@ export const useNavigation = () => {
           { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
           { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
           { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
+          { label: t('nav.secFilings'), to: '/tools/sec-filings', icon: 'document-arrow-down' },
           { label: t('nav.discipline'), to: '/discipline', icon: 'light-bulb' },
         ],
       },

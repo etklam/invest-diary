@@ -5,6 +5,7 @@ const toolPages = [
   '/tools/seasonality',
   '/tools/market-rotation',
   '/tools/financial-freedom',
+  '/tools/sec-filings',
 ]
 
 for (const path of toolPages) {

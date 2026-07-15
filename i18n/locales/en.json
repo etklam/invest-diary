@@ -64,6 +64,7 @@
     "financialFreedom": "Financial Freedom Calculator",
     "marketRotation": "Market Rotation Monitor",
     "relativeValue": "Relative Value Calculator",
+    "secFilings": "SEC Filings Downloader",
     "partners": "Partners",
     "reviewQueue": "Review Queue",
     "tradePlans": "Trade Plans",
@@ -652,7 +653,20 @@
       "stock_note_access_denied": "Cannot modify agent-created stock notes",
       "auth_forbidden": "Access forbidden",
       "csrf_failed": "CSRF token validation failed",
-      "user_self_modification": "Cannot modify your own account"
+      "user_self_modification": "Cannot modify your own account",
+      "sec_config_missing": "SEC access is not configured",
+      "sec_validation_error": "Invalid SEC filings request",
+      "sec_company_not_found": "SEC company not found",
+      "sec_filing_not_found": "SEC filing not found",
+      "sec_document_not_found": "SEC document not found",
+      "sec_upstream_rate_limited": "SEC EDGAR is temporarily rate limited",
+      "sec_upstream_unavailable": "SEC EDGAR is temporarily unavailable",
+      "sec_upstream_invalid_response": "SEC EDGAR returned an invalid response",
+      "sec_queue_full": "SEC request queue is busy",
+      "sec_unsafe_redirect": "SEC returned an unsafe redirect",
+      "sec_file_too_large": "This SEC document exceeds the download limit",
+      "sec_package_limit_exceeded": "This filing package exceeds the ZIP limit",
+      "sec_rate_limited": "Too many SEC filing requests. Please try again later"
     }
   },
   "tags": {
@@ -985,6 +999,10 @@
       "seasonality": {
         "title": "Seasonality",
         "description": "Use historical data to see which months have the highest win rates and which call for caution. Not a guarantee — just a reference baseline."
+      },
+      "secFilings": {
+        "title": "SEC Filings Downloader",
+        "description": "Search official EDGAR filings and download original documents or ZIP packages."
       }
     },
     "cta": {
@@ -2152,6 +2170,16 @@
       "balanced": "Balanced",
       "overweight": "Overweight"
     }
+  },
+  "secFilings": {
+    "kicker": "Official SEC EDGAR documents", "title": "SEC Filings Downloader", "subtitle": "Search by ticker, company name, or CIK. Browse recent and historical filings, inspect every submitted document, and download original SEC files.",
+    "searchLabel": "Company search", "searchPlaceholder": "AAPL, Apple, or 0000320193", "selectedCompany": "Selected company",
+    "filedFrom": "Filed from", "filedTo": "Filed to", "periodFrom": "Reporting period from", "amendments": "Amendments", "include": "Include", "exclude": "Exclude", "only": "Only amendments", "applyFilters": "Apply filters",
+    "select": "Select", "form": "Form", "filingDate": "Filing date", "reportPeriod": "Reporting period", "accession": "Accession", "open": "Open filing",
+    "selectedCount": "{count} of 10 filings selected", "primaryDocuments": "Primary documents", "completeSubmissions": "Complete submissions", "batchDownload": "Download batch ZIP",
+    "loading": "Loading SEC filings…", "emptyFilings": "No filings match these filters.", "initial": "Search for a company to browse its SEC filings.", "stale": "SEC is temporarily unavailable. Showing the latest cached data.", "previous": "Previous", "next": "Next",
+    "back": "Back to SEC filings", "detailSubtitle": "Official documents submitted with this SEC EDGAR filing.", "amendment": "Amendment", "filed": "Filed", "downloadZip": "Download filing ZIP", "download": "Download", "noPdf": "This filing does not include an original PDF attachment. No PDF has been generated.", "documents": "Submitted documents ({count})",
+    "documentClasses": { "primary": "Primary", "complete-submission": "Complete TXT", "xbrl": "XBRL", "exhibit": "Exhibit", "pdf": "Original PDF", "other": "Other" }
   },
   "betaCockpit": {
     "title": "Beta Cockpit",

@@ -205,6 +205,7 @@ export default defineNuxtConfig({
     jwtSecret: process.env.JWT_SECRET,
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || '',
     telegramWebhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || '',
+    secUserAgent: process.env.SEC_USER_AGENT || '',
 
     // Public to both client and server
     public: {
@@ -239,6 +240,11 @@ export default defineNuxtConfig({
         loc: '/how-to-use',
         changefreq: 'monthly',
         priority: 0.6
+      },
+      {
+        loc: '/tools/sec-filings',
+        changefreq: 'weekly',
+        priority: 0.7
       }
     ],
     sources: ['/api/__sitemap__/blog-urls']

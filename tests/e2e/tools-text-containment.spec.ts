@@ -70,3 +70,28 @@ test('financial freedom yearly projection stats keep long English labels inside 
     'financial freedom yearly projection stats',
   )
 })
+
+test('SEC company search keeps long issuer names inside the results panel', async ({ page }) => {
+  await setEnglishLocale(page)
+  await page.route(/\/api\/tools\/sec-filings\/companies(?:\?.*)?$/, route => route.fulfill({
+    json: {
+      data: [{
+        cik: '0001234567',
+        name: 'International Consolidated Advanced Technologies and Financial Holdings Corporation',
+        tickers: ['ICATFH'],
+        exchanges: ['Nasdaq'],
+        matchedBy: 'name',
+      }],
+      meta: { stale: false, cacheStatus: 'miss', fetchedAt: '2026-01-01T00:00:00.000Z' },
+    },
+  }))
+
+  await page.goto('/tools/sec-filings', { waitUntil: 'load' })
+  const search = page.getByLabel('Company search')
+  await expect(search).toHaveAttribute('data-hydrated', 'true')
+  await search.fill('International')
+
+  const result = page.getByRole('button', { name: /International Consolidated/ })
+  await expect(result).toBeVisible()
+  await expectNoHorizontalOverflow(result, 'SEC company search result')
+})

@@ -73,6 +73,11 @@ export const rateLimiters = {
   authPasswordIp: makeLimiter('auth-password-ip', authRateLimits.password),
   // Auth: password change identity (user)
   authPasswordIdentity: makeLimiter('auth-password-user', authRateLimits.password),
+
+  secMetadata: (identifier: string) => consumeRateLimit('sec-metadata', identifier, 60, 60),
+  secDownload: (identifier: string) => consumeRateLimit('sec-download', identifier, 20, 60),
+  secPackage: (identifier: string) => consumeRateLimit('sec-package', identifier, 5, 600),
+  secBatch: (identifier: string) => consumeRateLimit('sec-batch', identifier, 3, 600),
 }
 
 /**

@@ -135,6 +135,7 @@ describe('useNavigation composable', () => {
         '/tools/position-sizing',
         '/tools/financial-freedom',
         '/tools/seasonality',
+        '/tools/sec-filings',
         '/discipline',
       ])
       expect(paths).not.toContain('/tools/market-rotation')

@@ -64,6 +64,7 @@
     "financialFreedom": "財務自由計算機",
     "marketRotation": "市場輪動監控",
     "relativeValue": "相對價值計算器",
+    "secFilings": "SEC 申報文件下載器",
     "partners": "合作夥伴",
     "reviewQueue": "複盤佇列",
     "tradePlans": "交易計畫",
@@ -652,7 +653,8 @@
       "stock_note_access_denied": "無法修改 agent 建立的股票筆記",
       "auth_forbidden": "存取被拒絕",
       "csrf_failed": "CSRF 權杖驗證失敗",
-      "user_self_modification": "無法修改自己的帳號"
+      "user_self_modification": "無法修改自己的帳號",
+      "sec_config_missing": "尚未設定 SEC 存取資訊", "sec_validation_error": "SEC 申報文件請求無效", "sec_company_not_found": "找不到 SEC 公司", "sec_filing_not_found": "找不到 SEC 申報文件", "sec_document_not_found": "找不到 SEC 文件", "sec_upstream_rate_limited": "SEC EDGAR 暫時限制請求頻率", "sec_upstream_unavailable": "SEC EDGAR 暫時無法使用", "sec_upstream_invalid_response": "SEC EDGAR 回傳無效資料", "sec_queue_full": "SEC 請求佇列忙碌中", "sec_unsafe_redirect": "SEC 回傳了不安全的重新導向", "sec_file_too_large": "此 SEC 文件超過下載大小限制", "sec_package_limit_exceeded": "此申報文件壓縮包超過限制", "sec_rate_limited": "SEC 申報文件請求過多，請稍後再試"
     }
   },
   "tags": {
@@ -985,6 +987,10 @@
       "seasonality": {
         "title": "季節性分析",
         "description": "用歷史數據看哪些月份的勝率最高、哪些月份該保守。不保證未來，但能幫你建立參考基準。"
+      },
+      "secFilings": {
+        "title": "SEC 申報文件下載器",
+        "description": "搜尋 EDGAR 官方申報，下載原始文件或 ZIP 壓縮包。"
       }
     },
     "cta": {
@@ -2152,6 +2158,16 @@
       "balanced": "均衡",
       "overweight": "超配"
     }
+  },
+  "secFilings": {
+    "kicker": "SEC EDGAR 官方文件", "title": "SEC 申報文件下載器", "subtitle": "使用股票代號、公司名稱或 CIK 搜尋，瀏覽近期與歷史申報，查看所有提交文件並下載 SEC 原始檔案。",
+    "searchLabel": "搜尋公司", "searchPlaceholder": "AAPL、Apple 或 0000320193", "selectedCompany": "已選公司",
+    "filedFrom": "申報日起", "filedTo": "申報日至", "periodFrom": "報告期間起", "amendments": "修正申報", "include": "包含", "exclude": "排除", "only": "僅修正申報", "applyFilters": "套用篩選",
+    "select": "選取", "form": "表格", "filingDate": "申報日期", "reportPeriod": "報告期間", "accession": "申報編號", "open": "開啟申報",
+    "selectedCount": "已選 {count}／10 份申報", "primaryDocuments": "主要文件", "completeSubmissions": "完整申報 TXT", "batchDownload": "下載批次 ZIP",
+    "loading": "正在載入 SEC 申報資料…", "emptyFilings": "沒有符合篩選條件的申報。", "initial": "先搜尋公司，再瀏覽其 SEC 申報文件。", "stale": "SEC 暫時無法使用，目前顯示最近的快取資料。", "previous": "上一頁", "next": "下一頁",
+    "back": "返回 SEC 申報搜尋", "detailSubtitle": "此 SEC EDGAR 申報隨附的官方原始文件。", "amendment": "修正申報", "filed": "申報於", "downloadZip": "下載申報 ZIP", "download": "下載", "noPdf": "此申報未包含原始 PDF 附件，系統不會自行產生 PDF。", "documents": "提交文件（{count}）",
+    "documentClasses": { "primary": "主要文件", "complete-submission": "完整 TXT", "xbrl": "XBRL", "exhibit": "附件", "pdf": "原始 PDF", "other": "其他" }
   },
   "betaCockpit": {
     "title": "Beta 駕駛艙",

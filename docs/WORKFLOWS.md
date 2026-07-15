@@ -688,7 +688,31 @@ intake works but there are known bugs.
 
 ---
 
-## 10. Testing Workflow
+## 10. SEC Filings Downloader Workflow
+
+`/tools/sec-filings` is a public, read-only SEC EDGAR research tool. Browser code never calls SEC directly. Company search, submissions history, filing indexes, individual documents, and ZIP packages flow through `/api/tools/sec-filings/**` and the isolated modules in `server/utils/sec-edgar/`.
+
+The client constructs URLs only from validated CIKs, accession numbers, historical segment names, and document basenames. It allows only `www.sec.gov` and `data.sec.gov`, applies a process-local queue below the SEC fair-access ceiling, retries bounded transient failures, and can serve explicitly marked stale metadata. Document bodies are streamed; ZIP creation stages bounded files in a request-scoped temporary directory that is always removed.
+
+Required deployment setting: `SEC_USER_AGENT`, containing an application name and monitored contact email. Tests use `tests/fixtures/sec/` and mocked fetch only; live SEC calls are forbidden.
+
+### Main files
+
+- UI: `pages/tools/sec-filings/`, `components/sec-filings/`, `composables/useSecFilingsTool.ts`
+- API: `server/api/tools/sec-filings/`
+- Server modules: `server/utils/sec-edgar/`
+- Shared types: `types/sec-filings.ts`
+- Contract: `docs/plans/active/sec-filings-downloader.md`
+
+### Related tests
+
+- `tests/unit/server/sec-edgar-*.test.ts`
+- `tests/api/sec-filings.test.ts`
+- `tests/e2e/sec-filings.spec.ts`
+
+---
+
+## 11. Testing Workflow
 
 Vitest is the primary runner with `happy-dom` environment and setup file
 [`tests/vi-setup.ts`](../tests/vi-setup.ts). Tests live in three buckets:
@@ -742,7 +766,7 @@ paths (see [`vitest.config.ts`](../vitest.config.ts):14). Presentational
 
 ---
 
-## 11. Deployment / Operations Workflow
+## 12. Deployment / Operations Workflow
 
 Container deploy is Docker-first. The image (`Dockerfile`,
 multi-stage) runs `docker-entrypoint.sh`, which waits for MySQL, optionally

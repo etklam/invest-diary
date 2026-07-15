@@ -248,6 +248,13 @@ export const Errors = {
     message: message ?? 'External service unavailable',
   }),
 
+  secProvider: (code: ErrorCode, statusCode: number, message: string, details?: ErrorDetail[]) => new AppError({
+    statusCode,
+    code,
+    message,
+    details,
+  }),
+
   // User
   accountSelfModification: (action: string) => new AppError({
     statusCode: 400,
