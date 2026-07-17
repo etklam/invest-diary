@@ -12,7 +12,7 @@ const getIconName = (icon: string) => `heroicons:${icon}`
     <div class="mx-auto flex h-16 max-w-md items-center justify-around px-2">
       <NuxtLink
         v-for="item in navigationItems"
-        :key="item.to"
+        :key="item.id || `${item.icon}-${item.to}`"
         :to="item.to"
         class="flex min-h-16 flex-1 flex-col items-center justify-center gap-1 transition-colors duration-200"
         :style="isActive(item.to) ? 'color: var(--color-primary);' : 'color: var(--color-text-soft);'"

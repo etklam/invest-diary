@@ -134,7 +134,7 @@
 
     <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
       <button
-        @click="showQuickModal = true"
+        @click="openQuickDiary()"
         class="fin-button-primary"
       >
         <Icon name="heroicons:bolt" class="mr-2 h-5 w-5" />
@@ -150,7 +150,8 @@
 
     <QuickDiaryModal
       :show="showQuickModal"
-      @close="showQuickModal = false"
+      :context="quickDiaryContext"
+      @close="closeQuickDiary"
       @created="fetchDiaries"
     />
   </div>
@@ -159,7 +160,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useCalendar } from '~/composables/useCalendar'
+import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useI18n } from '#imports'
+import type { QuickDiaryContext } from '~/types/quicknote'
 
 definePageMeta({
   middleware: 'auth'
@@ -187,6 +190,21 @@ const {
 } = useCalendar()
 
 const showQuickModal = ref(false)
+const quickDiaryContext = ref<QuickDiaryContext | null>(null)
+
+const openQuickDiary = (date?: string) => {
+  quickDiaryContext.value = {
+    source: 'calendar',
+    ...(date ? { date } : {}),
+  }
+  showQuickModal.value = true
+}
+
+const closeQuickDiary = () => {
+  showQuickModal.value = false
+  // Clear date/source so the next open does not inherit the previous day
+  quickDiaryContext.value = null
+}
 
 const handleDateClick = (day: number) => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
@@ -195,9 +213,15 @@ const handleDateClick = (day: number) => {
   if (diary) {
     navigateTo(`/diaries/${diary.id}`)
   } else {
-    navigateTo(`/diaries/new?date=${dateStr}`)
+    openQuickDiary(dateStr)
   }
 }
+
+// Refresh when floating FAB or other surfaces create/append a diary
+const { onDiaryMutation } = useDiaryMutation()
+onDiaryMutation(() => {
+  fetchDiaries()
+})
 </script>
 
 <style scoped>

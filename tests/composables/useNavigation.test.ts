@@ -263,8 +263,34 @@ describe('useNavigation composable', () => {
     })
   })
 
-  describe('mobile bottom nav (must stay unchanged by desktop refactor)', () => {
-    it('exposes the same five routes for authenticated users', async () => {
+  describe('homeRoute (authenticated workbench home)', () => {
+    it('points authenticated Logo/Home to /diaries', async () => {
+      vi.stubGlobal('useAuth', () => ({
+        isAuthenticated: ref(true),
+        user: ref({ role: 'USER' }),
+      }))
+
+      const { useNavigation } = await import('~/composables/useNavigation')
+      const { homeRoute } = useNavigation()
+
+      expect(homeRoute.value).toBe('/diaries')
+    })
+
+    it('points unauthenticated Logo/Home to /', async () => {
+      vi.stubGlobal('useAuth', () => ({
+        isAuthenticated: ref(false),
+        user: ref(null),
+      }))
+
+      const { useNavigation } = await import('~/composables/useNavigation')
+      const { homeRoute } = useNavigation()
+
+      expect(homeRoute.value).toBe('/')
+    })
+  })
+
+  describe('mobile bottom nav', () => {
+    it('sends authenticated Home to /diaries while keeping secondary tabs', async () => {
       vi.stubGlobal('useAuth', () => ({
         isAuthenticated: ref(true),
         user: ref({ role: 'USER' }),
@@ -274,15 +300,17 @@ describe('useNavigation composable', () => {
       const { bottomNavItems } = useNavigation()
 
       expect(bottomNavItems.value.map(i => i.to)).toEqual([
-        '/',
+        '/diaries',
         '/stocks',
         '/diaries',
         '/alerts',
         '/settings',
       ])
+      expect(bottomNavItems.value[0]?.icon).toBe('home')
+      expect(bottomNavItems.value[0]?.id).toBe('home')
     })
 
-    it('exposes the same five routes for guests (component-level gates visibility)', async () => {
+    it('keeps guest Home on /', async () => {
       vi.stubGlobal('useAuth', () => ({
         isAuthenticated: ref(false),
         user: ref(null),
@@ -298,6 +326,7 @@ describe('useNavigation composable', () => {
         '/alerts',
         '/settings',
       ])
+      expect(bottomNavItems.value[0]?.icon).toBe('home')
     })
   })
 })

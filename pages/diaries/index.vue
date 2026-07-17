@@ -35,7 +35,7 @@
       </div>
 
       <div class="hero-actions flex flex-wrap items-start gap-3 lg:w-full lg:flex-col lg:items-stretch lg:self-end lg:justify-self-end">
-        <BaseButton variant="primary" class="w-full lg:w-full" @click="showQuickModal = true">
+        <BaseButton variant="primary" class="w-full lg:w-full" @click="openQuickDiary">
           <Icon name="heroicons:bolt" class="h-5 w-5" />
           {{ $t('desk.actions.quickDiary') }}
         </BaseButton>
@@ -56,7 +56,8 @@
 
     <QuickDiaryModal
       :show="showQuickModal"
-      @close="showQuickModal = false"
+      :context="quickDiaryContext"
+      @close="closeQuickDiary"
       @created="handleDiaryCreated"
     />
 
@@ -362,6 +363,9 @@
 </template>
 
 <script setup lang="ts">
+import type { QuickDiaryContext } from '~/types/quicknote'
+import { useDiaryMutation } from '~/composables/useDiaryMutation'
+
 definePageMeta({
   middleware: 'auth'
 })
@@ -370,6 +374,17 @@ const { t } = useI18n()
 
 // Quick diary modal state
 const showQuickModal = ref(false)
+const quickDiaryContext = ref<QuickDiaryContext | null>(null)
+
+const openQuickDiary = () => {
+  quickDiaryContext.value = { source: 'diaries' }
+  showQuickModal.value = true
+}
+
+const closeQuickDiary = () => {
+  showQuickModal.value = false
+  quickDiaryContext.value = null
+}
 
 const filters = reactive({
   search: '',
@@ -401,6 +416,12 @@ const { data: apiResponse, pending, error, refresh } = await useLazyFetch('/api/
 const handleDiaryCreated = () => {
   refresh()
 }
+
+// Also refresh when floating FAB / other entry points save a diary
+const { onDiaryMutation } = useDiaryMutation()
+onDiaryMutation(() => {
+  refresh()
+})
 
 const diaryItems = computed<any[]>(() => apiResponse.value?.data ?? [])
 

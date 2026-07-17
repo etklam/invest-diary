@@ -31,7 +31,7 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
   const loadingMore = ref(false)
 
   // Initial data fetch using useLazyFetch
-  const { pending, error } = useLazyFetch<DiariesApiResponse>(
+  const { pending, error, refresh: refreshFetch } = useLazyFetch<DiariesApiResponse>(
     () => `/api/diaries?page=${page.value}&limit=${limit}`,
     {
       onResponse({ response }) {
@@ -47,6 +47,14 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
       }
     }
   )
+
+  // Reset to page 1 and re-fetch (used after Quick Diary create/append)
+  const refresh = async () => {
+    page.value = 1
+    diaries.value = []
+    pagination.value = null
+    await refreshFetch()
+  }
 
   // Check if more data available
   const hasMore = computed(() => {
@@ -174,6 +182,7 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
     groupedDiaries,
     // Methods
     loadMore,
+    refresh,
     resetFilters,
     formatDate
   }

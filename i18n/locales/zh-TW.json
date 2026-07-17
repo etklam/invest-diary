@@ -140,7 +140,8 @@
     "modal": {
       "eyebrow": "隨手筆記",
       "step2Hint": "模板只是個起點，您可以隨時調整內容使其更完整。",
-      "templateSubcopy": "選個骨架，再慢慢填入您的觀察與細節。"
+      "templateSubcopy": "選個骨架，再慢慢填入您的觀察與細節。",
+      "editorHint": "先寫內容再儲存。需要結構時可隨時更換模板。"
     },
     "page": {
       "eyebrow": "筆記空間",
@@ -286,6 +287,9 @@
     },
     "preview": "預覽",
     "success": "快速日記建立成功！",
+    "successCreate": "已建立新日誌！",
+    "successAppend": "已追加至既有日誌！",
+    "changeTemplate": "更換模板",
     "fillRequired": "請填寫必要資料"
   },
   "diary": {

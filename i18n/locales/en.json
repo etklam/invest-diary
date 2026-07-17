@@ -140,7 +140,8 @@
     "modal": {
       "eyebrow": "Quicknote Overlay",
       "step2Hint": "Templates create a draft suggestion. You can still edit freely before saving.",
-      "templateSubcopy": "Start from a template, get a structure first, then fill in the real judgment."
+      "templateSubcopy": "Start from a template, get a structure first, then fill in the real judgment.",
+      "editorHint": "Write first, then save. Switch templates anytime if you need a structure."
     },
     "page": {
       "eyebrow": "Quicknote Studio",
@@ -286,6 +287,9 @@
     },
     "preview": "Preview",
     "success": "Quick diary created successfully!",
+    "successCreate": "New diary created successfully!",
+    "successAppend": "Appended to existing diary successfully!",
+    "changeTemplate": "Change template",
     "fillRequired": "Please fill required information"
   },
   "diary": {

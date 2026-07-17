@@ -5,18 +5,20 @@ import { mockToast } from '../vi-setup'
 import QuickDiaryModal from '~/components/QuickDiaryModal.vue'
 
 const messages: Record<string, string> = {
-  'common.back': '返回',
   'common.cancel': '取消',
   'common.close': '關閉',
   'quickDiary.title': '隨手筆記',
   'quickDiary.selectTemplate': '今天想記錄些什麼？選個模板快速開始吧',
+  'quickDiary.changeTemplate': '更換模板',
   'quickDiary.modal.eyebrow': '隨手筆記',
-  'quickDiary.modal.step2Hint': '模板只是個起點，您可以隨時調整內容使其更完整。',
+  'quickDiary.modal.editorHint': '先寫內容再儲存。需要結構時可隨時更換模板。',
   'quickDiary.modal.templateSubcopy': '選個骨架，再慢慢填入您的觀察與細節。',
   'quickDiary.createDiary': '開啟新紀錄',
   'quickDiary.appendDiary': '補充到今日',
   'quickDiary.appending': '正在更新今日內容...',
   'quickDiary.success': '快速日記建立成功！',
+  'quickDiary.successCreate': '已建立新日誌！',
+  'quickDiary.successAppend': '已追加至既有日誌！',
   'quickDiary.templates.blank': '自由編輯',
   'quickDiary.templates.blankDesc': '不套模板，直接記下當下的判斷與提醒',
   'quickDiary.templates.trading': '交易日記',
@@ -78,6 +80,11 @@ const submitQuickNoteMock = vi.fn()
 const clearDraftMock = vi.fn()
 const setReminderMock = vi.fn()
 const clearReminderMock = vi.fn()
+const applyTemplateKindMock = vi.fn()
+const setDateMock = vi.fn()
+const resetStateMock = vi.fn()
+const notifyDiaryCreatedMock = vi.fn()
+const localStorageMap = new Map<string, any>()
 
 function createMockState() {
   return reactive({
@@ -112,18 +119,16 @@ function createMockComposer() {
     checkingExistingDiaryForDate: ref(false),
     suggestedDraft: ref({ title: '2026/03/22 日記', content: '' }),
     hasTemplateChangesPending: ref(false),
-    applyTemplateKind: vi.fn((kind: string) => {
+    applyTemplateKind: applyTemplateKindMock.mockImplementation((kind: string) => {
       state.templateKind = kind as typeof state.templateKind
     }),
     updateTemplateData: vi.fn((patch: Record<string, unknown>) => {
-      // Simulate template data update
       if (patch.symbols) {
         const sym = typeof patch.symbols === 'string'
           ? patch.symbols.split(',').map((s: string) => s.trim().toUpperCase()).join(', ')
           : ''
         state.title = `2026/03/22 ${patch.tradingType === 'sell' ? 'Sell' : 'Buy'} Diary - ${sym}`
       }
-      // Simulate syncSuggestedDraft updating content from template note
       if (patch.note) {
         state.content = patch.note as string
       }
@@ -131,7 +136,7 @@ function createMockComposer() {
     setTitle: vi.fn((title: string) => { state.title = title }),
     setContent: vi.fn((content: string) => { state.content = content }),
     setTags: vi.fn((tags: string[]) => { state.tags = tags }),
-    setDate: vi.fn(),
+    setDate: setDateMock.mockImplementation((date: string) => { state.date = date }),
     setSaveMode: vi.fn((mode: string) => { state.saveMode = mode }),
     appendVoiceTranscript: vi.fn(),
     applySnippet: vi.fn(),
@@ -145,7 +150,7 @@ function createMockComposer() {
       await submitQuickNoteMock({
         title: state.title,
         content: state.content,
-        date: '2026-03-22',
+        date: state.date,
         saveMode: state.saveMode,
         tags: state.tags,
       })
@@ -155,7 +160,7 @@ function createMockComposer() {
     }),
     initialize: vi.fn(() => false),
     dispose: vi.fn(),
-    resetState: vi.fn(),
+    resetState: resetStateMock,
   }
   return composer
 }
@@ -164,7 +169,29 @@ vi.mock('~/composables/useQuickNoteComposer', () => ({
   useQuickNoteComposer: () => createMockComposer(),
 }))
 
-function mountModal() {
+vi.mock('~/composables/useDiaryMutation', () => ({
+  useDiaryMutation: () => ({
+    notifyDiaryCreated: notifyDiaryCreatedMock,
+    onDiaryMutation: vi.fn(),
+    lastMutation: ref(null),
+    version: ref(0),
+  }),
+}))
+
+vi.mock('@vueuse/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@vueuse/core')>()
+  return {
+    ...actual,
+    useLocalStorage: (key: string, defaultValue: any) => {
+      if (!localStorageMap.has(key)) {
+        localStorageMap.set(key, ref(defaultValue))
+      }
+      return localStorageMap.get(key)!
+    },
+  }
+})
+
+function mountModal(props: Record<string, unknown> = {}) {
   vi.stubGlobal('useI18n', () => ({
     t: (key: string, params?: Record<string, string>) => {
       const template = messages[key] || key
@@ -183,6 +210,7 @@ function mountModal() {
   return mount(QuickDiaryModal, {
     props: {
       show: true,
+      ...props,
     },
     global: {
       stubs: {
@@ -235,6 +263,7 @@ async function clickSubmitButton(wrapper: ReturnType<typeof mount>) {
 describe('QuickDiaryModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorageMap.clear()
     submitQuickNoteMock.mockResolvedValue({ id: '42' })
   })
 
@@ -243,43 +272,56 @@ describe('QuickDiaryModal', () => {
     vi.clearAllMocks()
   })
 
-  it('submits trading template content through the shared smart-save diary API', async () => {
+  it('opens directly into the editor without a forced template step', async () => {
     const wrapper = mountModal()
 
-    await clickByText(wrapper, '交易日記')
-
-    const symbolInput = wrapper.findAll('input[placeholder="例如: 2330, 2317"]')[0]!
-    await symbolInput.setValue('tsla, nvda')
-    const noteTextarea = wrapper.findAll('textarea[placeholder="簡單記錄今日操作心得..."]')[0]!
-    await noteTextarea.setValue('Watch setup')
-    await clickByText(wrapper, '補充到今日')
-    await clickSubmitButton(wrapper)
-    await flushPromises()
-
-    expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({
-      date: '2026-03-22',
-      title: expect.stringContaining('TSLA, NVDA'),
-      content: expect.stringContaining('Watch setup'),
-      saveMode: 'append',
-      tags: [],
-    }))
-    expect(clearDraftMock).toHaveBeenCalled()
-    expect(clearReminderMock).toHaveBeenCalledWith('reminder1')
-    expect(submitQuickNoteMock).toHaveBeenCalledTimes(1)
-    expect(wrapper.emitted('created')).toEqual([['42']])
-    expect(mockToast.success).toHaveBeenCalledWith('快速日記建立成功！')
+    expect(wrapper.find('input[aria-label="筆記標題"]').exists()).toBe(true)
+    expect(wrapper.find('textarea[aria-label="筆記內容"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('更換模板')
+    expect(wrapper.text()).not.toContain('1/2')
+    expect(wrapper.text()).not.toContain('2/2')
+    // Template grid is secondary and hidden until toggled
+    expect(wrapper.text()).not.toContain('交易日記')
   })
 
-  it('keeps free writing available in the modal and saves blank notes without forcing a template body', async () => {
+  it('applies last-used template on open and persists the selection', async () => {
+    localStorageMap.set('quick-note-last-template-kind', ref('observation'))
     const wrapper = mountModal()
+    await flushPromises()
 
-    await clickByText(wrapper, '自由編輯')
+    expect(applyTemplateKindMock).toHaveBeenCalledWith('observation')
 
-    expect(wrapper.text()).not.toContain('模板助手')
+    await clickByText(wrapper, '更換模板')
+    await clickByText(wrapper, '交易日記')
+
+    expect(applyTemplateKindMock).toHaveBeenCalledWith('trading')
+    expect(localStorageMap.get('quick-note-last-template-kind')?.value).toBe('trading')
+  })
+
+  it('applies calendar capture date from context', async () => {
+    mountModal({
+      context: { source: 'calendar', date: '2026-07-04' },
+    })
+    await flushPromises()
+
+    expect(setDateMock).toHaveBeenCalledWith('2026-07-04')
+  })
+
+  it('resets composer state when the modal closes', async () => {
+    const wrapper = mountModal({
+      context: { source: 'timeline' },
+    })
+
+    await clickByText(wrapper, '取消')
+    expect(resetStateMock).toHaveBeenCalled()
+    expect(wrapper.emitted('close')).toBeTruthy()
+  })
+
+  it('saves free writing and notifies create mutation', async () => {
+    const wrapper = mountModal()
 
     await wrapper.get('input[aria-label="筆記標題"]').setValue('午盤臨場觀察')
     await wrapper.get('textarea[aria-label="筆記內容"]').setValue('量縮但承接還在，尾盤再看是否補充到今日。')
-    await clickByText(wrapper, '補充到今日')
     await clickSubmitButton(wrapper)
     await flushPromises()
 
@@ -287,8 +329,35 @@ describe('QuickDiaryModal', () => {
       title: '午盤臨場觀察',
       content: '量縮但承接還在，尾盤再看是否補充到今日。',
       date: '2026-03-22',
-      saveMode: 'append',
+      saveMode: 'create',
       tags: [],
     }))
+    expect(notifyDiaryCreatedMock).toHaveBeenCalledWith({
+      id: '42',
+      date: '2026-03-22',
+      mode: 'create',
+    })
+    expect(mockToast.success).toHaveBeenCalledWith('已建立新日誌！')
+    expect(wrapper.emitted('created')).toEqual([['42']])
+  })
+
+  it('uses append success toast and mutation mode when appending', async () => {
+    const wrapper = mountModal()
+
+    await wrapper.get('input[aria-label="筆記標題"]').setValue('追加一筆')
+    await wrapper.get('textarea[aria-label="筆記內容"]').setValue('補一句觀察')
+    await clickByText(wrapper, '補充到今日')
+    await clickSubmitButton(wrapper)
+    await flushPromises()
+
+    expect(submitQuickNoteMock).toHaveBeenCalledWith(expect.objectContaining({
+      saveMode: 'append',
+    }))
+    expect(notifyDiaryCreatedMock).toHaveBeenCalledWith({
+      id: '42',
+      date: '2026-03-22',
+      mode: 'append',
+    })
+    expect(mockToast.success).toHaveBeenCalledWith('已追加至既有日誌！')
   })
 })

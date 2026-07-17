@@ -36,7 +36,7 @@
       <!-- Floating Quick Diary Button -->
       <button
         v-if="isAuthenticated"
-        @click="showQuickDiaryModal = true"
+        @click="openFloatingQuickDiary"
         :aria-label="$t('diary.quickDiary')"
         class="fixed right-6 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-dt-lg transition-colors duration-200 group hover:opacity-90 xl:bottom-[calc(1.5rem+env(safe-area-inset-bottom))]"
         style="background: var(--color-accent);"
@@ -47,7 +47,8 @@
       <!-- Quick Diary Modal -->
       <QuickDiaryModal
         :show="showQuickDiaryModal"
-        @close="showQuickDiaryModal = false"
+        :context="quickDiaryContext"
+        @close="closeFloatingQuickDiary"
       />
     </template>
   </div>
@@ -55,12 +56,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import type { QuickDiaryContext } from '~/types/quicknote'
 
 const { toasts, removeToast } = useToast()
 const { isInitialized, isAuthenticated } = useAuth()
 const { canInstall } = useAppPWA()
 const showInstallPrompt = ref(false)
 const showQuickDiaryModal = ref(false)
+const quickDiaryContext = ref<QuickDiaryContext | null>(null)
 
 import { useAlerts } from '~/composables/useAlerts'
 
@@ -73,6 +76,17 @@ const {
 watch(canInstall, (value) => {
   showInstallPrompt.value = value
 }, { immediate: true })
+
+function openFloatingQuickDiary() {
+  quickDiaryContext.value = { source: 'floating' }
+  showQuickDiaryModal.value = true
+}
+
+function closeFloatingQuickDiary() {
+  showQuickDiaryModal.value = false
+  // Reset after close so the next open never inherits a prior date/source
+  quickDiaryContext.value = null
+}
 
 const isEditableTarget = (target: EventTarget | null) => {
   if (!(target instanceof HTMLElement)) return false
@@ -94,7 +108,11 @@ const handleKeydown = (e: KeyboardEvent) => {
   if (!isAuthenticated.value) return
 
   e.preventDefault()
-  showQuickDiaryModal.value = !showQuickDiaryModal.value
+  if (showQuickDiaryModal.value) {
+    closeFloatingQuickDiary()
+  } else {
+    openFloatingQuickDiary()
+  }
 }
 
 onMounted(() => {

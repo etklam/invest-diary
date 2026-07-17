@@ -23,13 +23,14 @@
           <Icon name="heroicons:rectangle-group" class="mr-2 h-5 w-5" />
           {{ t('compareDiary.title') }}
         </NuxtLink>
-        <NuxtLink
-          to="/diaries/new"
+        <button
+          type="button"
           class="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold shadow-xl shadow-slate-200 dark:shadow-none hover:opacity-90 transition-opacity group focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
+          @click="openQuickDiary"
         >
           <Icon name="heroicons:pencil-square" class="mr-2 h-5 w-5" />
           {{ t('diary.newDiary') }}
-        </NuxtLink>
+        </button>
       </div>
     </header>
 
@@ -101,13 +102,14 @@
       <h3 class="text-2xl font-black text-slate-900 dark:text-white">{{ t('timeline.noEntries') }}</h3>
       <p class="mt-3 text-slate-500 dark:text-slate-400 max-w-xs mx-auto font-medium">{{ t('diary.noDiaries') }}</p>
       <div class="mt-10">
-        <NuxtLink
-          to="/diaries/new"
+        <button
+          type="button"
           class="fin-button-primary"
+          @click="openQuickDiary"
         >
           <Icon name="heroicons:plus" class="mr-2 h-5 w-5" />
           {{ t('diary.newDiary') }}
-        </NuxtLink>
+        </button>
       </div>
     </div>
 
@@ -218,10 +220,21 @@
         </button>
       </div>
     </div>
+
+    <QuickDiaryModal
+      :show="showQuickModal"
+      :context="quickDiaryContext"
+      @close="closeQuickDiary"
+      @created="refresh"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { QuickDiaryContext } from '~/types/quicknote'
+import { useDiaryMutation } from '~/composables/useDiaryMutation'
+import { useTimelineDiaries } from '~/composables/useTimelineDiaries'
+
 const { t } = useI18n()
 
 definePageMeta({
@@ -238,9 +251,29 @@ const {
   hasMore,
   groupedDiaries,
   loadMore,
+  refresh,
   resetFilters,
   formatDate
 } = useTimelineDiaries()
+
+const showQuickModal = ref(false)
+const quickDiaryContext = ref<QuickDiaryContext | null>(null)
+
+const openQuickDiary = () => {
+  quickDiaryContext.value = { source: 'timeline' }
+  showQuickModal.value = true
+}
+
+const closeQuickDiary = () => {
+  showQuickModal.value = false
+  quickDiaryContext.value = null
+}
+
+// Keep list fresh when floating FAB / other pages mutate diaries
+const { onDiaryMutation } = useDiaryMutation()
+onDiaryMutation(() => {
+  void refresh()
+})
 </script>
 
 <style scoped>

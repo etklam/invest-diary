@@ -3,8 +3,8 @@ import { computed } from 'vue'
 // Featured tools: first N tools shown prominently on desktop nav
 const FEATURED_TOOLS_COUNT = 3
 
-// Bottom navigation routes (mobile)
-const BOTTOM_NAV_ROUTES = ['/', '/stocks', '/diaries', '/alerts', '/settings'] as const
+// Bottom navigation slots after Home (Home is derived from homeRoute)
+const BOTTOM_NAV_SECONDARY_ROUTES = ['/stocks', '/diaries', '/alerts', '/settings'] as const
 
 interface NavItem {
   label: string
@@ -12,6 +12,8 @@ interface NavItem {
   icon: string
   auth?: boolean // true = only auth, false = only guest, undefined = both
   admin?: boolean // true = only admin
+  /** Stable key for list rendering when multiple items share the same route */
+  id?: string
 }
 
 type NavGroupId = 'journal' | 'portfolio' | 'tools' | 'learn'
@@ -23,10 +25,19 @@ interface NavGroup {
   items: NavItem[]
 }
 
+/** Authenticated users land on /diaries as their working home. */
+export const AUTHENTICATED_HOME_ROUTE = '/diaries'
+export const GUEST_HOME_ROUTE = '/'
+
 export const useNavigation = () => {
   const { isAuthenticated, user } = useAuth()
   const route = useRoute()
   const { t } = useI18n()
+
+  // Single source of truth for Logo / Home destinations
+  const homeRoute = computed(() => (
+    isAuthenticated.value ? AUTHENTICATED_HOME_ROUTE : GUEST_HOME_ROUTE
+  ))
 
   const mainNavItems = computed<NavItem[]>(() => {
     if (!isAuthenticated.value) {
@@ -139,24 +150,33 @@ export const useNavigation = () => {
   // Combined nav items for bottom navigation (mobile)
   const allNavItems = computed<NavItem[]>(() => [...mainNavItems.value, ...toolNavItems.value])
   const bottomNavItems = computed<NavItem[]>(() => {
-    return BOTTOM_NAV_ROUTES.map(route => {
-      const found = allNavItems.value.find(item => item.to === route)
-      if (found) return found
+    const homeItem: NavItem = {
+      id: 'home',
+      label: t('nav.home'),
+      to: homeRoute.value,
+      icon: 'home',
+    }
+
+    const secondary = BOTTOM_NAV_SECONDARY_ROUTES.map((path) => {
+      const found = allNavItems.value.find(item => item.to === path)
+      if (found) return { ...found, id: path }
       // Fallback for missing routes (should not happen with proper configuration)
       const fallbackMap: Record<string, NavItem> = {
-        '/': { label: 'Home', to: '/', icon: 'home' },
-        '/stocks': { label: 'Stocks', to: '/stocks', icon: 'chart-bar' },
-        '/diaries': { label: 'Diaries', to: '/diaries', icon: 'document-text' },
-        '/alerts': { label: 'Alerts', to: '/alerts', icon: 'bell' },
-        '/settings': { label: 'Settings', to: '/settings', icon: 'cog-6-tooth' }
+        '/stocks': { id: 'stocks', label: t('nav.stocks'), to: '/stocks', icon: 'chart-bar' },
+        '/diaries': { id: 'diaries', label: t('nav.diaries'), to: '/diaries', icon: 'document-text' },
+        '/alerts': { id: 'alerts', label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
+        '/settings': { id: 'settings', label: t('nav.settings'), to: '/settings', icon: 'cog-6-tooth' },
       }
-      return fallbackMap[route] || { label: 'Unknown', to: route, icon: 'question-mark-circle' }
+      return fallbackMap[path] || { id: path, label: 'Unknown', to: path, icon: 'question-mark-circle' }
     })
+
+    return [homeItem, ...secondary]
   })
 
   return {
     isAuthenticated,
     user,
+    homeRoute,
     mainNavItems,
     toolNavItems,
     allNavItems,

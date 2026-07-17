@@ -140,7 +140,8 @@
     "modal": {
       "eyebrow": "快速日记",
       "step2Hint": "模板只是个起点，您可以随时调整内容使其更完整。",
-      "templateSubcopy": "选个骨架，再慢慢填入您的观察与细节。"
+      "templateSubcopy": "选个骨架，再慢慢填入您的观察与细节。",
+      "editorHint": "先写内容再保存。需要结构时可随时更换模板。"
     },
     "page": {
       "eyebrow": "笔记空间",
@@ -286,6 +287,9 @@
     },
     "preview": "预览",
     "success": "快速日记建立成功！",
+    "successCreate": "已建立新日志！",
+    "successAppend": "已追加至既有日志！",
+    "changeTemplate": "更换模板",
     "fillRequired": "请填写必要信息"
   },
   "diary": {

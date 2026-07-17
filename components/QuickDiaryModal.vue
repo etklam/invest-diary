@@ -49,62 +49,74 @@
                 style="background: var(--color-surface); border-color: var(--color-border); box-shadow: var(--shadow-lg);"
               >
                 <div class="flex items-center justify-between border-b px-4 py-4 sm:px-6 sm:py-5" style="border-color: var(--color-border);">
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" style="color: var(--color-secondary);">{{ t('quickDiary.modal.eyebrow') }}</p>
-                      <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold" style="background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary);">
-                        {{ step }}/2
-                      </span>
-                    </div>
+                  <div class="min-w-0">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" style="color: var(--color-secondary);">{{ t('quickDiary.modal.eyebrow') }}</p>
                     <h3 class="text-lg font-semibold sm:text-xl" id="modal-title" style="color: var(--color-text); font-family: var(--font-display);">
                       {{ t('quickDiary.title') }}
                     </h3>
-                    <p v-if="step === 2" class="mt-1 text-xs" style="color: var(--color-text-muted);">
-                      {{ t('quickDiary.modal.step2Hint') }}
+                    <p class="mt-1 text-xs" style="color: var(--color-text-muted);">
+                      {{ t('quickDiary.modal.editorHint') }}
                     </p>
                   </div>
-                  <button
-                    class="flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200"
-                    style="color: var(--color-text-soft);"
-                    :aria-label="t('common.close')"
-                    @click="close"
-                  >
-                    <Icon name="heroicons:x-mark" class="h-5 w-5" />
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all duration-200"
+                      style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
+                      :aria-expanded="showTemplatePicker"
+                      :aria-controls="'quick-diary-template-picker'"
+                      @click="showTemplatePicker = !showTemplatePicker"
+                    >
+                      <Icon name="heroicons:squares-2x2" class="h-4 w-4" />
+                      {{ t('quickDiary.changeTemplate') }}
+                    </button>
+                    <button
+                      class="flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200"
+                      style="color: var(--color-text-soft);"
+                      :aria-label="t('common.close')"
+                      @click="close"
+                    >
+                      <Icon name="heroicons:x-mark" class="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-                  <div v-if="step === 1" class="space-y-6">
-                    <div class="space-y-2 text-center sm:text-left">
+                  <div
+                    v-if="showTemplatePicker"
+                    id="quick-diary-template-picker"
+                    class="mb-6 space-y-4 rounded-2xl border p-4"
+                    style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-muted) 70%, var(--color-surface));"
+                  >
+                    <div class="space-y-1">
                       <p class="text-sm font-medium" style="color: var(--color-text-muted);">{{ t('quickDiary.selectTemplate') }}</p>
                       <p class="text-xs" style="color: var(--color-text-soft);">{{ t('quickDiary.modal.templateSubcopy') }}</p>
                     </div>
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                       <button
                         v-for="template in templates"
                         :key="template.kind"
                         type="button"
-                        class="group relative flex flex-col items-center rounded-3xl border p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:items-start sm:text-left"
-                        style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-muted) 88%, var(--color-surface));"
+                        class="group relative flex min-h-[44px] flex-col items-start rounded-2xl border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                        :style="state.templateKind === template.kind
+                          ? 'border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));'
+                          : 'border-color: var(--color-border); background: var(--color-surface);'"
+                        :aria-pressed="state.templateKind === template.kind"
                         @click="selectTemplate(template.kind)"
                       >
                         <div
-                          class="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm"
+                          class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-sm"
                           :class="template.iconClass"
                         >
-                          <Icon :name="template.icon" class="h-7 w-7" />
+                          <Icon :name="template.icon" class="h-5 w-5" />
                         </div>
                         <h4 class="text-sm font-bold tracking-tight" style="color: var(--color-text)">{{ template.label }}</h4>
-                        <p class="mt-2 text-[11px] leading-relaxed" style="color: var(--color-text-muted)">{{ template.description }}</p>
-                        
-                        <div class="absolute bottom-4 right-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                          <Icon name="heroicons:arrow-right" class="h-4 w-4" style="color: var(--color-primary);" />
-                        </div>
+                        <p class="mt-1 text-[11px] leading-relaxed" style="color: var(--color-text-muted)">{{ template.description }}</p>
                       </button>
                     </div>
                   </div>
 
-                  <div v-else class="space-y-5">
+                  <div class="space-y-5">
                     <QuickNoteTemplateAssistant
                       :template-kind="state.templateKind"
                       :template-data="state.templateData"
@@ -144,17 +156,8 @@
 
                 <div class="flex gap-3 border-t px-4 py-4 sm:justify-end sm:px-6" style="border-color: var(--color-border);">
                   <button
-                    v-if="step === 2"
                     type="button"
-                    class="flex-1 rounded-xl border px-4 py-3 font-medium transition-all duration-200 sm:flex-none sm:px-5 sm:py-2.5"
-                    style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
-                    @click="step = 1"
-                  >
-                    {{ t('common.back') }}
-                  </button>
-                  <button
-                    type="button"
-                    class="flex-1 rounded-xl border px-4 py-3 font-medium transition-all duration-200 sm:flex-none sm:px-5 sm:py-2.5"
+                    class="flex-1 rounded-xl border px-4 py-3 font-medium transition-all duration-200 sm:flex-none sm:px-5 sm:py-2.5 min-h-[44px]"
                     style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
                     @click="close"
                   >
@@ -172,16 +175,27 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
 import QuickNoteEditorCore from '~/components/quicknote/QuickNoteEditorCore.vue'
 import QuickNoteTemplateAssistant from '~/components/quicknote/QuickNoteTemplateAssistant.vue'
+import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useQuickNoteComposer } from '~/composables/useQuickNoteComposer'
 import { getQuickReminderLabel } from '~/lib/quicknote/quick-reminders'
 import { createQuickNoteModalTemplates, resolveQuickNoteSaveErrorMessage } from '~/lib/quicknote/modal-shell'
-import type { QuickNoteQuickReminderPreset, QuickNoteTemplateKind } from '~/types/quicknote'
+import type {
+  QuickDiaryContext,
+  QuickNoteQuickReminderPreset,
+  QuickNoteTemplateKind,
+} from '~/types/quicknote'
 
-const props = defineProps<{
+const LAST_TEMPLATE_KEY = 'quick-note-last-template-kind'
+
+const props = withDefaults(defineProps<{
   show: boolean
-}>()
+  context?: QuickDiaryContext | null
+}>(), {
+  context: null,
+})
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -190,8 +204,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const toast = useToast()
-const step = ref(1)
+const { notifyDiaryCreated } = useDiaryMutation()
 const saving = ref(false)
+const showTemplatePicker = ref(false)
+const lastTemplateKind = useLocalStorage<QuickNoteTemplateKind>(LAST_TEMPLATE_KEY, 'blank')
 
 const {
   state,
@@ -220,18 +236,43 @@ const {
   dispose,
   resetState,
 } = useQuickNoteComposer({
-  defaultTemplateKind: 'trading',
+  defaultTemplateKind: 'blank',
   defaultSaveMode: 'create',
 })
 
 const templates = computed(() => createQuickNoteModalTemplates(t))
 
+function resolveOpenTemplateKind(restoredDraft: boolean): QuickNoteTemplateKind | null {
+  // Explicit context wins only when no draft was restored.
+  if (!restoredDraft && props.context?.templateKind) {
+    return props.context.templateKind
+  }
+  if (!restoredDraft) {
+    return lastTemplateKind.value || 'blank'
+  }
+  return null
+}
+
+function applyOpenContext(restoredDraft: boolean) {
+  const kind = resolveOpenTemplateKind(restoredDraft)
+  if (kind) {
+    applyTemplateKind(kind)
+  }
+
+  // Capture sources may pin a date (e.g. calendar empty day). Apply after draft restore.
+  if (props.context?.date) {
+    setDate(props.context.date)
+  }
+}
+
 watch(
   () => props.show,
   (show) => {
     if (show) {
-      initialize((message) => confirm(message))
+      const restored = Boolean(initialize((message) => confirm(message)))
+      applyOpenContext(restored)
       void syncExistingDiaryForDate()
+      showTemplatePicker.value = false
       return
     }
     dispose()
@@ -241,11 +282,12 @@ watch(
 
 function selectTemplate(kind: QuickNoteTemplateKind) {
   applyTemplateKind(kind)
-  step.value = 2
+  lastTemplateKind.value = kind
+  showTemplatePicker.value = false
 }
 
 function close() {
-  step.value = 1
+  showTemplatePicker.value = false
   resetState()
   emit('close')
 }
@@ -278,9 +320,24 @@ function handleClearReminder(payload: { key: 'reminder1' }) {
 async function handleSave() {
   saving.value = true
   try {
+    // Capture before save() resets composer state
+    const mode = state.saveMode
+    const date = state.date
+    const kind = state.templateKind
     const diary = await save()
-    toast.success(t('quickDiary.success'))
-    emit('created', String(diary?.id))
+    const diaryId = String(diary?.id ?? '')
+
+    lastTemplateKind.value = kind
+    if (diaryId) {
+      notifyDiaryCreated({ id: diaryId, date, mode })
+    }
+
+    toast.success(
+      mode === 'append'
+        ? t('quickDiary.successAppend')
+        : t('quickDiary.successCreate')
+    )
+    emit('created', diaryId)
     close()
   } catch (error: any) {
     console.error('Error creating quick diary:', error)

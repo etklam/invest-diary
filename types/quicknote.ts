@@ -3,6 +3,15 @@ export type QuickNoteSaveMode = 'create' | 'append'
 export type QuickNoteReminderKey = 'reminder1'
 export type QuickNoteQuickReminderPreset = 'tomorrow' | 'nextWeek' | 'nextMonth'
 
+/** Optional open context for QuickDiaryModal capture entry points */
+export type QuickDiaryCaptureSource = 'floating' | 'calendar' | 'timeline' | 'diaries'
+
+export interface QuickDiaryContext {
+  date?: string
+  templateKind?: QuickNoteTemplateKind
+  source?: QuickDiaryCaptureSource
+}
+
 export interface QuickNoteReminders {
   reminder1: string | null
 }
