@@ -27,7 +27,7 @@ describe('BaseButton', () => {
     })
     const classes = wrapper.classes()
     expect(classes).toContain('border-dt-border')
-    expect(classes).toContain('bg-transparent')
+    expect(classes).toContain('bg-dt-surface')
     expect(classes).toContain('text-dt-text')
   })
 

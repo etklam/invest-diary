@@ -6,20 +6,20 @@ defineProps<{
 </script>
 
 <template>
-  <section class="rounded-xl border border-dt-border bg-dt-surface p-5 shadow-sm">
+  <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm sm:p-6">
     <header
       v-if="title || description"
       class="mb-4 border-b border-dt-border pb-3"
     >
       <h2
         v-if="title"
-        class="text-xl font-semibold text-dt-text"
+        class="font-display text-xl font-semibold tracking-tight text-dt-text"
       >
         {{ title }}
       </h2>
       <p
         v-if="description"
-        class="mt-1 text-sm text-dt-text-muted"
+        class="mt-1 text-sm leading-relaxed text-dt-text-muted"
       >
         {{ description }}
       </p>

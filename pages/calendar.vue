@@ -1,56 +1,74 @@
 <template>
-  <div class="calendar-page">
-    <header class="fin-panel mb-6">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p class="fin-kicker">{{ t('calendar.intelligence') }}</p>
-          <h1 class="fin-title">
+  <div class="calendar-page mx-auto max-w-[1080px] space-y-6">
+    <!-- Header -->
+    <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm sm:p-6">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="min-w-0">
+          <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
+            {{ t('calendar.intelligence') }}
+          </p>
+          <h1 class="font-display mt-1.5 text-[clamp(1.75rem,4vw,2.5rem)] leading-tight tracking-tight text-dt-text">
             {{ t('calendar.title', { year: currentYear, month: currentMonth + 1 }) }}
           </h1>
         </div>
         <div class="flex items-center gap-2">
-          <button
-            @click="previousMonth"
-            class="fin-button-secondary !p-2"
+          <BaseButton
+            variant="secondary"
+            class="!min-h-11 !w-11 !px-0"
             :aria-label="t('common.previous')"
+            @click="previousMonth"
           >
             <Icon name="heroicons:chevron-left" class="h-5 w-5" />
-          </button>
-          <button
-            @click="nextMonth"
-            class="fin-button-secondary !p-2"
+          </BaseButton>
+          <BaseButton
+            variant="secondary"
+            class="!min-h-11 !w-11 !px-0"
             :aria-label="t('common.next')"
+            @click="nextMonth"
           >
             <Icon name="heroicons:chevron-right" class="h-5 w-5" />
-          </button>
+          </BaseButton>
         </div>
       </div>
-      
-      <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div class="metric-card">
-          <p class="fin-label !mb-1">{{ t('calendar.daysInMonth') }}</p>
-          <p class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ daysInMonth }}</p>
-        </div>
-        <div class="metric-card">
-          <p class="fin-label !mb-1">{{ t('calendar.diaryCount') }}</p>
-          <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ monthDiaryCount }}</p>
-        </div>
-        <div class="metric-card">
-          <p class="fin-label !mb-1">{{ t('calendar.coverage') }}</p>
-          <div class="flex items-baseline gap-2">
-            <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ monthCoverage }}</p>
-            <span class="text-xs text-slate-400">{{ t('calendar.excludeHolidays') }}</span>
-          </div>
-        </div>
-      </div>
-    </header>
 
-    <section class="fin-panel overflow-hidden">
-      <div class="grid grid-cols-7 gap-px bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+      <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <article class="rounded-dt-sm border border-dt-border bg-dt-surface-strong p-4">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
+            {{ t('calendar.daysInMonth') }}
+          </p>
+          <p class="font-data mt-2 text-2xl font-semibold tabular-nums text-dt-text">
+            {{ daysInMonth }}
+          </p>
+        </article>
+        <article class="rounded-dt-sm border border-dt-border bg-dt-surface-strong p-4">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
+            {{ t('calendar.diaryCount') }}
+          </p>
+          <p class="font-data mt-2 text-2xl font-semibold tabular-nums text-dt-primary">
+            {{ monthDiaryCount }}
+          </p>
+        </article>
+        <article class="rounded-dt-sm border border-dt-border bg-dt-surface-strong p-4">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
+            {{ t('calendar.coverage') }}
+          </p>
+          <div class="mt-2 flex items-baseline gap-2">
+            <p class="font-data text-2xl font-semibold tabular-nums text-dt-text">
+              {{ monthCoverage }}
+            </p>
+            <span class="text-xs text-dt-text-soft">{{ t('calendar.excludeHolidays') }}</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Month grid -->
+    <section class="overflow-hidden rounded-dt-md border border-dt-border bg-dt-surface shadow-dt-sm">
+      <div class="grid grid-cols-7 gap-px bg-dt-border">
         <div
           v-for="day in weekDays"
           :key="day"
-          class="bg-slate-50 dark:bg-slate-900/50 text-center text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 py-3"
+          class="bg-dt-surface-strong py-3 text-center text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft"
         >
           {{ day }}
         </div>
@@ -58,94 +76,108 @@
         <div
           v-for="n in firstDayOfWeek"
           :key="'blank-' + n"
-          class="bg-white dark:bg-slate-950/30 h-20 sm:h-28"
+          class="min-h-[5.5rem] bg-dt-bg sm:min-h-[7rem]"
         />
 
         <button
           v-for="day in daysInMonth"
           :key="day"
           type="button"
-          @click="handleDateClick(day)"
-          class="day-cell group relative bg-white dark:bg-slate-950 h-20 sm:h-28 p-2 text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-900"
+          class="day-cell group relative min-h-[5.5rem] bg-dt-surface p-2.5 text-left transition-colors duration-150 hover:bg-dt-surface-strong sm:min-h-[7rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-dt-primary/40"
           :class="{
             'is-today': isToday(day),
             'has-diary': hasDiary(day),
-            'is-holiday': isExcludedHoliday(day)
+            'is-holiday': isExcludedHoliday(day),
           }"
+          @click="handleDateClick(day)"
         >
-          <span class="text-sm font-semibold transition-colors" :class="isToday(day) ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300'">
+          <span
+            class="inline-flex h-7 min-w-7 items-center justify-center rounded-md text-sm font-semibold tabular-nums"
+            :class="isToday(day)
+              ? 'bg-dt-primary text-white'
+              : 'text-dt-text-muted group-hover:text-dt-text'"
+          >
             {{ day }}
           </span>
-          
-          <div v-if="isToday(day)" class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></div>
 
-          <div v-if="hasDiary(day)" class="mt-1">
-            <div class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400">
+          <div v-if="hasDiary(day)" class="mt-1.5 pr-1">
+            <div class="line-clamp-2 text-[11px] leading-snug text-dt-text-muted group-hover:text-dt-text sm:text-xs">
               {{ getDiaryForDay(day)?.title }}
             </div>
-            <div class="absolute bottom-2 right-2 flex gap-1">
-              <div class="w-1.5 h-1.5 rounded-full bg-blue-500" :title="t('nav.diaries')"></div>
-              <div v-if="getDiaryForDay(day)?.alerts?.length" class="w-1.5 h-1.5 rounded-full bg-amber-500" :title="t('nav.alerts')"></div>
-              <div v-if="getDiaryForDay(day)?.transactions?.length" class="w-1.5 h-1.5 rounded-full bg-emerald-500" :title="t('stock.dashboard.quickTransaction')"></div>
+            <div class="absolute bottom-2.5 right-2.5 flex gap-1">
+              <span
+                class="h-1.5 w-1.5 rounded-full bg-dt-primary"
+                :title="t('nav.diaries')"
+              />
+              <span
+                v-if="getDiaryForDay(day)?.alerts?.length"
+                class="h-1.5 w-1.5 rounded-full bg-dt-warning"
+                :title="t('nav.alerts')"
+              />
+              <span
+                v-if="getDiaryForDay(day)?.transactions?.length"
+                class="h-1.5 w-1.5 rounded-full bg-dt-success"
+                :title="t('stock.dashboard.quickTransaction')"
+              />
             </div>
           </div>
-          
-          <div v-if="isExcludedHoliday(day)" class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]" 
-               style="background-image: repeating-linear-gradient(-45deg, currentColor, currentColor 1px, transparent 1px, transparent 10px);">
-          </div>
+
+          <div
+            v-if="isExcludedHoliday(day)"
+            class="pointer-events-none absolute inset-0 opacity-[0.04]"
+            style="background-image: repeating-linear-gradient(-45deg, currentColor, currentColor 1px, transparent 1px, transparent 8px);"
+          />
         </button>
       </div>
     </section>
 
-    <section class="fin-panel mt-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200">{{ t('calendar.activityHeatmap') }}</h2>
-        <div class="flex items-center gap-4 text-[10px] uppercase tracking-widest font-bold text-slate-400">
-          <div class="flex items-center gap-1">
-            <div class="w-2.5 h-2.5 rounded-sm bg-slate-200 dark:bg-slate-800"></div>
-            <span>{{ t('calendar.notRecorded') }}</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <div class="w-2.5 h-2.5 rounded-sm bg-blue-600"></div>
-            <span>{{ t('calendar.recorded') }}</span>
-          </div>
+    <!-- Heatmap -->
+    <LedgerCard :title="t('calendar.activityHeatmap')">
+      <div class="mb-4 flex flex-wrap items-center justify-end gap-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-dt-text-soft">
+        <div class="flex items-center gap-1.5">
+          <div class="h-2.5 w-2.5 rounded-sm bg-dt-surface-muted" />
+          <span>{{ t('calendar.notRecorded') }}</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div class="h-2.5 w-2.5 rounded-sm bg-dt-primary" />
+          <span>{{ t('calendar.recorded') }}</span>
         </div>
       </div>
-      
-      <div class="heatmap-container overflow-x-auto pb-2">
-        <div class="flex gap-1 min-w-max">
-          <div v-for="(week, weekIndex) in heatmapDays" :key="`week-${weekIndex}`" class="flex flex-col gap-1">
+
+      <div class="heatmap-container overflow-x-auto pb-1">
+        <div class="flex min-w-max gap-1">
+          <div
+            v-for="(week, weekIndex) in heatmapDays"
+            :key="`week-${weekIndex}`"
+            class="flex flex-col gap-1"
+          >
             <div
               v-for="(cell, dayIndex) in week"
               :key="`cell-${weekIndex}-${dayIndex}`"
-              class="w-3 h-3 rounded-sm transition-colors"
+              class="h-3 w-3 rounded-[3px]"
               :class="{
                 'bg-transparent': !cell,
-                'bg-slate-200 dark:bg-slate-800': cell && cell.level === 0 && !cell.excluded,
-                'bg-blue-600 shadow-sm shadow-blue-500/20': cell && cell.level === 1,
-                'bg-slate-300 dark:bg-slate-700 opacity-50': cell && cell.excluded
+                'bg-dt-surface-muted': cell && cell.level === 0 && !cell.excluded,
+                'bg-dt-primary': cell && cell.level === 1,
+                'bg-dt-border opacity-60': cell && cell.excluded,
               }"
-              :title="cell ? `${cell.dateKey}: ${cell.level === 1 ? t('calendar.recorded') : t('calendar.notRecorded')}${cell.excluded ? ' (' + t('calendar.holiday') + ')' : ''}` : ''"
+              :title="cell
+                ? `${cell.dateKey}: ${cell.level === 1 ? t('calendar.recorded') : t('calendar.notRecorded')}${cell.excluded ? ` (${t('calendar.holiday')})` : ''}`
+                : ''"
             />
           </div>
         </div>
       </div>
-    </section>
+    </LedgerCard>
 
-    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-      <button
-        @click="openQuickDiary()"
-        class="fin-button-primary"
-      >
+    <div class="flex flex-col justify-center gap-3 sm:flex-row">
+      <BaseButton variant="primary" @click="openQuickDiary()">
         <Icon name="heroicons:bolt" class="mr-2 h-5 w-5" />
         {{ t('calendar.quickDiary') }}
-      </button>
-      <button
-        @click="goToToday"
-        class="fin-button-secondary"
-      >
+      </BaseButton>
+      <BaseButton variant="secondary" @click="goToToday">
         {{ t('calendar.backToToday') }}
-      </button>
+      </BaseButton>
     </div>
 
     <QuickDiaryModal
@@ -202,7 +234,6 @@ const openQuickDiary = (date?: string) => {
 
 const closeQuickDiary = () => {
   showQuickModal.value = false
-  // Clear date/source so the next open does not inherit the previous day
   quickDiaryContext.value = null
 }
 
@@ -217,7 +248,6 @@ const handleDateClick = (day: number) => {
   }
 }
 
-// Refresh when floating FAB or other surfaces create/append a diary
 const { onDiaryMutation } = useDiaryMutation()
 onDiaryMutation(() => {
   fetchDiaries()
@@ -225,39 +255,17 @@ onDiaryMutation(() => {
 </script>
 
 <style scoped>
-.calendar-page {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.metric-card {
-  padding: 1rem;
-  border-radius: 0.75rem;
-  background: rgb(248 250 252 / 50%);
-  border: 1px solid rgb(226 232 240);
-}
-
-.dark .metric-card {
-  background: rgb(30 41 59 / 30%);
-  border-color: rgb(51 65 85);
-}
-
 .day-cell.is-today {
-  background: rgb(239 246 255);
-  box-shadow: inset 0 0 0 1px rgb(59 130 246 / 30%);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent);
 }
 
-.dark .day-cell.is-today {
-  background: rgb(30 58 138 / 20%);
-  box-shadow: inset 0 0 0 1px rgb(59 130 246 / 20%);
+.day-cell.is-holiday:not(.is-today) {
+  background: var(--color-background);
 }
 
-.day-cell.is-holiday {
-  background: rgb(248 250 252);
-}
-
-.dark .day-cell.is-holiday {
-  background: rgb(15 23 42 / 50%);
+.day-cell.has-diary:not(.is-today) {
+  background: color-mix(in srgb, var(--color-surface-strong) 70%, var(--color-surface));
 }
 
 .line-clamp-2 {
@@ -276,11 +284,7 @@ onDiaryMutation(() => {
 }
 
 .heatmap-container::-webkit-scrollbar-thumb {
-  background: rgb(203 213 225);
-  border-radius: 10px;
-}
-
-.dark .heatmap-container::-webkit-scrollbar-thumb {
-  background: rgb(71 85 105);
+  background: var(--color-border-strong);
+  border-radius: 999px;
 }
 </style>

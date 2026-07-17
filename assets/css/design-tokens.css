@@ -4,29 +4,30 @@
   --font-body: 'Source Sans 3', sans-serif;
   --font-data: 'IBM Plex Mono', monospace;
 
-  --color-background: #F8FAFC;
+  /* Surface ladder: background < surface-strong < surface for calm depth */
+  --color-background: #F4F6F9;
   --color-surface: #FFFFFF;
-  --color-surface-strong: #F1F5F9;
+  --color-surface-strong: #EEF2F7;
   --color-surface-muted: #E2E8F0;
   /* ponytail: --color-panel-ink is a misnomer (used as solid bg, not ink).
      Kept the name so how-to-use / QuickDiaryModal keep working; value aligned
      to the dark surface scale. Rename to --color-surface-deep when those 3
      call-sites can be updated together. */
-  --color-panel-ink: #0F172A;
-  --color-primary: #2563EB;
-  --color-primary-active: #1D4ED8;
-  --color-secondary: #3B82F6;
-  --color-secondary-active: #2563EB;
-  --color-accent: #10B981;
-  --color-success: #10B981;
-  --color-danger: #EF4444;
-  --color-warning: #F59E0B;
-  --color-info: #38BDF8;
-  --color-border: #CBD5E1;
+  --color-panel-ink: #0B1220;
+  --color-primary: #1D4ED8;
+  --color-primary-active: #1E40AF;
+  --color-secondary: #2563EB;
+  --color-secondary-active: #1D4ED8;
+  --color-accent: #059669;
+  --color-success: #059669;
+  --color-danger: #DC2626;
+  --color-warning: #D97706;
+  --color-info: #0284C7;
+  --color-border: #D5DCE6;
   --color-border-strong: #94A3B8;
   --color-on-ink: #FFFFFF;
-  --color-text: #0F172A;
-  --color-text-muted: #475569;
+  --color-text: #0B1220;
+  --color-text-muted: #3F4B5B;
   --color-text-soft: #64748B;
 
   --font-size-xs: 12px;
@@ -54,9 +55,10 @@
   --radius-lg: 24px;
   --radius-pill: 999px;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  /* Soft ledger shadows — depth without glow */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 1px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.08), 0 4px 10px rgba(15, 23, 42, 0.04);
 
   --motion-fast: 150ms;
   --motion-base: 280ms;
@@ -66,28 +68,28 @@
 
 :root.dark,
 .dark {
-  --color-background: #0B1220;
-  --color-surface: #111827;
-  --color-surface-strong: #1E293B;
-  --color-surface-muted: #0F172A;
+  --color-background: #080D16;
+  --color-surface: #0F1623;
+  --color-surface-strong: #172033;
+  --color-surface-muted: #0B1220;
   /* ponytail: misnomer alias, see light-mode comment above. */
-  --color-panel-ink: #111827;
+  --color-panel-ink: #0F1623;
   --color-primary: #3B82F6;
   --color-primary-active: #60A5FA;
-  --color-secondary: #38BDF8;
-  --color-secondary-active: #7DD3FC;
+  --color-secondary: #60A5FA;
+  --color-secondary-active: #93C5FD;
   --color-accent: #34D399;
   --color-success: #34D399;
   --color-danger: #F87171;
   --color-warning: #FBBF24;
   --color-info: #38BDF8;
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(255, 255, 255, 0.14);
+  --color-border: rgba(148, 163, 184, 0.14);
+  --color-border-strong: rgba(148, 163, 184, 0.24);
   --color-on-ink: #F8FAFC;
-  --color-text: #F8FAFC;
+  --color-text: #F1F5F9;
   --color-text-muted: #CBD5E1;
   --color-text-soft: #94A3B8;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.50);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.60);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.70);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.40);
+  --shadow-lg: 0 14px 36px rgba(0, 0, 0, 0.48);
 }

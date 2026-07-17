@@ -50,28 +50,29 @@
 
 ## Color
 - **Approach:** restrained
-- **Primary:** `#2563EB` — Electric Blue。用於主要導覽、主 CTA、焦點框、重要資訊區塊。冷調藍色傳達專業與信任，適合金融決策情境。
-- **Secondary:** `#3B82F6` — Sky Blue。用於次要互動、輔助按鈕、連結提示。比 Primary 輕一階，建立清晰的視覺層級。
-- **Accent:** `#10B981` — Terminal Green。用於正向行為、完成、持續、紀律提示、gain 數據。
-- **Info:** `#38BDF8` — Cyan Light。用於資訊面板、kicker、資料亮點。
+- **Primary:** `#1D4ED8` — Ledger Blue。用於主要導覽、主 CTA、焦點框。比泛用 `#2563EB` 更深一階，降低「模板藍」感。
+- **Secondary:** `#2563EB` — 次要互動、輔助提示。比 Primary 亮一階。
+- **Accent:** `#059669` — Ledger Green。正向結果、完成、gain 數據。
+- **Info:** `#0284C7` — 資訊面板、次要亮點（克制使用，不當裝飾）。
 - **Neutrals:** 冷灰系，透過 `dt-*` design token 統一亮/暗模式
-  - `#F8FAFC` surface-0 (light) / `#0B1220` (dark)
-  - `#F1F5F9` surface-1 (light) / `#111827` (dark)
-  - `#CBD5E1` border-soft (light) / `rgba(255,255,255,0.08)` (dark)
+  - `#F4F6F9` background (light) / `#080D16` (dark)
+  - `#FFFFFF` surface (light) / `#0F1623` (dark)
+  - `#EEF2F7` surface-strong (light) / `#172033` (dark)
+  - `#D5DCE6` border (light) / `rgba(148,163,184,0.14)` (dark)
   - `#94A3B8` border-strong
-  - `#475569` text-muted (light) / `#CBD5E1` (dark)
-  - `#0F172A` text-strong (light) / `#F8FAFC` (dark)
+  - `#3F4B5B` text-muted (light) / `#CBD5E1` (dark)
+  - `#0B1220` text-strong (light) / `#F1F5F9` (dark)
 - **Semantic:**
-  - success `#10B981` (light) / `#34D399` (dark)
-  - warning `#F59E0B` (light) / `#FBBF24` (dark)
-  - error `#EF4444` (light) / `#F87171` (dark)
-  - info `#38BDF8`
+  - success `#059669` (light) / `#34D399` (dark)
+  - warning `#D97706` (light) / `#FBBF24` (dark)
+  - error `#DC2626` (light) / `#F87171` (dark)
+  - info `#0284C7`
 - **Dark mode:** 不做單純反相。暗色模式像深夜交易工作台，以 solid surface + border 建構層級深度，不用玻璃擬態。
-  - bg `#0B1220`
-  - surface `#111827`（solid，非半透明）
-  - surface-raised `#1E293B`（solid，比 surface 亮一階）
-  - border `rgba(255,255,255,0.08)`
-  - text `#F8FAFC`
+  - bg `#080D16`
+  - surface `#0F1623`（solid，非半透明）
+  - surface-raised `#172033`（solid，比 surface 亮一階）
+  - border `rgba(148,163,184,0.14)`
+  - text `#F1F5F9`
   - muted `#CBD5E1`
   - 所有 `dt-*` token 已映射，元件不直接使用 rgba 值
 
@@ -152,3 +153,4 @@
 | 2026-06-06 | 設計方向從 `Institutional Fintech` 轉向 `Calm Institutional Ledger`，5 phase 重構 | 移除 glassmorphism、radial-gradient、hover translateY。建立 6 個 dt-* 元件（LedgerCard/BaseButton/StatusBadge/EtfMobileCard/ReviewCandidateCard/DiaryNotePreview）。4 頁重構（homepage/diary-desk/etf/position-sizing），scoped CSS 平均減少 85%+。Diary 新增 thesis/risk/review 欄位支援複盤流程。保留深色底色與電光藍主色，但改用 solid surface 替代半透明。取代 2026-05-19 玻璃擬態決策 |
 | 2026-06-06 | Phase 6：全站工具頁統一完成 | seasonality（scoped CSS 218→0）、relative-value（移除 40+ inline styles + glassmorphism）、financial-freedom（scoped CSS 233→38）。全站 5 個工具頁全部完成 Calm Institutional Ledger 重構，淨刪 445 行 |
 | 2026-07-01 | Impeccable full pass：11 phase 全站一致性稽核 | 跨 7 個產品區域（auth layout、navigation、diary desk、beta cockpit、tools、articles/public、auth/onboarding）與 6 個 discipline 元件清殘留 glassmorphism、radial/linear-gradient、hover translateY、scale-105/95 micro-bounce、glow shadow。消除 discipline 模組自帶的金（#C9A962）＋紫（#7C3AED）子設計系統與 Playfair Display 字體，全部映射至 `var(--color-primary)`。StatusBadge/BaseButton token 對齊（`green-500/30`→`dt-success/30`、`red-600`→`dt-danger`、`min-h-10`→`min-h-11` 44px 觸控目標）。LandingCard/LandingSection/LandingBadge/PWAUpdatePrompt/BlogCard/QuickNoteEditorCore 全部回到 solid surface + border + dt-* tokens。Timeline 頁：移除 gradient 時間軸線、radial-gradient dot pattern、translate-x-2 card hover、amber dot glow shadow；raw amber/emerald badge → dt-warning/dt-success。Auth login/register：backdrop-blur shell 移除，hardcoded navy gradient（#11263a/#1c3145/#233948）→ `var(--color-panel-ink)`。Phase 10 gates：lint 0 errors / typecheck clean / 1761 tests pass / build ✅。保留 PRODUCT.md / DESIGN.md 方向與所有 i18n、a11y 設定 |
+| 2026-07-17 | Consistency + craft pass | 收斂 calendar/timeline 至 dt-* + LedgerCard/BaseButton；token 微調更深墨色與克制主藍；DesktopNav/BottomNav/BaseButton/LedgerCard 去掉 cyan/slate 硬編碼。 |
