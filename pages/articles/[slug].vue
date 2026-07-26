@@ -210,6 +210,7 @@ import { parseMarkdown } from '@nuxtjs/mdc/runtime'
 import type { MDCParserResult } from '@nuxtjs/mdc'
 import { calculateReadingTime, looksLikeHtmlContent, parseTags } from '~/lib/blog'
 import { usePerformance } from '~/composables/usePerformance'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import { normalizeCategory } from '~/types/blog'
 
 definePageMeta({
@@ -472,7 +473,7 @@ const handleDelete = async () => {
     await router.push('/articles')
   } catch (apiError: any) {
     console.error('Failed to delete post:', apiError)
-    toast.error(apiError.data?.statusMessage || t('blog.deleteFailed'))
+    toast.error(resolveErrorMessage(apiError, t, t('blog.deleteFailed')))
   }
 }
 </script>

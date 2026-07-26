@@ -67,6 +67,7 @@ describe('PUT /api/diaries/:id transaction diff upsert', () => {
       },
       alert: { deleteMany: mockAlertDeleteMany },
       diary: { update: mockDiaryUpdate },
+      user: { findUnique: vi.fn().mockResolvedValue({ timezone: 'Asia/Taipei' }) },
     }))
   })
 

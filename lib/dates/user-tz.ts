@@ -74,7 +74,7 @@ function getZonedOffsetMs(date: Date, timeZone: string): number {
  * 把 user-local 的 wall-clock parts（年月日時分秒毫秒）轉成 UTC Date。
  * 用兩段式 offset 驗證處理 DST 跳躍。
  */
-function zonedPartsToUtc(
+export function zonedPartsToUtc(
   parts: {
     year: number
     month: number

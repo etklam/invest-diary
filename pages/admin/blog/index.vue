@@ -9,6 +9,7 @@ import {
 import { resolveReloadPageAfterDelete } from '~/lib/admin/user-management'
 import { formatDate } from '~/lib/dates'
 import { CATEGORY_OPTIONS } from '~/types/blog'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -83,7 +84,7 @@ const fetchPosts = async (page = 1) => {
     selectedPosts.value = new Set()
   } catch (error: any) {
     console.error('Failed to fetch posts:', error)
-    toast.error(error.data?.statusMessage || t('blog.loadFailed'))
+    toast.error(resolveErrorMessage(error, t, t('blog.loadFailed')))
   } finally {
     loading.value = false
   }
@@ -97,7 +98,7 @@ const publishPost = async (postId: string) => {
     await fetchPosts(pagination.value.page)
   } catch (error: any) {
     console.error('Failed to publish post:', error)
-    toast.error(error.data?.statusMessage || t('blog.publishFailed'))
+    toast.error(resolveErrorMessage(error, t, t('blog.publishFailed')))
   }
 }
 
@@ -111,7 +112,7 @@ const archivePost = async (postId: string) => {
     await fetchPosts(pagination.value.page)
   } catch (error: any) {
     console.error('Failed to archive post:', error)
-    toast.error(error.data?.statusMessage || t('blog.archiveFailed'))
+    toast.error(resolveErrorMessage(error, t, t('blog.archiveFailed')))
   }
 }
 
@@ -130,7 +131,7 @@ const deletePost = async (postId: string, postTitle: string) => {
     await fetchPosts(nextPage)
   } catch (error: any) {
     console.error('Failed to delete post:', error)
-    toast.error(error.data?.statusMessage || t('blog.deleteFailed'))
+    toast.error(resolveErrorMessage(error, t, t('blog.deleteFailed')))
   }
 }
 
@@ -185,7 +186,7 @@ const bulkPublish = async () => {
     await fetchPosts(pagination.value.page)
   } catch (error: any) {
     console.error('Failed to bulk publish:', error)
-    toast.error(error.data?.statusMessage || '批量發布失敗')
+    toast.error(resolveErrorMessage(error, t, '批量發布失敗'))
   }
 }
 
@@ -202,7 +203,7 @@ const bulkDelete = async () => {
     await fetchPosts(pagination.value.page)
   } catch (error: any) {
     console.error('Failed to bulk delete:', error)
-    toast.error(error.data?.statusMessage || '批量刪除失敗')
+    toast.error(resolveErrorMessage(error, t, '批量刪除失敗'))
   }
 }
 </script>

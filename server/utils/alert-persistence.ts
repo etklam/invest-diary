@@ -6,6 +6,7 @@ export async function persistAlert(
   tx: Prisma.TransactionClient,
   diaryId: bigint,
   input: AlertInput,
+  timezone: string,
 ) {
   const triggerAt = new Date(input.trigger_at ?? input.triggerAt ?? new Date())
   const recurringMode = input.recurring_mode ?? input.recurringMode
@@ -25,7 +26,7 @@ export async function persistAlert(
     message: input.message,
     mode: recurringMode,
     startDate: triggerAt,
-    triggerTime: triggerAt.toTimeString().slice(0, 5),
+    timezone,
   })
 
   if (!parentData) {
@@ -60,20 +61,22 @@ export async function replaceAlerts(
   tx: Prisma.TransactionClient,
   diaryId: bigint,
   alerts: AlertInput[] | undefined,
+  timezone: string,
 ): Promise<void> {
   await tx.alert.deleteMany({ where: { diaryId } })
-  await persistAlerts(tx, diaryId, alerts)
+  await persistAlerts(tx, diaryId, alerts, timezone)
 }
 
 export async function persistAlerts(
   tx: Prisma.TransactionClient,
   diaryId: bigint,
   alerts: AlertInput[] | undefined,
+  timezone: string,
 ) {
   const persisted = []
 
   for (const alert of alerts ?? []) {
-    const result = await persistAlert(tx, diaryId, alert)
+    const result = await persistAlert(tx, diaryId, alert, timezone)
     if (result) persisted.push(result)
   }
 

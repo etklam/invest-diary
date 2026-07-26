@@ -78,13 +78,17 @@ export function formatShortDate(input: DateInput, timezone?: string): string {
  *   // → "2024/01/15 (一)"
  */
 export function formatDateWithWeekday(input: DateInput, timezone?: string): string {
-  const date = toDateInstance(input)
   const tz = timezone || 'Asia/Taipei'
 
   const formattedDate = formatShortDate(input, tz)
 
+  // 星期必須從目標時區的 YMD 推導，而非 runtime-local 的 getDay()：
+  // 跨日 instant + 非 UTC server (如 SSR) 會讓星期與顯示日期對不上。
+  const ymd = formatYmdInTimezone(input, tz)
+  const weekdayIndex = new Date(`${ymd}T00:00:00Z`).getUTCDay()
+
   const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-  const weekday = weekdays[date.getDay()]
+  const weekday = weekdays[weekdayIndex]
 
   return `${formattedDate} (${weekday})`
 }

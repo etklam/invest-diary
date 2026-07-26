@@ -129,6 +129,8 @@
 <script setup lang="ts">
 import { useDebounceFn, useLocalStorage } from '@vueuse/core'
 import { formatDate } from '~/lib/dates'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
+const { t } = useI18n()
 const toast = useToast()
 const router = useRouter()
 const route = useRoute()
@@ -287,7 +289,7 @@ const updatePost = async () => {
     router.push('/admin/blog')
   } catch (err: any) {
     console.error('Failed to update post:', err)
-    toast.error(err.data?.statusMessage || '更新失敗')
+    toast.error(resolveErrorMessage(err, t, '更新失敗'))
   } finally {
     saving.value = false
   }

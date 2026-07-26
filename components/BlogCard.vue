@@ -93,6 +93,7 @@
 import { computed, ref } from 'vue'
 import { refreshNuxtData, useAuth, useI18n, useToast } from '#imports'
 import { calculateReadingTime } from '~/lib/blog'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import { normalizeCategory } from '~/types/blog'
 
 interface Author {
@@ -151,7 +152,7 @@ const handleDelete = async () => {
     refreshNuxtData()
   } catch (error: any) {
     console.error('Failed to delete post:', error)
-    toast.error(error.data?.statusMessage || t('blog.deleteFailed'))
+    toast.error(resolveErrorMessage(error, t, t('blog.deleteFailed')))
   }
 }
 

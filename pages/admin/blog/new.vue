@@ -91,7 +91,9 @@
 
 <script setup lang="ts">
 import { useDebounceFn, useLocalStorage } from '@vueuse/core'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 
+const { t } = useI18n()
 const toast = useToast()
 const router = useRouter()
 
@@ -202,7 +204,7 @@ const createPost = async () => {
     }
   } catch (error: any) {
     console.error('Failed to create post:', error)
-    toast.error(error.data?.statusMessage || '建立失敗')
+    toast.error(resolveErrorMessage(error, t, '建立失敗'))
   } finally {
     loading.value = false
   }

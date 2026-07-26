@@ -115,10 +115,16 @@ export async function createAlertForDiary(
   await findDiaryForUser(diaryId, userId)
 
   return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { timezone: true },
+    })
+    const timezone = user?.timezone ?? 'Asia/Taipei'
+
     return persistAlert(tx, diaryId, {
       message: validated.message,
       trigger_at: validated.trigger_at,
       recurring_mode: validated.recurring_mode,
-    })
+    }, timezone)
   })
 }

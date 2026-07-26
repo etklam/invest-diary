@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { formatDate } from '~/lib/dates'
 import { buildAdminUsersQueryString, resolveReloadPageAfterDelete } from '~/lib/admin/user-management'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 
 const { t } = useI18n()
 const { user: currentUser } = useAuth()
@@ -36,7 +37,7 @@ const fetchStats = async () => {
     }
   } catch (error: any) {
     console.error('Failed to fetch stats:', error)
-    toast.error(error.data?.statusMessage || t('admin.error.fetchStatsFailed'))
+    toast.error(resolveErrorMessage(error, t, t('admin.error.fetchStatsFailed')))
   } finally {
     loading.value.stats = false
   }
@@ -59,7 +60,7 @@ const fetchUsers = async (page = 1) => {
     }
   } catch (error: any) {
     console.error('Failed to fetch users:', error)
-    toast.error(error.data?.statusMessage || t('admin.error.fetchUsersFailed'))
+    toast.error(resolveErrorMessage(error, t, t('admin.error.fetchUsersFailed')))
   } finally {
     loading.value.users = false
   }
@@ -79,7 +80,7 @@ const updateUserRole = async (userId: string, newRole: 'USER' | 'ADMIN') => {
     }
   } catch (error: any) {
     console.error('Failed to update user role:', error)
-    toast.error(error.data?.statusMessage || t('admin.error.updateRoleFailed'))
+    toast.error(resolveErrorMessage(error, t, t('admin.error.updateRoleFailed')))
   }
 }
 
@@ -105,7 +106,7 @@ const deleteUser = async (userId: string, userEmail: string) => {
     }
   } catch (error: any) {
     console.error('Failed to delete user:', error)
-    toast.error(error.data?.statusMessage || t('admin.error.deleteUserFailed'))
+    toast.error(resolveErrorMessage(error, t, t('admin.error.deleteUserFailed')))
   }
 }
 

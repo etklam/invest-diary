@@ -70,6 +70,9 @@ describe('Diary API Routes', () => {
           create: mockDiaryCreate,
           update: mockDiaryUpdate,
         },
+        user: {
+          findUnique: vi.fn().mockResolvedValue({ timezone: 'Asia/Taipei' }),
+        },
       }
       return callback(tx)
     })

@@ -6,9 +6,13 @@ type TranslateFn = (key: string) => string
  * Fallback 順序：
  *   1. i18n 翻譯（error.code.{lowercase_code}）
  *   2. 服務端 statusMessage（若存在）
- *   3. error.somethingWrong（硬編碼 fallback）
+ *   3. 呼叫端提供的 fallback（若有）
+ *   4. error.somethingWrong（硬編碼 fallback）
+ *
+ * `fallback` 是已解析的字串（呼叫端自行決定用 t(key) 或字面訊息），
+ * 讓 caller 保留原本各自的 fallback 語意，同時接上 error-code 翻譯層。
  */
-export function resolveErrorMessage(error: unknown, t?: TranslateFn): string {
+export function resolveErrorMessage(error: unknown, t?: TranslateFn, fallback?: string): string {
   let code: string | undefined
 
   if (error && typeof error === 'object') {
@@ -48,7 +52,12 @@ export function resolveErrorMessage(error: unknown, t?: TranslateFn): string {
     }
   }
 
-  // Fallback 3: hardcoded
+  // Fallback 3: 呼叫端提供的 fallback
+  if (fallback) {
+    return fallback
+  }
+
+  // Fallback 4: hardcoded
   if (t) {
     return t('error.somethingWrong')
   }

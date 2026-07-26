@@ -182,6 +182,7 @@ definePageMeta({
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 const toast = useToast()
 const saving = ref(false)
 const checkingDate = ref(false)
@@ -330,7 +331,7 @@ const saveDiary = async () => {
   } catch (e: any) {
     if (isAuthSessionError(e)) return
     console.error(e)
-    toast.error('儲存失敗: ' + (e.data?.statusMessage || e.message))
+    toast.error(resolveErrorMessage(e, t, '儲存失敗'))
   } finally {
     saving.value = false
   }

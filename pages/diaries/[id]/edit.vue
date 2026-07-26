@@ -153,6 +153,7 @@ import {
 import { buildDiaryAuthoringPayload } from '~/lib/diary-authoring/payload'
 import type { DiaryAuthoringForm } from '~/lib/diary-authoring/types'
 import { validateDiaryDraft } from '~/lib/diary-authoring/validation'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 
 definePageMeta({
   middleware: 'auth'
@@ -163,6 +164,7 @@ const router = useRouter()
 const id = route.params.id
 const saving = ref(false)
 const toast = useToast()
+const { t } = useI18n()
 const { runWithAuthRecovery } = useAuthRecovery()
 const { getTodayDateString, getTimezone } = useTimezone()
 
@@ -228,7 +230,7 @@ const saveDiary = async () => {
   } catch (e: any) {
     if (isAuthSessionError(e)) return
     console.error(e)
-    toast.error('儲存失敗: ' + (e.data?.statusMessage || e.message))
+    toast.error(resolveErrorMessage(e, t, '儲存失敗'))
   } finally {
     saving.value = false
   }

@@ -306,6 +306,7 @@
 
 <script setup lang="ts">
 import type { PartnerLinkSummary, PartnerLinksResponse, ApiKeyCreateResponse, ApiKeysResponse, ApiKeySummary } from '~/types/partner'
+import { resolveErrorMessage } from '~/composables/useErrorI18n'
 
 const { t, locale } = useI18n()
 const toast = useToast()
@@ -344,7 +345,7 @@ const loadLinks = async () => {
     const response = await $fetch<PartnerLinksResponse>('/api/partners')
     links.value = response.links
   } catch (error: any) {
-    toast.error(error?.data?.statusMessage || t('settings.partnerLoadFailed'))
+    toast.error(resolveErrorMessage(error, t, t('settings.partnerLoadFailed')))
   } finally {
     isPartnersLoading.value = false
   }
@@ -387,7 +388,7 @@ const handleCreateLink = async () => {
     partnerEmail.value = ''
     toast.success(t('settings.partnerRequestSent'))
   } catch (error: any) {
-    toast.error(error?.data?.statusMessage || t('settings.partnerCreateFailed'))
+    toast.error(resolveErrorMessage(error, t, t('settings.partnerCreateFailed')))
   } finally {
     isSubmitting.value = false
   }
@@ -401,7 +402,7 @@ const acceptLink = async (linkId: string) => {
     upsertLink(response.link)
     toast.success(t('settings.partnerAccepted'))
   } catch (error: any) {
-    toast.error(error?.data?.statusMessage || t('settings.partnerAcceptFailed'))
+    toast.error(resolveErrorMessage(error, t, t('settings.partnerAcceptFailed')))
   }
 }
 
@@ -419,7 +420,7 @@ const toggleSharingField = async (link: PartnerLinkSummary, field: 'shareDiaries
     toast.success(value ? t('settings.shareEnabled') : t('settings.shareDisabled'))
   } catch (error: any) {
     upsertLink({ ...link, [updateField]: previous })
-    toast.error(error?.data?.statusMessage || t('settings.partnerShareFailed'))
+    toast.error(resolveErrorMessage(error, t, t('settings.partnerShareFailed')))
   }
 }
 
@@ -444,7 +445,7 @@ const removeLink = async (linkId: string) => {
     toast.success(t('settings.partnerRemoved'))
   } catch (error: any) {
     links.value = previous
-    toast.error(error?.data?.statusMessage || t('settings.partnerRemoveFailed'))
+    toast.error(resolveErrorMessage(error, t, t('settings.partnerRemoveFailed')))
   }
 }
 
@@ -454,7 +455,7 @@ const loadKeys = async () => {
     const response = await $fetch<ApiKeysResponse>('/api/api-keys')
     keys.value = response.keys
   } catch (error: any) {
-    toast.error(error?.data?.statusMessage || t('settings.apiKeyLoadFailed'))
+    toast.error(resolveErrorMessage(error, t, t('settings.apiKeyLoadFailed')))
   } finally {
     isKeysLoading.value = false
   }
@@ -480,7 +481,7 @@ const createKey = async () => {
     scope.value = 'DIARY_CREATE'
     toast.success(t('settings.apiKeyCreateSuccess'))
   } catch (error: any) {
-    toast.error(error?.data?.statusMessage || t('settings.apiKeyCreateFailed'))
+    toast.error(resolveErrorMessage(error, t, t('settings.apiKeyCreateFailed')))
   } finally {
     isKeySubmitting.value = false
   }
@@ -497,7 +498,7 @@ const revokeKey = async (keyId: string) => {
     toast.success(t('settings.apiKeyRevokedSuccess'))
   } catch (error: any) {
     keys.value = previous
-    toast.error(error?.data?.statusMessage || t('settings.apiKeyRevokeFailed'))
+    toast.error(resolveErrorMessage(error, t, t('settings.apiKeyRevokeFailed')))
   }
 }
 </script>

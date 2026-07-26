@@ -113,6 +113,14 @@ describe('formatDateWithWeekday', () => {
     const result = formatDateWithWeekday(new Date('2024-01-15T20:00:00Z'), 'Asia/Tokyo')
     expect(result).toBe('2024/01/16 (二)') // Jan 16 is Tuesday
   })
+
+  it('星期應與目標時區的日期一致（跨日 instant regression）', () => {
+    // 此 instant 在 UTC 是 2024-01-14 (週日)，但在 Asia/Taipei 是 2024-01-15 (週一)。
+    // 舊實作用 getDay() 會依 runtime-local 時區判星期，SSR (UTC server) 下
+    // 會輸出「2024/01/15 (日)」——日期與星期對不上。
+    const result = formatDateWithWeekday(new Date('2024-01-14T18:00:00Z'), 'Asia/Taipei')
+    expect(result).toBe('2024/01/15 (一)')
+  })
 })
 
 // ─── formatYmdInTimezone ────────────────────────────────────────────────────────

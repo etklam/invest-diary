@@ -20,6 +20,21 @@ export function toInputDate(value: string | Date): Date {
   return value instanceof Date ? value : new Date(value)
 }
 
+/**
+ * 查使用者 timezone，供 recurring alert 序列計算使用。
+ * 找不到（理論上不會）時回退 schema default 'Asia/Taipei'。
+ */
+async function resolveUserTimezone(
+  tx: Prisma.TransactionClient,
+  userId: bigint,
+): Promise<string> {
+  const user = await tx.user.findUnique({
+    where: { id: userId },
+    select: { timezone: true },
+  })
+  return user?.timezone ?? 'Asia/Taipei'
+}
+
 // ---- Shared validation ----
 
 export interface DiaryValidationOptions {
@@ -336,7 +351,8 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
   if (alerts) {
     const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const createdDiary = await tx.diary.create(diaryCreateArgs)
-      const persistedAlerts = await persistAlerts(tx, createdDiary.id, alerts)
+      const timezone = await resolveUserTimezone(tx, userId)
+      const persistedAlerts = await persistAlerts(tx, createdDiary.id, alerts, timezone)
       return { ...createdDiary, alerts: persistedAlerts }
     })
 
@@ -401,7 +417,8 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
 
   const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await persistTransactionDiff(tx, diaryId, userId, diff)
-    await replaceAlerts(tx, diaryId, alerts)
+    const timezone = await resolveUserTimezone(tx, userId)
+    await replaceAlerts(tx, diaryId, alerts, timezone)
 
     // Update the diary record
     return await tx.diary.update({

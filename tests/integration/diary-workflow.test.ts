@@ -23,6 +23,7 @@ const mockPrismaTransaction = vi.fn(async (callback: any) => callback({
   transaction: { deleteMany: mockTransactionDeleteMany },
   alert: { deleteMany: mockAlertDeleteMany },
   diary: { update: mockDiaryUpdate },
+  user: { findUnique: vi.fn().mockResolvedValue({ timezone: 'Asia/Taipei' }) },
 }))
 
 vi.mock('~/lib/prisma', () => ({

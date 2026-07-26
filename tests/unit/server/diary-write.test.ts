@@ -16,6 +16,7 @@ const {
   mockTxAlertCreate,
   mockTxAlertCreateMany,
   mockTxAlertUpdate,
+  mockTxUserFindUnique,
 } = vi.hoisted(() => ({
   mockPrismaDiaryFindFirst: vi.fn(),
   mockPrismaDiaryCreate: vi.fn(),
@@ -31,6 +32,7 @@ const {
   mockTxAlertCreate: vi.fn(),
   mockTxAlertCreateMany: vi.fn(),
   mockTxAlertUpdate: vi.fn(),
+  mockTxUserFindUnique: vi.fn(),
 }))
 
 vi.mock('~/lib/prisma', () => ({
@@ -259,6 +261,7 @@ describe('createDiaryForUser', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockPrismaTransactionFindMany.mockResolvedValue([])
+    mockTxUserFindUnique.mockResolvedValue({ timezone: 'Asia/Taipei' })
   })
 
   const baseCreatedDiary = {
@@ -454,6 +457,7 @@ describe('createDiaryForUser', () => {
     mockPrismaTransaction.mockImplementation(async (cb: any) => cb({
       diary: { create: mockTxDiaryCreate },
       alert: { create: mockTxAlertCreate },
+      user: { findUnique: mockTxUserFindUnique },
     }))
 
     await createDiaryForUser({
@@ -494,6 +498,7 @@ describe('createDiaryForUser', () => {
         createMany: mockTxAlertCreateMany,
         update: mockTxAlertUpdate,
       },
+      user: { findUnique: mockTxUserFindUnique },
     }))
 
     await createDiaryForUser({
@@ -578,6 +583,7 @@ describe('updateDiaryForUser', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockPrismaTransactionFindMany.mockResolvedValue([])
+    mockTxUserFindUnique.mockResolvedValue({ timezone: 'Asia/Taipei' })
 
     mockTxTransactionUpdateMany.mockResolvedValue({ count: 1 })
     mockTxDiaryUpdate.mockResolvedValue({
@@ -611,6 +617,7 @@ describe('updateDiaryForUser', () => {
           update: mockTxAlertUpdate,
         },
         diary: { update: mockTxDiaryUpdate },
+        user: { findUnique: mockTxUserFindUnique },
       })
     })
   })
