@@ -3,24 +3,19 @@ import DesktopNav from './nav/DesktopNav.vue'
 import MobileNav from './nav/MobileNav.vue'
 
 const { t } = useI18n()
-const route = useRoute()
-const isHomeRoute = computed(() => route.path === '/')
 
 // Mobile menu state
 const mobileNavOpen = ref(false)
 </script>
 
 <template>
-  <nav class="sticky z-40 px-3 sm:px-4 lg:px-6" :class="isHomeRoute ? 'top-3' : 'top-4'">
+  <nav class="sticky top-4 z-40 px-3 sm:px-4 lg:px-6">
     <DesktopNav>
       <template #mobile-trigger>
         <div class="ml-auto flex xl:hidden">
           <button
             @click="mobileNavOpen = !mobileNavOpen"
-            class="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border bg-white/80 p-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900"
-            :class="isHomeRoute
-              ? 'border-sky-100 text-sky-700 hover:bg-sky-50 dark:text-sky-200'
-              : 'border-cyan-100 text-cyan-700 hover:bg-cyan-50 dark:text-cyan-200'"
+            class="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-dt-sm border border-dt-border bg-dt-surface p-2 text-dt-text transition-colors duration-200 hover:bg-dt-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30"
             :aria-label="mobileNavOpen ? t('theme.closeMenu') : t('theme.openMenu')"
           >
             <Icon

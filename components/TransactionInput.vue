@@ -1,185 +1,170 @@
 <template>
   <div class="space-y-4">
-    <div class="flex justify-between items-center">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">交易記錄</h3>
-      <button
-        type="button"
-        @click="addTransaction"
-        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 min-h-[44px]"
-      >
-        <Icon name="heroicons:plus" class="mr-2 h-4 w-4" />
-        新增交易
-      </button>
-    </div>
-
-    <div v-if="transactions.length === 0" class="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-      <p class="text-sm text-gray-500 dark:text-gray-400">尚無交易記錄</p>
+    <div v-if="transactions.length === 0" class="rounded-dt-sm border border-dashed border-dt-border bg-dt-surface-strong py-8 text-center">
+      <p class="text-sm text-dt-text-muted">{{ t('diary.form.noTransactions') }}</p>
+      <BaseButton variant="secondary" class="mt-3" @click="addTransaction">
+        <Icon name="heroicons:plus" class="h-4 w-4" />
+        {{ t('diary.form.addTransaction') }}
+      </BaseButton>
     </div>
 
     <div v-else class="space-y-4">
       <div
         v-for="(transaction, index) in transactions"
         :key="index"
-        class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 relative"
-        :class="{ 'border-red-500 dark:border-red-500': hasValidationError(transaction) }"
+        class="relative rounded-dt-sm border bg-dt-surface-strong p-4"
+        :class="hasValidationError(transaction) ? 'border-dt-danger' : 'border-dt-border'"
       >
         <button
           type="button"
           @click="removeTransaction(index)"
-          class="absolute top-2 right-2 text-gray-400 hover:text-red-500 min-w-[44px] min-h-[44px] flex items-center justify-center"
-          aria-label="刪除交易"
+          class="absolute right-1 top-1 flex min-h-[44px] min-w-[44px] items-center justify-center text-dt-text-soft transition-colors hover:text-dt-danger"
+          :aria-label="t('diary.form.removeTransaction')"
         >
           <Icon name="heroicons:x-mark" class="h-5 w-5" />
         </button>
 
-        <div class="grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-6">
+        <div class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-6">
           <div class="sm:col-span-1">
-            <label :for="`symbol-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">代碼</label>
-            <div class="mt-1">
-              <input
-                type="text"
-                :id="`symbol-${index}`"
-                :value="transaction.symbol"
-                @input="updateSymbol(index, $event)"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white uppercase min-h-[44px] px-3"
-                placeholder="AAPL"
-              />
-            </div>
+            <label :for="`symbol-${index}`" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.symbol') }}</label>
+            <input
+              type="text"
+              :id="`symbol-${index}`"
+              :value="transaction.symbol"
+              @input="updateSymbol(index, $event)"
+              :class="inputClass"
+              class="uppercase"
+              placeholder="AAPL"
+            />
           </div>
 
           <div class="sm:col-span-1">
-            <label :for="`type-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">類型</label>
-            <div class="mt-1">
-              <select
-                :id="`type-${index}`"
-                v-model="transaction.type"
-                @change="validateTransaction(index)"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[44px] px-3"
-              >
-                <option value="BUY">買入</option>
-                <option value="SELL">賣出</option>
-              </select>
-            </div>
+            <label :for="`type-${index}`" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.type') }}</label>
+            <select
+              :id="`type-${index}`"
+              v-model="transaction.type"
+              @change="validateTransaction(index)"
+              :class="inputClass"
+            >
+              <option value="BUY">{{ t('diary.form.buy') }}</option>
+              <option value="SELL">{{ t('diary.form.sell') }}</option>
+            </select>
           </div>
 
           <div class="sm:col-span-1">
-            <label :for="`quantity-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">
-              數量
-              <span v-if="transaction.type === 'SELL' && getCurrentHolding(transaction.symbol)" class="text-xs text-gray-500 dark:text-gray-400">
-                (可用: {{ formatQuantity(getCurrentHolding(transaction.symbol)) }})
+            <label :for="`quantity-${index}`" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">
+              {{ t('diary.form.quantity') }}
+              <span v-if="transaction.type === 'SELL' && getCurrentHolding(transaction.symbol)" class="font-mono text-[11px] normal-case tracking-normal text-dt-text-soft">
+                ({{ t('diary.form.available') }} {{ formatQuantity(getCurrentHolding(transaction.symbol)) }})
               </span>
             </label>
-            <div class="mt-1">
-              <input
-                type="number"
-                :id="`quantity-${index}`"
-                v-model.number="transaction.quantity"
-                @input="validateTransaction(index)"
-                step="0.0001"
-                min="0"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[44px] px-3"
-                :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-500': getValidationError(transaction) }"
-              />
-            </div>
+            <input
+              type="number"
+              :id="`quantity-${index}`"
+              v-model.number="transaction.quantity"
+              @input="validateTransaction(index)"
+              step="0.0001"
+              min="0"
+              :class="[inputClass, getValidationError(transaction) ? 'border-dt-danger focus:border-dt-danger' : '']"
+              class="font-mono"
+            />
           </div>
 
           <div class="sm:col-span-1">
-            <label :for="`price-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">價格</label>
-            <div class="mt-1">
-              <input
-                type="number"
-                :id="`price-${index}`"
-                v-model.number="transaction.price"
-                step="0.01"
-                min="0"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[44px] px-3"
-              />
-            </div>
+            <label :for="`price-${index}`" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.price') }}</label>
+            <input
+              type="number"
+              :id="`price-${index}`"
+              v-model.number="transaction.price"
+              step="0.01"
+              min="0"
+              :class="inputClass"
+              class="font-mono"
+            />
           </div>
 
           <div class="sm:col-span-2">
-            <label :for="`date-${index}`" class="block text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300">日期時間</label>
-            <div class="mt-1">
-              <input
-                type="datetime-local"
-                :id="`date-${index}`"
-                v-model="transaction.trade_date"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[44px] px-3"
-              />
-            </div>
+            <label :for="`date-${index}`" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.dateTime') }}</label>
+            <input
+              type="datetime-local"
+              :id="`date-${index}`"
+              v-model="transaction.trade_date"
+              :class="inputClass"
+              class="font-mono"
+            />
           </div>
         </div>
 
         <!-- Validation Error Message -->
-        <div v-if="getValidationError(transaction)" class="mt-3 text-sm text-red-600 dark:text-red-400 flex items-center">
-          <Icon name="heroicons:exclamation-triangle" class="h-4 w-4 mr-1" />
+        <div v-if="getValidationError(transaction)" class="mt-3 flex items-center text-sm text-dt-danger">
+          <Icon name="heroicons:exclamation-triangle" class="mr-1 h-4 w-4" />
           {{ getValidationError(transaction) }}
         </div>
 
         <!-- 交易筆記（柔性提示，可摺疊） -->
-        <div class="mt-3 border-t border-gray-100 dark:border-gray-700 pt-3">
+        <div class="mt-3 border-t border-dt-border pt-3">
           <button
             type="button"
             @click="toggleNotes(index)"
-            class="flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            class="flex items-center text-xs text-dt-text-muted transition-colors hover:text-dt-primary"
           >
             <Icon
               :name="expandedNotes.has(index) ? 'heroicons:chevron-down' : 'heroicons:chevron-right'"
-              class="h-3 w-3 mr-1"
+              class="mr-1 h-3 w-3"
             />
-            {{ expandedNotes.has(index) ? '收起筆記' : '+ 交易筆記（選填）' }}
+            {{ expandedNotes.has(index) ? t('diary.form.notesToggleOpen') : t('diary.form.notesToggle') }}
           </button>
 
           <div v-if="expandedNotes.has(index)" class="mt-3 space-y-3">
             <!-- notes -->
             <div>
-              <label :for="`notes-${index}`" class="block text-xs font-medium text-gray-600 dark:text-gray-400">
-                交易理由 / 心得
+              <label :for="`notes-${index}`" class="block text-xs font-medium text-dt-text-muted">
+                {{ t('diary.form.notes') }}
               </label>
               <textarea
                 :id="`notes-${index}`"
                 :value="transaction.notes ?? ''"
                 @input="updateField(index, 'notes', ($event.target as HTMLTextAreaElement).value)"
                 rows="2"
-                class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 resize-none"
-                placeholder="為什麼做這筆交易？執行心得..."
+                class="mt-1 block w-full resize-none rounded-dt-sm border border-dt-border bg-dt-surface px-3 py-2 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+                :placeholder="t('diary.form.notesPlaceholder')"
               />
             </div>
 
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <!-- strategy -->
               <div>
-                <label :for="`strategy-${index}`" class="block text-xs font-medium text-gray-600 dark:text-gray-400">
-                  策略標籤
+                <label :for="`strategy-${index}`" class="block text-xs font-medium text-dt-text-muted">
+                  {{ t('diary.form.strategy') }}
                 </label>
                 <input
                   type="text"
                   :id="`strategy-${index}`"
                   :value="transaction.strategy ?? ''"
                   @input="updateField(index, 'strategy', ($event.target as HTMLInputElement).value)"
-                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[36px] px-3"
-                  placeholder="如：趨勢跟隨、突破買入"
+                  :class="inputClass"
+                  :placeholder="t('diary.form.strategyPlaceholder')"
                 />
               </div>
 
               <!-- emotion -->
               <div>
-                <label :for="`emotion-${index}`" class="block text-xs font-medium text-gray-600 dark:text-gray-400">
-                  當下情緒
+                <label :for="`emotion-${index}`" class="block text-xs font-medium text-dt-text-muted">
+                  {{ t('diary.form.emotion') }}
                 </label>
                 <select
                   :id="`emotion-${index}`"
                   :value="transaction.emotion ?? ''"
                   @change="updateField(index, 'emotion', ($event.target as HTMLSelectElement).value)"
-                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[36px] px-3"
+                  :class="inputClass"
                 >
-                  <option value="">選擇情緒...</option>
-                  <option value="calm">😌 冷靜</option>
-                  <option value="confident">💪 有信心</option>
-                  <option value="uncertain">🤔 不確定</option>
-                  <option value="fomo">😰 追漲（FOMO）</option>
-                  <option value="fear">😨 恐懼</option>
-                  <option value="greed">🤑 貪婪</option>
+                  <option value="">{{ t('diary.form.emotionSelect') }}</option>
+                  <option value="calm">{{ t('diary.form.emotionCalm') }}</option>
+                  <option value="confident">{{ t('diary.form.emotionConfident') }}</option>
+                  <option value="uncertain">{{ t('diary.form.emotionUncertain') }}</option>
+                  <option value="fomo">{{ t('diary.form.emotionFomo') }}</option>
+                  <option value="fear">{{ t('diary.form.emotionFear') }}</option>
+                  <option value="greed">{{ t('diary.form.emotionGreed') }}</option>
                 </select>
               </div>
             </div>
@@ -187,15 +172,22 @@
         </div>
 
       </div>
+
+      <div class="flex justify-end">
+        <BaseButton variant="secondary" @click="addTransaction">
+          <Icon name="heroicons:plus" class="h-4 w-4" />
+          {{ t('diary.form.addTransaction') }}
+        </BaseButton>
+      </div>
     </div>
 
     <!-- Holdings Summary -->
-    <div v-if="holdings.length > 0" class="bg-blue-50 dark:bg-blue-900/40 p-3 rounded-md border border-blue-200 dark:border-blue-700">
-      <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">目前持股（本表）</h4>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-        <div v-for="holding in holdings" :key="holding.symbol" class="bg-white dark:bg-gray-800 p-2 rounded">
-          <span class="font-medium text-gray-900 dark:text-white">{{ holding.symbol }}</span>
-          <span class="text-gray-600 dark:text-gray-400 ml-2">{{ formatQuantity(holding.quantity) }}</span>
+    <div v-if="holdings.length > 0" class="rounded-dt-sm border border-dt-border bg-dt-surface-strong p-3">
+      <h4 class="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.holdingsThisTable') }}</h4>
+      <div class="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+        <div v-for="holding in holdings" :key="holding.symbol" class="rounded-dt-sm border border-dt-border bg-dt-surface p-2">
+          <span class="font-semibold text-dt-text">{{ holding.symbol }}</span>
+          <span class="ml-2 font-mono text-dt-text-muted">{{ formatQuantity(holding.quantity) }}</span>
         </div>
       </div>
     </div>
@@ -228,6 +220,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:modelValue', value: Transaction[]): void
 }>()
+
+const { t } = useI18n()
+
+const inputClass = 'mt-1 block w-full min-h-[44px] rounded-dt-sm border border-dt-border bg-dt-surface px-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none'
 
 const transactions = computed({
   get: () => props.modelValue,
@@ -307,7 +303,7 @@ const validateTransaction = (index: number) => {
     const symbol = tx.symbol?.trim()
 
     if (!symbol) {
-      errors.push('賣出時必須輸入股票代碼')
+      errors.push(t('diary.form.sellNeedsSymbol'))
     } else {
       // Only enforce holdings when the server-provided baseline is known.
       if (ledgerContext.value.available) {
@@ -318,9 +314,12 @@ const validateTransaction = (index: number) => {
         )
 
         if (available <= 0) {
-          errors.push(`沒有 ${symbol} 的持股可賣`)
+          errors.push(t('diary.form.sellNoHolding', { symbol }))
         } else if ((tx.quantity || 0) > available) {
-          errors.push(`賣出數量 (${formatQuantity(tx.quantity)}) 超過持股數量 (${formatQuantity(available)})`)
+          errors.push(t('diary.form.sellExceeds', {
+            qty: formatQuantity(tx.quantity),
+            available: formatQuantity(available),
+          }))
         }
       }
     }

@@ -1,163 +1,202 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-        {{ isEditing ? '編輯日記' : '新增日記' }}
+  <div class="mx-auto max-w-4xl space-y-6">
+    <!-- Header: 標題 + 日期（日記的身分欄位，放第一視線） -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="font-display text-2xl font-semibold tracking-tight text-dt-text">
+        {{ isEditing ? t('diary.editDiary') : t('diary.newDiary') }}
       </h1>
-      <div v-if="isEditing" class="text-sm text-gray-500 dark:text-gray-400">
-        已載入該日期的既有日記
-      </div>
+      <label class="flex items-center gap-2">
+        <span class="text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.diaryDate') }}</span>
+        <Icon v-if="checkingDate" name="svg-spinners:180-ring-with-bg" class="h-4 w-4 text-dt-primary" />
+        <input
+          type="date"
+          id="diary-date"
+          v-model="form.date"
+          :disabled="checkingDate"
+          :class="inputClass"
+          class="w-auto font-mono"
+        />
+      </label>
     </div>
 
-    <form @submit.prevent="saveDiary" class="space-y-8">
-      <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <p v-if="isEditing" class="rounded-dt-sm border border-dt-border bg-dt-surface-strong px-4 py-2 text-sm text-dt-text-muted">
+      <Icon name="heroicons:information-circle" class="mr-1 inline-block h-4 w-4 align-text-bottom text-dt-info" />
+      {{ t('diary.form.existingLoaded') }}
+    </p>
+
+    <form @submit.prevent="saveDiary" class="space-y-6">
+      <LedgerCard>
+        <DiaryEditor
+          v-model:title="form.title"
+          v-model:content="form.content"
+        />
+      </LedgerCard>
+
+      <!-- Thesis & Risk -->
+      <LedgerCard>
+        <div class="grid gap-4 md:grid-cols-2">
           <div>
-            <label for="diary-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              日期
-              <Icon v-if="checkingDate" name="svg-spinners:180-ring-with-bg" class="inline-block ml-2 h-4 w-4" />
+            <label class="text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">
+              {{ t('review.fields.thesis') }}
             </label>
-            <input
-              type="date"
-              id="diary-date"
-              v-model="form.date"
-              :disabled="checkingDate"
-              class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white disabled:opacity-50"
+            <textarea
+              v-model="form.thesis"
+              :placeholder="t('review.fields.thesisPlaceholder')"
+              class="mt-1 w-full rounded-dt-sm border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+              rows="3"
+            />
+          </div>
+          <div>
+            <label class="text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">
+              {{ t('review.fields.risk') }}
+            </label>
+            <textarea
+              v-model="form.risk"
+              :placeholder="t('review.fields.riskPlaceholder')"
+              class="mt-1 w-full rounded-dt-sm border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+              rows="3"
             />
           </div>
         </div>
-      </div>
+      </LedgerCard>
 
-      <DiaryEditor
-        v-model:title="form.title"
-        v-model:content="form.content"
-      />
-
-      <!-- Thesis & Risk -->
-      <div class="grid gap-4 md:grid-cols-2">
-        <div>
-          <label class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
-            {{ $t('review.fields.thesis') }}
-          </label>
-          <textarea
-            v-model="form.thesis"
-            :placeholder="$t('review.fields.thesisPlaceholder')"
-            class="mt-1 w-full rounded-lg border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
-            rows="3"
+      <!-- 交易記錄（摺疊，有資料自動展開） -->
+      <section class="rounded-dt-md border border-dt-border bg-dt-surface shadow-dt-sm">
+        <button
+          type="button"
+          @click="showTransactions = !showTransactions"
+          class="flex min-h-11 w-full items-center justify-between px-5 py-4 text-left sm:px-6"
+          :aria-expanded="showTransactions"
+        >
+          <span class="flex items-center gap-2 font-display text-lg font-semibold tracking-tight text-dt-text">
+            {{ t('diary.form.transactions') }}
+            <span
+              v-if="form.transactions.length"
+              class="rounded-dt-pill bg-dt-surface-strong px-2 py-0.5 font-mono text-xs text-dt-text-muted"
+            >{{ form.transactions.length }}</span>
+          </span>
+          <Icon
+            :name="showTransactions ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+            class="h-5 w-5 text-dt-text-muted"
           />
+        </button>
+        <div v-show="showTransactions" class="border-t border-dt-border px-5 py-4 sm:px-6">
+          <div class="mb-4 flex justify-end">
+            <BaseButton variant="ghost" :disabled="loadingLatest" @click="copyFromLatest">
+              <Icon v-if="loadingLatest" name="svg-spinners:180-ring-with-bg" class="h-4 w-4" />
+              <Icon v-else name="heroicons:document-duplicate" class="h-4 w-4" />
+              {{ t('diary.form.copyFromLatest') }}
+            </BaseButton>
+          </div>
+          <TransactionInput v-model="form.transactions" />
         </div>
-        <div>
-          <label class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
-            {{ $t('review.fields.risk') }}
-          </label>
-          <textarea
-            v-model="form.risk"
-            :placeholder="$t('review.fields.riskPlaceholder')"
-            class="mt-1 w-full rounded-lg border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
-            rows="3"
+      </section>
+
+      <!-- 提醒設定（摺疊，有資料自動展開） -->
+      <section class="rounded-dt-md border border-dt-border bg-dt-surface shadow-dt-sm">
+        <button
+          type="button"
+          @click="showAlerts = !showAlerts"
+          class="flex min-h-11 w-full items-center justify-between px-5 py-4 text-left sm:px-6"
+          :aria-expanded="showAlerts"
+        >
+          <span class="flex items-center gap-2 font-display text-lg font-semibold tracking-tight text-dt-text">
+            {{ t('diary.form.alerts') }}
+            <span
+              v-if="form.alerts.length"
+              class="rounded-dt-pill bg-dt-surface-strong px-2 py-0.5 font-mono text-xs text-dt-text-muted"
+            >{{ form.alerts.length }}</span>
+          </span>
+          <Icon
+            :name="showAlerts ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+            class="h-5 w-5 text-dt-text-muted"
           />
-        </div>
-      </div>
+        </button>
+        <div v-show="showAlerts" class="space-y-4 border-t border-dt-border px-5 py-4 sm:px-6">
+          <div v-if="form.alerts.length === 0" class="rounded-dt-sm border border-dashed border-dt-border bg-dt-surface-strong py-8 text-center">
+            <p class="text-sm text-dt-text-muted">{{ t('diary.form.noAlerts') }}</p>
+            <BaseButton variant="secondary" class="mt-3" @click="addAlert">
+              <Icon name="heroicons:plus" class="h-4 w-4" />
+              {{ t('diary.form.addAlert') }}
+            </BaseButton>
+          </div>
 
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">交易記錄</h3>
-          <button
-            type="button"
-            @click="copyFromLatest"
-            :disabled="loadingLatest"
-            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            <Icon v-if="loadingLatest" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4" />
-            <Icon v-else name="heroicons:document-duplicate" class="mr-2 h-4 w-4" />
-            複製上筆交易
-          </button>
-        </div>
-        <TransactionInput v-model="form.transactions" />
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">提醒設定</h3>
-          <button
-            type="button"
-            @click="addAlert"
-            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <Icon name="heroicons:plus" class="mr-2 h-4 w-4" />
-            新增提醒
-          </button>
-        </div>
-
-        <div v-if="form.alerts.length === 0" class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
-          尚無提醒
-        </div>
-
-        <div v-else class="space-y-4">
-          <div v-for="(alert, index) in form.alerts" :key="index" class="flex items-start space-x-4 bg-gray-50 dark:bg-gray-700 p-3 rounded-md relative">
-            <button
-              type="button"
-              @click="removeAlert(index)"
-              class="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+          <template v-else>
+            <div
+              v-for="(alert, index) in form.alerts"
+              :key="index"
+              class="relative rounded-dt-sm border border-dt-border bg-dt-surface-strong p-4"
             >
-              <Icon name="heroicons:x-mark" class="h-5 w-5" />
-            </button>
-            
-            <div class="flex-grow grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div>
-                <label :for="`alert-msg-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">訊息</label>
-                <input
-                  type="text"
-                  :id="`alert-msg-${index}`"
-                  v-model="alert.message"
-                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                  placeholder="提醒內容"
-                />
-              </div>
-              <div>
-                <label :for="`alert-time-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">提醒日期</label>
-                <input
-                  type="date"
-                  :id="`alert-time-${index}`"
-                  v-model="alert.trigger_at"
-                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                />
-              </div>
-              <div>
-                <label :for="`alert-recurring-${index}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">持續提醒</label>
-                <select
-                  :id="`alert-recurring-${index}`"
-                  v-model="alert.recurring_mode"
-                  class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                >
-                  <option value="">不重複</option>
-                  <option value="WEEK">本周（到週五）</option>
-                  <option value="MONTH">本月（到月底）</option>
-                </select>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {{ getRecurringDescription(alert.recurring_mode) }}
-                </p>
+              <button
+                type="button"
+                @click="removeAlert(index)"
+                class="absolute right-1 top-1 flex min-h-[44px] min-w-[44px] items-center justify-center text-dt-text-soft transition-colors hover:text-dt-danger"
+                :aria-label="t('common.delete')"
+              >
+                <Icon name="heroicons:x-mark" class="h-5 w-5" />
+              </button>
+
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label :for="`alert-msg-${index}`" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.alertMessage') }}</label>
+                  <input
+                    type="text"
+                    :id="`alert-msg-${index}`"
+                    v-model="alert.message"
+                    :class="inputClass"
+                    :placeholder="t('diary.form.alertMessagePlaceholder')"
+                  />
+                </div>
+                <div>
+                  <label :for="`alert-time-${index}`" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.alertDate') }}</label>
+                  <input
+                    type="date"
+                    :id="`alert-time-${index}`"
+                    v-model="alert.trigger_at"
+                    :class="inputClass"
+                    class="font-mono"
+                  />
+                </div>
+                <div>
+                  <label :for="`alert-recurring-${index}`" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.alertRecurring') }}</label>
+                  <select
+                    :id="`alert-recurring-${index}`"
+                    v-model="alert.recurring_mode"
+                    :class="inputClass"
+                  >
+                    <option value="">{{ t('diary.form.recurringNone') }}</option>
+                    <option value="WEEK">{{ t('diary.form.recurringWeek') }}</option>
+                    <option value="MONTH">{{ t('diary.form.recurringMonth') }}</option>
+                  </select>
+                  <p class="mt-1 text-xs text-dt-text-soft">
+                    {{ getRecurringDescription(alert.recurring_mode) }}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="flex justify-end space-x-3">
+            <div class="flex justify-end">
+              <BaseButton variant="secondary" @click="addAlert">
+                <Icon name="heroicons:plus" class="h-4 w-4" />
+                {{ t('diary.form.addAlert') }}
+              </BaseButton>
+            </div>
+          </template>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3">
         <NuxtLink
           to="/diaries"
-          class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-dt-sm border border-dt-border bg-dt-surface px-4 py-2 text-sm font-semibold text-dt-text transition-colors duration-150 hover:bg-dt-surface-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30"
         >
-          取消
+          {{ t('common.cancel') }}
         </NuxtLink>
-        <button
-          type="submit"
-          :disabled="saving"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-        >
-          <Icon v-if="saving" name="svg-spinners:180-ring-with-bg" class="mr-2 h-4 w-4" />
-          {{ isEditing ? '更新日記' : '儲存日記' }}
-        </button>
+        <BaseButton type="submit" :disabled="saving">
+          <Icon v-if="saving" name="svg-spinners:180-ring-with-bg" class="h-4 w-4" />
+          {{ isEditing ? t('common.save') : t('diary.writeDiary') }}
+        </BaseButton>
       </div>
     </form>
   </div>
@@ -192,11 +231,18 @@ const existingDiaryId = ref<string | null>(null)
 const { runWithAuthRecovery } = useAuthRecovery()
 const { getTodayDateString, formatLocaleDate, getTimezone } = useTimezone()
 
+const inputClass = 'mt-1 block w-full min-h-[44px] rounded-dt-sm border border-dt-border bg-dt-surface px-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none disabled:opacity-50'
 
 // Get date from URL query parameter or use today
 const initialDate = (route.query.date as string) || getTodayDateString()
 
 const form = reactive<DiaryAuthoringForm>(createEmptyDiaryAuthoringForm(initialDate))
+
+// Progressive disclosure：進階區塊預設收合，有資料時自動展開
+const showTransactions = ref(form.transactions.length > 0)
+const showAlerts = ref(form.alerts.length > 0)
+watch(() => form.transactions.length, (n) => { if (n > 0) showTransactions.value = true })
+watch(() => form.alerts.length, (n) => { if (n > 0) showAlerts.value = true })
 
 // Watch for date changes and check if diary exists
 watch(() => form.date, async (newDate) => {
@@ -222,14 +268,11 @@ watch(() => form.date, async (newDate) => {
     }
   } catch (error: any) {
     if (isAuthSessionError(error)) return
-    toast.error(resolveErrorMessage(error) || '無法檢查既有日記')
+    toast.error(resolveErrorMessage(error, t, t('diary.form.checkExistingFailed')))
   } finally {
     checkingDate.value = false
   }
 })
-
-// Try to fetch latest transactions to copy holdings if needed
-// For now, we start fresh
 
 const addAlert = () => {
   const today = getTodayDateString()
@@ -242,9 +285,9 @@ const addAlert = () => {
 }
 
 const getRecurringDescription = (mode?: string) => {
-  if (mode === 'WEEK') return '每個工作日提醒，直到本週五'
-  if (mode === 'MONTH') return '每個工作日提醒，直到本月底'
-  return '僅提醒一次'
+  if (mode === 'WEEK') return t('diary.form.recurringWeekDesc')
+  if (mode === 'MONTH') return t('diary.form.recurringMonthDesc')
+  return t('diary.form.recurringOnceDesc')
 }
 
 const removeAlert = (index: number) => {
@@ -273,14 +316,14 @@ const copyFromLatest = async () => {
 
       // Show success feedback
       const diaryDate = formatLocaleDate(latest.diary_date)
-      toast.success(`已複製 ${newTransactions.length} 筆交易記錄（來源：${diaryDate}）`)
+      toast.success(t('diary.form.copySuccess', { count: newTransactions.length, date: diaryDate }))
     } else {
-      toast.warning('沒有找到之前的交易記錄')
+      toast.warning(t('diary.form.copyEmpty'))
     }
   } catch (error: any) {
     if (isAuthSessionError(error)) return
     console.error('Error fetching latest transactions:', error)
-    toast.error('複製失敗，請稍後再試')
+    toast.error(t('diary.form.copyFailed'))
   } finally {
     loadingLatest.value = false
   }
@@ -288,7 +331,7 @@ const copyFromLatest = async () => {
 
 const saveDiary = async () => {
   if (!form.title) {
-    toast.error('請輸入標題')
+    toast.error(t('diary.titleRequired'))
     return
   }
 
@@ -296,7 +339,7 @@ const saveDiary = async () => {
   // it must not treat the current table as the whole portfolio.
   const validationError = validateDiaryDraft(form.transactions, { available: false })
   if (validationError) {
-    toast.error('交易記錄驗證失敗：' + validationError.message)
+    toast.error(`${t('diary.form.validationFailed')}: ${validationError.message}`)
     return
   }
 
@@ -312,7 +355,7 @@ const saveDiary = async () => {
           body: payload
         } as any)
       })
-      toast.success('日記更新成功！')
+      toast.success(t('diary.updateSuccess'))
     } else {
       // Create new diary
       await runWithAuthRecovery(async () => {
@@ -321,7 +364,7 @@ const saveDiary = async () => {
           body: payload
         })
       })
-      toast.success('日記儲存成功！')
+      toast.success(t('diary.saveSuccess'))
     }
 
     // Show random discipline quote
@@ -331,7 +374,7 @@ const saveDiary = async () => {
   } catch (e: any) {
     if (isAuthSessionError(e)) return
     console.error(e)
-    toast.error(resolveErrorMessage(e, t, '儲存失敗'))
+    toast.error(resolveErrorMessage(e, t, t('diary.saveFailed')))
   } finally {
     saving.value = false
   }

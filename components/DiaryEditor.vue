@@ -1,41 +1,41 @@
 <template>
   <div class="space-y-6">
     <div>
-      <label for="title" class="block text-sm font-medium text-dt-text-muted">標題</label>
+      <label for="title" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.diaryTitle') }}</label>
       <div class="mt-1">
         <input
           type="text"
           name="title"
           id="title"
           v-model="localTitle"
-          class="shadow-sm focus:ring-dt-primary/30 focus:border-dt-primary block w-full sm:text-sm border-dt-border rounded-md bg-dt-surface-strong"
-          placeholder="輸入日記標題"
+          class="block w-full min-h-[44px] rounded-dt-sm border border-dt-border bg-dt-surface px-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+          :placeholder="t('diary.form.titlePlaceholder')"
         />
       </div>
     </div>
 
     <div>
-      <label for="content" class="block text-sm font-medium text-dt-text-muted">內容 (Markdown)</label>
+      <label for="content" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.diaryContent') }} (Markdown)</label>
       <div class="mt-1">
         <textarea
           id="content"
           name="content"
           rows="15"
           v-model="localContent"
-          class="shadow-sm focus:ring-dt-primary/30 focus:border-dt-primary block w-full sm:text-sm border-dt-border rounded-md bg-dt-surface-strong font-mono"
-          placeholder="# 今日市場觀察..."
+          class="block w-full rounded-dt-sm border border-dt-border bg-dt-surface p-3 font-mono text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+          :placeholder="t('diary.form.contentPlaceholder')"
         ></textarea>
       </div>
       <p class="mt-2 text-sm text-dt-text-soft">
-        支援 Markdown 語法。
+        {{ t('diary.form.markdownHint') }}
       </p>
     </div>
 
-    <div class="bg-dt-surface-strong p-4 rounded-md border border-dt-border">
-      <h3 class="text-lg font-medium text-dt-text mb-4">預覽</h3>
-      <div class="prose dark:prose-invert max-w-none bg-dt-surface p-4 rounded-md border border-dt-border min-h-[200px]">
+    <div class="rounded-dt-sm border border-dt-border bg-dt-surface-strong p-4">
+      <h3 class="mb-4 text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.preview') }}</h3>
+      <div class="prose min-h-[200px] max-w-none rounded-dt-sm border border-dt-border bg-dt-surface p-4 dark:prose-invert">
         <MDC :value="localContent" v-if="localContent" />
-        <p v-else class="text-dt-text-soft italic">預覽將顯示於此...</p>
+        <p v-else class="italic text-dt-text-soft">{{ t('diary.form.previewEmpty') }}</p>
       </div>
     </div>
   </div>
@@ -51,6 +51,8 @@ const emit = defineEmits<{
   (e: 'update:title', value: string): void
   (e: 'update:content', value: string): void
 }>()
+
+const { t } = useI18n()
 
 const localTitle = computed({
   get: () => props.title,

@@ -5,6 +5,7 @@ import type { NitroApp } from 'nitropack'
 import { logger } from '~/lib/logger'
 import { connectionManager } from '../websocket/connectionManager'
 import { setupAlertHandlers } from '../websocket/alertHandler'
+import { isAllowedWebSocketOrigin } from '../utils/websocket-origin'
 import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
 import { authenticateAccessToken } from '../utils/auth-session'
 
@@ -41,17 +42,6 @@ declare global {
   var __diaryWebSocketPatchState__: WebSocketPatchState | undefined
 }
 
-function isAllowedDevOrigin(origin: string | undefined): boolean {
-  if (!origin) return true
-
-  try {
-    const { hostname } = new URL(origin)
-    return hostname === 'localhost' || hostname === '127.0.0.1'
-  } catch {
-    return false
-  }
-}
-
 function getPatchState(): WebSocketPatchState {
   if (!globalThis.__diaryWebSocketPatchState__) {
     globalThis.__diaryWebSocketPatchState__ = {
@@ -79,12 +69,7 @@ function createSocketServer(
     {
       cors: {
         origin: (origin, callback) => {
-          if (!isProduction && isAllowedDevOrigin(origin)) {
-            callback(null, true)
-            return
-          }
-
-          if (allowedOrigin && origin === allowedOrigin) {
+          if (isAllowedWebSocketOrigin(origin, allowedOrigin, isProduction)) {
             callback(null, true)
             return
           }
