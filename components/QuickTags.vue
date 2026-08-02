@@ -1,79 +1,96 @@
 <template>
-  <div class="space-y-3">
-    <div>
-      <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">自定義標籤</label>
-      <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <input
-          v-model="customInput"
-          type="text"
-          class="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-          placeholder="用 @ 分隔，例如：工作@靈感"
-          @keydown.enter.prevent="addFromInput"
-          @blur="addFromInput"
-          aria-label="自定義標籤輸入"
-        />
-        <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 transition-colors duration-200 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200"
-          @click="addFromInput"
-        >
-          新增
-        </button>
+  <section class="quick-tags space-y-4" aria-labelledby="quick-tags-title">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h3 id="quick-tags-title" class="text-sm font-semibold" style="color: var(--color-text);">標籤</h3>
+        <p class="mt-1 text-xs" style="color: var(--color-text-soft);">按 Enter 新增，也可以輸入 # 標籤</p>
       </div>
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">使用 @ 分隔多個標籤</p>
-    </div>
-
-    <div v-if="selectedTags.length" class="flex flex-wrap gap-2">
-      <span
-        v-for="tag in selectedTags"
-        :key="tag"
-        class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs text-indigo-700 dark:border-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200"
-      >
-        #{{ displayTag(tag) }}
-        <button
-          type="button"
-          class="text-indigo-500 hover:text-indigo-700 dark:text-indigo-200"
-          :aria-label="`移除標籤 ${tag}`"
-          @click="removeSelected(tag)"
-        >
-          <Icon name="heroicons:x-mark" class="h-3 w-3" />
-        </button>
+      <span v-if="selectedTags.length" class="font-data text-xs" style="color: var(--color-text-soft);">
+        {{ selectedTags.length }}
       </span>
     </div>
 
+    <div class="flex gap-2">
+      <input
+        v-model="customInput"
+        type="text"
+        class="min-w-0 flex-1 rounded-dt-sm border px-3 py-2.5 text-sm outline-none transition-colors focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20"
+        style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
+        placeholder="#市場 或 輸入標籤"
+        aria-label="標籤輸入"
+        @keydown.enter.prevent="addFromInput"
+        @blur="addFromInput"
+      />
+      <button
+        type="button"
+        class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-dt-sm border px-3 text-sm font-semibold transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+        style="border-color: var(--color-border); background: var(--color-surface); color: var(--color-text-muted);"
+        @click="addFromInput"
+      >
+        新增
+      </button>
+    </div>
+
+    <div v-if="selectedTags.length" class="space-y-2">
+      <p class="text-[11px] font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">已選標籤</p>
+      <div class="flex flex-wrap gap-2">
+        <span
+          v-for="tag in selectedTags"
+          :key="tag"
+          class="inline-flex min-h-8 max-w-full items-center gap-1 rounded-dt-pill border px-2.5 text-xs font-medium"
+          style="border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border)); background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface-muted)); color: var(--color-primary);"
+        >
+          <span class="truncate">#{{ displayTag(tag) }}</span>
+          <button
+            type="button"
+            class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-dt-primary/10 focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+            :aria-label="`移除標籤 ${tag}`"
+            @click="removeSelected(tag)"
+          >
+            <Icon name="heroicons:x-mark" class="h-3.5 w-3.5" />
+          </button>
+        </span>
+      </div>
+    </div>
+
     <div v-if="recentTags.length" class="space-y-2">
-      <p class="text-xs font-medium text-gray-500 dark:text-gray-400">最近使用</p>
+      <p class="text-[11px] font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">最近使用</p>
       <div class="flex flex-wrap gap-2">
         <button
           v-for="tag in recentTags"
           :key="tag"
           type="button"
-          class="px-3 py-1 rounded-full text-xs border border-gray-200 bg-white text-gray-600 hover:border-indigo-300 hover:text-indigo-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+          class="min-h-9 max-w-full truncate rounded-dt-pill border px-3 text-xs transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+          :style="selected.has(tag)
+            ? 'border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-muted)); color: var(--color-primary);'
+            : 'border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-muted);'"
+          :aria-pressed="selected.has(tag)"
           @click="addSelected(tag)"
         >
-          #{{ tag }}
+          #{{ displayTag(tag) }}
         </button>
       </div>
     </div>
 
     <div class="space-y-2">
-      <p class="text-xs font-medium text-gray-500 dark:text-gray-400">快速標籤</p>
+      <p class="text-[11px] font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">常用標籤</p>
       <div class="flex flex-wrap gap-2">
         <button
           v-for="tag in tags"
           :key="tag.key"
           type="button"
-          class="px-3 py-1 rounded-full text-xs border transition-colors duration-200"
-          :class="selected.has(tag.key)
-            ? 'bg-indigo-600 text-white border-indigo-600'
-            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600'"
+          class="min-h-9 max-w-full truncate rounded-dt-pill border px-3 text-xs transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+          :style="selected.has(tag.key)
+            ? 'border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-ink);'
+            : 'border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-muted);'"
+          :aria-pressed="selected.has(tag.key)"
           @click="toggle(tag.key)"
         >
           #{{ t(tag.labelKey) }}
         </button>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -81,24 +98,9 @@ import { computed, ref } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { DEFAULT_TAGS, type TagKey } from '~/types/diary'
 
-// --- Tag history (inlined from deleted useQuickNoteTags) ---
 const TAGS_KEY = 'quick-note-tags'
 const MAX_HISTORY = 30
 
-const tagHistory = useLocalStorage<string[]>(TAGS_KEY, [])
-
-function getRecentTags(limit = 8) {
-  return tagHistory.value.slice(0, limit)
-}
-
-function addTagToHistory(tag: string) {
-  const cleaned = tag.trim()
-  if (!cleaned) return
-  const next = [cleaned, ...tagHistory.value.filter(t => t !== cleaned)]
-  tagHistory.value = next.slice(0, MAX_HISTORY)
-}
-
-// --- Component logic ---
 const props = defineProps<{
   modelValue: string[]
 }>()
@@ -108,17 +110,21 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-
 const tags = DEFAULT_TAGS
+const tagHistory = useLocalStorage<string[]>(TAGS_KEY, [])
+const customInput = ref('')
 
 const selected = computed(() => new Set(props.modelValue))
 const selectedTags = computed(() => props.modelValue)
+const recentTags = computed(() => tagHistory.value.slice(0, 8))
 
-const customInput = ref('')
+function addTagToHistory(tag: string) {
+  const cleaned = tag.trim()
+  if (!cleaned) return
+  tagHistory.value = [cleaned, ...tagHistory.value.filter(item => item !== cleaned)].slice(0, MAX_HISTORY)
+}
 
-const recentTags = computed(() => getRecentTags())
-
-const displayTag = (tag: string) => {
+function displayTag(tag: string) {
   const matched = tags.find(item => item.key === tag)
   return matched ? t(matched.labelKey) : tag
 }
@@ -136,22 +142,21 @@ function toggle(key: TagKey) {
 
 function addSelected(tag: string) {
   const cleaned = tag.trim()
-  if (!cleaned) return
-  if (selected.value.has(cleaned)) return
+  if (!cleaned || selected.value.has(cleaned)) return
   emit('update:modelValue', [...props.modelValue, cleaned])
   addTagToHistory(cleaned)
 }
 
 function removeSelected(tag: string) {
-  emit('update:modelValue', props.modelValue.filter(t => t !== tag))
+  emit('update:modelValue', props.modelValue.filter(item => item !== tag))
 }
 
 function addFromInput() {
-  if (!customInput.value.trim()) return
   const parts = customInput.value
-    .split('@')
-    .map(p => p.trim())
+    .split(/[#，,]/)
+    .map(item => item.trim())
     .filter(Boolean)
+
   if (!parts.length) return
 
   const next = new Set(props.modelValue)

@@ -101,12 +101,15 @@
     "selectTemplate": "Choose a template to start",
     "date": "Date",
     "selectDate": "Select date",
-    "createDiary": "Create Diary",
+    "createDiary": "Create Note",
     "appendDiary": "Append To Today",
     "creating": "Creating...",
     "appending": "Appending...",
     "draft": {
       "saved": "Draft saved",
+      "saving": "Saving…",
+      "failed": "Save failed",
+      "retry": "Retry",
       "restorePrompt": "A draft from the last 24 hours was found. Restore it?",
       "restoreSuccess": "Draft restored"
     },
@@ -154,15 +157,35 @@
       }
     },
     "editor": {
-      "eyebrow": "Quicknote Desk",
-      "intro": "Choose the save mode first, then organize the content. It makes the whole record clearer.",
+      "eyebrow": "Quick Note",
+      "intro": "",
       "saveModeLabel": "Save Mode",
       "titleAria": "Quick note title",
       "contentAria": "Quick note content",
+      "titlePlaceholder": "Add a title (optional)",
+      "contentPlaceholder": "Write down what is on your mind…",
+      "createContext": "This will create a standalone note",
+      "appendContext": "This will be added to today’s diary",
+      "metadata": "Note details",
+      "quickTemplates": "Quick templates",
+      "unset": "Not set",
+      "today": "Today",
+      "openDatePicker": "Choose date",
+      "openReminderPicker": "Set reminder",
+      "openTagPicker": "Manage tags",
+      "openTemplatePicker": "Use Template",
+      "closePicker": "Close",
+      "reminderPickerTitle": "Remind me",
+      "tagPickerTitle": "Tags",
+      "datePickerTitle": "Date",
+      "voicePickerTitle": "Voice input",
+      "customReminder": "Custom date and time",
+      "selectedTags": "Selected tags",
+      "noTags": "No tags yet",
       "snippets": "Snippets",
       "manageTemplates": "Manage Templates",
       "reminders": "Quick Reminders",
-      "checklistTitle": "Before You Save",
+      "checklistTitle": "Before Saving",
       "checklist": {
         "title": "The title should make sense at a glance tomorrow.",
         "append": "If you are only adding one more thought, choose append to today.",
@@ -176,14 +199,14 @@
     },
     "saveModes": {
       "create": {
-        "label": "Create New Diary",
+        "label": "New Note",
         "description": "Save this as a standalone entry with its own record.",
-        "summary": "This will create a separate diary entry, best for a complete new idea."
+        "summary": "This will create a standalone note"
       },
       "append": {
         "label": "Append To Today",
         "description": "Add one more judgment to the diary you already opened today.",
-        "summary": "This will append the content to today's existing diary, best for follow-up notes."
+        "summary": "This will be added to today’s diary"
       }
     },
     "reminders": {
@@ -237,9 +260,10 @@
       "expand": "More Tools",
       "collapse": "Hide Tools",
       "date": "Change Date",
+      "tags": "Tags",
       "reminders": "Set Reminder",
       "voice": "Voice Input",
-      "templates": "Manage Templates"
+      "templates": "Templates"
     },
     "trading": {
       "operation": "Today's Operation",

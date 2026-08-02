@@ -101,12 +101,15 @@
     "selectTemplate": "选择一个模板开始快速创建日记",
     "date": "日期",
     "selectDate": "选择日期",
-    "createDiary": "建立日记",
-    "appendDiary": "补充到今日",
+    "createDiary": "建立笔记",
+    "appendDiary": "加入今日笔记",
     "creating": "建立中...",
     "appending": "正在更新今日内容...",
     "draft": {
       "saved": "草稿已自动保存",
+      "saving": "正在保存…",
+      "failed": "保存失败",
+      "retry": "重试",
       "restorePrompt": "我们为您保留了最近的草稿，需要恢复它吗？",
       "restoreSuccess": "已为您恢复草稿内容"
     },
@@ -154,15 +157,35 @@
       }
     },
     "editor": {
-      "eyebrow": "编辑工作台",
-      "intro": "先决定保存方式，再整理内容，让记录流程更顺畅。",
+      "eyebrow": "随手笔记",
+      "intro": "",
       "saveModeLabel": "保存方式",
       "titleAria": "笔记标题",
       "contentAria": "笔记内容",
+      "titlePlaceholder": "加入标题（选填）",
+      "contentPlaceholder": "记下你现在的想法……",
+      "createContext": "将建立一篇独立笔记",
+      "appendContext": "内容会加入今天的日记",
+      "metadata": "笔记信息",
+      "quickTemplates": "快速模板",
+      "unset": "未设置",
+      "today": "今天",
+      "openDatePicker": "选择日期",
+      "openReminderPicker": "设置提醒",
+      "openTagPicker": "管理标签",
+      "openTemplatePicker": "模板",
+      "closePicker": "关闭",
+      "reminderPickerTitle": "提醒我",
+      "tagPickerTitle": "标签",
+      "datePickerTitle": "日期",
+      "voicePickerTitle": "语音输入",
+      "customReminder": "自定义日期和时间",
+      "selectedTags": "已选标签",
+      "noTags": "尚未加入标签",
       "snippets": "快捷工具",
       "manageTemplates": "自定义模板",
       "reminders": "快速提醒",
-      "checklistTitle": "在保存之前...",
+      "checklistTitle": "保存前小提醒",
       "checklist": {
         "title": "标题是否能让未来的您一眼看懂当时的想法？",
         "append": "如果您只是想补充今日日记，请选择「补充到今日」。",
@@ -176,14 +199,14 @@
     },
     "saveModes": {
       "create": {
-        "label": "建立日记",
+        "label": "新笔记",
         "description": "这是一笔独立的观察，将会存为新的日记。",
-        "summary": "系统将为您建立一则独立日记，适合记录全新的交易思路。"
+        "summary": "将建立一篇独立笔记"
       },
       "append": {
-        "label": "补充到今日",
+        "label": "加入今日笔记",
         "description": "这是在今日日记上的小补充，内容会接在后面。",
-        "summary": "内容将会自动衔接在今日现有日记之后，适合补充零碎判断。"
+        "summary": "内容会加入今天的日记"
       }
     },
     "reminders": {
@@ -237,9 +260,10 @@
       "expand": "更多工具",
       "collapse": "收起工具",
       "date": "更改日期",
+      "tags": "标签",
       "reminders": "设置提醒",
       "voice": "语音输入",
-      "templates": "管理模板"
+      "templates": "模板"
     },
     "trading": {
       "operation": "今日操作",

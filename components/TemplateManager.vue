@@ -8,7 +8,7 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="modelValue" class="fixed inset-0 z-50">
+      <div v-if="modelValue" class="fixed inset-0 z-[110]">
         <div class="absolute inset-0 bg-black/40" @click="close"></div>
 
         <div class="relative mx-auto mt-10 w-[92%] max-w-2xl rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">

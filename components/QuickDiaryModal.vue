@@ -1,172 +1,106 @@
 <template>
   <Teleport to="body">
     <Transition
-      enter-active-class="transition-all duration-300 ease-out"
+      enter-active-class="transition-opacity duration-200 ease-out"
       enter-from-class="opacity-0"
       enter-to-class="opacity-100"
-      leave-active-class="transition-all duration-200 ease-in"
+      leave-active-class="transition-opacity duration-150 ease-in"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
       <div
         v-if="show"
-        class="fixed inset-0 z-50 overflow-y-auto"
-        aria-labelledby="modal-title"
+        class="fixed inset-0 z-[100] overflow-y-auto"
+        aria-labelledby="quick-note-modal-title"
         role="dialog"
         aria-modal="true"
+        @keydown="handleDialogKeydown"
       >
-        <div class="flex min-h-screen items-end justify-center px-4 pb-20 text-center sm:items-center sm:p-0">
-          <Transition
-            enter-active-class="transition-opacity duration-300 ease-out"
-            enter-from-class="opacity-0"
-            enter-to-class="opacity-100"
-            leave-active-class="transition-opacity duration-200 ease-in"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
+        <div class="flex min-h-[100dvh] items-end justify-center sm:items-center sm:p-6">
+          <div class="fixed inset-0 bg-black/55" @click="close" />
+
+          <div
+            ref="dialogPanel"
+            class="relative flex h-[100dvh] w-full flex-col overflow-hidden sm:h-auto sm:max-h-[calc(100dvh-48px)] sm:max-w-[1120px] sm:rounded-dt-lg sm:border"
+            style="border-color: var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-lg);"
+            tabindex="-1"
           >
-            <div
-              v-if="show"
-              class="fixed inset-0"
-              style="background: rgba(0, 0, 0, 0.5);"
-              @click="close"
-            />
-          </Transition>
-
-          <Transition
-            enter-active-class="transition-all duration-300 ease-out"
-            enter-from-class="opacity-0 translate-y-8 scale-95"
-            enter-to-class="opacity-100 translate-y-0 scale-100"
-            leave-active-class="transition-all duration-200 ease-in"
-            leave-from-class="opacity-100 translate-y-0 scale-100"
-            leave-to-class="opacity-0 translate-y-8 scale-95"
-          >
-            <div
-              v-if="show"
-              class="relative inline-block w-full transform overflow-hidden text-left align-bottom transition-all sm:mx-auto sm:max-w-4xl sm:align-middle"
-            >
-              <div
-                class="flex h-screen flex-col sm:h-auto sm:max-h-[calc(100vh-4rem)] sm:rounded-2xl sm:border"
-                style="background: var(--color-surface); border-color: var(--color-border); box-shadow: var(--shadow-lg);"
-              >
-                <div class="flex items-center justify-between border-b px-4 py-4 sm:px-6 sm:py-5" style="border-color: var(--color-border);">
-                  <div class="min-w-0">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" style="color: var(--color-secondary);">{{ t('quickDiary.modal.eyebrow') }}</p>
-                    <h3 class="text-lg font-semibold sm:text-xl" id="modal-title" style="color: var(--color-text); font-family: var(--font-display);">
-                      {{ t('quickDiary.title') }}
-                    </h3>
-                    <p class="mt-1 text-xs" style="color: var(--color-text-muted);">
-                      {{ t('quickDiary.modal.editorHint') }}
-                    </p>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <button
-                      type="button"
-                      class="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all duration-200"
-                      style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
-                      :aria-expanded="showTemplatePicker"
-                      :aria-controls="'quick-diary-template-picker'"
-                      @click="showTemplatePicker = !showTemplatePicker"
-                    >
-                      <Icon name="heroicons:squares-2x2" class="h-4 w-4" />
-                      {{ t('quickDiary.changeTemplate') }}
-                    </button>
-                    <button
-                      class="flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200"
-                      style="color: var(--color-text-soft);"
-                      :aria-label="t('common.close')"
-                      @click="close"
-                    >
-                      <Icon name="heroicons:x-mark" class="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-                  <div
-                    v-if="showTemplatePicker"
-                    id="quick-diary-template-picker"
-                    class="mb-6 space-y-4 rounded-2xl border p-4"
-                    style="border-color: var(--color-border); background: color-mix(in srgb, var(--color-surface-muted) 70%, var(--color-surface));"
-                  >
-                    <div class="space-y-1">
-                      <p class="text-sm font-medium" style="color: var(--color-text-muted);">{{ t('quickDiary.selectTemplate') }}</p>
-                      <p class="text-xs" style="color: var(--color-text-soft);">{{ t('quickDiary.modal.templateSubcopy') }}</p>
-                    </div>
-                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                      <button
-                        v-for="template in templates"
-                        :key="template.kind"
-                        type="button"
-                        class="group relative flex min-h-[44px] flex-col items-start rounded-2xl border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                        :style="state.templateKind === template.kind
-                          ? 'border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));'
-                          : 'border-color: var(--color-border); background: var(--color-surface);'"
-                        :aria-pressed="state.templateKind === template.kind"
-                        @click="selectTemplate(template.kind)"
-                      >
-                        <div
-                          class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-sm"
-                          :class="template.iconClass"
-                        >
-                          <Icon :name="template.icon" class="h-5 w-5" />
-                        </div>
-                        <h4 class="text-sm font-bold tracking-tight" style="color: var(--color-text)">{{ template.label }}</h4>
-                        <p class="mt-1 text-[11px] leading-relaxed" style="color: var(--color-text-muted)">{{ template.description }}</p>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="space-y-5">
-                    <QuickNoteTemplateAssistant
-                      :template-kind="state.templateKind"
-                      :template-data="state.templateData"
-                      :has-template-changes-pending="hasTemplateChangesPending"
-                      @update:template-data="updateTemplateData"
-                      @apply-template-changes="applyTemplateChanges"
-                      @regenerate-template="regenerateFromTemplate"
-                    />
-
-                    <QuickNoteEditorCore
-                      :save-mode="state.saveMode"
-                      :title="state.title"
-                      :content="state.content"
-                      :tags="state.tags"
-                      :date="state.date"
-                      :saving="saving"
-                      :draft-hint="draftHint"
-                      :save-label="state.saveMode === 'append' ? t('quickDiary.appendDiary') : t('quickDiary.createDiary')"
-                      :saving-label="state.saveMode === 'append' ? t('quickDiary.appending') : t('quickDiary.creating')"
-                      :templates="templatesFromStorage"
-                      :reminders="reminders"
-                      :active-reminders="activeReminders"
-                      @update:title="setTitle"
-                      @update:content="setContent"
-                      @update:tags="setTags"
-                      @update:date="setDate"
-                      @update:save-mode="setSaveMode"
-                      @append-text="appendVoiceTranscript"
-                      @apply-template="handleApplyTemplate"
-                      @set-quick-reminder="handleSetQuickReminder"
-                      @reminder-set="handleSetReminder"
-                      @reminder-clear="handleClearReminder"
-                      @save="handleSave"
-                    />
-                  </div>
-                </div>
-
-                <div class="flex gap-3 border-t px-4 py-4 sm:justify-end sm:px-6" style="border-color: var(--color-border);">
-                  <button
-                    type="button"
-                    class="flex-1 rounded-xl border px-4 py-3 font-medium transition-all duration-200 sm:flex-none sm:px-5 sm:py-2.5 min-h-[44px]"
-                    style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
-                    @click="close"
-                  >
-                    {{ t('common.cancel') }}
-                  </button>
-                </div>
+            <header class="flex min-h-[72px] items-center justify-between gap-4 border-b px-4 py-3 sm:px-6" style="border-color: var(--color-border);">
+              <div class="flex min-w-0 items-center gap-3">
+                <h1 id="quick-note-modal-title" class="truncate text-lg font-semibold sm:text-xl" style="color: var(--color-text); font-family: var(--font-display);">
+                  {{ t('quickDiary.title') }}
+                </h1>
+                <span v-if="draftHint" class="truncate text-xs" style="color: var(--color-text-soft);" aria-live="polite">
+                  {{ draftHint }}
+                </span>
               </div>
-            </div>
-          </Transition>
+
+              <div class="flex shrink-0 items-center gap-1.5">
+                <button
+                  type="button"
+                  class="inline-flex min-h-11 items-center gap-2 rounded-dt-sm border px-3 text-xs font-semibold transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+                  style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-muted);"
+                  :aria-expanded="showTemplatePicker"
+                  :aria-controls="'quick-note-template-picker'"
+                  @click="showTemplatePicker = !showTemplatePicker"
+                >
+                  <Icon name="heroicons:squares-2x2" class="h-4 w-4" />
+                  <span class="hidden sm:inline">{{ t('quickDiary.changeTemplate') }}</span>
+                  <span class="sm:hidden">{{ t('quickDiary.tools.templates') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="flex h-11 w-11 items-center justify-center rounded-dt-sm transition-colors hover:bg-dt-surface-muted focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+                  style="color: var(--color-text-soft);"
+                  :aria-label="t('common.close')"
+                  @click="close"
+                >
+                  <Icon name="heroicons:x-mark" class="h-5 w-5" />
+                </button>
+              </div>
+            </header>
+
+            <QuickNoteEditorCore
+              :save-mode="state.saveMode"
+              :title="state.title"
+              :content="state.content"
+              :tags="state.tags"
+              :date="state.date"
+              :saving="saving"
+              :draft-hint="draftHint"
+              :draft-status="draftStatus"
+              :save-label="state.saveMode === 'append' ? t('quickDiary.appendDiary') : t('quickDiary.createDiary')"
+              :saving-label="state.saveMode === 'append' ? t('quickDiary.appending') : t('quickDiary.creating')"
+              :templates="templatesFromStorage"
+              :reminders="reminders"
+              :active-reminders="activeReminders"
+              :template-kind="state.templateKind"
+              :template-data="state.templateData"
+              :has-template-changes-pending="hasTemplateChangesPending"
+              :template-options="templates"
+              :template-picker-open="showTemplatePicker"
+              :autofocus="autofocusEditor"
+              scrollable
+              @update:title="setTitle"
+              @update:content="setContent"
+              @update:tags="setTags"
+              @update:date="setDate"
+              @update:save-mode="setSaveMode"
+              @append-text="appendVoiceTranscript"
+              @apply-template="handleApplyTemplate"
+              @update:template-data="updateTemplateData"
+              @apply-template-changes="applyTemplateChanges"
+              @regenerate-template="regenerateFromTemplate"
+              @update:template-picker-open="showTemplatePicker = $event"
+              @select-template-kind="selectTemplate"
+              @set-quick-reminder="handleSetQuickReminder"
+              @reminder-set="handleSetReminder"
+              @reminder-clear="handleClearReminder"
+              @retry-draft="retryDraftSave"
+              @save="handleSave"
+              @cancel="close"
+            />
+          </div>
         </div>
       </div>
     </Transition>
@@ -174,10 +108,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import QuickNoteEditorCore from '~/components/quicknote/QuickNoteEditorCore.vue'
-import QuickNoteTemplateAssistant from '~/components/quicknote/QuickNoteTemplateAssistant.vue'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useQuickNoteComposer } from '~/composables/useQuickNoteComposer'
 import { getQuickReminderLabel } from '~/lib/quicknote/quick-reminders'
@@ -207,6 +140,9 @@ const toast = useToast()
 const { notifyDiaryCreated } = useDiaryMutation()
 const saving = ref(false)
 const showTemplatePicker = ref(false)
+const autofocusEditor = ref(false)
+const dialogPanel = ref<HTMLElement | null>(null)
+const previousActiveElement = ref<HTMLElement | null>(null)
 const lastTemplateKind = useLocalStorage<QuickNoteTemplateKind>(LAST_TEMPLATE_KEY, 'blank')
 
 const {
@@ -214,6 +150,7 @@ const {
   templates: templatesFromStorage,
   reminders,
   draftHint,
+  draftStatus,
   activeReminders,
   hasTemplateChangesPending,
   applyTemplateKind,
@@ -231,6 +168,7 @@ const {
   handleReminderSet,
   handleReminderClear,
   syncExistingDiaryForDate,
+  retryDraftSave,
   save,
   initialize,
   dispose,
@@ -243,47 +181,41 @@ const {
 const templates = computed(() => createQuickNoteModalTemplates(t))
 
 function resolveOpenTemplateKind(restoredDraft: boolean): QuickNoteTemplateKind | null {
-  // Explicit context wins only when no draft was restored.
-  if (!restoredDraft && props.context?.templateKind) {
-    return props.context.templateKind
-  }
-  if (!restoredDraft) {
-    return lastTemplateKind.value || 'blank'
-  }
+  if (!restoredDraft && props.context?.templateKind) return props.context.templateKind
+  if (!restoredDraft) return lastTemplateKind.value || 'blank'
   return null
 }
 
 function applyOpenContext(restoredDraft: boolean) {
   const kind = resolveOpenTemplateKind(restoredDraft)
-  if (kind) {
-    applyTemplateKind(kind)
-  }
-
-  // Capture sources may pin a date (e.g. calendar empty day). Apply after draft restore.
-  if (props.context?.date) {
-    setDate(props.context.date)
-  }
+  if (kind) applyTemplateKind(kind)
+  if (props.context?.date) setDate(props.context.date)
 }
 
 watch(
   () => props.show,
   (show) => {
     if (show) {
+      if (process.client) previousActiveElement.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
       const restored = Boolean(initialize((message) => confirm(message)))
       applyOpenContext(restored)
+      autofocusEditor.value = !restored && !state.content.trim()
       void syncExistingDiaryForDate()
       showTemplatePicker.value = false
+      void nextTick(() => dialogPanel.value?.focus())
       return
     }
     dispose()
+    showTemplatePicker.value = false
+    autofocusEditor.value = false
+    if (process.client) previousActiveElement.value?.focus()
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 function selectTemplate(kind: QuickNoteTemplateKind) {
   applyTemplateKind(kind)
   lastTemplateKind.value = kind
-  showTemplatePicker.value = false
 }
 
 function close() {
@@ -318,9 +250,9 @@ function handleClearReminder(payload: { key: 'reminder1' }) {
 }
 
 async function handleSave() {
+  if (saving.value) return
   saving.value = true
   try {
-    // Capture before save() resets composer state
     const mode = state.saveMode
     const date = state.date
     const kind = state.templateKind
@@ -328,15 +260,10 @@ async function handleSave() {
     const diaryId = String(diary?.id ?? '')
 
     lastTemplateKind.value = kind
-    if (diaryId) {
-      notifyDiaryCreated({ id: diaryId, date, mode })
-    }
+    showTemplatePicker.value = false
+    if (diaryId) notifyDiaryCreated({ id: diaryId, date, mode })
 
-    toast.success(
-      mode === 'append'
-        ? t('quickDiary.successAppend')
-        : t('quickDiary.successCreate')
-    )
+    toast.success(mode === 'append' ? t('quickDiary.successAppend') : t('quickDiary.successCreate'))
     emit('created', diaryId)
     close()
   } catch (error: any) {
@@ -344,6 +271,30 @@ async function handleSave() {
     toast.error(resolveQuickNoteSaveErrorMessage(error, t))
   } finally {
     saving.value = false
+  }
+}
+
+function handleDialogKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    close()
+    return
+  }
+  if (event.key !== 'Tab' || !dialogPanel.value) return
+
+  const focusable = Array.from(dialogPanel.value.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  ))
+  if (!focusable.length) return
+
+  const first = focusable[0]!
+  const last = focusable[focusable.length - 1]!
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
   }
 }
 </script>

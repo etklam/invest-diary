@@ -65,17 +65,19 @@ test('quick diary can switch to template mode, then append to today with structu
   // Wait for the quick capture input to be ready
   await expect(page.locator('[data-test="quick-capture-input"]')).toBeVisible()
 
-  // Click to expand the template panel
-  await page.getByText('Use Template').click()
+  // Open the template bottom sheet / dialog
+  await page.getByRole('button', { name: 'Use Template' }).click()
 
-  // Click on Trading Diary template
-  const tradingButton = page.getByRole('button', { name: 'Trading Diary' })
+  // Choose the structured trading template inside the picker
+  const templatePicker = page.getByRole('dialog', { name: 'Use Template' })
+  const tradingButton = templatePicker.getByRole('button', { name: /^Trading Diary/ })
   await tradingButton.click()
   await expect(tradingButton).toHaveAttribute('aria-pressed', 'true')
 
   // Fill in the template fields
   await page.getByPlaceholder('e.g., 2330, 2317').fill('tsla, nvda')
   await page.getByPlaceholder("Quick notes on today's operations...").fill('Wait for confirmation and keep size small.')
+  await templatePicker.getByRole('button', { name: 'Close', exact: true }).click()
 
   // Setup POST mock - capture any POST request
   let requestBody: any = null
@@ -100,6 +102,6 @@ test('quick diary can switch to template mode, then append to today with structu
     tags: [],
   })
   expect(String(requestBody.title)).toContain('TSLA, NVDA')
-  expect(String(requestBody.content)).toContain('Wait for confirmation and keep size.')
+  expect(String(requestBody.content)).toContain('Wait for confirmation and keep size small.')
   await expect(page.getByText('Quick diary saved')).toBeVisible()
 })

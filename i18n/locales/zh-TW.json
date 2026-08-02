@@ -101,12 +101,15 @@
     "selectTemplate": "今天想記錄些什麼？選個模板快速開始吧",
     "date": "日期",
     "selectDate": "選擇日期",
-    "createDiary": "開啟新紀錄",
-    "appendDiary": "補充到今日",
+    "createDiary": "建立筆記",
+    "appendDiary": "加入今日筆記",
     "creating": "正在為您準備紀錄...",
     "appending": "正在更新今日內容...",
     "draft": {
       "saved": "草稿已自動儲存",
+      "saving": "正在儲存…",
+      "failed": "儲存失敗",
+      "retry": "重試",
       "restorePrompt": "我們為您保留了最近的草稿，需要恢復它嗎？",
       "restoreSuccess": "已為您恢復草稿內容"
     },
@@ -149,24 +152,44 @@
       "rhythmTitle": "記錄小撇步",
       "rhythm": {
         "template": "模板是用來激發靈感的，最真實的還是您的直覺。",
-        "saveMode": "如果是新的思路，建議「開啟新紀錄」；若是對今日內容的補充，選「補充到今日」最合適。",
+        "saveMode": "如果是新的思路，建議「新筆記」；若是對今日內容的補充，選「加入今日筆記」最合適。",
         "tags": "加上標籤和提醒，能讓這份紀錄在未來發揮更大的作用。"
       }
     },
     "editor": {
-      "eyebrow": "編輯工作檯",
-      "intro": "先決定保存方式，再整理內容，讓您的記錄流程更順暢。",
+      "eyebrow": "隨手筆記",
+      "intro": "",
       "saveModeLabel": "保存方式",
       "titleAria": "筆記標題",
       "contentAria": "筆記內容",
+      "titlePlaceholder": "加入標題（選填）",
+      "contentPlaceholder": "記低你現在的想法……",
+      "createContext": "將建立一篇獨立筆記",
+      "appendContext": "內容會加入今天的日記",
+      "metadata": "筆記資訊",
+      "quickTemplates": "快速模板",
+      "unset": "未設定",
+      "today": "今天",
+      "openDatePicker": "選擇日期",
+      "openReminderPicker": "設定提醒",
+      "openTagPicker": "管理標籤",
+      "openTemplatePicker": "模板",
+      "closePicker": "關閉",
+      "reminderPickerTitle": "提醒我",
+      "tagPickerTitle": "標籤",
+      "datePickerTitle": "日期",
+      "voicePickerTitle": "語音輸入",
+      "customReminder": "自訂日期及時間",
+      "selectedTags": "已選標籤",
+      "noTags": "尚未加入標籤",
       "snippets": "快捷工具",
       "manageTemplates": "自訂模板",
       "reminders": "快速提醒",
-      "checklistTitle": "在儲存之前...",
+      "checklistTitle": "儲存前小提醒",
       "checklist": {
         "title": "標題是否能讓未來的您一眼看懂當時的想法？",
-        "append": "如果您只是想補充今日日記，請選擇「補充到今日」。",
-        "create": "若是獨立的分析或新發現，建議「開啟新紀錄」以便日後整理。"
+        "append": "如果您只是想補充今日日記，請選擇「加入今日筆記」。",
+        "create": "若是獨立的分析或新發現，建議「新筆記」以便日後整理。"
       },
       "expand": "完整編輯",
       "collapse": "收起編輯器",
@@ -176,14 +199,14 @@
     },
     "saveModes": {
       "create": {
-        "label": "開啟新紀錄",
+        "label": "新筆記",
         "description": "這是一筆獨立的觀察，將會存為新的日記。",
-        "summary": "系統將為您建立一則獨立的日記，適合記錄全新的交易思路。"
+        "summary": "將建立一篇獨立筆記"
       },
       "append": {
-        "label": "補充到今日",
+        "label": "加入今日筆記",
         "description": "這是在今日日記上的小補充，內容將會連接在後面。",
-        "summary": "內容將會自動銜接在今日現有的日記之後，適合補充瑣碎的判斷。"
+        "summary": "內容會加入今天的日記"
       }
     },
     "reminders": {
@@ -237,9 +260,10 @@
       "expand": "更多工具",
       "collapse": "收起工具",
       "date": "更改日期",
+      "tags": "標籤",
       "reminders": "設定提醒",
       "voice": "語音輸入",
-      "templates": "管理模板"
+      "templates": "模板"
     },
     "trading": {
       "operation": "今日操作",

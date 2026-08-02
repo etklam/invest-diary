@@ -10,9 +10,7 @@ const messages: Record<string, string> = {
   'quickDiary.editor.intro': '先決定保存方式，再整理內容，讓您的記錄流程更順暢。',
   'quickDiary.editor.saveModeLabel': '保存方式',
   'quickDiary.editor.titleAria': '筆記標題',
-  'quickDiary.editor.contentAria': '筆記內容',
   'quickDiary.editor.snippets': '快捷工具',
-  'quickDiary.editor.manageTemplates': '自訂模板',
   'quickDiary.editor.reminders': '快速提醒',
   'quickDiary.editor.checklistTitle': '在儲存之前...',
   'quickDiary.editor.checklist.title': '標題是否能讓未來的您一眼看懂當時的想法？',
@@ -23,6 +21,25 @@ const messages: Record<string, string> = {
   'quickDiary.editor.dateHint': '{date} · 點此更改',
   'quickDiary.editor.saveModeHintCreate': '將建立新日記 · 點此變更',
   'quickDiary.editor.saveModeHintAppend': '將追加到今日 · 點此變更',
+  'quickDiary.editor.appendContext': '內容會加入今天的日記',
+  'quickDiary.editor.createContext': '將建立一篇獨立筆記',
+  'quickDiary.editor.titlePlaceholder': '加入標題（選填）',
+  'quickDiary.editor.contentPlaceholder': '記低你現在的想法……',
+  'quickDiary.editor.contentAria': '筆記內容',
+  'quickDiary.editor.openTemplatePicker': '使用模板',
+  'quickDiary.editor.openTagPicker': '管理標籤',
+  'quickDiary.editor.openReminderPicker': '設定提醒',
+  'quickDiary.editor.metadata': '筆記資訊',
+  'quickDiary.editor.quickTemplates': '快速模板',
+  'quickDiary.editor.unset': '未設定',
+  'quickDiary.editor.today': '今天',
+  'quickDiary.editor.tagPickerTitle': '標籤',
+  'quickDiary.editor.reminderPickerTitle': '提醒我',
+  'quickDiary.editor.datePickerTitle': '日期',
+  'quickDiary.editor.closePicker': '關閉',
+  'quickDiary.editor.customReminder': '自訂日期及時間',
+  'quickDiary.editor.manageTemplates': '自訂模板',
+  'quickDiary.tools.tags': '標籤',
   'quickDiary.templates.blank': '自由編輯',
   'quickDiary.templates.trading': '交易日記',
   'quickDiary.templates.reflection': '盤後反思',
@@ -249,7 +266,7 @@ describe('QuickDiaryOneLiner', () => {
     const wrapper = mountOneLiner()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('將追加到今日內容後')
+    expect(wrapper.text()).toContain('內容會加入今天的日記')
 
     await wrapper.get('[data-test="quick-capture-input"]').setValue('SPX broke above yesterday high')
     await wrapper.get('[data-test="quick-capture-save"]').trigger('click')
@@ -267,15 +284,13 @@ describe('QuickDiaryOneLiner', () => {
     const wrapper = mountOneLiner()
     await flushPromises()
 
-    // Expand the editor first to show more tools
-    const expandEditorBtn = wrapper.findAll('button').find(button => button.text().trim() === '完整編輯')
-    expect(expandEditorBtn).toBeTruthy()
-    await expandEditorBtn!.trigger('click')
-
-    // Find and click the "設定提醒" tool chip
+    // The focused editor exposes reminder as a secondary tool immediately.
     const reminderChip = wrapper.findAll('button').find(button => button.text().trim() === '設定提醒')
     expect(reminderChip).toBeTruthy()
     await reminderChip!.trigger('click')
+    const tomorrowButton = wrapper.findAll('button').find(button => button.text().trim() === '明天')
+    expect(tomorrowButton).toBeTruthy()
+    await tomorrowButton!.trigger('click')
     await flushPromises()
 
     expect(setReminderMock).toHaveBeenCalledWith('tomorrow')

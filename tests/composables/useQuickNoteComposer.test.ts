@@ -106,7 +106,7 @@ describe('useQuickNoteComposer', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/diaries', expect.objectContaining({
       method: 'POST',
       body: expect.objectContaining({
-        title: '2026/03/22 Diary',
+        title: expect.stringContaining('A blank quicknote body'),
         content: 'A blank quicknote body',
         tags: ['watch', 'profit'],
         appendToToday: false,
@@ -333,8 +333,8 @@ describe('useQuickNoteComposer', () => {
     // After declining, clearDraft resets the draft ref
     const draftRef = storageMap.get('quick-note-draft')
     expect(draftRef.value.title).toBe('')
-    // After declining restore, syncSuggestedDraft populates from blank template
-    expect(composer.title.value).toContain('2026')
+    // Blank notes keep the visible title optional; save() derives a fallback title.
+    expect(composer.title.value).toBe('')
   })
 
   // --- Draft persistence ---

@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, onUnmounted, reactive, ref, toRef, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onUnmounted, reactive, ref, toRef, watch } from 'vue'
 import { useDebounceFn, useLocalStorage } from '@vueuse/core'
 import { toUtcNoonDate } from '~/lib/dates/normalize'
 import { generateTemplateDraft } from '~/lib/quicknote/generate-template-draft'
@@ -38,6 +38,21 @@ function normalizeSymbols(symbols: string | undefined): string {
 
 function normalizeQuickNoteDate(date: string | Date): string {
   return toUtcNoonDate(date).toISOString()
+}
+
+function deriveQuickNoteTitle(content: string, fallbackTitle: string): string {
+  const firstLine = content
+    .split(/\r?\n/)
+    .map(line => line.replace(/^\s*#+\s*/, '').trim())
+    .find(Boolean)
+
+  if (!firstLine) return fallbackTitle
+
+  const shortened = firstLine.length > 72
+    ? `${firstLine.slice(0, 69).trimEnd()}…`
+    : firstLine
+
+  return `${shortened} — ${fallbackTitle}`.slice(0, 100)
 }
 
 // ---------------------------------------------------------------------------
@@ -99,6 +114,9 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   })
 
   const lastSavedAt = ref('')
+  const draftStatus = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle')
+  const pendingDraft = ref<Partial<QuickNoteDraft> | null>(null)
+  let autosaveGeneration = 0
 
   const hasDraft = computed(() => {
     if (!draft.value.savedAt) return false
@@ -115,14 +133,27 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     )
   })
 
-  const saveDraft = useDebounceFn((data: Partial<QuickNoteDraft>) => {
-    draft.value = {
-      ...draft.value,
-      ...data,
-      savedAt: new Date().toISOString(),
+  const saveDraft = useDebounceFn((data: Partial<QuickNoteDraft>, generation: number) => {
+    if (generation !== autosaveGeneration) return
+    pendingDraft.value = data
+    try {
+      draft.value = {
+        ...draft.value,
+        ...data,
+        savedAt: new Date().toISOString(),
+      }
+      lastSavedAt.value = draft.value.savedAt
+      draftStatus.value = 'saved'
+    } catch {
+      draftStatus.value = 'failed'
     }
-    lastSavedAt.value = draft.value.savedAt
   }, 1000)
+
+  function retryDraftSave() {
+    if (!pendingDraft.value) return
+    draftStatus.value = 'saving'
+    saveDraft(pendingDraft.value, autosaveGeneration)
+  }
 
   function clearDraft() {
     draft.value = {
@@ -136,6 +167,8 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       savedAt: '',
     }
     lastSavedAt.value = ''
+    pendingDraft.value = null
+    draftStatus.value = 'idle'
   }
 
   // --- Reminders (inlined from useQuickNoteReminders) ---
@@ -219,6 +252,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   const restoredThisSession = ref(false)
   const nowTick = ref(Date.now())
   const saveModeTouched = ref(false)
+  const suppressAutosave = ref(false)
   const existingDiaryForDate = ref(false)
   const checkingExistingDiaryForDate = ref(false)
   let reminderTimer: ReturnType<typeof setInterval> | null = null
@@ -240,9 +274,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   })
 
   function syncSuggestedDraft(force = false) {
-    if (force || !state.titleTouched) {
-      state.title = suggestedDraft.value.title
-    }
+    if (force || !state.titleTouched) state.title = state.templateKind === 'blank' ? '' : suggestedDraft.value.title
     if (force || !state.contentTouched) {
       state.content = suggestedDraft.value.content
       appliedTemplateContent.value = suggestedDraft.value.content
@@ -297,8 +329,10 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   // --- Computed outputs ---
   const draftHint = computed(() => {
-    if (!lastSavedAt.value) return ''
-    return t('quickDiary.draft.saved')
+    if (draftStatus.value === 'saving') return t('quickDiary.draft.saving')
+    if (draftStatus.value === 'failed') return t('quickDiary.draft.failed')
+    if (draftStatus.value === 'saved' && lastSavedAt.value) return t('quickDiary.draft.saved')
+    return ''
   })
 
   const activeReminders = computed(() => {
@@ -342,7 +376,17 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   watch(
     () => [state.title, state.content, state.tags, state.date, state.saveMode, state.templateKind, state.templateData],
     () => {
-      if (!readyForAutosave.value) return
+      if (!readyForAutosave.value || suppressAutosave.value) return
+      const hasMeaningfulDraft = Boolean(
+        state.title.trim() ||
+        state.content.trim() ||
+        state.tags.length ||
+        state.date !== getTodayDateString() ||
+        state.saveMode !== defaultSaveMode ||
+        state.templateKind !== defaultTemplateKind,
+      )
+      if (!hasMeaningfulDraft) return
+      draftStatus.value = 'saving'
       saveDraft({
         title: state.title,
         content: state.content,
@@ -351,7 +395,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
         saveMode: state.saveMode,
         templateKind: state.templateKind,
         templateData: { ...state.templateData },
-      })
+      }, autosaveGeneration)
     },
     { deep: true },
   )
@@ -415,6 +459,8 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   }
 
   function resetState() {
+    autosaveGeneration += 1
+    suppressAutosave.value = true
     state.date = getTodayDateString()
     state.saveMode = defaultSaveMode
     state.templateKind = defaultTemplateKind
@@ -424,6 +470,9 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     state.contentTouched = false
     saveModeTouched.value = false
     syncSuggestedDraft(true)
+    void nextTick(() => {
+      suppressAutosave.value = false
+    })
   }
 
   async function syncExistingDiaryForDate(date = state.date) {
@@ -448,12 +497,9 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   }
 
   async function save() {
-    const title = state.title.trim() || suggestedDraft.value.title
     const content = state.content.trim()
+    const title = state.title.trim() || deriveQuickNoteTitle(content, suggestedDraft.value.title)
 
-    if (!title) {
-      throw new Error('TITLE_REQUIRED')
-    }
     if (!content) {
       throw new Error('CONTENT_REQUIRED')
     }
@@ -469,6 +515,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     clearDraft()
     clearAllReminders()
     resetState()
+    await nextTick()
 
     return result
   }
@@ -511,8 +558,10 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   }
 
   function dispose() {
+    autosaveGeneration += 1
     if (reminderTimer) clearInterval(reminderTimer)
     reminderTimer = null
+    restoredThisSession.value = false
   }
 
   if (getCurrentInstance()) {
@@ -532,6 +581,8 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     templates,
     reminders,
     draftHint,
+    draftStatus,
+    retryDraftSave,
     activeReminders,
     existingDiaryForDate,
     checkingExistingDiaryForDate,

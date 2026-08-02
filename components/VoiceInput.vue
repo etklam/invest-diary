@@ -2,10 +2,10 @@
   <div class="relative inline-flex items-center">
     <button
       type="button"
-      class="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors duration-200"
+      class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-dt-sm border px-3 text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-dt-primary/30 disabled:cursor-not-allowed disabled:opacity-50"
       :class="isListening
-        ? 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-200 dark:border-rose-800'
-        : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600'"
+        ? 'border-dt-danger bg-dt-danger/10 text-dt-danger'
+        : 'border-dt-border bg-dt-surface-muted text-dt-text-muted hover:border-dt-primary hover:text-dt-primary'"
       :disabled="!isSupported"
       :aria-pressed="isListening"
       :aria-label="isListening ? '停止語音輸入' : '開始語音輸入'"
@@ -14,7 +14,7 @@
       <span class="relative inline-flex h-4 w-4 items-center justify-center">
         <span
           v-if="isListening"
-          class="absolute inline-flex h-4 w-4 rounded-full bg-rose-400/60 animate-ping motion-reduce:animate-none"
+          class="absolute inline-flex h-4 w-4 rounded-full bg-dt-danger/50 animate-ping motion-reduce:animate-none"
         ></span>
         <Icon :name="isListening ? 'heroicons:stop-circle' : 'heroicons:microphone'" class="h-4 w-4" />
       </span>
@@ -31,11 +31,12 @@
     >
       <div
         v-if="isListening && (interimTranscript || transcript)"
-        class="absolute left-0 top-full z-10 mt-2 w-64 rounded-md border border-gray-200 bg-white p-3 text-xs text-gray-700 shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+        class="absolute left-0 top-full z-10 mt-2 w-64 rounded-dt-sm border p-3 text-xs shadow-dt-md"
+        style="border-color: var(--color-border); background: var(--color-surface); color: var(--color-text);"
         role="status"
         aria-live="polite"
       >
-        <p class="text-[11px] text-gray-500 dark:text-gray-400">語音轉錄中</p>
+        <p class="text-[11px]" style="color: var(--color-text-soft);">語音轉錄中</p>
         <p class="mt-1 leading-relaxed">
           <span v-if="transcript">{{ transcript }}</span>
           <span v-if="interimTranscript" class="opacity-70"> {{ interimTranscript }}</span>
