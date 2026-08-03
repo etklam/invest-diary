@@ -89,6 +89,8 @@ describe('QuickNoteEditorCore', () => {
   it('emits content, tags, and date updates', async () => {
     const wrapper = mountEditorCore()
 
+    expect(wrapper.find('.quick-note-editor-scroll').classes()).toContain('pb-36')
+
     await wrapper.get('input[aria-label="快速筆記標題"]').setValue('Manual title')
     await wrapper.get('textarea[aria-label="快速筆記內容"]').setValue('Updated note')
     await wrapper.get('[data-test="tags"]').trigger('click')

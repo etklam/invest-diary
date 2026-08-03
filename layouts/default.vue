@@ -20,7 +20,10 @@
       <main
         id="main-content"
         class="mx-auto w-full max-w-[1240px] px-4 py-8 pb-28 sm:px-6 lg:px-8 xl:pb-8"
-        :class="{ 'pt-24': showInstallPrompt }"
+        :class="[
+          { 'pt-24': showInstallPrompt },
+          { 'max-[639px]:pt-14': showAlert },
+        ]"
       >
         <slot />
       </main>
@@ -35,7 +38,7 @@
       <BottomNavigation v-if="isAuthenticated" class="xl:hidden" />
       <!-- Floating Quick Diary Button -->
       <button
-        v-if="isAuthenticated"
+        v-if="showFloatingQuickDiary"
         @click="openFloatingQuickDiary"
         :aria-label="$t('diary.quickDiary')"
         class="fixed right-6 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-dt-lg transition-colors duration-200 group hover:opacity-90 xl:bottom-[calc(1.5rem+env(safe-area-inset-bottom))]"
@@ -55,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { QuickDiaryContext } from '~/types/quicknote'
 
 const { toasts, removeToast } = useToast()
@@ -64,6 +67,8 @@ const { canInstall } = useAppPWA()
 const showInstallPrompt = ref(false)
 const showQuickDiaryModal = ref(false)
 const quickDiaryContext = ref<QuickDiaryContext | null>(null)
+const route = useRoute()
+const showFloatingQuickDiary = computed(() => isAuthenticated.value && route.path !== '/diaries/quick')
 
 import { useAlerts } from '~/composables/useAlerts'
 

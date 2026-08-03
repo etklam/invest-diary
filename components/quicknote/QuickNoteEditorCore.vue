@@ -6,7 +6,7 @@
   >
     <div
       class="quick-note-editor-scroll"
-      :class="scrollable ? 'min-h-0 flex-1 overflow-y-auto' : ''"
+      :class="scrollable ? 'min-h-0 flex-1 overflow-y-auto' : 'pb-36 lg:pb-0'"
     >
       <div class="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-7 lg:p-7">
         <section class="min-w-0 space-y-5" aria-label="隨手筆記編輯器">
@@ -62,10 +62,10 @@
               ref="contentInput"
               :value="content"
               data-test="quick-capture-input"
-              class="min-h-[360px] w-full resize-y rounded-dt-md border px-4 py-4 text-base leading-7 outline-none transition-colors placeholder:text-dt-text-soft focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20 sm:min-h-[400px] sm:px-5 sm:py-5"
+              class="h-44 min-h-0 w-full resize-y rounded-dt-md border px-4 py-4 text-base leading-7 outline-none transition-colors placeholder:text-dt-text-soft focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20 max-[374px]:h-36 max-[374px]:py-3 sm:h-auto sm:min-h-[400px] sm:px-5 sm:py-5"
               style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
               :placeholder="t('quickDiary.editor.contentPlaceholder')"
-              rows="14"
+              rows="1"
               :autofocus="false"
               :aria-label="t('quickDiary.editor.contentAria')"
               @input="handleContentInput"
@@ -714,3 +714,14 @@ onMounted(() => {
   nextTick(focusContent)
 })
 </script>
+
+<style scoped>
+@media (max-width: 639px) and (max-height: 800px) {
+  #quick-note-content {
+    height: 5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+}
+</style>
