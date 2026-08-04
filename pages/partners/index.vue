@@ -27,6 +27,7 @@
 
     <!-- Stats Overview -->
     <section class="stats-grid">
+      <LedgerCard>
       <article class="stat-card stat-connected">
         <span class="stat-icon"><Icon name="heroicons:user-group-solid" class="w-5 h-5" /></span>
         <span class="stat-value">{{ connectedCount }}</span>
@@ -869,11 +870,11 @@ const revokeKey = async (keyId: string) => {
 }
 
 .partner-card.partner-connected {
-  border-left: 3px solid #1C6B5C;
+  border-left: 1px solid #1C6B5C;
 }
 
 .partner-card.partner-pending {
-  border-left: 3px solid #A56A18;
+  border-left: 1px solid #A56A18;
 }
 
 :root.dark .partner-card.partner-connected {

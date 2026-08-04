@@ -105,7 +105,7 @@
         :key="group.period"
         class="relative mb-10"
       >
-        <div class="sticky top-[4.5rem] z-10 mb-5 flex items-center gap-3 bg-dt-bg/90 py-2 backdrop-blur-[2px]">
+        <div class="sticky top-[4.5rem] z-10 mb-5 flex items-center gap-3 bg-dt-surface py-2">
           <div class="relative z-10 h-3 w-3 shrink-0 rounded-full border-2 border-dt-primary bg-dt-surface sm:ml-2" />
           <div class="flex min-w-0 flex-wrap items-center gap-2 rounded-dt-sm border border-dt-border bg-dt-surface px-3 py-1.5 shadow-dt-sm">
             <h2 class="text-sm font-semibold tracking-wide text-dt-text">
