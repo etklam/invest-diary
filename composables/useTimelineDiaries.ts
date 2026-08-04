@@ -9,7 +9,7 @@ import type {
 } from '~/types/diary'
 
 export const useTimelineDiaries = (options?: { limit?: number; timezone?: string }) => {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const { user } = useAuth()
   const toast = useToast()
 
@@ -140,7 +140,11 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
       const year = Number(yearStr)
       const month = Number(monthStr)
       const period = `${year}-${String(month).padStart(2, '0')}`
-      const periodLabel = t('timeline.periodLabel', { year, month })
+      // Localized month name — avoid bare "{year} {month}" numbers on EN
+      const periodLabel = new Intl.DateTimeFormat(locale.value || 'en', {
+        year: 'numeric',
+        month: 'long',
+      }).format(new Date(year, month - 1, 1))
 
       if (!groups.has(period)) {
         groups.set(period, {

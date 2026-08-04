@@ -8,25 +8,25 @@
             {{ t('calendar.intelligence') }}
           </p>
           <h1 class="font-display mt-1.5 text-[clamp(1.75rem,4vw,2.5rem)] leading-tight tracking-tight text-dt-text">
-            {{ t('calendar.title', { year: currentYear, month: currentMonth + 1 }) }}
+            {{ monthTitle }}
           </h1>
         </div>
         <div class="flex items-center gap-2">
           <BaseButton
             variant="secondary"
-            class="!min-h-11 !w-11 !px-0"
+            class="!min-h-11 !w-11 !px-0 text-dt-text"
             :aria-label="t('common.previous')"
             @click="previousMonth"
           >
-            <Icon name="heroicons:chevron-left" class="h-5 w-5" />
+            <span class="text-xl leading-none" aria-hidden="true">‹</span>
           </BaseButton>
           <BaseButton
             variant="secondary"
-            class="!min-h-11 !w-11 !px-0"
+            class="!min-h-11 !w-11 !px-0 text-dt-text"
             :aria-label="t('common.next')"
             @click="nextMonth"
           >
-            <Icon name="heroicons:chevron-right" class="h-5 w-5" />
+            <span class="text-xl leading-none" aria-hidden="true">›</span>
           </BaseButton>
         </div>
       </div>
@@ -190,7 +190,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useCalendar } from '~/composables/useCalendar'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useI18n } from '#imports'
@@ -200,7 +200,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const {
   currentYear,
@@ -220,6 +220,13 @@ const {
   isToday,
   isExcludedHoliday
 } = useCalendar()
+
+const monthTitle = computed(() =>
+  new Intl.DateTimeFormat(locale.value || 'en', {
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(currentYear.value, currentMonth.value, 1)),
+)
 
 const showQuickModal = ref(false)
 const quickDiaryContext = ref<QuickDiaryContext | null>(null)

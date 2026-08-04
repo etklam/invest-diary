@@ -10,18 +10,21 @@
     <!-- 提醒置頂顯示 -->
     <div
       v-if="diary.alerts && diary.alerts.length > 0"
-      class="rounded-dt-sm border border-dt-border border-l-4 border-l-dt-warning bg-dt-surface p-4 shadow-dt-sm"
+      class="rounded-dt-sm border border-dt-warning/40 bg-dt-surface p-4 shadow-dt-sm"
+      style="background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));"
     >
-      <div class="flex items-start">
-        <Icon name="heroicons:bell-alert" class="mt-0.5 h-5 w-5 flex-shrink-0 text-dt-warning" />
-        <div class="ml-3 flex-1">
+      <div class="flex items-start gap-3">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-dt-sm border border-dt-warning/30 bg-dt-surface">
+          <Icon name="heroicons:bell-alert" class="h-5 w-5 text-dt-warning" />
+        </span>
+        <div class="min-w-0 flex-1">
           <h3 class="text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">
             {{ t('diary.view.alerts') }}
           </h3>
           <div class="mt-2 space-y-2">
-            <div v-for="alert in diary.alerts" :key="alert.id" class="flex items-start justify-between">
+            <div v-for="alert in diary.alerts" :key="alert.id" class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
               <p class="text-sm text-dt-text">{{ alert.message }}</p>
-              <span class="ml-2 whitespace-nowrap font-mono text-xs text-dt-text-muted">
+              <span class="shrink-0 font-data text-xs text-dt-text-muted">
                 {{ formatDate(alert.triggerAt) }}
               </span>
             </div>
@@ -30,19 +33,19 @@
       </div>
     </div>
 
-    <div class="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h1 class="font-display text-3xl font-semibold tracking-tight text-dt-text">{{ diary.title }}</h1>
-        <p class="mt-1 font-mono text-sm text-dt-text-muted">
+    <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+      <div class="min-w-0">
+        <h1 class="font-display text-2xl font-semibold tracking-tight text-dt-text sm:text-3xl">{{ diary.title }}</h1>
+        <p class="mt-1 font-data text-sm text-dt-text-muted">
           {{ formatLocaleDateTime(diary.createdAt) }}
         </p>
       </div>
-      <div class="flex gap-3">
-        <BaseButton variant="secondary" @click="router.push(`/diaries/${diary.id}/edit`)">
+      <div class="flex w-full gap-3 sm:w-auto">
+        <BaseButton variant="secondary" class="flex-1 sm:flex-none" @click="router.push(`/diaries/${diary.id}/edit`)">
           <Icon name="heroicons:pencil" class="h-4 w-4" />
           {{ t('common.edit') }}
         </BaseButton>
-        <BaseButton variant="danger" @click="deleteDiary">
+        <BaseButton variant="danger" class="flex-1 sm:flex-none" @click="deleteDiary">
           <Icon name="heroicons:trash" class="h-4 w-4" />
           {{ t('common.delete') }}
         </BaseButton>
@@ -72,7 +75,30 @@
 
     <div v-if="diary.transactions && diary.transactions.length > 0" class="space-y-6">
       <LedgerCard :title="t('diary.form.transactions')">
-        <div class="overflow-x-auto">
+        <!-- Mobile: stacked ledger rows -->
+        <ul class="space-y-3 sm:hidden">
+          <li
+            v-for="tx in diary.transactions"
+            :key="`m-${tx.id}`"
+            class="rounded-dt-sm border border-dt-border bg-dt-surface-strong p-3"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-data text-sm font-semibold text-dt-text">{{ tx.symbol }}</span>
+              <StatusBadge :tone="tx.type === 'BUY' ? 'success' : 'danger'">
+                {{ tx.type === 'BUY' ? t('diary.form.buy') : t('diary.form.sell') }}
+              </StatusBadge>
+            </div>
+            <div class="mt-2 grid grid-cols-2 gap-2 font-data text-xs text-dt-text-muted">
+              <span>{{ t('diary.form.quantity') }} · {{ tx.quantity }}</span>
+              <span class="text-right">{{ t('diary.form.price') }} · {{ tx.price }}</span>
+              <span>{{ t('diary.view.total') }} · {{ (Number(tx.quantity) * Number(tx.price)).toFixed(2) }}</span>
+              <span class="text-right">{{ formatLocaleDateTime(tx.tradeDate) }}</span>
+            </div>
+          </li>
+        </ul>
+
+        <!-- Desktop: table -->
+        <div class="hidden overflow-x-auto sm:block">
           <table class="min-w-full divide-y divide-dt-border">
             <thead>
               <tr>

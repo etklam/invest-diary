@@ -4,16 +4,16 @@
     <header class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
-            <Icon name="heroicons:presentation-chart-line" class="text-blue-600 dark:text-blue-400" />
+          <h1 class="flex items-center gap-3 font-display text-2xl font-semibold tracking-tight text-dt-text sm:text-3xl">
+            <Icon name="heroicons:presentation-chart-line" class="text-dt-primary" />
             {{ t('stock.dashboard.title') }}
           </h1>
-          <div class="flex items-center gap-3 mt-1">
-            <p class="text-sm text-slate-500 dark:text-slate-400">
+          <div class="mt-1 flex flex-wrap items-center gap-3">
+            <p class="text-sm text-dt-text-muted">
               {{ t('stock.dashboard.manageDescription') }}
             </p>
-            <span v-if="marketState" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-              <span class="w-1.5 h-1.5 rounded-full" :class="marketState === 'REGULAR' ? 'bg-green-500 animate-pulse' : 'bg-amber-500'"></span>
+            <span v-if="marketState" class="inline-flex items-center gap-1.5 rounded-full border border-dt-border bg-dt-surface-strong px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-dt-text-muted">
+              <span class="h-1.5 w-1.5 rounded-full" :class="marketState === 'REGULAR' ? 'bg-dt-success animate-pulse' : 'bg-dt-warning'"></span>
               {{ t('stock.dashboard.marketState') }}: {{ marketState }}
             </span>
           </div>
@@ -46,10 +46,10 @@
         <!-- Portfolio Value -->
         <div class="stats-card">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ t('stock.dashboard.netLiquidity') }}</span>
-            <Icon name="heroicons:banknotes" class="w-5 h-5 text-blue-500 opacity-50" />
+            <span class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('stock.dashboard.netLiquidity') }}</span>
+            <Icon name="heroicons:banknotes" class="h-5 w-5 text-dt-primary opacity-50" />
           </div>
-          <div class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+          <div class="font-data text-2xl font-bold tabular-nums text-dt-text">
             {{ formatCurrency(currentMarketValue || totalCost) }}
           </div>
           <div class="flex items-center gap-1.5 mt-1">
@@ -63,8 +63,8 @@
         <!-- Day Change -->
         <div class="stats-card">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ t('stock.dashboard.dayChange') }}</span>
-            <Icon name="heroicons:bolt" class="w-5 h-5 text-amber-500 opacity-50" />
+            <span class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('stock.dashboard.dayChange') }}</span>
+            <Icon name="heroicons:bolt" class="h-5 w-5 text-dt-warning opacity-50" />
           </div>
           <div class="text-2xl font-bold tabular-nums" :class="totalDayChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
             {{ totalDayChange >= 0 ? '+' : '' }}{{ formatCurrency(totalDayChange) }}
@@ -80,14 +80,14 @@
         <!-- Margin/Equity Ratio or Total Cost -->
         <div class="stats-card">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ t('stock.dashboard.totalInvested') }}</span>
-            <Icon name="heroicons:credit-card" class="w-5 h-5 text-indigo-500 opacity-50" />
+            <span class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('stock.dashboard.totalInvested') }}</span>
+            <Icon name="heroicons:credit-card" class="h-5 w-5 text-dt-info opacity-50" />
           </div>
-          <div class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+          <div class="font-data text-2xl font-bold tabular-nums text-dt-text">
             {{ formatCurrency(totalCost) }}
           </div>
           <div class="flex items-center gap-1.5 mt-1">
-            <span class="text-xs font-medium text-slate-600 dark:text-slate-300">
+            <span class="text-xs font-medium text-dt-text-muted">
               {{ totalHoldings }} {{ t('stock.dashboard.positions') }}
             </span>
             <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ t('stock.dashboard.active') }}</span>
@@ -97,8 +97,8 @@
         <!-- Unrealized P/L % -->
         <div class="stats-card">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ t('stock.dashboard.unrealizedPLPercent') }}</span>
-            <Icon name="heroicons:arrow-trending-up" class="w-5 h-5 text-emerald-500 opacity-50" />
+            <span class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('stock.dashboard.unrealizedPLPercent') }}</span>
+            <Icon name="heroicons:arrow-trending-up" class="h-5 w-5 text-dt-success opacity-50" />
           </div>
           <div class="text-2xl font-bold tabular-nums" :class="totalUnrealizedPct >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
             {{ totalUnrealizedPct >= 0 ? '+' : '' }}{{ totalUnrealizedPct.toFixed(2) }}%
@@ -118,11 +118,11 @@
       <section class="panel-dashboard p-6 mb-6">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
+            <h2 class="font-bold text-dt-text flex items-center gap-2 text-base">
               <Icon name="heroicons:shield-exclamation" class="text-amber-500" />
               {{ t('stock.riskSummary.title') }}
             </h2>
-            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p class="mt-1 text-xs text-dt-text-muted">
               {{ t('stock.riskSummary.description') }}
             </p>
           </div>
@@ -183,7 +183,7 @@
         <div class="lg:col-span-8 space-y-6">
           <div class="panel-dashboard overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
+              <h3 class="font-bold text-dt-text flex items-center gap-2 text-base">
                 <Icon name="heroicons:list-bullet" class="text-blue-500" />
                 {{ t('stock.dashboard.activePositions') }}
               </h3>
@@ -194,7 +194,7 @@
                     v-model="searchQuery"
                     type="text"
                     :placeholder="t('stock.dashboard.searchPlaceholder')"
-                    class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-dt-text placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   >
                 </div>
               </div>
@@ -238,7 +238,7 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                       <div class="flex flex-col items-end">
-                        <span class="text-sm font-semibold tabular-nums text-slate-900 dark:text-white">
+                        <span class="text-sm font-semibold tabular-nums text-dt-text">
                           {{ holding.price ? formatCurrency(holding.price) : '—' }}
                         </span>
                         <span v-if="holding.dayChangePercent !== undefined" class="text-[10px] font-bold tabular-nums" :class="holding.dayChangePercent >= 0 ? 'text-green-500' : 'text-red-500'">
@@ -247,12 +247,12 @@
                       </div>
                     </td>
                     <td class="px-6 py-4 text-right">
-                      <div class="text-sm font-medium tabular-nums text-slate-900 dark:text-white">
+                      <div class="text-sm font-medium tabular-nums text-dt-text">
                         {{ holding.marketValue ? formatCurrency(holding.marketValue) : formatCurrency(holding.totalCost) }}
                       </div>
                     </td>
                     <td class="px-6 py-4 text-right">
-                      <div class="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+                      <div class="text-xs text-dt-text-muted tabular-nums">
                         {{ formatCurrency(holding.avgCost) }}
                       </div>
                     </td>
@@ -268,7 +268,7 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                       <div class="flex items-center justify-end gap-3">
-                        <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                        <span class="text-xs font-semibold text-dt-text-muted">
                           {{ formatPercentage(holding.totalCost) }}
                         </span>
                         <div class="w-12 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden hidden sm:block">
@@ -287,7 +287,7 @@
         <div class="lg:col-span-4 space-y-6">
           <!-- Allocation Card -->
           <div class="panel-dashboard p-6">
-            <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6 text-base">
+            <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-base">
               <Icon name="heroicons:chart-pie" class="text-indigo-500" />
               {{ t('stock.dashboard.assetAllocation') }}
             </h3>
@@ -310,7 +310,7 @@
                   />
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span class="text-2xl font-black text-slate-900 dark:text-white">{{ totalHoldings }}</span>
+                  <span class="text-2xl font-black text-dt-text">{{ totalHoldings }}</span>
                   <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ t('stock.dashboard.assets') }}</span>
                 </div>
               </div>
@@ -332,11 +332,11 @@
 
           <!-- Quick Trade Shortcut -->
           <div class="panel-dashboard p-6 bg-blue-600/5 dark:bg-blue-400/5 border-blue-200 dark:border-blue-900/50">
-            <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4 text-base">
+            <h3 class="font-bold text-dt-text flex items-center gap-2 mb-4 text-base">
               <Icon name="heroicons:plus-circle" class="text-blue-500" />
               {{ t('stock.dashboard.quickTransaction') }}
             </h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">{{ t('stock.dashboard.quickTransactionDesc') }}</p>
+            <p class="text-xs text-dt-text-muted mb-4">{{ t('stock.dashboard.quickTransactionDesc') }}</p>
             <NuxtLink to="/diaries/new" class="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 active:scale-95">
               <Icon name="heroicons:pencil-square" class="w-4 h-4" />
               {{ t('stock.dashboard.logNewTrade') }}
@@ -348,7 +348,7 @@
       <!-- ── 績效儀表板 ── -->
       <section class="mt-8">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 class="text-lg font-bold text-dt-text flex items-center gap-2">
             <Icon name="heroicons:chart-bar-square" class="text-indigo-500" />
             已實現績效
           </h2>
@@ -368,15 +368,16 @@
               {{ isExporting ? '匯出中...' : '匯出 CSV' }}
             </button>
             <!-- 時間範圍切換 -->
-            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+            <div class="flex items-center gap-1 rounded-dt-sm border border-dt-border bg-dt-surface-strong p-1">
               <button
                 v-for="opt in periodOptions"
                 :key="opt.value"
+                type="button"
                 @click="selectedPeriod = opt.value"
-                class="px-3 py-1 text-xs font-bold rounded-lg transition-all"
+                class="min-h-11 min-w-11 rounded-dt-sm px-3 text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30"
                 :class="selectedPeriod === opt.value
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'"
+                  ? 'bg-dt-primary text-white shadow-sm'
+                  : 'text-dt-text-muted hover:bg-dt-surface hover:text-dt-text'"
               >
                 {{ opt.label }}
               </button>
@@ -396,7 +397,7 @@
           <!-- 勝率 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">勝率</span>
+              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">勝率</span>
               <Icon name="heroicons:trophy" class="w-5 h-5 text-amber-500 opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
@@ -412,7 +413,7 @@
           <!-- 已實現損益 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">已實現損益</span>
+              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">已實現損益</span>
               <Icon name="heroicons:currency-dollar" class="w-5 h-5 text-emerald-500 opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
@@ -425,11 +426,11 @@
           <!-- 最大回撤 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">最大回撤</span>
+              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">最大回撤</span>
               <Icon name="heroicons:arrow-trending-down" class="w-5 h-5 text-red-500 opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
-              :class="perfData.summary.maxDrawdownPct > 20 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white'">
+              :class="perfData.summary.maxDrawdownPct > 20 ? 'text-red-600 dark:text-red-400' : 'text-dt-text'">
               {{ perfData.summary.totalClosedTrades > 0 ? '-' + perfData.summary.maxDrawdownPct.toFixed(1) + '%' : 'N/A' }}
             </div>
             <div class="text-[10px] text-slate-400 mt-1">損益曲線最大跌幅</div>
@@ -438,7 +439,7 @@
           <!-- 夏普比率 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">夏普比率</span>
+              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">夏普比率</span>
               <Icon name="heroicons:scale" class="w-5 h-5 text-purple-500 opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
@@ -453,7 +454,7 @@
 
         <!-- 損益趨勢圖 -->
         <div v-if="perfData && perfData.periodStats.length > 0" class="panel-dashboard p-6 mb-6">
-          <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6 text-sm">
+          <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-sm">
             <Icon name="heroicons:chart-bar" class="text-indigo-400" />
             損益走勢（{{ periodLabel }}）
           </h3>
@@ -466,13 +467,13 @@
         <div v-else-if="!perfPending && (!perfData || perfData.summary.totalClosedTrades === 0)"
           class="panel-dashboard p-10 text-center">
           <Icon name="heroicons:chart-bar-square" class="w-12 h-12 text-slate-300 dark:text-slate-300 mx-auto mb-3" />
-          <p class="text-sm font-medium text-slate-500 dark:text-slate-400">尚無已實現交易</p>
+          <p class="text-sm font-medium text-dt-text-muted">尚無已實現交易</p>
           <p class="text-xs text-slate-400 dark:text-slate-400 mt-1">完成第一筆買入並賣出後，績效指標將會出現</p>
         </div>
 
         <!-- 資金曲線（折線圖） -->
         <div v-if="perfData && perfData.equityCurve && perfData.equityCurve.length > 1" class="panel-dashboard p-6 mb-6">
-          <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6 text-sm">
+          <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-sm">
             <Icon name="heroicons:chart-bar" class="text-indigo-400" />
             資金曲線（累積損益）
           </h3>
@@ -483,7 +484,7 @@
 
         <!-- 各股票損益分析（橫條圖） -->
         <div v-if="perfData && perfData.symbolBreakdown && perfData.symbolBreakdown.length > 0" class="panel-dashboard p-6 mb-6">
-          <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6 text-sm">
+          <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-sm">
             <Icon name="heroicons:chart-bar" class="text-emerald-400" />
             各股票損益（前 10）
           </h3>
@@ -506,7 +507,7 @@
             <div class="divide-y divide-slate-100 dark:divide-slate-800">
               <div v-for="t in perfData.topWins" :key="t.id" class="px-5 py-3 flex items-center justify-between">
                 <div>
-                  <span class="text-sm font-bold text-slate-900 dark:text-white">{{ t.symbol }}</span>
+                  <span class="text-sm font-bold text-dt-text">{{ t.symbol }}</span>
                   <span class="ml-2 text-xs text-slate-400">{{ formatTradeDate(t.sellDate) }}</span>
                 </div>
                 <div class="text-right">
@@ -530,7 +531,7 @@
             <div class="divide-y divide-slate-100 dark:divide-slate-800">
               <div v-for="t in perfData.topLosses" :key="t.id" class="px-5 py-3 flex items-center justify-between">
                 <div>
-                  <span class="text-sm font-bold text-slate-900 dark:text-white">{{ t.symbol }}</span>
+                  <span class="text-sm font-bold text-dt-text">{{ t.symbol }}</span>
                   <span class="ml-2 text-xs text-slate-400">{{ formatTradeDate(t.sellDate) }}</span>
                 </div>
                 <div class="text-right">
@@ -1054,26 +1055,22 @@ useHead({
 
 .panel-dashboard {
   border: 1px solid var(--color-border);
-  border-radius: 1.5rem;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, transparent), color-mix(in srgb, var(--color-surface-strong) 86%, transparent));
+  border-radius: 1rem;
+  background: var(--color-surface);
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(12px);
 }
 
 .stats-card {
   border: 1px solid var(--color-border);
-  border-radius: 1.5rem;
+  border-radius: 1rem;
   padding: 1.25rem;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 94%, transparent), color-mix(in srgb, var(--color-surface-strong) 88%, transparent));
+  background: var(--color-surface);
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(12px);
-  transition: box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease, border-color var(--motion-fast) ease;
+  transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
 }
 
 .stats-card:hover {
-  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
 }
 
 .risk-metric {
@@ -1110,17 +1107,38 @@ useHead({
 }
 
 .action-btn-dashboard {
-  @apply inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all active:scale-95;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  transition: opacity var(--motion-fast) ease;
+}
+
+.action-btn-dashboard:hover {
+  opacity: 0.92;
+}
+
+.action-btn-dashboard:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .action-btn-muted-dashboard {
   display: inline-flex;
+  min-height: 2.75rem;
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
   border-radius: 0.75rem;
   border: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface-strong) 78%, transparent);
+  background: var(--color-surface-strong);
   color: var(--color-text-muted);
   font-size: 0.875rem;
   font-weight: 700;

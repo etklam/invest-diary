@@ -1,22 +1,22 @@
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-8">
-    <header class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-      <div class="space-y-2">
-        <p class="text-xs font-black uppercase tracking-[0.2em] text-indigo-500">
+  <div class="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div class="min-w-0 space-y-2">
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
           {{ t('compareDiary.kicker') }}
         </p>
-        <h1 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+        <h1 class="font-display text-3xl font-semibold tracking-tight text-dt-text sm:text-4xl">
           {{ t('compareDiary.title') }}
         </h1>
-        <p class="max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+        <p class="max-w-2xl text-sm leading-relaxed text-dt-text-muted">
           {{ t('compareDiary.subtitle') }}
         </p>
       </div>
 
-      <div class="flex flex-col gap-3 sm:flex-row">
+      <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
         <select
           v-model="selectedPartnerId"
-          class="min-w-[240px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+          class="min-h-11 w-full rounded-dt-sm border border-dt-border bg-dt-surface px-4 text-sm font-semibold text-dt-text outline-none focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20 sm:min-w-[240px]"
         >
           <option value="">
             {{ t('compareDiary.selectPartner') }}
@@ -30,157 +30,168 @@
           </option>
         </select>
 
-        <NuxtLink
-          to="/partners"
-          class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-600 dark:hover:text-indigo-300"
-        >
-          {{ t('compareDiary.managePartners') }}
+        <NuxtLink to="/partners" class="inline-flex">
+          <BaseButton variant="secondary" class="w-full sm:w-auto">
+            {{ t('compareDiary.managePartners') }}
+          </BaseButton>
         </NuxtLink>
       </div>
     </header>
 
-    <div v-if="pending" class="rounded-3xl border border-dashed border-slate-300 px-6 py-20 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
+    <div
+      v-if="pending"
+      class="rounded-dt-md border border-dashed border-dt-border px-6 py-20 text-center text-dt-text-muted"
+    >
       {{ t('common.loading') }}
     </div>
 
-    <div v-else-if="error" class="rounded-3xl border border-red-200 bg-red-50 px-6 py-12 text-center dark:border-red-900/50 dark:bg-red-900/10">
-      <p class="text-lg font-semibold text-red-700 dark:text-red-300">
+    <div
+      v-else-if="error"
+      class="rounded-dt-md border border-dt-danger/30 bg-dt-surface px-6 py-12 text-center shadow-dt-sm"
+    >
+      <p class="text-lg font-semibold text-dt-danger">
         {{ t('compareDiary.loadFailed') }}
       </p>
-      <p class="mt-2 text-sm text-red-600/80 dark:text-red-300/80">
+      <p class="mt-2 text-sm text-dt-text-muted">
         {{ error.message }}
       </p>
     </div>
 
-    <div v-else-if="!acceptedLinks.length" class="rounded-3xl border border-dashed border-slate-300 px-6 py-20 text-center dark:border-slate-700">
-      <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+    <div
+      v-else-if="!acceptedLinks.length"
+      class="rounded-dt-md border border-dashed border-dt-border bg-dt-surface px-6 py-16 text-center shadow-dt-sm"
+    >
+      <h2 class="font-display text-2xl font-semibold text-dt-text">
         {{ t('compareDiary.noPartnerTitle') }}
       </h2>
-      <p class="mx-auto mt-3 max-w-xl text-sm text-slate-500 dark:text-slate-400">
+      <p class="mx-auto mt-3 max-w-xl text-sm text-dt-text-muted">
         {{ t('compareDiary.noPartnerDesc') }}
       </p>
-      <NuxtLink
-        to="/partners"
-        class="mt-6 inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
-      >
-        {{ t('compareDiary.openSettings') }}
+      <NuxtLink to="/partners" class="mt-6 inline-flex">
+        <BaseButton variant="primary">
+          {{ t('compareDiary.openSettings') }}
+        </BaseButton>
       </NuxtLink>
     </div>
 
     <div v-else class="space-y-6">
       <div class="grid gap-4 lg:grid-cols-[1fr_auto_1fr]">
-        <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
-          <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+        <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm">
+          <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-text-soft">
             {{ t('compareDiary.yourSide') }}
           </p>
-          <h2 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">
+          <h2 class="mt-2 text-xl font-semibold text-dt-text sm:text-2xl">
             {{ data?.owner.name || data?.owner.email }}
           </h2>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p class="mt-1 text-sm text-dt-text-muted">
             {{ data?.owner.email }}
           </p>
         </section>
 
-        <div class="hidden items-center justify-center text-sm font-black uppercase tracking-[0.4em] text-slate-300 lg:flex">
+        <div class="hidden items-center justify-center text-xs font-bold uppercase tracking-[0.3em] text-dt-text-soft lg:flex">
           VS
         </div>
 
-        <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
-          <p class="text-xs font-black uppercase tracking-[0.2em] text-indigo-500">
+        <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm">
+          <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
             {{ t('compareDiary.partnerSide') }}
           </p>
-          <h2 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">
+          <h2 class="mt-2 text-xl font-semibold text-dt-text sm:text-2xl">
             {{ data?.partner?.name || data?.partner?.email || t('compareDiary.partnerUnavailable') }}
           </h2>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p class="mt-1 text-sm text-dt-text-muted">
             {{ selectedLink?.partner.email }}
           </p>
           <p
             v-if="selectedLink && !selectedLink.partnerSharesDiaries"
-            class="mt-3 rounded-2xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-200"
+            class="mt-3 rounded-dt-sm border border-dt-warning/30 px-3 py-2 text-xs font-medium text-dt-warning"
+            style="background: color-mix(in srgb, var(--color-warning) 10%, var(--color-surface));"
           >
             {{ t('compareDiary.partnerNotSharing') }}
           </p>
         </section>
       </div>
 
-      <div v-if="!data?.compareDays.length" class="rounded-3xl border border-dashed border-slate-300 px-6 py-16 text-center dark:border-slate-700">
-        <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+      <div
+        v-if="!data?.compareDays.length"
+        class="rounded-dt-md border border-dashed border-dt-border bg-dt-surface px-6 py-16 text-center shadow-dt-sm"
+      >
+        <h2 class="font-display text-2xl font-semibold text-dt-text">
           {{ t('compareDiary.noEntriesTitle') }}
         </h2>
-        <p class="mx-auto mt-3 max-w-xl text-sm text-slate-500 dark:text-slate-400">
+        <p class="mx-auto mt-3 max-w-xl text-sm text-dt-text-muted">
           {{ selectedLink?.partnerSharesDiaries ? t('compareDiary.noEntriesDesc') : t('compareDiary.partnerNotSharing') }}
         </p>
       </div>
 
-      <div v-else class="space-y-6">
+      <div v-else class="space-y-4">
         <article
           v-for="day in data?.compareDays"
           :key="day.dateKey"
-          class="rounded-[32px] border border-slate-200 bg-slate-50/80 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/50"
+          class="rounded-dt-md border border-dt-border bg-dt-surface-strong/60 p-4 shadow-dt-sm sm:p-5"
         >
-          <div class="mb-4 flex items-center justify-between">
-            <h3 class="text-sm font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-data text-sm font-semibold text-dt-text-muted">
               {{ day.dateKey }}
             </h3>
-            <span class="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-300">
+            <StatusBadge tone="neutral">
               {{ t('compareDiary.sameDay') }}
-            </span>
+            </StatusBadge>
           </div>
 
           <div class="grid gap-4 lg:grid-cols-2">
-            <section class="rounded-3xl bg-white p-5 dark:bg-slate-900">
+            <section class="rounded-dt-sm border border-dt-border bg-dt-surface p-4 sm:p-5">
               <template v-if="day.ownerDiary">
                 <div class="flex flex-wrap items-center gap-2">
-                  <h4 class="text-xl font-black text-slate-900 dark:text-white">
+                  <h4 class="text-lg font-semibold text-dt-text">
                     {{ day.ownerDiary.title }}
                   </h4>
-                  <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <StatusBadge tone="neutral">
                     {{ sourceLabel(day.ownerDiary.createdVia, day.ownerDiary.createdByLabel) }}
-                  </span>
+                  </StatusBadge>
                 </div>
-                <p class="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600 dark:text-slate-300">
+                <p class="mt-3 whitespace-pre-wrap text-sm leading-7 text-dt-text-muted">
                   {{ day.ownerDiary.content || t('compareDiary.emptyDiaryContent') }}
                 </p>
                 <div v-if="day.ownerDiary.tags?.length" class="mt-4 flex flex-wrap gap-2">
                   <span
                     v-for="tag in day.ownerDiary.tags"
                     :key="tag"
-                    class="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-300"
+                    class="rounded-full bg-dt-surface-strong px-2 py-1 text-[11px] font-semibold text-dt-text-soft"
                   >
                     #{{ tag }}
                   </span>
                 </div>
               </template>
-              <div v-else class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400 dark:border-slate-700 dark:text-slate-400">
+              <div v-else class="rounded-dt-sm border border-dashed border-dt-border px-4 py-10 text-center text-sm text-dt-text-soft">
                 {{ t('compareDiary.noDiaryForDay') }}
               </div>
             </section>
 
-            <section class="rounded-3xl bg-white p-5 dark:bg-slate-900">
+            <section class="rounded-dt-sm border border-dt-border bg-dt-surface p-4 sm:p-5">
               <template v-if="day.partnerDiary">
                 <div class="flex flex-wrap items-center gap-2">
-                  <h4 class="text-xl font-black text-slate-900 dark:text-white">
+                  <h4 class="text-lg font-semibold text-dt-text">
                     {{ day.partnerDiary.title }}
                   </h4>
-                  <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200">
+                  <StatusBadge tone="accent">
                     {{ sourceLabel(day.partnerDiary.createdVia, day.partnerDiary.createdByLabel) }}
-                  </span>
+                  </StatusBadge>
                 </div>
-                <p class="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600 dark:text-slate-300">
+                <p class="mt-3 whitespace-pre-wrap text-sm leading-7 text-dt-text-muted">
                   {{ day.partnerDiary.content || t('compareDiary.emptyDiaryContent') }}
                 </p>
                 <div v-if="day.partnerDiary.tags?.length" class="mt-4 flex flex-wrap gap-2">
                   <span
                     v-for="tag in day.partnerDiary.tags"
                     :key="tag"
-                    class="rounded-full bg-indigo-50 px-2 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200"
+                    class="rounded-full bg-dt-surface-strong px-2 py-1 text-[11px] font-semibold text-dt-primary"
                   >
                     #{{ tag }}
                   </span>
                 </div>
               </template>
-              <div v-else class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400 dark:border-slate-700 dark:text-slate-400">
+              <div v-else class="rounded-dt-sm border border-dashed border-dt-border px-4 py-10 text-center text-sm text-dt-text-soft">
                 {{ t('compareDiary.noDiaryForDay') }}
               </div>
             </section>

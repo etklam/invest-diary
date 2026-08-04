@@ -1,82 +1,88 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('alert.title') }}</h1>
-    </div>
+  <div class="space-y-6 pb-4">
+    <header class="flex items-center justify-between gap-3">
+      <h1 class="font-display text-2xl font-semibold tracking-tight text-dt-text sm:text-3xl">
+        {{ t('alert.title') }}
+      </h1>
+    </header>
 
     <div v-if="pending" class="py-8">
       <AppSkeleton variant="table-row" :count="5" />
     </div>
 
-    <div v-else-if="error" class="bg-red-50 p-4 rounded-md">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <Icon name="heroicons:x-circle" class="h-5 w-5 text-red-400" />
-        </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">{{ t('alert.loadFailed') }}</h3>
-          <div class="mt-2 text-sm text-red-700">
+    <div
+      v-else-if="error"
+      class="rounded-dt-md border border-dt-danger/30 bg-dt-surface p-4 shadow-dt-sm"
+    >
+      <div class="flex gap-3">
+        <Icon name="heroicons:x-circle" class="h-5 w-5 shrink-0 text-dt-danger" />
+        <div class="min-w-0">
+          <h3 class="text-sm font-semibold text-dt-text">{{ t('alert.loadFailed') }}</h3>
+          <p class="mt-1 text-sm text-dt-text-muted">
             {{ error.message }}
-          </div>
+          </p>
         </div>
       </div>
     </div>
 
-    <div v-else-if="!alerts || alerts.length === 0" class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
-      <Icon name="heroicons:bell-slash" class="mx-auto h-12 w-12 text-gray-400" />
-      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ t('alert.noAlerts') }}</h3>
-      <p class="mt-1 text-sm text-gray-500">{{ t('alert.noAlertsDesc') }}</p>
-    </div>
+    <LedgerCard v-else-if="!alerts || alerts.length === 0">
+      <div class="px-2 py-10 text-center">
+        <Icon name="heroicons:bell-slash" class="mx-auto h-10 w-10 text-dt-text-soft" />
+        <h3 class="mt-3 text-sm font-semibold text-dt-text">{{ t('alert.noAlerts') }}</h3>
+        <p class="mt-1 text-sm text-dt-text-muted">{{ t('alert.noAlertsDesc') }}</p>
+      </div>
+    </LedgerCard>
 
-    <div v-else class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-      <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-        <li v-for="alert in alerts" :key="alert.id.toString()">
-          <div class="px-4 py-4 sm:px-6">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <Icon name="heroicons:bell" class="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                </div>
-                <div class="ml-4">
-                  <div class="text-sm font-medium text-indigo-600 dark:text-indigo-400 truncate">
-                    {{ alert.message }}
-                  </div>
-                  <div v-if="alert.diary" class="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                    <Icon name="heroicons:document-text" class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                    <NuxtLink :to="`/diaries/${alert.diary.id}`" class="hover:underline">
-                      {{ t('alert.viewRelatedDiary') }}
-                    </NuxtLink>
-                  </div>
-                </div>
+    <section v-else class="overflow-hidden rounded-dt-md border border-dt-border bg-dt-surface shadow-dt-sm">
+      <ul class="divide-y divide-dt-border">
+        <li
+          v-for="alert in alerts"
+          :key="alert.id.toString()"
+          class="px-4 py-4 sm:px-5"
+        >
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="flex min-w-0 items-start gap-3">
+              <div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-dt-sm border border-dt-border bg-dt-surface-strong">
+                <Icon name="heroicons:bell" class="h-5 w-5 text-dt-primary" />
               </div>
-              <div class="ml-2 flex-shrink-0 flex">
-                <button
-                  @click="dismissAlert(alert.id)"
-                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              <div class="min-w-0 space-y-1.5">
+                <p class="text-sm font-semibold leading-snug text-dt-text">
+                  {{ alert.message }}
+                </p>
+                <NuxtLink
+                  v-if="alert.diary"
+                  :to="`/diaries/${alert.diary.id}`"
+                  class="inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-dt-primary hover:underline"
                 >
-                  {{ t('alert.markAsRead') }}
-                </button>
-              </div>
-            </div>
-            <div class="mt-2 sm:flex sm:justify-between">
-              <div class="sm:flex">
-                <p class="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <Icon name="heroicons:clock" class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-                  {{ t('alert.triggerTime') }}：{{ formatDate(alert.triggerAt, { timezone: userTimezone }) }}
-                  <span v-if="alert.recurringMode" class="ml-2 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-0.5 rounded-full">
-                    {{ getRecurringLabel(alert.recurringMode) }} • 第 {{ alert.instanceNumber }} 次
+                  <Icon name="heroicons:document-text" class="h-4 w-4" />
+                  {{ t('alert.viewRelatedDiary') }}
+                </NuxtLink>
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-dt-text-muted">
+                  <span class="inline-flex items-center gap-1 font-data">
+                    <Icon name="heroicons:clock" class="h-3.5 w-3.5 text-dt-text-soft" />
+                    {{ t('alert.triggerTime') }}：{{ formatDate(alert.triggerAt, { timezone: userTimezone }) }}
                   </span>
+                  <StatusBadge v-if="alert.recurringMode" tone="accent">
+                    {{ getRecurringLabel(alert.recurringMode) }} · #{{ alert.instanceNumber }}
+                  </StatusBadge>
+                </div>
+                <p class="font-data text-xs text-dt-text-soft">
+                  {{ t('alert.createdAt') }}：{{ formatShortDate(alert.createdAt, userTimezone) }}
                 </p>
               </div>
-              <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 dark:text-gray-400">
-                <Icon name="heroicons:calendar" class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-                {{ t('alert.createdAt') }}：{{ formatShortDate(alert.createdAt, userTimezone) }}
-              </div>
             </div>
+
+            <BaseButton
+              variant="primary"
+              class="w-full shrink-0 sm:w-auto"
+              @click="dismissAlert(alert.id)"
+            >
+              {{ t('alert.markAsRead') }}
+            </BaseButton>
           </div>
         </li>
       </ul>
-    </div>
+    </section>
   </div>
 </template>
 
