@@ -6,11 +6,11 @@
   >
     <div
       class="quick-note-editor-scroll"
-      :class="scrollable ? 'min-h-0 flex-1 overflow-y-auto' : 'pb-36 lg:pb-0'"
+      :class="scrollable ? 'min-h-0 flex-1 overflow-y-auto' : 'pb-40 lg:pb-0'"
     >
-      <div class="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-7 lg:p-7">
-        <section class="min-w-0 space-y-5" aria-label="隨手筆記編輯器">
-          <div class="space-y-3">
+      <div class="grid gap-5 p-4 sm:gap-6 sm:p-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-7 lg:p-7">
+        <section class="min-w-0 space-y-4 sm:space-y-5" aria-label="隨手筆記編輯器">
+          <div class="space-y-2 sm:space-y-3">
             <div
               class="grid grid-cols-2 gap-1 rounded-dt-md border p-1"
               style="border-color: var(--color-border); background: var(--color-surface-muted);"
@@ -32,7 +32,7 @@
                 {{ option.label }}
               </button>
             </div>
-            <p class="text-sm" style="color: var(--color-text-muted);">
+            <p class="hidden text-sm sm:block" style="color: var(--color-text-muted);">
               {{ saveMode === 'append' ? t('quickDiary.editor.appendContext') : t('quickDiary.editor.createContext') }}
             </p>
           </div>
@@ -54,25 +54,43 @@
           </div>
 
           <div class="space-y-2">
-            <label class="block text-sm font-semibold" style="color: var(--color-text);" for="quick-note-content">
-              {{ t('quickDiary.editor.contentAria') }}
-            </label>
+            <div class="flex items-center justify-between gap-3">
+              <label class="block text-sm font-semibold" style="color: var(--color-text);" for="quick-note-content">
+                {{ t('quickDiary.editor.contentAria') }}
+              </label>
+              <div class="flex items-center gap-2 lg:hidden" aria-label="快捷工具">
+                <button
+                  type="button"
+                  class="inline-flex min-h-10 items-center gap-1.5 rounded-dt-sm border px-2.5 text-xs font-semibold transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+                  style="border-color: var(--color-border); background: var(--color-surface); color: var(--color-text-muted);"
+                  :aria-expanded="templatePickerVisible"
+                  :aria-controls="templatePickerId"
+                  :aria-label="t('quickDiary.editor.openTemplatePicker')"
+                  @click="setTemplatePickerOpen(!templatePickerVisible)"
+                >
+                  <Icon name="heroicons:squares-2x2" class="h-4 w-4" />
+                  <span>{{ t('quickDiary.tools.templates') }}</span>
+                </button>
+                <VoiceInput @result="handleVoiceResult" />
+              </div>
+            </div>
             <textarea
               id="quick-note-content"
               ref="contentInput"
               :value="content"
               data-test="quick-capture-input"
-              class="h-44 min-h-0 w-full resize-y rounded-dt-md border px-4 py-4 text-base leading-7 outline-none transition-colors placeholder:text-dt-text-soft focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20 max-[374px]:h-36 max-[374px]:py-3 sm:h-auto sm:min-h-[400px] sm:px-5 sm:py-5"
+              class="w-full resize-y rounded-dt-md border px-4 py-3 text-base leading-6 outline-none transition-colors placeholder:text-dt-text-soft focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20 sm:min-h-[400px] sm:px-5 sm:py-5 sm:leading-7"
+              :class="scrollable ? 'min-h-[min(38svh,16rem)]' : 'min-h-[9.5rem] max-[374px]:min-h-[8rem]'"
               style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
               :placeholder="t('quickDiary.editor.contentPlaceholder')"
-              rows="1"
+              rows="6"
               :autofocus="false"
               :aria-label="t('quickDiary.editor.contentAria')"
               @input="handleContentInput"
             />
           </div>
 
-          <div class="flex flex-wrap items-center gap-2" aria-label="快捷工具">
+          <div class="hidden flex-wrap items-center gap-2 lg:flex" aria-label="快捷工具">
             <button
               type="button"
               class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-dt-sm border px-3 text-sm font-semibold transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
@@ -120,7 +138,7 @@
                 <Icon name="heroicons:calendar-days" class="h-4 w-4" style="color: var(--color-text-soft);" />
                 <span class="text-sm">{{ t('quickDiary.date') }}</span>
               </span>
-              <span class="flex items-center gap-2 text-sm" style="color: var(--color-text-muted);">
+              <span class="flex items-center gap-2 text-sm tabular-nums" style="color: var(--color-text-muted); font-family: var(--font-data);">
                 {{ dateLabel }}
                 <Icon name="heroicons:chevron-right" class="h-4 w-4" />
               </span>
@@ -136,9 +154,9 @@
                 <Icon name="heroicons:bell" class="h-4 w-4" style="color: var(--color-text-soft);" />
                 <span class="text-sm">{{ t('quickDiary.reminders.label') }}</span>
               </span>
-              <span class="flex items-center gap-2 text-sm" style="color: var(--color-text-muted);">
-                {{ reminderLabel }}
-                <Icon name="heroicons:chevron-right" class="h-4 w-4" />
+              <span class="flex min-w-0 items-center gap-2 text-sm" style="color: var(--color-text-muted);">
+                <span class="truncate">{{ reminderLabel }}</span>
+                <Icon name="heroicons:chevron-right" class="h-4 w-4 shrink-0" />
               </span>
             </button>
             <button
@@ -562,6 +580,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { getTodayDateString } = useTimezone()
 const contentInput = ref<HTMLTextAreaElement | null>(null)
 const pickerPanel = ref<HTMLElement | null>(null)
 const activePicker = ref<PickerKind | null>(null)
@@ -605,8 +624,7 @@ const fallbackTemplateOptions = computed<QuickNoteTemplateOption[]>(() => [
 const templateOptions = computed(() => props.templateOptions?.length ? props.templateOptions : fallbackTemplateOptions.value)
 const quickReminderOptions = computed(() => createQuickReminderOptions(t))
 const dateLabel = computed(() => {
-  const today = new Date().toISOString().slice(0, 10)
-  return props.date === today ? t('quickDiary.editor.today') : props.date
+  return props.date === getTodayDateString() ? t('quickDiary.editor.today') : props.date
 })
 const reminderLabel = computed(() => {
   const value = props.reminders.reminder1
@@ -715,13 +733,3 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-@media (max-width: 639px) and (max-height: 800px) {
-  #quick-note-content {
-    height: 5rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    line-height: 1.4;
-  }
-}
-</style>

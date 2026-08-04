@@ -25,28 +25,28 @@
             style="border-color: var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-lg);"
             tabindex="-1"
           >
-            <header class="flex min-h-[72px] items-center justify-between gap-4 border-b px-4 py-3 sm:px-6" style="border-color: var(--color-border);">
+            <header class="flex min-h-14 items-center justify-between gap-3 border-b px-4 py-2.5 sm:min-h-[72px] sm:gap-4 sm:px-6 sm:py-3" style="border-color: var(--color-border);">
               <div class="flex min-w-0 items-center gap-3">
                 <h1 id="quick-note-modal-title" class="truncate text-lg font-semibold sm:text-xl" style="color: var(--color-text); font-family: var(--font-display);">
                   {{ t('quickDiary.title') }}
                 </h1>
-                <span v-if="draftHint" class="truncate text-xs" style="color: var(--color-text-soft);" aria-live="polite">
+                <span v-if="draftHint" class="hidden truncate text-xs sm:inline" style="color: var(--color-text-soft);" aria-live="polite">
                   {{ draftHint }}
                 </span>
               </div>
 
               <div class="flex shrink-0 items-center gap-1.5">
+                <!-- Template lives next to content on mobile; keep header control from sm up -->
                 <button
                   type="button"
-                  class="inline-flex min-h-11 items-center gap-2 rounded-dt-sm border px-3 text-xs font-semibold transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+                  class="hidden min-h-11 items-center gap-2 rounded-dt-sm border px-3 text-xs font-semibold transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30 sm:inline-flex"
                   style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-muted);"
                   :aria-expanded="showTemplatePicker"
                   :aria-controls="'quick-note-template-picker'"
                   @click="showTemplatePicker = !showTemplatePicker"
                 >
                   <Icon name="heroicons:squares-2x2" class="h-4 w-4" />
-                  <span class="hidden sm:inline">{{ t('quickDiary.changeTemplate') }}</span>
-                  <span class="sm:hidden">{{ t('quickDiary.tools.templates') }}</span>
+                  <span>{{ t('quickDiary.changeTemplate') }}</span>
                 </button>
                 <button
                   type="button"
@@ -196,7 +196,10 @@ watch(
   () => props.show,
   (show) => {
     if (show) {
-      if (process.client) previousActiveElement.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
+      if (process.client) {
+        previousActiveElement.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
+        document.documentElement.style.overflow = 'hidden'
+      }
       const restored = Boolean(initialize((message) => confirm(message)))
       applyOpenContext(restored)
       autofocusEditor.value = !restored && !state.content.trim()
@@ -208,7 +211,10 @@ watch(
     dispose()
     showTemplatePicker.value = false
     autofocusEditor.value = false
-    if (process.client) previousActiveElement.value?.focus()
+    if (process.client) {
+      document.documentElement.style.overflow = ''
+      previousActiveElement.value?.focus()
+    }
   },
   { immediate: true },
 )
