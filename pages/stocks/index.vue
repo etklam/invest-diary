@@ -44,7 +44,7 @@
       <!-- Top Stats Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <!-- Portfolio Value -->
-        <LedgerCard>
+        <div class="stats-card">
           <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('stock.dashboard.netLiquidity') }}</span>
             <Icon name="heroicons:banknotes" class="h-5 w-5 text-dt-primary opacity-50" />
@@ -56,9 +56,9 @@
             <span class="text-xs font-medium" :class="(unrealizedAmount || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
               {{ (unrealizedAmount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(unrealizedAmount || 0) }}
             </span>
-            <span class="text-[10px] text-dt-text-muted">{{ t('stock.dashboard.totalPL') }}</span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ t('stock.dashboard.totalPL') }}</span>
           </div>
-        </LedgerCard>
+        </div>
 
         <!-- Day Change -->
         <div class="stats-card">

@@ -27,7 +27,6 @@
 
     <!-- Stats Overview -->
     <section class="stats-grid">
-      <LedgerCard>
       <article class="stat-card stat-connected">
         <span class="stat-icon"><Icon name="heroicons:user-group-solid" class="w-5 h-5" /></span>
         <span class="stat-value">{{ connectedCount }}</span>

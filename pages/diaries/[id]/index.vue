@@ -80,26 +80,19 @@
           <li
             v-for="tx in diary.transactions"
             :key="`m-${tx.id}`"
-            class="rounded-dt-md border border-dt-border bg-dt-surface p-4 shadow-dt-sm"
+            class="rounded-dt-sm border border-dt-border bg-dt-surface-strong p-3"
           >
-            <div class="flex items-center justify-between gap-3">
-              <div class="flex items-center gap-3">
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-dt-sm border border-dt-border bg-dt-surface-strong">
-                  <StatusBadge :tone="tx.type === 'BUY' ? 'success' : 'danger'" class="text-sm">
-                    {{ tx.type === 'BUY' ? t('diary.form.buy') : t('diary.form.sell') }}
-                  </StatusBadge>
-                </div>
-                <div>
-                  <span class="font-data text-sm font-semibold text-dt-text">{{ tx.symbol }}</span>
-                  <div class="text-xs text-dt-text-muted">{{ t('diary.view.total') }} · {{ (Number(tx.quantity) * Number(tx.price)).toFixed(2) }}</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="font-data text-sm text-dt-text-muted">{{ formatLocaleDateTime(tx.tradeDate) }}</span>
-                <StatusBadge :tone="tx.type === 'BUY' ? 'success' : 'danger'">
-                  {{ tx.type === 'BUY' ? t('diary.form.buy') : t('diary.form.sell') }}
-                </StatusBadge>
-              </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-data text-sm font-semibold text-dt-text">{{ tx.symbol }}</span>
+              <StatusBadge :tone="tx.type === 'BUY' ? 'success' : 'danger'">
+                {{ tx.type === 'BUY' ? t('diary.form.buy') : t('diary.form.sell') }}
+              </StatusBadge>
+            </div>
+            <div class="mt-2 grid grid-cols-2 gap-2 font-data text-xs text-dt-text-muted">
+              <span>{{ t('diary.form.quantity') }} · {{ tx.quantity }}</span>
+              <span class="text-right">{{ t('diary.form.price') }} · {{ tx.price }}</span>
+              <span>{{ t('diary.view.total') }} · {{ (Number(tx.quantity) * Number(tx.price)).toFixed(2) }}</span>
+              <span class="text-right">{{ formatLocaleDateTime(tx.tradeDate) }}</span>
             </div>
           </li>
         </ul>
