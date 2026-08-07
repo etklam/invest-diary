@@ -1,4 +1,4 @@
-# Market Rotation Monitor Design
+# Market Rotation Monitor Contract
 
 ## 狀態
 

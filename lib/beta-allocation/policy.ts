@@ -5,7 +5,7 @@
  * Converts market regime + breadth + leadership into a suggested
  * portfolio beta posture (high beta / core index / cash split).
  *
- * See `docs/plans/active/beta-cockpit-plan.md` § Phase 2 + Code Quality C1.
+ * See `docs/archive/completed/2026-06/beta-cockpit-plan.md` § Phase 2 + Code Quality C1.
  */
 
 export interface BetaAllocationInput {

@@ -116,7 +116,7 @@ npm test
 - 發現的缺口
 - 下次要修的項目
 
-演練結果可追加到 `docs/HEALTH_CHECK.md` 或對應 incident 文件。
+演練結果可追加到 `docs/operations/HEALTH_CHECK.md` 或對應 incident 文件。
 
 ## 備份檢查清單
 

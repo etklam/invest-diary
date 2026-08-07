@@ -1,4 +1,6 @@
-# Docker 部署指南
+# Docker 部署指南（舊 Forgejo 環境，已被取代）
+
+> Superseded by `docs/operations/DEPLOYMENT.md` and the current `.forgejo/workflows/build.yml` workflow. Hostnames, image paths, and workflow names below are historical.
 
 本文檔說明如何配置和使用自動化的 Docker 映像檔建置和部署流程。
 

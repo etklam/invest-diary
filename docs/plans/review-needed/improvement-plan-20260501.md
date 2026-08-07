@@ -1,4 +1,6 @@
-# Diary Vue 改善計畫
+# Diary Vue 改善計畫（待重新盤點）
+
+Status: Review needed — the May 2026 completion table has not been re-audited against the current codebase.
 
 **日期**: 2026-05-01
 **範圍**: 安全性、可維護性、新功能（排除 PostgreSQL 遷移）
@@ -367,7 +369,7 @@ coverage: {
 **內容**: 從 git history 回溯版本變更記錄
 
 ### 7.3 備份與恢復文檔
-**檔案**: `docs/BACKUP_RESTORE.md`
+**檔案**: `docs/operations/BACKUP_RESTORE.md`
 **內容**: 資料庫備份策略、恢復流程、定期測試計畫
 
 ---

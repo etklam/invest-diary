@@ -1,4 +1,6 @@
-# Partner Shared Diary 未完成項目詳解
+# Partner Shared Diary 後續項目（待重新盤點）
+
+Status: Review needed — the original 85% estimate predates the current API-key and partner regression suites.
 
 **日期**: 2026-04-15
 **當前狀態**: 85% 完成

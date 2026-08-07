@@ -480,9 +480,9 @@ docker system prune -a --volumes
 
 ## Batch CronJobs | 排程任務
 
-Market Rotation snapshot batch 採用 K8s CronJob，每日美東收盤後跑一次。詳細排程、scope 隔離、staleness contract 與 YAML 範例請參考 [docs/BETA_COCKPIT.md#batch-cron-schedule](docs/BETA_COCKPIT.md#batch-cron-schedule)。
+Market Rotation snapshot batch 採用 K8s CronJob，每日美東收盤後跑一次。詳細排程、scope 隔離、staleness contract 與 YAML 範例請參考 [Beta Cockpit batch cron schedule](../BETA_COCKPIT.md#batch-cron-schedule)。
 
-- **Manifest**: [`k8s/cron-market-rotation.yaml`](k8s/cron-market-rotation.yaml)
+- **Manifest**: [`k8s/cron-market-rotation.yaml`](../../k8s/cron-market-rotation.yaml)
 - **Entry point**: `scripts/market-rotation/run-batch.ts`
 - **Schedule**: `30 21 * * 0-5` (21:30 UTC, Sunday–Friday)
 

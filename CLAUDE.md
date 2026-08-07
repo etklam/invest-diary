@@ -37,6 +37,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 功能：投資日誌、股票/ETF 追蹤、交易分析、合作夥伴比較、Telegram 機器人、AI Agent API、教育博客。
 
+## Agent skills
+
+### Issue tracker
+
+Issues 與 PRDs 使用 `.scratch/<feature-slug>/` 下的本地 Markdown。詳見 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+使用 `needs-triage`、`needs-info`、`ready-for-agent`、`ready-for-human`、`wontfix`。詳見 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+本 repo 採 single-context：領域語言位於 `CONTEXT.md`，架構決策位於 `docs/adr/`。詳見 `docs/agents/domain.md`。
+
 ---
 
 ## Development Commands
@@ -290,10 +304,10 @@ throw Errors.etfNotFound(symbol).toH3Error()
 ## Additional Documentation
 
 - **DESIGN.md** — Design system（必讀，改 UI 前先看）
-- **DEPLOYMENT.md** — 部署詳解
-- **docs/plans/active/improvements.md** — 功能路線圖
+- **docs/operations/DEPLOYMENT.md** — 部署詳解
+- **docs/README.md** — 文件總索引
 - **docs/TESTING.md** — 測試指南
-- **docs/HEALTH_CHECK.md** — Health check 文件
+- **docs/operations/HEALTH_CHECK.md** — Health check 文件
 
 ---
 

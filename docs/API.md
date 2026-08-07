@@ -1,6 +1,6 @@
 # API Reference
 
-This document is the hand-written API contract for the Phase 4 priority surface. It intentionally does not use Swagger/OpenAPI runtime dependencies.
+This document is the hand-written contract for the core authenticated and agent API surface. It is intentionally selective rather than an exhaustive route inventory, and it does not add Swagger/OpenAPI runtime dependencies.
 
 Base path: `/api`
 
@@ -28,7 +28,7 @@ Request body:
 
 Responses:
 
-- `200` account created and auth cookies set.
+- `200` account created. Registration does not create a browser session; the client redirects to login.
 - `400` invalid input or duplicate account.
 - `429` rate limited.
 
@@ -89,7 +89,9 @@ Query parameters:
 - `page` optional page number.
 - `limit` optional page size.
 - `search` optional text search.
-- `tag` optional tag filter.
+- `dateFrom` and `dateTo` optional inclusive date filters in `YYYY-MM-DD` form.
+- `sortBy` optional supported sort mode.
+- `reviewStatus` optional review-status filter.
 
 Responses:
 

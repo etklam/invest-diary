@@ -1,4 +1,6 @@
-# 投資日記系統改善建議
+# 投資日記系統改善建議（Nuxt 3 時期，已被取代）
+
+> Superseded: this document predates the Nuxt 4 migration and no longer represents the current security, testing, or tooling baseline.
 
 ## Context
 

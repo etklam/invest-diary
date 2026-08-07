@@ -1,4 +1,6 @@
-# UI 色彩系統重構計畫
+# UI 色彩系統重構計畫（已被取代）
+
+> Superseded by the current `DESIGN.md` contract and the completed Calm Institutional Ledger passes.
 
 > **專案**: diary-vue (Nuxt 4 + TailwindCSS + @nuxtjs/color-mode)
 > **日期**: 2026-04-15

@@ -1,4 +1,4 @@
-# SEC Filings Downloader — implementation contract
+# SEC Filings Downloader — Implementation Contract
 
 Status: Complete — phases 1–8 implemented and regression-tested on 2026-07-15.
 

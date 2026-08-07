@@ -1,43 +1,47 @@
-# Documentation Index
+# Documentation index
 
-## Current docs
+This directory is the central index for current project documentation. Historical plans belong under `archive/`; they are evidence, not current instructions.
 
-| Document | Purpose |
-|---|---|
-| [WORKFLOWS.md](WORKFLOWS.md) | Current project workflow summary (start here) |
-| [API.md](API.md) | API reference |
-| [TESTING.md](TESTING.md) | Testing strategy and conventions |
-| [HEALTH_CHECK.md](HEALTH_CHECK.md) | Health check documentation |
-| [BACKUP_RESTORE.md](BACKUP_RESTORE.md) | Backup and restore procedures |
-| [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md) | Docker deployment guide |
-| [FORGEJO_CI_SETUP.md](FORGEJO_CI_SETUP.md) | Forgejo CI setup |
-
-## Architecture decisions
+## Start here
 
 | Document | Purpose |
-|---|---|
-| [adr/0001-diary-first-architecture.md](adr/0001-diary-first-architecture.md) | Diary-first architecture |
-| [adr/0002-stock-etf-separate-contexts.md](adr/0002-stock-etf-separate-contexts.md) | Stock vs ETF separation |
-| [adr/0003-ai-agent-as-standard-user.md](adr/0003-ai-agent-as-standard-user.md) | AI agent as standard user |
-| [adr/0004-market-rotation-snapshots.md](adr/0004-market-rotation-snapshots.md) | Market rotation snapshots |
-| [adr/0005-market-state-terminology.md](adr/0005-market-state-terminology.md) | Market state terminology |
+| --- | --- |
+| [WORKFLOWS.md](WORKFLOWS.md) | Current product workflows, code ownership, tests, and known gotchas |
+| [API.md](API.md) | Hand-written core API contract |
+| [TESTING.md](TESTING.md) | Test strategy and conventions |
 
-## Active plans
+## Product and architecture
 
 | Document | Purpose |
-|---|---|
-| [plans/active/improvements.md](plans/active/improvements.md) | Feature roadmap |
-| [plans/active/improvement-plan-20260501.md](plans/active/improvement-plan-20260501.md) | 2026-05-01 improvement plan |
-| [plans/active/trade-basic-enhance-plan-v2.md](plans/active/trade-basic-enhance-plan-v2.md) | Trade Basic UI/UX enhancement v2 |
-| [plans/active/market-rotation-monitor-design.md](plans/active/market-rotation-monitor-design.md) | Market rotation monitor design |
-| [plans/active/beta-cockpit-plan.md](plans/active/beta-cockpit-plan.md) | Beta Cockpit upgrade — core universe, beta allocation engine, portfolio exposure |
-| [plans/active/ui-color-system-refactor.md](plans/active/ui-color-system-refactor.md) | UI color system refactor |
-| [plans/active/partner-shared-diary/](plans/active/partner-shared-diary/) | Partner shared diary |
+| --- | --- |
+| [../PRODUCT.md](../PRODUCT.md) | Product positioning and design principles |
+| [../DESIGN.md](../DESIGN.md) | Canonical visual and interaction system |
+| [../CONTEXT.md](../CONTEXT.md) | Canonical domain language |
+| [BETA_COCKPIT.md](BETA_COCKPIT.md) | Current Beta Cockpit reference |
+| [contracts/MARKET_ROTATION.md](contracts/MARKET_ROTATION.md) | Market Rotation contract |
+| [contracts/SEC_FILINGS.md](contracts/SEC_FILINGS.md) | SEC Filings Downloader contract |
+| [adr/](adr/) | Accepted architecture decisions |
 
-## Archive
+## Operations
 
-Historical records under [archive/](archive/) — completed plans, deprecated docs, and brainstorm ideas. Treat as historical context, not current truth.
+| Document | Purpose |
+| --- | --- |
+| [operations/DEPLOYMENT.md](operations/DEPLOYMENT.md) | Docker, CapRover, K3s, environment, and maintenance runbook |
+| [operations/FORGEJO_CI.md](operations/FORGEJO_CI.md) | Current Forgejo image build and K3s rollout contract |
+| [operations/HEALTH_CHECK.md](operations/HEALTH_CHECK.md) | Local and runtime health checks |
+| [operations/BACKUP_RESTORE.md](operations/BACKUP_RESTORE.md) | Backup and restore procedures |
 
-- [archive/completed/](archive/completed/) — finished work records
-- [archive/deprecated/](archive/deprecated/) — superseded or misleading docs
-- [archive/ideas/](archive/ideas/) — brainstorm proposals
+## Engineering agents
+
+| Document | Purpose |
+| --- | --- |
+| [agents/issue-tracker.md](agents/issue-tracker.md) | Local Markdown issue tracker conventions |
+| [agents/triage-labels.md](agents/triage-labels.md) | Canonical triage status mapping |
+| [agents/domain.md](agents/domain.md) | Domain-document consumption rules |
+
+## Plans and history
+
+- [plans/README.md](plans/README.md) — plan status conventions and review queue
+- [archive/completed/](archive/completed/) — delivered work
+- [archive/deprecated/](archive/deprecated/) — superseded material
+- [archive/ideas/](archive/ideas/) — uncommitted proposals

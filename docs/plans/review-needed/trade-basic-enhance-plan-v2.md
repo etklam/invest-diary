@@ -1,4 +1,6 @@
-# Trade Basic UI/UX Enhance Plan v2
+# Trade Basic UI/UX Enhance Plan v2（待重新盤點）
+
+Status: Review needed — later design-system passes implemented part of this plan while its checklist remains stale.
 
 > Revision reason: v1 的設計方向有參考價值，但落地上下文錯誤。  
 > 本版以 **Nuxt 4 + Vue + TypeScript + 現有 design tokens + i18n + mobile/PWA** 為前提重寫。

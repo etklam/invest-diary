@@ -56,9 +56,9 @@ Open http://localhost:3000.
 | [docs/WORKFLOWS.md](docs/WORKFLOWS.md) | Current project workflow summary |
 | [docs/API.md](docs/API.md) | API reference |
 | [docs/TESTING.md](docs/TESTING.md) | Testing strategy |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Deployment guide |
-| [docs/HEALTH_CHECK.md](docs/HEALTH_CHECK.md) | Health check documentation |
-| [docs/BACKUP_RESTORE.md](docs/BACKUP_RESTORE.md) | Backup and restore |
+| [docs/operations/DEPLOYMENT.md](docs/operations/DEPLOYMENT.md) | Deployment guide |
+| [docs/operations/HEALTH_CHECK.md](docs/operations/HEALTH_CHECK.md) | Health check documentation |
+| [docs/operations/BACKUP_RESTORE.md](docs/operations/BACKUP_RESTORE.md) | Backup and restore |
 | [CLAUDE.md](CLAUDE.md) | AI agent guidance |
 | [CONTEXT.md](CONTEXT.md) | Domain language and decisions |
 | [DESIGN.md](DESIGN.md) | Design system |
@@ -67,10 +67,10 @@ Open http://localhost:3000.
 ## Beta Cockpit
 
 The Market Rotation Monitor upgrade produces a Beta allocation recommendation
-from market state + breadth + rotation ranks. Design, cron schedule, exposure
-buckets, and limitations are documented in
-[docs/BETA_COCKPIT.md](docs/BETA_COCKPIT.md). The source plan lives at
-[docs/plans/active/beta-cockpit-plan.md](docs/plans/active/beta-cockpit-plan.md).
+from market state + breadth + rotation ranks. The current contract, cron
+schedule, exposure buckets, and limitations are documented in
+[docs/BETA_COCKPIT.md](docs/BETA_COCKPIT.md). The delivered source plan is
+archived under [docs/archive/completed/2026-06/](docs/archive/completed/2026-06/).
 
 ## License
 

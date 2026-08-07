@@ -4,7 +4,7 @@
 > from "observe market state" into "recommend a Beta allocation" that connects
 > market signals to portfolio decisions.
 >
-> Source plan: [`docs/plans/active/beta-cockpit-plan.md`](plans/active/beta-cockpit-plan.md)
+> Delivered source plan: [`docs/archive/completed/2026-06/beta-cockpit-plan.md`](archive/completed/2026-06/beta-cockpit-plan.md)
 
 ## Purpose
 

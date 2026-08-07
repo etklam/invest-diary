@@ -1,4 +1,6 @@
-# Forgejo Actions CI：Docker Image 自動建置指南
+# Forgejo Actions CI：歷史設定與踩坑記錄
+
+> Historical setup notes. The current source of truth is `.forgejo/workflows/build.yml` and `docs/operations/FORGEJO_CI.md`.
 
 記錄從零開始設定 Forgejo Actions CI pipeline，自動建置 Docker image 並推送到 Forgejo Container Registry 的完整過程。
 

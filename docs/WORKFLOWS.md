@@ -156,8 +156,6 @@ status is mutated via `[id]/review.patch.ts`.
   `attachDiaryTags` (parses `tagsString` into structured tags)
 - [`server/utils/alert-persistence.ts`](../server/utils/alert-persistence.ts):5
   — `persistAlert`, `replaceAlerts`:59, `persistAlerts`:68
-- [`lib/diary-date.ts`](../lib/diary-date.ts) — UTC noon normalisation,
-  `getUtcDayRange`
 - [`lib/diary-tags.ts`](../lib/diary-tags.ts) — tag parse/stringify/normalise
 - [`composables/useQuickNoteComposer.ts`](../composables/useQuickNoteComposer.ts),
   [`composables/useQuickNoteTemplates.ts`](../composables/useQuickNoteTemplates.ts),
@@ -282,11 +280,10 @@ by the scheduler (see §7).
 
 ## 5. ETF / Market Rotation Workflow
 
-ETF side is pure research — no personal transactions. `Etf` rows (managed via
-admin seed) hold OHLCV history in `EtfPrice`. The user-facing ETF profile
-aggregator (`lib/etf-profile/`) composes quote, risk, relative strength and
-valuation into one payload via `readEtfResearch`. ETF watchlist is a simple
-user → etf join with sort order.
+ETF side is pure research — no personal transactions. `Etf` rows are managed
+through the admin surface, while each user can maintain an ETF watchlist. The
+current user-facing research surface is the Market Rotation Monitor; the old
+per-symbol ETF profile aggregator has been removed.
 
 **Market Rotation Monitor** is the more complex subsystem. Canonical ETF
 universe is defined in `lib/market-rotation/universe.ts` (sectors, indexes,
@@ -309,14 +306,6 @@ documents canonical labels and the deterministic mapping
 
 ### Main files
 
-- ETF public API:
-  [`server/api/etf/all.get.ts`](../server/api/etf/all.get.ts),
-  [`server/api/etf/[symbol]/index.get.ts`](../server/api/etf/[symbol]/index.get.ts),
-  [`profile.get.ts`](../server/api/etf/[symbol]/profile.get.ts),
-  [`quote.get.ts`](../server/api/etf/[symbol]/quote.get.ts),
-  [`risk.get.ts`](../server/api/etf/[symbol]/risk.get.ts),
-  [`rs.get.ts`](../server/api/etf/[symbol]/rs.get.ts),
-  [`valuation.get.ts`](../server/api/etf/[symbol]/valuation.get.ts)
 - ETF watchlist:
   [`server/api/etf/watchlist/index.get.ts`](../server/api/etf/watchlist/index.get.ts),
   `index.post.ts`, `[id].delete.ts`
@@ -360,14 +349,6 @@ documents canonical labels and the deterministic mapping
   (`roundMetric`),
   [`lib/market-rotation/universe.ts`](../lib/market-rotation/universe.ts)
   (`getUniverseForScope`)
-- ETF profile aggregator:
-  [`lib/etf-profile/research.ts`](../lib/etf-profile/research.ts)
-  (`readEtfResearch`),
-  [`lib/etf-profile/cache.ts`](../lib/etf-profile/cache.ts) (stale-while-
-  revalidate for multi-layer fallback),
-  [`lib/etf-profile/aggregator.ts`](../lib/etf-profile/aggregator.ts),
-  [`lib/etf-profile/calculators/risk.ts`](../lib/etf-profile/calculators/risk.ts),
-  [`lib/etf-profile/calculators/rs.ts`](../lib/etf-profile/calculators/rs.ts)
 - CLI: [`scripts/market-rotation/run-batch.ts`](../scripts/market-rotation/run-batch.ts)
   (CronJob target),
   [`scripts/market-state/seed-universe.ts`](../scripts/market-state/seed-universe.ts),
@@ -379,8 +360,6 @@ documents canonical labels and the deterministic mapping
 - [`tests/api/etf-watchlist.test.ts`](../tests/api/etf-watchlist.test.ts)
 - [`tests/api/rotation-monitor.test.ts`](../tests/api/rotation-monitor.test.ts)
 - [`tests/api/market-state.test.ts`](../tests/api/market-state.test.ts)
-- [`tests/unit/server/etf-detail-api.test.ts`](../tests/unit/server/etf-detail-api.test.ts)
-- [`tests/unit/server/etf-profile-api.test.ts`](../tests/unit/server/etf-profile-api.test.ts)
 - [`tests/unit/server/etf-ownership-regressions.test.ts`](../tests/unit/server/etf-ownership-regressions.test.ts)
 - [`tests/unit/server/etf-watchlist-queries.test.ts`](../tests/unit/server/etf-watchlist-queries.test.ts)
 - [`tests/unit/server/market-rotation-batch.test.ts`](../tests/unit/server/market-rotation-batch.test.ts)
@@ -393,8 +372,6 @@ documents canonical labels and the deterministic mapping
   state, summary)
 - [`tests/unit/lib/market-state/`](../tests/unit/lib/market-state) (breadth,
   regime)
-- [`tests/unit/lib/etf-profile/`](../tests/unit/lib/etf-profile) (aggregator,
-  cache, research, risk-calculator, rs-calculator, types-contract)
 
 ### Known gotchas
 
@@ -404,10 +381,6 @@ documents canonical labels and the deterministic mapping
 - The `monitor.ts` groupBy historically did not filter by canonical symbols;
   the 2026-07 tech-debt pass added `symbol: { in: universeSymbols }` so stale
   DB rows cannot inflate coverage ratio (CONTEXT.md 2026-07 §2).
-- ETF profile cache (`lib/etf-profile/cache.ts`) uses
-  stale-while-revalidate semantics distinct from the handler-facing
-  `lib/market-data/cache.ts` and is intentionally not consolidated
-  (CONTEXT.md 2026-06 §3).
 - 2W trend sparkline returns `null` for missing intermediate points — no
   interpolation (CONTEXT.md §"2W Trend Sparkline").
 
@@ -447,11 +420,8 @@ of regressions (see test files).
   [`server/api/blog/[id].delete.ts`](../server/api/blog/[id].delete.ts)
 - Query layer: [`server/utils/post-queries.ts`](../server/utils/post-queries.ts):28
   (`PostQueryConfig`, `queryPosts`, `parsePostQueryConfig`)
-- Serializer: [`server/utils/blog-response.ts`](../server/utils/blog-response.ts)
-  (`serializeBlogPost`, `serializeBlogPosts` — strips author email for
-  public), [`server/utils/blog-schemas.ts`](../server/utils/blog-schemas.ts)
-- Markdown: [`composables/useArticleMarkdown.ts`](../composables/useArticleMarkdown.ts),
-  [`lib/blog.ts`](../lib/blog.ts)
+- Validation: [`server/utils/blog-schemas.ts`](../server/utils/blog-schemas.ts)
+- Markdown and response helpers: [`lib/blog.ts`](../lib/blog.ts)
 - UI: [`pages/blog/`](../pages/blog), [`pages/articles/`](../pages/articles)
   ( Needs verification: legacy alias route for older slugs)
 
@@ -514,7 +484,6 @@ plugin (`server/plugins/alert-scheduler.ts`) is opt-in via
   [`server/schedulers/price-alert-checker.ts`](../server/schedulers/price-alert-checker.ts)
 - WebSocket: [`server/websocket/connectionManager.ts`](../server/websocket/connectionManager.ts),
   [`plugins/websocket.client.ts`](../plugins/websocket.client.ts),
-  [`composables/useWebSocket.ts`](../composables/useWebSocket.ts),
   [`composables/useAlerts.ts`](../composables/useAlerts.ts)
 - UI: [`pages/alerts/`](../pages/alerts)
 
@@ -702,7 +671,7 @@ Required deployment setting: `SEC_USER_AGENT`, containing an application name an
 - API: `server/api/tools/sec-filings/`
 - Server modules: `server/utils/sec-edgar/`
 - Shared types: `types/sec-filings.ts`
-- Contract: `docs/plans/active/sec-filings-downloader.md`
+- Contract: `docs/contracts/SEC_FILINGS.md`
 
 ### Related tests
 
@@ -814,9 +783,9 @@ See [`.env.example`](../.env.example) for the full list.
 - Telegram webhook ops: [`scripts/telegram-webhook.mjs`](../scripts/telegram-webhook.mjs)
 - Migrations: [`prisma/`](../prisma) — `npx prisma migrate dev` (local),
   `npx prisma migrate deploy` (CI / container)
-- Backup/restore runbook: [`docs/BACKUP_RESTORE.md`](BACKUP_RESTORE.md)
-- Full deploy guide: [`DEPLOYMENT.md`](../DEPLOYMENT.md),
-  [`docs/DOCKER_DEPLOYMENT.md`](DOCKER_DEPLOYMENT.md)
+- Backup/restore runbook: [`operations/BACKUP_RESTORE.md`](operations/BACKUP_RESTORE.md)
+- Full deploy guide: [`operations/DEPLOYMENT.md`](operations/DEPLOYMENT.md)
+- Forgejo CI: [`operations/FORGEJO_CI.md`](operations/FORGEJO_CI.md)
 
 ### Related tests
 

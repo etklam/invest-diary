@@ -203,7 +203,6 @@ const ROOT_WHITELIST = new Set([
   'README.md',
   'CLAUDE.md',
   'CONTRIBUTING.md',
-  'DEPLOYMENT.md',
   'CHANGELOG.md',
   'CONTEXT.md',
   'DESIGN.md',
