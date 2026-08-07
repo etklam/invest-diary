@@ -1,5 +1,5 @@
 <template>
-  <div class="timeline-page mx-auto max-w-[880px] space-y-6 pb-20">
+  <div class="timeline-page mx-auto w-full max-w-[1180px] space-y-6 pb-20">
     <!-- Header -->
     <header class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
       <div class="min-w-0">
@@ -97,93 +97,89 @@
     </div>
 
     <!-- Timeline -->
-    <div v-else class="relative pl-5 sm:pl-10">
-      <div class="absolute bottom-0 left-[11px] top-2 w-px bg-dt-border sm:left-[19px]" />
-
-      <div
-        v-for="group in groupedDiaries"
+    <div v-else class="timeline-stream">
+      <section
+        v-for="(group, groupIndex) in groupedDiaries"
         :key="group.period"
-        class="relative mb-10"
+        class="timeline-month"
+        :class="{ 'timeline-month--spaced': groupIndex > 0 }"
       >
-        <div class="sticky top-[4.5rem] z-10 mb-5 flex items-center gap-3 bg-dt-surface py-2">
-          <div class="relative z-10 h-3 w-3 shrink-0 rounded-full border-2 border-dt-primary bg-dt-surface sm:ml-2" />
-          <div class="flex min-w-0 flex-wrap items-center gap-2 rounded-dt-sm border border-dt-border bg-dt-surface px-3 py-1.5 shadow-dt-sm">
-            <h2 class="text-sm font-semibold tracking-wide text-dt-text">
-              {{ group.periodLabel }}
-            </h2>
-            <StatusBadge tone="neutral">
-              {{ group.diaries.length }}
-            </StatusBadge>
-          </div>
+        <div class="timeline-month-heading flex items-center justify-between border-b border-dt-border pb-2">
+          <h2 class="text-sm font-semibold tracking-wide text-dt-text">
+            {{ group.periodLabel }}
+          </h2>
+          <span class="font-data text-xs text-dt-text-muted">
+            {{ t('timeline.entriesCount', { count: group.diaries.length }) }}
+          </span>
         </div>
 
-        <div class="space-y-3 sm:ml-4">
-          <NuxtLink
+        <div class="timeline-month-entries">
+          <div
             v-for="diary in group.diaries"
             :key="String(diary.id)"
-            :to="`/diaries/${diary.id}`"
-            class="group relative block rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm transition-colors duration-150 hover:border-dt-border-strong hover:bg-dt-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30 sm:p-6"
+            class="timeline-entry group relative grid grid-cols-[24px_minmax(0,1fr)] items-stretch gap-x-3 lg:grid-cols-[112px_32px_minmax(0,1fr)]"
           >
-            <div
-              class="absolute -left-[21px] top-7 h-2 w-2 rounded-full border-2 border-dt-surface sm:-left-[29px]"
-              :class="diary.alerts?.length ? 'bg-dt-warning' : 'bg-dt-border-strong group-hover:bg-dt-primary'"
-            />
+            <time
+              class="timeline-date hidden flex-col items-center text-center lg:flex"
+              :datetime="String(diary.date || diary.createdAt)"
+            >
+              <span class="timeline-date-day font-data">{{ formatTimelineDay(diary.date || diary.createdAt) }}</span>
+              <span class="timeline-date-month">{{ formatTimelineMonth(diary.date || diary.createdAt) }}</span>
+              <span class="timeline-date-weekday">{{ formatTimelineWeekday(diary.date || diary.createdAt) }}</span>
+            </time>
 
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div class="min-w-0 space-y-2">
-                <h3 class="text-lg font-semibold leading-snug tracking-tight text-dt-text group-hover:text-dt-primary sm:text-xl">
+            <div class="timeline-rail-cell relative flex min-h-full justify-center" aria-hidden="true">
+              <span
+                class="timeline-node relative z-10 mt-4 block h-3 w-3 shrink-0 rounded-full border-2 border-dt-surface bg-dt-border-strong transition-colors duration-150 group-hover:bg-dt-primary"
+                :class="{ '!bg-dt-warning': diary.alerts?.length }"
+              />
+              <span class="timeline-connector absolute h-px bg-dt-border-strong transition-colors duration-150 group-hover:bg-dt-primary" />
+            </div>
+
+            <NuxtLink
+              :to="`/diaries/${diary.id}`"
+              class="timeline-entry-card block w-full max-w-[920px] rounded-dt-md border border-dt-border bg-dt-surface px-4 py-4 shadow-dt-sm transition-colors duration-150 hover:border-dt-border-strong hover:bg-dt-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/40 sm:px-5 sm:py-5 lg:px-5 lg:py-[18px]"
+            >
+              <div class="flex min-w-0 items-start gap-3">
+                <h3 class="line-clamp-2 min-w-0 flex-1 text-[17px] font-semibold leading-[1.35] tracking-tight text-dt-text transition-colors duration-150 group-hover:text-dt-primary sm:text-lg">
                   {{ diary.title }}
                 </h3>
-                <div class="flex flex-wrap items-center gap-2">
-                  <time class="font-data inline-flex items-center rounded-md bg-dt-surface-strong px-2 py-1 text-xs text-dt-text-muted">
-                    <Icon name="heroicons:calendar" class="mr-1.5 h-3.5 w-3.5 text-dt-text-soft" />
-                    {{ formatDate(diary.date || diary.createdAt) }}
-                  </time>
-                  <span
-                    v-for="tag in (diary.tags || []).slice(0, 2)"
-                    :key="tag"
-                    class="text-[11px] font-medium text-dt-text-soft"
-                  >
-                    #{{ tag }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="flex flex-wrap gap-2">
-                <StatusBadge v-if="diary.alerts?.length" tone="warning">
-                  {{ diary.alerts.length }} {{ t('timeline.reminders') }}
-                </StatusBadge>
-                <StatusBadge v-if="diary.transactions?.length" tone="success">
-                  {{ diary.transactions.length }} Trades
-                </StatusBadge>
-              </div>
-            </div>
-
-            <p class="mt-4 line-clamp-2 text-sm leading-relaxed text-dt-text-muted">
-              {{ diary.content ? diary.content.replace(/[#*`]/g, '') : t('timeline.noContent') }}
-            </p>
-
-            <div class="mt-5 flex items-center justify-between border-t border-dt-border pt-4">
-              <div class="flex items-center gap-2 text-dt-text-soft">
                 <Icon
-                  v-if="diary.alerts?.length"
-                  name="heroicons:bell"
-                  class="h-4 w-4 text-dt-warning"
-                />
-                <Icon
-                  v-if="diary.transactions?.length"
-                  name="heroicons:banknotes"
-                  class="h-4 w-4 text-dt-success"
+                  name="heroicons:arrow-right"
+                  class="mt-0.5 h-4 w-4 shrink-0 text-dt-text-soft transition-colors duration-150 group-hover:text-dt-primary"
+                  aria-hidden="true"
                 />
               </div>
-              <span class="inline-flex items-center gap-1 text-xs font-semibold text-dt-primary">
-                {{ t('timeline.viewDetails') }}
-                <Icon name="heroicons:arrow-right" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </span>
-            </div>
-          </NuxtLink>
+
+              <div class="timeline-meta mt-1.5 flex flex-wrap items-center text-[11px] leading-5 text-dt-text-soft sm:text-xs">
+                <time class="timeline-meta-item inline-flex items-center font-data text-dt-text-muted">
+                  <Icon name="heroicons:calendar" class="mr-1 h-3.5 w-3.5 text-dt-text-soft" aria-hidden="true" />
+                  {{ formatCompactDate(diary.date || diary.createdAt) }}
+                </time>
+                <span
+                  v-for="tag in (diary.tags || []).slice(0, 2)"
+                  :key="tag"
+                  class="timeline-meta-item font-medium"
+                >
+                  #{{ tag }}
+                </span>
+                <span v-if="diary.alerts?.length" class="timeline-meta-item inline-flex items-center gap-1 text-dt-warning">
+                  <Icon name="heroicons:bell" class="h-3.5 w-3.5" aria-hidden="true" />
+                  {{ t('timeline.alertsCount', { count: diary.alerts.length }) }}
+                </span>
+                <span v-if="diary.transactions?.length" class="timeline-meta-item inline-flex items-center gap-1 text-dt-success">
+                  <Icon name="heroicons:banknotes" class="h-3.5 w-3.5" aria-hidden="true" />
+                  {{ t('timeline.transactionsCount', { count: diary.transactions.length }) }}
+                </span>
+              </div>
+
+              <p class="mt-2.5 line-clamp-2 text-sm leading-[1.55] text-dt-text-muted">
+                {{ diary.content ? diary.content.replace(/[#*`]/g, '') : t('timeline.noContent') }}
+              </p>
+            </NuxtLink>
+          </div>
         </div>
-      </div>
+      </section>
 
       <div v-if="isHydrated && hasMore" class="pt-4 text-center">
         <BaseButton
@@ -210,11 +206,27 @@
 </template>
 
 <script setup lang="ts">
+import { formatShortDate } from '~/lib/dates'
 import type { QuickDiaryContext } from '~/types/quicknote'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useTimelineDiaries } from '~/composables/useTimelineDiaries'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const { user } = useAuth()
+
+const timelineTimezone = computed(() => user.value?.timezone || 'Asia/Taipei')
+
+const formatTimelinePart = (date: Date | string, options: Intl.DateTimeFormatOptions) => {
+  return new Intl.DateTimeFormat(locale.value || 'zh-TW', {
+    ...options,
+    timeZone: timelineTimezone.value,
+  }).format(new Date(date))
+}
+
+const formatTimelineDay = (date: Date | string) => formatTimelinePart(date, { day: '2-digit' }).replace(/\D/g, '')
+const formatTimelineMonth = (date: Date | string) => formatTimelinePart(date, { month: 'short' })
+const formatTimelineWeekday = (date: Date | string) => formatTimelinePart(date, { weekday: 'short' })
+const formatCompactDate = (date: Date | string) => formatShortDate(date, timelineTimezone.value)
 
 definePageMeta({
   middleware: 'auth'
@@ -230,8 +242,7 @@ const {
   groupedDiaries,
   loadMore,
   refresh,
-  resetFilters,
-  formatDate
+  resetFilters
 } = useTimelineDiaries()
 
 const showQuickModal = ref(false)
@@ -254,6 +265,76 @@ onDiaryMutation(() => {
 </script>
 
 <style scoped>
+.timeline-month--spaced {
+  margin-top: 1.75rem;
+}
+
+.timeline-month-heading {
+  min-height: 2rem;
+}
+
+.timeline-month-entries {
+  position: relative;
+}
+
+.timeline-entry + .timeline-entry {
+  margin-top: 0.75rem;
+}
+
+.timeline-entry::before {
+  position: absolute;
+  top: 0;
+  bottom: -0.75rem;
+  left: 12px;
+  width: 1px;
+  background: var(--color-border);
+  content: '';
+}
+
+.timeline-entry:last-child::before {
+  bottom: 0;
+}
+
+.timeline-date {
+  padding-top: 0.25rem;
+}
+
+.timeline-date-day {
+  color: var(--color-primary);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.timeline-date-month,
+.timeline-date-weekday {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.timeline-date-month {
+  margin-top: 0.4rem;
+}
+
+.timeline-meta-item + .timeline-meta-item::before {
+  margin-inline: 0.5rem;
+  color: var(--color-text-soft);
+  content: '·';
+}
+
+.timeline-connector {
+  top: 22px;
+  right: -12px;
+  left: calc(50% + 5px);
+}
+
+@media (min-width: 1024px) {
+  .timeline-entry::before {
+    left: 140px;
+  }
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
