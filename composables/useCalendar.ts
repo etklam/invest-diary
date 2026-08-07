@@ -152,8 +152,9 @@ export const useCalendar = () => {
       }
 
       holidayDateSet.value = holidayDates
-    } catch (error) {
-      toast.error(resolveErrorMessage(error, t))
+    } catch {
+      // Holidays are an auxiliary feature backed by external date.nager.at;
+      // on failure, degrade silently (no holiday markers) instead of toasting.
       holidayDateSet.value = new Set()
     } finally {
       loadingHolidays.value = false
