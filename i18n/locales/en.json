@@ -679,7 +679,8 @@
     "emptyDiaryContent": "No written content",
     "noDiaryForDay": "No diary for this day",
     "webSource": "web",
-    "apiSource": "api"
+    "apiSource": "api",
+    "legacySource": "legacy"
   },
   "calendar": {
     "title": "{month} {year}",
@@ -1929,59 +1930,6 @@
       "description": "Click refresh to get the latest content",
       "refresh": "Refresh",
       "later": "Later"
-    }
-  },
-  "telegram": {
-    "start": {
-      "welcome": "Welcome to Investment Diary Bot!\n\nQuick commands:\n/buy 5 2330{'@'}600 — Record buy\n/sell 3 AAPL{'@'}150 — Record sell\n/note content — Record note\n/login — Link account\n/language — Switch language",
-      "notLinked": "Your account is not linked yet.\nPlease generate a verification code in the web app settings, then use /login CODE"
-    },
-    "buy": {
-      "oneLinerSuccess": "✅ Recorded\nBuy {quantity} {symbol} {'@'} ${price}\nTotal: ${total}",
-      "askQuantity": "Enter quantity:",
-      "askSymbol": "Enter stock symbol:",
-      "askPrice": "Enter buy price:",
-      "invalidQuantity": "Quantity must be a positive number. Try again:",
-      "invalidPrice": "Price must be a positive number. Try again:",
-      "invalidSymbol": "Invalid stock symbol. Try again:",
-      "confirm": "Buy {quantity} {symbol} {'@'} {'$'}{price} — Confirm? (yes/no)"
-    },
-    "sell": {
-      "oneLinerSuccess": "✅ Recorded\nSell {quantity} {symbol} {'@'} ${price}\nTotal: ${total}",
-      "askQuantity": "Enter quantity:",
-      "askSymbol": "Enter stock symbol:",
-      "askPrice": "Enter sell price:",
-      "invalidQuantity": "Quantity must be a positive number. Try again:",
-      "invalidPrice": "Price must be a positive number. Try again:",
-      "invalidSymbol": "Invalid stock symbol. Try again:",
-      "confirm": "Sell {quantity} {symbol} {'@'} {'$'}{price} — Confirm? (yes/no)"
-    },
-    "note": {
-      "success": "✅ Diary recorded",
-      "askContent": "Enter diary content:",
-      "tooLong": "Content must be 1-2000 characters. Try again:"
-    },
-    "login": {
-      "usage": "Usage: /login CODE\nGenerate a verification code in the web app settings first.",
-      "success": "✅ Account linked",
-      "invalidCode": "❌ Invalid or expired code. Please generate a new one.",
-      "alreadyLinked": "Your account is already linked. Use /language to switch language."
-    },
-    "language": {
-      "unsupported": "Unsupported language. Supported: zh-TW, zh-CN, en\nUsage: /language en",
-      "set": "✅ Language set to {language}"
-    },
-    "cancel": "Cancelled",
-    "help": "Investment Diary Bot\n\nCommands:\n/buy qty symbol{'@'}price — Record buy\n/sell qty symbol{'@'}price — Record sell\n/note content — Record note\n/login CODE — Link account\n/language zh-TW|zh-CN|en — Switch language\n/cancel — Cancel active operation\n/help — Show this help\n/start — Welcome message",
-    "generic": {
-      "noReply": "Use /help to see available commands."
-    },
-    "errors": {
-      "notLinked": "Please use /login to link your account first.",
-      "parseFailed": "Invalid format. Use:\n/buy quantity symbol{'@'}price (e.g. /buy 5 2330{'@'}600)\nOr just type /buy to start guided input.",
-      "dbWriteFailed": "❌ Recording failed. Please try again later.",
-      "unknown": "Unknown command. Use /start to see available commands.",
-      "tooManyCodeAttempts": "Too many failed attempts. Please generate a new verification code."
     }
   },
   "today": {

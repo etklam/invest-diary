@@ -2,7 +2,7 @@
 
 ## What it is
 
-Personal investment diary app. Nuxt 4 + TypeScript + MySQL 8 + Prisma. Tracks investment diaries, stock/ETF watchlists, market rotation, blog, alerts, partner compare, agent API, and Telegram integration.
+Personal investment diary app. Nuxt 4 + TypeScript + MySQL 8 + Prisma. Tracks investment diaries, stock/ETF watchlists, market rotation, blog, alerts, partner compare, and agent API.
 
 ## Core workflows
 
@@ -16,7 +16,6 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for the full workflow summary.
 - Alerts — quick reminders and recurring WEEK/MONTH alerts
 - Partner compare — diary sharing with privacy boundaries
 - Agent API — programmatic diary ingestion with scoped API keys
-- Telegram bot — diary intake via chat commands
 
 ## Tech stack
 

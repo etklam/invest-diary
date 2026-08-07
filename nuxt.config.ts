@@ -203,15 +203,12 @@ export default defineNuxtConfig({
     // Server-side only
     databaseUrl: process.env.DATABASE_URL,
     jwtSecret: process.env.JWT_SECRET,
-    telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || '',
-    telegramWebhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || '',
     secUserAgent: process.env.SEC_USER_AGENT || '',
 
     // Public to both client and server
     public: {
       appName: process.env.NUXT_PUBLIC_APP_NAME || '投資日記',
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://trade-basic.com',
-      telegramBotUsername: process.env.NUXT_PUBLIC_TELEGRAM_BOT_USERNAME || ''
     }
   },
 

@@ -63,6 +63,7 @@ export interface Diary {
   content: string | null
   tags?: string[]
   tagsString?: string | null
+  // TELEGRAM_BOT is retained for historical rows; new writes only use WEB/API_KEY.
   createdVia?: 'WEB' | 'API_KEY' | 'TELEGRAM_BOT'
   createdByLabel?: string | null
   date: Date

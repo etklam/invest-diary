@@ -6,7 +6,7 @@ import { API_KEY_TOKEN_PREFIX } from '~/server/utils/api-key'
 const CSRF_COOKIE = 'csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
 const STATE_CHANGE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
-const SKIP_PATHS = ['/api/auth', '/api/agent', '/api/telegram/webhook']
+const SKIP_PATHS = ['/api/auth', '/api/agent']
 
 const log = logger.auth
 

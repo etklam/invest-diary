@@ -156,9 +156,6 @@ _避免：LLM-generated summary、主觀投資建議、和 dashboard 數據不�
 日記的快速輸入入口。目標是降低寫日記的心理門檻，幫助養成每日記錄習慣。提供多種模板（自由書寫、交易日記、盤後反思、市場觀察）。
 _避免：速記、草稿_
 
-**Telegram Bot（Telegram 機器人）**：
-交易的快速輸入入口。目標是一行文字記錄買賣，與 Quick Note（日記入口）互補。目前為半成品。
-
 ---
 
 ## 關係 (Relationships)
@@ -225,7 +222,7 @@ _避免：速記、草稿_
 - **DisciplineCheck（已清理的歷史設計債）**：曾存在於資料模型中，但領域專家確認每日打勾機制是設計錯誤。紀律系統只需要清單展示和隨機抽取。現行 schema、API 和程式碼已移除；歷史 migration 和規劃文件仍保留脈絡。
 - **PortfolioSnapshot（已清理的歷史設計債）**：曾設計為每日持倉快照，但使用者交易頻率極低（一個月不一定有一筆），實際上用不到。現行 schema、API 和程式碼已移除；歷史 migration 和規劃文件仍保留脈絡。
 - **"Stock" 一詞的重載**：在程式碼中 "stock" 同時指「實際交易的股票」和「關注清單中的標的」。目前透過 `Stock`（主表）、`StockNote`（觀點）、`StockWatchlist`（關注）區分，但新手使用者可能混淆。
-- **Telegram Bot**：目前為半成品，有 bug 無法正常使用。定位為「交易快速記錄入口」，與 Quick Note（日記入口）互補。
+- **Telegram Bot（已移除）**：舊版聊天輸入入口已完整退役；歷史 `Diary.createdVia = TELEGRAM_BOT` 僅作為資料 provenance 保留，新寫入只允許 `WEB` / `API_KEY`。
 - **"Market Rotation Monitor" 的邊界**：這是 ETF 研究工具的新可見名稱，不是新的 Market 限界上下文；Stock 與 ETF 仍依 ADR-0002 保持分離。
 - **"Market Rotation Snapshot" 與即時計算的界線**：2 週比較層以持久化每日快照為核心，不在每次開頁時即時計完整 1y history、RSI、rank、percentile 和 2W delta。
 - **"Market Rotation Universe" 的邊界**：每日快照只涵蓋系統定義的 canonical ETF symbols；任意 custom symbols、一次性輸入、冷門 ticker、未知或無效 ticker 不自動持久化。
@@ -410,7 +407,7 @@ _避免：速記、草稿_
 
 #### 5. 時區轉換單一真相源 — `lib/dates/user-tz.ts`
 
-**問題**：CLAUDE.md 規定「日期存 UTC，使用者 timezone 在 `User.timezone`」。但時區轉換散在 `composables/useTimezone.ts`、`lib/dates/format.ts`、`lib/holiday-heatmap.ts`、`lib/telegram/diary-write.ts` 四處。`reviews.get.ts`（168 行）handler 內 inline `getTimeZoneParts` / `zonedDateTimeToUtc` 計算「給我 user 當天日記」的時間窗口。
+**問題**：CLAUDE.md 規定「日期存 UTC，使用者 timezone 在 `User.timezone`」。但時區轉換散在 `composables/useTimezone.ts`、`lib/dates/format.ts`、`lib/holiday-heatmap.ts` 三處。`reviews.get.ts`（168 行）handler 內 inline `getTimeZoneParts` / `zonedDateTimeToUtc` 計算「給我 user 當天日記」的時間窗口。
 
 **解法**：新建 `lib/dates/user-tz.ts` 為時區運算的單一真相源：
 
@@ -487,7 +484,7 @@ _避免：速記、草稿_
 
 #### 5. Diary 讀取側 query layer 對稱 — `server/utils/diary-read.ts`
 
-**問題**：Diary 寫入側是深 module（`diary-write.ts`，web + agent + telegram 三路徑共用），讀取側 `diary-read.ts` 只有 `findDiaryForUser(id)` 與 `findDiaryByDate(date)`。list、review dashboard 的多 bucket 日期運算（overdue / today / upcoming / unscheduled / completed）、latest diary 都 inline 在 handler。
+**問題**：Diary 寫入側是深 module（`diary-write.ts`，web + agent 兩路徑共用），讀取側 `diary-read.ts` 只有 `findDiaryForUser(id)` 與 `findDiaryByDate(date)`。list、review dashboard 的多 bucket 日期運算（overdue / today / upcoming / unscheduled / completed）、latest diary 都 inline 在 handler。
 
 **解法**：擴充 `diary-read.ts`（89 → 411 行），加 `listDiariesForUser(userId, filters)`（分頁 / 搜尋 / 排序 / tag 過濾）、`findLatestDiaryForUser(userId)`、`buildReviewBuckets(userId, tz)`（5 個 findMany 並發，搭配 `lib/dates/user-tz.ts` 的 half-open `[start, end)` DST-safe 區間）。3 個 handler 合計 −179 行（diaries.get −93、reviews.get −81、latest −5），收斂成 auth → parse → call → serialize 樣板。+50 unit tests 涵蓋 list 過濾、review buckets DST spring-forward / fall-back、跨日跨月。
 
@@ -507,9 +504,9 @@ _避免：速記、草稿_
 
 #### 8. 信任邊界 deep module 補測 + B1 CSRF prefix — `server/middleware/csrf.ts` + `server/utils/{error-handler,serialize}.ts`
 
-**問題**：這些是全系統最深的 cross-cutting module，卻只被 handler 測試間接覆蓋（而 handler 測試把上游全 mock 掉）。**(B1)** `csrf.ts:isApiKeyAuth` 比對 `Bearer sk_` 但實際 API key 前綴是 `dva_`（`api-key.ts:API_KEY_TOKEN_PREFIX`）——Bearer 分支永不命中，只有 `x-api-key` 路徑過 CSRF；前綴寫死兩處會漂移。`handleApiError` 的 4 路分派（ZodError / AppError / H3Error / unknown）零直測。`serialize()` 無 cycle 防護。`auth.ts` 的 Telegram webhook bypass 是安全關鍵一行，無測試 pin 住。
+**問題**：這些是全系統最深的 cross-cutting module，卻只被 handler 測試間接覆蓋（而 handler 測試把上游全 mock 掉）。**(B1)** `csrf.ts:isApiKeyAuth` 比對 `Bearer sk_` 但實際 API key 前綴是 `dva_`（`api-key.ts:API_KEY_TOKEN_PREFIX`）——Bearer 分支永不命中，只有 `x-api-key` 路徑過 CSRF；前綴寫死兩處會漂移。`handleApiError` 的 4 路分派（ZodError / AppError / H3Error / unknown）零直測。`serialize()` 無 cycle 防護。`auth.ts` 的 access-token / refresh-token fallback 是安全關鍵，無測試 pin 住。
 
-**解法**：B1——csrf.ts 改 `import { API_KEY_TOKEN_PREFIX }` 比對，未來不漂移。新建 `csrf.middleware.test.ts`（16 case，含 B1 regression：`Bearer dva_` 過、`Bearer sk_` 拒）、`error-handler.test.ts`（12 case，4 路分派 + pass-through 同 reference）、擴充 `serialize.test.ts`（+9 case：self / mutual cycle、深度 1000、`BigInt 0n`）。serialize 加 `WeakMap` cycle 防護（cycle 時回傳已轉好的 result 而非原物）。`auth.middleware.test.ts` +5 case pin 住 Telegram bypass 的 exact-match 不變量。
+**解法**：B1——csrf.ts 改 `import { API_KEY_TOKEN_PREFIX }` 比對，未來不漂移。新建 `csrf.middleware.test.ts`（16 case，含 B1 regression：`Bearer dva_` 過、`Bearer sk_` 拒）、`error-handler.test.ts`（12 case，4 路分派 + pass-through 同 reference）、擴充 `serialize.test.ts`（+9 case：self / mutual cycle、深度 1000、`BigInt 0n`）。serialize 加 `WeakMap` cycle 防護（cycle 時回傳已轉好的 result 而非原物）。`auth.middleware.test.ts` 補足一般 cookie 驗證與 refresh fallback 的 route contract。
 
 **通報未修的潛在點**：(1) serialize 對 Map / Set 靜默丟 entry（`Object.entries(Map)` 回空）——Prisma 不出 Map 故無炸點，測試標 `.skip`，一句話可修；(2) `requireUser`（401 強制）值得直測；(3) 既有測試 `clearAllMocks` 不清 implementation 的陷阱。
 

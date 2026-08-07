@@ -130,7 +130,7 @@ Files: `useArticleMarkdown`, `useAuthRecovery`, `useDiscipline`, `useGestures`, 
 **`tests/integration/`** — 5 files. Cross-module workflows that exercise multiple handlers or full Vue component trees.
 
 - `article-markdown-ssr.test.ts` — mounts the real `pages/articles/[slug].vue` inside `<Suspense>` and asserts parsed markdown body is rendered (regression guard for fire-and-forget SSR bug).
-- `auth-flow.test.ts`, `diary-workflow.test.ts`, `agent-stock-timeline.test.ts`, `telegram-bot.test.ts`.
+- `auth-flow.test.ts`, `diary-workflow.test.ts`, `agent-stock-timeline.test.ts`.
 
 **`tests/lib/`** — 16 files (plus 2 subdirs: `dates/`, `quicknote/`). Pure-function tests for library modules. No mocks, no Vue, no Prisma.
 
@@ -142,15 +142,14 @@ Examples: `recurring-alerts`, `blog`, `position-state`, `format`, `utils`, `mark
 | --- | --- |
 | `unit/components/` | `BaseButton`, `EtfMobileCard`, `LedgerCard`, `ReviewCandidateCard`, `StatusBadge` — presentational/design-system primitive tests |
 | `unit/composables/` | `useAuth.test.ts` (older copy; the newer copy is at top-level `composables/`) |
-| `unit/lib/` | Deep lib tests: `etf-profile/` (6 files), `market-rotation/` (16 files), `market-state/` (2 files), `telegram/`, `dates/`, plus `jwt`, `logger`, `error-consistency`, `error-i18n-mapping`, `discipline-share-url`, `prisma-*`, `symbol-normalization`, `stocks-symbols`, `trade-analytics`, `yahoo-request-queue`, `market-data-cache` |
+| `unit/lib/` | Deep lib tests: `market-rotation/` (16 files), `market-state/` (2 files), `dates/`, plus `jwt`, `logger`, `error-i18n-mapping`, `discipline-share-url`, `prisma-*`, `symbol-normalization`, `stocks-symbols`, `trade-analytics`, `yahoo-request-queue`, `market-data-cache` |
 | `unit/pages/` | 12 files. Page-level guards and contracts: admin route guards, article content rendering, discipline share/import URL handling, portfolio-risk / position-sizing / reviews / strategy-performance / trade-plans / tools-etf-profile-v2 contract tests, stocks-notes i18n |
 | `unit/server/` | 26 files. Server-side query-layer and middleware tests, all Prisma-mocked: `diary-write`, `diary-read`, `diaries-query`, `discipline-queries`, `etf-watchlist-queries`, `etf-profile-api`, `etf-detail-api`, `etf-ownership-regressions`, `market-quote-api`, `market-rotation-queries`, `market-rotation-monitor-queries`, `market-rotation-batch`, `spx-session-api`, `partner-queries`, `partner-compare`, `price-alert-queries`, `trade-queries`, `serialize`, `og-discipline-svg`, `phase2-auth-contracts`, `auth.middleware`, `auth.cookies`, `admin.middleware`, `health.get`, `alert-scheduler`, `alert-persistence` |
 | `unit/schedulers/` | `alert-pusher`, `price-alert-checker` — scheduler job logic |
-| `unit/telegram/` | `commands`, `db`, `diary-write`, `intake`, `parser` — Telegram bot modules |
 | `unit/websocket/` | `connectionManager`, `alertHandler` — Socket.IO server-side logic |
 | `unit/scripts/` | `market-rotation/run-batch`, `market-state/seed-universe-utils`, `market-state/update-breadth-utils` — tests for `scripts/` TypeScript entry points |
 | `unit/types/` | `common.test.ts` — shared type guards |
-| `unit/*.test.ts` (top-level) | Repo-wide regression guards: `api-logger-regression`, `auth-client-regressions`, `auth-page-hydration-regressions`, `csp-regressions`, `dockerfile-prisma-config`, `pwa-regressions`, `prisma-market-rotation-run-schema`, `telegram-webhook-script`, `typecheck-config`, `websocket-client-regressions`, `websocket-plugin-regression`, `stock-watchlist-queries`, `stock-timeline-queries`, `api-docs-content` |
+| `unit/*.test.ts` (top-level) | Repo-wide regression guards: `api-logger-regression`, `auth-client-regressions`, `auth-page-hydration-regressions`, `csp-regressions`, `dockerfile-prisma-config`, `pwa-regressions`, `prisma-market-rotation-run-schema`, `typecheck-config`, `websocket-client-regressions`, `websocket-plugin-regression`, `stock-watchlist-queries`, `stock-timeline-queries`, `api-docs-content` |
 
 **`tests/e2e/`** — 7 Playwright specs + helpers. See section 9.
 
@@ -297,7 +296,6 @@ These are areas where coverage is known to be thin or where tests exist but are 
 - **Agent API (`server/api/agent/**`)** — **Needs verification.** `tests/api/agent-diaries.test.ts`, `agent-stocks-records.test.ts`, `agent-stocks-watchlist.test.ts` exist but I did not audit them against the current handler surface area.
 - **`server/utils/partner-compare.ts` and `server/utils/partner-queries.ts`** — covered, but the partner comparison algorithm has known edge cases around cross-timezone compare days. **Needs verification** that the test cases cover the edge cases.
 - **WebSocket** — `connectionManager` and `alertHandler` have unit tests, but there is **no** integration test that verifies end-to-end Socket.IO message delivery. **Needs verification.**
-- **Telegram bot** — `tests/unit/telegram/` and `tests/integration/telegram-bot.test.ts` exist. Recent commit `6f3dfc6 fix(telegram): fix 3 bugs, add i18n, 73 TDD tests` suggests solid coverage, but the bot has many command branches; **needs verification** that all command paths are exercised.
 - **Market rotation snapshot pipeline** — `tests/unit/lib/market-rotation/` has 16 files and is the most TDD-driven area of the codebase (see commit `3ff23b8 feat(market-rotation): add calculation utils with TDD coverage`). Still, the end-to-end pipeline (`pipeline.test.ts`, `snapshot-builder.test.ts`) operates on synthetic inputs — **needs verification** against real Yahoo Finance shape.
 - **i18n locale files** — no test verifies that all three locale files (`en.json`, `zh-TW.json`, `zh-CN.json`) have the same key set. `tests/unit/pages/article-content-rendering.test.ts` checks one specific key (`blog.contentUnavailable`) across locales but nothing systematic.
 
