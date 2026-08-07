@@ -679,7 +679,8 @@
     "emptyDiaryContent": "沒有文字內容",
     "noDiaryForDay": "這一天沒有 diary",
     "webSource": "網頁",
-    "apiSource": "API"
+    "apiSource": "API",
+    "legacySource": "歷史來源"
   },
   "calendar": {
     "title": "{year}年 {month}月",
@@ -1929,59 +1930,6 @@
       "description": "點擊重新整理以獲取最新內容",
       "refresh": "重新整理",
       "later": "稍後"
-    }
-  },
-  "telegram": {
-    "start": {
-      "welcome": "歡迎使用投資日記 Bot！\n\n快速指令：\n/buy 5 2330{'@'}600 — 記錄買入\n/sell 3 AAPL{'@'}150 — 記錄賣出\n/note 內容 — 記錄備註\n/login — 綁定帳號\n/language — 切換語言",
-      "notLinked": "你還沒有綁定帳號。\n請先在網站設定頁面產生驗證碼，然後輸入 /login <驗證碼>"
-    },
-    "buy": {
-      "oneLinerSuccess": "✅ 已記錄\n買入 {quantity} {symbol} {'@'} ${price}\n總金額: ${total}",
-      "askQuantity": "請輸入購買數量：",
-      "askSymbol": "請輸入股票代碼：",
-      "askPrice": "請輸入買入價格：",
-      "invalidQuantity": "數量必須是正數，請重新輸入：",
-      "invalidPrice": "價格必須是正數，請重新輸入：",
-      "invalidSymbol": "無效的股票代碼，請重新輸入：",
-      "confirm": "買入 {quantity} {symbol} {'@'} {'$'}{price} — 確認？(yes/no)"
-    },
-    "sell": {
-      "oneLinerSuccess": "✅ 已記錄\n賣出 {quantity} {symbol} {'@'} ${price}\n總金額: ${total}",
-      "askQuantity": "請輸入賣出數量：",
-      "askSymbol": "請輸入股票代碼：",
-      "askPrice": "請輸入賣出價格：",
-      "invalidQuantity": "數量必須是正數，請重新輸入：",
-      "invalidPrice": "價格必須是正數，請重新輸入：",
-      "invalidSymbol": "無效的股票代碼，請重新輸入：",
-      "confirm": "賣出 {quantity} {symbol} {'@'} {'$'}{price} — 確認？(yes/no)"
-    },
-    "note": {
-      "success": "✅ 已記錄日記",
-      "askContent": "請輸入日記內容：",
-      "tooLong": "內容長度必須在 1-2000 字之間，請重新輸入："
-    },
-    "login": {
-      "usage": "使用方法：/login <驗證碼>\n請先在網站設定頁面產生驗證碼。",
-      "success": "✅ 已綁定到帳號",
-      "invalidCode": "❌ 無效的驗證碼或已過期，請重新產生。",
-      "alreadyLinked": "你已經綁定過帳號了。使用 /language 切換語言。"
-    },
-    "language": {
-      "unsupported": "不支援的語言。支援的語言：zh-TW, zh-CN, en\n使用方法：/language zh-TW",
-      "set": "✅ 語言已設定為 {language}"
-    },
-    "cancel": "已取消",
-    "help": "投資日記 Bot\n\n可用指令：\n/buy 數量 代碼{'@'}價格 — 記錄買入\n/sell 數量 代碼{'@'}價格 — 記錄賣出\n/note 內容 — 記錄備註\n/login 驗證碼 — 綁定帳號\n/language zh-TW|zh-CN|en — 切換語言\n/cancel — 取消目前操作\n/help — 顯示此說明\n/start — 歡迎訊息",
-    "generic": {
-      "noReply": "使用 /help 查看可用指令。"
-    },
-    "errors": {
-      "notLinked": "請先使用 /login 綁定你的帳號。",
-      "parseFailed": "格式錯誤，請使用：\n/buy 數量 代碼{'@'}價格（例：/buy 5 2330{'@'}600）\n或直接輸入 /buy 開始多段對話。",
-      "dbWriteFailed": "❌ 記錄失敗，請稍後再試",
-      "unknown": "未知指令，請使用 /start 查看可用指令。",
-      "tooManyCodeAttempts": "嘗試次數過多，請重新產生驗證碼。"
     }
   },
   "today": {

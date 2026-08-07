@@ -189,48 +189,9 @@ describe('server/middleware/auth', () => {
     expect(event.context.user).toBeUndefined()
   })
 
-  // ── Telegram webhook bypass (security-critical invariant) ──
-  // ponytail: 401 enforcement for unprotected /api routes lives in requireUser
-  // (server/utils/auth.ts), not in this middleware. What this middleware DOES
-  // guarantee is: (a) the Telegram webhook path skips JWT entirely, and
-  // (b) every other /api path without credentials leaves context.user undefined
-  // (never silently grants a user).
-
-  it('should skip JWT verification entirely for /api/telegram/webhook', async () => {
+  it('should apply normal JWT processing to the former Telegram webhook path', async () => {
+    // The webhook route has been removed; its former path must no longer bypass auth.
     ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/telegram/webhook' })
-    // No cookies set — would normally leave user undefined, but we also must prove
-    // the JWT machinery is never even consulted for this path.
-    mockGetCookie.mockReturnValue(undefined)
-
-    const { default: handler } = await import('~/server/middleware/auth')
-    const event = { context: {} } as any
-    await handler(event)
-
-    expect(mockVerifyToken).not.toHaveBeenCalled()
-    expect(mockUserFindUnique).not.toHaveBeenCalled()
-    expect(mockRefreshTokenFindUnique).not.toHaveBeenCalled()
-    expect(event.context.user).toBeUndefined()
-  })
-
-  it('should skip JWT verification for /api/telegram/webhook even if a cookie is present', async () => {
-    // A misconfigured request that ships an access token to the webhook must NOT
-    // cause the auth middleware to populate context.user — the webhook authenticates
-    // via its own secret token, and a stale browser cookie should not override that.
-    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/telegram/webhook' })
-    mockGetCookie.mockReturnValueOnce('stale-access-token').mockReturnValueOnce(null)
-
-    const { default: handler } = await import('~/server/middleware/auth')
-    const event = { context: { user: undefined } } as any
-    await handler(event)
-
-    expect(mockVerifyToken).not.toHaveBeenCalled()
-    expect(event.context.user).toBeUndefined()
-  })
-
-  it('should NOT bypass JWT for paths that merely contain "telegram" (exact-match invariant)', async () => {
-    // The bypass is `pathname === '/api/telegram/webhook'` — not a prefix.
-    // /api/telegram/other must go through the normal auth flow.
-    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/telegram/other' })
     mockGetCookie.mockReturnValueOnce('access').mockReturnValueOnce(null)
     mockVerifyToken.mockResolvedValueOnce({
       userId: '1',
@@ -251,6 +212,20 @@ describe('server/middleware/auth', () => {
     await handler(event)
 
     expect(mockVerifyToken).toHaveBeenCalled()
+    expect(event.context.user).toEqual({ id: '1', email: 'a@b.com', role: 'USER' })
+  })
+
+  it('should leave context.user undefined for former Telegram webhook path without credentials', async () => {
+    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/telegram/webhook' })
+    mockGetCookie.mockReset()
+    mockGetCookie.mockReturnValue(undefined)
+
+    const { default: handler } = await import('~/server/middleware/auth')
+    const event = { context: { user: undefined } } as any
+    await handler(event)
+
+    expect(mockVerifyToken).not.toHaveBeenCalled()
+    expect(event.context.user).toBeUndefined()
   })
 
   it('should leave context.user undefined for protected /api paths without any credentials', async () => {

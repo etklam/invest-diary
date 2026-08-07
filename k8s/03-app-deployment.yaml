@@ -35,15 +35,6 @@ spec:
                 secretKeyRef:
                   name: diary-vue-app-secrets
                   key: JWT_SECRET
-            - name: TELEGRAM_WEBHOOK_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: diary-vue-app-secrets
-                  key: TELEGRAM_WEBHOOK_SECRET
-            - name: TELEGRAM_BOT_TOKEN
-              value: ""
-            - name: NUXT_PUBLIC_TELEGRAM_BOT_USERNAME
-              value: ""
           resources:
             limits:
               cpu: "1000m"

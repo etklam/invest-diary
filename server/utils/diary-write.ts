@@ -283,7 +283,7 @@ async function persistTransactionDiff(
 export interface CreateDiaryForUserInput {
   userId: string | bigint
   body: DiaryInput & { appendToToday?: boolean }
-  createdVia?: 'WEB' | 'API_KEY' | 'TELEGRAM_BOT'
+  createdVia?: 'WEB' | 'API_KEY'
   createdByLabel?: string | null
 }
 

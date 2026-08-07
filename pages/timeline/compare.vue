@@ -249,6 +249,9 @@ const sourceLabel = (createdVia?: string | null, createdByLabel?: string | null)
   if (createdVia === 'API_KEY') {
     return createdByLabel || t('compareDiary.apiSource')
   }
+  if (createdVia === 'TELEGRAM_BOT') {
+    return t('compareDiary.legacySource')
+  }
   return t('compareDiary.webSource')
 }
 

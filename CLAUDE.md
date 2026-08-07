@@ -35,7 +35,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Diary Vue** — 個人投資日記應用。Nuxt 4 + TypeScript + MySQL 8.0 + Prisma ORM。JWT 認證，Docker 部署，PWA 支援，三語 i18n (EN/ZH-TW/ZH-CN)。
 
-功能：投資日誌、股票/ETF 追蹤、交易分析、合作夥伴比較、Telegram 機器人、AI Agent API、教育博客。
+功能：投資日誌、股票/ETF 追蹤、交易分析、合作夥伴比較、AI Agent API、教育博客。
 
 ## Agent skills
 
@@ -195,7 +195,7 @@ export default defineEventHandler(async (event) => {
 - `Etf` / `EtfPrice` — ETF 追蹤
 - `PartnerLink` — 合作夥伴連結，雙向分享控制
 - `ApiKeyCredential` — API Key 認證
-- `TelegramAccount` — Telegram 綁定
+- `Diary.createdVia` — 日記建立來源；新資料只允許 `WEB` / `API_KEY`，歷史 `TELEGRAM_BOT` 值保留可讀性
 
 **Key Relationships:**
 

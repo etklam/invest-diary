@@ -39,8 +39,6 @@ surface area today:
   agent), diary content shared, transactions/holdings private
 - **Agent API** — API key-scoped ingestion endpoints for diary creation and
   stock timeline/notes
-- **Telegram bot** — webhook-driven grammY bot for linking accounts and quick
-  transaction intake (CONTEXT.md notes this is partially built)
 - **Tools** — standalone calculators (position sizing, FIRE, relative value,
   seasonality) under `pages/tools/`
 - **Admin** — admin-only API for blog, ETF seed, market rotation batch
@@ -55,7 +53,7 @@ Brand and design direction live in [`../PRODUCT.md`](../PRODUCT.md) and
   truth (currently ~650 lines)
 - [`nuxt.config.ts`](../nuxt.config.ts) — Nuxt + PWA + i18n + mdx wiring
 - [`package.json`](../package.json) — runtime + dev dependencies (Nuxt 4.3,
-  Prisma 7.4, grammy 1.42, yahoo-finance2 3.14, jose 6, zod 4)
+  Prisma 7.4, yahoo-finance2 3.14, jose 6, zod 4)
 
 ---
 
@@ -68,8 +66,8 @@ and silently refreshes via the refresh token if needed. Refresh tokens are
 SHA-256 hashed at rest; legacy plaintext rows are migrated on read. Password
 change increments `User.tokenVersion`, invalidating all outstanding tokens.
 
-Telegram webhook and CSRF-routed mutations are explicitly exempted from the
-auth middleware. Admin routes additionally require `role === 'ADMIN'` via
+CSRF-routed API-key mutations are explicitly exempted from the CSRF check.
+Admin routes additionally require `role === 'ADMIN'` via
 `server/middleware/admin.ts`.
 
 ### Main files
@@ -86,7 +84,7 @@ auth middleware. Admin routes additionally require `role === 'ADMIN'` via
 - [`server/api/auth/me.get.ts`](../server/api/auth/me.get.ts) — current user
   payload for the SPA
 - [`server/middleware/auth.ts`](../server/middleware/auth.ts):11 — global
-  `/api/**` auth, Telegram webhook bypass, refresh-token recovery
+  `/api/**` auth and refresh-token recovery
 - [`server/middleware/admin.ts`](../server/middleware/admin.ts):10 —
   `role === 'ADMIN'` gate for `/api/admin/**` and blog write routes
 - [`server/utils/auth.ts`](../server/utils/auth.ts):11 — cookie helpers
@@ -595,65 +593,11 @@ endpoints:
 
 ---
 
-## 9. Telegram Workflow
+## 9. Legacy channel removal
 
-Webhook-driven grammY bot. Telegram delivers updates to
-`POST /api/telegram/webhook`; the webhook validates the
-`x-telegram-bot-api-secret-token` header against
-`runtimeConfig.telegramWebhookSecret` (the auth middleware bypasses this
-route). Each update is deduplicated via `telegram_processed_updates`.
-Account binding flow: user generates a verification code via
-`/api/telegram/generate-code`, then in Telegram runs `/login <code>` to
-attach their `TelegramAccount` row. The bot supports `/start`, `/help`,
-`/login`, `/language`, `/buy`, `/sell`, `/note`, `/cancel`, plus free-text
-message handling. Sessions and conversation state are persisted in
-`telegram_sessions` via a Prisma adapter.
-
-CONTEXT.md explicitly notes the bot is "半成品" (partially built) — core
-intake works but there are known bugs.
-
-### Main files
-
-- API:
-  [`server/api/telegram/webhook.post.ts`](../server/api/telegram/webhook.post.ts):15,
-  [`server/api/telegram/generate-code.post.ts`](../server/api/telegram/generate-code.post.ts),
-  [`server/api/telegram/status.get.ts`](../server/api/telegram/status.get.ts),
-  [`server/api/telegram/unlink.delete.ts`](../server/api/telegram/unlink.delete.ts)
-- Bot core:
-  [`lib/telegram/bot.ts`](../lib/telegram/bot.ts):31 (`createBot`),
-  [`lib/telegram/commands.ts`](../lib/telegram/commands.ts),
-  [`lib/telegram/conversations.ts`](../lib/telegram/conversations.ts)
-  (`createBuyConversation`, `createSellConversation`, `createNoteConversation`),
-  [`lib/telegram/session.ts`](../lib/telegram/session.ts)
-  (`createPrismaSessionAdapter`),
-  [`lib/telegram/intake.ts`](../lib/telegram/intake.ts)
-  (`classifyTelegramUpdate`),
-  [`lib/telegram/parser.ts`](../lib/telegram/parser.ts),
-  [`lib/telegram/diary-write.ts`](../lib/telegram/diary-write.ts)
-- DB helpers: [`server/utils/telegram-db.ts`](../server/utils/telegram-db.ts)
-  (`findTelegramAccount`, `checkAndMarkUpdate`, `releaseUpdate`)
-- Webhook registration CLI:
-  [`scripts/telegram-webhook.mjs`](../scripts/telegram-webhook.mjs)
-  (npm scripts `telegram:webhook:set|info|delete`)
-- Cleanup: [`server/plugins/telegram-cleanup.ts`](../server/plugins/telegram-cleanup.ts)
-
-### Related tests
-
-- [`tests/api/telegram-webhook.test.ts`](../tests/api/telegram-webhook.test.ts)
-- [`tests/unit/telegram-webhook-script.test.ts`](../tests/unit/telegram-webhook-script.test.ts)
-- [`tests/unit/lib/telegram/`](../tests/unit/lib/telegram)
-- [`tests/unit/telegram/`](../tests/unit/telegram)
-- [`tests/integration/telegram-bot.test.ts`](../tests/integration/telegram-bot.test.ts)
-
-### Known gotchas
-
-- Telegram webhook requires `TELEGRAM_BOT_TOKEN` and
-  `TELEGRAM_WEBHOOK_SECRET` runtime config; missing token causes a 500
-  immediately (`webhook.post.ts`:25).
-- The webhook always returns `{ ok: true }` for duplicate or empty updates
-  so Telegram does not retry indefinitely.
-- Acquired updates are released on processing failure so Telegram retries
-  can re-enter (`webhook.post.ts`:60).
+The retired chat channel is no longer part of the application surface. Historical
+`Diary.createdVia` provenance remains readable, while new diary writes use only
+the web and API-key paths.
 
 ---
 
@@ -694,8 +638,7 @@ Vitest is the primary runner with `happy-dom` environment and setup file
   `vi-setup.ts` (`mockReadBody`, `mockGetQuery`, etc.). Each resource has
   its own file.
 - **Integration** (`tests/integration/`) — multi-component workflows
-  (auth-flow, diary-workflow, agent-stock-timeline, article-markdown-ssr,
-  telegram-bot).
+  (auth-flow, diary-workflow, agent-stock-timeline, article-markdown-ssr).
 
 Playwright E2E (`tests/e2e/`) is configured via
 [`playwright.config.ts`](../playwright.config.ts) and covers auth, diary
@@ -762,8 +705,6 @@ in-process; no HTTP, no JWT, no CSRF (CONTEXT.md 2026-07 §6). Env is just
   schedulers (one replica only)
 - `RUN_MIGRATIONS` — `'true'` to run `prisma migrate deploy` at container
   start (defaults to false; CapRover uses `preDeployFunction`)
-- Runtime config (Telegram): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`
-
 See [`.env.example`](../.env.example) for the full list.
 
 ### Main files
@@ -780,7 +721,6 @@ See [`.env.example`](../.env.example) for the full list.
 - Batch CLIs: [`scripts/market-rotation/run-batch.ts`](../scripts/market-rotation/run-batch.ts),
   [`scripts/market-state/seed-universe.ts`](../scripts/market-state/seed-universe.ts),
   [`scripts/market-state/update-breadth.ts`](../scripts/market-state/update-breadth.ts)
-- Telegram webhook ops: [`scripts/telegram-webhook.mjs`](../scripts/telegram-webhook.mjs)
 - Migrations: [`prisma/`](../prisma) — `npx prisma migrate dev` (local),
   `npx prisma migrate deploy` (CI / container)
 - Backup/restore runbook: [`operations/BACKUP_RESTORE.md`](operations/BACKUP_RESTORE.md)
@@ -795,7 +735,6 @@ See [`.env.example`](../.env.example) for the full list.
   [`tests/unit/lib/prisma-runtime-contract.test.ts`](../tests/unit/lib/prisma-runtime-contract.test.ts),
   [`tests/unit/lib/prisma-version-gate.test.ts`](../tests/unit/lib/prisma-version-gate.test.ts)
 - [`tests/unit/prisma-market-rotation-run-schema.test.ts`](../tests/unit/prisma-market-rotation-run-schema.test.ts)
-- [`tests/unit/telegram-webhook-script.test.ts`](../tests/unit/telegram-webhook-script.test.ts)
 
 ### Known gotchas
 
@@ -808,7 +747,3 @@ See [`.env.example`](../.env.example) for the full list.
 - Pre-deploy checklist (`CLAUDE.md §14`): generate `JWT_SECRET`, point
   `DATABASE_URL` at prod MySQL, set `NUXT_PUBLIC_SITE_URL`, run
   `npm run health:full`, run `npx prisma migrate deploy`.
-- Telegram webhook registration is **manual** — run
-  `npm run telegram:webhook:set` after deploy with the correct public URL
-  and secret. The webhook secret in Telegram must match
-  `runtimeConfig.telegramWebhookSecret`.

@@ -9,7 +9,7 @@ describe('server/middleware/csrf', () => {
     mockSetCookie.mockReset()
   })
 
-  const buildEvent = (method: string, pathname: string) =>
+  const buildEvent = (method: string, _pathname: string) =>
     ({ method, context: {} }) as any
 
   const stubHeaders = (headers: Record<string, string | undefined>) => {
@@ -185,12 +185,14 @@ describe('server/middleware/csrf', () => {
     await expect(handler(buildEvent('POST', '/api/agent/diary'))).resolves.toBeUndefined()
   })
 
-  it('POST /api/telegram/webhook skips CSRF (webhook has its own secret)', async () => {
+  it('POST to the former Telegram webhook path still requires CSRF', async () => {
     ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/telegram/webhook' })
     mockGetCookie.mockReturnValue(undefined)
     stubHeaders({})
 
     const handler = await loadHandler()
-    await expect(handler(buildEvent('POST', '/api/telegram/webhook'))).resolves.toBeUndefined()
+    await expect(handler(buildEvent('POST', '/api/telegram/webhook'))).rejects.toMatchObject({
+      statusCode: 403,
+    })
   })
 })

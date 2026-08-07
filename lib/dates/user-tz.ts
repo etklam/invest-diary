@@ -4,7 +4,7 @@
  *
  * 所有「給我 user timezone 的某天 / 今天日期 / 該天的 UTC 範圍」
  * 類操作都收斂到此處，取代原本散落在 reviews.get.ts、
- * holiday-heatmap.ts、useTimezone.ts、telegram/diary-write.ts 的 inline 邏輯。
+ * holiday-heatmap.ts、useTimezone.ts 的 inline 邏輯。
  *
  * 核心設計：
  *   - getUserDayRange 回傳 half-open [start, end) 區間，

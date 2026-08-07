@@ -87,8 +87,6 @@ model User {
   initiatedPartnerLinks PartnerLink[]              @relation("PartnerLinkInitiatedBy")
   priceAlerts           PriceAlert[]
   stockNotes            StockNote[]
-  telegramAccounts      TelegramAccount[]
-  verificationCodes     TelegramVerificationCode[]
   tradePlans            TradePlan[]
   diaryReconciliationAudits DiaryReconciliationAudit[]
 
@@ -474,61 +472,6 @@ model StockNote {
 }
 
 // ─── Phase 6.1: Stock Price Alerts ────────────────────────────────────────────
-
-// ─── Telegram Bot ───────────────────────────────────────────────────────────
-
-model TelegramAccount {
-  id           Int      @id @default(autoincrement())
-  telegramId   BigInt   @unique @map("telegram_id")
-  userId       BigInt   @map("user_id")
-  username     String?  @db.VarChar(100)
-  firstName    String?  @map("first_name") @db.VarChar(100)
-  lastName     String?  @map("last_name") @db.VarChar(100)
-  language     String   @default("zh-TW") @db.VarChar(10)
-  linkedAt     DateTime @default(now()) @map("linked_at")
-  lastActiveAt DateTime @default(now()) @map("last_active_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([telegramId])
-  @@map("telegram_accounts")
-}
-
-model TelegramSession {
-  id        String   @id @db.VarChar(255)
-  key       String   @db.VarChar(255)
-  value     Json
-  expiresAt DateTime @map("expires_at")
-
-  @@index([key])
-  @@index([expiresAt])
-  @@map("telegram_sessions")
-}
-
-model TelegramVerificationCode {
-  id        Int       @id @default(autoincrement())
-  userId    BigInt    @map("user_id")
-  code      String    @unique @db.VarChar(10)
-  expiresAt DateTime  @map("expires_at")
-  usedAt    DateTime? @map("used_at")
-  attempts  Int       @default(0)
-  createdAt DateTime  @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([code])
-  @@map("telegram_verification_codes")
-}
-
-model TelegramProcessedUpdate {
-  updateId    Int      @id @map("update_id")
-  processedAt DateTime @default(now()) @map("processed_at")
-  action      String   @db.VarChar(50)
-
-  @@map("telegram_processed_updates")
-}
 
 // ─── Stock Price Alerts ──────────────────────────────────────────────────────
 

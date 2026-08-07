@@ -90,10 +90,6 @@ JWT_SECRET="your-very-secure-random-32-character-secret-key-change-this"
 NUXT_PUBLIC_APP_NAME="投資日記"
 NUXT_PUBLIC_SITE_URL="https://your-domain.com"
 
-# Telegram Bot（如需 Telegram 快速記錄）
-NUXT_PUBLIC_TELEGRAM_BOT_USERNAME="your_bot_username"
-TELEGRAM_BOT_TOKEN="123456789:ABCdef..."
-TELEGRAM_WEBHOOK_SECRET="use-a-random-secret-with-letters-numbers-underscore-or-dash"
 SEC_USER_AGENT="Trade Basic SEC Filings monitored-contact@example.com"
 ```
 
@@ -103,25 +99,6 @@ SEC_USER_AGENT="Trade Basic SEC Filings monitored-contact@example.com"
 # 生成隨機金鑰
 openssl rand -base64 32
 ```
-
-### 4. 註冊 Telegram Webhook
-
-Telegram bot 採用 webhook 模式。只設定 `TELEGRAM_BOT_TOKEN` 不會讓 bot 自動回應，還必須把 webhook URL 註冊到 Telegram。
-
-部署完成且網域可用後，在專案目錄執行：
-
-```bash
-npm run telegram:webhook:set
-npm run telegram:webhook:info
-```
-
-檢查 `telegram:webhook:info` 輸出的 `url` 是否為：
-
-```text
-https://your-domain.com/api/telegram/webhook
-```
-
-如果 `last_error_message` 有值，先處理 HTTPS、反向代理、環境變數或資料庫連線問題。Telegram 發送 webhook 時會帶 `x-telegram-bot-api-secret-token` header，值必須和 `TELEGRAM_WEBHOOK_SECRET` 一致，否則 `/api/telegram/webhook` 會回 401。
 
 ---
 
@@ -158,11 +135,6 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 
 # Site URL（用於 SEO/Sitemap）
 NUXT_PUBLIC_SITE_URL="https://your-domain.com"
-
-# Telegram Bot（如需 Telegram 快速記錄）
-NUXT_PUBLIC_TELEGRAM_BOT_USERNAME="your_bot_username"
-TELEGRAM_BOT_TOKEN="123456789:ABCdef..."
-TELEGRAM_WEBHOOK_SECRET="use-a-random-secret-with-letters-numbers-underscore-or-dash"
 
 # 調度器啟用狀態（重要！）
 # 只在主實例上設置為 "true"，其他實例設為 "false" 或不設置
@@ -449,6 +421,23 @@ docker run -d \
   -e RUN_MIGRATIONS=true \
   diary-vue:latest
 ```
+
+### 退役舊聊天整合（一次性操作）
+
+這次版本會移除舊聊天機器人的 runtime、路由與四張專用資料表；歷史日記的
+`createdVia = TELEGRAM_BOT` 值會保留。正式環境執行部署前，請依序完成：
+
+1. 先在供應商端刪除 webhook，並撤銷舊 bot token，停止外部更新繼續送入舊端點。
+2. 先完成 MySQL 備份，確認可還原，再進行任何 schema migration。
+3. 先排空並停止仍在執行舊版映像的 app pod / container；不可讓舊版 runtime
+   與刪表 migration 同時運行，否則舊版查詢可能在 migration 後失敗。
+4. 部署新映像並以受控方式執行 `npx prisma migrate deploy`（或設定
+   `RUN_MIGRATIONS=true`），套用
+   `20260807100000_remove_telegram_bot_support`。
+5. 確認新部署不再注入舊 token / secret 環境變數，並檢查一般 Web 與 API-key
+   日記寫入仍可用；舊 webhook 路徑應不再提供 handler。
+
+此 migration 僅刪除聊天整合的專用表，不會改寫或刪除 `diaries` 的歷史來源值。
 
 ### 備份與還原
 
