@@ -22,6 +22,7 @@ export { toUtcNoonDate, getUtcDayRange, toDateTimeLocalValue } from './normalize
 // ─── 使用者時區操作（deep module）────────────────────────────────────────────
 export {
   getUserDayRange,
+  getUserYmdDayRange,
   getUserTodayYmd,
   getUserYmdInTimezone,
   resolveCountryCodeFromTimezone,

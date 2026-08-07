@@ -6,6 +6,7 @@ import {
   computeThreshold,
   filterQualifiedDates,
   pickComparisonDate,
+  resolveQualifiedDateWindow,
 } from '~/lib/market-rotation/qualified-date'
 
 describe('lib/market-rotation/qualified-date', () => {
@@ -181,6 +182,32 @@ describe('lib/market-rotation/qualified-date', () => {
       //   index:   0     1     2     3     4     5     6     7     8     9    10
       // offset 10 → 06-04
       expect(comparison).toEqual(new Date('2026-06-04'))
+    })
+
+    it('keeps the same comparison boundary before and after persisting a new qualified date', () => {
+      const newSnapshotDate = new Date('2026-06-15')
+      const alreadyPersisted = Array.from({ length: 10 }, (_, index) => ({
+        date: new Date(`2026-06-${String(14 - index).padStart(2, '0')}`),
+        count: 11,
+      }))
+
+      const beforePersistence = resolveQualifiedDateWindow(
+        alreadyPersisted.map(group => group.date),
+        {
+          candidateDate: newSnapshotDate,
+          candidateIsQualified: true,
+        },
+      )
+      const afterPersistence = resolveQualifiedDateWindow([
+        newSnapshotDate,
+        ...alreadyPersisted.map(group => group.date),
+      ])
+
+      // The new date is position 0, so offset 10 is 2026-06-05 in both cases.
+      expect(beforePersistence.qualifiedDatesDesc).toHaveLength(11)
+      expect(beforePersistence.comparisonDate).toEqual(new Date('2026-06-05'))
+      expect(afterPersistence.comparisonDate).toEqual(beforePersistence.comparisonDate)
+      expect(afterPersistence.latestDate).toEqual(newSnapshotDate)
     })
   })
 })

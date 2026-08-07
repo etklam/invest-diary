@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     const data = await $fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode.toUpperCase()}`)
     // date.nager.at may return 204/empty → ofetch resolves undefined; treat as service failure
     if (!Array.isArray(data)) {
-      log.warn({ year, countryCode }, 'holiday upstream returned non-array payload')
+      log.warn('holiday upstream returned non-array payload', { year, countryCode })
       throw Errors.externalServiceError('Failed to fetch holiday data').toH3Error()
     }
     return {

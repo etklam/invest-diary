@@ -21,7 +21,23 @@ function parseYyyyMmDd(dateStr: string): { year: number; month: number; day: num
   if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return null
   if (month < 1 || month > 12 || day < 1 || day > 31) return null
 
+  // Date.UTC() normalizes overflow (2026-02-31 → 2026-03-03), which is
+  // exactly the silent data corruption this boundary is meant to prevent.
+  const calendarDate = new Date(0)
+  calendarDate.setUTCFullYear(year, month - 1, day)
+  calendarDate.setUTCHours(12, 0, 0, 0)
+  if (
+    calendarDate.getUTCFullYear() !== year
+    || calendarDate.getUTCMonth() !== month - 1
+    || calendarDate.getUTCDate() !== day
+  ) return null
+
   return { year, month, day }
+}
+
+/** Return true only for a real Gregorian calendar date in YYYY-MM-DD form. */
+export function isValidYyyyMmDd(value: unknown): value is string {
+  return typeof value === 'string' && parseYyyyMmDd(value) !== null
 }
 
 // ─── 公開 API ─────────────────────────────────────────────────────────────────
@@ -36,9 +52,15 @@ function parseYyyyMmDd(dateStr: string): { year: number; month: number; day: num
  */
 export function toUtcNoonDate(input: string | Date): Date {
   if (typeof input === 'string') {
-    const parsedYmd = parseYyyyMmDd(input)
-    if (parsedYmd) {
-      return new Date(Date.UTC(parsedYmd.year, parsedYmd.month - 1, parsedYmd.day, 12, 0, 0, 0))
+    const datePart = /^(\d{4}-\d{2}-\d{2})(?:$|[Tt ])/u.exec(input)?.[1]
+    if (datePart) {
+      const parsedYmd = parseYyyyMmDd(datePart)
+      if (!parsedYmd) throw new Error('Invalid date input')
+
+      const normalized = new Date(0)
+      normalized.setUTCFullYear(parsedYmd.year, parsedYmd.month - 1, parsedYmd.day)
+      normalized.setUTCHours(12, 0, 0, 0)
+      return normalized
     }
   }
 

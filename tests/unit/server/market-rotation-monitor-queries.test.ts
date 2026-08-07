@@ -474,5 +474,26 @@ describe('server/utils/market-rotation-monitor-queries', () => {
       expect(seriesDates).toEqual(['2026-06-13', '2026-06-15'])
       expect(seriesDates).not.toContain('2026-06-14')
     })
+
+    it('uses the supplied canonical window without resolving a second date sequence', async () => {
+      const comparisonDate = new Date('2026-06-13')
+      const asOfDate = new Date('2026-06-15')
+      mockSnapshotFindMany.mockResolvedValue([
+        { symbol: 'XLK', date: comparisonDate, adjustedClose: dec(100), lastPrice: dec(100) },
+        { symbol: 'XLK', date: asOfDate, adjustedClose: dec(110), lastPrice: dec(110) },
+      ])
+
+      const result = await getMonitorTrendSeries(prisma as any, 'sectors', {
+        qualifiedDatesDesc: [asOfDate, comparisonDate],
+        latestDate: asOfDate,
+        comparisonDate,
+      })
+
+      expect(mockSnapshotGroupBy).not.toHaveBeenCalled()
+      expect(result.get('XLK')).toEqual([
+        { date: '2026-06-13', value: 100 },
+        { date: '2026-06-15', value: 110 },
+      ])
+    })
   })
 })

@@ -407,6 +407,7 @@
       "existingLoaded": "已載入該日期的既有日記",
       "checkExistingFailed": "無法檢查既有日記",
       "validationFailed": "交易記錄驗證失敗",
+      "positiveNumber": "數量與價格必須是大於 0 的有限數字",
       "sellNeedsSymbol": "賣出時必須輸入股票代碼",
       "sellNoHolding": "沒有 {symbol} 的持股可賣",
       "sellExceeds": "賣出數量（{qty}）超過持股數量（{available}）",

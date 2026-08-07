@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose'
+import { randomUUID } from 'node:crypto'
 
 export const ACCESS_TOKEN_EXPIRY = '1h' // 1 hour
 export const REFRESH_TOKEN_EXPIRY = '30d' // 30 days
@@ -11,6 +12,7 @@ export interface TokenPayload {
   role: string
   tokenVersion: number
   type: 'access' | 'refresh'
+  jti?: string
 }
 
 function getSecret() {
@@ -66,10 +68,12 @@ export async function signRefreshToken(
   userId: string,
   email: string,
   role: string,
-  tokenVersion: number
+  tokenVersion: number,
+  sessionId = randomUUID(),
 ): Promise<string> {
   return await new SignJWT({ userId, email, role, tokenVersion, type: 'refresh' })
     .setProtectedHeader({ alg: 'HS256' })
+    .setJti(sessionId)
     .setIssuedAt()
     .setExpirationTime(REFRESH_TOKEN_EXPIRY)
     .sign(getSecret())
@@ -86,6 +90,7 @@ export async function verifyToken(token: string): Promise<TokenPayload> {
     email: payload.email as string,
     role: payload.role as string,
     tokenVersion: payload.tokenVersion as number,
-    type: payload.type as 'access' | 'refresh'
+    type: payload.type as 'access' | 'refresh',
+    ...(typeof payload.jti === 'string' ? { jti: payload.jti } : {}),
   }
 }

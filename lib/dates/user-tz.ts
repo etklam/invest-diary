@@ -112,6 +112,40 @@ export interface UserDayRange {
   end: Date
 }
 
+/** Resolve a strict civil YYYY-MM-DD interval in a user's timezone. */
+export function getUserYmdDayRange(ymd: string, timeZone: string): UserDayRange {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd)
+  if (!match) throw new Error('Invalid date input')
+
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const date = new Date(0)
+  date.setUTCFullYear(year, month - 1, day)
+  date.setUTCHours(0, 0, 0, 0)
+  if (
+    date.getUTCFullYear() !== year
+    || date.getUTCMonth() !== month - 1
+    || date.getUTCDate() !== day
+  ) throw new Error('Invalid date input')
+
+  const nextDay = new Date(date)
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1)
+
+  return {
+    start: zonedPartsToUtc({ year, month, day, hour: 0, minute: 0, second: 0, millisecond: 0 }, timeZone),
+    end: zonedPartsToUtc({
+      year: nextDay.getUTCFullYear(),
+      month: nextDay.getUTCMonth() + 1,
+      day: nextDay.getUTCDate(),
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    }, timeZone),
+  }
+}
+
 /**
  * 取得涵蓋某個 UTC instant 所對應 user-local 「該天」的 UTC 區間。
  *

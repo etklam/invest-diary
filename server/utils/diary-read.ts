@@ -118,14 +118,11 @@ export async function findLatestDiaryForUser(userId: bigint) {
 
 // ---- List with filters (diaries.get.ts) ----
 
-const MAX_LIMIT = 100
-const DEFAULT_LIMIT = 20
-
-const DIARY_LIST_SORT_OPTIONS: Record<string, Record<string, 'asc' | 'desc'>> = {
-  'date-desc': { createdAt: 'desc' },
-  'date-asc': { createdAt: 'asc' },
-  'title-asc': { title: 'asc' },
-  'title-desc': { title: 'desc' },
+const DIARY_LIST_SORT_OPTIONS: Record<string, Prisma.DiaryOrderByWithRelationInput[]> = {
+  'date-desc': [{ date: 'desc' }, { id: 'desc' }],
+  'date-asc': [{ date: 'asc' }, { id: 'asc' }],
+  'title-asc': [{ title: 'asc' }, { id: 'asc' }],
+  'title-desc': [{ title: 'desc' }, { id: 'desc' }],
 }
 
 const DIARY_LIST_SELECT = {
@@ -228,7 +225,7 @@ export async function listDiariesForUser(
   filters: DiaryListFilters,
 ): Promise<{ items: DiaryListItem[]; total: number }> {
   const orderBy = (filters.sortBy && DIARY_LIST_SORT_OPTIONS[filters.sortBy])
-    ?? { createdAt: 'desc' as const }
+    ?? DIARY_LIST_SORT_OPTIONS['date-desc']
 
   const where: Prisma.DiaryWhereInput = { userId }
 

@@ -407,6 +407,7 @@
       "existingLoaded": "已加载该日期的既有日记",
       "checkExistingFailed": "无法检查既有日记",
       "validationFailed": "交易记录验证失败",
+      "positiveNumber": "数量与价格必须是大于 0 的有限数字",
       "sellNeedsSymbol": "卖出时必须输入股票代码",
       "sellNoHolding": "没有 {symbol} 的持股可卖",
       "sellExceeds": "卖出数量（{qty}）超过持股数量（{available}）",

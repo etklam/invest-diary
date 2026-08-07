@@ -10,11 +10,15 @@
  */
 
 import { toNumber, type DecimalLike } from '~/lib/market-rotation/decimal'
-import { isRankScope } from '~/lib/market-rotation/types'
+import { isRankScope, type RankScope } from '~/lib/market-rotation/types'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
 import {
+  COMPARISON_OFFSET,
+  isQualifiedSnapshotCount,
   loadQualifiedDatesForScope,
   pickComparisonDate,
+  resolveQualifiedDateWindow,
+  type QualifiedDateWindow,
 } from '~/lib/market-rotation/qualified-date'
 
 // ─── Interfaces ────────────────────────────────────────────────────────────
@@ -74,6 +78,22 @@ export interface SnapshotUpsertRow {
   rankDelta2W: number | null
   signal: string | null
   signalStatus: string
+}
+
+export interface ComparisonWindowCandidate {
+  date: Date
+  snapshotCount: number
+}
+
+export interface ComparisonWindowOptions {
+  /** Candidate snapshots produced by the current batch before persistence. */
+  candidate?: ComparisonWindowCandidate | null
+  /** Qualified-date offset; defaults to the accepted 2W offset (10). */
+  offset?: number
+}
+
+export interface MarketRotationComparisonWindow extends QualifiedDateWindow {
+  rankScope: RankScope
 }
 
 interface MarketRotationPrisma {
@@ -173,6 +193,41 @@ export async function getLatestQualifiedDate(
 }
 
 /**
+ * Resolve one canonical qualified-date window for a Rank Scope.
+ *
+ * When a batch supplies a candidate date, its successful snapshot count is
+ * checked against the same scope threshold before it is inserted into the
+ * sequence. This is what lets pre-persistence snapshot generation and
+ * post-persistence monitor reads select the same comparison boundary.
+ */
+export async function getComparisonWindow(
+  prisma: MarketRotationPrisma,
+  rankScope: RankScope,
+  options: ComparisonWindowOptions = {},
+): Promise<MarketRotationComparisonWindow> {
+  const universe = getUniverseForScope(rankScope)
+  const qualifiedDates = await loadQualifiedDatesForScope(
+    prisma,
+    rankScope,
+    universe.length,
+    universe.map(entry => entry.symbol),
+  )
+  const candidate = options.candidate
+
+  const window = resolveQualifiedDateWindow(qualifiedDates, {
+    candidateDate: candidate?.date,
+    candidateIsQualified: candidate != null
+      && isQualifiedSnapshotCount(candidate.snapshotCount, universe.length),
+    offset: options.offset ?? COMPARISON_OFFSET,
+  })
+
+  return {
+    rankScope,
+    ...window,
+  }
+}
+
+/**
  * getComparisonDate
  *
  * Gets the date at `offset` position from the list of fully qualified dates
@@ -200,8 +255,14 @@ export async function getLatestQualifiedDate(
 export async function getComparisonDate(
   prisma: MarketRotationPrisma,
   rankScope: string,
-  offset: number,
+  offset: number = COMPARISON_OFFSET,
+  options: ComparisonWindowOptions = {},
 ): Promise<Date | null> {
+  if (isRankScope(rankScope)) {
+    const window = await getComparisonWindow(prisma, rankScope, { ...options, offset })
+    return window.comparisonDate
+  }
+
   const universe = isRankScope(rankScope) ? getUniverseForScope(rankScope) : []
   const universeSymbols = universe.map(entry => entry.symbol)
 

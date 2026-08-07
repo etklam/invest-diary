@@ -189,20 +189,17 @@ describe('user-queries', () => {
       })
     })
 
-    it('falls back to update on P2002 unique collision', async () => {
+    it('does not overwrite another session on P2002 unique collision', async () => {
       const { Prisma } = await import('@prisma/client')
       const prismaError = new Prisma.PrismaClientKnownRequestError('unique violation', {
         code: 'P2002',
         clientVersion: 'test',
       })
       mockRefreshTokenCreate.mockRejectedValue(prismaError)
-      mockRefreshTokenUpdate.mockResolvedValue({ id: 1n })
 
-      await createRefreshToken(USER_ID, 'collide')
+      await expect(createRefreshToken(USER_ID, 'collide')).rejects.toBe(prismaError)
 
-      expect(mockRefreshTokenUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { token: 'hash(collide)' } }),
-      )
+      expect(mockRefreshTokenUpdate).not.toHaveBeenCalled()
     })
 
     it('rethrows non-P2002 errors', async () => {

@@ -1,4 +1,6 @@
 import { logger } from '~/lib/logger'
+import { Errors } from '~/lib/errors/factory'
+import { getUtcDayRange, isValidYyyyMmDd } from '~/lib/dates/normalize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { serialize } from '~/server/utils/serialize'
@@ -11,6 +13,16 @@ import {
 // already-shaped filters object so it stays a pure query function.
 const MAX_LIMIT = 100
 const DEFAULT_LIMIT = 20
+
+function parseDiaryFilterDate(value: unknown, field: 'dateFrom' | 'dateTo'): Date | undefined {
+  if (value === undefined || value === null || value === '') return undefined
+  if (typeof value !== 'string' || !isValidYyyyMmDd(value)) {
+    throw Errors.validationError([{ field, message: 'Date must be a valid YYYY-MM-DD calendar date' }])
+  }
+
+  const range = getUtcDayRange(value)
+  return field === 'dateFrom' ? range.startOfDayUtc : range.endOfDayUtc
+}
 
 export default defineEventHandler(async (event) => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -43,16 +55,12 @@ export default defineEventHandler(async (event) => {
     const sortBy = typeof query.sortBy === 'string' && query.sortBy ? query.sortBy : undefined
     const reviewStatus = typeof query.reviewStatus === 'string' ? query.reviewStatus : undefined
 
-    // Date range (YYYY-MM-DD → UTC day boundaries)
-    let dateFrom: Date | undefined
-    let dateTo: Date | undefined
-    if (typeof query.dateFrom === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(query.dateFrom)) {
-      const [y, m, d] = query.dateFrom.split('-').map(Number)
-      dateFrom = new Date(Date.UTC(y!, m! - 1, d!, 0, 0, 0, 0))
-    }
-    if (typeof query.dateTo === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(query.dateTo)) {
-      const [y, m, d] = query.dateTo.split('-').map(Number)
-      dateTo = new Date(Date.UTC(y!, m! - 1, d!, 23, 59, 59, 999))
+    // Date range (strict YYYY-MM-DD → UTC day boundaries)
+    const dateFrom = parseDiaryFilterDate(query.dateFrom, 'dateFrom')
+    const dateTo = parseDiaryFilterDate(query.dateTo, 'dateTo')
+    if (typeof query.dateFrom === 'string' && typeof query.dateTo === 'string'
+      && query.dateFrom > query.dateTo) {
+      throw Errors.validationError([{ field: 'dateTo', message: 'dateTo must be on or after dateFrom' }])
     }
 
     const filters: DiaryListFilters = {

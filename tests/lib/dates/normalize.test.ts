@@ -27,6 +27,14 @@ describe('toUtcNoonDate', () => {
     expect(() => toUtcNoonDate('invalid')).toThrow('Invalid date input')
   })
 
+  it.each(['2026-02-29', '2026-02-31', '2026-04-31'])('拒絕不存在的日曆日期 %s', (value) => {
+    expect(() => toUtcNoonDate(value)).toThrow('Invalid date input')
+  })
+
+  it('接受閏年二月二十九日', () => {
+    expect(toUtcNoonDate('2024-02-29').toISOString()).toBe('2024-02-29T12:00:00.000Z')
+  })
+
   it('應處理跨月日期', () => {
     const normalized = toUtcNoonDate('2026-01-01')
     expect(normalized.toISOString()).toBe('2026-01-01T12:00:00.000Z')

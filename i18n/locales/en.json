@@ -407,6 +407,7 @@
       "existingLoaded": "Loaded the existing entry for this date",
       "checkExistingFailed": "Could not check for an existing entry",
       "validationFailed": "Transaction validation failed",
+      "positiveNumber": "Quantity and price must be finite numbers greater than 0",
       "sellNeedsSymbol": "Symbol is required to sell",
       "sellNoHolding": "No {symbol} holdings to sell",
       "sellExceeds": "Sell quantity ({qty}) exceeds holdings ({available})",

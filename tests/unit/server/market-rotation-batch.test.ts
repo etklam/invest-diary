@@ -6,7 +6,7 @@ import { ensureCanonicalPrices, runScopeBatch, runFullBatch } from '~/server/uti
 // Mock the query functions
 vi.mock('~/server/utils/market-rotation-queries', () => ({
   getHistoricalPrices: vi.fn(),
-  getComparisonDate: vi.fn(),
+  getComparisonWindow: vi.fn(),
   getComparisonSnapshots: vi.fn(),
   upsertSnapshots: vi.fn(),
 }))
@@ -16,7 +16,7 @@ vi.mock('~/lib/market-rotation/pipeline', () => ({
   runSnapshotPipeline: vi.fn(),
 }))
 
-import { getHistoricalPrices, getComparisonDate, getComparisonSnapshots, upsertSnapshots } from '~/server/utils/market-rotation-queries'
+import { getHistoricalPrices, getComparisonWindow, getComparisonSnapshots, upsertSnapshots } from '~/server/utils/market-rotation-queries'
 import { runSnapshotPipeline } from '~/lib/market-rotation/pipeline'
 
 function makePrisma() {
@@ -50,7 +50,12 @@ describe('runScopeBatch', () => {
 
     // Mock: comparison date found
     const compDate = new Date('2026-05-22')
-    vi.mocked(getComparisonDate).mockResolvedValue(compDate)
+    vi.mocked(getComparisonWindow).mockResolvedValue({
+      rankScope: 'sectors',
+      qualifiedDatesDesc: [new Date('2099-09-17'), compDate],
+      latestDate: new Date('2099-09-17'),
+      comparisonDate: compDate,
+    })
 
     // Mock: comparison snapshots
     vi.mocked(getComparisonSnapshots).mockResolvedValue([
@@ -136,6 +141,12 @@ describe('runScopeBatch', () => {
     // Verify pipeline was called with symbol prices
     expect(runSnapshotPipeline).toHaveBeenCalled()
     expect(getHistoricalPrices).toHaveBeenCalledWith(prisma, 'XLK', 252)
+    expect(getComparisonWindow).toHaveBeenCalledWith(prisma, 'sectors', {
+      candidate: {
+        date: new Date('2099-09-17'),
+        snapshotCount: 11,
+      },
+    })
     const [symbolPrices, comparisonSnaps] = vi.mocked(runSnapshotPipeline).mock.calls[0]
     expect(symbolPrices.length).toBeGreaterThan(0)
     expect(comparisonSnaps).toBeDefined()
@@ -156,7 +167,12 @@ describe('runScopeBatch', () => {
       })
     })
 
-    vi.mocked(getComparisonDate).mockResolvedValue(null)
+    vi.mocked(getComparisonWindow).mockResolvedValue({
+      rankScope: 'sectors',
+      qualifiedDatesDesc: [],
+      latestDate: null,
+      comparisonDate: null,
+    })
     vi.mocked(runSnapshotPipeline).mockReturnValue({
       latest: [],
       snapshots: [],
@@ -180,7 +196,12 @@ describe('runScopeBatch', () => {
         return { date: d, close: 100 + i, adjustedClose: 100 + i }
       }),
     ])
-    vi.mocked(getComparisonDate).mockResolvedValue(null)
+    vi.mocked(getComparisonWindow).mockResolvedValue({
+      rankScope: 'sectors',
+      qualifiedDatesDesc: [],
+      latestDate: null,
+      comparisonDate: null,
+    })
     vi.mocked(runSnapshotPipeline).mockReturnValue({
       latest: [{ symbol: 'XLK', signal: null, signalStatus: 'insufficient_data' }],
       snapshots: [],
@@ -329,7 +350,12 @@ describe('runFullBatch', () => {
         return { date: d, close: 100 + i, adjustedClose: 100 + i }
       }),
     ])
-    vi.mocked(getComparisonDate).mockResolvedValue(null)
+    vi.mocked(getComparisonWindow).mockResolvedValue({
+      rankScope: 'sectors',
+      qualifiedDatesDesc: [],
+      latestDate: null,
+      comparisonDate: null,
+    })
     vi.mocked(runSnapshotPipeline).mockReturnValue({
       latest: [{ symbol: 'TEST', signal: null, signalStatus: 'insufficient_data' }],
       snapshots: [],

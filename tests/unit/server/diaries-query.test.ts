@@ -132,43 +132,43 @@ describe('GET /api/diaries handler — filter/sort integration', () => {
     expect(call.where.date.lte).toBeDefined()
   })
 
-  it('passes sortBy=date-asc as orderBy { createdAt: asc }', async () => {
+  it('passes sortBy=date-asc as Diary date + id order', async () => {
     mockGetQuery.mockReturnValue({ sortBy: 'date-asc' })
     const handler = await getHandler()
 
     await handler({ context: { user: { id: '1' }, requestId: 'req-sort' } })
 
     const call = mockDiaryFindMany.mock.calls[0][0]
-    expect(call.orderBy).toEqual({ createdAt: 'asc' })
+    expect(call.orderBy).toEqual([{ date: 'asc' }, { id: 'asc' }])
   })
 
-  it('passes sortBy=title-asc as orderBy { title: asc }', async () => {
+  it('passes sortBy=title-asc with a stable id tie-breaker', async () => {
     mockGetQuery.mockReturnValue({ sortBy: 'title-asc' })
     const handler = await getHandler()
 
     await handler({ context: { user: { id: '1' }, requestId: 'req-title-asc' } })
 
     const call = mockDiaryFindMany.mock.calls[0][0]
-    expect(call.orderBy).toEqual({ title: 'asc' })
+    expect(call.orderBy).toEqual([{ title: 'asc' }, { id: 'asc' }])
   })
 
-  it('passes sortBy=title-desc as orderBy { title: desc }', async () => {
+  it('passes sortBy=title-desc with a stable id tie-breaker', async () => {
     mockGetQuery.mockReturnValue({ sortBy: 'title-desc' })
     const handler = await getHandler()
 
     await handler({ context: { user: { id: '1' }, requestId: 'req-title-desc' } })
 
     const call = mockDiaryFindMany.mock.calls[0][0]
-    expect(call.orderBy).toEqual({ title: 'desc' })
+    expect(call.orderBy).toEqual([{ title: 'desc' }, { id: 'desc' }])
   })
 
-  it('defaults orderBy to { createdAt: desc } when no sortBy', async () => {
+  it('defaults orderBy to Diary date descending with an id tie-breaker', async () => {
     const handler = await getHandler()
 
     await handler({ context: { user: { id: '1' }, requestId: 'req-default' } })
 
     const call = mockDiaryFindMany.mock.calls[0][0]
-    expect(call.orderBy).toEqual({ createdAt: 'desc' })
+    expect(call.orderBy).toEqual([{ date: 'desc' }, { id: 'desc' }])
   })
 
   it('falls back to default sort for invalid sortBy', async () => {
@@ -178,7 +178,7 @@ describe('GET /api/diaries handler — filter/sort integration', () => {
     await handler({ context: { user: { id: '1' }, requestId: 'req-invalid' } })
 
     const call = mockDiaryFindMany.mock.calls[0][0]
-    expect(call.orderBy).toEqual({ createdAt: 'desc' })
+    expect(call.orderBy).toEqual([{ date: 'desc' }, { id: 'desc' }])
   })
 
   it('ignores empty search string', async () => {
@@ -191,24 +191,22 @@ describe('GET /api/diaries handler — filter/sort integration', () => {
     expect(call.where.OR).toBeUndefined()
   })
 
-  it('ignores invalid dateFrom', async () => {
-    mockGetQuery.mockReturnValue({ dateFrom: 'not-a-date' })
+  it('rejects invalid dateFrom', async () => {
+    mockGetQuery.mockReturnValue({ dateFrom: '2026-02-31' })
     const handler = await getHandler()
 
-    await handler({ context: { user: { id: '1' }, requestId: 'req-bad-from' } })
-
-    const call = mockDiaryFindMany.mock.calls[0][0]
-    expect(call.where.date).toBeUndefined()
+    await expect(handler({ context: { user: { id: '1' }, requestId: 'req-bad-from' } })).rejects.toMatchObject({
+      statusCode: 400,
+    })
   })
 
-  it('ignores invalid dateTo', async () => {
-    mockGetQuery.mockReturnValue({ dateTo: 'yesterday' })
+  it('rejects invalid dateTo', async () => {
+    mockGetQuery.mockReturnValue({ dateTo: '2026-04-31' })
     const handler = await getHandler()
 
-    await handler({ context: { user: { id: '1' }, requestId: 'req-bad-to' } })
-
-    const call = mockDiaryFindMany.mock.calls[0][0]
-    expect(call.where.date).toBeUndefined()
+    await expect(handler({ context: { user: { id: '1' }, requestId: 'req-bad-to' } })).rejects.toMatchObject({
+      statusCode: 400,
+    })
   })
 
   it('preserves existing days filter alongside new filters', async () => {

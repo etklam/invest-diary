@@ -9,6 +9,7 @@ import { persistAlerts, replaceAlerts } from '~/server/utils/alert-persistence'
 import {
   calculateLedgerHoldings,
   validateTransactionLedger,
+  validateTransactionValues,
   type HoldingsInput,
 } from '~/lib/diary-authoring/validation'
 
@@ -44,6 +45,18 @@ export interface DiaryValidationOptions {
   baselineAvailable?: boolean
 }
 
+/** Prisma's unique constraint error, kept structural so this module remains testable without a DB client. */
+export function isUniqueConstraintError(error: unknown): boolean {
+  return typeof error === 'object'
+    && error !== null
+    && 'code' in error
+    && (error as { code?: unknown }).code === 'P2002'
+}
+
+function diaryDateLabel(date: Date): string {
+  return date.toISOString().slice(0, 10)
+}
+
 /**
  * Validate diary input shared by both create and update.
  * Throws validation error if title is missing or transactions are invalid.
@@ -56,6 +69,15 @@ export function validateDiaryInput(
   if (!title) {
     throw Errors.validationError([{ field: 'title', message: 'Title is required' }])
   }
+
+  const valueError = validateTransactionValues(transactions ?? [], { requirePrice: true })
+  if (valueError) {
+    throw Errors.validationError([{
+      field: `transactions.${valueError.index}.${valueError.field}`,
+      message: valueError.message,
+    }])
+  }
+
   if (options.baselineAvailable === false) return
 
   const transactionError = validateTransactionLedger(
@@ -152,14 +174,15 @@ function normalizeDecimalWrite(
   value: Prisma.Decimal | number | string,
   field: 'quantity' | 'price',
 ): Prisma.Decimal | number {
-  if (typeof value !== 'string') return value
-
   const numberValue = Number(value)
-  if (!Number.isFinite(numberValue)) {
-    throw Errors.validationError([{ field: `transactions.${field}`, message: `${field} must be a finite number` }])
+  if (!Number.isFinite(numberValue) || numberValue <= 0) {
+    throw Errors.validationError([{
+      field: `transactions.${field}`,
+      message: `${field} must be a finite number greater than 0`,
+    }])
   }
 
-  return numberValue
+  return typeof value === 'string' ? numberValue : value
 }
 
 export interface ResolvedTransactionUpdate {
@@ -264,14 +287,20 @@ export interface CreateDiaryForUserInput {
   createdByLabel?: string | null
 }
 
+function normalizeDiaryDate(value: string | Date | undefined): Date {
+  try {
+    return value === undefined ? toUtcNoonDate(new Date()) : toUtcNoonDate(value)
+  } catch {
+    throw Errors.validationError([{ field: 'date', message: 'date must be a valid calendar date' }])
+  }
+}
+
 export async function createDiaryForUser(input: CreateDiaryForUserInput): Promise<Diary> {
   const userId = typeof input.userId === 'bigint' ? input.userId : BigInt(input.userId)
   const { body } = input
 
-  // Validate in original order: title → content → transactions
-  if (!body.title) {
-    throw Errors.validationError([{ field: 'title', message: 'Title is required' }])
-  }
+  // Validate before any read/write so malformed rows cannot reach persistence.
+  validateDiaryInput(body.title, body.transactions, { baselineAvailable: false })
 
   if (!body.content) {
     throw Errors.validationError([{ field: 'content', message: 'Content is required' }])
@@ -279,7 +308,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
 
   const { title, content, date, transactions, alerts, appendToToday, tags, thesis, risk, execution, reviewDueAt } = body
 
-  const diaryDate = date ? toUtcNoonDate(date) : toUtcNoonDate(new Date())
+  const diaryDate = normalizeDiaryDate(date)
   const { startOfDayUtc, endOfDayUtc } = getUtcDayRange(diaryDate)
 
   const existingDiary = await prisma.diary.findFirst({
@@ -293,24 +322,68 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
   })
 
   if (existingDiary && appendToToday) {
+    // Appending is still a real diary write: validate the incoming ledger
+    // rows before touching the existing aggregate, and persist new child
+    // rows in the same transaction as the content merge.
+    await validateDiaryTransactionsForUser(userId, diaryDate, transactions)
+
     const separator = '\n\n---\n\n'
     const mergedTags = tags?.length
       ? normalizeDiaryTags([...parseDiaryTags(existingDiary.tagsString), ...tags])
       : null
 
-    const updatedDiary = await prisma.diary.update({
-      where: { id: existingDiary.id },
-      data: {
-        content: `${existingDiary.content ?? ''}${separator}${content}`,
-        ...(mergedTags ? { tagsString: stringifyDiaryTags(mergedTags) } : {}),
-      },
-      include: {
-        transactions: true,
-        alerts: true,
-      },
-    })
+    const appendData = {
+      content: `${existingDiary.content ?? ''}${separator}${content}`,
+      ...(mergedTags ? { tagsString: stringifyDiaryTags(mergedTags) } : {}),
+    }
+    const hasChildWrites = Boolean(transactions?.length || alerts?.length)
 
-    return attachDiaryTags(updatedDiary as Diary)
+    try {
+      if (!hasChildWrites) {
+        const updatedDiary = await prisma.diary.update({
+          where: { id: existingDiary.id },
+          data: appendData,
+          include: {
+            transactions: true,
+            alerts: true,
+          },
+        })
+        return attachDiaryTags(updatedDiary as Diary)
+      }
+
+      const updatedDiary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        for (const transaction of transactions ?? []) {
+          await tx.transaction.create({
+            data: {
+              ...mapTransactionWriteData(transaction),
+              userId,
+              diaryId: existingDiary.id,
+            },
+          })
+        }
+
+        if (alerts?.length) {
+          const timezone = await resolveUserTimezone(tx, userId)
+          await persistAlerts(tx, existingDiary.id, alerts, timezone)
+        }
+
+        return tx.diary.update({
+          where: { id: existingDiary.id },
+          data: appendData,
+          include: {
+            transactions: true,
+            alerts: true,
+          },
+        })
+      })
+
+      return attachDiaryTags(updatedDiary as Diary)
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw Errors.diaryAlreadyExists(diaryDateLabel(diaryDate))
+      }
+      throw error
+    }
   }
 
   if (existingDiary) {
@@ -348,20 +421,28 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
     },
   }
 
-  if (alerts) {
-    const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const createdDiary = await tx.diary.create(diaryCreateArgs)
-      const timezone = await resolveUserTimezone(tx, userId)
-      const persistedAlerts = await persistAlerts(tx, createdDiary.id, alerts, timezone)
-      return { ...createdDiary, alerts: persistedAlerts }
-    })
+  try {
+    if (alerts) {
+      const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        const createdDiary = await tx.diary.create(diaryCreateArgs)
+        const timezone = await resolveUserTimezone(tx, userId)
+        const persistedAlerts = await persistAlerts(tx, createdDiary.id, alerts, timezone)
+        return { ...createdDiary, alerts: persistedAlerts }
+      })
 
+      return attachDiaryTags(diary as Diary)
+    }
+
+    const diary = await prisma.diary.create(diaryCreateArgs)
     return attachDiaryTags(diary as Diary)
+  } catch (error) {
+    // The database constraint is the authority for concurrent creates. The
+    // application preflight above is only a fast UX path.
+    if (isUniqueConstraintError(error)) {
+      throw Errors.diaryAlreadyExists(diaryDateLabel(diaryDate))
+    }
+    throw error
   }
-
-  const diary = await prisma.diary.create(diaryCreateArgs)
-
-  return attachDiaryTags(diary as Diary)
 }
 
 // ---- Update diary ----
@@ -388,7 +469,7 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
 
   // --- Scalar validation ---
 
-  validateDiaryInput(body.title, undefined, { baselineAvailable: false })
+  validateDiaryInput(body.title, body.transactions, { baselineAvailable: false })
 
   // --- Ownership check ---
   // SQL-level ownership filter collapses not-found and not-owned into a
@@ -403,8 +484,24 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
   }
 
   const targetDiaryDate = body.date
-    ? toUtcNoonDate(body.date)
+    ? normalizeDiaryDate(body.date)
     : (existingDiary.date ?? new Date())
+
+  if (body.date) {
+    const { startOfDayUtc, endOfDayUtc } = getUtcDayRange(targetDiaryDate)
+    const occupiedDiary = await prisma.diary.findFirst({
+      where: {
+        userId,
+        id: { not: diaryId },
+        date: { gte: startOfDayUtc, lte: endOfDayUtc },
+      },
+      select: { id: true },
+    })
+    if (occupiedDiary) {
+      throw Errors.diaryAlreadyExists(diaryDateLabel(targetDiaryDate))
+    }
+  }
+
   await validateDiaryTransactionsForUser(userId, targetDiaryDate, body.transactions, diaryId)
 
   // --- Diff transactions ---
@@ -413,36 +510,43 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
 
   // --- Persist inside a Prisma transaction ---
 
-  const { title, content, date, alerts, tags, thesis, risk, execution, reviewDueAt, reviewStatus, reviewedAt } = body
+  const { title, content, alerts, tags, thesis, risk, execution, reviewDueAt, reviewStatus, reviewedAt } = body
 
-  const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await persistTransactionDiff(tx, diaryId, userId, diff)
-    const timezone = await resolveUserTimezone(tx, userId)
-    await replaceAlerts(tx, diaryId, alerts, timezone)
+  try {
+    const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await persistTransactionDiff(tx, diaryId, userId, diff)
+      const timezone = await resolveUserTimezone(tx, userId)
+      await replaceAlerts(tx, diaryId, alerts, timezone)
 
-    // Update the diary record
-    return await tx.diary.update({
-      where: { id: diaryId },
-      data: {
-        title,
-        content,
-        tagsString: tags !== undefined ? stringifyDiaryTags(tags) : undefined,
-        date: date ? toUtcNoonDate(date) : undefined,
-        ...(thesis !== undefined ? { thesis } : {}),
-        ...(risk !== undefined ? { risk } : {}),
-        ...(execution !== undefined ? { execution } : {}),
-        ...(reviewDueAt !== undefined ? { reviewDueAt: reviewDueAt ? new Date(reviewDueAt) : null } : {}),
-        ...(reviewStatus !== undefined ? { reviewStatus } : {}),
-        ...(reviewedAt !== undefined ? { reviewedAt: reviewedAt ? new Date(reviewedAt) : null } : {}),
-      },
-      include: {
-        transactions: true,
-        alerts: true,
-      },
+      // Update the diary record
+      return await tx.diary.update({
+        where: { id: diaryId },
+        data: {
+          title,
+          content,
+          tagsString: tags !== undefined ? stringifyDiaryTags(tags) : undefined,
+          date: body.date ? targetDiaryDate : undefined,
+          ...(thesis !== undefined ? { thesis } : {}),
+          ...(risk !== undefined ? { risk } : {}),
+          ...(execution !== undefined ? { execution } : {}),
+          ...(reviewDueAt !== undefined ? { reviewDueAt: reviewDueAt ? new Date(reviewDueAt) : null } : {}),
+          ...(reviewStatus !== undefined ? { reviewStatus } : {}),
+          ...(reviewedAt !== undefined ? { reviewedAt: reviewedAt ? new Date(reviewedAt) : null } : {}),
+        },
+        include: {
+          transactions: true,
+          alerts: true,
+        },
+      })
     })
-  })
 
-  return attachDiaryTags(diary as Diary)
+    return attachDiaryTags(diary as Diary)
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      throw Errors.diaryAlreadyExists(diaryDateLabel(targetDiaryDate))
+    }
+    throw error
+  }
 }
 
 // ---- Delete diary ----

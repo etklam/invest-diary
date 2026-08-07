@@ -24,7 +24,6 @@ import type { RankScope } from '~/lib/market-rotation/types'
 import { buildMarketRotationMonitorPayload } from '~/lib/market-rotation/monitor'
 import { generateMarketSummary } from '~/lib/market-rotation/summary'
 import { decideBetaAllocation } from '~/lib/beta-allocation/policy'
-import { getComparisonDate } from '~/server/utils/market-rotation-queries'
 import {
   getLatestMonitorRows,
   resolveMarketState,
@@ -53,7 +52,7 @@ export default defineEventHandler(async (event) => {
 
     // Step 1: Load latest monitor rows for the requested scope
     const rankScope: RankScope = scopeRaw
-    const { rows, asOfDate } = await getLatestMonitorRows(prisma, rankScope)
+    const { rows, asOfDate, comparisonWindow } = await getLatestMonitorRows(prisma, rankScope)
     const { rows: sectorSummaryRows } = rankScope === 'sectors'
       ? { rows }
       : await getLatestMonitorRows(prisma, 'sectors')
@@ -66,19 +65,15 @@ export default defineEventHandler(async (event) => {
     // Step 2: Resolve market state (from market_breadth_daily regime)
     const marketState = await resolveMarketState(prisma)
 
-    // Step 3: Derive comparison date from the rows we already loaded.
-    // getMonitorComparisonDate used to re-query the same rows just to check
-    // for non-null rankDelta2W; we read it off `rows` instead and only pay
-    // for the qualified-date groupBy when comparison data actually exists.
-    const hasComparisonData = rows.some(r => r.rankDelta2W != null)
-    let comparisonDate: string | null = null
-    if (hasComparisonData) {
-      const comparisonDateRaw = await getComparisonDate(prisma, rankScope, 10)
-      comparisonDate = comparisonDateRaw ? toDateString(comparisonDateRaw) : null
-    }
+    // Step 3: Use the same qualified-date window that selected the latest
+    // rows. This keeps persisted deltas, metadata, and trend data on one
+    // canonical comparison boundary for the Rank Scope.
+    const comparisonDate = comparisonWindow.comparisonDate
+      ? toDateString(comparisonWindow.comparisonDate)
+      : null
 
     const trendSeries = comparisonDate
-      ? await getMonitorTrendSeries(prisma, rankScope, new Date(comparisonDate), asOfDate!)
+      ? await getMonitorTrendSeries(prisma, rankScope, comparisonWindow)
       : new Map()
     const rowsWithTrend = rows.map(row => ({
       ...row,

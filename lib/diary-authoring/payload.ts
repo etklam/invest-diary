@@ -3,7 +3,9 @@ import type { DiaryAuthoringForm, DiaryAuthoringPayload } from './types'
 
 function finiteNumber(value: unknown, field: string): number {
   const numberValue = Number(value)
-  if (!Number.isFinite(numberValue)) throw new Error(`${field} must be a finite number`)
+  if (!Number.isFinite(numberValue) || numberValue <= 0) {
+    throw new Error(`${field} must be a finite number greater than 0`)
+  }
   return numberValue
 }
 

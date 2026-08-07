@@ -76,6 +76,7 @@ async function main() {
       userId: user1.id,
       title: '市場分析 - 2025年2月',
       content: '# AAPL 分析\n\n蘋果公司今日表現強勁，財報超出預期。\n\n## 重點\n- 營收成長 15%\n- iPhone 銷量創新高\n\n## 未來展望\n預計下季持續看好。',
+      date: new Date('2025-02-01T12:00:00.000Z'),
       transactions: {
         create: [
           {
@@ -114,6 +115,7 @@ async function main() {
       userId: user1.id,
       title: '投資策略調整',
       content: '決定增加科技股比重，減少傳統產業配置。',
+      date: new Date('2025-02-05T12:00:00.000Z'),
       transactions: {
         create: [
           {
@@ -152,6 +154,7 @@ async function main() {
       userId: user1.id,
       title: '獲利了結',
       content: '今日賣出部分 TSLA 持股，獲利 20%。',
+      date: new Date('2025-02-10T12:00:00.000Z'),
       transactions: {
         create: [
           {
@@ -173,6 +176,7 @@ async function main() {
       userId: user2.id,
       title: '用戶2的投資日記',
       content: '這是用戶2的私人日記，用戶1不應該看到。',
+      date: new Date('2025-02-15T12:00:00.000Z'),
       transactions: {
         create: [
           {

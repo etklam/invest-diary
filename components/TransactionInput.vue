@@ -64,7 +64,7 @@
               v-model.number="transaction.quantity"
               @input="validateTransaction(index)"
               step="0.0001"
-              min="0"
+              min="0.0001"
               :class="[inputClass, getValidationError(transaction) ? 'border-dt-danger focus:border-dt-danger' : '']"
               class="font-mono"
             />
@@ -76,8 +76,9 @@
               type="number"
               :id="`price-${index}`"
               v-model.number="transaction.price"
+              @input="validateTransaction(index)"
               step="0.01"
-              min="0"
+              min="0.0001"
               :class="inputClass"
               class="font-mono"
             />
@@ -199,6 +200,7 @@ import { computed, ref, watch } from 'vue'
 import {
   calculateLedgerHoldings,
   holdingBeforeTransaction,
+  validateTransactionValues,
 } from '~/lib/diary-authoring/validation'
 import type {
   DiaryAuthoringLedgerContext,
@@ -298,8 +300,11 @@ const validateTransaction = (index: number) => {
 
   const errors: string[] = []
 
+  const valueError = validateTransactionValues([tx], { requirePrice: true })
+  if (valueError) errors.push(t('diary.form.positiveNumber'))
+
   // Validate SELL transactions
-  if (tx.type === 'SELL') {
+  if (errors.length === 0 && tx.type === 'SELL') {
     const symbol = tx.symbol?.trim()
 
     if (!symbol) {

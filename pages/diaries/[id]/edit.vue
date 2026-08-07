@@ -23,7 +23,43 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">編輯日記</h1>
     </div>
 
-    <form @submit.prevent="saveDiary" class="space-y-8">
+    <div
+      v-if="pendingConflict"
+      role="dialog"
+      aria-modal="true"
+      data-testid="diary-date-conflict"
+      class="space-y-4 rounded-md border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950/30"
+    >
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('quickDiary.errors.diaryExists') }}</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{{ $t('diary.form.existingLoaded') }}</p>
+      </div>
+      <div class="flex flex-wrap justify-end gap-3">
+        <button type="button" class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white" @click="resolveDateConflict('edit')">
+          {{ $t('common.edit') }}
+        </button>
+        <button type="button" class="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:text-gray-200" @click="resolveDateConflict('append')">
+          {{ $t('quickDiary.appendDiary') }}
+        </button>
+        <button type="button" class="inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300" @click="resolveDateConflict('cancel')">
+          {{ $t('common.cancel') }}
+        </button>
+      </div>
+    </div>
+
+    <div
+      v-if="dateLookupError"
+      role="alert"
+      data-testid="diary-date-lookup-error"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-700 dark:bg-red-950/30 dark:text-red-200"
+    >
+      <span>{{ $t('diary.form.checkExistingFailed') }}</span>
+      <button type="button" class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium dark:border-gray-600" @click="retryDateLookup">
+        {{ $t('common.retry') }}
+      </button>
+    </div>
+
+    <form v-if="!pendingConflict" @submit.prevent="saveDiary" class="space-y-8">
       <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
@@ -32,6 +68,7 @@
               type="date"
               id="diary-date"
               v-model="form.date"
+              :disabled="Boolean(pendingConflict)"
               class="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
             />
           </div>
@@ -125,7 +162,8 @@
 
       <div class="flex justify-end space-x-3">
         <NuxtLink
-          :to="`/diaries/${id}`"
+          :to="`/diaries/${currentDiaryId || routeId}`"
+          @click.prevent="cancelEditing"
           class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
         >
           取消
@@ -145,6 +183,7 @@
 
 <script setup lang="ts">
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
+import { showDisciplineToast } from '~/composables/useDiscipline'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 import {
   createEmptyDiaryAuthoringForm,
@@ -154,6 +193,10 @@ import { buildDiaryAuthoringPayload } from '~/lib/diary-authoring/payload'
 import type { DiaryAuthoringForm } from '~/lib/diary-authoring/types'
 import { validateDiaryDraft } from '~/lib/diary-authoring/validation'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
+import {
+  createLatestLookupGate,
+  useDiaryDraftGuard,
+} from '~/lib/diary-authoring/draft-guard'
 
 definePageMeta({
   middleware: 'auth'
@@ -161,27 +204,163 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
-const id = route.params.id
+const routeId = String(route.params.id)
 const saving = ref(false)
 const toast = useToast()
 const { t } = useI18n()
 const { runWithAuthRecovery } = useAuthRecovery()
 const { getTodayDateString, getTimezone } = useTimezone()
+const checkingDate = ref(false)
+const dateLookupError = ref(false)
+const pendingConflict = ref<{ date: string; diary: Record<string, any> } | null>(null)
+const appendToExisting = ref(false)
+const currentDiaryId = ref<string | null>(routeId)
+const committedDate = ref(getTodayDateString())
+const latestDateLookup = createLatestLookupGate()
+const ignoreDateWatchFor = ref<string | null>(null)
 
 // Fetch disciplines for trade discipline checking
 // Use lazy fetch to avoid calling API during SSR before auth check
-const { data: diary, pending, error } = await useLazyFetch<any>(`/api/diaries/${id}`)
+const { data: diary, pending, error } = await useLazyFetch<any>(`/api/diaries/${routeId}`)
 
 const form = reactive<DiaryAuthoringForm>(createEmptyDiaryAuthoringForm(getTodayDateString()))
+const draftGuard = useDiaryDraftGuard(() => form)
 
 watch(diary, (newDiary) => {
   if (newDiary) {
-    Object.assign(form, hydrateDiaryAuthoring(newDiary, {
+    const hydrated = hydrateDiaryAuthoring(newDiary, {
       timeZone: getTimezone(),
       fallbackDate: getTodayDateString(),
-    }))
+    })
+    ignoreDateWatchFor.value = hydrated.date
+    Object.assign(form, hydrated)
+    currentDiaryId.value = String(newDiary.id ?? routeId)
+    committedDate.value = hydrated.date
+    appendToExisting.value = false
+    pendingConflict.value = null
+    dateLookupError.value = false
+    draftGuard.markClean()
   }
 }, { immediate: true })
+
+function replaceForm(nextForm: DiaryAuthoringForm) {
+  ignoreDateWatchFor.value = nextForm.date
+  Object.assign(form, nextForm)
+}
+
+function restoreCommittedDate() {
+  ignoreDateWatchFor.value = committedDate.value
+  form.date = committedDate.value
+}
+
+function resetToNewDiary(date: string) {
+  replaceForm(createEmptyDiaryAuthoringForm(date))
+  currentDiaryId.value = null
+  appendToExisting.value = false
+}
+
+interface DateLookupOptions {
+  preserveDraft?: boolean
+}
+
+async function lookupDiaryForDate(date: string, options: DateLookupOptions = {}) {
+  const token = latestDateLookup.begin()
+  checkingDate.value = true
+  dateLookupError.value = false
+
+  try {
+    const existingDiary = await runWithAuthRecovery(() => $fetch<any>(
+      `/api/diaries/by-date?date=${encodeURIComponent(date)}`
+    ))
+
+    // Ignore a response that belongs to an older date selection.
+    if (!latestDateLookup.isLatest(token)) return
+
+    if (existingDiary) {
+      pendingConflict.value = { date, diary: existingDiary }
+      return
+    }
+
+    if (options.preserveDraft) {
+      // A retry that finds no Diary must not erase the draft retained after a
+      // transient lookup failure.
+      return
+    }
+
+    if (draftGuard.isContentDirty.value && !draftGuard.confirmDraftReplacement()) {
+      restoreCommittedDate()
+      return
+    }
+
+    resetToNewDiary(date)
+    committedDate.value = date
+    pendingConflict.value = null
+    draftGuard.markClean()
+  } catch (lookupError: any) {
+    if (isAuthSessionError(lookupError)) return
+    if (!latestDateLookup.isLatest(token)) return
+
+    dateLookupError.value = true
+    pendingConflict.value = null
+    if (date !== committedDate.value) restoreCommittedDate()
+    toast.error(resolveErrorMessage(lookupError, t, t('diary.form.checkExistingFailed')))
+  } finally {
+    if (latestDateLookup.isLatest(token)) checkingDate.value = false
+  }
+}
+
+function resolveDateConflict(choice: 'edit' | 'append' | 'cancel') {
+  const conflict = pendingConflict.value
+  if (!conflict) return
+
+  if (choice === 'cancel') {
+    restoreCommittedDate()
+    pendingConflict.value = null
+    return
+  }
+
+  if (choice === 'edit') {
+    replaceForm(hydrateDiaryAuthoring(conflict.diary, {
+      timeZone: getTimezone(),
+      fallbackDate: conflict.date,
+    }))
+    currentDiaryId.value = String(conflict.diary.id)
+    appendToExisting.value = false
+    committedDate.value = conflict.date
+    pendingConflict.value = null
+    dateLookupError.value = false
+    draftGuard.markClean()
+    return
+  }
+
+  // Append keeps the current form and makes the POST intent explicit. It does
+  // not hydrate the existing Diary into the current draft.
+  currentDiaryId.value = null
+  appendToExisting.value = true
+  committedDate.value = conflict.date
+  pendingConflict.value = null
+  dateLookupError.value = false
+}
+
+watch(() => form.date, (newDate, oldDate) => {
+  if (!newDate || newDate === oldDate) return
+  if (ignoreDateWatchFor.value === newDate) {
+    ignoreDateWatchFor.value = null
+    return
+  }
+
+  void lookupDiaryForDate(newDate)
+})
+
+const retryDateLookup = () => {
+  void lookupDiaryForDate(committedDate.value, { preserveDraft: true })
+}
+
+const cancelEditing = () => {
+  if (!draftGuard.confirmLeave()) return
+  draftGuard.allowNextRouteLeave()
+  void router.push(`/diaries/${currentDiaryId.value || routeId}`)
+}
 
 const addAlert = () => {
   const today = getTodayDateString()
@@ -212,21 +391,36 @@ const saveDiary = async () => {
 
   saving.value = true
   try {
-    const payload = buildDiaryAuthoringPayload(form)
+    const payload = {
+      ...buildDiaryAuthoringPayload(form),
+      ...(appendToExisting.value ? { appendToToday: true } : {}),
+    }
+    let savedDiaryId = currentDiaryId.value
 
-    await runWithAuthRecovery(async (): Promise<void> => {
-      await $fetch(`/api/diaries/${id}` as string, {
-        method: 'PUT' as const,
-        body: payload
-      } as any)
-    })
+    if (currentDiaryId.value && !appendToExisting.value) {
+      await runWithAuthRecovery(async (): Promise<void> => {
+        await $fetch(`/api/diaries/${currentDiaryId.value}` as string, {
+          method: 'PUT' as const,
+          body: payload
+        } as any)
+      })
+    } else {
+      const created = await runWithAuthRecovery(() => $fetch<any>('/api/diaries', {
+        method: 'POST' as const,
+        body: payload,
+      }))
+      savedDiaryId = created?.id != null ? String(created.id) : null
+    }
 
     toast.success('日記更新成功！')
+
+    // Mark the exact form that was persisted as clean before leaving the page.
+    draftGuard.markClean()
 
     // Show random discipline quote
     await showDisciplineToast()
 
-    router.push(`/diaries/${id}`)
+    router.push(savedDiaryId ? `/diaries/${savedDiaryId}` : '/diaries')
   } catch (e: any) {
     if (isAuthSessionError(e)) return
     console.error(e)

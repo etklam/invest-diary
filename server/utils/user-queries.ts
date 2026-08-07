@@ -16,7 +16,6 @@
 
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-import { Prisma } from '@prisma/client'
 import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
 import { sha256Hex } from '~/server/utils/hash'
@@ -148,9 +147,8 @@ export async function createUserForRegistration(input: {
 
 /**
  * Persist a refresh token for a user. Hashes the raw token with sha256Hex.
- * On P2002 (token hash already exists — extremely rare collision or replay of
- * the same token string), rebinds the existing row to this user/expiresAt
- * instead of crashing.
+ * A refresh token is one independent session. A unique collision must never
+ * rebind another session's row, so P2002 is allowed to propagate.
  */
 export async function createRefreshToken(
   userId: bigint,
@@ -164,16 +162,8 @@ export async function createRefreshToken(
       data: { token: tokenHash, userId, expiresAt },
     })
   } catch (error) {
-    if (
-      !(error instanceof Prisma.PrismaClientKnownRequestError) ||
-      error.code !== 'P2002'
-    ) {
-      throw error
-    }
-    await prisma.refreshToken.update({
-      where: { token: tokenHash },
-      data: { userId, expiresAt },
-    })
+    // Never overwrite a row belonging to another refresh session.
+    throw error
   }
 }
 

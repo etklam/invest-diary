@@ -48,6 +48,31 @@ export interface DateCountGroup {
   count: number
 }
 
+/**
+ * Snapshot coverage for a date that is about to be persisted.
+ *
+ * A batch run knows the number of successfully generated snapshots before the
+ * rows are written. That candidate date must participate in the comparison
+ * window when it already satisfies the scope qualification threshold.
+ */
+export interface SnapshotDateCoverage {
+  date: Date
+  snapshotCount: number
+}
+
+/**
+ * Canonical qualified-date sequence and its two-week boundary.
+ *
+ * `qualifiedDatesDesc` is the single source sequence: newest first. Both the
+ * latest snapshot date and the comparison date are derived from it so callers
+ * cannot accidentally apply the offset to two different sequences.
+ */
+export interface QualifiedDateWindow {
+  qualifiedDatesDesc: Date[]
+  latestDate: Date | null
+  comparisonDate: Date | null
+}
+
 // ─── Pure logic ──────────────────────────────────────────────────────────
 
 /**
@@ -60,6 +85,13 @@ export interface DateCountGroup {
 export function computeThreshold(universeSize: number): number {
   if (universeSize <= 0) return 1
   return Math.ceil(universeSize * QUALIFICATION_THRESHOLD_RATIO)
+}
+
+/**
+ * Return whether a snapshot count meets the scope's qualification threshold.
+ */
+export function isQualifiedSnapshotCount(snapshotCount: number, universeSize: number): boolean {
+  return snapshotCount >= computeThreshold(universeSize)
 }
 
 /**
@@ -104,6 +136,63 @@ export function pickComparisonDate(
   offset: number = COMPARISON_OFFSET,
 ): Date | null {
   return qualifiedDatesDesc[offset] ?? null
+}
+
+function dateKey(date: Date): string {
+  return date.toISOString().slice(0, 10)
+}
+
+/**
+ * Pick the newest qualified date from snapshots produced by the current
+ * batch run. The input may contain a partial set of candidate dates when
+ * symbols have different latest price dates.
+ */
+export function pickLatestQualifiedCandidate(
+  candidates: readonly SnapshotDateCoverage[],
+  universeSize: number,
+): SnapshotDateCoverage | null {
+  return candidates
+    .filter(candidate => isQualifiedSnapshotCount(candidate.snapshotCount, universeSize))
+    .slice()
+    .sort((a, b) => b.date.getTime() - a.date.getTime())[0] ?? null
+}
+
+/**
+ * Resolve the canonical qualified-date window.
+ *
+ * `candidateDate` is included only when `candidateIsQualified` is true. This
+ * is the pre-persistence bridge used by snapshot generation: it makes the
+ * newly generated date occupy its proper position before applying the
+ * accepted ten-qualified-date offset. Existing dates are de-duplicated by
+ * calendar date so retrying a batch cannot shift the window.
+ */
+export function resolveQualifiedDateWindow(
+  qualifiedDatesDesc: readonly Date[],
+  options: {
+    candidateDate?: Date | null
+    candidateIsQualified?: boolean
+    offset?: number
+  } = {},
+): QualifiedDateWindow {
+  const byDate = new Map<string, Date>()
+  for (const date of qualifiedDatesDesc) {
+    byDate.set(dateKey(date), date)
+  }
+
+  if (options.candidateDate && options.candidateIsQualified) {
+    const key = dateKey(options.candidateDate)
+    if (!byDate.has(key)) {
+      byDate.set(key, options.candidateDate)
+    }
+  }
+
+  const dates = [...byDate.values()].sort((a, b) => b.getTime() - a.getTime())
+
+  return {
+    qualifiedDatesDesc: dates,
+    latestDate: dates[0] ?? null,
+    comparisonDate: pickComparisonDate(dates, options.offset),
+  }
 }
 
 // ─── Prisma helper ───────────────────────────────────────────────────────

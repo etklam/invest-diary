@@ -28,7 +28,9 @@
     "health:full": "tsx scripts/health-check.ts && npm run build",
     "health:quick": "npm test && npx prisma validate",
     "docs:check": "tsx scripts/docs-health-check.ts",
-    "market-rotation:batch": "tsx scripts/market-rotation/run-batch.ts"
+    "market-rotation:batch": "tsx scripts/market-rotation/run-batch.ts",
+    "diary:duplicates:audit": "tsx scripts/diary-duplicate-audit.ts",
+    "diary:duplicates:reconcile": "tsx scripts/diary-reconcile-duplicates.ts"
   },
   "dependencies": {
     "@grammyjs/conversations": "^2.1.1",

@@ -13,13 +13,14 @@
 
 import type { EnrichedSnapshotInput } from '~/lib/market-rotation/comparison-enrichment'
 import { runSnapshotPipeline, type SymbolPrices } from '~/lib/market-rotation/pipeline'
+import { pickLatestQualifiedCandidate, type SnapshotDateCoverage } from '~/lib/market-rotation/qualified-date'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
 import { normalizeYahooSymbol } from '~/lib/market-data/yahoo'
 import { runYahooRequest } from '~/lib/market-data/yahoo-request-queue'
 import { parseDailyPrices, resolveRangeStart, type DailyPriceInput, type YahooChartQuote } from '~/lib/market-state/update-breadth-utils'
 import {
   getHistoricalPrices,
-  getComparisonDate,
+  getComparisonWindow,
   getComparisonSnapshots,
   upsertSnapshots,
   type SnapshotUpsertRow,
@@ -43,7 +44,7 @@ interface PrismaClient {
       create: DailyPriceInput
     }) => Promise<unknown>
   }
-  marketRotationSnapshot: Parameters<typeof getComparisonDate>[0]['marketRotationSnapshot']
+  marketRotationSnapshot: Parameters<typeof getComparisonWindow>[0]['marketRotationSnapshot']
 }
 
 export interface BatchJobResult {
@@ -74,6 +75,31 @@ const DEFAULT_MIN_LOOKBACK_DAYS = 252
 const DEFAULT_STALE_AFTER_DAYS = 7
 
 let yahooFinanceClient: YahooFinanceClient | null = null
+
+function getLatestCandidateCoverage(
+  symbolPrices: SymbolPrices[],
+  universeSize: number,
+): SnapshotDateCoverage | null {
+  const counts = new Map<string, SnapshotDateCoverage>()
+
+  for (const { prices } of symbolPrices) {
+    const latest = prices.at(-1)
+    if (!latest) continue
+
+    const existing = counts.get(latest.date)
+    if (existing) {
+      existing.snapshotCount += 1
+    }
+    else {
+      counts.set(latest.date, {
+        date: new Date(`${latest.date}T00:00:00.000Z`),
+        snapshotCount: 1,
+      })
+    }
+  }
+
+  return pickLatestQualifiedCandidate([...counts.values()], universeSize)
+}
 
 async function getYahooFinanceClient(): Promise<YahooFinanceClient> {
   if (yahooFinanceClient) return yahooFinanceClient
@@ -204,8 +230,12 @@ export async function runScopeBatch(
     }
   }
 
-  // Step 2: Find comparison date
-  const comparisonDate = await getComparisonDate(prisma, rankScope, 10)
+  // Step 2: Resolve the canonical comparison window. The newest candidate
+  // date is included before applying the ten-qualified-date offset when this
+  // run already has enough symbols to qualify it.
+  const candidate = getLatestCandidateCoverage(symbolPrices, universe.length)
+  const comparisonWindow = await getComparisonWindow(prisma, rankScope, { candidate })
+  const comparisonDate = comparisonWindow.comparisonDate
 
   // Step 3: Load comparison snapshots
   let comparisonSnapshots: EnrichedSnapshotInput[] = []

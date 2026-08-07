@@ -90,6 +90,7 @@ model User {
   telegramAccounts      TelegramAccount[]
   verificationCodes     TelegramVerificationCode[]
   tradePlans            TradePlan[]
+  diaryReconciliationAudits DiaryReconciliationAudit[]
 
   @@map("users")
 }
@@ -137,7 +138,32 @@ model Diary {
   @@index([userId], map: "diaries_user_id_fkey")
   // 複合索引：優化使用者日記列表查詢（按建立時間排序）
   @@index([userId, createdAt(sort: Desc)], map: "diaries_user_created_idx")
+  // Diary.date is the normalized UTC-noon representation of the user-local civil date.
+  @@unique([userId, date], map: "diaries_user_date_key")
   @@map("diaries")
+}
+
+model DiaryReconciliationAudit {
+  id                         BigInt   @id @default(autoincrement())
+  migrationId                String   @map("migration_id") @db.VarChar(100)
+  userId                     BigInt   @map("user_id")
+  diaryDate                  DateTime @map("diary_date")
+  canonicalDiaryId           BigInt   @map("canonical_diary_id")
+  mergedDiaryId              BigInt   @map("merged_diary_id")
+  canonicalContentHashBefore String   @map("canonical_content_hash_before") @db.Char(64)
+  mergedContentHashBefore    String   @map("merged_content_hash_before") @db.Char(64)
+  canonicalContentHashAfter  String   @map("canonical_content_hash_after") @db.Char(64)
+  transactionCount           Int      @map("transaction_count")
+  alertCount                 Int      @map("alert_count")
+  tradePlanCount             Int      @map("trade_plan_count")
+  timelineRecordCount        Int      @map("timeline_record_count")
+  createdAt                  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([migrationId, mergedDiaryId], map: "diary_reconciliation_audits_migration_merged_key")
+  @@index([userId, diaryDate], map: "diary_reconciliation_audits_user_date_idx")
+  @@map("diary_reconciliation_audits")
 }
 
 model TradePlan {

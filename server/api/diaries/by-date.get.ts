@@ -1,4 +1,5 @@
 import { Errors } from '~/lib/errors/factory'
+import { isValidYyyyMmDd } from '~/lib/dates/normalize'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { findDiaryByDate } from '~/server/utils/diary-read'
@@ -15,6 +16,11 @@ export default defineEventHandler(async (event) => {
 
   if (!dateStr) {
     throw Errors.validationError([{ field: 'date', message: 'Date is required' }]).toH3Error()
+  }
+  if (!isValidYyyyMmDd(dateStr)) {
+    throw Errors.validationError([
+      { field: 'date', message: 'Date must be a valid YYYY-MM-DD calendar date' },
+    ]).toH3Error()
   }
 
   try {

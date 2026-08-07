@@ -53,7 +53,7 @@ vi.mock('~/lib/prisma', () => ({
 // Tests for diffTransactions (pure function)
 // ============================================================
 
-import { diffTransactions } from '~/server/utils/diary-write'
+import { diffTransactions, isUniqueConstraintError } from '~/server/utils/diary-write'
 import type { TransactionInput } from '~/types/diary'
 
 describe('diffTransactions', () => {
@@ -189,6 +189,12 @@ describe('diffTransactions', () => {
     const result = diffTransactions(incoming)
 
     expect(result.toUpdate[0].id).toBe(777n)
+  })
+
+  it('recognizes Prisma unique constraint errors without requiring Prisma runtime classes', () => {
+    expect(isUniqueConstraintError({ code: 'P2002' })).toBe(true)
+    expect(isUniqueConstraintError({ code: 'P2025' })).toBe(false)
+    expect(isUniqueConstraintError(null)).toBe(false)
   })
 })
 
@@ -349,7 +355,7 @@ describe('createDiaryForUser', () => {
       tagsString: 'watch,mistake',
     })
 
-    const result = await createDiaryForUser({
+    await createDiaryForUser({
       userId: '1',
       body: {
         title: 'Test Diary',
@@ -368,6 +374,51 @@ describe('createDiaryForUser', () => {
       })
     )
     expect(mockPrismaDiaryCreate).not.toHaveBeenCalled()
+  })
+
+  it('persists appended transactions and alerts atomically with the content merge', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({
+      id: 99n,
+      userId: 1n,
+      content: 'Existing content',
+      tagsString: 'watch',
+    })
+    mockTxTransactionCreate.mockResolvedValue({ id: 701n })
+    mockTxAlertCreate.mockResolvedValue({ id: 702n })
+    mockTxDiaryUpdate.mockResolvedValue({
+      ...baseCreatedDiary,
+      id: 99n,
+      content: 'Existing content\n\n---\n\nNew content',
+      transactions: [{ id: 701n }],
+      alerts: [{ id: 702n }],
+    })
+    mockPrismaTransaction.mockImplementation(async (cb: any) => cb({
+      transaction: { create: mockTxTransactionCreate },
+      alert: {
+        create: mockTxAlertCreate,
+        createMany: mockTxAlertCreateMany,
+        update: mockTxAlertUpdate,
+      },
+      diary: { update: mockTxDiaryUpdate },
+      user: { findUnique: mockTxUserFindUnique },
+    }))
+
+    await createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Test Diary',
+        content: 'New content',
+        appendToToday: true,
+        transactions: [{ symbol: 'AAPL', type: 'BUY', quantity: 1, price: 100 }],
+        alerts: [{ message: 'Review', triggerAt: '2026-06-01T09:30:00Z' }],
+      },
+    })
+
+    expect(mockTxTransactionCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ diaryId: 99n, userId: 1n, symbol: 'AAPL' }),
+    }))
+    expect(mockTxAlertCreate).toHaveBeenCalled()
+    expect(mockTxDiaryUpdate).toHaveBeenCalled()
   })
 
   it('should create diary with transactions', async () => {
@@ -402,6 +453,46 @@ describe('createDiaryForUser', () => {
         }),
       })
     )
+  })
+
+  it.each([
+    ['quantity', 0],
+    ['quantity', -1],
+    ['quantity', Number.NaN],
+    ['quantity', Number.POSITIVE_INFINITY],
+    ['price', 0],
+    ['price', -1],
+    ['price', 'not-a-number'],
+  ])('rejects invalid transaction %s before persistence', async (field, value) => {
+    await expect(createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Invalid transaction',
+        content: 'Should not persist',
+        transactions: [{
+          symbol: 'AAPL',
+          type: 'BUY',
+          quantity: field === 'quantity' ? value : 1,
+          price: field === 'price' ? value : 100,
+        } as any],
+      },
+    })).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      details: [expect.objectContaining({ field: `transactions.0.${field}` })],
+    })
+
+    expect(mockPrismaDiaryFindFirst).not.toHaveBeenCalled()
+    expect(mockPrismaDiaryCreate).not.toHaveBeenCalled()
+  })
+
+  it('maps a concurrent create unique conflict to a structured diary conflict', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
+    mockPrismaDiaryCreate.mockRejectedValue({ code: 'P2002', meta: { target: ['user_id', 'date'] } })
+
+    await expect(createDiaryForUser({
+      userId: '1',
+      body: { title: 'Concurrent diary', content: 'Conflict' },
+    })).rejects.toMatchObject({ code: 'DIARY_ALREADY_EXISTS', statusCode: 409 })
   })
 
   it('allows a SELL in a later diary when the owned ledger has prior holdings', async () => {
@@ -770,6 +861,40 @@ describe('updateDiaryForUser', () => {
     ).rejects.toMatchObject({
       code: 'DIARY_NOT_FOUND',
     })
+  })
+
+  it('rejects moving a diary onto another occupied date before any writes', async () => {
+    mockPrismaDiaryFindFirst
+      .mockResolvedValueOnce({ id: 12n, userId: 1n, date: new Date('2026-05-01T12:00:00Z') })
+      .mockResolvedValueOnce({ id: 99n })
+
+    await expect(updateDiaryForUser({
+      userId: '1',
+      diaryId: '12',
+      body: {
+        title: 'Move conflict',
+        content: 'Should not move',
+        date: '2026-05-02',
+      },
+    })).rejects.toMatchObject({ code: 'DIARY_ALREADY_EXISTS', statusCode: 409 })
+
+    expect(mockPrismaTransaction).not.toHaveBeenCalled()
+    expect(mockTxDiaryUpdate).not.toHaveBeenCalled()
+  })
+
+  it('maps a concurrent move unique conflict to a structured diary conflict', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n, date: new Date('2026-05-01T12:00:00Z') })
+    mockTxDiaryUpdate.mockRejectedValue({ code: 'P2002' })
+
+    await expect(updateDiaryForUser({
+      userId: '1',
+      diaryId: '12',
+      body: {
+        title: 'Move race',
+        content: 'Conflict',
+        date: '2026-05-02',
+      },
+    })).rejects.toMatchObject({ code: 'DIARY_ALREADY_EXISTS', statusCode: 409 })
   })
 
   it('should throw validation error when transaction id does not belong to diary', async () => {

@@ -16,8 +16,11 @@ import type { MaStatus, RotationSignal, SignalStatus } from '~/lib/market-rotati
 import { toNumber, type DecimalLike } from '~/lib/market-rotation/decimal'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
 import { buildNormalizedTrendSeries } from '~/lib/market-rotation/trend-series'
-import { filterQualifiedDates } from '~/lib/market-rotation/qualified-date'
-import { getLatestQualifiedDate } from '~/server/utils/market-rotation-queries'
+import { loadQualifiedDatesForScope, type QualifiedDateWindow } from '~/lib/market-rotation/qualified-date'
+import {
+  getComparisonWindow,
+  type MarketRotationComparisonWindow,
+} from '~/server/utils/market-rotation-queries'
 
 function toDateString(date: Date): string {
   return date.toISOString().slice(0, 10)
@@ -118,16 +121,19 @@ const DEFAULT_UNIVERSE_KEY = 'SP500_NDX'
 export async function getLatestMonitorRows(
   prisma: MonitorPrisma,
   rankScope: string,
-): Promise<{ rows: MarketRotationMonitorRow[]; asOfDate: Date | null }> {
-  const universe = getUniverseForScope(rankScope as 'sectors' | 'indexes' | 'core')
-  const latestDate = await getLatestQualifiedDate(
+): Promise<{
+  rows: MarketRotationMonitorRow[]
+  asOfDate: Date | null
+  comparisonWindow: MarketRotationComparisonWindow
+}> {
+  const comparisonWindow = await getComparisonWindow(
     prisma as any,
-    rankScope,
-    universe.map(entry => entry.symbol),
+    rankScope as 'sectors' | 'indexes' | 'core',
   )
+  const latestDate = comparisonWindow.latestDate
 
   if (!latestDate) {
-    return { rows: [], asOfDate: null }
+    return { rows: [], asOfDate: null, comparisonWindow }
   }
 
   // Step 2: Read all snapshots for that date
@@ -142,7 +148,7 @@ export async function getLatestMonitorRows(
   const nameMap = buildNameMap(rankScope)
   const rows = rawRows.map(raw => toMonitorRow(raw, nameMap))
 
-  return { rows, asOfDate: latestDate }
+  return { rows, asOfDate: latestDate, comparisonWindow }
 }
 
 /**
@@ -184,22 +190,38 @@ export async function resolveMarketState(
 export async function getMonitorTrendSeries(
   prisma: MonitorPrisma,
   rankScope: 'sectors' | 'indexes' | 'core',
-  comparisonDate: Date,
-  asOfDate: Date,
+  comparisonDateOrWindow: Date | QualifiedDateWindow,
+  asOfDate?: Date,
 ): Promise<Map<string, MarketRotationTrendPoint[]>> {
   const universe = getUniverseForScope(rankScope)
   const universeSymbols = universe.map(entry => entry.symbol)
-  const groups = await prisma.marketRotationSnapshot.groupBy({
-    by: ['date'],
-    where: { rankScope, symbol: { in: universeSymbols } },
-    _count: { symbol: true },
-    orderBy: { date: 'desc' },
-  })
-  const qualifiedDates = filterQualifiedDates(
-    groups.map(g => ({ date: g.date, count: g._count.symbol })),
-    universe.length,
-  )
-    .filter(date => date >= comparisonDate && date <= asOfDate)
+
+  let comparisonDate: Date | null
+  let trendEndDate: Date | null
+  let qualifiedDatesDesc: Date[]
+
+  if (comparisonDateOrWindow instanceof Date) {
+    comparisonDate = comparisonDateOrWindow
+    trendEndDate = asOfDate ?? null
+    qualifiedDatesDesc = await loadQualifiedDatesForScope(
+      prisma,
+      rankScope,
+      universe.length,
+      universeSymbols,
+    )
+  }
+  else {
+    comparisonDate = comparisonDateOrWindow.comparisonDate
+    trendEndDate = comparisonDateOrWindow.latestDate ?? asOfDate ?? null
+    qualifiedDatesDesc = comparisonDateOrWindow.qualifiedDatesDesc
+  }
+
+  if (!comparisonDate || !trendEndDate) {
+    return new Map()
+  }
+
+  const qualifiedDates = qualifiedDatesDesc
+    .filter(date => date >= comparisonDate && date <= trendEndDate)
     .sort((a, b) => a.getTime() - b.getTime())
 
   if (qualifiedDates.length === 0) {

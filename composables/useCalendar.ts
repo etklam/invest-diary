@@ -2,13 +2,12 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
-import type { Diary, DiariesApiResponse } from '~/types/diary'
+import type { DiaryActivityDay } from '~/types/diary'
+import { formatYmdInTimezone } from '~/lib/dates/format'
 import {
-  buildDailyActivityMap,
   buildHolidaySet,
   calculateMonthCoverage,
   resolveCountryCodeFromTimezone,
-  toDateKeyInTimezone,
   type NagerHoliday
 } from '~/lib/holiday-heatmap'
 
@@ -41,7 +40,7 @@ export const useCalendar = () => {
   const initialDate = getNowInTimezone()
   const currentYear = ref(initialDate.year)
   const currentMonth = ref(initialDate.month)
-  const diaries = ref<Diary[]>([])
+  const activity = ref<DiaryActivityDay[]>([])
   const holidayDateSet = ref<Set<string>>(new Set())
   const excludeHolidaysInStats = ref(true)
   const loadingHolidays = ref(false)
@@ -56,13 +55,12 @@ export const useCalendar = () => {
   })
 
   const firstDayOfWeek = computed(() => {
-    // We only need the weekday index for the first of the month,
-    // so just instantiate the date in the current locale.
-    return new Date(currentYear.value, currentMonth.value, 1).getDay()
+    // Calendar cells represent the user's civil date, not the server locale.
+    return new Date(Date.UTC(currentYear.value, currentMonth.value, 1)).getUTCDay()
   })
 
   const activeDayKeys = computed(() => {
-    return buildDailyActivityMap(diaries.value, userTimezone.value)
+    return new Set(activity.value.map(day => day.date))
   })
 
   const monthDiaryCount = computed(() => {
@@ -84,22 +82,62 @@ export const useCalendar = () => {
     return result.coverage
   })
 
-  const diaryMap = computed(() => {
-    const map = new Map<string, Diary>()
-    diaries.value.forEach(diary => {
-      const key = toDateKeyInTimezone(diary.date || diary.createdAt, userTimezone.value)
-      map.set(key, diary)
+  const activityMap = computed(() => {
+    const map = new Map<string, DiaryActivityDay>()
+    activity.value.forEach(day => {
+      map.set(day.date, day)
     })
     return map
   })
 
   // Methods
-  const fetchDiaries = async () => {
+  const shiftDate = (dateKey: string, days: number): string => {
+    const date = new Date(`${dateKey}T00:00:00Z`)
+    date.setUTCDate(date.getUTCDate() + days)
+    return date.toISOString().slice(0, 10)
+  }
+
+  const mergeActivity = (days: DiaryActivityDay[]) => {
+    const byDate = new Map(activity.value.map(day => [day.date, day]))
+    days.forEach(day => byDate.set(day.date, day))
+    activity.value = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date))
+  }
+
+  const loadActivityRange = async (dateFrom: string, dateTo: string) => {
+    const response = await runWithAuthRecovery(() => $fetch<{
+      data: DiaryActivityDay[]
+    }>('/api/diaries/activity', { query: { dateFrom, dateTo } }))
+    mergeActivity(response.data ?? [])
+  }
+
+  const getCurrentMonthRange = () => {
+    const month = String(currentMonth.value + 1).padStart(2, '0')
+    const dateFrom = `${currentYear.value}-${month}-01`
+    const lastDay = new Date(Date.UTC(currentYear.value, currentMonth.value + 1, 0)).getUTCDate()
+    return { dateFrom, dateTo: `${currentYear.value}-${month}-${String(lastDay).padStart(2, '0')}` }
+  }
+
+  const loadMonthActivity = async () => {
     if (!isAuthenticated.value) return
     pending.value = true
     try {
-      const response = await runWithAuthRecovery(() => $fetch<DiariesApiResponse>('/api/diaries?limit=1000'))
-      diaries.value = response.data
+      const range = getCurrentMonthRange()
+      await loadActivityRange(range.dateFrom, range.dateTo)
+    } catch (error) {
+      if (isAuthSessionError(error)) return
+      toast.error(resolveErrorMessage(error, t))
+    } finally {
+      pending.value = false
+    }
+  }
+
+  const fetchActivity = async () => {
+    if (!isAuthenticated.value) return
+    pending.value = true
+    try {
+      const today = formatYmdInTimezone(new Date(), userTimezone.value)
+      await loadActivityRange(shiftDate(today, -(371 - 1)), today)
+      await loadMonthActivity()
     } catch (error) {
       if (isAuthSessionError(error)) return
       toast.error(resolveErrorMessage(error, t))
@@ -190,9 +228,9 @@ export const useCalendar = () => {
     return activeDayKeys.value.has(key)
   }
 
-  const getDiaryForDay = (day: number): Diary | undefined => {
+  const getActivityForDay = (day: number): DiaryActivityDay | undefined => {
     const key = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return diaryMap.value.get(key)
+    return activityMap.value.get(key)
   }
 
   const isToday = (day: number): boolean => {
@@ -215,12 +253,12 @@ export const useCalendar = () => {
     const rows: Array<Array<{ dateKey: string, level: 0 | 1, excluded: boolean } | null>> = []
     const days: Array<{ dateKey: string, level: 0 | 1, excluded: boolean }> = []
 
-    const endDate = new Date()
+    const endDate = new Date(`${formatYmdInTimezone(new Date(), tz)}T00:00:00Z`)
     
     for (let i = totalDays - 1; i >= 0; i--) {
       const d = new Date(endDate)
-      d.setDate(endDate.getDate() - i)
-      const key = toDateKeyInTimezone(d, tz)
+      d.setUTCDate(endDate.getUTCDate() - i)
+      const key = d.toISOString().slice(0, 10)
       days.push({
         dateKey: key,
         level: activeDayKeys.value.has(key) ? 1 : 0,
@@ -229,8 +267,8 @@ export const useCalendar = () => {
     }
 
     // To align weeks properly, we need to know the weekday of the first day in the array
-    const firstDate = new Date(days[0]!.dateKey)
-    const startWeekday = firstDate.getDay()
+    const firstDate = new Date(`${days[0]!.dateKey}T00:00:00Z`)
+    const startWeekday = firstDate.getUTCDay()
     let cursor = 0
 
     for (let week = 0; week < 54; week++) { // 53 or 54 weeks
@@ -255,26 +293,27 @@ export const useCalendar = () => {
   onMounted(() => {
     excludeHolidaysInStats.value = localStorage.getItem('exclude_holidays_in_stats') !== 'false'
     if (isAuthenticated.value) {
-      fetchDiaries()
+      fetchActivity()
       loadHolidays()
     }
   })
 
   watch(isAuthenticated, (authenticated) => {
     if (authenticated) {
-      fetchDiaries()
+      fetchActivity()
       loadHolidays()
     }
   })
 
   watch([currentYear, currentMonth], () => {
+    loadMonthActivity()
     loadHolidays()
   })
 
   return {
     currentYear,
     currentMonth,
-    diaries,
+    activity,
     pending,
     weekDays,
     daysInMonth,
@@ -284,12 +323,12 @@ export const useCalendar = () => {
     loadingHolidays,
     holidayDateSet,
     heatmapDays,
-    fetchDiaries,
+    fetchActivity,
     previousMonth,
     nextMonth,
     goToToday,
     hasDiary,
-    getDiaryForDay,
+    getActivityForDay,
     isToday,
     isExcludedHoliday
   }

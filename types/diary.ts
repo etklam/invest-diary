@@ -89,6 +89,13 @@ export interface DiariesApiResponse {
   }
 }
 
+export interface DiaryActivityDay {
+  date: string
+  diaryId: SerializedId
+  alertCount: number
+  transactionCount: number
+}
+
 export interface PaginationResponse {
   page: number
   limit: number

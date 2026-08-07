@@ -13,6 +13,7 @@ export type HoldingsInput = Map<string, number> | Record<string, number> | undef
 export interface LedgerValidationIssue {
   index: number
   symbol: string
+  field?: 'quantity' | 'price'
   message: string
 }
 
@@ -27,6 +28,50 @@ function quantityOf(value: unknown): number {
   }
   const numberValue = Number(value)
   return Number.isFinite(numberValue) ? numberValue : 0
+}
+
+function numberOf(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  if (typeof value === 'bigint') {
+    const numberValue = Number(value)
+    return Number.isFinite(numberValue) ? numberValue : null
+  }
+  if (value && typeof value === 'object' && 'toNumber' in value) {
+    const toNumber = (value as { toNumber?: () => number }).toNumber
+    if (typeof toNumber === 'function') {
+      const numberValue = Number(toNumber())
+      return Number.isFinite(numberValue) ? numberValue : null
+    }
+  }
+
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : null
+}
+
+/** Validate trusted-boundary transaction numbers before ledger arithmetic. */
+export function validateTransactionValues(
+  transactions: LedgerInputTransaction[],
+  options: { requirePrice?: boolean } = {},
+): LedgerValidationIssue | null {
+  for (const { transaction, index } of transactions.map((transaction, index) => ({ transaction, index }))) {
+    const symbol = transaction.symbol?.trim().toUpperCase() ?? ''
+    const fields: Array<['quantity' | 'price', unknown]> = [['quantity', transaction.quantity]]
+    if (options.requirePrice || transaction.price !== undefined) fields.push(['price', transaction.price])
+
+    for (const [field, value] of fields) {
+      const numberValue = numberOf(value)
+      if (numberValue === null || numberValue <= 0) {
+        return {
+          index,
+          symbol,
+          field,
+          message: `${field} must be a finite number greater than 0`,
+        }
+      }
+    }
+  }
+
+  return null
 }
 
 function normalizedHoldings(initialHoldings: HoldingsInput): Map<string, number> {
@@ -63,6 +108,9 @@ export function calculateLedgerHoldings(
   initialHoldings: HoldingsInput,
   transactions: LedgerInputTransaction[],
 ): Map<string, number> {
+  const valueError = validateTransactionValues(transactions)
+  if (valueError) throw new Error(valueError.message)
+
   const holdings = normalizedHoldings(initialHoldings)
 
   for (const { transaction } of orderedTransactions(transactions)) {
@@ -98,6 +146,9 @@ export function validateTransactionLedger(
   initialHoldings: HoldingsInput,
   transactions: LedgerInputTransaction[],
 ): LedgerValidationIssue | null {
+  const valueError = validateTransactionValues(transactions)
+  if (valueError) return valueError
+
   const holdings = normalizedHoldings(initialHoldings)
 
   for (const { transaction, index } of orderedTransactions(transactions)) {
@@ -140,6 +191,8 @@ export function validateDiaryDraft(
   transactions: LedgerInputTransaction[],
   context: DiaryAuthoringLedgerContext = { available: false },
 ): LedgerValidationIssue | null {
+  const valueError = validateTransactionValues(transactions)
+  if (valueError) return valueError
   if (!context.available) return null
   return validateTransactionLedger(context.holdings ?? {}, transactions)
 }

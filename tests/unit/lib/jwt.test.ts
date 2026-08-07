@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { signAccessToken, verifyToken } from '~/lib/jwt'
+import { signAccessToken, signRefreshToken, verifyToken } from '~/lib/jwt'
 
 describe('JWT Utils', () => {
   const testSecret = 'test-secret-key'
@@ -83,6 +83,23 @@ describe('JWT Utils', () => {
       
       await expect(verifyToken(token))
         .rejects.toThrow()
+    })
+  })
+
+  describe('refresh sessions', () => {
+    it('gives each refresh token a distinct session id even in the same second', async () => {
+      vi.useFakeTimers()
+      try {
+        const first = await signRefreshToken(testUserId, testEmail, testRole, testTokenVersion)
+        const second = await signRefreshToken(testUserId, testEmail, testRole, testTokenVersion)
+
+        expect(first).not.toBe(second)
+        expect((await verifyToken(first)).jti).toBeTruthy()
+        expect((await verifyToken(second)).jti).toBeTruthy()
+        expect((await verifyToken(first)).jti).not.toBe((await verifyToken(second)).jti)
+      } finally {
+        vi.useRealTimers()
+      }
     })
   })
 

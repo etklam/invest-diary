@@ -34,6 +34,7 @@ function createMockPrisma() {
 import {
   getHistoricalPrices,
   getLatestQualifiedDate,
+  getComparisonWindow,
   getComparisonDate,
   getComparisonSnapshots,
   upsertSnapshots,
@@ -324,6 +325,33 @@ describe('server/utils/market-rotation-queries', () => {
       const result = await getComparisonDate(prisma as any, 'sectors', 1)
 
       expect(result).toEqual(new Date('2026-06-13'))
+    })
+
+    it('uses the same 2W boundary before and after a new qualified snapshot is persisted', async () => {
+      const newSnapshotDate = new Date('2026-06-15')
+      const existingDates = Array.from({ length: 10 }, (_, index) => ({
+        date: new Date(`2026-06-${String(14 - index).padStart(2, '0')}`),
+        _count: { symbol: 11 },
+      }))
+
+      // Before persistence, the candidate date is supplied explicitly. It
+      // must occupy position 0 before offset 10 is applied.
+      mockMarketRotationSnapshotGroupBy.mockResolvedValueOnce(existingDates)
+      const beforePersistence = await getComparisonWindow(prisma as any, 'sectors', {
+        candidate: { date: newSnapshotDate, snapshotCount: 11 },
+      })
+
+      // After persistence, the same date is returned by groupBy naturally.
+      mockMarketRotationSnapshotGroupBy.mockResolvedValueOnce([
+        { date: newSnapshotDate, _count: { symbol: 11 } },
+        ...existingDates,
+      ])
+      const afterPersistence = await getComparisonWindow(prisma as any, 'sectors')
+
+      expect(beforePersistence.qualifiedDatesDesc).toHaveLength(11)
+      expect(beforePersistence.latestDate).toEqual(newSnapshotDate)
+      expect(beforePersistence.comparisonDate).toEqual(new Date('2026-06-05'))
+      expect(afterPersistence.comparisonDate).toEqual(beforePersistence.comparisonDate)
     })
   })
 

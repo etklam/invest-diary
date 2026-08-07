@@ -7,6 +7,9 @@ const globalStubs = {
     template: '<span />',
     props: ['name', 'class'],
   },
+  BaseButton: {
+    template: '<button><slot /></button>',
+  },
 }
 
 function makeTx(overrides: Partial<{
@@ -43,7 +46,7 @@ describe('TransactionInput', () => {
 
   it('空列表顯示「尚無交易記錄」', () => {
     const wrapper = mountInput([])
-    expect(wrapper.text()).toContain('尚無交易記錄')
+    expect(wrapper.text()).toContain('diary.form.noTransactions')
   })
 
   it('新增交易後顯示交易卡片', async () => {
@@ -60,15 +63,15 @@ describe('TransactionInput', () => {
     expect(wrapper.find('textarea').exists()).toBe(false)
 
     // 點擊「+ 交易筆記」按鈕展開
-    const toggleBtn = wrapper.findAll('button').find(b => b.text().includes('交易筆記'))
+    const toggleBtn = wrapper.findAll('button').find(b => b.text().includes('diary.form.notesToggle'))
     expect(toggleBtn).toBeTruthy()
     await toggleBtn!.trigger('click')
 
     // 展開後應顯示 textarea 和 strategy input
     expect(wrapper.find('textarea').exists()).toBe(true)
-    expect(wrapper.text()).toContain('交易理由')
-    expect(wrapper.text()).toContain('策略標籤')
-    expect(wrapper.text()).toContain('當下情緒')
+    expect(wrapper.text()).toContain('diary.form.notes')
+    expect(wrapper.text()).toContain('diary.form.strategy')
+    expect(wrapper.text()).toContain('diary.form.emotion')
   })
 
   it('既有的 notes/strategy/emotion 預設展開（交易有筆記時）', () => {
@@ -86,7 +89,7 @@ describe('TransactionInput', () => {
     const wrapper = mountInput([tx])
 
     // 展開筆記
-    const toggleBtn = wrapper.findAll('button').find(b => b.text().includes('交易筆記'))
+    const toggleBtn = wrapper.findAll('button').find(b => b.text().includes('diary.form.notesToggle'))
     await toggleBtn!.trigger('click')
 
     // 選擇情緒

@@ -102,7 +102,7 @@
 
           <div v-if="hasDiary(day)" class="mt-1.5 pr-1">
             <div class="line-clamp-2 text-[11px] leading-snug text-dt-text-muted group-hover:text-dt-text sm:text-xs">
-              {{ getDiaryForDay(day)?.title }}
+              {{ t('calendar.recorded') }}
             </div>
             <div class="absolute bottom-2.5 right-2.5 flex gap-1">
               <span
@@ -110,12 +110,12 @@
                 :title="t('nav.diaries')"
               />
               <span
-                v-if="getDiaryForDay(day)?.alerts?.length"
+                v-if="getActivityForDay(day)?.alertCount"
                 class="h-1.5 w-1.5 rounded-full bg-dt-warning"
                 :title="t('nav.alerts')"
               />
               <span
-                v-if="getDiaryForDay(day)?.transactions?.length"
+                v-if="getActivityForDay(day)?.transactionCount"
                 class="h-1.5 w-1.5 rounded-full bg-dt-success"
                 :title="t('stock.dashboard.quickTransaction')"
               />
@@ -184,7 +184,7 @@
       :show="showQuickModal"
       :context="quickDiaryContext"
       @close="closeQuickDiary"
-      @created="fetchDiaries"
+      @created="fetchActivity"
     />
   </div>
 </template>
@@ -211,12 +211,12 @@ const {
   monthDiaryCount,
   monthCoverage,
   heatmapDays,
-  fetchDiaries,
+  fetchActivity,
   previousMonth,
   nextMonth,
   goToToday,
   hasDiary,
-  getDiaryForDay,
+  getActivityForDay,
   isToday,
   isExcludedHoliday
 } = useCalendar()
@@ -246,10 +246,10 @@ const closeQuickDiary = () => {
 
 const handleDateClick = (day: number) => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  const diary = getDiaryForDay(day)
+  const activity = getActivityForDay(day)
 
-  if (diary) {
-    navigateTo(`/diaries/${diary.id}`)
+  if (activity) {
+    navigateTo(`/diaries/${activity.diaryId}`)
   } else {
     openQuickDiary(dateStr)
   }
@@ -257,7 +257,7 @@ const handleDateClick = (day: number) => {
 
 const { onDiaryMutation } = useDiaryMutation()
 onDiaryMutation(() => {
-  fetchDiaries()
+  fetchActivity()
 })
 </script>
 

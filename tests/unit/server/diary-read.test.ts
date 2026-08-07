@@ -304,30 +304,30 @@ describe('listDiariesForUser', () => {
   it('defaults orderBy to { createdAt: desc } when sortBy is omitted', async () => {
     await listDiariesForUser(7n, { page: 1, limit: 20 })
 
-    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual({ createdAt: 'desc' })
+    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual([{ date: 'desc' }, { id: 'desc' }])
   })
 
   it('whitelists known sort options (date-asc, title-asc, title-desc)', async () => {
     await listDiariesForUser(7n, { page: 1, limit: 20, sortBy: 'date-asc' })
-    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual({ createdAt: 'asc' })
+    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual([{ date: 'asc' }, { id: 'asc' }])
 
     vi.clearAllMocks()
     mockPrismaDiaryFindMany.mockResolvedValue([])
 
     await listDiariesForUser(7n, { page: 1, limit: 20, sortBy: 'title-asc' })
-    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual({ title: 'asc' })
+    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual([{ title: 'asc' }, { id: 'asc' }])
 
     vi.clearAllMocks()
     mockPrismaDiaryFindMany.mockResolvedValue([])
 
     await listDiariesForUser(7n, { page: 1, limit: 20, sortBy: 'title-desc' })
-    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual({ title: 'desc' })
+    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual([{ title: 'desc' }, { id: 'desc' }])
   })
 
   it('falls back to default sort for unknown sortBy', async () => {
     await listDiariesForUser(7n, { page: 1, limit: 20, sortBy: 'bogus' })
 
-    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual({ createdAt: 'desc' })
+    expect(mockPrismaDiaryFindMany.mock.calls[0][0].orderBy).toEqual([{ date: 'desc' }, { id: 'desc' }])
   })
 
   it('builds OR with contains for search on title + content', async () => {

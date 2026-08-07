@@ -27,7 +27,7 @@
               <span class="stat-label text-xs font-semibold uppercase tracking-[0.12em] text-dt-text-soft">{{ $t('desk.snapshot.thisWeek') }}</span>
             </article>
             <article class="stat-card flex flex-col gap-1 rounded-2xl border border-dt-border bg-dt-surface-strong p-4">
-              <span class="font-data text-2xl font-bold text-dt-text">{{ diaryItems.length }}</span>
+              <span class="font-data text-2xl font-bold text-dt-text">{{ filteredTotal }}</span>
               <span class="stat-label text-xs font-semibold uppercase tracking-[0.12em] text-dt-text-soft">{{ $t('desk.snapshot.filteredResults') }}</span>
             </article>
           </div>
@@ -215,7 +215,7 @@
             </div>
             <input
               id="search"
-              v-model="filters.search"
+              v-model="searchInput"
               type="text"
               :placeholder="$t('desk.filter.searchPlaceholder')"
               class="field block w-full rounded-dt-sm border border-dt-border bg-dt-surface-strong px-3 py-3 pl-11 text-sm text-dt-text focus:border-dt-secondary focus:outline-none focus:ring-2 focus:ring-dt-secondary/20"
@@ -265,12 +265,12 @@
     </LedgerCard>
 
     <!-- Loading state -->
-    <section v-if="pending" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-md">
+    <section v-if="pending && diaryItems.length === 0" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-md">
       <AppSkeleton variant="card" :count="3" />
     </section>
 
     <!-- Error state -->
-    <section v-else-if="error" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-danger/30 bg-dt-surface p-5 text-dt-danger shadow-dt-md">
+    <section v-else-if="error && diaryItems.length === 0" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-danger/30 bg-dt-surface p-5 text-dt-danger shadow-dt-md">
       <Icon name="heroicons:x-circle" class="h-5 w-5" />
       <div class="text-center">
         <h3 class="font-display text-xl tracking-tight text-dt-text">{{ $t('desk.error.title') }}</h3>
@@ -279,7 +279,7 @@
     </section>
 
     <!-- Empty state -->
-    <section v-else-if="diaryItems.length === 0" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-border bg-dt-surface p-5 text-center shadow-dt-md">
+    <section v-else-if="diaryItems.length === 0 && totalDiaries === 0 && !hasActiveFilters" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-border bg-dt-surface p-5 text-center shadow-dt-md">
       <Icon name="heroicons:document-text" class="h-10 w-10 text-dt-text-soft" />
       <div>
         <h3 class="font-display text-xl tracking-tight text-dt-text">{{ $t('desk.empty.title') }}</h3>
@@ -294,12 +294,15 @@
     </section>
 
     <!-- No results state (has diaries but filters too narrow) -->
-    <section v-else-if="totalDiaries > 0 && diaryItems.length === 0" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-border bg-dt-surface p-5 text-center shadow-dt-md">
+    <section v-else-if="diaryItems.length === 0 && hasActiveFilters" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-border bg-dt-surface p-5 text-center shadow-dt-md">
       <Icon name="heroicons:funnel" class="h-10 w-10 text-dt-text-soft" />
       <div>
         <h3 class="font-display text-xl tracking-tight text-dt-text">{{ $t('desk.noResults.title') }}</h3>
         <p class="mt-1 text-sm text-dt-text-muted">{{ $t('desk.noResults.description') }}</p>
       </div>
+      <BaseButton variant="secondary" @click="resetFilters">
+        {{ $t('desk.filter.clear') }}
+      </BaseButton>
     </section>
 
     <!-- Diary list -->
@@ -314,7 +317,7 @@
           </h2>
         </div>
         <p class="font-data text-xs uppercase tracking-[0.1em] text-dt-text-soft">
-          {{ $t('desk.list.note') }}
+          {{ pending ? $t('common.loading') : $t('desk.list.note') }}
         </p>
       </header>
 
@@ -358,12 +361,26 @@
           </span>
         </div>
       </NuxtLink>
+
+      <div v-if="loadMoreError" class="mt-4 flex flex-wrap items-center justify-center gap-3 rounded-dt-sm border border-dt-danger/30 bg-dt-danger/5 p-3 text-sm text-dt-danger">
+        <span>{{ loadMoreError.message }}</span>
+        <BaseButton variant="secondary" :disabled="loadingMore || pending" @click="loadMore">
+          {{ $t('common.retry') }}
+        </BaseButton>
+      </div>
+      <div v-else-if="hasMore" class="mt-4 flex justify-center">
+          <BaseButton variant="secondary" :disabled="loadingMore || pending" @click="loadMore">
+          <Icon v-if="loadingMore" name="svg-spinners:180-ring-with-bg" class="h-4 w-4" />
+          {{ loadingMore ? $t('common.loading') : $t('common.loadMore') }}
+        </BaseButton>
+      </div>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { QuickDiaryContext } from '~/types/quicknote'
+import type { DiariesApiResponse } from '~/types/diary'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 
 definePageMeta({
@@ -393,9 +410,26 @@ const filters = reactive({
   sortBy: 'date-desc'
 })
 
+const searchInput = ref('')
+const LIST_LIMIT = 20
+let searchDebounce: ReturnType<typeof setTimeout> | undefined
+
+watch(searchInput, (value) => {
+  if (searchDebounce) clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => {
+    filters.search = value.trim()
+  }, 300)
+})
+onBeforeUnmount(() => {
+  if (searchDebounce) clearTimeout(searchDebounce)
+})
+
 // Build reactive query params — API does the filtering/sorting
 const queryParams = computed(() => {
-  const params: Record<string, string> = {}
+  const params: Record<string, string> = {
+    page: '1',
+    limit: String(LIST_LIMIT),
+  }
   if (filters.search) params.search = filters.search
   if (filters.dateFrom) params.dateFrom = filters.dateFrom
   if (filters.dateTo) params.dateTo = filters.dateTo
@@ -405,66 +439,88 @@ const queryParams = computed(() => {
 
 // Use lazy fetch to avoid calling API during SSR before auth check
 // API returns { data, pagination }, so transform extracts both
-const { data: apiResponse, pending, error, refresh } = await useLazyFetch('/api/diaries', {
+const { data: apiResponse, pending, error, refresh } = await useLazyFetch<DiariesApiResponse>('/api/diaries', {
   query: queryParams,
-  transform: (res: any) => ({
-    data: res?.data ?? [],
-    total: res?.pagination?.total ?? 0,
-  }),
 })
 
+const {
+  data: summaryResponse,
+  refresh: refreshSummary,
+} = await useLazyFetch<any>('/api/diaries/summary')
+
+const loadingMore = ref(false)
+const loadMoreError = ref<Error | null>(null)
+const currentPage = ref(1)
+
+watch(queryParams, () => {
+  currentPage.value = 1
+  loadMoreError.value = null
+})
+
+const refreshAll = async () => {
+  await Promise.all([refresh(), refreshSummary()])
+}
+
 const handleDiaryCreated = () => {
-  refresh()
+  void refreshAll()
 }
 
 // Also refresh when floating FAB / other entry points save a diary
 const { onDiaryMutation } = useDiaryMutation()
 onDiaryMutation(() => {
-  refresh()
+  void refreshAll()
 })
 
 const diaryItems = computed<any[]>(() => apiResponse.value?.data ?? [])
 
-const totalDiaries = computed<number>(() => apiResponse.value?.total ?? 0)
+const filteredTotal = computed<number>(() => apiResponse.value?.pagination?.total ?? 0)
+const totalDiaries = computed<number>(() => summaryResponse.value?.global?.totalDiaries ?? 0)
+const hasMore = computed(() => diaryItems.value.length < filteredTotal.value)
 
-const reviewCandidates = computed<any[]>(() =>
-  diaryItems.value.filter(diary => diary.reviewStatus === 'pending').slice(0, 5)
-)
+const loadMore = async () => {
+  if (loadingMore.value || pending.value || !hasMore.value) return
+  const nextPage = currentPage.value + 1
+  loadingMore.value = true
+  loadMoreError.value = null
 
-const latestDiary = computed<any | null>(() => diaryItems.value[0] ?? null)
+  try {
+    const response = await $fetch<DiariesApiResponse>('/api/diaries', {
+      query: { ...queryParams.value, page: String(nextPage) },
+    })
+    const existing = new Set(diaryItems.value.map(diary => String(diary.id)))
+    const nextItems = response.data.filter(diary => !existing.has(String(diary.id)))
+    apiResponse.value = {
+      ...response,
+      data: [...diaryItems.value, ...nextItems],
+    }
+    currentPage.value = nextPage
+  } catch (error) {
+    loadMoreError.value = error instanceof Error ? error : new Error(String(error))
+  } finally {
+    loadingMore.value = false
+  }
+}
 
-const totalOpenAlerts = computed(() =>
-  diaryItems.value.reduce((sum, diary) => sum + (diary.alerts?.length ?? 0), 0)
-)
+const reviewCandidates = computed<any[]>(() => summaryResponse.value?.reviewCandidates ?? [])
 
-const totalTransactions = computed(() =>
-  diaryItems.value.reduce((sum, diary) => sum + (diary.transactions?.length ?? 0), 0)
-)
+const latestDiary = computed<any | null>(() => summaryResponse.value?.latestDiary ?? null)
 
-const diariesWithAlerts = computed(() =>
-  diaryItems.value.filter(diary => (diary.alerts?.length ?? 0) > 0).length
-)
+const totalOpenAlerts = computed(() => summaryResponse.value?.global?.totalOpenAlerts ?? 0)
 
-const diariesWithTransactions = computed(() =>
-  diaryItems.value.filter(diary => (diary.transactions?.length ?? 0) > 0).length
-)
+const totalTransactions = computed(() => summaryResponse.value?.global?.totalTransactions ?? 0)
 
-const diariesThisWeek = computed(() => {
-  const now = Date.now()
-  const sevenDays = 7 * 24 * 60 * 60 * 1000
+const diariesWithAlerts = computed(() => summaryResponse.value?.global?.diariesWithAlerts ?? 0)
 
-  return diaryItems.value.filter((diary) => {
-    const diaryTime = new Date(diary.date || diary.createdAt).getTime()
-    return Number.isFinite(diaryTime) && now - diaryTime <= sevenDays
-  }).length
-})
+const diariesWithTransactions = computed(() => summaryResponse.value?.global?.diariesWithTransactions ?? 0)
+
+const diariesThisWeek = computed(() => summaryResponse.value?.currentWeek?.totalDiaries ?? 0)
 
 const hasActiveFilters = computed(() =>
   Boolean(filters.search || filters.dateFrom || filters.dateTo || filters.sortBy !== 'date-desc')
 )
 
 const focusHeadline = computed(() => {
-  if (!diaryItems.value.length) {
+  if (!totalDiaries.value) {
     return t('desk.nextMove.noDiariesHeadline')
   }
 
@@ -482,14 +538,14 @@ const focusHeadline = computed(() => {
 })
 
 const focusStamp = computed(() => {
-  if (!diaryItems.value.length) return t('desk.nextMove.startStamp')
+  if (!totalDiaries.value) return t('desk.nextMove.startStamp')
   if (totalOpenAlerts.value > 0) return t('desk.nextMove.riskCheckStamp')
   if (totalTransactions.value > 0) return t('desk.nextMove.reviewStamp')
   return t('desk.nextMove.writingStamp')
 })
 
 const focusDescription = computed(() => {
-  if (!diaryItems.value.length) {
+  if (!totalDiaries.value) {
     return t('desk.nextMove.noDiariesDesc')
   }
 
@@ -506,13 +562,14 @@ const focusDescription = computed(() => {
 
 const filterSummary = computed(() => {
   if (pending.value) return t('desk.filter.loadingSummary')
-  if (!totalDiaries.value && !diaryItems.value.length) return t('desk.filter.noDataSummary')
-  if (hasActiveFilters.value) return t('desk.filter.filteredSummary', { count: diaryItems.value.length })
+  if (hasActiveFilters.value) return t('desk.filter.filteredSummary', { count: filteredTotal.value })
+  if (!totalDiaries.value && !filteredTotal.value) return t('desk.filter.noDataSummary')
   return t('desk.filter.defaultSummary', { count: totalDiaries.value })
 })
 
 // Reset filters
 const resetFilters = () => {
+  searchInput.value = ''
   filters.search = ''
   filters.dateFrom = ''
   filters.dateTo = ''
