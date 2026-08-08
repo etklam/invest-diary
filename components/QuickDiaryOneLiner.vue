@@ -14,6 +14,8 @@
       :templates="templates"
       :reminders="reminders"
       :active-reminders="activeReminders"
+      :existing-diary-for-date="existingDiaryForDate"
+      :checking-existing-diary-for-date="checkingExistingDiaryForDate"
       :template-kind="state.templateKind"
       :template-data="state.templateData"
       :has-template-changes-pending="hasTemplateChangesPending"
@@ -92,6 +94,8 @@ const {
   draftHint,
   draftStatus,
   activeReminders,
+  existingDiaryForDate,
+  checkingExistingDiaryForDate,
   hasTemplateChangesPending,
   applyTemplateKind,
   updateTemplateData,

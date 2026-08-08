@@ -9,6 +9,10 @@ const messages: Record<string, string> = {
   'quickDiary.editor.eyebrow': '編輯工作檯',
   'quickDiary.editor.intro': '先決定保存方式，再整理內容，讓您的記錄流程更順暢。',
   'quickDiary.editor.saveModeLabel': '保存方式',
+  'quickDiary.editor.saveTo': '儲存至',
+  'quickDiary.editor.moreOptions': '更多選項',
+  'quickDiary.editor.optional': '選填',
+  'quickDiary.editor.saveQuickDiary': '儲存隨手筆記',
   'quickDiary.editor.titleAria': '筆記標題',
   'quickDiary.editor.snippets': '快捷工具',
   'quickDiary.editor.reminders': '快速提醒',
@@ -75,6 +79,7 @@ const messages: Record<string, string> = {
   'quickDiary.reminders.presetSet': '已設定 {label} 提醒',
   'quickDiary.reminders.set': '提醒已設定',
   'quickDiary.reminders.cleared': '提醒已清除',
+  'quickDiary.reminders.label': '提醒',
   'quickDiary.toasts.saved': '已儲存快速筆記',
   'quickDiary.validation.contentRequired': '請先輸入內容',
   'quickDiary.errors.diaryExists': '該日期已有日記',
@@ -266,7 +271,7 @@ describe('QuickDiaryOneLiner', () => {
     const wrapper = mountOneLiner()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('內容會加入今天的日記')
+    expect(wrapper.text()).toContain('補充到今日')
 
     await wrapper.get('[data-test="quick-capture-input"]').setValue('SPX broke above yesterday high')
     await wrapper.get('[data-test="quick-capture-save"]').trigger('click')
@@ -285,9 +290,8 @@ describe('QuickDiaryOneLiner', () => {
     await flushPromises()
 
     // The focused editor exposes reminder as a secondary tool immediately.
-    const reminderChip = wrapper.findAll('button').find(button => button.text().trim() === '設定提醒')
-    expect(reminderChip).toBeTruthy()
-    await reminderChip!.trigger('click')
+    const reminderChip = wrapper.get('[data-test="quick-note-row-reminder"]')
+    await reminderChip.trigger('click')
     const tomorrowButton = wrapper.findAll('button').find(button => button.text().trim() === '明天')
     expect(tomorrowButton).toBeTruthy()
     await tomorrowButton!.trigger('click')

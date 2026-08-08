@@ -4,6 +4,12 @@ import { nextTick, ref } from 'vue'
 const localeRef = ref('en')
 const fetchMock = vi.fn()
 
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((done) => { resolve = done })
+  return { promise, resolve }
+}
+
 // In-memory storage to simulate useLocalStorage behavior
 const storageMap = new Map<string, any>()
 
@@ -17,7 +23,7 @@ vi.mock('@vueuse/core', async (importOriginal) => {
       }
       return storageMap.get(key)!
     },
-    useDebounceFn: (fn: Function, ms?: number) => fn,
+    useDebounceFn: (fn: Function, _ms?: number) => fn,
   }
 })
 
@@ -26,7 +32,7 @@ describe('useQuickNoteComposer', () => {
     vi.clearAllMocks()
     vi.useFakeTimers()
     localeRef.value = 'en'
-    fetchMock.mockResolvedValue({ id: '11' })
+    fetchMock.mockImplementation(async (url: string) => url === '/api/diaries/by-date' ? null : { id: '11' })
     // Reset in-memory storage
     storageMap.clear()
     vi.stubGlobal('$fetch', fetchMock)
@@ -363,6 +369,46 @@ describe('useQuickNoteComposer', () => {
 
     expect(hasDiary).toBe(true)
     expect(composer.saveMode.value).toBe('append')
+  })
+
+  it('waits for destination detection before saving', async () => {
+    const detection = deferred<{ id: string }>()
+    fetchMock.mockImplementation((url: string) => url === '/api/diaries/by-date' ? detection.promise : Promise.resolve({ id: '11' }))
+    const { useQuickNoteComposer } = await import('~/composables/useQuickNoteComposer')
+    const composer = useQuickNoteComposer()
+    composer.setContent('Fast capture')
+
+    const saving = composer.save()
+    expect(fetchMock).not.toHaveBeenCalledWith('/api/diaries', expect.anything())
+
+    detection.resolve({ id: 'today-diary' })
+    await saving
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/diaries', expect.objectContaining({
+      body: expect.objectContaining({ appendToToday: true }),
+    }))
+  })
+
+  it('ignores a stale existing-diary response after the date changes', async () => {
+    const oldDate = deferred<{ id: string }>()
+    const newDate = deferred<null>()
+    fetchMock.mockImplementation((_url: string, options?: { query?: { date?: string } }) => {
+      return options?.query?.date === '2026-03-22' ? oldDate.promise : newDate.promise
+    })
+    const { useQuickNoteComposer } = await import('~/composables/useQuickNoteComposer')
+    const composer = useQuickNoteComposer()
+
+    const first = composer.syncExistingDiaryForDate('2026-03-22')
+    composer.setDate('2026-03-23')
+    newDate.resolve(null)
+    await Promise.resolve()
+    oldDate.resolve({ id: 'old-date-diary' })
+    await first
+    await Promise.resolve()
+
+    expect(composer.date.value).toBe('2026-03-23')
+    expect(composer.existingDiaryForDate.value).toBe(false)
+    expect(composer.saveMode.value).toBe('create')
   })
 
   // --- Template draft generation ---

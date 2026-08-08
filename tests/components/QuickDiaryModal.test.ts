@@ -30,6 +30,25 @@ const messages: Record<string, string> = {
   'quickDiary.editor.eyebrow': '編輯工作檯',
   'quickDiary.editor.intro': '先決定保存方式，再整理內容，讓您的記錄流程更順暢。',
   'quickDiary.editor.saveModeLabel': '保存方式',
+  'quickDiary.editor.saveTo': '儲存至',
+  'quickDiary.editor.moreOptions': '更多選項',
+  'quickDiary.editor.optional': '選填',
+  'quickDiary.editor.saveQuickDiary': '儲存隨手筆記',
+  'quickDiary.editor.titlePlaceholder': '加入標題（選填）',
+  'quickDiary.editor.contentPlaceholder': '記下想法',
+  'quickDiary.editor.openDatePicker': '選擇日期',
+  'quickDiary.editor.openReminderPicker': '設定提醒',
+  'quickDiary.editor.openTagPicker': '管理標籤',
+  'quickDiary.editor.openTemplatePicker': '使用模板',
+  'quickDiary.editor.metadata': '筆記資訊',
+  'quickDiary.editor.quickTemplates': '快速模板',
+  'quickDiary.editor.unset': '未設定',
+  'quickDiary.editor.today': '今天',
+  'quickDiary.editor.reminderPickerTitle': '提醒我',
+  'quickDiary.editor.tagPickerTitle': '標籤',
+  'quickDiary.editor.datePickerTitle': '日期',
+  'quickDiary.editor.closePicker': '關閉',
+  'quickDiary.editor.customReminder': '自訂日期及時間',
   'quickDiary.editor.titleAria': '筆記標題',
   'quickDiary.editor.contentAria': '筆記內容',
   'quickDiary.editor.snippets': '快捷工具',
@@ -40,6 +59,8 @@ const messages: Record<string, string> = {
   'quickDiary.editor.checklist.append': '如果您只是想補充今日日記，請選擇「補充到今日」。',
   'quickDiary.editor.checklist.create': '若是獨立的分析或新發現，建議「開啟新紀錄」以便日後整理。',
   'quickDiary.date': '日期',
+  'quickDiary.reminders.label': '提醒',
+  'quickDiary.tools.tags': '標籤',
   'quickDiary.oneLiner.placeholder': '把當下的直覺、市場觀察或一點小提醒記下來吧...',
   'quickDiary.saveModes.create.label': '開啟新紀錄',
   'quickDiary.saveModes.create.description': '這是一筆獨立的觀察，將會存為新的日記。',
@@ -85,6 +106,7 @@ const setDateMock = vi.fn()
 const resetStateMock = vi.fn()
 const notifyDiaryCreatedMock = vi.fn()
 const localStorageMap = new Map<string, any>()
+const existingDiaryForDateMock = ref(false)
 
 function createMockState() {
   return reactive({
@@ -103,6 +125,7 @@ function createMockState() {
 
 function createMockComposer() {
   const state = createMockState()
+  if (existingDiaryForDateMock.value) state.saveMode = 'append'
   const composer: Record<string, any> = {
     state,
     saveMode: computed(() => state.saveMode),
@@ -115,7 +138,7 @@ function createMockComposer() {
     reminders: computed(() => state.reminders),
     draftHint: ref(''),
     activeReminders: ref([]),
-    existingDiaryForDate: ref(false),
+    existingDiaryForDate: existingDiaryForDateMock,
     checkingExistingDiaryForDate: ref(false),
     suggestedDraft: ref({ title: '2026/03/22 日記', content: '' }),
     hasTemplateChangesPending: ref(false),
@@ -208,6 +231,7 @@ function mountModal(props: Record<string, unknown> = {}) {
   vi.stubGlobal('clearInterval', vi.fn())
 
   return mount(QuickDiaryModal, {
+    attachTo: document.body,
     props: {
       show: true,
       ...props,
@@ -253,21 +277,19 @@ async function clickByText(wrapper: ReturnType<typeof mount>, text: string) {
 }
 
 async function clickSubmitButton(wrapper: ReturnType<typeof mount>) {
-  const target = wrapper.findAll('button').find(button => button.classes().includes('overflow-hidden'))
-  if (!target) {
-    throw new Error('Submit button not found')
-  }
-  await target.trigger('click')
+  await wrapper.get('[data-test="quick-capture-save"]').trigger('click')
 }
 
 describe('QuickDiaryModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorageMap.clear()
+    existingDiaryForDateMock.value = false
     submitQuickNoteMock.mockResolvedValue({ id: '42' })
   })
 
   afterEach(() => {
+    document.body.innerHTML = ''
     vi.unstubAllGlobals()
     vi.clearAllMocks()
   })
@@ -284,12 +306,13 @@ describe('QuickDiaryModal', () => {
     expect(wrapper.text()).not.toContain('交易日記')
   })
 
-  it('applies last-used template on open and persists the selection', async () => {
+  it('keeps a blank writing surface while placing the last-used template first', async () => {
     localStorageMap.set('quick-note-last-template-kind', ref('observation'))
     const wrapper = mountModal()
     await flushPromises()
 
-    expect(applyTemplateKindMock).toHaveBeenCalledWith('observation')
+    expect(applyTemplateKindMock).not.toHaveBeenCalledWith('observation')
+    expect(wrapper.get('textarea[aria-label="筆記內容"]').element).toBe(document.activeElement)
 
     await clickByText(wrapper, '更換模板')
     await clickByText(wrapper, '交易日記')
@@ -342,11 +365,11 @@ describe('QuickDiaryModal', () => {
   })
 
   it('uses append success toast and mutation mode when appending', async () => {
+    existingDiaryForDateMock.value = true
     const wrapper = mountModal()
 
     await wrapper.get('input[aria-label="筆記標題"]').setValue('追加一筆')
     await wrapper.get('textarea[aria-label="筆記內容"]').setValue('補一句觀察')
-    await clickByText(wrapper, '補充到今日')
     await clickSubmitButton(wrapper)
     await flushPromises()
 

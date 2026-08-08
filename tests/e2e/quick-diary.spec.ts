@@ -24,6 +24,18 @@ test('quick diary supports free writing and saves as a new diary by default', as
   const quickInput = page.locator('[data-test="quick-capture-input"]')
 
   await expect(page.getByRole('heading', { level: 1, name: 'Quick Diary' })).toBeVisible()
+  await expect(quickInput).toBeFocused()
+  await expect(page.locator('[data-test="quick-capture-save"]:visible')).toHaveText('Save Quick Diary')
+  await expect(page.locator('#quick-note-title')).toBeHidden()
+
+  const moreOptions = page.locator('[data-test="quick-note-row-more"]')
+  await expect(moreOptions).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false)
+  await moreOptions.click()
+  const mobileTitle = page.locator('#quick-note-title-mobile')
+  await expect(mobileTitle).toBeVisible()
+  await mobileTitle.press('Escape')
+  await expect(moreOptions).toBeFocused()
 
   // Setup POST mock
   let requestBody: any = null
@@ -45,7 +57,7 @@ test('quick diary supports free writing and saves as a new diary by default', as
   await expect(quickInput).toHaveValue('Need to capture this setup before the close.')
 
   // Click the Save button
-  await page.locator('[data-test="quick-capture-save"]').click()
+  await page.locator('[data-test="quick-capture-save"]:visible').click()
 
   await expect.poll(() => requestBody).not.toBeNull()
   expect(requestBody).toMatchObject({
@@ -95,7 +107,7 @@ test('quick diary can switch to template mode, then append to today with structu
   })
 
   // Click Save button
-  await page.locator('[data-test="quick-capture-save"]').click()
+  await page.locator('[data-test="quick-capture-save"]:visible').click()
 
   await expect.poll(() => requestBody).not.toBeNull()
   expect(requestBody).toMatchObject({

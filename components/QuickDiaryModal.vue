@@ -30,7 +30,7 @@
                 <h1 id="quick-note-modal-title" class="truncate text-lg font-semibold sm:text-xl" style="color: var(--color-text); font-family: var(--font-display);">
                   {{ t('quickDiary.title') }}
                 </h1>
-                <span v-if="draftHint" class="hidden truncate text-xs sm:inline" style="color: var(--color-text-soft);" aria-live="polite">
+                <span v-if="draftHint" class="truncate text-xs" style="color: var(--color-text-soft);" aria-live="polite">
                   {{ draftHint }}
                 </span>
               </div>
@@ -74,6 +74,8 @@
               :templates="templatesFromStorage"
               :reminders="reminders"
               :active-reminders="activeReminders"
+              :existing-diary-for-date="existingDiaryForDate"
+              :checking-existing-diary-for-date="checkingExistingDiaryForDate"
               :template-kind="state.templateKind"
               :template-data="state.templateData"
               :has-template-changes-pending="hasTemplateChangesPending"
@@ -152,6 +154,8 @@ const {
   draftHint,
   draftStatus,
   activeReminders,
+  existingDiaryForDate,
+  checkingExistingDiaryForDate,
   hasTemplateChangesPending,
   applyTemplateKind,
   updateTemplateData,
@@ -167,7 +171,6 @@ const {
   setQuickReminder,
   handleReminderSet,
   handleReminderClear,
-  syncExistingDiaryForDate,
   retryDraftSave,
   save,
   initialize,
@@ -178,17 +181,19 @@ const {
   defaultSaveMode: 'create',
 })
 
-const templates = computed(() => createQuickNoteModalTemplates(t))
-
-function resolveOpenTemplateKind(restoredDraft: boolean): QuickNoteTemplateKind | null {
-  if (!restoredDraft && props.context?.templateKind) return props.context.templateKind
-  if (!restoredDraft) return lastTemplateKind.value || 'blank'
-  return null
-}
+const templates = computed(() => {
+  const options = createQuickNoteModalTemplates(t)
+  if (lastTemplateKind.value === 'blank') return options
+  return [
+    ...options.filter(option => option.kind === 'blank'),
+    ...options.filter(option => option.kind === lastTemplateKind.value),
+    ...options.filter(option => option.kind !== 'blank' && option.kind !== lastTemplateKind.value),
+  ]
+})
 
 function applyOpenContext(restoredDraft: boolean) {
-  const kind = resolveOpenTemplateKind(restoredDraft)
-  if (kind) applyTemplateKind(kind)
+  if (restoredDraft) return
+  if (props.context?.templateKind) applyTemplateKind(props.context.templateKind)
   if (props.context?.date) setDate(props.context.date)
 }
 
@@ -203,9 +208,10 @@ watch(
       const restored = Boolean(initialize((message) => confirm(message)))
       applyOpenContext(restored)
       autofocusEditor.value = !restored && !state.content.trim()
-      void syncExistingDiaryForDate()
       showTemplatePicker.value = false
-      void nextTick(() => dialogPanel.value?.focus())
+      void nextTick(() => {
+        if (!autofocusEditor.value) dialogPanel.value?.focus()
+      })
       return
     }
     dispose()
@@ -281,6 +287,7 @@ async function handleSave() {
 }
 
 function handleDialogKeydown(event: KeyboardEvent) {
+  if (event.defaultPrevented) return
   if (event.key === 'Escape') {
     event.preventDefault()
     close()

@@ -127,8 +127,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       draft.value.title?.trim() ||
       draft.value.content?.trim() ||
       draft.value.tags?.length ||
-      draft.value.date ||
-      draft.value.saveMode !== 'create' ||
       draft.value.templateKind !== 'blank',
     )
   })
@@ -255,6 +253,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   const suppressAutosave = ref(false)
   const existingDiaryForDate = ref(false)
   const checkingExistingDiaryForDate = ref(false)
+  let existingDiarySyncGeneration = 0
   let reminderTimer: ReturnType<typeof setInterval> | null = null
 
   // --- Template draft (inlined from useQuickNoteTemplateDraft) ---
@@ -381,8 +380,6 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
         state.title.trim() ||
         state.content.trim() ||
         state.tags.length ||
-        state.date !== getTodayDateString() ||
-        state.saveMode !== defaultSaveMode ||
         state.templateKind !== defaultTemplateKind,
       )
       if (!hasMeaningfulDraft) return
@@ -478,12 +475,16 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   async function syncExistingDiaryForDate(date = state.date) {
     if (typeof $fetch !== 'function') return existingDiaryForDate.value
 
+    const generation = ++existingDiarySyncGeneration
     checkingExistingDiaryForDate.value = true
     try {
       const diary = await $fetch('/api/diaries/by-date', {
         query: { date },
       })
       const hasDiary = Boolean(diary)
+      if (generation !== existingDiarySyncGeneration || state.date !== date) {
+        return existingDiaryForDate.value
+      }
       existingDiaryForDate.value = hasDiary
       if (!saveModeTouched.value) {
         state.saveMode = hasDiary ? 'append' : defaultSaveMode
@@ -492,11 +493,14 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     } catch {
       return existingDiaryForDate.value
     } finally {
-      checkingExistingDiaryForDate.value = false
+      if (generation === existingDiarySyncGeneration) {
+        checkingExistingDiaryForDate.value = false
+      }
     }
   }
 
   async function save() {
+    await syncExistingDiaryForDate(state.date)
     const content = state.content.trim()
     const title = state.title.trim() || deriveQuickNoteTitle(content, suggestedDraft.value.title)
 
@@ -540,7 +544,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     Object.assign(state.templateData, cloneQuickNoteTemplateData(draft.value.templateData))
     state.titleTouched = Boolean(state.title)
     state.contentTouched = Boolean(state.content)
-    saveModeTouched.value = Boolean(draft.value.saveMode)
+    saveModeTouched.value = false
     setAppliedTemplateContent(state.templateKind === 'blank' ? '' : suggestedDraft.value.content)
     return true
   }
@@ -559,6 +563,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   function dispose() {
     autosaveGeneration += 1
+    existingDiarySyncGeneration += 1
     if (reminderTimer) clearInterval(reminderTimer)
     reminderTimer = null
     restoredThisSession.value = false

@@ -9,6 +9,25 @@ const messages: Record<string, string> = {
   'quickDiary.editor.eyebrow': 'Quicknote Desk',
   'quickDiary.editor.intro': '先選好儲存方式，再整理內容。',
   'quickDiary.editor.saveModeLabel': '儲存方式',
+  'quickDiary.editor.saveTo': '儲存至',
+  'quickDiary.editor.moreOptions': '更多選項',
+  'quickDiary.editor.optional': '選填',
+  'quickDiary.editor.saveQuickDiary': '儲存隨手筆記',
+  'quickDiary.editor.titlePlaceholder': '加入標題（選填）',
+  'quickDiary.editor.contentPlaceholder': '記下想法',
+  'quickDiary.editor.openDatePicker': '選擇日期',
+  'quickDiary.editor.openReminderPicker': '設定提醒',
+  'quickDiary.editor.openTagPicker': '管理標籤',
+  'quickDiary.editor.openTemplatePicker': '使用模板',
+  'quickDiary.editor.metadata': '筆記資訊',
+  'quickDiary.editor.quickTemplates': '快速模板',
+  'quickDiary.editor.unset': '未設定',
+  'quickDiary.editor.today': '今天',
+  'quickDiary.editor.reminderPickerTitle': '提醒我',
+  'quickDiary.editor.tagPickerTitle': '標籤',
+  'quickDiary.editor.datePickerTitle': '日期',
+  'quickDiary.editor.closePicker': '關閉',
+  'quickDiary.editor.customReminder': '自訂日期及時間',
   'quickDiary.editor.titleAria': '快速筆記標題',
   'quickDiary.editor.contentAria': '快速筆記內容',
   'quickDiary.editor.snippets': 'Snippets',
@@ -25,6 +44,8 @@ const messages: Record<string, string> = {
   'quickDiary.saveModes.append.description': '附加到今日日記',
   'quickDiary.saveModes.append.summary': '追加到當日日記',
   'quickDiary.oneLiner.placeholder': '請輸入內容',
+  'quickDiary.reminders.label': '提醒',
+  'quickDiary.tools.tags': '標籤',
   'quickDiary.reminders.presets.tomorrow': '明天',
   'quickDiary.reminders.presets.nextWeek': '下周',
   'quickDiary.reminders.presets.nextMonth': '下個月',
@@ -56,6 +77,7 @@ function mountEditorCore() {
       activeReminders: [
         { key: 'reminder1', label: '提醒 1', remaining: '59 分鐘' },
       ],
+      existingDiaryForDate: true,
     },
     global: {
       stubs: {
@@ -110,10 +132,12 @@ describe('QuickNoteEditorCore', () => {
 
     await wrapper.get('[data-test="voice"]').trigger('click')
     await wrapper.get('[data-test="template-apply"]').trigger('click')
+    await wrapper.get('[data-test="quick-note-row-reminder"]').trigger('click')
+    await wrapper.findAll('button').find(button => button.text().includes('自訂日期及時間'))!.trigger('click')
     await wrapper.get('[data-test="reminder-set"]').trigger('click')
     await wrapper.get('[data-test="reminder-clear"]').trigger('click')
     await wrapper.findAll('button').find(button => button.text().includes('追加到當日'))!.trigger('click')
-    await wrapper.findAll('button').find(button => button.text().includes('儲存'))!.trigger('click')
+    await wrapper.get('[data-test="quick-capture-save"]').trigger('click')
 
     expect(wrapper.emitted('append-text')).toEqual([['voice text']])
     expect(wrapper.emitted('apply-template')).toEqual([['模板內容']])
@@ -125,6 +149,8 @@ describe('QuickNoteEditorCore', () => {
 
   it('renders semantic quick reminder buttons and emits reminder presets', async () => {
     const wrapper = mountEditorCore()
+
+    await wrapper.get('[data-test="quick-note-row-reminder"]').trigger('click')
 
     const tomorrowButton = wrapper.findAll('button').find(button => button.text() === '明天')
     const nextWeekButton = wrapper.findAll('button').find(button => button.text() === '下周')
@@ -143,5 +169,16 @@ describe('QuickNoteEditorCore', () => {
       ['nextWeek'],
       ['nextMonth'],
     ])
+  })
+
+  it('keeps the title behind More options on mobile', async () => {
+    const wrapper = mountEditorCore()
+
+    expect(wrapper.get('#quick-note-title').classes()).toContain('w-full')
+    expect(wrapper.get('#quick-note-title').element.closest('.hidden')).toBeTruthy()
+
+    await wrapper.get('[data-test="quick-note-row-more"]').trigger('click')
+
+    expect(wrapper.get('#quick-note-title-mobile').attributes('aria-label')).toBe('快速筆記標題')
   })
 })
