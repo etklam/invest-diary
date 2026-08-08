@@ -101,8 +101,8 @@ type PerfPeriod = 'month' | 'quarter' | 'year'
 
 interface PerformanceSummary {
   totalClosedTrades: number
-  totalRealizedPnL: number
-  winRate: number
+  totalRealizedPnL: number | null
+  winRate: number | null
 }
 
 interface BreakdownEntry {
@@ -142,13 +142,18 @@ const { data, pending, error, refresh } = await useLazyFetch<StrategyPerformance
 
 const hasClosedTrades = computed(() => (data.value?.summary.totalClosedTrades ?? 0) > 0)
 
-const formatMoney = (value: number) => {
+const formatMoney = (value: number | null | undefined) => {
+  if (value == null || !Number.isFinite(value)) return '—'
   const sign = value > 0 ? '+' : ''
   return `${sign}${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
 }
 
-const formatPercent = (value: number) => `${value.toFixed(1)}%`
-const pnlClass = (value: number) => value >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+const formatPercent = (value: number | null | undefined) => (
+  value == null || !Number.isFinite(value) ? '—' : `${value.toFixed(1)}%`
+)
+const pnlClass = (value: number | null | undefined) => value != null && value < 0
+  ? 'text-rose-600 dark:text-rose-400'
+  : 'text-emerald-600 dark:text-emerald-400'
 </script>
 
 <style scoped>

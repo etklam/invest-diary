@@ -980,130 +980,131 @@
     }
   },
   "howToUse": {
-    "badge": "Workflow Guide",
+    "badge": "How to Use",
     "hero": {
-      "title": "How to use Trade Basic as one workflow for ideas, trades, reminders, and review",
-      "subtitle": "Write down your market read first, then connect a human or AI partner and compare the same day side by side."
+      "title": "Turn each trading decision into experience you can reuse",
+      "subtitle": "Capture the idea, add a plan, trades, and reminders, then use reviews and performance to learn what actually works.",
+      "secondary": "See the full workflow"
     },
     "gettingStarted": {
-      "title": "Run the smallest complete loop with a partner",
-      "subtitle": "Do not touch every feature on day one. Sign in, write one diary, connect one partner, and open compare.",
+      "title": "Start with one complete loop",
+      "subtitle": "You do not need to learn every screen at once. Capture the judgment, add context, then return when it is time to review.",
       "step1": {
-        "eyebrow": "Step 1",
-        "title": "Sign in so diaries, partner links, and API keys all live under the right account",
-        "description": "Partner sharing, compare view, and API key management all depend on the authenticated workspace. Start there so nothing lands under the wrong user.",
-        "cta": "Create account"
+        "eyebrow": "Capture · Quick Diary",
+        "title": "Capture the judgment while it is fresh",
+        "description": "Write down the market read, emotion, risk, or next move without waiting for perfect formatting. Create a new diary or append to today when the thought is small.",
+        "cta": "Open Quick Diary"
       },
       "step2": {
-        "eyebrow": "Step 2",
-        "title": "Write your own first diary so there is a baseline worth comparing",
-        "description": "Quick Notes are fine for raw thoughts, but same-day compare works best when your market view is saved as a real diary with title, date, tags, and context.",
-        "cta": "Open diaries"
+        "eyebrow": "Organize · Journal Desk",
+        "title": "Add thesis, risk, trades, and reminders",
+        "description": "The diary desk keeps the daily judgment, trades, and follow-up in one trail. Before entering, make entry, stop, target, and invalidation explicit in a trade plan.",
+        "cta": "Open diary desk"
       },
       "step3": {
-        "eyebrow": "Step 3",
-        "title": "Open settings to add a partner; humans can write manually, AI can get an API key later",
-        "description": "After the other side accepts, each account decides whether to share diaries for this relationship. History and future diaries can be compared, but stock holdings stay private.",
-        "cta": "Open settings"
+        "eyebrow": "Review · Review Queue",
+        "title": "Revisit the thesis when it is due",
+        "description": "Schedule the entries worth revisiting, then use unscheduled, overdue, today, and upcoming groups to turn experience back into the next decision.",
+        "cta": "Open review queue"
       }
     },
     "workflow": {
-      "title": "A practical daily loop",
-      "subtitle": "Trade Basic gets more useful when your journal and a partner journal live inside the same review loop. System 1 makes snap judgments, System 2 corrects through review — and the loop itself is the engine that builds capability.",
+      "title": "From judgment to correction",
+      "subtitle": "Trade Basic keeps capture, planning, tracking, and review in one data trail. You do not need perfect predictions; you need decisions that leave evidence you can revisit.",
       "step1": {
-        "label": "Write",
-        "title": "Record your own market read before memory edits it",
-        "description": "Write the setup, risk, and reasoning down while the market is still live so your later review has a real baseline."
+        "label": "Capture",
+        "title": "Keep the judgment before memory edits it",
+        "description": "Use Quick Diary for the market read, emotion, risk, or next move. Add structure later when the decision needs more context."
       },
       "step2": {
-        "label": "Link",
-        "title": "Create the partner relationship and decide whether to share diaries",
-        "description": "Partner links are many-to-many, but sharing is still your choice for each relationship. Turn it on only when you want this account timeline visible."
+        "label": "Plan",
+        "title": "Size the position, then write the trade plan",
+        "description": "Use the position calculator to estimate risk and size, then save entry, stop, target, maximum size, and invalidation conditions."
       },
       "step3": {
-        "label": "Automate",
-        "title": "If the partner is AI, create a scoped API key that can only create diaries",
-        "description": "The key belongs to the partner account, is shown once, and should be stored by the external agent. It does not replace normal web login."
+        "label": "Track",
+        "title": "Keep diaries, trades, holdings, and reminders aligned",
+        "description": "Transactions live with the diary, holdings show value and risk, and alerts plus the calendar keep follow-up visible."
       },
       "step4": {
-        "label": "Compare",
-        "title": "Open compare view to read both diaries side by side",
-        "description": "Use same-day diary pairs to review reasoning gaps without exposing stock positions."
+        "label": "Review",
+        "title": "Use reviews and performance to find the next correction",
+        "description": "Revisit thesis, risk, and execution. After trades close, inspect realized P/L and win rate by strategy and emotion."
       }
     },
     "surfaces": {
-      "title": "What each page is for",
-      "subtitle": "Each page should do one job. Do not treat the app like a bucket of pretty panels.",
-      "quickNotes": {
-        "title": "Quick Notes",
-        "description": "The fastest capture point for one-line observations, tags, reminders, and raw trading context."
+      "title": "The workbench: one job per page",
+      "subtitle": "Start at the diary desk after signing in. The other pages handle planning, holdings, review, or collaboration when you need them.",
+      "quickDiary": {
+        "title": "Quick Diary",
+        "description": "The fastest capture point. Choose a template, date, tags, and reminders, then create a diary or append to today."
       },
       "diaries": {
-        "title": "Full Diaries",
-        "description": "Your source of truth. This is the version you want to compare against a partner later."
+        "title": "Diary Desk",
+        "description": "Start from the latest diary, alerts, or trades, then filter the judgment trail. This is the authenticated home workspace."
       },
-      "timeline": {
-        "title": "Timeline",
-        "description": "Review your own long-term sequence here, then jump into compare when you need same-day contrast."
+      "reviews": {
+        "title": "Review Queue",
+        "description": "Work through unscheduled, overdue, today, upcoming, and completed reviews. Revisit thesis, risk, execution, and outcome."
       },
-      "alerts": {
-        "title": "Alerts",
-        "description": "The follow-up layer that keeps important review points from disappearing after you write them down."
+      "tradePlans": {
+        "title": "Trade Plans",
+        "description": "Write entry zone, stop, target, maximum size, and invalidation before the market makes you improvise."
+      },
+      "holdings": {
+        "title": "Holdings",
+        "description": "Track market value, unrealized P/L, allocation, and concentration. Holdings remain private even when you share with a partner."
+      },
+      "watchlist": {
+        "title": "Watchlist",
+        "description": "Track symbols, open their stock timeline and current Stock Note, then reorder or archive what you are watching."
+      },
+      "performance": {
+        "title": "Strategy Performance",
+        "description": "Review realized P/L and win rate by strategy and emotion for closed trades. No predictions — just your record."
+      },
+      "marketRotation": {
+        "title": "Market Rotation Monitor",
+        "description": "Read Market State, sector breadth, rotation ranks, and two-week changes across ETF universes. It is research, not a holdings list."
+      },
+      "partners": {
+        "title": "Partners and API keys",
+        "description": "Invite a human or AI partner and control diary sharing separately from stock-note sharing. Holdings stay in your account."
       },
       "compare": {
         "title": "Partner Compare",
-        "description": "Choose an accepted partner and line up the same-day diaries side by side. Diary content and tags are visible here; stock holdings are not."
-      },
-      "calendar": {
-        "title": "Calendar",
-        "description": "Visualize your journaling rhythm. See which days you wrote, set alerts, or made trades — all at a glance."
-      },
-      "stocks": {
-        "title": "Portfolio",
-        "description": "Track holdings, P/L, and market value changes. Use the allocation chart to watch where your capital flows."
-      },
-      "discipline": {
-        "title": "Trading Discipline",
-        "description": "Store your battle-tested trading rules as a checklist. Export and share with other traders."
-      },
-      "blog": {
-        "title": "Blog",
-        "description": "Read investment insights and analysis articles. Public content — no login required."
+        "description": "An advanced collaboration surface. Choose an accepted partner with sharing enabled and line up same-day diaries side by side."
       }
     },
     "tools": {
-      "title": "Investment Toolkit",
-      "subtitle": "Each tool does one job. Pick the one that solves your current problem — don't try to use them all at once.",
+      "title": "Research tools: open them when needed",
+      "subtitle": "Tools sit beside the diary workflow. Name the problem first, then choose the one tool that helps; you do not need to study them all at once.",
       "positionSizing": {
         "title": "Position Sizing",
-        "description": "Enter capital and risk parameters to calculate a sensible position size. Supports pyramid, rectangular, and other scaling strategies."
+        "description": "Enter capital, price, and risk parameters to estimate a sensible scaling position. Carry the result into a diary or trade plan."
       },
       "financialFreedom": {
         "title": "Financial Freedom",
-        "description": "Estimate your FIRE number and see how far you are from covering living expenses with passive income."
+        "description": "Estimate a FIRE target from expenses, return, and withdrawal assumptions. It is a planning reference, not a return guarantee."
       },
       "relativeValue": {
         "title": "Relative Value",
-        "description": "Compare price histories of two tickers to calculate relative strength and spot undervalued opportunities."
-      },
-      "etf": {
-        "title": "ETF Analysis",
-        "description": "Track and compare ETF performance and price trends. Manage your watchlist of interesting candidates."
+        "description": "Put two symbols into the same price context to compare relative strength and target-price differences."
       },
       "seasonality": {
         "title": "Seasonality",
-        "description": "Use historical data to see which months have the highest win rates and which call for caution. Not a guarantee — just a reference baseline."
+        "description": "Use historical monthly data to see seasonal strength, best months, and weak months as context — not a guarantee."
       },
       "secFilings": {
         "title": "SEC Filings Downloader",
-        "description": "Search official EDGAR filings and download original documents or ZIP packages."
+        "description": "Search official SEC EDGAR filings, inspect submitted documents, and download originals or batch ZIPs."
       }
     },
     "cta": {
-      "title": "Write clearly first, then bring in a partner",
-      "description": "Once you can keep a diary rhythm, connect a partner, and use same-day compare, the product stops being a note pile and starts acting like a review system.",
-      "primaryGuest": "Start with an account",
-      "primaryAuth": "Open settings",
+      "title": "Capture today’s decision",
+      "description": "One clear market read is enough to start a reviewable trail. Write it down first; add the rest of the workflow as the decision develops.",
+      "primaryGuest": "Create an account",
+      "primaryAuth": "Open diary desk",
       "secondary": "Read builder notes"
     }
   },

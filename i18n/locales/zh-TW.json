@@ -980,130 +980,131 @@
     }
   },
   "howToUse": {
-    "badge": "使用流程",
+    "badge": "使用指南",
     "hero": {
-      "title": "如何使用 Trade Basic，把想法、交易、提醒與復盤串成一套流程",
-      "subtitle": "先把自己的市場判斷寫下來，再接上真人或 AI partner，做同一天的左右對照。"
+      "title": "把每次交易判斷，變成下一次能用的經驗",
+      "subtitle": "快速記下想法，補上計畫、交易與提醒，再用複盤與績效找出真正有效的做法。",
+      "secondary": "先看完整流程"
     },
     "gettingStarted": {
-      "title": "先跑通一套帶 partner 的最小完整循環",
-      "subtitle": "第一天不用把每個功能都摸熟。先登入、寫一篇 diary、接上一個 partner，再打開 compare。",
+      "title": "先走完一個最小循環",
+      "subtitle": "不用一次學會每個頁面。先捕捉判斷、補足上下文，再按期限回看。",
       "step1": {
-        "eyebrow": "步驟 1",
-        "title": "先登入，確保 diary、partner 與 API key 都掛在正確帳號下面",
-        "description": "partner 分享、對照頁與 API key 管理都依賴同一個登入狀態。先進入正確工作區，別把資料記到錯的人身上。",
-        "cta": "建立帳號"
+        "eyebrow": "捕捉 · Quick Diary",
+        "title": "先把當下的判斷記下來",
+        "description": "盤中先寫市場觀察、情緒、風險或下一步，不必等到內容完美才開始。需要時可以建立新日記，也可以追加到今天。",
+        "cta": "開啟 Quick Diary"
       },
       "step2": {
-        "eyebrow": "步驟 2",
-        "title": "先寫一篇自己的 diary，留下一個值得被對照的基準",
-        "description": "Quick Notes 可以先抓念頭，但真正拿來比較的市場判斷，最好整理成正式 diary，把日期、標籤與上下文都寫清楚。",
-        "cta": "打開日記"
+        "eyebrow": "整理 · Journal Desk",
+        "title": "補上 thesis、風險、交易與提醒",
+        "description": "日記工作台把每日判斷、交易與提醒放在同一條脈絡裡；交易計畫也能在進場前把停損、目標與失效條件寫清楚。",
+        "cta": "查看日記工作台"
       },
       "step3": {
-        "eyebrow": "步驟 3",
-        "title": "去設定頁加 partner；真人可手寫，AI 之後可補 API key",
-        "description": "對方接受邀請後，雙方各自決定要不要分享這段關係的 account-level diary。歷史與未來 diary 都能被對照，但 stock 持倉會維持私密。",
-        "cta": "打開設定"
+        "eyebrow": "回看 · Review Queue",
+        "title": "在到期時回看假設與執行",
+        "description": "把值得回頭檢查的日記排進複盤佇列，依未排程、逾期、今日與即將到期整理，讓經驗真的回到下一次決策。",
+        "cta": "開啟複盤佇列"
       }
     },
     "workflow": {
-      "title": "一個務實的日常循環",
-      "subtitle": "Trade Basic 的價值不只是記錄——而是把你和 partner 的判斷放進同一套覆盤節奏。系統一靠直覺決策，系統二靠覆盤修正，而循環本身就是能力成長的引擎。",
+      "title": "從判斷到修正的工作流",
+      "subtitle": "Trade Basic 把捕捉、規劃、追蹤與複盤放在同一條資料脈絡裡。你不需要預測得完美，但要讓每次決策留下可回看的證據。",
       "step1": {
-        "label": "記錄",
-        "title": "先把你自己的市場判斷寫下來",
-        "description": "把 setup、風險與理由記在市場還活著的時候，不然回頭看時記憶已經替你亂改稿了。"
+        "label": "捕捉",
+        "title": "先把當下的判斷留住",
+        "description": "用 Quick Diary 記下市場觀察、情緒、風險或下一步；內容可以之後再補完整。"
       },
       "step2": {
-        "label": "連結",
-        "title": "建立 partner 關係，並決定這段關係要不要共享 diary",
-        "description": "partner 可以 many-to-many，但分享仍是逐段關係各自決定。你想分享才開，不想裸奔就別亂開。"
+        "label": "規劃",
+        "title": "先算部位，再寫清楚交易計畫",
+        "description": "用部位計算器估算風險與倉位，再把進場、停損、目標、最大部位和失效條件存成交易計畫。"
       },
       "step3": {
-        "label": "自動化",
-        "title": "如果 partner 是 AI，就替它建立只會 create diary 的 API key",
-        "description": "這把 key 屬於 partner 帳號，只顯示一次，該交給外部 agent 保管。它不是拿來取代正常網頁登入的。"
+        "label": "追蹤",
+        "title": "讓日記、交易、持倉與提醒對得上",
+        "description": "交易寫在日記裡，持倉頁看市值與風險，提醒和月曆則把需要回頭處理的事情留在視線內。"
       },
       "step4": {
-        "label": "對照",
-        "title": "打開 compare，把同一天的兩份 diary 左右掛著看",
-        "description": "用同日 diary 配對去找觀點落差，不要把 stock 部位也一起裸奔出去。"
+        "label": "複盤",
+        "title": "用 Review Queue 與策略績效找到下一個修正",
+        "description": "回看 thesis、風險和執行；交易關閉後，再按策略與情緒檢查已實現損益與勝率。"
       }
     },
     "surfaces": {
-      "title": "每一頁各自負責什麼",
-      "subtitle": "每個頁面都該只負責一件事，別把整個產品當成一堆漂亮面板。",
-      "quickNotes": {
-        "title": "Quick Notes",
-        "description": "最快的入口。用來記一句市場觀察、操作衝動、臨時提醒與標籤，先把脈絡留下來。"
+      "title": "工作台：每個頁面各自負責什麼",
+      "subtitle": "登入後先回到日記工作台；其他頁面各自處理規劃、持倉、複盤或協作，不必同時打開全部。",
+      "quickDiary": {
+        "title": "Quick Diary",
+        "description": "最快的捕捉入口。可以選模板、日期、標籤與提醒，並決定建立新日記或追加到今天。"
       },
       "diaries": {
-        "title": "完整日記",
-        "description": "你的正式版本。之後真要和 partner 對照，應該拿這裡的內容出來比，而不是拿零碎筆記硬湊。"
+        "title": "日記工作台",
+        "description": "從最新日記、提醒與交易開始下一步，再用篩選器找回自己的判斷軌跡。這是登入後的主要工作區。"
       },
-      "timeline": {
-        "title": "時間軸",
-        "description": "先看自己的長期節奏；要更直接的衝擊，再切去 compare 做同日對照。"
+      "reviews": {
+        "title": "複盤佇列",
+        "description": "按未排程、逾期、今日、即將到期與已完成分組，逐篇回看 thesis、風險、執行與結果。"
       },
-      "alerts": {
-        "title": "提醒管理",
-        "description": "集中追蹤所有需要回頭檢查的提醒，確保紀錄真的能進入下一次決策，而不是留在筆記裡。"
+      "tradePlans": {
+        "title": "交易計畫",
+        "description": "在市場讓你臨場反應以前，先把進場區間、停損、目標、最大部位與失效條件寫下來。"
+      },
+      "holdings": {
+        "title": "持倉總覽",
+        "description": "查看市值、未實現損益、資產配置與集中度；持倉是你的私人資料，不會因 partner 分享而公開。"
+      },
+      "watchlist": {
+        "title": "關注清單",
+        "description": "追蹤有興趣的標的，從清單進入股票時間線與當前 Stock Note，管理排序或封存。"
+      },
+      "performance": {
+        "title": "策略績效",
+        "description": "只看已關閉交易的已實現損益、勝率，以及策略與情緒的分布；不替你預測，只把紀錄攤開。"
+      },
+      "marketRotation": {
+        "title": "市場輪動監控",
+        "description": "以 Market State、產業廣度、輪動排名與雙週變化觀察 ETF 領先與轉弱，不是個人持倉清單。"
+      },
+      "partners": {
+        "title": "夥伴與 API keys",
+        "description": "邀請真人或 AI 夥伴，分開控制 diary 與股票筆記分享；持倉永遠留在自己的帳號裡。"
       },
       "compare": {
         "title": "Partner Compare",
-        "description": "選一個已接受的 partner，把同一天的兩份 diary 左右排開來看。這裡看得到 diary 與標籤，但看不到 stock 持倉。"
-      },
-      "calendar": {
-        "title": "月曆總覽",
-        "description": "用月曆視覺化你的紀錄節奏。哪些天有寫日記、哪些天放了提醒，一眼就看出來。"
-      },
-      "stocks": {
-        "title": "持倉管理",
-        "description": "集中看所有持倉的損益與市值變化，用資產配置圖追蹤資金流向。"
-      },
-      "discipline": {
-        "title": "交易紀律",
-        "description": "把你反覆驗證過的交易原則存成清單，也能匯出分享給其他交易者。"
-      },
-      "blog": {
-        "title": "交易手札",
-        "description": "閱讀投資觀點與分析文章，公開內容不用登入也能看。"
+        "description": "進階協作入口。選擇已接受且開啟分享的夥伴，把同一天的兩份 diary 並排回看。"
       }
     },
     "tools": {
-      "title": "投資工具箱",
-      "subtitle": "每一把工具都只做一件事，拿來解決你當下的問題，別想一次全用。",
+      "title": "研究工具：需要時再打開",
+      "subtitle": "工具和日記工作流分開。先明確知道要解決什麼問題，再選一把工具，不必一次全部研究。",
       "positionSizing": {
-        "title": "建倉計算器",
-        "description": "輸入資金與風險參數，算出合理的進場部位大小。支援金字塔、矩形等分批建倉策略。"
+        "title": "部位計算器",
+        "description": "輸入資金、價格與風險參數，估算分批建倉的合理部位，結果可帶回日記或交易計畫。"
       },
       "financialFreedom": {
         "title": "財務自由計算機",
-        "description": "估算你的 FIRE 數字，看看距離用被動收入覆蓋生活費還有多遠。"
+        "description": "用支出、報酬率與提領假設估算 FIRE 目標，當作長期規劃的參考，不是報酬保證。"
       },
       "relativeValue": {
         "title": "相對價值計算器",
-        "description": "輸入兩檔標的的價格歷史，算出相對強弱，找出被低估的機會。"
-      },
-      "etf": {
-        "title": "ETF 分析",
-        "description": "追蹤、比較 ETF 表現與價格走勢，用觀察清單管理你感興趣的標的。"
+        "description": "把兩檔標的放在同一個價格脈絡裡比較，觀察相對強弱與目標價格差異。"
       },
       "seasonality": {
         "title": "季節性分析",
-        "description": "用歷史數據看哪些月份的勝率最高、哪些月份該保守。不保證未來，但能幫你建立參考基準。"
+        "description": "用歷史月份資料查看季節性強弱、最佳與最弱月份，建立背景參考，不把歷史當成保證。"
       },
       "secFilings": {
         "title": "SEC 申報文件下載器",
-        "description": "搜尋 EDGAR 官方申報，下載原始文件或 ZIP 壓縮包。"
+        "description": "搜尋 SEC EDGAR 官方申報，查看提交文件並下載原始檔案或批次 ZIP。"
       }
     },
     "cta": {
-      "title": "先把自己寫清楚，再拿 partner 來對照",
-      "description": "當你能穩定寫 diary、接上 partner，再用 compare 頁回看觀點差異，這工具才真的開始幫你打工。",
-      "primaryGuest": "從帳號開始",
-      "primaryAuth": "前往設定",
+      "title": "先記下今天的判斷",
+      "description": "一條清楚的市場觀察，就是下一次複盤可以驗證的起點。先寫下來，其他流程再逐步補上。",
+      "primaryGuest": "建立帳號",
+      "primaryAuth": "前往日記工作台",
       "secondary": "閱讀建立者筆記"
     }
   },
