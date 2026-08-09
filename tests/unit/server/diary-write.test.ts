@@ -5,6 +5,7 @@ const {
   mockPrismaDiaryFindFirst,
   mockPrismaDiaryCreate,
   mockPrismaDiaryUpdate,
+  mockPrismaDiaryDelete,
   mockPrismaTransactionFindMany,
   mockPrismaTransaction,
   mockTxDiaryCreate,
@@ -21,6 +22,7 @@ const {
   mockPrismaDiaryFindFirst: vi.fn(),
   mockPrismaDiaryCreate: vi.fn(),
   mockPrismaDiaryUpdate: vi.fn(),
+  mockPrismaDiaryDelete: vi.fn(),
   mockPrismaTransactionFindMany: vi.fn(),
   mockPrismaTransaction: vi.fn(),
   mockTxDiaryCreate: vi.fn(),
@@ -41,6 +43,7 @@ vi.mock('~/lib/prisma', () => ({
       findFirst: mockPrismaDiaryFindFirst,
       create: mockPrismaDiaryCreate,
       update: mockPrismaDiaryUpdate,
+      delete: mockPrismaDiaryDelete,
     },
     transaction: {
       findMany: mockPrismaTransactionFindMany,
@@ -668,7 +671,7 @@ describe('createDiaryForUser', () => {
 // Tests for updateDiaryForUser
 // ============================================================
 
-import { updateDiaryForUser } from '~/server/utils/diary-write'
+import { deleteDiaryForUser, updateDiaryForUser } from '~/server/utils/diary-write'
 
 describe('updateDiaryForUser', () => {
   beforeEach(() => {
@@ -936,7 +939,7 @@ describe('updateDiaryForUser', () => {
     )
   })
 
-  it('should handle empty alerts gracefully', async () => {
+  it('preserves transactions and alerts when optional child fields are omitted', async () => {
     mockPrismaDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n })
 
     await updateDiaryForUser({
@@ -945,8 +948,8 @@ describe('updateDiaryForUser', () => {
       body: { title: 'Title', content: 'Content' },
     })
 
-    // Alerts should still be deleted even if empty
-    expect(mockTxAlertDeleteMany).toHaveBeenCalled()
+    expect(mockTxTransactionDeleteMany).not.toHaveBeenCalled()
+    expect(mockTxAlertDeleteMany).not.toHaveBeenCalled()
     expect(mockTxDiaryUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.not.objectContaining({
@@ -954,6 +957,128 @@ describe('updateDiaryForUser', () => {
         }),
       })
     )
+  })
+
+  it('does not allow generic Diary updates to bypass structured review completion', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n, reviewStatus: 'pending' })
+
+    await updateDiaryForUser({
+      userId: '1',
+      diaryId: '12',
+      body: {
+        title: 'Title',
+        content: 'Content',
+        reviewStatus: 'reviewed',
+        reviewedAt: '2026-08-09T04:00:00.000Z',
+      } as any,
+    })
+
+    const updateData = mockTxDiaryUpdate.mock.calls[0]?.[0].data
+    expect(updateData).not.toHaveProperty('reviewStatus')
+    expect(updateData).not.toHaveProperty('reviewedAt')
+  })
+
+  it('clears transactions and alerts when empty arrays are provided explicitly', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n })
+
+    await updateDiaryForUser({
+      userId: '1',
+      diaryId: '12',
+      body: { title: 'Title', content: 'Content', transactions: [], alerts: [] },
+    })
+
+    expect(mockTxTransactionDeleteMany).toHaveBeenCalled()
+    expect(mockTxAlertDeleteMany).toHaveBeenCalled()
+  })
+
+  it('rejects clearing an earlier BUY when a later Diary SELL depends on it', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({
+      id: 12n,
+      userId: 1n,
+      date: new Date('2026-05-01T12:00:00Z'),
+    })
+    mockPrismaTransactionFindMany.mockResolvedValue([{
+      id: 201n,
+      symbol: 'AAPL',
+      type: 'SELL',
+      quantity: 10,
+      price: 120,
+      tradeDate: new Date('2026-05-02T12:00:00Z'),
+    }])
+
+    await expect(updateDiaryForUser({
+      userId: '1',
+      diaryId: '12',
+      body: { title: 'Remove old buy', content: 'Should be rejected', transactions: [] },
+    })).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      details: [expect.objectContaining({ field: 'transactions' })],
+    })
+
+    expect(mockTxTransactionDeleteMany).not.toHaveBeenCalled()
+    expect(mockTxDiaryUpdate).not.toHaveBeenCalled()
+  })
+
+  it('rejects reducing an earlier BUY below a later SELL quantity', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n })
+    mockPrismaTransactionFindMany.mockResolvedValue([{
+      id: 201n,
+      symbol: 'AAPL',
+      type: 'SELL',
+      quantity: 10,
+      price: 120,
+      tradeDate: new Date('2026-05-02T12:00:00Z'),
+    }])
+
+    await expect(updateDiaryForUser({
+      userId: '1',
+      diaryId: '12',
+      body: {
+        title: 'Reduce old buy',
+        content: 'Should be rejected',
+        transactions: [{
+          id: '100',
+          symbol: 'AAPL',
+          type: 'BUY',
+          quantity: 5,
+          price: 100,
+          tradeDate: '2026-05-01T12:00:00Z',
+        }],
+      },
+    })).rejects.toMatchObject({ code: 'SYS_VALIDATION_ERROR' })
+
+    expect(mockTxTransactionUpdateMany).not.toHaveBeenCalled()
+  })
+
+  it('allows an earlier BUY edit when the projected full ledger remains valid', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n })
+    mockPrismaTransactionFindMany.mockResolvedValue([{
+      id: 201n,
+      symbol: 'AAPL',
+      type: 'SELL',
+      quantity: 10,
+      price: 120,
+      tradeDate: new Date('2026-05-02T12:00:00Z'),
+    }])
+
+    await expect(updateDiaryForUser({
+      userId: '1',
+      diaryId: '12',
+      body: {
+        title: 'Keep enough shares',
+        content: 'Valid projected ledger',
+        transactions: [{
+          id: '100',
+          symbol: 'AAPL',
+          type: 'BUY',
+          quantity: 10,
+          price: 105,
+          tradeDate: '2026-05-01T12:00:00Z',
+        }],
+      },
+    })).resolves.toBeDefined()
+
+    expect(mockTxTransactionUpdateMany).toHaveBeenCalled()
   })
 
   it('should persist recurring_mode from diary UI as a recurring series', async () => {
@@ -979,5 +1104,41 @@ describe('updateDiaryForUser', () => {
       data: { parentId: 501n },
     })
     expect(mockTxAlertCreateMany).toHaveBeenCalled()
+  })
+})
+
+describe('deleteDiaryForUser complete ledger validation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockPrismaDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n })
+    mockPrismaDiaryDelete.mockResolvedValue({ id: 12n })
+    mockPrismaTransactionFindMany.mockResolvedValue([])
+  })
+
+  it('rejects deleting a Diary when a later SELL depends on its BUY', async () => {
+    mockPrismaTransactionFindMany.mockResolvedValue([{
+      id: 201n,
+      symbol: 'AAPL',
+      type: 'SELL',
+      quantity: 10,
+      price: 120,
+      tradeDate: new Date('2026-05-02T12:00:00Z'),
+    }])
+
+    await expect(deleteDiaryForUser(12n, 1n)).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+    })
+    expect(mockPrismaDiaryDelete).not.toHaveBeenCalled()
+  })
+
+  it('allows deleting a Diary when the remaining full ledger stays valid', async () => {
+    await expect(deleteDiaryForUser(12n, 1n)).resolves.toBeUndefined()
+    expect(mockPrismaTransactionFindMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: {
+        diary: { userId: 1n },
+        diaryId: { not: 12n },
+      },
+    }))
+    expect(mockPrismaDiaryDelete).toHaveBeenCalledWith({ where: { id: 12n } })
   })
 })

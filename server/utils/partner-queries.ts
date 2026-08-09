@@ -18,7 +18,7 @@ export const LINK_INCLUDE = {
   },
 } as const
 
-const COMPARE_DIARY_SELECT = {
+export const COMPARE_DIARY_SELECT = {
   id: true,
   userId: true,
   title: true,

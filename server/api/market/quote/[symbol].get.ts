@@ -7,7 +7,6 @@
 import type { H3Event } from 'h3'
 import { fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
-import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import {
   buildMarketQuoteCacheKey,
@@ -31,7 +30,6 @@ function resolveSymbol(event: H3Event): string | undefined {
 }
 
 export default defineEventHandler(async (event) => {
-  const log = logger.api.withRequestId(event.context.requestId)
   const symbol = resolveSymbol(event)
   if (!symbol) {
     throw Errors.validationError([{ field: 'symbol', message: 'Missing symbol' }]).toH3Error()

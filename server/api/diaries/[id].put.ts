@@ -17,12 +17,23 @@ export default defineEventHandler(async (event): Promise<Diary> => {
   const diaryId = parsePositiveBigIntParam(event, 'id')
   const body = await readBody(event)
 
-  // Auto-set reviewedAt when marking as reviewed
-  if (body?.reviewStatus === 'reviewed' && !body.reviewedAt) {
-    body.reviewedAt = new Date()
-  }
-
   try {
+    const reviewOwnedFields = [
+      'reviewStatus',
+      'reviewedAt',
+      'reviewOutcome',
+      'reviewSummary',
+      'reviewLearning',
+      'reviewAdjustment',
+    ]
+    const invalidField = reviewOwnedFields.find(field => body && Object.hasOwn(body, field))
+    if (invalidField) {
+      throw Errors.validationError([{
+        field: invalidField,
+        message: 'Structured review fields must be updated through the review endpoint',
+      }])
+    }
+
     const diary = await updateDiaryForUser({
       userId,
       diaryId,

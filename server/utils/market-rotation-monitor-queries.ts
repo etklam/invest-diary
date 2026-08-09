@@ -15,6 +15,7 @@ import { toMarketState } from '~/lib/market-rotation/state'
 import type { MaStatus, RotationSignal, SignalStatus } from '~/lib/market-rotation/signal'
 import { toNumber, type DecimalLike } from '~/lib/market-rotation/decimal'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
+import type { RankScope } from '~/lib/market-rotation/types'
 import { buildNormalizedTrendSeries } from '~/lib/market-rotation/trend-series'
 import { loadQualifiedDatesForScope, type QualifiedDateWindow } from '~/lib/market-rotation/qualified-date'
 import {
@@ -36,7 +37,7 @@ interface MonitorPrisma {
       select: { date: true }
     }) => Promise<{ date: Date } | null>
     findMany: (args: {
-      where: { rankScope: string; date: Date }
+      where: { rankScope: string; date: Date; symbol?: { in: string[] } }
     }) => Promise<Array<Record<string, unknown>>>
     groupBy: (args: {
       by: ['date']
@@ -59,9 +60,8 @@ interface MonitorPrisma {
 /**
  * Build a symbol → name map from the universe for the given scope.
  */
-function buildNameMap(rankScope: string): Map<string, string> {
-  const scope = rankScope as 'sectors' | 'indexes' | 'core'
-  const universe = getUniverseForScope(scope)
+function buildNameMap(rankScope: RankScope): Map<string, string> {
+  const universe = getUniverseForScope(rankScope)
   const map = new Map<string, string>()
   for (const entry of universe) {
     map.set(entry.symbol, entry.name)
@@ -120,7 +120,7 @@ const DEFAULT_UNIVERSE_KEY = 'SP500_NDX'
  */
 export async function getLatestMonitorRows(
   prisma: MonitorPrisma,
-  rankScope: string,
+  rankScope: RankScope,
 ): Promise<{
   rows: MarketRotationMonitorRow[]
   asOfDate: Date | null
@@ -136,11 +136,14 @@ export async function getLatestMonitorRows(
     return { rows: [], asOfDate: null, comparisonWindow }
   }
 
-  // Step 2: Read all snapshots for that date
+  // Step 2: Read canonical snapshots only; stale symbols must not leak into
+  // ranking, breadth, or coverage after the qualified date is selected.
+  const canonicalSymbols = getUniverseForScope(rankScope).map(entry => entry.symbol)
   const rawRows = await prisma.marketRotationSnapshot.findMany({
     where: {
       rankScope,
       date: latestDate,
+      symbol: { in: canonicalSymbols },
     },
   })
 

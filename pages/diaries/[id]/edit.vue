@@ -80,7 +80,7 @@
         v-model:content="form.content"
       />
 
-      <!-- Thesis & Risk -->
+      <!-- Original decision context -->
       <div class="grid gap-4 md:grid-cols-2">
         <div>
           <label class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
@@ -102,6 +102,29 @@
             :placeholder="$t('review.fields.riskPlaceholder')"
             class="mt-1 w-full rounded-lg border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
             rows="3"
+          />
+        </div>
+        <div>
+          <label for="diary-execution" class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
+            {{ $t('review.fields.execution') }}
+          </label>
+          <textarea
+            id="diary-execution"
+            v-model="form.execution"
+            :placeholder="$t('review.fields.executionPlaceholder')"
+            class="mt-1 w-full rounded-lg border border-dt-border bg-dt-surface p-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none"
+            rows="3"
+          />
+        </div>
+        <div>
+          <label for="diary-review-due" class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">
+            {{ $t('review.fields.reviewDue') }}
+          </label>
+          <input
+            id="diary-review-due"
+            v-model="form.reviewDueAt"
+            type="date"
+            class="mt-1 w-full rounded-lg border border-dt-border bg-dt-surface p-3 font-data text-sm text-dt-text focus:border-dt-primary focus:outline-none"
           />
         </div>
       </div>

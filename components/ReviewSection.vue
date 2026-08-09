@@ -24,7 +24,7 @@
             </h3>
           </div>
           <StatusBadge :tone="completed ? 'success' : tone">
-            {{ statusLabel(item.reviewStatus) }}
+            {{ completed ? completedLabel(item) : statusLabel(item.reviewStatus) }}
           </StatusBadge>
         </div>
 
@@ -56,18 +56,11 @@
         </dl>
 
         <div class="mt-4 flex flex-wrap gap-2 border-t border-dt-border pt-4">
-          <NuxtLink :to="`/diaries/${item.id}`">
-            <BaseButton variant="secondary">
-              {{ $t('review.reviewNow') }}
+          <NuxtLink :to="`/diaries/${item.id}/review`">
+            <BaseButton :variant="completed ? 'secondary' : 'primary'">
+              {{ completed ? $t('review.viewReview') : $t('review.startReview') }}
             </BaseButton>
           </NuxtLink>
-          <BaseButton
-            v-if="!completed"
-            variant="primary"
-            @click="$emit('markReviewed', item)"
-          >
-            {{ $t('review.markReviewed') }}
-          </BaseButton>
         </div>
       </article>
     </div>
@@ -88,6 +81,7 @@ interface DiaryReviewItem {
   reviewDueAt?: string | null
   reviewStatus: ReviewStatus
   reviewedAt?: string | null
+  reviewOutcome?: string | null
 }
 
 defineProps<{
@@ -97,10 +91,6 @@ defineProps<{
   items: DiaryReviewItem[]
   emptyText: string
   completed?: boolean
-}>()
-
-defineEmits<{
-  markReviewed: [item: DiaryReviewItem]
 }>()
 
 const { formatLocaleDate } = useTimezone()
@@ -124,5 +114,10 @@ const statusLabel = (status: ReviewStatus) => {
   if (status === 'reviewed') return t('review.statusReviewed')
   if (status === 'pending') return t('review.statusPending')
   return t('review.statusNone')
+}
+
+const completedLabel = (item: DiaryReviewItem) => {
+  if (!item.reviewOutcome) return t('review.legacyBadge')
+  return t(`review.outcomes.${item.reviewOutcome}`)
 }
 </script>

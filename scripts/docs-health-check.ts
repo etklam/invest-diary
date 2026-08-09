@@ -49,7 +49,6 @@ interface Issue {
   message: string
 }
 
-const allIssues: Issue[] = []
 const checksRun: { name: string; passed: boolean }[] = []
 
 /**
@@ -230,7 +229,6 @@ async function checkRootMarkdownWhitelist(): Promise<Issue[]> {
 /** Check #4 — current docs linking into `docs/archive/deprecated/`. */
 async function checkLinksToDeprecatedDocs(mdFiles: string[]): Promise<Issue[]> {
   const issues: Issue[] = []
-  const archiveDeprecated = join(REPO_ROOT, 'docs', 'archive', 'deprecated') + sep
   const archiveRoot = join(REPO_ROOT, 'docs', 'archive') + sep
   const archiveRootAlt = join(REPO_ROOT, 'docs', 'archives') + sep
 

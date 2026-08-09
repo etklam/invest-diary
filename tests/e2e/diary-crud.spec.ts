@@ -277,9 +277,7 @@ test('add transactions to a new diary entry', { timeout: 60_000 }, async ({ page
   })
 
   // Mock /api/diaries/by-date — new.vue checks for existing diary on mount
-  let byDateCalled = false
   await page.route('**/api/diaries/by-date**', async (route) => {
-    byDateCalled = true
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

@@ -55,30 +55,11 @@
 
     <template v-else>
       <ReviewSection
-        :title="$t('review.queue.sections.unscheduled')"
-        :description="$t('review.queue.sections.unscheduledDesc')"
-        tone="accent"
-        :items="reviewGroups.unscheduled"
-        :empty-text="$t('review.queue.empty.unscheduled')"
-        @mark-reviewed="markReviewed"
-      />
-
-      <ReviewSection
-        :title="$t('review.queue.sections.overdue')"
-        :description="$t('review.queue.sections.overdueDesc')"
+        :title="$t('review.queue.sections.needsAttention')"
+        :description="$t('review.queue.sections.needsAttentionDesc')"
         tone="danger"
-        :items="reviewGroups.overdue"
-        :empty-text="$t('review.queue.empty.overdue')"
-        @mark-reviewed="markReviewed"
-      />
-
-      <ReviewSection
-        :title="$t('review.queue.sections.today')"
-        :description="$t('review.queue.sections.todayDesc')"
-        tone="warning"
-        :items="reviewGroups.today"
-        :empty-text="$t('review.queue.empty.today')"
-        @mark-reviewed="markReviewed"
+        :items="needsAttention"
+        :empty-text="$t('review.queue.empty.needsAttention')"
       />
 
       <ReviewSection
@@ -87,24 +68,44 @@
         tone="accent"
         :items="reviewGroups.upcoming"
         :empty-text="$t('review.queue.empty.upcoming')"
-        @mark-reviewed="markReviewed"
       />
 
-      <ReviewSection
-        :title="$t('review.queue.sections.completed')"
-        :description="$t('review.queue.sections.completedDesc')"
-        tone="success"
-        :items="reviewGroups.completed"
-        :empty-text="$t('review.queue.empty.completed')"
-        completed
-      />
+      <details class="rounded-dt-md border border-dt-border bg-dt-surface p-4 shadow-dt-sm">
+        <summary class="cursor-pointer font-semibold text-dt-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/40">
+          {{ $t('review.queue.sections.completed') }} · {{ reviewGroups.completed.length }}
+        </summary>
+        <div class="mt-4">
+          <ReviewSection
+            :title="$t('review.queue.sections.completed')"
+            :description="$t('review.queue.sections.completedDesc')"
+            tone="success"
+            :items="reviewGroups.completed"
+            :empty-text="$t('review.queue.empty.completed')"
+            completed
+          />
+        </div>
+      </details>
+
+      <details class="rounded-dt-md border border-dt-border bg-dt-surface p-4 shadow-dt-sm">
+        <summary class="cursor-pointer font-semibold text-dt-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/40">
+          {{ $t('review.queue.sections.unscheduled') }} · {{ reviewGroups.unscheduled.length }}
+        </summary>
+        <div class="mt-4">
+          <ReviewSection
+            :title="$t('review.queue.sections.unscheduled')"
+            :description="$t('review.queue.sections.unscheduledDesc')"
+            tone="accent"
+            :items="reviewGroups.unscheduled"
+            :empty-text="$t('review.queue.empty.unscheduled')"
+          />
+        </div>
+      </details>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { SerializedId } from '~/types/common'
-import { isAuthSessionError } from '~/lib/auth/session-error'
 
 definePageMeta({
   middleware: 'auth',
@@ -121,6 +122,7 @@ interface DiaryReviewItem {
   reviewDueAt?: string | null
   reviewStatus: ReviewStatus
   reviewedAt?: string | null
+  reviewOutcome?: string | null
 }
 
 interface ReviewGroups {
@@ -139,10 +141,6 @@ const emptyGroups = (): ReviewGroups => ({
   completed: [],
 })
 
-const { t } = useI18n()
-const toast = useToast()
-const { runWithAuthRecovery } = useAuthRecovery()
-
 const { data, pending, error, refresh } = await useLazyFetch<ReviewGroups>('/api/reviews', {
   default: emptyGroups,
 })
@@ -151,23 +149,8 @@ const reviewGroups = computed(() => data.value ?? emptyGroups())
 const totalOpenReviews = computed(() =>
   reviewGroups.value.unscheduled.length + reviewGroups.value.overdue.length + reviewGroups.value.today.length + reviewGroups.value.upcoming.length
 )
-
-const markReviewed = async (item: DiaryReviewItem) => {
-  try {
-    await runWithAuthRecovery(async () => {
-      await $fetch(`/api/diaries/${item.id}/review`, {
-        method: 'PATCH',
-        body: {
-          reviewStatus: 'reviewed',
-          reviewedAt: new Date().toISOString(),
-        },
-      })
-    })
-    toast.success(t('review.queue.markedReviewed'))
-    await refresh()
-  } catch (err) {
-    if (isAuthSessionError(err)) return
-    toast.error(t('review.queue.markReviewedFailed'))
-  }
-}
+const needsAttention = computed(() => [
+  ...reviewGroups.value.overdue,
+  ...reviewGroups.value.today,
+])
 </script>

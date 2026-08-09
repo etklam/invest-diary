@@ -48,8 +48,11 @@ const messages: Record<string, string> = {
   'quickDiary.appendDiary': '追加到既有日記',
   'review.fields.thesis': '交易假設',
   'review.fields.risk': '風險',
+  'review.fields.execution': '執行',
+  'review.fields.reviewDue': '複盤期限',
   'review.fields.thesisPlaceholder': '交易假設',
   'review.fields.riskPlaceholder': '風險',
+  'review.fields.executionPlaceholder': '執行',
 }
 
 const activeWrappers: VueWrapper<any>[] = []
@@ -172,10 +175,6 @@ function mountPage(
   activeWrappers.push(wrapper)
 
   return { wrapper, fetchMock, router, diary }
-}
-
-function byDateCalls(fetchMock: ReturnType<typeof vi.fn>) {
-  return fetchMock.mock.calls.filter(([url]) => String(url).includes('/api/diaries/by-date'))
 }
 
 async function settleInitial(wrapper: VueWrapper<any>, initial: ReturnType<typeof deferred<any>>) {

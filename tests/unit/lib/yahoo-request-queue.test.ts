@@ -46,16 +46,16 @@ describe('runYahooRequest', () => {
       resolve: (value: string) => void
     }> = []
 
-    const makeFetcher = (label: string) => () => {
+    const makeFetcher = () => () => {
       const d = createDeferred<string>()
       deferreds.push({ promise: d.promise, resolve: d.resolve })
       return d.promise
     }
 
-    const p1 = runYahooRequest('a', makeFetcher('a'))
-    const p2 = runYahooRequest('b', makeFetcher('b'))
-    const p3 = runYahooRequest('c', makeFetcher('c'))
-    const p4 = runYahooRequest('d', makeFetcher('d'))
+    const p1 = runYahooRequest('a', makeFetcher())
+    const p2 = runYahooRequest('b', makeFetcher())
+    const p3 = runYahooRequest('c', makeFetcher())
+    const p4 = runYahooRequest('d', makeFetcher())
 
     // flush microtasks: first two acquire slots, third and fourth queue
     await vi.advanceTimersByTimeAsync(0)

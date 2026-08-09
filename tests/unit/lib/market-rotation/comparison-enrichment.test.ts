@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { enrichWithComparison, type EnrichedSnapshotInput, type FinalSnapshot } from '~/lib/market-rotation/comparison-enrichment'
+import { enrichWithComparison, type EnrichedSnapshotInput } from '~/lib/market-rotation/comparison-enrichment'
 
 // ─── Helpers ─────────────────────────────────────────────────────
 

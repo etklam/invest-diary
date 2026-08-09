@@ -18,7 +18,7 @@
 - **基礎元件系統建立：** 6 個新元件（LedgerCard, BaseButton, StatusBadge, DiaryNotePreview, EtfMobileCard, ReviewCandidateCard）全部使用 `dt-*` design token，支援亮/暗模式。
 - **頁面重構完成：** homepage hero、diaries/index（日記資料庫）、tools/etf（ETF board）、tools/position-sizing（建倉計算器）。Scoped CSS 平均減少 85%+。
 - **Token contract 保留：** `dt-*` tailwind class 映射不變，`design-tokens.css` 變數名稱不變。改動只觸及 value 和元件層。
-- **Structured Review：** Diary model 新增 thesis/risk/execution/reviewDueAt/reviewStatus/reviewedAt 欄位，支援交易假設記錄與複盤流程。
+- **Structured Review：** Diary 保留 thesis/risk/execution 原始決策，再以 reviewOutcome/reviewSummary/reviewLearning/reviewAdjustment 疊加事後複盤。專頁明確分隔唯讀原始脈絡與可編輯反思；Queue 優先呈現逾期/今日項目，Timeline 只顯示精簡結果，不把複盤內容灑得到處都是。
 - **字體角色不變：** `Fraunces`（展示）、`Source Sans 3`（內文/UI）、`IBM Plex Mono`（數據/程式碼）三件套。
 - **i18n 完整：** 所有新文案（hero copy、review prompts、field labels）均有 en/zh-TW/zh-CN 三語翻譯。
 

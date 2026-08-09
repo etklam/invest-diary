@@ -3,7 +3,7 @@ import {
   getQuickNoteReflectionMarketConditionLabel,
   resolveQuickNoteLocaleVariant,
 } from '~/lib/quicknote/template-localization'
-import type { QuickNoteTemplateData, QuickNoteTemplateKind, RecentClosedTrade } from '~/types/quicknote'
+import type { QuickNoteTemplateData, QuickNoteTemplateKind } from '~/types/quicknote'
 
 interface GenerateTemplateDraftInput {
   templateKind: QuickNoteTemplateKind

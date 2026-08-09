@@ -98,27 +98,14 @@ export interface DiaryLedgerBaselineTransaction {
   tradeDate: Date
 }
 
-/**
- * Read the cross-Diary ledger baseline. Ownership is deliberately expressed
- * through `diary.userId`; Transaction.userId is only a denormalized copy.
- *
- * Option A uses the target Diary date as the ledger cutoff. The current
- * Diary's old rows are excluded on update so a draft is not counted twice.
- */
-export async function readDiaryLedgerBaseline(
+/** Read the user's complete persisted ledger, optionally excluding one Diary. */
+export async function readUserTransactionLedger(
   userId: bigint,
-  targetDiaryDate: Date,
   excludeDiaryId?: bigint,
 ): Promise<DiaryLedgerBaselineTransaction[]> {
-  const { endOfDayUtc } = getUtcDayRange(targetDiaryDate)
-
   return await prisma.transaction.findMany({
     where: {
-      diary: {
-        userId,
-        date: { lte: targetDiaryDate },
-      },
-      tradeDate: { lte: endOfDayUtc },
+      diary: { userId },
       ...(excludeDiaryId !== undefined ? { diaryId: { not: excludeDiaryId } } : {}),
     },
     select: {
@@ -135,26 +122,17 @@ export async function readDiaryLedgerBaseline(
 
 async function validateDiaryTransactionsForUser(
   userId: bigint,
-  targetDiaryDate: Date,
-  transactions: TransactionInput[] | undefined,
+  transactions: TransactionInput[],
   excludeDiaryId?: bigint,
 ): Promise<void> {
-  if (!transactions?.length) return
-
-  const baselineRows = await readDiaryLedgerBaseline(userId, targetDiaryDate, excludeDiaryId)
-  let baselineHoldings: Map<string, number>
+  const persistedRows = await readUserTransactionLedger(userId, excludeDiaryId)
 
   try {
-    baselineHoldings = calculateLedgerHoldings({}, baselineRows)
+    calculateLedgerHoldings({}, [...persistedRows, ...transactions])
   } catch (error) {
     const message = error instanceof Error ? error.message : '既有交易帳本無效'
     throw Errors.validationError([{ field: 'transactions', message }])
   }
-
-  validateDiaryInput('valid', transactions, {
-    initialHoldings: baselineHoldings,
-    baselineAvailable: true,
-  })
 }
 
 // ---- Transaction diff types and pure function ----
@@ -325,7 +303,9 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
     // Appending is still a real diary write: validate the incoming ledger
     // rows before touching the existing aggregate, and persist new child
     // rows in the same transaction as the content merge.
-    await validateDiaryTransactionsForUser(userId, diaryDate, transactions)
+    if (transactions?.length) {
+      await validateDiaryTransactionsForUser(userId, transactions)
+    }
 
     const separator = '\n\n---\n\n'
     const mergedTags = tags?.length
@@ -393,7 +373,9 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
 
   // Server-side ledger validation is authoritative. The baseline includes
   // earlier Diaries owned by this user, then validates the current draft.
-  await validateDiaryTransactionsForUser(userId, diaryDate, transactions)
+  if (transactions?.length) {
+    await validateDiaryTransactionsForUser(userId, transactions)
+  }
 
   const diaryCreateArgs = {
     data: {
@@ -408,6 +390,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
       ...(risk !== undefined ? { risk } : {}),
       ...(execution !== undefined ? { execution } : {}),
       ...(reviewDueAt !== undefined ? { reviewDueAt: reviewDueAt ? new Date(reviewDueAt) : null } : {}),
+      ...(reviewDueAt ? { reviewStatus: 'pending' } : {}),
       transactions: {
         create: transactions?.map((tx) => ({
           ...mapTransactionWriteData(tx),
@@ -502,21 +485,29 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
     }
   }
 
-  await validateDiaryTransactionsForUser(userId, targetDiaryDate, body.transactions, diaryId)
+  if (body.transactions !== undefined) {
+    await validateDiaryTransactionsForUser(userId, body.transactions, diaryId)
+  }
 
   // --- Diff transactions ---
 
-  const diff = diffTransactions(body.transactions)
+  const diff = body.transactions === undefined
+    ? null
+    : diffTransactions(body.transactions)
 
   // --- Persist inside a Prisma transaction ---
 
-  const { title, content, alerts, tags, thesis, risk, execution, reviewDueAt, reviewStatus, reviewedAt } = body
+  const { title, content, alerts, tags, thesis, risk, execution, reviewDueAt } = body
 
   try {
     const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      await persistTransactionDiff(tx, diaryId, userId, diff)
-      const timezone = await resolveUserTimezone(tx, userId)
-      await replaceAlerts(tx, diaryId, alerts, timezone)
+      if (diff) {
+        await persistTransactionDiff(tx, diaryId, userId, diff)
+      }
+      if (alerts !== undefined) {
+        const timezone = await resolveUserTimezone(tx, userId)
+        await replaceAlerts(tx, diaryId, alerts, timezone)
+      }
 
       // Update the diary record
       return await tx.diary.update({
@@ -530,8 +521,9 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
           ...(risk !== undefined ? { risk } : {}),
           ...(execution !== undefined ? { execution } : {}),
           ...(reviewDueAt !== undefined ? { reviewDueAt: reviewDueAt ? new Date(reviewDueAt) : null } : {}),
-          ...(reviewStatus !== undefined ? { reviewStatus } : {}),
-          ...(reviewedAt !== undefined ? { reviewedAt: reviewedAt ? new Date(reviewedAt) : null } : {}),
+          ...(reviewDueAt !== undefined && existingDiary.reviewStatus !== 'reviewed'
+            ? { reviewStatus: reviewDueAt ? 'pending' : 'none' }
+            : {}),
         },
         include: {
           transactions: true,
@@ -570,5 +562,7 @@ export async function deleteDiaryForUser(
   if (!existing) {
     throw Errors.diaryNotFound(String(id))
   }
+
+  await validateDiaryTransactionsForUser(uid, [], id)
   await prisma.diary.delete({ where: { id } })
 }

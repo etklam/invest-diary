@@ -14,6 +14,8 @@ function createForm(overrides: Partial<DiaryAuthoringForm> = {}): DiaryAuthoring
     content: '',
     thesis: '',
     risk: '',
+    execution: '',
+    reviewDueAt: '',
     transactions: [],
     alerts: [],
     ...overrides,

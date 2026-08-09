@@ -28,6 +28,8 @@ export interface DiaryAuthoringForm {
   content: string
   thesis: string
   risk: string
+  execution: string
+  reviewDueAt: string
   transactions: DiaryAuthoringTransaction[]
   alerts: DiaryAuthoringAlert[]
 }

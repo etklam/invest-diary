@@ -2017,6 +2017,15 @@
     "statusReviewed": "Reviewed",
     "markReviewed": "Mark as reviewed",
     "reviewNow": "Review now",
+    "startReview": "Start review",
+    "viewReview": "View review",
+    "legacyBadge": "Reviewed · Legacy",
+    "outcomes": {
+      "INTACT": "Intact",
+      "PARTIAL": "Partially intact",
+      "INVALIDATED": "Invalidated",
+      "UNCLEAR": "Unclear"
+    },
     "dueIn": "Review due in {duration}",
     "overdue": "Review overdue",
     "prompts": {
@@ -2034,7 +2043,37 @@
       "execution": "Execution",
       "executionPlaceholder": "How did you actually execute?",
       "reviewDue": "Review due",
-      "reviewNotes": "Review notes"
+      "reviewNotes": "Review notes",
+      "outcome": "Outcome",
+      "outcomeHelp": "Judge the original decision, not just the profit or loss.",
+      "summary": "What happened",
+      "summaryHelp": "Summarize what the market and the position actually did.",
+      "learning": "What I learned",
+      "learningHelp": "Capture the evidence or reasoning worth remembering.",
+      "adjustment": "Next adjustment",
+      "adjustmentHelp": "State what you will repeat, stop, or change next time."
+    },
+    "page": {
+      "kicker": "Structured review",
+      "backToDiary": "Back to diary",
+      "loadFailed": "Failed to load review",
+      "originalContext": "Original decision context",
+      "originalContextDesc": "Read-only context preserved from when the decision was made.",
+      "noOriginalContext": "This older diary has no structured decision fields or content.",
+      "formTitle": "Review the decision",
+      "formDesc": "Choose an outcome and write at least one meaningful reflection.",
+      "completedTitle": "Completed review",
+      "completedDesc": "This decision has a structured review.",
+      "reviewedAt": "Latest review saved {date}",
+      "editReview": "Edit review",
+      "legacyNotice": "This diary was reviewed before structured reviews existed. Add details without rewriting the original record.",
+      "transactions": "Related transactions",
+      "tradePlans": "Related trade plans",
+      "validationError": "Choose an outcome and complete at least one reflection field.",
+      "save": "Save review",
+      "saving": "Saving…",
+      "saved": "Review saved",
+      "saveFailed": "Failed to save review"
     },
     "queue": {
       "kicker": "Review workflow",
@@ -2047,6 +2086,8 @@
       "markedReviewed": "Diary marked as reviewed",
       "markReviewedFailed": "Failed to mark diary as reviewed",
       "sections": {
+        "needsAttention": "Needs attention",
+        "needsAttentionDesc": "Overdue and due-today decisions come first.",
         "unscheduled": "Needs scheduling",
         "unscheduledDesc": "Pending reviews without a due date yet.",
         "overdue": "Overdue reviews",
@@ -2059,6 +2100,7 @@
         "completedDesc": "Recently reviewed diaries."
       },
       "empty": {
+        "needsAttention": "Nothing needs immediate review.",
         "unscheduled": "No unscheduled pending reviews.",
         "overdue": "No overdue reviews.",
         "today": "No reviews due today.",

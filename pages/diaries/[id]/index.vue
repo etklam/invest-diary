@@ -52,7 +52,7 @@
       </div>
     </div>
 
-    <div v-if="diary.thesis || diary.risk" class="grid gap-4 md:grid-cols-2">
+    <div v-if="diary.thesis || diary.risk || diary.execution" class="grid gap-4 md:grid-cols-3">
       <LedgerCard v-if="diary.thesis">
         <h3 class="text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">
           {{ t('diary.fields.thesis') }}
@@ -65,7 +65,32 @@
         </h3>
         <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-dt-text">{{ diary.risk }}</p>
       </LedgerCard>
+      <LedgerCard v-if="diary.execution">
+        <h3 class="text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">
+          {{ t('diary.fields.execution') }}
+        </h3>
+        <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-dt-text">{{ diary.execution }}</p>
+      </LedgerCard>
     </div>
+
+    <LedgerCard :title="t('review.page.kicker')">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm font-semibold text-dt-text">{{ diaryReviewLabel }}</p>
+          <p v-if="diary.reviewedAt" class="mt-1 font-data text-xs text-dt-text-muted">
+            {{ t('review.page.reviewedAt', { date: formatLocaleDateTime(diary.reviewedAt) }) }}
+          </p>
+          <p v-else-if="diary.reviewDueAt" class="mt-1 font-data text-xs text-dt-text-muted">
+            {{ t('review.fields.reviewDue') }} · {{ formatDate(diary.reviewDueAt) }}
+          </p>
+        </div>
+        <NuxtLink :to="`/diaries/${diary.id}/review`">
+          <BaseButton :variant="diary.reviewStatus === 'reviewed' ? 'secondary' : 'primary'">
+            {{ diary.reviewStatus === 'reviewed' ? t('review.viewReview') : t('review.startReview') }}
+          </BaseButton>
+        </NuxtLink>
+      </div>
+    </LedgerCard>
 
     <LedgerCard>
       <div class="prose dark:prose-invert max-w-none">
@@ -157,6 +182,13 @@ const { formatLocaleDateTime } = useTimezone()
 
 // Rename for template compatibility
 const formatDate = formatShortDate
+const diaryReviewLabel = computed(() => {
+  if (diary.value?.reviewOutcome) {
+    return `${t('review.statusReviewed')} · ${t(`review.outcomes.${diary.value.reviewOutcome}`)}`
+  }
+  if (diary.value?.reviewStatus === 'reviewed') return t('review.page.legacyNotice')
+  return t('review.page.formDesc')
+})
 
 const deleteDiary = async () => {
   if (!confirm(t('diary.deleteConfirm'))) return

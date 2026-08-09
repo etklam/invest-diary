@@ -76,7 +76,6 @@ import {
   toDate,
   createPosition,
   applyBuy,
-  applySell,
   isPositionClosed,
 } from '~/lib/position-state'
 import type { SymbolPosition } from '~/lib/position-state'

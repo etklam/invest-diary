@@ -34,4 +34,13 @@ describe('Timeline-first page contracts', () => {
     expect(guide).toContain("'/timeline/compare'")
     expect(guide).not.toContain("isAuthenticated.value ? '/diaries'")
   })
+
+  it('surfaces a compact structured review outcome without exposing review text', () => {
+    const timeline = source('pages/timeline/index.vue')
+    expect(timeline).toContain("diary.reviewStatus === 'reviewed'")
+    expect(timeline).toContain('reviewSignal(diary.reviewOutcome)')
+    expect(timeline).not.toContain('diary.reviewSummary')
+    expect(timeline).not.toContain('diary.reviewLearning')
+    expect(timeline).not.toContain('diary.reviewAdjustment')
+  })
 })

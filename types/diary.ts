@@ -14,6 +14,10 @@ export const DEFAULT_TAGS = [
 
 export type TagKey = typeof DEFAULT_TAGS[number]['key']
 
+export const REVIEW_OUTCOMES = ['INTACT', 'PARTIAL', 'INVALIDATED', 'UNCLEAR'] as const
+export type ReviewOutcome = typeof REVIEW_OUTCOMES[number]
+export type ReviewStatus = 'none' | 'pending' | 'reviewed'
+
 // ---- API / Domain Types (backward compatible) ----
 
 export interface TransactionInput {
@@ -50,9 +54,7 @@ export interface DiaryInput {
   thesis?: string
   risk?: string
   execution?: string
-  reviewDueAt?: string | Date
-  reviewStatus?: string
-  reviewedAt?: string | Date
+  reviewDueAt?: string | Date | null
 }
 
 // Prisma-like return shape used by APIs
@@ -76,8 +78,12 @@ export interface Diary {
   risk?: string | null
   execution?: string | null
   reviewDueAt?: Date | null
-  reviewStatus?: string | null
+  reviewStatus?: ReviewStatus | null
   reviewedAt?: Date | null
+  reviewOutcome?: ReviewOutcome | null
+  reviewSummary?: string | null
+  reviewLearning?: string | null
+  reviewAdjustment?: string | null
 }
 
 export interface DiariesApiResponse {

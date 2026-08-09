@@ -170,6 +170,10 @@
                   <Icon name="heroicons:banknotes" class="h-3.5 w-3.5" aria-hidden="true" />
                   {{ t('timeline.transactionsCount', { count: diary.transactions.length }) }}
                 </span>
+                <span v-if="diary.reviewStatus === 'reviewed'" class="timeline-meta-item inline-flex items-center gap-1 text-dt-secondary">
+                  <Icon name="heroicons:clipboard-document-check" class="h-3.5 w-3.5" aria-hidden="true" />
+                  {{ reviewSignal(diary.reviewOutcome) }}
+                </span>
               </div>
 
               <p class="mt-2.5 line-clamp-2 text-sm leading-[1.55] text-dt-text-muted">
@@ -220,6 +224,9 @@ const formatTimelineDay = (date: Date | string) => formatTimelinePart(date, { da
 const formatTimelineMonth = (date: Date | string) => formatTimelinePart(date, { month: 'short' })
 const formatTimelineWeekday = (date: Date | string) => formatTimelinePart(date, { weekday: 'short' })
 const formatCompactDate = (date: Date | string) => formatShortDate(date, timelineTimezone.value)
+const reviewSignal = (outcome?: string | null) => outcome
+  ? `${t('review.statusReviewed')} · ${t(`review.outcomes.${outcome}`)}`
+  : t('review.statusReviewed')
 
 definePageMeta({
   middleware: 'auth'

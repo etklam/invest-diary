@@ -121,6 +121,44 @@ describe('useAuth composable', () => {
     })
   })
 
+  it('does not share the refresh pipeline across SSR requests', async () => {
+    ;(process as any).client = false
+    ;(process as any).server = true
+    const cookies = [
+      'access-token=user-a; refresh-token=refresh-a',
+      'access-token=user-b; refresh-token=refresh-b',
+    ]
+    vi.stubGlobal('useRequestHeaders', vi.fn(() => ({
+      cookie: cookies.shift() ?? '',
+    })))
+
+    const { useAuth } = await import('~/composables/useAuth')
+    const authA = useAuth()
+    const authB = useAuth()
+
+    const mockFetch = globalThis.$fetch as ReturnType<typeof vi.fn>
+    mockFetch.mockResolvedValue({ ok: true })
+
+    await Promise.all([
+      authA.refreshAccessToken(),
+      authB.refreshAccessToken(),
+    ])
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(mockFetch).toHaveBeenNthCalledWith(1, '/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        cookie: 'access-token=user-a; refresh-token=refresh-a',
+      },
+    })
+    expect(mockFetch).toHaveBeenNthCalledWith(2, '/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        cookie: 'access-token=user-b; refresh-token=refresh-b',
+      },
+    })
+  })
+
   it('logs out and clears user state', async () => {
     const { useAuth } = await import('~/composables/useAuth')
     const auth = useAuth()

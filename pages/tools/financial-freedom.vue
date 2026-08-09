@@ -2,7 +2,7 @@
 import {
   withdrawalRatePresets,
 } from '~/lib/financialFreedom'
-import { formatCurrency, formatPercent, formatCompactCurrency } from '~/lib/format'
+import { formatCurrency, formatPercent } from '~/lib/format'
 import { formatYearMonth as formatDate } from '~/lib/dates'
 import { useFinancialFreedomCalculator } from '~/composables/useFinancialFreedomCalculator'
 import LedgerCard from '~/components/LedgerCard.vue'

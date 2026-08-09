@@ -129,6 +129,7 @@ describe('Review API Routes', () => {
         reviewStatus: 'pending',
         NOT: { reviewStatus: 'reviewed' },
       })
+      expect(mockDiaryFindMany.mock.calls[0]?.[0].select).toMatchObject({ reviewOutcome: true })
       expect(mockDiaryFindMany.mock.calls[1]?.[0].where).toMatchObject({
         userId: 7n,
         reviewDueAt: { lt: new Date('2026-06-13T16:00:00.000Z') },
@@ -173,22 +174,27 @@ describe('Review API Routes', () => {
   })
 
   describe('PATCH /api/diaries/:id/review', () => {
-    it('updates review status, reviewedAt, and reviewDueAt for an owned diary', async () => {
+    it('saves a structured review, trims reflection text, and owns the completion timestamp', async () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-06-14T10:00:00.000Z'))
       mockReadBody.mockResolvedValue({
-        reviewStatus: 'reviewed',
-        reviewedAt: '2026-06-14T10:00:00.000Z',
-        reviewDueAt: '2026-06-20T10:00:00.000Z',
+        reviewOutcome: 'PARTIAL',
+        reviewSummary: '  The setup worked, entry did not.  ',
+        reviewLearning: ' ',
+        reviewAdjustment: null,
       })
-      mockDiaryFindFirst.mockResolvedValue({ id: 10n, userId: 7n, transactions: [], alerts: [] })
+      mockDiaryFindFirst.mockResolvedValue({ id: 10n, title: 'Reviewed diary' })
       mockDiaryUpdate.mockResolvedValue({
         id: 10n,
-        userId: 7n,
         title: 'Reviewed diary',
         reviewStatus: 'reviewed',
         reviewedAt: new Date('2026-06-14T10:00:00.000Z'),
-        reviewDueAt: new Date('2026-06-20T10:00:00.000Z'),
+        reviewOutcome: 'PARTIAL',
+        reviewSummary: 'The setup worked, entry did not.',
+        reviewLearning: null,
+        reviewAdjustment: null,
         transactions: [],
-        alerts: [],
+        tradePlans: [],
       })
 
       const { default: handler } = await import('~/server/api/diaries/[id]/review.patch')
@@ -200,8 +206,11 @@ describe('Review API Routes', () => {
       expect(mockDiaryUpdate).toHaveBeenCalledWith(expect.objectContaining({
         where: { id: 10n },
         data: {
+          reviewOutcome: 'PARTIAL',
+          reviewSummary: 'The setup worked, entry did not.',
+          reviewLearning: null,
+          reviewAdjustment: null,
           reviewStatus: 'reviewed',
-          reviewDueAt: new Date('2026-06-20T10:00:00.000Z'),
           reviewedAt: new Date('2026-06-14T10:00:00.000Z'),
         },
       }))
@@ -209,33 +218,62 @@ describe('Review API Routes', () => {
       expect(result.reviewStatus).toBe('reviewed')
     })
 
-    it('clears reviewedAt when reverting to pending', async () => {
+    it('rejects status-only completion and client-supplied timestamps', async () => {
       mockReadBody.mockResolvedValue({
-        reviewStatus: 'pending',
-        reviewDueAt: null,
-      })
-      mockDiaryFindFirst.mockResolvedValue({ id: 10n, userId: 7n, transactions: [], alerts: [] })
-      mockDiaryUpdate.mockResolvedValue({
-        id: 10n,
-        userId: 7n,
-        title: 'Pending diary',
-        reviewStatus: 'pending',
-        reviewedAt: null,
-        reviewDueAt: null,
-        transactions: [],
-        alerts: [],
+        reviewOutcome: 'INTACT',
+        reviewSummary: 'Still valid',
+        reviewStatus: 'reviewed',
+        reviewedAt: '2026-06-14T10:00:00.000Z',
       })
 
       const { default: handler } = await import('~/server/api/diaries/[id]/review.patch')
-      await handler({ context: { user: { id: '7' }, requestId: 'req-review-pending' } } as any)
+      await expect(handler({ context: { user: { id: '7' }, requestId: 'req-review-invalid' } } as any))
+        .rejects.toMatchObject({ statusCode: 400 })
+      expect(mockDiaryUpdate).not.toHaveBeenCalled()
+    })
 
-      expect(mockDiaryUpdate).toHaveBeenCalledWith(expect.objectContaining({
-        data: {
-          reviewStatus: 'pending',
-          reviewDueAt: null,
-          reviewedAt: null,
-        },
+    it('rejects a review with only whitespace reflections', async () => {
+      mockReadBody.mockResolvedValue({
+        reviewOutcome: 'UNCLEAR',
+        reviewSummary: '  ',
+        reviewLearning: '\n',
+      })
+
+      const { default: handler } = await import('~/server/api/diaries/[id]/review.patch')
+      await expect(handler({ context: { user: { id: '7' }, requestId: 'req-review-empty' } } as any))
+        .rejects.toMatchObject({ statusCode: 400 })
+      expect(mockDiaryUpdate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('GET /api/diaries/:id/review', () => {
+    it('returns only an owned diary with decision, transaction, and trade-plan context', async () => {
+      mockDiaryFindFirst.mockResolvedValue({
+        id: 10n,
+        title: 'Decision context',
+        reviewStatus: 'reviewed',
+        reviewOutcome: null,
+        transactions: [{ id: 20n, symbol: 'AAPL' }],
+        tradePlans: [{ id: 30n, symbol: 'AAPL' }],
+      })
+
+      const { default: handler } = await import('~/server/api/diaries/[id]/review.get')
+      const result = await handler({ context: { user: { id: '7' }, requestId: 'req-review-get' } } as any)
+
+      expect(mockDiaryFindFirst).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: 10n, userId: 7n },
+        select: expect.objectContaining({
+          content: true,
+          execution: true,
+          reviewOutcome: true,
+          reviewSummary: true,
+          transactions: expect.any(Object),
+          tradePlans: expect.any(Object),
+        }),
       }))
+      expect(result.id).toBe('10')
+      expect(result.transactions[0].id).toBe('20')
+      expect(result.tradePlans[0].id).toBe('30')
     })
   })
 })

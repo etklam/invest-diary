@@ -48,25 +48,6 @@ vi.mock('~/lib/logger', () => ({
   },
 }))
 
-// ── Helpers ──────────────────────────────────────────────────────────────
-function makeWatchlistItem(overrides: {
-  id?: bigint
-  symbol?: string
-  name?: string
-  sortOrder?: number
-  latestPrice?: number | null
-  latestDate?: Date | null
-}) {
-  return {
-    id: overrides.id ?? 1n,
-    symbol: overrides.symbol ?? 'SPY',
-    name: overrides.name ?? 'SPDR S&P 500 ETF',
-    sortOrder: overrides.sortOrder ?? 0,
-    latestPrice: overrides.latestPrice ?? null,
-    latestDate: overrides.latestDate ?? null,
-  }
-}
-
 // ── Tests ────────────────────────────────────────────────────────────────
 describe('ETF watchlist routes', () => {
   beforeEach(() => {

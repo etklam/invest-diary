@@ -145,6 +145,20 @@ describe('server/utils/partner-queries', () => {
     })
   })
 
+  it('keeps Pair View on an explicit allowlist that excludes private decision and review fields', async () => {
+    const { COMPARE_DIARY_SELECT } = await import('~/server/utils/partner-queries')
+    const selected = Object.keys(COMPARE_DIARY_SELECT)
+
+    expect(selected).toEqual([
+      'id', 'userId', 'title', 'content', 'tagsString', 'createdVia',
+      'createdByLabel', 'date', 'createdAt', 'updatedAt',
+    ])
+    expect(selected).not.toEqual(expect.arrayContaining([
+      'thesis', 'risk', 'execution', 'reviewDueAt', 'reviewStatus', 'reviewedAt',
+      'reviewOutcome', 'reviewSummary', 'reviewLearning', 'reviewAdjustment',
+    ]))
+  })
+
   // ─── loadCompareContext ────────────────────────────────────────────────────
 
   describe('loadCompareContext', () => {

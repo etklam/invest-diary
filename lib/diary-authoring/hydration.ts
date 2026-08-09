@@ -73,6 +73,8 @@ export function createEmptyDiaryAuthoringForm(date: string): DiaryAuthoringForm 
     content: '',
     thesis: '',
     risk: '',
+    execution: '',
+    reviewDueAt: '',
     transactions: [],
     alerts: [],
   }
@@ -93,6 +95,10 @@ export function hydrateDiaryAuthoring(
     content: String(diary.content ?? ''),
     thesis: String(diary.thesis ?? ''),
     risk: String(diary.risk ?? ''),
+    execution: String(diary.execution ?? ''),
+    reviewDueAt: diary.reviewDueAt
+      ? formatYmdInTimezone(diary.reviewDueAt, timeZone)
+      : '',
     transactions: Array.isArray(diary.transactions)
       ? diary.transactions.map((transaction: Record<string, any>) => hydrateTransaction(transaction))
       : [],

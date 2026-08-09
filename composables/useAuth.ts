@@ -92,7 +92,7 @@ export const useAuth = () => {
     }
   }
 
-  const runRefreshPipeline = async (): Promise<boolean> => {
+  const runRefreshPipeline = async (clearSharedPipeline = true): Promise<boolean> => {
     devLog('[Auth] runRefreshPipeline started')
     try {
       const response = await authFetch<AuthApiResponse<never>>('/api/auth/refresh', {
@@ -106,12 +106,16 @@ export const useAuth = () => {
       return false
     } finally {
       devLog('[Auth] runRefreshPipeline clearing pipeline')
-      refreshPipeline = null
+      if (clearSharedPipeline) refreshPipeline = null
     }
   }
 
   const refreshAccessToken = async (): Promise<boolean> => {
     devLog('[Auth] refreshAccessToken called', { hasPipeline: !!refreshPipeline })
+    if (process.server) {
+      return runRefreshPipeline(false)
+    }
+
     if (!refreshPipeline) {
       devLog('[Auth] Creating new refresh pipeline')
       refreshPipeline = runRefreshPipeline()
@@ -163,7 +167,6 @@ export const useAuth = () => {
         await navigateTo('/auth/login')
       }
     } catch (error) {
-      const authError = error as AuthErrorShape
       toast.error(resolveErrorMessage(error, t))
       throw error
     } finally {
@@ -244,7 +247,6 @@ export const useAuth = () => {
       }
       return false
     } catch (error) {
-      const authError = error as AuthErrorShape
       toast.error(resolveErrorMessage(error, t))
       throw error
     } finally {
@@ -266,7 +268,6 @@ export const useAuth = () => {
       }
       return false
     } catch (error) {
-      const authError = error as AuthErrorShape
       toast.error(resolveErrorMessage(error, t))
       throw error
     } finally {

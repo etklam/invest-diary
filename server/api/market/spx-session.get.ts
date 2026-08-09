@@ -2,7 +2,6 @@ import { fetchIntradayData, fetchQuote } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import { buildSpxSessionSummary } from '~/lib/quicknote/market-session'
 import { requireUser } from '~/server/utils/auth'
-import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import {
   buildMarketIntradayCacheKey,
@@ -12,7 +11,6 @@ import {
 } from '~/lib/market-data/cache'
 
 export default defineEventHandler(async (event) => {
-  const log = logger.api.withRequestId(event.context.requestId)
   requireUser(event)
 
   const ip = getRequestIP(event) || 'unknown'

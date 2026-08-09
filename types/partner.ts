@@ -51,9 +51,21 @@ export interface PartnerLinksResponse {
 
 export interface PartnerCompareDay {
   dateKey: string
-  ownerDiary: Diary | null
-  partnerDiary: Diary | null
+  ownerDiary: PartnerCompareDiary | null
+  partnerDiary: PartnerCompareDiary | null
 }
+
+export type PartnerCompareDiary = Pick<Diary,
+  | 'id'
+  | 'userId'
+  | 'title'
+  | 'content'
+  | 'createdVia'
+  | 'createdByLabel'
+  | 'date'
+  | 'createdAt'
+  | 'updatedAt'
+> & { tags?: string[] }
 
 export interface PartnerCompareResponse {
   owner: PartnerAccountSummary

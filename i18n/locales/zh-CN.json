@@ -2017,6 +2017,15 @@
     "statusReviewed": "已复盘",
     "markReviewed": "标记为已复盘",
     "reviewNow": "立即复盘",
+    "startReview": "开始复盘",
+    "viewReview": "查看复盘",
+    "legacyBadge": "已复盘 · 旧版",
+    "outcomes": {
+      "INTACT": "完整成立",
+      "PARTIAL": "部分成立",
+      "INVALIDATED": "已失效",
+      "UNCLEAR": "尚不明确"
+    },
     "dueIn": "{duration} 后复盘",
     "overdue": "已过复盘期限",
     "prompts": {
@@ -2034,7 +2043,37 @@
       "execution": "执行纪录",
       "executionPlaceholder": "实际怎么执行的？",
       "reviewDue": "复盘期限",
-      "reviewNotes": "复盘笔记"
+      "reviewNotes": "复盘笔记",
+      "outcome": "结果判定",
+      "outcomeHelp": "评估原始决策，不要只看最后盈亏。",
+      "summary": "实际发生什么",
+      "summaryHelp": "简要记录市场与持仓后来如何发展。",
+      "learning": "学到什么",
+      "learningHelp": "留下值得记住的证据、推理或盲点。",
+      "adjustment": "下次调整",
+      "adjustmentHelp": "写下下次要保留、停止或改变的做法。"
+    },
+    "page": {
+      "kicker": "结构化复盘",
+      "backToDiary": "返回 Diary",
+      "loadFailed": "复盘加载失败",
+      "originalContext": "原始决策脉络",
+      "originalContextDesc": "只读呈现当时留下的内容，不会被复盘改写。",
+      "noOriginalContext": "这篇旧 Diary 没有结构化决策字段或正文。",
+      "formTitle": "复盘这次决策",
+      "formDesc": "选择结果判定，并至少写下一项有意义的反思。",
+      "completedTitle": "已完成复盘",
+      "completedDesc": "这次决策已有结构化复盘。",
+      "reviewedAt": "最近一次保存于 {date}",
+      "editReview": "编辑复盘",
+      "legacyNotice": "这篇 Diary 在结构化复盘推出前已标记完成；你可以补上内容，但原始记录不会被改写。",
+      "transactions": "相关交易",
+      "tradePlans": "相关交易计划",
+      "validationError": "请选择结果判定，并至少完成一个反思字段。",
+      "save": "保存复盘",
+      "saving": "保存中…",
+      "saved": "复盘已保存",
+      "saveFailed": "复盘保存失败"
     },
     "queue": {
       "kicker": "复盘流程",
@@ -2047,6 +2086,8 @@
       "markedReviewed": "已标记为已复盘",
       "markReviewedFailed": "标记复盘失败",
       "sections": {
+        "needsAttention": "优先处理",
+        "needsAttentionDesc": "逾期与今日到期的决策排在最前面。",
         "unscheduled": "待排程复盘",
         "unscheduledDesc": "已标记待复盘，但还没设定期限的 diary。",
         "overdue": "逾期复盘",
@@ -2059,6 +2100,7 @@
         "completedDesc": "最近已经处理完的 diary。"
       },
       "empty": {
+        "needsAttention": "目前没有需要立即复盘的项目。",
         "unscheduled": "没有待排程复盘。",
         "overdue": "没有逾期复盘。",
         "today": "今天没有到期复盘。",

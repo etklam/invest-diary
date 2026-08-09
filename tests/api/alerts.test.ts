@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mockReadBody } from '../vi-setup'
 
 const mockRequireUser = vi.fn()
 const mockAlertFindMany = vi.fn()

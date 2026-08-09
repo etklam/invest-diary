@@ -330,30 +330,6 @@ export async function upsertSnapshots(
 ): Promise<number> {
   if (snapshots.length === 0) return 0
 
-  const fieldNameMap: Record<string, string> = {
-    twoWeekPerformancePct: 'two_week_performance_pct',
-    rsiPercentile: 'rsi_percentile',
-    rsiDelta2W: 'rsi_delta_2w',
-    maScorePercentile: 'ma_score_percentile',
-    maStatus: 'ma_status',
-    rolling252dHigh: 'rolling_252d_high',
-    percentFromHigh: 'percent_from_high',
-    distanceFromHighScore: 'distance_from_high_score',
-    distanceFromHighScorePercentile: 'distance_from_high_score_percentile',
-    rotationScore: 'rotation_score',
-    rotationScoreDelta2W: 'rotation_score_delta_2w',
-    rotationRank: 'rotation_rank',
-    rankDelta2W: 'rank_delta_2w',
-    signalStatus: 'signal_status',
-    dailyChangePct: 'daily_change_pct',
-    weeklyChangePct: 'weekly_change_pct',
-    sectorName: 'sector_name',
-    lastPrice: 'last_price',
-    adjustedClose: 'adjusted_close',
-    groupType: 'group_type',
-    rankScope: 'rank_scope',
-  }
-
   for (const snapshot of snapshots) {
     const data: Record<string, unknown> = {
       date: snapshot.date,

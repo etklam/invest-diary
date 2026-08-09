@@ -1,6 +1,4 @@
-import { FullConfig } from '@playwright/test'
-
-async function globalSetup(config: FullConfig) {
+async function globalSetup() {
   console.log('E2E Global Setup: Preparing test environment...')
 
   // Note: Database seeding should be done manually before running E2E tests
@@ -11,5 +9,4 @@ async function globalSetup(config: FullConfig) {
 }
 
 export default globalSetup
-
 

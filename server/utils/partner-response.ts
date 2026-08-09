@@ -1,15 +1,21 @@
 import { attachDiaryTags } from '~/server/utils/diary-response'
 import { getPartnerSide } from '~/lib/partners/policy'
 import type { PartnerLinkRecord } from '~/types/partner'
-import type { Diary } from '~/types/diary'
 
-export function serializeDiaryForPartnerView<T extends Diary>(diary: T | null) {
+export function serializeDiaryForPartnerView(diary: Record<string, any> | null) {
   if (!diary) return null
 
   return attachDiaryTags({
-    ...diary,
-    transactions: undefined,
-    alerts: undefined,
+    id: diary.id,
+    userId: diary.userId,
+    title: diary.title,
+    content: diary.content,
+    tagsString: diary.tagsString,
+    createdVia: diary.createdVia,
+    createdByLabel: diary.createdByLabel,
+    date: diary.date,
+    createdAt: diary.createdAt,
+    updatedAt: diary.updatedAt,
   })
 }
 

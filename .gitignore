@@ -34,3 +34,6 @@ screenshots
 .worktrees/
 .gstack/
 .agents/
+
+# Local agent working files (issues/PRDs, planning)
+.scratch/

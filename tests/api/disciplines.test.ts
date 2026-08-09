@@ -6,7 +6,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mockReadBody, mockGetQuery } from '../vi-setup'
+import { mockReadBody } from '../vi-setup'
 
 const mockRequireUser = vi.fn()
 const mockListDisciplines = vi.fn()

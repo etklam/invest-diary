@@ -2017,6 +2017,15 @@
     "statusReviewed": "已複盤",
     "markReviewed": "標記為已複盤",
     "reviewNow": "立即複盤",
+    "startReview": "開始複盤",
+    "viewReview": "查看複盤",
+    "legacyBadge": "已複盤 · 舊版",
+    "outcomes": {
+      "INTACT": "完整成立",
+      "PARTIAL": "部分成立",
+      "INVALIDATED": "已失效",
+      "UNCLEAR": "尚不明確"
+    },
     "dueIn": "{duration} 後複盤",
     "overdue": "已過複盤期限",
     "prompts": {
@@ -2034,7 +2043,37 @@
       "execution": "執行紀錄",
       "executionPlaceholder": "實際怎麼執行的？",
       "reviewDue": "複盤期限",
-      "reviewNotes": "複盤筆記"
+      "reviewNotes": "複盤筆記",
+      "outcome": "結果判定",
+      "outcomeHelp": "評估原始決策，不要只看最後賺賠。",
+      "summary": "實際發生什麼",
+      "summaryHelp": "簡要記錄市場與部位後來怎麼發展。",
+      "learning": "學到什麼",
+      "learningHelp": "留下值得記住的證據、推理或盲點。",
+      "adjustment": "下次調整",
+      "adjustmentHelp": "寫下下次要保留、停止或改變的做法。"
+    },
+    "page": {
+      "kicker": "結構化複盤",
+      "backToDiary": "返回 Diary",
+      "loadFailed": "複盤載入失敗",
+      "originalContext": "原始決策脈絡",
+      "originalContextDesc": "唯讀呈現當時留下的內容，不會被複盤改寫。",
+      "noOriginalContext": "這篇舊 Diary 沒有結構化決策欄位或內文。",
+      "formTitle": "複盤這次決策",
+      "formDesc": "選擇結果判定，並至少寫下一項有意義的反思。",
+      "completedTitle": "已完成複盤",
+      "completedDesc": "這次決策已有結構化複盤。",
+      "reviewedAt": "最近一次儲存於 {date}",
+      "editReview": "編輯複盤",
+      "legacyNotice": "這篇 Diary 在結構化複盤推出前已標記完成；你可以補上內容，但原始紀錄不會被改寫。",
+      "transactions": "相關交易",
+      "tradePlans": "相關交易計畫",
+      "validationError": "請選擇結果判定，並至少完成一個反思欄位。",
+      "save": "儲存複盤",
+      "saving": "儲存中…",
+      "saved": "複盤已儲存",
+      "saveFailed": "複盤儲存失敗"
     },
     "queue": {
       "kicker": "複盤流程",
@@ -2047,6 +2086,8 @@
       "markedReviewed": "已標記為已複盤",
       "markReviewedFailed": "標記複盤失敗",
       "sections": {
+        "needsAttention": "優先處理",
+        "needsAttentionDesc": "逾期與今日到期的決策排在最前面。",
         "unscheduled": "待排程複盤",
         "unscheduledDesc": "已標記待複盤，但還沒設定期限的 diary。",
         "overdue": "逾期複盤",
@@ -2059,6 +2100,7 @@
         "completedDesc": "最近已經處理完的 diary。"
       },
       "empty": {
+        "needsAttention": "目前沒有需要立即複盤的項目。",
         "unscheduled": "沒有待排程複盤。",
         "overdue": "沒有逾期複盤。",
         "today": "今天沒有到期複盤。",

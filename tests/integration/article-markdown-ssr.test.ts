@@ -19,17 +19,10 @@
  */
 import { describe, expect, it, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { ref, defineComponent, h, defineAsyncComponent, Suspense } from 'vue'
+import { ref, defineComponent, h, Suspense } from 'vue'
 import type { Component } from 'vue'
 
 // ---- MDCRenderer stub: renders AST nodes to a real DOM tree ---------------
-
-function textOf(node: any): string {
-  if (!node) return ''
-  if (typeof node.value === 'string') return node.value
-  if (Array.isArray(node.children)) return node.children.map(textOf).join('')
-  return ''
-}
 
 function astToVNodes(node: any): any {
   if (!node) return ''

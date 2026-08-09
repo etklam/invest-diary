@@ -142,6 +142,7 @@ const DIARY_LIST_SELECT = {
   reviewDueAt: true,
   reviewStatus: true,
   reviewedAt: true,
+  reviewOutcome: true,
   alerts: {
     where: { isDismissed: false },
     select: {
@@ -191,6 +192,7 @@ export interface DiaryListItem {
   reviewDueAt: Date | null
   reviewStatus: string | null
   reviewedAt: Date | null
+  reviewOutcome: string | null
   alerts: Array<{
     id: bigint
     message: string
@@ -297,6 +299,7 @@ const REVIEW_SELECT = {
   reviewDueAt: true,
   reviewStatus: true,
   reviewedAt: true,
+  reviewOutcome: true,
 } satisfies Prisma.DiarySelect
 
 export type ReviewItem = {
@@ -310,6 +313,7 @@ export type ReviewItem = {
   // "no review scheduled" rather than exposing the DB null.
   reviewStatus: string | null
   reviewedAt: Date | null
+  reviewOutcome: string | null
 }
 
 export interface ReviewBuckets {

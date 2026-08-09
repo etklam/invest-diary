@@ -3,7 +3,6 @@ import {
   computePortfolioExposure,
   compareExposureToTarget,
   type PortfolioExposure,
-  type ExposureGap,
   type SuggestedAllocation,
 } from '~/lib/portfolio-exposure/exposure'
 import type { HoldingView } from '~/lib/stocks-view'

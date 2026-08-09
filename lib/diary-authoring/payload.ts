@@ -21,6 +21,8 @@ export function buildDiaryAuthoringPayload(form: DiaryAuthoringForm): DiaryAutho
     content: form.content,
     thesis: form.thesis || undefined,
     risk: form.risk || undefined,
+    execution: form.execution || undefined,
+    reviewDueAt: form.reviewDueAt ? toUtcNoonDate(form.reviewDueAt).toISOString() : null,
     date: toUtcNoonDate(form.date).toISOString(),
     transactions: form.transactions.map((transaction) => ({
       ...(transaction.id ? { id: transaction.id } : {}),

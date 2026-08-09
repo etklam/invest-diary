@@ -18,6 +18,8 @@ describe('diary authoring module', () => {
       content: null,
       thesis: null,
       risk: 'risk',
+      execution: 'scaled in',
+      reviewDueAt: '2026-05-25T12:00:00.000Z',
       transactions: [{
         id: 42n,
         symbol: ' aapl ',
@@ -40,6 +42,8 @@ describe('diary authoring module', () => {
       content: '',
       thesis: '',
       risk: 'risk',
+      execution: 'scaled in',
+      reviewDueAt: '2026-05-25',
       transactions: [{
         id: '42',
         symbol: 'AAPL',
@@ -59,6 +63,8 @@ describe('diary authoring module', () => {
     const form = createEmptyDiaryAuthoringForm('2026-05-18')
     form.title = 'Plan'
     form.content = 'Content'
+    form.execution = 'Followed the plan'
+    form.reviewDueAt = '2026-05-25'
     form.transactions.push({
       symbol: ' aapl ',
       type: 'BUY',
@@ -77,6 +83,8 @@ describe('diary authoring module', () => {
       content: 'Content',
       thesis: undefined,
       risk: undefined,
+      execution: 'Followed the plan',
+      reviewDueAt: '2026-05-25T12:00:00.000Z',
       date: '2026-05-18T12:00:00.000Z',
       transactions: [{
         symbol: 'AAPL',

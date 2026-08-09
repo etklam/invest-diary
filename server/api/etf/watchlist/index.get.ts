@@ -3,12 +3,10 @@
  */
 
 import { requireUser } from '~/server/utils/auth'
-import { logger } from '~/lib/logger'
 import { serialize } from '~/server/utils/serialize'
 import { listUserEtfWatchlist } from '~/server/utils/etf-watchlist-queries'
 
 export default defineEventHandler(async (event) => {
-  const log = logger.etf.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   const watchlist = await listUserEtfWatchlist(user.id)

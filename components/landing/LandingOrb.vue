@@ -30,8 +30,6 @@ const colorStyles = computed(() => {
   }
 })
 
-const colorClass = computed(() => '')
-
 const sizeClass = computed(() => {
   switch (props.size) {
     case 'sm': return 'w-40 h-40'

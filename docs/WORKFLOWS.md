@@ -122,8 +122,10 @@ Admin routes additionally require `role === 'ADMIN'` via
 ## 3. Diary Workflow
 
 The core surface. A `Diary` has title + markdown `content` + `tagsString`, a
-`date` (normalised to UTC noon), optional structured review fields
-(`thesis`, `risk`, `execution`, `reviewDueAt`, `reviewStatus`, `reviewedAt`),
+`date` (normalised to UTC noon), optional original-decision and structured-review
+fields (`thesis`, `risk`, `execution`, `reviewDueAt`, `reviewStatus`,
+`reviewedAt`, `reviewOutcome`, `reviewSummary`, `reviewLearning`,
+`reviewAdjustment`),
 nested `Transaction[]` (BUY/SELL, each linked back via `diaryId`), and
 nested `Alert[]`. Create/update paths run through `diary-write.ts`, which
 validates title + transactions, maps transactions via
@@ -131,7 +133,11 @@ validates title + transactions, maps transactions via
 (supports recurring parent + children). Reads go through `diary-read.ts`
 (ownership-checked). List endpoints (`server/api/diaries.get.ts`,
 `by-date.get.ts`) feed the timeline, calendar and quick-note UIs. Review
-status is mutated via `[id]/review.patch.ts`.
+completion is owned by the focused `[id]/review` GET/PATCH contract. PATCH
+requires a canonical outcome plus at least one meaningful reflection, and the
+server writes `reviewStatus` and `reviewedAt`; generic Diary updates cannot mark
+a review complete. Review text is owner-only and is excluded from Timeline and
+Partner payloads (Timeline receives only the compact outcome).
 
 ### Main files
 
@@ -142,12 +148,16 @@ status is mutated via `[id]/review.patch.ts`.
   [`server/api/diaries/[id].put.ts`](../server/api/diaries/[id].put.ts):9,
   [`server/api/diaries/[id].delete.ts`](../server/api/diaries/[id].delete.ts)
 - [`server/api/diaries/by-date.get.ts`](../server/api/diaries/by-date.get.ts)
-- [`server/api/diaries/[id]/review.patch.ts`](../server/api/diaries/[id]/review.patch.ts)
+- [`server/api/diaries/[id]/review.get.ts`](../server/api/diaries/[id]/review.get.ts),
+  [`server/api/diaries/[id]/review.patch.ts`](../server/api/diaries/[id]/review.patch.ts)
+- [`server/utils/diary-review.ts`](../server/utils/diary-review.ts) — owner-only
+  Review read model, validation, normalization and completion write
 - [`server/api/reviews.get.ts`](../server/api/reviews.get.ts) — review queue
   using `lib/dates/user-tz.ts` half-open day range
 - [`server/utils/diary-write.ts`](../server/utils/diary-write.ts):25 —
   `validateDiaryInput`, `mapTransactionWriteData`:65, `diffTransactions`:84,
-  `createDiaryForUser`, `updateDiaryForUser`
+  `createDiaryForUser`, `updateDiaryForUser`; transaction-changing updates and
+  deletes validate the projected complete chronological user ledger first
 - [`server/utils/diary-read.ts`](../server/utils/diary-read.ts):37 —
   `findDiaryForUser` (ownership-checked), `findDiaryByDate`:71
 - [`server/utils/diary-response.ts`](../server/utils/diary-response.ts) —

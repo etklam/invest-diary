@@ -10,7 +10,6 @@ import {
   toDateKey,
   type BreadthDayResult,
   type DailyPriceInput,
-  type PricePoint,
   type YahooChartQuote,
 } from '../../lib/market-state/update-breadth-utils'
 import { normalizeYahooSymbol } from '../../lib/market-data/yahoo'

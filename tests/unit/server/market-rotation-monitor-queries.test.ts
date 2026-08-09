@@ -126,6 +126,9 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         where: {
           rankScope: 'sectors',
           date: new Date('2026-06-10'),
+          symbol: {
+            in: ['XLK', 'XLF', 'XLE', 'XLU', 'XLP', 'XLY', 'XLI', 'XLV', 'XLB', 'XLC', 'XLRE'],
+          },
         },
       })
 
@@ -148,6 +151,9 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         where: {
           rankScope: 'sectors',
           date: new Date('2026-06-10'),
+          symbol: {
+            in: ['XLK', 'XLF', 'XLE', 'XLU', 'XLP', 'XLY', 'XLI', 'XLV', 'XLB', 'XLC', 'XLRE'],
+          },
         },
       })
       expect(mockSnapshotFindFirst).not.toHaveBeenCalled()

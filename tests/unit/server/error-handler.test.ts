@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { z } from 'zod'
 import { createError, H3Error } from 'h3'
 import { handleApiError } from '~/server/utils/error-handler'
-import { AppError, Errors } from '~/lib/errors/factory'
+import { Errors } from '~/lib/errors/factory'
 
 describe('server/utils/error-handler — handleApiError', () => {
   // Helper: catch the thrown value so we can assert on its shape.

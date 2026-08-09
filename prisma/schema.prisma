@@ -126,6 +126,10 @@ model Diary {
   reviewDueAt  DateTime? @map("review_due_at") // When to review this diary
   reviewStatus String?   @default("none") @map("review_status") @db.VarChar(20) // none / pending / reviewed
   reviewedAt   DateTime? @map("reviewed_at") // When actually reviewed
+  reviewOutcome    String? @map("review_outcome") @db.VarChar(20)
+  reviewSummary    String? @map("review_summary") @db.Text
+  reviewLearning   String? @map("review_learning") @db.Text
+  reviewAdjustment String? @map("review_adjustment") @db.Text
 
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   alerts               Alert[]

@@ -6,7 +6,6 @@
 import { requireUser } from '~/server/utils/auth'
 import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
-import { logger } from '~/lib/logger'
 
 // Common US ETFs
 const COMMON_ETFS = [
@@ -37,7 +36,6 @@ const COMMON_ETFS = [
 ]
 
 export default defineEventHandler(async (event) => {
-  const log = logger.admin.withRequestId(event.context.requestId)
   requireUser(event)
   await adminMiddleware(event)
 
