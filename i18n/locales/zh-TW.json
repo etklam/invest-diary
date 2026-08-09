@@ -429,6 +429,30 @@
       "total": "總額",
       "time": "時間"
     },
+    "decisionRecord": {
+      "kicker": "決策紀錄",
+      "tags": "決策標籤",
+      "originalDecision": "原始判斷",
+      "originalDecisionDesc": "當時相信什麼，以及原本打算怎麼做。",
+      "originalDiary": "原始 Diary",
+      "executionIntent": "執行意圖",
+      "tradePlans": "交易計畫",
+      "tradePlansDesc": "這篇 Diary 留下的計畫；不代表已實際執行。",
+      "noTradePlans": "這篇 Diary 尚未連結交易計畫。",
+      "actualExecution": "實際執行",
+      "actualExecutionDesc": "持久化的交易紀錄呈現實際留下的行動，與原本意圖分開閱讀。",
+      "noTransactions": "這篇 Diary 尚未記錄實際交易。",
+      "transactionContext": "交易脈絡",
+      "holdings": "持倉脈絡",
+      "holdingsDescription": "依這篇 Diary 的交易，以平均成本法計算。",
+      "holdingsUnavailable": "這些交易需要更早的帳本紀錄，才能正確計算持倉。",
+      "averageCost": "平均成本",
+      "totalCost": "總成本",
+      "noHoldings": "這些交易目前沒有剩餘持倉。",
+      "review": "複盤",
+      "reviewDesc": "哪些判斷成立、哪些改變，以及下次要帶走什麼。",
+      "reviewPending": "這次決策尚未完成複盤。"
+    },
     "updateSuccess": "日記更新成功",
     "deleteFailed": "刪除失敗"
   },
@@ -664,6 +688,7 @@
     "reminders": "提醒事項",
     "moreReminders": "還有 {count} 個提醒...",
     "noContent": "無內容",
+    "tradePlansCount": "{count} 個交易計畫",
     "transactionsCount": "{count} 筆交易",
     "alertsCount": "{count} 個提醒",
     "viewDetails": "查看詳情 →",
@@ -2073,7 +2098,10 @@
       "save": "儲存複盤",
       "saving": "儲存中…",
       "saved": "複盤已儲存",
-      "saveFailed": "複盤儲存失敗"
+      "saveFailed": "複盤儲存失敗",
+      "nextActions": "複盤後續操作",
+      "viewDecision": "查看決策紀錄",
+      "viewTimeline": "查看 Timeline"
     },
     "queue": {
       "kicker": "複盤流程",
@@ -2145,6 +2173,13 @@
     "loadFailed": "交易計畫載入失敗",
     "noSetupType": "未填策略型態",
     "linkedTo": "連結 diary：",
+    "decisionContext": {
+      "title": "決策脈絡",
+      "review": "複盤",
+      "transactions": "交易紀錄",
+      "recordedTransactions": "這篇 Diary 記錄了 {count} 筆交易。",
+      "viewDecision": "查看決策紀錄"
+    },
     "fields": {
       "symbol": "標的",
       "setupType": "策略型態",
@@ -2172,6 +2207,7 @@
     },
     "actions": {
       "new": "新增交易計畫",
+      "createFromDiary": "建立交易計畫",
       "create": "建立計畫",
       "save": "儲存計畫",
       "backToList": "返回計畫列表"

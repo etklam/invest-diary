@@ -7,6 +7,9 @@ export interface TradePlanDiaryLink {
   id: SerializedId
   title: string
   date: string
+  reviewStatus?: string | null
+  reviewOutcome?: string | null
+  transactionCount?: number
 }
 
 export interface TradePlan {

@@ -1,90 +1,88 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-    <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-      <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-        當前持股
-      </h3>
-      <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-        根據所有交易記錄計算（平均成本法）
-      </p>
+  <div>
+    <p class="mb-3 text-sm leading-relaxed text-dt-text-muted">
+      {{ t('diary.decisionRecord.holdingsDescription') }}
+    </p>
+
+    <p v-if="holdingsUnavailable" role="status" class="rounded-dt-sm border border-dt-border bg-dt-surface px-3 py-4 text-sm text-dt-text-muted">
+      {{ t('diary.decisionRecord.holdingsUnavailable') }}
+    </p>
+
+    <div v-else class="hidden overflow-x-auto sm:block">
+      <table class="min-w-full divide-y divide-dt-border">
+        <thead>
+          <tr>
+            <th scope="col" class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('diary.form.symbol') }}</th>
+            <th scope="col" class="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('diary.form.quantity') }}</th>
+            <th scope="col" class="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('diary.decisionRecord.averageCost') }}</th>
+            <th scope="col" class="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('diary.decisionRecord.totalCost') }}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-dt-border">
+          <tr v-for="holding in holdings" :key="holding.symbol">
+            <td class="whitespace-nowrap px-3 py-3 font-data text-sm font-semibold text-dt-text">{{ holding.symbol }}</td>
+            <td class="whitespace-nowrap px-3 py-3 text-right font-data text-sm text-dt-text-soft">{{ holding.quantity.toFixed(4) }}</td>
+            <td class="whitespace-nowrap px-3 py-3 text-right font-data text-sm text-dt-text-soft">{{ holding.avgCost.toFixed(2) }}</td>
+            <td class="whitespace-nowrap px-3 py-3 text-right font-data text-sm text-dt-text-soft">{{ holding.totalCost.toFixed(2) }}</td>
+          </tr>
+          <tr v-if="holdings.length === 0">
+            <td colspan="4" class="px-3 py-5 text-center text-sm text-dt-text-muted">
+              {{ t('diary.decisionRecord.noHoldings') }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div>
-      <!-- Desktop Table -->
-      <div class="hidden md:block overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">代碼</th>
-              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">數量</th>
-              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">平均成本</th>
-              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">總成本</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="holding in holdings" :key="holding.symbol">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ holding.symbol }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ holding.quantity.toFixed(4) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ holding.avgCost.toFixed(2) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 text-right">{{ holding.totalCost.toFixed(2) }}</td>
-            </tr>
-            <tr v-if="holdings.length === 0">
-              <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
-                目前無持股
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
-      <!-- Mobile Card Layout -->
-      <div class="md:hidden space-y-3 px-4 py-4">
-        <div v-if="holdings.length === 0" class="text-center py-6">
-          <p class="text-sm text-gray-500 dark:text-gray-400">目前無持股</p>
-        </div>
-
-        <div
-          v-for="holding in holdings"
-          :key="holding.symbol"
-          class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3"
-        >
-          <h4 class="text-base font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
-            {{ holding.symbol }}
-          </h4>
-          <div class="space-y-1.5 text-sm">
-            <div class="flex justify-between">
-              <span class="text-gray-500 dark:text-gray-400">數量</span>
-              <span class="font-medium text-gray-900 dark:text-white">
-                {{ holding.quantity.toFixed(4) }}
-              </span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-500 dark:text-gray-400">平均成本</span>
-              <span class="font-medium text-gray-900 dark:text-white">
-                {{ holding.avgCost.toFixed(2) }}
-              </span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-500 dark:text-gray-400">總成本</span>
-              <span class="font-medium text-gray-900 dark:text-white">
-                {{ holding.totalCost.toFixed(2) }}
-              </span>
-            </div>
+    <ul v-if="!holdingsUnavailable" class="space-y-3 sm:hidden">
+      <li v-if="holdings.length === 0" class="py-4 text-center text-sm text-dt-text-muted">
+        {{ t('diary.decisionRecord.noHoldings') }}
+      </li>
+      <li
+        v-for="holding in holdings"
+        :key="holding.symbol"
+        class="rounded-dt-sm border border-dt-border bg-dt-surface p-3"
+      >
+        <h4 class="font-data text-sm font-semibold text-dt-text">{{ holding.symbol }}</h4>
+        <dl class="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+          <div>
+            <dt class="text-dt-text-muted">{{ t('diary.form.quantity') }}</dt>
+            <dd class="mt-0.5 font-data text-dt-text">{{ holding.quantity.toFixed(4) }}</dd>
           </div>
-        </div>
-      </div>
-    </div>
+          <div class="text-right">
+            <dt class="text-dt-text-muted">{{ t('diary.decisionRecord.averageCost') }}</dt>
+            <dd class="mt-0.5 font-data text-dt-text">{{ holding.avgCost.toFixed(2) }}</dd>
+          </div>
+          <div class="col-span-2 text-right">
+            <dt class="text-dt-text-muted">{{ t('diary.decisionRecord.totalCost') }}</dt>
+            <dd class="mt-0.5 font-data text-dt-text">{{ holding.totalCost.toFixed(2) }}</dd>
+          </div>
+        </dl>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { calculateHoldings, type TransactionForHolding } from '~/lib/position-state'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   transactions: TransactionForHolding[]
 }>()
 
-const holdings = computed(() => {
-  // Use the centralized average cost calculation from lib/utils.ts
-  return calculateHoldings(props.transactions || [])
+const holdingsResult = computed(() => {
+  try {
+    return { items: calculateHoldings(props.transactions || []), unavailable: false }
+  } catch {
+    // A Diary can validly SELL holdings acquired in an earlier Diary. The
+    // local Transaction subset cannot calculate that cost basis on its own.
+    return { items: [], unavailable: true }
+  }
 })
+
+const holdings = computed(() => holdingsResult.value.items)
+const holdingsUnavailable = computed(() => holdingsResult.value.unavailable)
 </script>

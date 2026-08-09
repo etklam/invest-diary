@@ -429,6 +429,30 @@
       "total": "Total",
       "time": "Time"
     },
+    "decisionRecord": {
+      "kicker": "Decision record",
+      "tags": "Decision tags",
+      "originalDecision": "Original Decision",
+      "originalDecisionDesc": "What you believed and intended at the time.",
+      "originalDiary": "Original Diary",
+      "executionIntent": "Execution intent",
+      "tradePlans": "Trade Plan",
+      "tradePlansDesc": "Plans recorded for this Diary; they do not imply execution.",
+      "noTradePlans": "No Trade Plan is linked to this Diary yet.",
+      "actualExecution": "Actual Execution",
+      "actualExecutionDesc": "Persisted Transactions show what was recorded, separately from planned intent.",
+      "noTransactions": "No actual Transactions are recorded for this Diary.",
+      "transactionContext": "Trade context",
+      "holdings": "Holdings context",
+      "holdingsDescription": "Calculated from this Diary's Transactions using average cost.",
+      "holdingsUnavailable": "Earlier ledger history is required to calculate holdings for these Transactions.",
+      "averageCost": "Average cost",
+      "totalCost": "Total cost",
+      "noHoldings": "No open holdings remain in these Transactions.",
+      "review": "Review",
+      "reviewDesc": "What held up, what changed, and what to carry forward.",
+      "reviewPending": "This decision has not been reviewed yet."
+    },
     "updateSuccess": "Entry updated",
     "deleteFailed": "Delete failed"
   },
@@ -664,6 +688,7 @@
     "reminders": "Reminders",
     "moreReminders": "{count} more reminders...",
     "noContent": "No content",
+    "tradePlansCount": "{count} trade plans",
     "transactionsCount": "{count} transactions",
     "alertsCount": "{count} alerts",
     "viewDetails": "View Details →",
@@ -2073,7 +2098,10 @@
       "save": "Save review",
       "saving": "Saving…",
       "saved": "Review saved",
-      "saveFailed": "Failed to save review"
+      "saveFailed": "Failed to save review",
+      "nextActions": "Review next actions",
+      "viewDecision": "View Decision",
+      "viewTimeline": "View Timeline"
     },
     "queue": {
       "kicker": "Review workflow",
@@ -2145,6 +2173,13 @@
     "loadFailed": "Failed to load trade plans",
     "noSetupType": "No setup type",
     "linkedTo": "Linked diary:",
+    "decisionContext": {
+      "title": "Decision context",
+      "review": "Review",
+      "transactions": "Transactions",
+      "recordedTransactions": "{count} Transactions recorded on this Diary.",
+      "viewDecision": "View Decision"
+    },
     "fields": {
       "symbol": "Symbol",
       "setupType": "Setup type",
@@ -2172,6 +2207,7 @@
     },
     "actions": {
       "new": "New Trade Plan",
+      "createFromDiary": "Create Trade Plan",
       "create": "Create Plan",
       "save": "Save Plan",
       "backToList": "Back to plans"

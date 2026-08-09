@@ -7,6 +7,7 @@
  *
  * Surfaces:
  *  - findDiaryForUser(id)         : single diary by id (ownership-checked)
+ *  - findDiaryDetailForUser(id)   : rich owner-only Decision Record detail
  *  - findDiaryByDate(date)        : single diary by date (null when absent)
  *  - findLatestDiaryForUser()     : newest diary (null when none exists)
  *  - listDiariesForUser(filters)  : paginated list + count + tag parse
@@ -25,6 +26,7 @@ import { getUtcDayRange } from '~/lib/dates/normalize'
 import { getUserDayRange } from '~/lib/dates/user-tz'
 import { parseDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'
+import { TRADE_PLAN_STATUSES, type TradePlanStatus } from '~/types/trade-plan'
 
 /**
  * Shared include fragment used by most single-diary read paths.
@@ -35,6 +37,30 @@ const DIARY_FULL_INCLUDE = {
   transactions: true,
   alerts: true,
 } as const
+
+const DIARY_DETAIL_INCLUDE = {
+  alerts: true,
+  transactions: {
+    orderBy: [{ tradeDate: 'asc' as const }, { id: 'asc' as const }],
+  },
+  tradePlans: {
+    select: {
+      id: true,
+      symbol: true,
+      setupType: true,
+      entryPrice: true,
+      entryZoneLow: true,
+      entryZoneHigh: true,
+      stopLoss: true,
+      targetPrice: true,
+      maxPositionSize: true,
+      invalidationCondition: true,
+      notes: true,
+      status: true,
+    },
+    orderBy: { id: 'asc' as const },
+  },
+} satisfies Prisma.DiaryInclude
 
 /**
  * Find a single diary by ID with full relations (transactions, alerts).
@@ -67,6 +93,27 @@ export async function findDiaryForUser(
     throw Errors.diaryNotFound(String(diaryId))
   }
 
+  return diary
+}
+
+/**
+ * Rich owner-only Diary detail used by the Decision Record page. It keeps the
+ * ordinary ownership lookup lean for alert checks and by-date authoring while
+ * loading every relation the detail page renders in one bounded query.
+ */
+export async function findDiaryDetailForUser(
+  id: bigint | string,
+  userId: bigint | string,
+) {
+  const diaryId = typeof id === 'bigint' ? id : BigInt(id)
+  const uid = typeof userId === 'bigint' ? userId : BigInt(userId)
+
+  const diary = await prisma.diary.findFirst({
+    where: { id: diaryId, userId: uid },
+    include: DIARY_DETAIL_INCLUDE,
+  })
+
+  if (!diary) throw Errors.diaryNotFound(String(diaryId))
   return diary
 }
 
@@ -162,7 +209,34 @@ const DIARY_LIST_SELECT = {
       tradeDate: true,
     },
   },
+  tradePlans: {
+    select: {
+      status: true,
+    },
+  },
 } satisfies Prisma.DiarySelect
+
+export interface TradePlanSummary {
+  total: number
+  statuses: Array<{
+    status: TradePlanStatus
+    count: number
+  }>
+}
+
+function summarizeTradePlans(tradePlans: Array<{ status: string }>): TradePlanSummary | undefined {
+  if (tradePlans.length === 0) return undefined
+
+  return {
+    total: tradePlans.length,
+    statuses: TRADE_PLAN_STATUSES
+      .map(status => ({
+        status,
+        count: tradePlans.filter(plan => plan.status === status).length,
+      }))
+      .filter(({ count }) => count > 0),
+  }
+}
 
 export interface DiaryListFilters {
   page: number
@@ -207,6 +281,7 @@ export interface DiaryListItem {
     price: Prisma.Decimal
     tradeDate: Date
   }>
+  tradePlanSummary?: TradePlanSummary
   // ponytail: tags is parsed from tagsString — kept on the item so handlers
   // don't need to re-map. serialize() leaves arrays untouched.
   tags: string[]
@@ -279,10 +354,14 @@ export async function listDiariesForUser(
   ])
 
   const items = rawItems.map(
-    (d: Prisma.DiaryGetPayload<{ select: typeof DIARY_LIST_SELECT }>) => ({
-      ...d,
-      tags: parseDiaryTags(d.tagsString),
-    }),
+    (d: Prisma.DiaryGetPayload<{ select: typeof DIARY_LIST_SELECT }>) => {
+      const { tradePlans, ...diary } = d
+      return {
+        ...diary,
+        tags: parseDiaryTags(d.tagsString),
+        tradePlanSummary: summarizeTradePlans(tradePlans ?? []),
+      }
+    },
   ) as unknown as DiaryListItem[]
 
   return { items, total }

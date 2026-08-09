@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import type { RouteLocationRaw } from 'vue-router'
+import { computed, resolveComponent } from 'vue'
 
 const props = withDefaults(
   defineProps<{
     variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
     type?: 'button' | 'submit' | 'reset'
     disabled?: boolean
+    to?: RouteLocationRaw
   }>(),
   {
     variant: 'primary',
@@ -26,15 +28,26 @@ const variantClass = computed(() => {
       'border-dt-danger bg-dt-danger text-white hover:opacity-90',
   }[props.variant]
 })
+
+const componentTag = computed(() => props.to ? resolveComponent('NuxtLink') : 'button')
+
+const preventDisabledNavigation = (event: MouseEvent) => {
+  if (props.to && props.disabled) event.preventDefault()
+}
 </script>
 
 <template>
-  <button
-    :type="type"
-    :disabled="disabled"
+  <component
+    :is="componentTag"
+    :to="to"
+    :type="to ? undefined : type"
+    :disabled="to ? undefined : disabled"
+    :aria-disabled="to && disabled ? 'true' : undefined"
+    :tabindex="to && disabled ? -1 : undefined"
     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-dt-sm border px-4 py-2 text-sm font-semibold transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30 disabled:cursor-not-allowed disabled:opacity-50"
     :class="variantClass"
+    @click="preventDisabledNavigation"
   >
     <slot />
-  </button>
+  </component>
 </template>

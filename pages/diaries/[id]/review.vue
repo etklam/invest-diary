@@ -53,12 +53,20 @@
               <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-dt-text">{{ field.value }}</p>
             </div>
           </div>
-          <div class="mt-5">
+          <nav :aria-label="t('review.page.nextActions')" class="mt-5 flex flex-wrap gap-3">
             <BaseButton variant="secondary" @click="editing = true">
               <Icon name="heroicons:pencil" class="mr-2 h-4 w-4" />
               {{ t('review.page.editReview') }}
             </BaseButton>
-          </div>
+            <BaseButton :to="`/diaries/${diary.id}`" variant="secondary">
+              <Icon name="heroicons:book-open" class="mr-2 h-4 w-4" aria-hidden="true" />
+              {{ t('review.page.viewDecision') }}
+            </BaseButton>
+            <BaseButton to="/timeline" variant="ghost">
+              <Icon name="heroicons:queue-list" class="mr-2 h-4 w-4" aria-hidden="true" />
+              {{ t('review.page.viewTimeline') }}
+            </BaseButton>
+          </nav>
         </LedgerCard>
       </section>
 

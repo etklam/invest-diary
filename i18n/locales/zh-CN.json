@@ -429,6 +429,30 @@
       "total": "总额",
       "time": "时间"
     },
+    "decisionRecord": {
+      "kicker": "决策记录",
+      "tags": "决策标签",
+      "originalDecision": "原始判断",
+      "originalDecisionDesc": "当时相信什么，以及原本打算怎么做。",
+      "originalDiary": "原始 Diary",
+      "executionIntent": "执行意图",
+      "tradePlans": "交易计划",
+      "tradePlansDesc": "这篇 Diary 留下的计划；不代表已实际执行。",
+      "noTradePlans": "这篇 Diary 尚未链接交易计划。",
+      "actualExecution": "实际执行",
+      "actualExecutionDesc": "持久化的交易记录呈现实际留下的行动，与原本意图分开阅读。",
+      "noTransactions": "这篇 Diary 尚未记录实际交易。",
+      "transactionContext": "交易脉络",
+      "holdings": "持仓脉络",
+      "holdingsDescription": "按这篇 Diary 的交易，以平均成本法计算。",
+      "holdingsUnavailable": "这些交易需要更早的账本记录，才能正确计算持仓。",
+      "averageCost": "平均成本",
+      "totalCost": "总成本",
+      "noHoldings": "这些交易目前没有剩余持仓。",
+      "review": "复盘",
+      "reviewDesc": "哪些判断成立、哪些改变，以及下次要带走什么。",
+      "reviewPending": "这次决策尚未完成复盘。"
+    },
     "updateSuccess": "日记更新成功",
     "deleteFailed": "删除失败"
   },
@@ -797,6 +821,7 @@
     "reminders": "提醒事项",
     "moreReminders": "还有 {count} 个提醒...",
     "noContent": "无内容",
+    "tradePlansCount": "{count} 个交易计划",
     "transactionsCount": "{count} 笔交易",
     "alertsCount": "{count} 个提醒",
     "viewDetails": "查看详情 →",
@@ -2073,7 +2098,10 @@
       "save": "保存复盘",
       "saving": "保存中…",
       "saved": "复盘已保存",
-      "saveFailed": "复盘保存失败"
+      "saveFailed": "复盘保存失败",
+      "nextActions": "复盘后续操作",
+      "viewDecision": "查看决策记录",
+      "viewTimeline": "查看 Timeline"
     },
     "queue": {
       "kicker": "复盘流程",
@@ -2145,6 +2173,13 @@
     "loadFailed": "交易计划加载失败",
     "noSetupType": "未填策略形态",
     "linkedTo": "链接 diary：",
+    "decisionContext": {
+      "title": "决策脉络",
+      "review": "复盘",
+      "transactions": "交易记录",
+      "recordedTransactions": "这篇 Diary 记录了 {count} 笔交易。",
+      "viewDecision": "查看决策记录"
+    },
     "fields": {
       "symbol": "标的",
       "setupType": "策略形态",
@@ -2172,6 +2207,7 @@
     },
     "actions": {
       "new": "新增交易计划",
+      "createFromDiary": "建立交易计划",
       "create": "建立计划",
       "save": "保存计划",
       "backToList": "返回计划列表"

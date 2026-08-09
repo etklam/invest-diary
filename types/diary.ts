@@ -2,6 +2,7 @@
 
 import type { Prisma } from '@prisma/client'
 import type { SerializedId } from './common'
+import type { TradePlan, TradePlanStatus } from './trade-plan'
 
 export const DEFAULT_TAGS = [
   { key: 'profit', labelKey: 'tags.profit', color: 'green' },
@@ -73,6 +74,11 @@ export interface Diary {
   updatedAt: Date
   transactions?: TransactionInput[]
   alerts?: AlertInput[]
+  tradePlans?: TradePlan[]
+  tradePlanSummary?: {
+    total: number
+    statuses: Array<{ status: TradePlanStatus; count: number }>
+  }
   // Structured review fields
   thesis?: string | null
   risk?: string | null

@@ -23,6 +23,7 @@ vi.mock('~/lib/prisma', () => ({
 
 import {
   findDiaryForUser,
+  findDiaryDetailForUser,
   findDiaryByDate,
   findLatestDiaryForUser,
   listDiariesForUser,
@@ -121,6 +122,48 @@ describe('findDiaryForUser', () => {
     expect(result.alerts).toHaveLength(1)
     // BigInt preserved — handlers call serialize()
     expect(result.transactions[0].id).toBe(100n)
+  })
+})
+
+describe('findDiaryDetailForUser', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('loads the complete owner Decision Record in one query', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue({
+      id: 1n,
+      userId: 42n,
+      title: 'Decision',
+      transactions: [],
+      alerts: [],
+      tradePlans: [],
+    })
+
+    await findDiaryDetailForUser(1n, 42n)
+
+    const query = mockPrismaDiaryFindFirst.mock.calls[0][0]
+    expect(query.where).toEqual({ id: 1n, userId: 42n })
+    expect(query.include.transactions.orderBy).toEqual([{ tradeDate: 'asc' }, { id: 'asc' }])
+    expect(query.include.tradePlans.orderBy).toEqual({ id: 'asc' })
+    expect(query.include.tradePlans.select).toMatchObject({
+      id: true,
+      symbol: true,
+      entryPrice: true,
+      invalidationCondition: true,
+      notes: true,
+      status: true,
+    })
+    expect(query.include.tradePlans.select).not.toHaveProperty('userId')
+  })
+
+  it('collapses missing and foreign-owned Diaries to the same not-found error', async () => {
+    mockPrismaDiaryFindFirst.mockResolvedValue(null)
+
+    await expect(findDiaryDetailForUser(1n, 99n)).rejects.toMatchObject({
+      code: 'DIARY_NOT_FOUND',
+      statusCode: 404,
+    })
   })
 })
 
@@ -291,6 +334,7 @@ describe('listDiariesForUser', () => {
     reviewedAt: null,
     alerts: [],
     transactions: [],
+    tradePlans: [],
   }
 
   it('applies pagination: skip = (page-1)*limit, take = limit', async () => {
@@ -419,6 +463,36 @@ describe('listDiariesForUser', () => {
     expect(items[0].id).toBe(1n)
   })
 
+  it('returns a bounded aggregate of all linked Trade Plan statuses', async () => {
+    mockPrismaDiaryFindMany.mockResolvedValue([{
+      ...baseItem,
+      tradePlans: [
+        { status: 'active' },
+        { status: 'active' },
+        { status: 'closed' },
+      ],
+    }])
+
+    const { items } = await listDiariesForUser(7n, { page: 1, limit: 20 })
+
+    expect(items[0].tradePlanSummary).toEqual({
+      total: 3,
+      statuses: [
+        { status: 'active', count: 2 },
+        { status: 'closed', count: 1 },
+      ],
+    })
+    expect(items[0]).not.toHaveProperty('tradePlans')
+  })
+
+  it('omits the Trade Plan summary when a Diary has no linked plans', async () => {
+    mockPrismaDiaryFindMany.mockResolvedValue([{ ...baseItem, tradePlans: [] }])
+
+    const { items } = await listDiariesForUser(7n, { page: 1, limit: 20 })
+
+    expect(items[0].tradePlanSummary).toBeUndefined()
+  })
+
   it('selects only the list fields (no full content join of unrelated fields)', async () => {
     await listDiariesForUser(7n, { page: 1, limit: 20 })
 
@@ -428,6 +502,9 @@ describe('listDiariesForUser', () => {
     expect(select.content).toBe(true)
     expect(select.alerts.select.id).toBe(true)
     expect(select.transactions.select.symbol).toBe(true)
+    expect(select.tradePlans).toEqual({ select: { status: true } })
+    expect(select.tradePlans.select).not.toHaveProperty('notes')
+    expect(select.tradePlans.select).not.toHaveProperty('invalidationCondition')
   })
 })
 

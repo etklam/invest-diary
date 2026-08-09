@@ -43,3 +43,38 @@ export async function findTradePlanForUser(id: bigint, userId: bigint) {
 
   return tradePlan
 }
+
+export async function findTradePlanDetailForUser(id: bigint, userId: bigint) {
+  const tradePlan = await prisma.tradePlan.findFirst({
+    where: { id, userId },
+  })
+
+  if (!tradePlan) throw Errors.notFound('Trade plan not found')
+  if (!tradePlan.diaryId) return { ...tradePlan, diary: null }
+
+  const diary = await prisma.diary.findFirst({
+    where: { id: tradePlan.diaryId, userId },
+    select: {
+      id: true,
+      title: true,
+      date: true,
+      reviewStatus: true,
+      reviewOutcome: true,
+      _count: { select: { transactions: true } },
+    },
+  })
+
+  return {
+    ...tradePlan,
+    diary: diary
+      ? {
+          id: diary.id,
+          title: diary.title,
+          date: diary.date,
+          reviewStatus: diary.reviewStatus,
+          reviewOutcome: diary.reviewOutcome,
+          transactionCount: diary._count.transactions,
+        }
+      : null,
+  }
+}

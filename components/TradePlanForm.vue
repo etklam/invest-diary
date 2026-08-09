@@ -86,9 +86,7 @@
     </LedgerCard>
 
     <div class="flex flex-wrap justify-end gap-3">
-      <NuxtLink to="/trade-plans">
-        <BaseButton variant="secondary">{{ $t('common.cancel') }}</BaseButton>
-      </NuxtLink>
+      <BaseButton to="/trade-plans" variant="secondary">{{ $t('common.cancel') }}</BaseButton>
       <BaseButton type="submit" :disabled="saving">
         <Icon v-if="saving" name="svg-spinners:180-ring-with-bg" class="h-4 w-4" />
         {{ submitLabel }}
@@ -98,6 +96,7 @@
 </template>
 
 <script setup lang="ts">
+import { reactive, watch } from 'vue'
 import { TRADE_PLAN_STATUSES, type TradePlanFormValue } from '~/types/trade-plan'
 
 interface DiaryOption {

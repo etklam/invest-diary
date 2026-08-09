@@ -8,9 +8,7 @@
         </h1>
       </div>
       <div class="flex flex-wrap gap-2">
-        <NuxtLink to="/trade-plans">
-          <BaseButton variant="secondary">{{ $t('tradePlan.actions.backToList') }}</BaseButton>
-        </NuxtLink>
+        <BaseButton to="/trade-plans" variant="secondary">{{ $t('tradePlan.actions.backToList') }}</BaseButton>
         <BaseButton v-if="tradePlan" variant="danger" :disabled="deleting" @click="deleteTradePlan">
           {{ $t('common.delete') }}
         </BaseButton>
@@ -25,14 +23,41 @@
       {{ $t('tradePlan.loadFailed') }}
     </section>
 
-    <TradePlanForm
-      v-else-if="tradePlan"
-      :initial="initialForm"
-      :diaries="diaryOptions"
-      :saving="saving"
-      :submit-label="$t('tradePlan.actions.save')"
-      @submit="updateTradePlan"
-    />
+    <template v-else-if="tradePlan">
+      <LedgerCard v-if="tradePlan.diary" :title="$t('tradePlan.decisionContext.title')">
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0">
+            <h2 class="break-words text-lg font-bold text-dt-text">{{ tradePlan.diary.title }}</h2>
+            <p class="mt-1 font-data text-sm text-dt-text-muted">{{ formatDiaryDate(tradePlan.diary.date) }}</p>
+            <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              <div>
+                <dt class="text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">
+                  {{ $t('tradePlan.decisionContext.review') }}
+                </dt>
+                <dd class="mt-1 text-dt-text">{{ decisionReviewLabel }}</dd>
+              </div>
+              <div>
+                <dt class="sr-only">{{ $t('tradePlan.decisionContext.transactions') }}</dt>
+                <dd class="text-dt-text-muted">
+                  {{ $t('tradePlan.decisionContext.recordedTransactions', { count: tradePlan.diary.transactionCount ?? 0 }) }}
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <BaseButton :to="`/diaries/${tradePlan.diary.id}`" class="w-full shrink-0 sm:w-auto">
+            {{ $t('tradePlan.decisionContext.viewDecision') }}
+          </BaseButton>
+        </div>
+      </LedgerCard>
+
+      <TradePlanForm
+        :initial="initialForm"
+        :diaries="diaryOptions"
+        :saving="saving"
+        :submit-label="$t('tradePlan.actions.save')"
+        @submit="updateTradePlan"
+      />
+    </template>
   </div>
 </template>
 
@@ -58,6 +83,22 @@ const { data: diariesResponse } = await useLazyFetch<any>('/api/diaries', {
 })
 
 const diaryOptions = computed(() => diariesResponse.value?.data ?? [])
+const { formatLocaleDate } = useTimezone()
+
+const formatDiaryDate = (value: string) => formatLocaleDate(value, {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+})
+
+const decisionReviewLabel = computed(() => {
+  const diary = tradePlan.value?.diary
+  if (!diary) return ''
+  if (diary.reviewOutcome) return `${t('review.statusReviewed')} · ${t(`review.outcomes.${diary.reviewOutcome}`)}`
+  if (diary.reviewStatus === 'reviewed') return t('review.statusReviewed')
+  if (diary.reviewStatus === 'pending') return t('review.statusPending')
+  return t('review.statusNone')
+})
 
 const formString = (value?: string | number | null) => value === null || value === undefined ? '' : String(value)
 

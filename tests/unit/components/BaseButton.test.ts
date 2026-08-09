@@ -82,4 +82,40 @@ describe('BaseButton', () => {
     const wrapper = mount(BaseButton)
     expect(wrapper.classes()).toContain('min-h-11')
   })
+
+  it('renders navigation as one link instead of a nested link and button', () => {
+    const wrapper = mount(BaseButton, {
+      props: { to: '/timeline' },
+      slots: { default: 'Timeline' },
+      global: {
+        stubs: {
+          NuxtLink: {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>',
+          },
+        },
+      },
+    })
+
+    expect(wrapper.element.tagName).toBe('A')
+    expect(wrapper.attributes('href')).toBe('/timeline')
+    expect(wrapper.find('button').exists()).toBe(false)
+  })
+
+  it('removes disabled navigation from the tab order', () => {
+    const wrapper = mount(BaseButton, {
+      props: { to: '/timeline', disabled: true },
+      global: {
+        stubs: {
+          NuxtLink: {
+            props: ['to'],
+            template: '<a :href="to"><slot /></a>',
+          },
+        },
+      },
+    })
+
+    expect(wrapper.attributes('aria-disabled')).toBe('true')
+    expect(wrapper.attributes('tabindex')).toBe('-1')
+  })
 })

@@ -43,4 +43,22 @@ describe('Timeline-first page contracts', () => {
     expect(timeline).not.toContain('diary.reviewLearning')
     expect(timeline).not.toContain('diary.reviewAdjustment')
   })
+
+  it('shows owner Trade Plan signals in metadata priority order without changing Pair View privacy', () => {
+    const timeline = source('pages/timeline/index.vue')
+    const partnerQueries = source('server/utils/partner-queries.ts')
+    const tag = timeline.indexOf('v-for="tag in (diary.tags || []).slice(0, 2)"')
+    const plan = timeline.indexOf('v-if="diary.tradePlanSummary"')
+    const transaction = timeline.indexOf('v-if="diary.transactions?.length"')
+    const review = timeline.indexOf("v-if=\"diary.reviewStatus === 'reviewed'\"")
+    const alert = timeline.indexOf('v-if="diary.alerts?.length"')
+
+    expect(tag).toBeLessThan(plan)
+    expect(plan).toBeLessThan(transaction)
+    expect(transaction).toBeLessThan(review)
+    expect(review).toBeLessThan(alert)
+    expect(timeline).toContain('class="truncate"')
+    expect(partnerQueries).not.toContain('tradePlanSummary')
+    expect(partnerQueries).not.toContain('tradePlans:')
+  })
 })

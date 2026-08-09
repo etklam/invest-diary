@@ -162,9 +162,13 @@
                 >
                   #{{ tag }}
                 </span>
-                <span v-if="diary.alerts?.length" class="timeline-meta-item inline-flex items-center gap-1 text-dt-warning">
-                  <Icon name="heroicons:bell" class="h-3.5 w-3.5" aria-hidden="true" />
-                  {{ t('timeline.alertsCount', { count: diary.alerts.length }) }}
+                <span
+                  v-if="diary.tradePlanSummary"
+                  class="timeline-meta-item inline-flex min-w-0 max-w-full items-center gap-1 text-dt-primary"
+                  :title="tradePlanSignal(diary.tradePlanSummary)"
+                >
+                  <Icon name="heroicons:map" class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span class="truncate">{{ tradePlanSignal(diary.tradePlanSummary) }}</span>
                 </span>
                 <span v-if="diary.transactions?.length" class="timeline-meta-item inline-flex items-center gap-1 text-dt-success">
                   <Icon name="heroicons:banknotes" class="h-3.5 w-3.5" aria-hidden="true" />
@@ -173,6 +177,10 @@
                 <span v-if="diary.reviewStatus === 'reviewed'" class="timeline-meta-item inline-flex items-center gap-1 text-dt-secondary">
                   <Icon name="heroicons:clipboard-document-check" class="h-3.5 w-3.5" aria-hidden="true" />
                   {{ reviewSignal(diary.reviewOutcome) }}
+                </span>
+                <span v-if="diary.alerts?.length" class="timeline-meta-item inline-flex items-center gap-1 text-dt-warning">
+                  <Icon name="heroicons:bell" class="h-3.5 w-3.5" aria-hidden="true" />
+                  {{ t('timeline.alertsCount', { count: diary.alerts.length }) }}
                 </span>
               </div>
 
@@ -227,6 +235,10 @@ const formatCompactDate = (date: Date | string) => formatShortDate(date, timelin
 const reviewSignal = (outcome?: string | null) => outcome
   ? `${t('review.statusReviewed')} · ${t(`review.outcomes.${outcome}`)}`
   : t('review.statusReviewed')
+const tradePlanSignal = (summary: NonNullable<import('~/types/diary').Diary['tradePlanSummary']>) => [
+  t('timeline.tradePlansCount', { count: summary.total }),
+  ...summary.statuses.map(({ status, count }) => `${t(`tradePlan.status.${status}`)} ${count}`),
+].join(' · ')
 
 definePageMeta({
   middleware: 'auth'

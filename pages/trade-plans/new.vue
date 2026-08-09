@@ -5,12 +5,15 @@
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">{{ $t('tradePlan.kicker') }}</p>
         <h1 class="font-display mt-1 text-3xl tracking-tight text-dt-text">{{ $t('tradePlan.actions.new') }}</h1>
       </div>
-      <NuxtLink to="/trade-plans">
-        <BaseButton variant="secondary">{{ $t('tradePlan.actions.backToList') }}</BaseButton>
-      </NuxtLink>
+      <BaseButton to="/trade-plans" variant="secondary">{{ $t('tradePlan.actions.backToList') }}</BaseButton>
     </header>
 
+    <section v-if="resolvingDiaryContext" class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm">
+      <AppSkeleton variant="card" :count="3" />
+    </section>
+
     <TradePlanForm
+      v-else
       :initial="initialForm"
       :diaries="diaryOptions"
       :saving="saving"
@@ -39,11 +42,29 @@ const { data: diariesResponse } = await useLazyFetch<any>('/api/diaries', {
   default: () => ({ data: [] }),
 })
 
-const diaryOptions = computed(() => diariesResponse.value?.data ?? [])
-
 const queryValue = (name: string) => {
   const value = route.query[name]
   return Array.isArray(value) ? value[0] || '' : String(value || '')
+}
+
+const contextDiary = ref<any>(null)
+const routePrefill = ref<Pick<TradePlanFormValue, 'diaryId' | 'symbol'> | null>(null)
+const resolvingDiaryContext = ref(Boolean(queryValue('diaryId')))
+const diaryOptions = computed(() => {
+  const options = diariesResponse.value?.data ?? []
+  if (!contextDiary.value || options.some((diary: any) => String(diary.id) === String(contextDiary.value.id))) return options
+  return [contextDiary.value, ...options]
+})
+
+const routeDiary = computed(() => diaryOptions.value.find(
+  (diary: any) => String(diary.id) === queryValue('diaryId'),
+))
+
+const uniqueStructuredSymbol = (diary: any) => {
+  const symbols = new Set<string>((diary?.transactions ?? [])
+    .map((transaction: any) => typeof transaction.symbol === 'string' ? transaction.symbol.trim() : '')
+    .filter(Boolean))
+  return symbols.size === 1 ? ([...symbols][0] ?? '') : ''
 }
 
 onMounted(() => {
@@ -60,8 +81,28 @@ onMounted(() => {
   }
 })
 
+onMounted(async () => {
+  const diaryId = queryValue('diaryId')
+  if (!diaryId) return
+
+  try {
+    const ownedDiary = routeDiary.value ?? await $fetch(`/api/diaries/${encodeURIComponent(diaryId)}`)
+    contextDiary.value = ownedDiary
+    routePrefill.value = {
+      diaryId: String(ownedDiary.id),
+      symbol: uniqueStructuredSymbol(ownedDiary),
+    }
+  } catch {
+    contextDiary.value = null
+    routePrefill.value = null
+  } finally {
+    resolvingDiaryContext.value = false
+  }
+})
+
 const initialForm = computed<Partial<TradePlanFormValue>>(() => ({
-  symbol: statePrefill.value.symbol ?? queryValue('symbol'),
+  diaryId: routePrefill.value?.diaryId ?? '',
+  symbol: routePrefill.value ? routePrefill.value.symbol : (statePrefill.value.symbol ?? ''),
   entryPrice: statePrefill.value.entryPrice ?? queryValue('entryPrice'),
   maxPositionSize: statePrefill.value.maxPositionSize ?? queryValue('maxPositionSize'),
   notes: statePrefill.value.notes ?? queryValue('notes'),
