@@ -8,8 +8,11 @@
     <!-- 底部導航 -->
     <BottomNavigation v-if="showBottomNavigation" />
 
-    <!-- 浮動操作按鈕 -->
-    <FloatingActionButton v-if="showFab" />
+    <QuickDiaryModal
+      :show="showQuickDiary"
+      :context="quickDiaryContext"
+      @close="closeQuickDiary"
+    />
 
     <!-- 鍵盤佔位符 -->
     <div v-if="keyboardVisible" class="keyboard-spacer" :style="{ height: keyboardHeight + 'px' }"></div>
@@ -20,7 +23,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useMobileDetection } from '~/composables/useMobileDetection'
 import BottomNavigation from '~/components/BottomNavigation.vue'
-import FloatingActionButton from '~/components/FloatingActionButton.vue'
+import { useAppShell } from '~/composables/useAppShell'
 
 // 響應式偵測
 const { isMobile, isTablet } = useMobileDetection()
@@ -40,7 +43,7 @@ const navigationHeight = ref(64)
 
 // 計算屬性
 const showBottomNavigation = computed(() => isMobile.value || isTablet.value)
-const showFab = computed(() => isMobile.value || isTablet.value)
+const { showQuickDiary, quickDiaryContext, closeQuickDiary } = useAppShell()
 
 // 初始化安全區域
 const initSafeArea = () => {

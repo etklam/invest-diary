@@ -25,12 +25,12 @@ export async function authenticate(page: Page, options?: { timeout?: number }) {
 
   // Submit login form
   await Promise.all([
-    page.waitForURL('**/diaries', { timeout }),
+    page.waitForURL('**/timeline', { timeout }),
     page.locator('button.login-submit').click(),
   ])
 
   // Verify we're logged in
-  await expect(page).toHaveURL(/diaries/)
+  await expect(page).toHaveURL(/timeline/)
 }
 
 /**

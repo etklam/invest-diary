@@ -1,4 +1,5 @@
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
+import { AUTHENTICATED_HOME_ROUTE } from '~/lib/routes'
 
 interface AuthUser {
   id: string
@@ -136,7 +137,7 @@ export const useAuth = () => {
         syncTimezone(response.data.timezone)
         isInitialized.value = true
         toast.success('登入成功')
-        await navigateTo('/diaries')
+        await navigateTo(AUTHENTICATED_HOME_ROUTE)
       }
     } catch (error) {
       const authError = error as AuthErrorShape

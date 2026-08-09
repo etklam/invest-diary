@@ -90,27 +90,26 @@ describe('useNavigation composable', () => {
       expect(desktopNavGroups.value.map(g => g.id)).toEqual([
         'journal',
         'portfolio',
-        'tools',
-        'learn',
+        'research',
+        'more',
       ])
     })
 
-    it('routes Journal children (timeline/calendar/diaries/reviews/trade-plans)', async () => {
+    it('routes Journal children (diaries/calendar/reviews/trade-plans)', async () => {
       const { useNavigation } = await import('~/composables/useNavigation')
       const { desktopNavGroups } = useNavigation()
       const journal = desktopNavGroups.value.find(g => g.id === 'journal')!
 
       const paths = journal.items.map(i => i.to)
       expect(paths).toEqual([
-        '/timeline',
-        '/calendar',
         '/diaries',
+        '/calendar',
         '/reviews',
         '/trade-plans',
       ])
     })
 
-    it('routes Portfolio children (incl. market-rotation/relative-value/strategy-performance)', async () => {
+    it('routes Portfolio children without mixing in research tools', async () => {
       const { useNavigation } = await import('~/composables/useNavigation')
       const { desktopNavGroups } = useNavigation()
       const portfolio = desktopNavGroups.value.find(g => g.id === 'portfolio')!
@@ -119,38 +118,39 @@ describe('useNavigation composable', () => {
       expect(paths).toEqual([
         '/stocks',
         '/stocks/watchlist',
+        '/strategy-performance',
+        '/tools/position-sizing',
+      ])
+    })
+
+    it('routes Research children', async () => {
+      const { useNavigation } = await import('~/composables/useNavigation')
+      const { desktopNavGroups } = useNavigation()
+      const research = desktopNavGroups.value.find(g => g.id === 'research')!
+
+      const paths = research.items.map(i => i.to)
+      expect(paths).toEqual([
         '/tools/market-rotation',
         '/tools/relative-value',
-        '/strategy-performance',
-      ])
-    })
-
-    it('routes Tools children (no overlap with Portfolio)', async () => {
-      const { useNavigation } = await import('~/composables/useNavigation')
-      const { desktopNavGroups } = useNavigation()
-      const tools = desktopNavGroups.value.find(g => g.id === 'tools')!
-
-      const paths = tools.items.map(i => i.to)
-      expect(paths).toEqual([
-        '/tools/position-sizing',
-        '/tools/financial-freedom',
         '/tools/seasonality',
         '/tools/sec-filings',
-        '/discipline',
       ])
-      expect(paths).not.toContain('/tools/market-rotation')
-      expect(paths).not.toContain('/tools/relative-value')
     })
 
-    it('routes Learn children (articles/how-to-use/about)', async () => {
+    it('keeps lower-frequency and account destinations in More', async () => {
       const { useNavigation } = await import('~/composables/useNavigation')
       const { desktopNavGroups } = useNavigation()
-      const learn = desktopNavGroups.value.find(g => g.id === 'learn')!
+      const more = desktopNavGroups.value.find(g => g.id === 'more')!
 
-      expect(learn.items.map(i => i.to)).toEqual([
+      expect(more.items.map(i => i.to)).toEqual([
+        '/alerts',
+        '/partners',
+        '/discipline',
+        '/tools/financial-freedom',
         '/articles',
         '/how-to-use',
         '/about',
+        '/settings',
       ])
     })
 
@@ -201,7 +201,7 @@ describe('useNavigation composable', () => {
       expect(activeIds).toEqual(['portfolio'])
     })
 
-    it('marks Portfolio (not Tools) active on /tools/market-rotation', async () => {
+    it('marks Research active on /tools/market-rotation', async () => {
       vi.stubGlobal('useRoute', () => ({ path: '/tools/market-rotation' }))
 
       const { useNavigation } = await import('~/composables/useNavigation')
@@ -211,10 +211,10 @@ describe('useNavigation composable', () => {
         .filter(g => isGroupActive(g))
         .map(g => g.id)
 
-      expect(activeIds).toEqual(['portfolio'])
+      expect(activeIds).toEqual(['research'])
     })
 
-    it('marks only Tools active on /discipline', async () => {
+    it('marks only More active on /discipline', async () => {
       vi.stubGlobal('useRoute', () => ({ path: '/discipline' }))
 
       const { useNavigation } = await import('~/composables/useNavigation')
@@ -224,10 +224,10 @@ describe('useNavigation composable', () => {
         .filter(g => isGroupActive(g))
         .map(g => g.id)
 
-      expect(activeIds).toEqual(['tools'])
+      expect(activeIds).toEqual(['more'])
     })
 
-    it('marks only Learn active on /articles', async () => {
+    it('marks only More active on /articles', async () => {
       vi.stubGlobal('useRoute', () => ({ path: '/articles' }))
 
       const { useNavigation } = await import('~/composables/useNavigation')
@@ -237,16 +237,20 @@ describe('useNavigation composable', () => {
         .filter(g => isGroupActive(g))
         .map(g => g.id)
 
-      expect(activeIds).toEqual(['learn'])
+      expect(activeIds).toEqual(['more'])
     })
 
-    it('marks no group active when route is outside every group (e.g. /alerts)', async () => {
+    it('marks More active for alerts', async () => {
       vi.stubGlobal('useRoute', () => ({ path: '/alerts' }))
 
       const { useNavigation } = await import('~/composables/useNavigation')
       const { desktopNavGroups, isGroupActive } = useNavigation()
 
-      expect(desktopNavGroups.value.some(g => isGroupActive(g))).toBe(false)
+      const activeIds = desktopNavGroups.value
+        .filter(g => isGroupActive(g))
+        .map(g => g.id)
+
+      expect(activeIds).toEqual(['more'])
     })
 
     it('marks Journal active on nested /reviews/123 (prefix match)', async () => {
@@ -264,7 +268,7 @@ describe('useNavigation composable', () => {
   })
 
   describe('homeRoute (authenticated workbench home)', () => {
-    it('points authenticated Logo/Home to /diaries', async () => {
+    it('points authenticated Logo/Home to /timeline', async () => {
       vi.stubGlobal('useAuth', () => ({
         isAuthenticated: ref(true),
         user: ref({ role: 'USER' }),
@@ -273,7 +277,7 @@ describe('useNavigation composable', () => {
       const { useNavigation } = await import('~/composables/useNavigation')
       const { homeRoute } = useNavigation()
 
-      expect(homeRoute.value).toBe('/diaries')
+      expect(homeRoute.value).toBe('/timeline')
     })
 
     it('points unauthenticated Logo/Home to /', async () => {
@@ -290,7 +294,14 @@ describe('useNavigation composable', () => {
   })
 
   describe('mobile bottom nav', () => {
-    it('sends authenticated Home to /diaries while keeping secondary tabs', async () => {
+    beforeEach(() => {
+      vi.stubGlobal('useAuth', () => ({
+        isAuthenticated: ref(true),
+        user: ref({ role: 'USER' }),
+      }))
+    })
+
+    it('exposes five job-based slots without duplicate destinations', async () => {
       vi.stubGlobal('useAuth', () => ({
         isAuthenticated: ref(true),
         user: ref({ role: 'USER' }),
@@ -299,34 +310,40 @@ describe('useNavigation composable', () => {
       const { useNavigation } = await import('~/composables/useNavigation')
       const { bottomNavItems } = useNavigation()
 
-      expect(bottomNavItems.value.map(i => i.to)).toEqual([
-        '/diaries',
-        '/stocks',
-        '/diaries',
-        '/alerts',
-        '/settings',
+      expect(bottomNavItems.value.map(i => i.id)).toEqual([
+        'timeline',
+        'portfolio',
+        'quick-diary',
+        'review',
+        'more',
       ])
-      expect(bottomNavItems.value[0]?.icon).toBe('home')
-      expect(bottomNavItems.value[0]?.id).toBe('home')
+      expect(bottomNavItems.value.map(i => i.to)).toEqual([
+        '/timeline',
+        '/stocks',
+        undefined,
+        '/reviews',
+        undefined,
+      ])
+      expect(bottomNavItems.value[2]?.action).toBe('quick-diary')
+      expect(bottomNavItems.value[4]?.action).toBe('more')
+      const destinations = bottomNavItems.value.flatMap(item => item.to ? [item.to] : [])
+      expect(new Set(destinations).size).toBe(destinations.length)
     })
 
-    it('keeps guest Home on /', async () => {
-      vi.stubGlobal('useAuth', () => ({
-        isAuthenticated: ref(false),
-        user: ref(null),
-      }))
-
+    it('keeps Pair View under the single Timeline active item', async () => {
+      vi.stubGlobal('useRoute', () => ({ path: '/timeline/compare' }))
       const { useNavigation } = await import('~/composables/useNavigation')
-      const { bottomNavItems } = useNavigation()
+      const { bottomNavItems, isBottomNavActive } = useNavigation()
 
-      expect(bottomNavItems.value.map(i => i.to)).toEqual([
-        '/',
-        '/stocks',
-        '/diaries',
-        '/alerts',
-        '/settings',
-      ])
-      expect(bottomNavItems.value[0]?.icon).toBe('home')
+      expect(bottomNavItems.value.filter(isBottomNavActive).map(item => item.id)).toEqual(['timeline'])
+    })
+
+    it('uses More as the active primary item for nested lower-frequency routes', async () => {
+      vi.stubGlobal('useRoute', () => ({ path: '/trade-plans/123' }))
+      const { useNavigation } = await import('~/composables/useNavigation')
+      const { bottomNavItems, isBottomNavActive } = useNavigation()
+
+      expect(bottomNavItems.value.filter(isBottomNavActive).map(item => item.id)).toEqual(['more'])
     })
   })
 })

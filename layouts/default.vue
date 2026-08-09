@@ -36,39 +36,30 @@
         @close="dismissCurrentAlert"
       />
       <BottomNavigation v-if="isAuthenticated" class="xl:hidden" />
-      <!-- Floating Quick Diary Button -->
-      <button
-        v-if="showFloatingQuickDiary"
-        @click="openFloatingQuickDiary"
-        :aria-label="$t('diary.quickDiary')"
-        class="fixed right-6 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-dt-lg transition-colors duration-200 group hover:opacity-90 xl:bottom-[calc(1.5rem+env(safe-area-inset-bottom))]"
-        style="background: var(--color-accent);"
-        :title="$t('diary.quickDiary')"
-      >
-        <Icon name="heroicons:pencil-square" class="h-6 w-6 group-hover:scale-110 transition-transform" />
-      </button>
-      <!-- Quick Diary Modal -->
       <QuickDiaryModal
-        :show="showQuickDiaryModal"
+        :show="showQuickDiary"
         :context="quickDiaryContext"
-        @close="closeFloatingQuickDiary"
+        @close="closeQuickDiary"
       />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import type { QuickDiaryContext } from '~/types/quicknote'
+import { onMounted, onUnmounted } from 'vue'
+import { isQuickDiaryShortcut } from '~/lib/quicknote/shortcut'
+import { useAppShell } from '~/composables/useAppShell'
 
 const { toasts, removeToast } = useToast()
 const { isInitialized, isAuthenticated } = useAuth()
 const { canInstall } = useAppPWA()
 const showInstallPrompt = ref(false)
-const showQuickDiaryModal = ref(false)
-const quickDiaryContext = ref<QuickDiaryContext | null>(null)
-const route = useRoute()
-const showFloatingQuickDiary = computed(() => isAuthenticated.value && route.path !== '/diaries/quick')
+const {
+  showQuickDiary,
+  quickDiaryContext,
+  openQuickDiary,
+  closeQuickDiary,
+} = useAppShell()
 
 import { useAlerts } from '~/composables/useAlerts'
 
@@ -82,43 +73,16 @@ watch(canInstall, (value) => {
   showInstallPrompt.value = value
 }, { immediate: true })
 
-function openFloatingQuickDiary() {
-  quickDiaryContext.value = { source: 'floating' }
-  showQuickDiaryModal.value = true
-}
-
-function closeFloatingQuickDiary() {
-  showQuickDiaryModal.value = false
-  // Reset after close so the next open never inherits a prior date/source
-  quickDiaryContext.value = null
-}
-
-const isEditableTarget = (target: EventTarget | null) => {
-  if (!(target instanceof HTMLElement)) return false
-
-  if (target.isContentEditable) return true
-
-  const interactiveTags = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
-  if (interactiveTags.has(target.tagName)) return true
-
-  return Boolean(target.closest('[contenteditable="true"], [role="textbox"]'))
-}
-
-// Cmd/Ctrl+K keyboard shortcut to open Quick Diary
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.defaultPrevented || e.isComposing) return
-  if (e.altKey || e.shiftKey) return
-  if (isEditableTarget(e.target)) return
-  if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'k') return
-  if (!isAuthenticated.value) return
+  if (!isAuthenticated.value || !isQuickDiaryShortcut(e)) return
 
   e.preventDefault()
-  if (showQuickDiaryModal.value) {
-    closeFloatingQuickDiary()
-  } else {
-    openFloatingQuickDiary()
-  }
+  openQuickDiary()
 }
+
+watch(isAuthenticated, (authenticated) => {
+  if (!authenticated) closeQuickDiary()
+})
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)

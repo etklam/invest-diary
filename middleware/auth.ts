@@ -1,3 +1,5 @@
+import { AUTHENTICATED_HOME_ROUTE } from '~/lib/routes'
+
 export default defineNuxtRouteMiddleware((to) => {
   const { isAuthenticated, isInitialized } = useAuth()
 
@@ -24,8 +26,8 @@ export default defineNuxtRouteMiddleware((to) => {
     return navigateTo('/auth/login')
   }
 
-  // If authenticated user tries to access auth pages, redirect to diary workspace
-  if (isAuthenticated.value && publicRoutes.includes(to.path)) {
-    return navigateTo('/diaries')
+  // Authenticated users return to their chronological workspace.
+  if (isAuthenticated.value && (to.path === '/' || publicRoutes.includes(to.path))) {
+    return navigateTo(AUTHENTICATED_HOME_ROUTE)
   }
 })

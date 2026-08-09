@@ -6,15 +6,22 @@
           {{ t('compareDiary.kicker') }}
         </p>
         <h1 class="font-display text-3xl font-semibold tracking-tight text-dt-text sm:text-4xl">
-          {{ t('compareDiary.title') }}
+          {{ t('timeline.title') }}
         </h1>
         <p class="max-w-2xl text-sm leading-relaxed text-dt-text-muted">
           {{ t('compareDiary.subtitle') }}
         </p>
       </div>
 
+    </header>
+
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <TimelineModeSwitch />
+
       <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+        <label for="pair-partner" class="sr-only">{{ t('compareDiary.selectPartner') }}</label>
         <select
+          id="pair-partner"
           v-model="selectedPartnerId"
           class="min-h-11 w-full rounded-dt-sm border border-dt-border bg-dt-surface px-4 text-sm font-semibold text-dt-text outline-none focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20 sm:min-w-[240px]"
         >
@@ -36,7 +43,7 @@
           </BaseButton>
         </NuxtLink>
       </div>
-    </header>
+    </div>
 
     <div
       v-if="pending"
@@ -220,7 +227,7 @@ const query = computed(() => ({
   limit: 20,
 }))
 
-const { data, pending, error, refresh } = await useFetch<PartnerCompareResponse>('/api/partners/compare', {
+const { data, pending, error } = await useFetch<PartnerCompareResponse>('/api/partners/compare', {
   query,
   watch: [query],
 })
@@ -232,6 +239,10 @@ const selectedLink = computed(() => {
   return data.value?.links.find(link => link.partner.id === candidateId) ?? null
 })
 
+watch(() => data.value?.selectedPartnerId, (partnerId) => {
+  if (partnerId && !selectedPartnerId.value) selectedPartnerId.value = String(partnerId)
+}, { immediate: true })
+
 watch(selectedPartnerId, async (value) => {
   const currentPartnerId = typeof route.query.partnerId === 'string' ? route.query.partnerId : ''
   if ((value || '') === currentPartnerId) return
@@ -242,7 +253,6 @@ watch(selectedPartnerId, async (value) => {
       ...(value ? { partnerId: value } : { partnerId: undefined }),
     },
   })
-  refresh()
 })
 
 const sourceLabel = (createdVia?: string | null, createdByLabel?: string | null) => {

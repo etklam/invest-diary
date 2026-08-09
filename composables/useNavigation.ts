@@ -1,10 +1,10 @@
 import { computed } from 'vue'
+import { AUTHENTICATED_HOME_ROUTE, GUEST_HOME_ROUTE } from '~/lib/routes'
+
+export { AUTHENTICATED_HOME_ROUTE, GUEST_HOME_ROUTE } from '~/lib/routes'
 
 // Featured tools: first N tools shown prominently on desktop nav
 const FEATURED_TOOLS_COUNT = 3
-
-// Bottom navigation slots after Home (Home is derived from homeRoute)
-const BOTTOM_NAV_SECONDARY_ROUTES = ['/stocks', '/diaries', '/alerts', '/settings'] as const
 
 interface NavItem {
   label: string
@@ -16,7 +16,15 @@ interface NavItem {
   id?: string
 }
 
-type NavGroupId = 'journal' | 'portfolio' | 'tools' | 'learn'
+export interface BottomNavItem {
+  id: 'timeline' | 'portfolio' | 'quick-diary' | 'review' | 'more'
+  label: string
+  icon: string
+  to?: string
+  action?: 'quick-diary' | 'more'
+}
+
+type NavGroupId = 'journal' | 'portfolio' | 'research' | 'more'
 
 interface NavGroup {
   id: NavGroupId
@@ -24,10 +32,6 @@ interface NavGroup {
   icon: string
   items: NavItem[]
 }
-
-/** Authenticated users land on /diaries as their working home. */
-export const AUTHENTICATED_HOME_ROUTE = '/diaries'
-export const GUEST_HOME_ROUTE = '/'
 
 export const useNavigation = () => {
   const { isAuthenticated, user } = useAuth()
@@ -101,9 +105,8 @@ export const useNavigation = () => {
         label: t('nav.journal'),
         icon: 'book-open',
         items: [
-          { label: t('nav.timeline'), to: '/timeline', icon: 'clock' },
-          { label: t('nav.calendar'), to: '/calendar', icon: 'calendar' },
           { label: t('nav.diaries'), to: '/diaries', icon: 'document-text' },
+          { label: t('nav.calendar'), to: '/calendar', icon: 'calendar' },
           { label: t('nav.reviewQueue'), to: '/reviews', icon: 'clipboard-document-check' },
           { label: t('nav.tradePlans'), to: '/trade-plans', icon: 'clipboard-document-list' },
         ],
@@ -115,31 +118,34 @@ export const useNavigation = () => {
         items: [
           { label: t('nav.stocks'), to: '/stocks', icon: 'chart-bar' },
           { label: t('nav.watchlist'), to: '/stocks/watchlist', icon: 'eye' },
-          { label: t('nav.marketRotation'), to: '/tools/market-rotation', icon: 'chart-bar' },
-          { label: t('nav.relativeValue'), to: '/tools/relative-value', icon: 'chart-bar' },
           { label: t('nav.strategyPerformance'), to: '/strategy-performance', icon: 'chart-pie' },
+          { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
         ],
       },
       {
-        id: 'tools',
-        label: t('nav.tools'),
-        icon: 'wrench-screwdriver',
+        id: 'research',
+        label: t('nav.research'),
+        icon: 'magnifying-glass',
         items: [
-          { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
-          { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
+          { label: t('nav.marketRotation'), to: '/tools/market-rotation', icon: 'chart-bar' },
+          { label: t('nav.relativeValue'), to: '/tools/relative-value', icon: 'scale' },
           { label: t('nav.seasonality'), to: '/tools/seasonality', icon: 'chart-bar' },
           { label: t('nav.secFilings'), to: '/tools/sec-filings', icon: 'document-arrow-down' },
-          { label: t('nav.discipline'), to: '/discipline', icon: 'light-bulb' },
         ],
       },
       {
-        id: 'learn',
-        label: t('nav.learn'),
-        icon: 'academic-cap',
+        id: 'more',
+        label: t('nav.more'),
+        icon: 'ellipsis-horizontal',
         items: [
+          { label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
+          { label: t('nav.partners'), to: '/partners', icon: 'user-group' },
+          { label: t('nav.discipline'), to: '/discipline', icon: 'light-bulb' },
+          { label: t('nav.financialFreedom'), to: '/tools/financial-freedom', icon: 'calculator' },
           { label: t('nav.blog'), to: '/articles', icon: 'document' },
           { label: t('nav.howToUse'), to: '/how-to-use', icon: 'map' },
           { label: t('nav.about'), to: '/about', icon: 'information-circle' },
+          { label: t('nav.settings'), to: '/settings', icon: 'cog-6-tooth' },
         ],
       },
     ]
@@ -147,31 +153,21 @@ export const useNavigation = () => {
 
   const isGroupActive = (group: NavGroup) => group.items.some(item => isActive(item.to))
 
-  // Combined nav items for bottom navigation (mobile)
+  // Combined route inventory for secondary/mobile menus.
   const allNavItems = computed<NavItem[]>(() => [...mainNavItems.value, ...toolNavItems.value])
-  const bottomNavItems = computed<NavItem[]>(() => {
-    const homeItem: NavItem = {
-      id: 'home',
-      label: t('nav.home'),
-      to: homeRoute.value,
-      icon: 'home',
-    }
+  const bottomNavItems = computed<BottomNavItem[]>(() => [
+    { id: 'timeline', label: t('nav.timeline'), to: '/timeline', icon: 'clock' },
+    { id: 'portfolio', label: t('nav.portfolio'), to: '/stocks', icon: 'chart-bar' },
+    { id: 'quick-diary', label: t('diary.quickDiary'), icon: 'pencil-square', action: 'quick-diary' },
+    { id: 'review', label: t('nav.reviewQueue'), to: '/reviews', icon: 'clipboard-document-check' },
+    { id: 'more', label: t('nav.more'), icon: 'ellipsis-horizontal', action: 'more' },
+  ])
 
-    const secondary = BOTTOM_NAV_SECONDARY_ROUTES.map((path) => {
-      const found = allNavItems.value.find(item => item.to === path)
-      if (found) return { ...found, id: path }
-      // Fallback for missing routes (should not happen with proper configuration)
-      const fallbackMap: Record<string, NavItem> = {
-        '/stocks': { id: 'stocks', label: t('nav.stocks'), to: '/stocks', icon: 'chart-bar' },
-        '/diaries': { id: 'diaries', label: t('nav.diaries'), to: '/diaries', icon: 'document-text' },
-        '/alerts': { id: 'alerts', label: t('nav.alerts'), to: '/alerts', icon: 'bell' },
-        '/settings': { id: 'settings', label: t('nav.settings'), to: '/settings', icon: 'cog-6-tooth' },
-      }
-      return fallbackMap[path] || { id: path, label: 'Unknown', to: path, icon: 'question-mark-circle' }
-    })
-
-    return [homeItem, ...secondary]
-  })
+  const isBottomNavActive = (item: BottomNavItem) => {
+    if (item.to) return isActive(item.to)
+    if (item.action !== 'more') return false
+    return !['/timeline', '/stocks', '/reviews'].some(path => isActive(path))
+  }
 
   return {
     isAuthenticated,
@@ -184,6 +180,7 @@ export const useNavigation = () => {
     desktopNavGroups,
     isActive,
     isGroupActive,
+    isBottomNavActive,
     FEATURED_TOOLS_COUNT
   }
 }

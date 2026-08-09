@@ -51,7 +51,7 @@ describe('useAuth composable', () => {
 
     expect(auth.user.value?.email).toBe('test@example.com')
     expect(auth.isAuthenticated.value).toBe(true)
-    expect(globalThis.navigateTo).toHaveBeenCalledWith('/diaries')
+    expect(globalThis.navigateTo).toHaveBeenCalledWith('/timeline')
     expect(window.localStorage.setItem).toHaveBeenCalledWith('user_timezone', 'Asia/Taipei')
   })
 

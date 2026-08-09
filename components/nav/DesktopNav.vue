@@ -3,6 +3,7 @@ import NavLogo from './NavLogo.vue'
 import ThemeToggle from './ThemeToggle.vue'
 import UserMenu from '../UserMenu.vue'
 import NavDropdown from './NavDropdown.vue'
+import { useAppShell } from '~/composables/useAppShell'
 
 const { t } = useI18n()
 const {
@@ -14,6 +15,7 @@ const {
 } = useNavigation()
 
 const getIconName = (icon: string) => `heroicons:${icon}`
+const { openQuickDiary } = useAppShell()
 </script>
 
 <template>
@@ -25,6 +27,17 @@ const getIconName = (icon: string) => `heroicons:${icon}`
 
       <ul class="hidden items-center gap-1 xl:flex">
         <template v-if="isAuthenticated">
+          <li>
+            <NuxtLink
+              to="/timeline"
+              class="inline-flex min-h-[44px] items-center gap-2 rounded-dt-sm px-3 py-2 text-sm font-medium text-dt-text-muted transition-colors duration-150 hover:bg-dt-surface-strong hover:text-dt-primary"
+              :class="isActive('/timeline') ? 'bg-dt-primary text-white shadow-dt-sm hover:bg-dt-primary-active hover:text-white' : ''"
+              :aria-current="isActive('/timeline') ? 'page' : undefined"
+            >
+              <Icon name="heroicons:clock" class="h-[18px] w-[18px]" />
+              <span>{{ t('nav.timeline') }}</span>
+            </NuxtLink>
+          </li>
           <li v-for="group in desktopNavGroups" :key="group.id">
             <NavDropdown :group="group" :active="isGroupActive(group)" />
           </li>
@@ -46,15 +59,14 @@ const getIconName = (icon: string) => `heroicons:${icon}`
 
       <ul class="ml-auto mr-2 hidden items-center gap-2 xl:flex">
         <li v-if="isAuthenticated">
-          <NuxtLink
-            to="/alerts"
-            class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-dt-sm p-2 text-dt-text-muted transition-colors duration-150 hover:bg-dt-surface-strong hover:text-dt-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30"
-            :class="isActive('/alerts') ? 'bg-dt-primary text-white shadow-dt-sm hover:bg-dt-primary-active hover:text-white' : ''"
-            :aria-current="isActive('/alerts') ? 'page' : undefined"
-            :aria-label="t('nav.alerts')"
+          <BaseButton
+            variant="primary"
+            :title="t('quickDiary.shortcutHint')"
+            @click="openQuickDiary()"
           >
-            <Icon name="heroicons:bell" class="h-[18px] w-[18px]" width="18" height="18" />
-          </NuxtLink>
+            <Icon name="heroicons:pencil-square" class="h-[18px] w-[18px]" />
+            {{ t('diary.quickDiary') }}
+          </BaseButton>
         </li>
 
         <li><LanguageSwitcher /></li>

@@ -180,21 +180,15 @@
       </BaseButton>
     </div>
 
-    <QuickDiaryModal
-      :show="showQuickModal"
-      :context="quickDiaryContext"
-      @close="closeQuickDiary"
-      @created="fetchActivity"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useCalendar } from '~/composables/useCalendar'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
+import { useAppShell } from '~/composables/useAppShell'
 import { useI18n } from '#imports'
-import type { QuickDiaryContext } from '~/types/quicknote'
 
 definePageMeta({
   middleware: 'auth'
@@ -228,20 +222,12 @@ const monthTitle = computed(() =>
   }).format(new Date(currentYear.value, currentMonth.value, 1)),
 )
 
-const showQuickModal = ref(false)
-const quickDiaryContext = ref<QuickDiaryContext | null>(null)
-
+const { openQuickDiary: openGlobalQuickDiary } = useAppShell()
 const openQuickDiary = (date?: string) => {
-  quickDiaryContext.value = {
+  openGlobalQuickDiary({
     source: 'calendar',
     ...(date ? { date } : {}),
-  }
-  showQuickModal.value = true
-}
-
-const closeQuickDiary = () => {
-  showQuickModal.value = false
-  quickDiaryContext.value = null
+  })
 }
 
 const handleDateClick = (day: number) => {

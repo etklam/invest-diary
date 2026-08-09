@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import NavLogo from './NavLogo.vue'
 import ThemeToggle from './ThemeToggle.vue'
+import { nextTick, onUnmounted, ref, watch } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean
 }>()
 
@@ -11,20 +11,67 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { mainNavItems, toolNavItems, isActive, isAuthenticated } = useNavigation()
+const { desktopNavGroups, mainNavItems, toolNavItems, isActive, isAuthenticated } = useNavigation()
 const { user, logout } = useAuth()
 const route = useRoute()
+const panelRef = ref<HTMLElement | null>(null)
+const previousActiveElement = ref<HTMLElement | null>(null)
 
 const getIconName = (icon: string) => `heroicons:${icon}`
+const isGroupItemActive = (items: Array<{ to: string }>, to: string) => {
+  const activePath = items
+    .filter(item => isActive(item.to))
+    .sort((a, b) => b.to.length - a.to.length)[0]?.to
+  return activePath === to
+}
 
 const handleLogout = async () => {
   emit('close')
   await logout()
 }
 
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    emit('close')
+    return
+  }
+  if (event.key !== 'Tab' || !panelRef.value) return
+
+  const focusable = Array.from(panelRef.value.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  ))
+  if (!focusable.length) return
+  const first = focusable[0]!
+  const last = focusable[focusable.length - 1]!
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
+
+watch(() => props.isOpen, async (isOpen) => {
+  if (isOpen) {
+    previousActiveElement.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    document.documentElement.style.overflow = 'hidden'
+    await nextTick()
+    panelRef.value?.focus()
+    return
+  }
+  document.documentElement.style.overflow = ''
+  previousActiveElement.value?.focus()
+})
+
 // Close on route change
 watch(() => route.path, () => {
   emit('close')
+})
+
+onUnmounted(() => {
+  document.documentElement.style.overflow = ''
 })
 </script>
 
@@ -37,56 +84,76 @@ watch(() => route.path, () => {
     <div
       @click="emit('close')"
       class="fixed inset-0 bg-black/40"
+      aria-hidden="true"
     />
 
     <!-- Mobile Nav Content -->
     <nav
+      ref="panelRef"
       class="relative flex h-full w-full flex-col overflow-y-auto border-r border-dt-border bg-dt-surface pb-8 pt-5 shadow-dt-lg sm:pt-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="mobile-more-title"
+      tabindex="-1"
+      @keydown="handleKeydown"
     >
       <div
-        class="mb-5 flex w-full items-center border-b border-dt-border px-5 pb-5 sm:px-6 sm:pb-6"
+        class="mb-5 flex w-full items-center justify-between border-b border-dt-border px-5 pb-5 sm:px-6 sm:pb-6"
       >
-        <NavLogo is-mobile @click="emit('close')" />
+        <h2 id="mobile-more-title" class="font-display text-xl font-semibold text-dt-text">
+          {{ t('nav.more') }}
+        </h2>
+        <button
+          type="button"
+          class="flex h-11 w-11 items-center justify-center rounded-dt-sm text-dt-text-muted hover:bg-dt-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30"
+          :aria-label="t('theme.closeMenu')"
+          @click="emit('close')"
+        >
+          <Icon name="heroicons:x-mark" class="h-6 w-6" />
+        </button>
       </div>
 
-      <div class="px-3 pb-6 sm:px-4">
-        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-dt-text-muted">
-          {{ t('nav.home') }}
-        </h3>
-        <ul class="mb-8 text-sm font-medium">
-          <li v-for="item in mainNavItems" :key="item.to">
-            <NuxtLink
-              :to="item.to"
-              class="flex items-center rounded-dt-sm px-3 py-2.5 pr-4 text-sm transition-colors duration-200"
-              :class="isActive(item.to)
-                ? 'bg-dt-primary text-white'
-                : 'text-dt-text hover:bg-dt-surface-strong'"
-              @click="emit('close')"
-            >
-              <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
-              <span>{{ item.label }}</span>
-            </NuxtLink>
-          </li>
-        </ul>
+      <div v-if="isAuthenticated" class="space-y-6 px-3 pb-6 sm:px-4">
+        <section v-for="group in desktopNavGroups" :key="group.id">
+          <h3 class="mb-2 px-3 text-xs font-semibold uppercase text-dt-text-muted">
+            {{ group.label }}
+          </h3>
+          <ul class="text-sm font-medium">
+            <li v-for="item in group.items" :key="item.to">
+              <NuxtLink
+                :to="item.to"
+                class="flex min-h-11 items-center rounded-dt-sm px-3 py-2.5 pr-2 text-sm transition-colors duration-200"
+                :class="isGroupItemActive(group.items, item.to)
+                  ? 'bg-dt-primary text-white'
+                  : 'text-dt-text hover:bg-dt-surface-strong'"
+                :aria-current="isGroupItemActive(group.items, item.to) ? 'page' : undefined"
+                @click="emit('close')"
+              >
+                <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
+                <span>{{ item.label }}</span>
+              </NuxtLink>
+            </li>
+          </ul>
+        </section>
+      </div>
 
-        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-dt-text-muted">
-          {{ t('nav.tools') }}
-        </h3>
-        <ul class="text-sm font-medium">
-          <li v-for="item in toolNavItems" :key="item.to">
-            <NuxtLink
-              :to="item.to"
-              class="flex items-center rounded-dt-sm px-3 py-2.5 pr-2 text-sm transition-colors duration-200"
-              :class="isActive(item.to)
-                ? 'bg-dt-primary text-white'
-                : 'text-dt-text hover:bg-dt-surface-strong'"
-              @click="emit('close')"
-            >
-              <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
-              <span>{{ item.label }}</span>
-            </NuxtLink>
-          </li>
-        </ul>
+      <div v-else class="space-y-6 px-3 pb-6 sm:px-4">
+        <section v-for="(items, label) in { [t('nav.home')]: mainNavItems, [t('nav.tools')]: toolNavItems }" :key="label">
+          <h3 class="mb-2 px-3 text-xs font-semibold uppercase text-dt-text-muted">{{ label }}</h3>
+          <ul class="text-sm font-medium">
+            <li v-for="item in items" :key="item.to">
+              <NuxtLink
+                :to="item.to"
+                class="flex min-h-11 items-center rounded-dt-sm px-3 py-2.5 text-dt-text hover:bg-dt-surface-strong"
+                :aria-current="isActive(item.to) ? 'page' : undefined"
+                @click="emit('close')"
+              >
+                <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
+                <span>{{ item.label }}</span>
+              </NuxtLink>
+            </li>
+          </ul>
+        </section>
       </div>
 
       <!-- Mobile Auth Section -->
@@ -105,14 +172,6 @@ watch(() => route.path, () => {
             <div class="px-3 py-2 text-sm text-dt-text font-medium">
               {{ user?.name || user?.email }}
             </div>
-            <NuxtLink
-              to="/settings"
-              class="mt-2 flex items-center rounded-dt-sm px-3 py-3 pr-2 text-dt-text transition-colors hover:bg-dt-surface-strong"
-              @click="emit('close')"
-            >
-              <Icon name="heroicons:cog-6-tooth" class="mr-3 h-5 w-5" />
-              <span>{{ t('nav.settings') }}</span>
-            </NuxtLink>
             <button
               @click="handleLogout"
               class="flex w-full cursor-pointer items-center rounded-dt-sm px-3 py-3 pr-2 text-dt-danger transition-colors hover:bg-dt-danger/10"

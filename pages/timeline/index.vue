@@ -1,7 +1,7 @@
 <template>
   <div class="timeline-page mx-auto w-full max-w-[1180px] space-y-6 pb-20">
     <!-- Header -->
-    <header class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div class="min-w-0">
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
           {{ t('timeline.kicker') }}
@@ -9,18 +9,12 @@
         <h1 class="font-display mt-1.5 text-[clamp(1.9rem,4vw,2.75rem)] leading-tight tracking-tight text-dt-text">
           {{ t('timeline.title') }}
         </h1>
-        <p class="mt-2 max-w-xl text-sm leading-relaxed text-dt-text-muted sm:text-base">
+        <p class="mt-1 max-w-xl text-sm leading-relaxed text-dt-text-muted">
           {{ t('timeline.subtitle') }}
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
-        <NuxtLink to="/timeline/compare" class="inline-flex">
-          <BaseButton variant="secondary">
-            <Icon name="heroicons:rectangle-group" class="mr-2 h-5 w-5" />
-            {{ t('compareDiary.title') }}
-          </BaseButton>
-        </NuxtLink>
+      <div class="flex items-center gap-3">
         <BaseButton variant="primary" @click="openQuickDiary">
           <Icon name="heroicons:pencil-square" class="mr-2 h-5 w-5" />
           {{ t('diary.newDiary') }}
@@ -28,9 +22,14 @@
       </div>
     </header>
 
+    <TimelineModeSwitch />
+
     <!-- Filters -->
-    <LedgerCard>
-      <div class="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto]">
+    <details class="rounded-dt-sm border border-dt-border bg-dt-surface px-4 py-3">
+      <summary class="cursor-pointer text-sm font-semibold text-dt-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30">
+        {{ t('desk.filter.title') }}
+      </summary>
+      <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto]">
         <label class="block">
           <span class="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
             {{ t('diary.dateFrom') }}
@@ -58,7 +57,7 @@
           </BaseButton>
         </div>
       </div>
-    </LedgerCard>
+    </details>
 
     <!-- Loading -->
     <div v-if="pending" class="rounded-dt-md border border-dt-border bg-dt-surface px-6 py-16 text-center shadow-dt-sm">
@@ -196,20 +195,14 @@
       </div>
     </div>
 
-    <QuickDiaryModal
-      :show="showQuickModal"
-      :context="quickDiaryContext"
-      @close="closeQuickDiary"
-      @created="refresh"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { formatShortDate } from '~/lib/dates'
-import type { QuickDiaryContext } from '~/types/quicknote'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useTimelineDiaries } from '~/composables/useTimelineDiaries'
+import { useAppShell } from '~/composables/useAppShell'
 
 const { t, locale } = useI18n()
 const { user } = useAuth()
@@ -245,18 +238,8 @@ const {
   resetFilters
 } = useTimelineDiaries()
 
-const showQuickModal = ref(false)
-const quickDiaryContext = ref<QuickDiaryContext | null>(null)
-
-const openQuickDiary = () => {
-  quickDiaryContext.value = { source: 'timeline' }
-  showQuickModal.value = true
-}
-
-const closeQuickDiary = () => {
-  showQuickModal.value = false
-  quickDiaryContext.value = null
-}
+const { openQuickDiary: openGlobalQuickDiary } = useAppShell()
+const openQuickDiary = () => openGlobalQuickDiary({ source: 'timeline' })
 
 const { onDiaryMutation } = useDiaryMutation()
 onDiaryMutation(() => {

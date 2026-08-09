@@ -45,6 +45,8 @@
     "manageBlog": "交易手札管理",
     "journal": "投资日志",
     "portfolio": "投资组合",
+    "research": "研究",
+    "more": "更多",
     "learn": "学习",
     "dashboard": "仪表板",
     "discover": "探索",
@@ -97,6 +99,7 @@
     "loginNow": "立即登录"
   },
   "quickDiary": {
+    "shortcutHint": "快速日记（Ctrl/Cmd + J）",
     "title": "快速日记",
     "selectTemplate": "选择一个模板开始快速创建日记",
     "date": "日期",
@@ -445,48 +448,48 @@
     "badge": "使用指南",
     "hero": {
       "title": "把每次交易判断，变成下一次能用的经验",
-      "subtitle": "快速记下想法，补上计划、交易与提醒，再用复盘与绩效找出真正有效的做法。",
+      "subtitle": "快速记下想法，在 Timeline 回看判断，并在同一套流程里比较不同观点。",
       "secondary": "先看完整流程"
     },
     "gettingStarted": {
       "title": "先走完一个最小循环",
-      "subtitle": "不用一次学会每个页面。先捕捉判断、补足上下文，再按期限回看。",
+      "subtitle": "不用一次学会每个页面。先看自己的历史，记下下一个想法，需要时再比较另一个观点。",
       "step1": {
-        "eyebrow": "捕捉 · Quick Diary",
-        "title": "先把当下的判断记下来",
-        "description": "盘中先写市场观察、情绪、风险或下一步，不必等到内容完美才开始。需要时可以建立新日记，也可以追加到今天。",
-        "cta": "打开 Quick Diary"
+        "eyebrow": "阅读 · Timeline",
+        "title": "先看自己的投资思考如何演变",
+        "description": "Timeline 是登录后的首页。先按时间阅读真实日记，只有需要追查特定脉络时再使用筛选。",
+        "cta": "打开 Timeline"
       },
       "step2": {
-        "eyebrow": "整理 · Journal Desk",
-        "title": "补上 thesis、风险、交易与提醒",
-        "description": "日记工作台把每日判断、交易与提醒放在同一条脉络里；交易计划也能在进场前把止损、目标与失效条件写清楚。",
-        "cta": "查看日记工作台"
+        "eyebrow": "捕捉 · Quick Diary",
+        "title": "用一次操作记下下一个想法",
+        "description": "从 App 导航打开 Quick Diary，记录市场观察、情绪、风险或下一步；内容需要更多结构时才使用完整日记编辑器。",
+        "cta": "打开 Quick Diary"
       },
       "step3": {
-        "eyebrow": "回看 · Review Queue",
-        "title": "在到期时回看假设与执行",
-        "description": "把值得回头检查的日记排进复盘队列，按未排程、逾期、今天与即将到期整理，让经验真的回到下一次决策。",
-        "cta": "打开复盘队列"
+        "eyebrow": "比较 · Pair View",
+        "title": "并排阅读同一天的两个观点",
+        "description": "从 My Timeline 切到 Pair View，选择已分享的伙伴，直接并排比较，不必另外学一套工具。",
+        "cta": "打开 Pair View"
       }
     },
     "workflow": {
       "title": "从判断到修正的工作流",
-      "subtitle": "Trade Basic 把捕捉、规划、追踪与复盘放在同一条资料脉络里。你不需要预测得完美，但要让每次决策留下可回看的证据。",
+      "subtitle": "Trade Basic 把捕捉、时间阅读、观点比较与复盘放在同一条脉络里。你不需要预测得完美，但要留下可回看的证据。",
       "step1": {
         "label": "捕捉",
         "title": "先把当下的判断留住",
         "description": "用 Quick Diary 记下市场观察、情绪、风险或下一步；内容可以之后再补完整。"
       },
       "step2": {
-        "label": "规划",
-        "title": "先算部位，再写清楚交易计划",
-        "description": "用部位计算器估算风险与仓位，再把进场、止损、目标、最大部位和失效条件存成交易计划。"
+        "label": "回看",
+        "title": "在 Timeline 阅读当时的判断",
+        "description": "Timeline 先呈现真实日记，让你沿着时间看 thesis、风险与决策如何改变。"
       },
       "step3": {
-        "label": "追踪",
-        "title": "让日记、交易、持仓与提醒对得上",
-        "description": "交易写在日记里，持仓页看市值与风险，提醒和月历则把需要回头处理的事情留在视线内。"
+        "label": "比较",
+        "title": "需要另一个观点时切到 Pair View",
+        "description": "选择已分享的伙伴，把同一天的日记并排阅读；系统不评分，也不替任何一方判定正确。"
       },
       "step4": {
         "label": "复盘",
@@ -496,14 +499,18 @@
     },
     "surfaces": {
       "title": "工作台：每个页面各自负责什么",
-      "subtitle": "登录后先回到日记工作台；其他页面各自处理规划、持仓、复盘或协作，不必同时打开全部。",
+      "subtitle": "登录后先回到 Timeline；其他页面各自处理捕捉、搜索、规划、持仓、复盘或协作，不必同时打开全部。",
+      "timeline": {
+        "title": "Timeline",
+        "description": "登录后的首页。按时间阅读真实日记，需要另一个观点时再切到 Pair View。"
+      },
       "quickDiary": {
         "title": "Quick Notes",
         "description": "最快的捕捉入口。可以选模板、日期、标签与提醒，并决定建立新日记或追加到今天。"
       },
       "diaries": {
-        "title": "日记工作台",
-        "description": "从最新日记、提醒与交易开始下一步，再用筛选器找回自己的判断轨迹。这是登录后的主要工作区。"
+        "title": "日记资料库",
+        "description": "搜索、筛选、排序与管理完整记录。Timeline 负责阅读历史，资料库负责找出并维护记录。"
       },
       "reviews": {
         "title": "复盘队列",
@@ -534,8 +541,8 @@
         "description": "邀请真人或 AI 伙伴，分开控制 diary 与股票笔记分享；持仓永远留在自己的账号里。"
       },
       "compare": {
-        "title": "Partner Compare",
-        "description": "进阶协作入口。选择已接受且开启分享的伙伴，把同一天的两份 diary 并排回看。"
+        "title": "Pair View",
+        "description": "Timeline 的另一种阅读模式。选择已接受且开启分享的伙伴，并排回看同一天的日记。"
       }
     },
     "tools": {
@@ -566,7 +573,7 @@
       "title": "先记下今天的判断",
       "description": "一条清楚的市场观察，就是下一次复盘可以验证的起点。先写下来，其他流程再逐步补上。",
       "primaryGuest": "创建账号",
-      "primaryAuth": "前往日记工作台",
+      "primaryAuth": "打开 Timeline",
       "secondary": "阅读建立者笔记"
     }
   },
@@ -779,6 +786,9 @@
   },
   "timeline": {
     "title": "时间轴",
+    "viewMode": "时间轴查看模式",
+    "myTimeline": "我的时间轴",
+    "pairView": "双人查看",
     "kicker": "事件时间轴",
     "subtitle": "以时间顺序回顾您的投资历程",
     "noEntries": "暂无时间轴纪录",
@@ -1949,57 +1959,13 @@
     }
   },
   "desk": {
-    "kicker": "Diary Ledger",
-    "title": "日记工作台",
-    "summary": "先看节奏，再做记录。提醒、交易、最新复盘都放在第一视线，不用再在卡片海里兜圈。",
-    "snapshot": {
-      "label": "Ledger Snapshot",
-      "totalDiaries": "总日记数",
-      "thisWeek": "近 7 天记录",
-      "filteredResults": "目前筛选结果"
-    },
+    "libraryDescription": "搜索、筛选并管理完整的日记记录。",
     "actions": {
       "quickDiary": "快速日记",
-      "newDiary": "新增日记",
-      "partners": "合作伙伴"
-    },
-    "nextMove": {
-      "label": "Next Move",
-      "latestDiary": "最近一篇",
-      "alertReview": "提醒盘点",
-      "tradeReview": "交易复盘",
-      "noDiariesHeadline": "今天先写下第一篇判断记录",
-      "hasAlertsHeadline": "先处理 {count} 个提醒，别让风险信号失焦",
-      "latestDiaryHeadline": "从 {date} 的最近一篇开始复盘",
-      "defaultHeadline": "先把今天的交易节奏写清楚",
-      "startStamp": "Start",
-      "riskCheckStamp": "Risk Check",
-      "reviewStamp": "Review",
-      "writingStamp": "Writing",
-      "noDiariesDesc": "这个页面现在不是展示墙，是工作桌。第一步很简单，先把今天的理由记下来。",
-      "hasAlertsDesc": "你的工作桌上还有未消化的提醒。先进相关条目检查条件、更新判断，再决定下一步。",
-      "hasTransactionsDesc": "交易和文字已经开始累积，接下来要做的不是再开更多卡片，而是把理由、结果、修正对齐。",
-      "defaultDesc": "目前节奏偏轻，适合补全条目细节，让之后的复盘有完整上下文。"
+      "newDiary": "新增日记"
     },
     "tasks": {
-      "noDiaryTitle": "还未开始",
-      "noDiaryText": "先用一篇快速日记，把今天的判断和情绪落地。",
-      "untitled": "未命名记录",
-      "alertCountTitle": "{count} 个待留意提醒",
-      "alertCountMeta": "有提醒的日记 {count} 篇",
-      "hasAlertsText": "先处理带提醒的条目，别让风险提示变成背景音。",
-      "noAlertsText": "目前没有待处理提醒，节奏算稳。",
-      "tradeCountTitle": "{count} 笔交易挂在日记里",
-      "tradeCountMeta": "涉及交易的日记 {count} 篇",
-      "hasTradesText": "有交易就该有理由，从有交易的条目开始回看。",
-      "noTradesText": "还没有交易记录，先把观察和规则写出来。"
-    },
-    "rules": {
-      "label": "Desk Rules",
-      "title": "先把账对清楚，再谈判断。",
-      "rule1": "先记理由，再看结果，情绪放最后。",
-      "rule2": "日期、提醒、交易三条线要对得上。",
-      "rule3": "筛选器是拿来缩短决策，不是把自己绕晕。"
+      "untitled": "未命名记录"
     },
     "filter": {
       "label": "Filter Desk",

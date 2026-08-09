@@ -214,7 +214,8 @@
 
 <script setup lang="ts">
 definePageMeta({
-  requiresAuth: false
+  requiresAuth: false,
+  middleware: 'auth',
 })
 
 const { t } = useI18n()

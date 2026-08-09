@@ -61,7 +61,7 @@ test('registration with existing email shows error toast', async ({ page }) => {
   await expect(page).toHaveURL(/auth\/register/)
 })
 
-test('login with valid credentials redirects to diaries', async ({ page }) => {
+test('login with valid credentials redirects to Timeline', async ({ page }) => {
   let loginBody: any = null
   await page.route('**/api/auth/login', async (route) => {
     loginBody = route.request().postDataJSON()
@@ -80,7 +80,7 @@ test('login with valid credentials redirects to diaries', async ({ page }) => {
     })
   })
 
-  // The diaries page will try to load diaries after login redirect
+  // Timeline loads diaries after login redirect.
   await page.route('**/api/diaries', async (route) => {
     await route.fulfill({
       status: 200,
@@ -96,7 +96,7 @@ test('login with valid credentials redirects to diaries', async ({ page }) => {
   await page.getByLabel('Password').fill('password123')
 
   await Promise.all([
-    page.waitForURL('**/diaries', { timeout: 30_000 }),
+    page.waitForURL('**/timeline', { timeout: 30_000 }),
     page.locator('button.login-submit').click(),
   ])
 
@@ -105,7 +105,7 @@ test('login with valid credentials redirects to diaries', async ({ page }) => {
     email: 'test@example.com',
     password: 'password123',
   })
-  await expect(page).toHaveURL(/diaries/)
+  await expect(page).toHaveURL(/timeline/)
 })
 
 test('login with invalid credentials shows error toast', async ({ page }) => {
@@ -151,7 +151,7 @@ test('logout clears session and redirects to login page', async ({ page }) => {
     })
   })
 
-  // Mock diaries list so the diaries page can load after login
+  // Mock diaries list so Timeline can load after login.
   await page.route('**/api/diaries', async (route) => {
     await route.fulfill({
       status: 200,
@@ -176,10 +176,10 @@ test('logout clears session and redirects to login page', async ({ page }) => {
   await page.getByLabel('Email').fill('test@example.com')
   await page.getByLabel('Password').fill('password123')
   await Promise.all([
-    page.waitForURL('**/diaries', { timeout: 30_000 }),
+    page.waitForURL('**/timeline', { timeout: 30_000 }),
     page.locator('button.login-submit').click(),
   ])
-  await expect(page).toHaveURL(/diaries/)
+  await expect(page).toHaveURL(/timeline/)
 
   // Trigger logout via the composable — call the same fetch the logout() function uses
   await page.evaluate(() =>

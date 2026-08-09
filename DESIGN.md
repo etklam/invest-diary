@@ -16,7 +16,7 @@
 ## Post-Refactor Audit (2026-06-06)
 - **方向調整：** 從 `Institutional Fintech`（glassmorphism + glow）轉向 `Calm Institutional Ledger`（clean panels + ledger rows + tables）。保留深色專業底色，移除 radial-gradient、color-mix glass effects、hover 動畫。
 - **基礎元件系統建立：** 6 個新元件（LedgerCard, BaseButton, StatusBadge, DiaryNotePreview, EtfMobileCard, ReviewCandidateCard）全部使用 `dt-*` design token，支援亮/暗模式。
-- **頁面重構完成：** homepage hero、diaries/index（日記工作台）、tools/etf（ETF board）、tools/position-sizing（建倉計算器）。Scoped CSS 平均減少 85%+。
+- **頁面重構完成：** homepage hero、diaries/index（日記資料庫）、tools/etf（ETF board）、tools/position-sizing（建倉計算器）。Scoped CSS 平均減少 85%+。
 - **Token contract 保留：** `dt-*` tailwind class 映射不變，`design-tokens.css` 變數名稱不變。改動只觸及 value 和元件層。
 - **Structured Review：** Diary model 新增 thesis/risk/execution/reviewDueAt/reviewStatus/reviewedAt 欄位，支援交易假設記錄與複盤流程。
 - **字體角色不變：** `Fraunces`（展示）、`Source Sans 3`（內文/UI）、`IBM Plex Mono`（數據/程式碼）三件套。
@@ -134,7 +134,7 @@
 ## Screen-Level Recommendations
 - **Landing (已完成)：** 從「功能介紹頁」改成「交易者的工作方法頁」。Hero 使用 DiaryNotePreview 展示真實日記樣本，搭配 BaseButton CTA。移除 bg-grid、terminal-panel、三欄 metric card。
 - **Auth:** 左側宣傳面板保留，但要縮短 marketing copy，讓登入重心更乾淨。加上 trust cues，例如資料不會公開、登入後回到上次工作區。
-- **Diary Desk (已完成)：** 從卡片瀑布改成帶主次層級的工作台。上方顯示今日狀態、未完成複盤候選（ReviewCandidateCard）、統計摘要；下方顯示日記條目列表。Scoped CSS 減少 92%。
+- **Diary Library (已完成)：** 保留搜尋、篩選、排序、分頁、Quick Diary 與完整日記編輯入口；移除與 Timeline 首頁角色重疊的 KPI、Next Move、Desk Rules 與複盤候選面板。
 - **Tools — ETF (已完成)：** 統一使用 dt-* token + StatusBadge + BaseButton + EtfMobileCard（手機版）。移除 slate-* 硬編碼與自訂 statusClass()。
 - **Tools — Position Sizing (已完成)：** 移除 .hero-spotlight gradient 與 .result-banner gradient，改用 clean border + surface + dt-primary solid。Scoped CSS 減少 81%。
 - **Tools — Seasonality (已完成)：** 移除 hero-spotlight linear-gradient、month-highlight radial-gradient + color-mix，全部改用 LedgerCard + dt-* tokens。Scoped CSS 從 218 行降至 0。
@@ -154,3 +154,4 @@
 | 2026-06-06 | Phase 6：全站工具頁統一完成 | seasonality（scoped CSS 218→0）、relative-value（移除 40+ inline styles + glassmorphism）、financial-freedom（scoped CSS 233→38）。全站 5 個工具頁全部完成 Calm Institutional Ledger 重構，淨刪 445 行 |
 | 2026-07-01 | Impeccable full pass：11 phase 全站一致性稽核 | 跨 7 個產品區域（auth layout、navigation、diary desk、beta cockpit、tools、articles/public、auth/onboarding）與 6 個 discipline 元件清殘留 glassmorphism、radial/linear-gradient、hover translateY、scale-105/95 micro-bounce、glow shadow。消除 discipline 模組自帶的金（#C9A962）＋紫（#7C3AED）子設計系統與 Playfair Display 字體，全部映射至 `var(--color-primary)`。StatusBadge/BaseButton token 對齊（`green-500/30`→`dt-success/30`、`red-600`→`dt-danger`、`min-h-10`→`min-h-11` 44px 觸控目標）。LandingCard/LandingSection/LandingBadge/PWAUpdatePrompt/BlogCard/QuickNoteEditorCore 全部回到 solid surface + border + dt-* tokens。Timeline 頁：移除 gradient 時間軸線、radial-gradient dot pattern、translate-x-2 card hover、amber dot glow shadow；raw amber/emerald badge → dt-warning/dt-success。Auth login/register：backdrop-blur shell 移除，hardcoded navy gradient（#11263a/#1c3145/#233948）→ `var(--color-panel-ink)`。Phase 10 gates：lint 0 errors / typecheck clean / 1761 tests pass / build ✅。保留 PRODUCT.md / DESIGN.md 方向與所有 i18n、a11y 設定 |
 | 2026-07-17 | Consistency + craft pass | 收斂 calendar/timeline 至 dt-* + LedgerCard/BaseButton；token 微調更深墨色與克制主藍；DesktopNav/BottomNav/BaseButton/LedgerCard 去掉 cyan/slate 硬編碼。 |
+| 2026-08-09 | Timeline-first information architecture | 已登入首頁統一為 `/timeline`；桌面導覽改為 Timeline 直達與 Journal/Portfolio/Research/More 分組，行動底欄改為 Timeline/Portfolio/Quick Diary/Review/More。Quick Diary 由 authenticated shell 持有唯一 modal，Calendar 等 contextual surface 只傳 context。Pair View 成為 Timeline 閱讀模式，Diaries 收斂為搜尋管理 library。 |

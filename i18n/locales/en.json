@@ -45,6 +45,8 @@
     "manageBlog": "Manage Trading Journal",
     "journal": "Journal",
     "portfolio": "Portfolio",
+    "research": "Research",
+    "more": "More",
     "learn": "Learn",
     "dashboard": "Dashboard",
     "discover": "Discover",
@@ -97,6 +99,7 @@
     "passwordMismatchError": "Passwords do not match"
   },
   "quickDiary": {
+    "shortcutHint": "Quick Diary (Ctrl/Cmd + J)",
     "title": "Quick Diary",
     "selectTemplate": "Choose a template to start",
     "date": "Date",
@@ -650,6 +653,9 @@
   },
   "timeline": {
     "title": "Timeline",
+    "viewMode": "Timeline view",
+    "myTimeline": "My Timeline",
+    "pairView": "Pair View",
     "kicker": "Event Timeline",
     "subtitle": "A chronological view of your investment journey",
     "noEntries": "No entries yet",
@@ -987,48 +993,48 @@
     "badge": "How to Use",
     "hero": {
       "title": "Turn each trading decision into experience you can reuse",
-      "subtitle": "Capture the idea, add a plan, trades, and reminders, then use reviews and performance to learn what actually works.",
+      "subtitle": "Capture a thought, revisit it on your Timeline, and compare perspectives without leaving the same workflow.",
       "secondary": "See the full workflow"
     },
     "gettingStarted": {
       "title": "Start with one complete loop",
-      "subtitle": "You do not need to learn every screen at once. Capture the judgment, add context, then return when it is time to review.",
+      "subtitle": "You do not need to learn every screen at once. Start with your history, capture the next thought, then compare when another perspective helps.",
       "step1": {
-        "eyebrow": "Capture · Quick Diary",
-        "title": "Capture the judgment while it is fresh",
-        "description": "Write down the market read, emotion, risk, or next move without waiting for perfect formatting. Create a new diary or append to today when the thought is small.",
-        "cta": "Open Quick Diary"
+        "eyebrow": "Read · Timeline",
+        "title": "See your investment thinking over time",
+        "description": "Timeline is the authenticated home. Start with real entries in chronological order, then filter only when you need to find a narrower thread.",
+        "cta": "Open Timeline"
       },
       "step2": {
-        "eyebrow": "Organize · Journal Desk",
-        "title": "Add thesis, risk, trades, and reminders",
-        "description": "The diary desk keeps the daily judgment, trades, and follow-up in one trail. Before entering, make entry, stop, target, and invalidation explicit in a trade plan.",
-        "cta": "Open diary desk"
+        "eyebrow": "Capture · Quick Diary",
+        "title": "Capture the next thought in one action",
+        "description": "Open Quick Diary from the app navigation to record a market read, emotion, risk, or next move. Use the full Diary editor only when the entry needs more structure.",
+        "cta": "Open Quick Diary"
       },
       "step3": {
-        "eyebrow": "Review · Review Queue",
-        "title": "Revisit the thesis when it is due",
-        "description": "Schedule the entries worth revisiting, then use unscheduled, overdue, today, and upcoming groups to turn experience back into the next decision.",
-        "cta": "Open review queue"
+        "eyebrow": "Compare · Pair View",
+        "title": "Read two viewpoints on the same day",
+        "description": "Switch from My Timeline to Pair View, choose a sharing partner, and compare both entries side by side without learning a separate tool.",
+        "cta": "Open Pair View"
       }
     },
     "workflow": {
       "title": "From judgment to correction",
-      "subtitle": "Trade Basic keeps capture, planning, tracking, and review in one data trail. You do not need perfect predictions; you need decisions that leave evidence you can revisit.",
+      "subtitle": "Trade Basic keeps capture, chronological reading, comparison, and review in one trail. You do not need perfect predictions; you need evidence you can revisit.",
       "step1": {
         "label": "Capture",
         "title": "Keep the judgment before memory edits it",
         "description": "Use Quick Diary for the market read, emotion, risk, or next move. Add structure later when the decision needs more context."
       },
       "step2": {
-        "label": "Plan",
-        "title": "Size the position, then write the trade plan",
-        "description": "Use the position calculator to estimate risk and size, then save entry, stop, target, maximum size, and invalidation conditions."
+        "label": "Revisit",
+        "title": "Read the judgment on your Timeline",
+        "description": "Timeline puts real diary entries first so you can follow how a thesis, risk, and decision changed over time."
       },
       "step3": {
-        "label": "Track",
-        "title": "Keep diaries, trades, holdings, and reminders aligned",
-        "description": "Transactions live with the diary, holdings show value and risk, and alerts plus the calendar keep follow-up visible."
+        "label": "Compare",
+        "title": "Switch to Pair View when perspective matters",
+        "description": "Choose a sharing partner and line up same-day entries side by side. Neither viewpoint is scored or declared correct."
       },
       "step4": {
         "label": "Review",
@@ -1038,14 +1044,18 @@
     },
     "surfaces": {
       "title": "The workbench: one job per page",
-      "subtitle": "Start at the diary desk after signing in. The other pages handle planning, holdings, review, or collaboration when you need them.",
+      "subtitle": "Start on Timeline after signing in. The other pages handle capture, search, planning, holdings, review, or collaboration when you need them.",
+      "timeline": {
+        "title": "Timeline",
+        "description": "The authenticated home. Read your actual diary entries in chronological order, then switch to Pair View when you want another perspective."
+      },
       "quickDiary": {
         "title": "Quick Diary",
         "description": "The fastest capture point. Choose a template, date, tags, and reminders, then create a diary or append to today."
       },
       "diaries": {
-        "title": "Diary Desk",
-        "description": "Start from the latest diary, alerts, or trades, then filter the judgment trail. This is the authenticated home workspace."
+        "title": "Diary Library",
+        "description": "Search, filter, sort, and manage full records. Timeline is for reading history; the library is for finding and maintaining it."
       },
       "reviews": {
         "title": "Review Queue",
@@ -1076,8 +1086,8 @@
         "description": "Invite a human or AI partner and control diary sharing separately from stock-note sharing. Holdings stay in your account."
       },
       "compare": {
-        "title": "Partner Compare",
-        "description": "An advanced collaboration surface. Choose an accepted partner with sharing enabled and line up same-day diaries side by side."
+        "title": "Pair View",
+        "description": "A Timeline reading mode. Choose an accepted sharing partner and compare same-day diaries side by side."
       }
     },
     "tools": {
@@ -1108,7 +1118,7 @@
       "title": "Capture today’s decision",
       "description": "One clear market read is enough to start a reviewable trail. Write it down first; add the rest of the workflow as the decision develops.",
       "primaryGuest": "Create an account",
-      "primaryAuth": "Open diary desk",
+      "primaryAuth": "Open Timeline",
       "secondary": "Read builder notes"
     }
   },
@@ -1949,57 +1959,13 @@
     }
   },
   "desk": {
-    "kicker": "Diary Ledger",
-    "title": "Journal Desk",
-    "summary": "Read the rhythm first, then write. Alerts, trades, and the latest reviews — all within your first glance. No more circling through a sea of cards.",
-    "snapshot": {
-      "label": "Ledger Snapshot",
-      "totalDiaries": "Total Diaries",
-      "thisWeek": "Last 7 Days",
-      "filteredResults": "Filtered Results"
-    },
+    "libraryDescription": "Search, filter, and manage your full Diary record.",
     "actions": {
       "quickDiary": "Quick Diary",
-      "newDiary": "New Diary",
-      "partners": "Partners"
-    },
-    "nextMove": {
-      "label": "Next Move",
-      "latestDiary": "Latest Entry",
-      "alertReview": "Alert Review",
-      "tradeReview": "Trade Review",
-      "noDiariesHeadline": "Write your first judgment note today",
-      "hasAlertsHeadline": "Handle {count} alerts first — don't let risk signals blur",
-      "latestDiaryHeadline": "Start reviewing from the latest entry on {date}",
-      "defaultHeadline": "Write down today's trading rhythm clearly",
-      "startStamp": "Start",
-      "riskCheckStamp": "Risk Check",
-      "reviewStamp": "Review",
-      "writingStamp": "Writing",
-      "noDiariesDesc": "This page is a workstation, not a gallery. The first step is simple — write down your reasoning for today.",
-      "hasAlertsDesc": "You still have undigested alerts on your desk. Check conditions and update your judgment in related entries before deciding the next move.",
-      "hasTransactionsDesc": "Trades and notes are starting to pile up. The next step isn't opening more cards — it's aligning reasons, outcomes, and corrections.",
-      "defaultDesc": "The rhythm is light right now. A good time to fill in entry details so future reviews have full context."
+      "newDiary": "New Diary"
     },
     "tasks": {
-      "noDiaryTitle": "Not Started Yet",
-      "noDiaryText": "Start with a quick diary — ground today's judgment and emotions.",
-      "untitled": "Untitled Entry",
-      "alertCountTitle": "{count} alerts to watch",
-      "alertCountMeta": "Diaries with alerts: {count}",
-      "hasAlertsText": "Tackle the entries with alerts first — don't let risk signals become background noise.",
-      "noAlertsText": "No pending alerts. Steady pace.",
-      "tradeCountTitle": "{count} trades logged in diaries",
-      "tradeCountMeta": "Diaries with trades: {count}",
-      "hasTradesText": "Every trade deserves a reason. Start reviewing from entries with transactions.",
-      "noTradesText": "No trade records yet. Start by writing down observations and rules."
-    },
-    "rules": {
-      "label": "Desk Rules",
-      "title": "Reconcile the books before making judgments.",
-      "rule1": "Record the reasoning first, review the outcome second, emotions last.",
-      "rule2": "Dates, alerts, and trades — all three lines must line up.",
-      "rule3": "Filters are for narrowing decisions, not for confusing yourself."
+      "untitled": "Untitled Entry"
     },
     "filter": {
       "label": "Filter Desk",

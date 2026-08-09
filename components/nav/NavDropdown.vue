@@ -97,6 +97,10 @@ const handleClickOutside = (event: MouseEvent) => {
 
 // Close on route change so the menu doesn't linger after navigation
 const route = useRoute()
+const activeItemPath = computed(() => props.group.items
+  .filter(item => route.path === item.to || route.path.startsWith(`${item.to}/`))
+  .sort((a, b) => b.to.length - a.to.length)[0]?.to)
+
 watch(() => route.path, () => {
   close()
 })
@@ -168,7 +172,7 @@ const setItemRef = (el: unknown, index: number) => {
             ? 'bg-[color:color-mix(in_srgb,var(--color-primary)_14%,transparent)] text-dt-primary'
             : 'text-dt-text-muted hover:bg-[color:color-mix(in_srgb,var(--color-primary)_12%,transparent)] hover:text-dt-primary'"
           role="menuitem"
-          :aria-current="active && idx === focusedIndex ? 'page' : undefined"
+          :aria-current="item.to === activeItemPath ? 'page' : undefined"
         >
           <Icon :name="getIconName(item.icon)" class="h-4 w-4" width="16" height="16" />
           <span>{{ item.label }}</span>

@@ -176,6 +176,8 @@
 </template>
 
 <script setup lang="ts">
+import { AUTHENTICATED_HOME_ROUTE } from '~/lib/routes'
+
 definePageMeta({
   requiresAuth: false
 })
@@ -185,20 +187,21 @@ const { isAuthenticated } = useAuth()
 const config = useRuntimeConfig()
 const siteUrl = String(config.public.siteUrl || 'https://trade-basic.com').replace(/\/+$/, '')
 const canonicalUrl = `${siteUrl}/how-to-use`
-const primaryLink = computed(() => (isAuthenticated.value ? '/diaries' : '/auth/register'))
+const primaryLink = computed(() => (isAuthenticated.value ? AUTHENTICATED_HOME_ROUTE : '/auth/register'))
 const gettingStartedLinks = computed(() => (
   isAuthenticated.value
-    ? ['/diaries/quick', '/diaries', '/reviews']
+    ? [AUTHENTICATED_HOME_ROUTE, '/diaries/quick', '/timeline/compare']
     : ['/auth/register', '/auth/register', '/auth/register']
 ))
 const workflowIcons = [
   'heroicons:pencil-square-20-solid',
-  'heroicons:clipboard-document-list-20-solid',
-  'heroicons:chart-bar-20-solid',
+  'heroicons:clock-20-solid',
+  'heroicons:users-20-solid',
   'heroicons:arrow-path-20-solid',
 ]
 
 const workspaceFeatures = {
+  timeline: { link: '/timeline', img: '/screenshots/how-to-use-features/00-timeline.png', kicker: 'nav.timeline' },
   quickDiary: { link: '/diaries/quick', img: '/screenshots/how-to-use-features/01-quick-diary.png', kicker: 'quickDiary.title' },
   diaries: { link: '/diaries', img: '/screenshots/how-to-use-features/02-diaries.png', kicker: 'nav.diaries' },
   reviews: { link: '/reviews', img: '/screenshots/how-to-use-features/03-review-queue.png', kicker: 'nav.reviewQueue' },

@@ -45,6 +45,8 @@
     "manageBlog": "交易手札管理",
     "journal": "投資日誌",
     "portfolio": "投資組合",
+    "research": "研究",
+    "more": "更多",
     "learn": "學習",
     "dashboard": "儀表板",
     "discover": "探索",
@@ -97,6 +99,7 @@
     "loginNow": "立即登入"
   },
   "quickDiary": {
+    "shortcutHint": "快速日記（Ctrl/Cmd + J）",
     "title": "隨手筆記",
     "selectTemplate": "今天想記錄些什麼？選個模板快速開始吧",
     "date": "日期",
@@ -650,6 +653,9 @@
   },
   "timeline": {
     "title": "時間軸",
+    "viewMode": "時間軸檢視模式",
+    "myTimeline": "我的時間軸",
+    "pairView": "雙人檢視",
     "kicker": "事件時間軸",
     "subtitle": "依時間順序回顧您的投資歷程",
     "noEntries": "尚無時間軸紀錄",
@@ -987,48 +993,48 @@
     "badge": "使用指南",
     "hero": {
       "title": "把每次交易判斷，變成下一次能用的經驗",
-      "subtitle": "快速記下想法，補上計畫、交易與提醒，再用複盤與績效找出真正有效的做法。",
+      "subtitle": "快速記下想法，在 Timeline 回看判斷，並在同一套流程裡比較不同觀點。",
       "secondary": "先看完整流程"
     },
     "gettingStarted": {
       "title": "先走完一個最小循環",
-      "subtitle": "不用一次學會每個頁面。先捕捉判斷、補足上下文，再按期限回看。",
+      "subtitle": "不用一次學會每個頁面。先看自己的歷史，記下下一個想法，需要時再比較另一個觀點。",
       "step1": {
-        "eyebrow": "捕捉 · Quick Diary",
-        "title": "先把當下的判斷記下來",
-        "description": "盤中先寫市場觀察、情緒、風險或下一步，不必等到內容完美才開始。需要時可以建立新日記，也可以追加到今天。",
-        "cta": "開啟 Quick Diary"
+        "eyebrow": "閱讀 · Timeline",
+        "title": "先看自己的投資思考如何演變",
+        "description": "Timeline 是登入後的首頁。先按時間閱讀真實日記，只有需要追查特定脈絡時再使用篩選。",
+        "cta": "開啟 Timeline"
       },
       "step2": {
-        "eyebrow": "整理 · Journal Desk",
-        "title": "補上 thesis、風險、交易與提醒",
-        "description": "日記工作台把每日判斷、交易與提醒放在同一條脈絡裡；交易計畫也能在進場前把停損、目標與失效條件寫清楚。",
-        "cta": "查看日記工作台"
+        "eyebrow": "捕捉 · Quick Diary",
+        "title": "用一次操作記下下一個想法",
+        "description": "從 App 導覽開啟 Quick Diary，記錄市場觀察、情緒、風險或下一步；內容需要更多結構時才使用完整日記編輯器。",
+        "cta": "開啟 Quick Diary"
       },
       "step3": {
-        "eyebrow": "回看 · Review Queue",
-        "title": "在到期時回看假設與執行",
-        "description": "把值得回頭檢查的日記排進複盤佇列，依未排程、逾期、今日與即將到期整理，讓經驗真的回到下一次決策。",
-        "cta": "開啟複盤佇列"
+        "eyebrow": "比較 · Pair View",
+        "title": "並排閱讀同一天的兩個觀點",
+        "description": "從 My Timeline 切到 Pair View，選擇已分享的夥伴，直接並排比較，不必另外學一套工具。",
+        "cta": "開啟 Pair View"
       }
     },
     "workflow": {
       "title": "從判斷到修正的工作流",
-      "subtitle": "Trade Basic 把捕捉、規劃、追蹤與複盤放在同一條資料脈絡裡。你不需要預測得完美，但要讓每次決策留下可回看的證據。",
+      "subtitle": "Trade Basic 把捕捉、時間閱讀、觀點比較與複盤放在同一條脈絡裡。你不需要預測得完美，但要留下可回看的證據。",
       "step1": {
         "label": "捕捉",
         "title": "先把當下的判斷留住",
         "description": "用 Quick Diary 記下市場觀察、情緒、風險或下一步；內容可以之後再補完整。"
       },
       "step2": {
-        "label": "規劃",
-        "title": "先算部位，再寫清楚交易計畫",
-        "description": "用部位計算器估算風險與倉位，再把進場、停損、目標、最大部位和失效條件存成交易計畫。"
+        "label": "回看",
+        "title": "在 Timeline 閱讀當時的判斷",
+        "description": "Timeline 先呈現真實日記，讓你沿著時間看 thesis、風險與決策如何改變。"
       },
       "step3": {
-        "label": "追蹤",
-        "title": "讓日記、交易、持倉與提醒對得上",
-        "description": "交易寫在日記裡，持倉頁看市值與風險，提醒和月曆則把需要回頭處理的事情留在視線內。"
+        "label": "比較",
+        "title": "需要另一個觀點時切到 Pair View",
+        "description": "選擇已分享的夥伴，把同一天的日記並排閱讀；系統不評分，也不替任何一方判定正確。"
       },
       "step4": {
         "label": "複盤",
@@ -1038,14 +1044,18 @@
     },
     "surfaces": {
       "title": "工作台：每個頁面各自負責什麼",
-      "subtitle": "登入後先回到日記工作台；其他頁面各自處理規劃、持倉、複盤或協作，不必同時打開全部。",
+      "subtitle": "登入後先回到 Timeline；其他頁面各自處理捕捉、搜尋、規劃、持倉、複盤或協作，不必同時打開全部。",
+      "timeline": {
+        "title": "Timeline",
+        "description": "登入後的首頁。按時間閱讀真實日記，需要另一個觀點時再切到 Pair View。"
+      },
       "quickDiary": {
         "title": "Quick Diary",
         "description": "最快的捕捉入口。可以選模板、日期、標籤與提醒，並決定建立新日記或追加到今天。"
       },
       "diaries": {
-        "title": "日記工作台",
-        "description": "從最新日記、提醒與交易開始下一步，再用篩選器找回自己的判斷軌跡。這是登入後的主要工作區。"
+        "title": "日記資料庫",
+        "description": "搜尋、篩選、排序與管理完整紀錄。Timeline 負責閱讀歷史，資料庫負責找出並維護紀錄。"
       },
       "reviews": {
         "title": "複盤佇列",
@@ -1076,8 +1086,8 @@
         "description": "邀請真人或 AI 夥伴，分開控制 diary 與股票筆記分享；持倉永遠留在自己的帳號裡。"
       },
       "compare": {
-        "title": "Partner Compare",
-        "description": "進階協作入口。選擇已接受且開啟分享的夥伴，把同一天的兩份 diary 並排回看。"
+        "title": "Pair View",
+        "description": "Timeline 的另一種閱讀模式。選擇已接受且開啟分享的夥伴，並排回看同一天的日記。"
       }
     },
     "tools": {
@@ -1108,7 +1118,7 @@
       "title": "先記下今天的判斷",
       "description": "一條清楚的市場觀察，就是下一次複盤可以驗證的起點。先寫下來，其他流程再逐步補上。",
       "primaryGuest": "建立帳號",
-      "primaryAuth": "前往日記工作台",
+      "primaryAuth": "開啟 Timeline",
       "secondary": "閱讀建立者筆記"
     }
   },
@@ -1949,57 +1959,13 @@
     }
   },
   "desk": {
-    "kicker": "Diary Ledger",
-    "title": "日記工作台",
-    "summary": "先看節奏，再做紀錄。提醒、交易、最新複盤都放在第一視線，唔使再喺卡片海裡面兜圈。",
-    "snapshot": {
-      "label": "Ledger Snapshot",
-      "totalDiaries": "總日記數",
-      "thisWeek": "近 7 天紀錄",
-      "filteredResults": "目前篩選結果"
-    },
+    "libraryDescription": "搜尋、篩選並管理完整的日記紀錄。",
     "actions": {
       "quickDiary": "快速日記",
-      "newDiary": "新增日記",
-      "partners": "合作夥伴"
-    },
-    "nextMove": {
-      "label": "Next Move",
-      "latestDiary": "最近一篇",
-      "alertReview": "提醒盤點",
-      "tradeReview": "交易覆盤",
-      "noDiariesHeadline": "今天先寫下第一篇判斷紀錄",
-      "hasAlertsHeadline": "先處理 {count} 個提醒，別讓風險訊號失焦",
-      "latestDiaryHeadline": "從 {date} 的最近一篇開始複盤",
-      "defaultHeadline": "先把今天的交易節奏寫清楚",
-      "startStamp": "Start",
-      "riskCheckStamp": "Risk Check",
-      "reviewStamp": "Review",
-      "writingStamp": "Writing",
-      "noDiariesDesc": "這個頁面現在不是展示牆，是工作桌。第一步很簡單，先把今天的理由記下來。",
-      "hasAlertsDesc": "你的工作桌上還有未消化的提醒。先進相關條目檢查條件、更新判斷，再決定下一步。",
-      "hasTransactionsDesc": "交易和文字已經開始累積，接下來要做的不是再開更多卡片，而是把理由、結果、修正對齊。",
-      "defaultDesc": "目前節奏偏輕，適合補全條目細節，讓之後的複盤有完整上下文。"
+      "newDiary": "新增日記"
     },
     "tasks": {
-      "noDiaryTitle": "還未開始",
-      "noDiaryText": "先用一篇快速日記，把今天的判斷和情緒落地。",
-      "untitled": "未命名紀錄",
-      "alertCountTitle": "{count} 個待留意提醒",
-      "alertCountMeta": "有提醒的日記 {count} 篇",
-      "hasAlertsText": "先處理帶提醒的條目，別讓風險提示變成背景音。",
-      "noAlertsText": "目前沒有待處理提醒，節奏算穩。",
-      "tradeCountTitle": "{count} 筆交易掛在日記裡",
-      "tradeCountMeta": "涉及交易的日記 {count} 篇",
-      "hasTradesText": "有交易就該有理由，從有交易的條目開始回看。",
-      "noTradesText": "還沒有交易紀錄，先把觀察和規則寫出來。"
-    },
-    "rules": {
-      "label": "Desk Rules",
-      "title": "先把帳對清楚，再談判斷。",
-      "rule1": "先記理由，再看結果，情緒放最後。",
-      "rule2": "日期、提醒、交易三條線要對得上。",
-      "rule3": "篩選器是拿來縮短決策，不是把自己繞暈。"
+      "untitled": "未命名紀錄"
     },
     "filter": {
       "label": "Filter Desk",

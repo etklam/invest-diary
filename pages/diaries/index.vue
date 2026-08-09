@@ -1,187 +1,30 @@
 <template>
   <div class="diary-page mx-auto max-w-[1280px] space-y-6">
-    <!-- Mobile: action buttons first -->
-    <section class="ledger-hero order-1 flex flex-col gap-4 rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-md md:order-none md:flex-row md:flex-wrap md:items-end md:justify-between lg:grid lg:grid-cols-[1.7fr_240px] lg:items-end">
-      <div class="hero-copy min-w-0">
-        <p class="kicker text-xs font-bold uppercase tracking-[0.18em] text-dt-secondary">
-          {{ $t('desk.kicker') }}
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
+          {{ $t('desk.list.label') }}
         </p>
-        <h1 class="font-display mt-1.5 text-[clamp(2.2rem,5vw,3.2rem)] leading-[1.03] tracking-tight text-dt-text">
-          {{ $t('desk.title') }}
+        <h1 class="font-display mt-1 text-3xl tracking-tight text-dt-text">
+          {{ $t('nav.diaries') }}
         </h1>
-        <p class="mt-3 max-w-[38rem] text-base leading-relaxed text-dt-text-muted">
-          {{ $t('desk.summary') }}
+        <p class="mt-2 text-sm text-dt-text-muted">
+          {{ $t('desk.libraryDescription') }}
         </p>
-
-        <div class="mt-5 max-w-[46rem]">
-          <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
-            {{ $t('desk.snapshot.label') }}
-          </p>
-          <div class="mt-3 grid grid-cols-3 gap-3">
-            <article class="stat-card flex flex-col gap-1 rounded-2xl border border-dt-border bg-dt-surface-strong p-4">
-              <span class="font-data text-2xl font-bold text-dt-text">{{ totalDiaries }}</span>
-              <span class="stat-label text-xs font-semibold uppercase tracking-[0.12em] text-dt-text-soft">{{ $t('desk.snapshot.totalDiaries') }}</span>
-            </article>
-            <article class="stat-card flex flex-col gap-1 rounded-2xl border border-dt-border bg-dt-surface-strong p-4">
-              <span class="font-data text-2xl font-bold text-dt-text">{{ diariesThisWeek }}</span>
-              <span class="stat-label text-xs font-semibold uppercase tracking-[0.12em] text-dt-text-soft">{{ $t('desk.snapshot.thisWeek') }}</span>
-            </article>
-            <article class="stat-card flex flex-col gap-1 rounded-2xl border border-dt-border bg-dt-surface-strong p-4">
-              <span class="font-data text-2xl font-bold text-dt-text">{{ filteredTotal }}</span>
-              <span class="stat-label text-xs font-semibold uppercase tracking-[0.12em] text-dt-text-soft">{{ $t('desk.snapshot.filteredResults') }}</span>
-            </article>
-          </div>
-        </div>
       </div>
-
-      <div class="hero-actions flex flex-wrap items-start gap-3 lg:w-full lg:flex-col lg:items-stretch lg:self-end lg:justify-self-end">
-        <BaseButton variant="primary" class="w-full lg:w-full" @click="openQuickDiary">
-          <Icon name="heroicons:bolt" class="h-5 w-5" />
+      <div class="flex flex-wrap gap-3">
+        <BaseButton variant="primary" @click="openQuickDiary">
+          <Icon name="heroicons:pencil-square" class="h-5 w-5" />
           {{ $t('desk.actions.quickDiary') }}
         </BaseButton>
-        <NuxtLink to="/diaries/new" class="w-full lg:w-full">
-          <BaseButton variant="secondary" class="w-full">
+        <NuxtLink to="/diaries/new" class="inline-flex">
+          <BaseButton variant="secondary">
             <Icon name="heroicons:plus" class="h-5 w-5" />
             {{ $t('desk.actions.newDiary') }}
           </BaseButton>
         </NuxtLink>
-        <NuxtLink to="/partners" class="w-full lg:w-full">
-          <BaseButton variant="ghost" class="w-full">
-            <Icon name="heroicons:user-group" class="h-5 w-5" />
-            {{ $t('desk.actions.partners') }}
-          </BaseButton>
-        </NuxtLink>
       </div>
-    </section>
-
-    <QuickDiaryModal
-      :show="showQuickModal"
-      :context="quickDiaryContext"
-      @close="closeQuickDiary"
-      @created="handleDiaryCreated"
-    />
-
-    <div class="workspace-grid grid gap-4 lg:grid-cols-[2fr_0.58fr] lg:items-start">
-      <!-- Next Move panel -->
-      <LedgerCard>
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
-                {{ $t('desk.nextMove.label') }}
-              </p>
-              <h2 class="font-display mt-1 text-3xl leading-tight tracking-tight text-dt-text">
-                {{ focusHeadline }}
-              </h2>
-            </div>
-            <StatusBadge tone="accent">{{ focusStamp }}</StatusBadge>
-          </div>
-
-        <p class="mt-3 text-base leading-relaxed text-dt-text-muted">
-          {{ focusDescription }}
-        </p>
-
-        <div class="task-grid mt-5 grid gap-3">
-          <article class="task-card rounded-2xl border border-dt-border bg-dt-surface-strong p-4">
-            <p class="stat-label text-xs font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
-              {{ $t('desk.nextMove.latestDiary') }}
-            </p>
-            <template v-if="latestDiary">
-              <h3 class="mt-2 text-lg font-bold text-dt-text">
-                {{ latestDiary.title || $t('desk.tasks.untitled') }}
-              </h3>
-              <p class="task-meta mt-1 font-data text-xs text-dt-secondary">
-                {{ formatDiaryDate(latestDiary.date || latestDiary.createdAt) }}
-              </p>
-              <p class="mt-2 text-sm leading-relaxed text-dt-text-muted">
-                {{ getDiaryExcerpt(latestDiary) }}
-              </p>
-            </template>
-            <template v-else>
-              <h3 class="mt-2 text-lg font-bold text-dt-text">
-                {{ $t('desk.tasks.noDiaryTitle') }}
-              </h3>
-              <p class="mt-2 text-sm leading-relaxed text-dt-text-muted">
-                {{ $t('desk.tasks.noDiaryText') }}
-              </p>
-            </template>
-          </article>
-
-          <article class="task-card rounded-2xl border border-dt-border bg-dt-surface-strong p-4">
-            <p class="stat-label text-xs font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
-              {{ $t('desk.nextMove.alertReview') }}
-            </p>
-            <h3 class="mt-2 text-lg font-bold text-dt-text">
-              {{ $t('desk.tasks.alertCountTitle', { count: totalOpenAlerts }) }}
-            </h3>
-            <p class="task-meta mt-1 font-data text-xs text-dt-secondary">
-              {{ $t('desk.tasks.alertCountMeta', { count: diariesWithAlerts }) }}
-            </p>
-            <p class="mt-2 text-sm leading-relaxed text-dt-text-muted">
-              {{ totalOpenAlerts > 0 ? $t('desk.tasks.hasAlertsText') : $t('desk.tasks.noAlertsText') }}
-            </p>
-          </article>
-
-          <article class="task-card rounded-2xl border border-dt-border bg-dt-surface-strong p-4">
-            <p class="stat-label text-xs font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
-              {{ $t('desk.nextMove.tradeReview') }}
-            </p>
-            <h3 class="mt-2 text-lg font-bold text-dt-text">
-              {{ $t('desk.tasks.tradeCountTitle', { count: totalTransactions }) }}
-            </h3>
-            <p class="task-meta mt-1 font-data text-xs text-dt-secondary">
-              {{ $t('desk.tasks.tradeCountMeta', { count: diariesWithTransactions }) }}
-            </p>
-            <p class="mt-2 text-sm leading-relaxed text-dt-text-muted">
-              {{ totalTransactions > 0 ? $t('desk.tasks.hasTradesText') : $t('desk.tasks.noTradesText') }}
-            </p>
-          </article>
-        </div>
-      </LedgerCard>
-
-      <!-- Sidebar: Desk Rules -->
-      <aside class="grid gap-4">
-        <LedgerCard>
-          <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
-            {{ $t('desk.rules.label') }}
-          </p>
-          <h3 class="mt-2 text-lg font-bold text-dt-text">
-            {{ $t('desk.rules.title') }}
-          </h3>
-          <div class="mt-3 grid gap-2.5">
-            <article class="desk-rule grid grid-cols-[auto_1fr] gap-3 rounded-2xl border border-dt-border bg-dt-surface-strong p-3">
-              <span class="desk-rule-index inline-flex h-8 min-w-[2rem] items-center justify-center rounded-full bg-dt-secondary/10 font-data text-xs font-bold text-dt-secondary">01</span>
-              <p class="text-sm leading-relaxed text-dt-text-muted">{{ $t('desk.rules.rule1') }}</p>
-            </article>
-            <article class="desk-rule grid grid-cols-[auto_1fr] gap-3 rounded-2xl border border-dt-border bg-dt-surface-strong p-3">
-              <span class="desk-rule-index inline-flex h-8 min-w-[2rem] items-center justify-center rounded-full bg-dt-secondary/10 font-data text-xs font-bold text-dt-secondary">02</span>
-              <p class="text-sm leading-relaxed text-dt-text-muted">{{ $t('desk.rules.rule2') }}</p>
-            </article>
-            <article class="desk-rule grid grid-cols-[auto_1fr] gap-3 rounded-2xl border border-dt-border bg-dt-surface-strong p-3">
-              <span class="desk-rule-index inline-flex h-8 min-w-[2rem] items-center justify-center rounded-full bg-dt-secondary/10 font-data text-xs font-bold text-dt-secondary">03</span>
-              <p class="text-sm leading-relaxed text-dt-text-muted">{{ $t('desk.rules.rule3') }}</p>
-            </article>
-          </div>
-        </LedgerCard>
-      </aside>
-    </div>
-
-    <!-- Review Candidates -->
-    <section v-if="reviewCandidates.length > 0" class="review-candidates-panel">
-      <LedgerCard :title="t('review.candidates')" :description="t('review.candidatesDesc')">
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <ReviewCandidateCard
-            v-for="diary in reviewCandidates"
-            :key="diary.id"
-            :date="formatDiaryDate(diary.date || diary.createdAt)"
-            :title="diary.title || t('desk.tasks.untitled')"
-            :thesis="diary.thesis"
-            :risk="diary.risk"
-            :review-status="diary.reviewStatus || 'none'"
-            @review="navigateTo(`/diaries/${diary.id}`)"
-          />
-        </div>
-      </LedgerCard>
-    </section>
+    </header>
 
     <!-- Filters -->
     <LedgerCard class="order-5 md:order-none">
@@ -279,7 +122,7 @@
     </section>
 
     <!-- Empty state -->
-    <section v-else-if="diaryItems.length === 0 && totalDiaries === 0 && !hasActiveFilters" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-border bg-dt-surface p-5 text-center shadow-dt-md">
+    <section v-else-if="diaryItems.length === 0 && !hasActiveFilters" class="state-panel flex min-h-[220px] flex-wrap items-center justify-center gap-4 rounded-dt-md border border-dt-border bg-dt-surface p-5 text-center shadow-dt-md">
       <Icon name="heroicons:document-text" class="h-10 w-10 text-dt-text-soft" />
       <div>
         <h3 class="font-display text-xl tracking-tight text-dt-text">{{ $t('desk.empty.title') }}</h3>
@@ -379,9 +222,9 @@
 </template>
 
 <script setup lang="ts">
-import type { QuickDiaryContext } from '~/types/quicknote'
 import type { DiariesApiResponse } from '~/types/diary'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
+import { useAppShell } from '~/composables/useAppShell'
 
 definePageMeta({
   middleware: 'auth'
@@ -389,19 +232,8 @@ definePageMeta({
 const { formatLocaleDate } = useTimezone()
 const { t } = useI18n()
 
-// Quick diary modal state
-const showQuickModal = ref(false)
-const quickDiaryContext = ref<QuickDiaryContext | null>(null)
-
-const openQuickDiary = () => {
-  quickDiaryContext.value = { source: 'diaries' }
-  showQuickModal.value = true
-}
-
-const closeQuickDiary = () => {
-  showQuickModal.value = false
-  quickDiaryContext.value = null
-}
+const { openQuickDiary: openGlobalQuickDiary } = useAppShell()
+const openQuickDiary = () => openGlobalQuickDiary({ source: 'diaries' })
 
 const filters = reactive({
   search: '',
@@ -443,11 +275,6 @@ const { data: apiResponse, pending, error, refresh } = await useLazyFetch<Diarie
   query: queryParams,
 })
 
-const {
-  data: summaryResponse,
-  refresh: refreshSummary,
-} = await useLazyFetch<any>('/api/diaries/summary')
-
 const loadingMore = ref(false)
 const loadMoreError = ref<Error | null>(null)
 const currentPage = ref(1)
@@ -458,11 +285,7 @@ watch(queryParams, () => {
 })
 
 const refreshAll = async () => {
-  await Promise.all([refresh(), refreshSummary()])
-}
-
-const handleDiaryCreated = () => {
-  void refreshAll()
+  await refresh()
 }
 
 // Also refresh when floating FAB / other entry points save a diary
@@ -474,7 +297,6 @@ onDiaryMutation(() => {
 const diaryItems = computed<any[]>(() => apiResponse.value?.data ?? [])
 
 const filteredTotal = computed<number>(() => apiResponse.value?.pagination?.total ?? 0)
-const totalDiaries = computed<number>(() => summaryResponse.value?.global?.totalDiaries ?? 0)
 const hasMore = computed(() => diaryItems.value.length < filteredTotal.value)
 
 const loadMore = async () => {
@@ -501,70 +323,15 @@ const loadMore = async () => {
   }
 }
 
-const reviewCandidates = computed<any[]>(() => summaryResponse.value?.reviewCandidates ?? [])
-
-const latestDiary = computed<any | null>(() => summaryResponse.value?.latestDiary ?? null)
-
-const totalOpenAlerts = computed(() => summaryResponse.value?.global?.totalOpenAlerts ?? 0)
-
-const totalTransactions = computed(() => summaryResponse.value?.global?.totalTransactions ?? 0)
-
-const diariesWithAlerts = computed(() => summaryResponse.value?.global?.diariesWithAlerts ?? 0)
-
-const diariesWithTransactions = computed(() => summaryResponse.value?.global?.diariesWithTransactions ?? 0)
-
-const diariesThisWeek = computed(() => summaryResponse.value?.currentWeek?.totalDiaries ?? 0)
-
 const hasActiveFilters = computed(() =>
   Boolean(filters.search || filters.dateFrom || filters.dateTo || filters.sortBy !== 'date-desc')
 )
 
-const focusHeadline = computed(() => {
-  if (!totalDiaries.value) {
-    return t('desk.nextMove.noDiariesHeadline')
-  }
-
-  if (totalOpenAlerts.value > 0) {
-    return t('desk.nextMove.hasAlertsHeadline', { count: totalOpenAlerts.value })
-  }
-
-  if (latestDiary.value) {
-    return t('desk.nextMove.latestDiaryHeadline', {
-      date: formatDiaryDate(latestDiary.value.date || latestDiary.value.createdAt)
-    })
-  }
-
-  return t('desk.nextMove.defaultHeadline')
-})
-
-const focusStamp = computed(() => {
-  if (!totalDiaries.value) return t('desk.nextMove.startStamp')
-  if (totalOpenAlerts.value > 0) return t('desk.nextMove.riskCheckStamp')
-  if (totalTransactions.value > 0) return t('desk.nextMove.reviewStamp')
-  return t('desk.nextMove.writingStamp')
-})
-
-const focusDescription = computed(() => {
-  if (!totalDiaries.value) {
-    return t('desk.nextMove.noDiariesDesc')
-  }
-
-  if (totalOpenAlerts.value > 0) {
-    return t('desk.nextMove.hasAlertsDesc')
-  }
-
-  if (totalTransactions.value > 0) {
-    return t('desk.nextMove.hasTransactionsDesc')
-  }
-
-  return t('desk.nextMove.defaultDesc')
-})
-
 const filterSummary = computed(() => {
   if (pending.value) return t('desk.filter.loadingSummary')
   if (hasActiveFilters.value) return t('desk.filter.filteredSummary', { count: filteredTotal.value })
-  if (!totalDiaries.value && !filteredTotal.value) return t('desk.filter.noDataSummary')
-  return t('desk.filter.defaultSummary', { count: totalDiaries.value })
+  if (!filteredTotal.value) return t('desk.filter.noDataSummary')
+  return t('desk.filter.defaultSummary', { count: filteredTotal.value })
 })
 
 // Reset filters
@@ -599,19 +366,7 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
 <style scoped>
 /* Minimal scoped CSS — only layout patterns that Tailwind can't express cleanly */
 
-.hero-copy {
-  flex: 1 1 42rem;
-}
-
 @media (min-width: 768px) {
-  .task-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .task-card:first-child {
-    grid-column: 1 / -1;
-  }
-
   .ledger-row {
     grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
     align-items: start;
@@ -624,27 +379,9 @@ const getDiaryExcerpt = (diary: { content?: string }) => {
 }
 
 @media (min-width: 1024px) {
-  .task-grid {
-    grid-template-columns: minmax(0, 1.45fr) minmax(260px, 1fr);
-    align-items: stretch;
-  }
-
-  .task-card:first-child {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-  }
-
   .ledger-row {
     grid-template-columns: minmax(0, 1fr) minmax(170px, 200px);
     column-gap: 1.25rem;
   }
-}
-
-/* Mobile reorder: actions first, then sidebar, filters last */
-@media (max-width: 767px) {
-  .ledger-hero { order: 1; }
-  .workspace-grid { order: 2; }
-  .workspace-grid aside { order: 2; }
-  .workspace-grid > :first-child { order: 1; }
 }
 </style>
