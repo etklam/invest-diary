@@ -14,6 +14,13 @@
       </div>
     </div>
 
+    <CompanySymbolInput
+      v-if="stockSymbols !== undefined"
+      input-id="diary-company-symbols"
+      :model-value="stockSymbols"
+      @update:model-value="emit('update:stockSymbols', $event)"
+    />
+
     <div>
       <label for="content" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.diaryContent') }} (Markdown)</label>
       <div class="mt-1">
@@ -42,14 +49,18 @@
 </template>
 
 <script setup lang="ts">
+import CompanySymbolInput from '~/components/stocks/CompanySymbolInput.vue'
+
 const props = defineProps<{
   title: string
   content: string
+  stockSymbols?: string[]
 }>()
 
 const emit = defineEmits<{
   (e: 'update:title', value: string): void
   (e: 'update:content', value: string): void
+  (e: 'update:stockSymbols', value: string[]): void
 }>()
 
 const { t } = useI18n()

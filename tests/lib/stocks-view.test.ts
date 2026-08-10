@@ -127,22 +127,26 @@ describe('computePortfolioAggregations', () => {
 
     expect(result.totalHoldings).toBe(3)
     expect(result.totalCost).toBe(350) // 100 + 200 + 50
-    expect(result.currentMarketValue).toBe(350) // 150 + 150 + 50 (MSFT falls back to cost)
+    expect(result.currentMarketValue).toBe(300)
+    expect(result.pricedPositionCount).toBe(2)
+    expect(result.unpricedPositionCount).toBe(1)
+    expect(result.unpricedCostBasis).toBe(50)
+    expect(result.valuationStatus).toBe('partial')
   })
 
   it('calculates unrealized P/L', () => {
     const result = computePortfolioAggregations(holdings)
 
-    expect(result.unrealizedAmount).toBe(0) // 350 - 350 (MSFT has no price, falls back to cost)
+    expect(result.unrealizedAmount).toBe(0) // priced value 300 - priced cost 300
     expect(result.unrealizedPct).toBe(0)
   })
 
-  it('calculates portfolio risk summary with cost fallback for missing prices', () => {
+  it('calculates concentration only across the disclosed priced subset', () => {
     const result = computePortfolioAggregations(holdings)
 
     expect(result.activePositionCount).toBe(3)
     expect(result.largestPositionSymbol).toBe('AAPL')
-    expect(result.largestPositionPct).toBeCloseTo(42.857, 2)
+    expect(result.largestPositionPct).toBe(50)
     expect(result.top3ConcentrationPct).toBe(100)
     expect(result.concentrationWarning).toBe(true)
   })
@@ -172,17 +176,41 @@ describe('computePortfolioAggregations', () => {
 
     expect(result.totalHoldings).toBe(0)
     expect(result.totalCost).toBe(0)
-    expect(result.currentMarketValue).toBe(0)
-    expect(result.unrealizedAmount).toBe(0)
-    expect(result.unrealizedPct).toBe(0)
-    expect(result.totalDayChange).toBe(0)
-    expect(result.totalDayChangePercent).toBe(0)
+    expect(result.currentMarketValue).toBeNull()
+    expect(result.unrealizedAmount).toBeNull()
+    expect(result.unrealizedPct).toBeNull()
+    expect(result.totalDayChange).toBeNull()
+    expect(result.totalDayChangePercent).toBeNull()
+    expect(result.valuationStatus).toBe('empty')
   })
 
   it('handles holdings without day change data', () => {
     const result = computePortfolioAggregations(holdings)
 
-    expect(result.totalDayChange).toBe(0)
-    expect(result.totalDayChangePercent).toBe(0)
+    expect(result.totalDayChange).toBeNull()
+    expect(result.totalDayChangePercent).toBeNull()
+  })
+
+  it('reports unavailable rather than substituting cost when no position has a quote', () => {
+    const result = computePortfolioAggregations([
+      { symbol: 'MSFT', quantity: 2, avgCost: 50, totalCost: 100 },
+    ])
+
+    expect(result.currentMarketValue).toBeNull()
+    expect(result.unpricedCostBasis).toBe(100)
+    expect(result.quoteCoveragePct).toBe(0)
+    expect(result.valuationStatus).toBe('unavailable')
+  })
+
+  it('uses the oldest included quote time as valuation as-of and reports stale quotes', () => {
+    const result = computePortfolioAggregations([
+      { symbol: 'AAPL', quantity: 1, avgCost: 100, totalCost: 100, price: 120, quoteAsOf: '2026-08-01T00:00:00.000Z' },
+      { symbol: 'NVDA', quantity: 1, avgCost: 80, totalCost: 80, price: 90, quoteAsOf: '2026-08-10T00:00:00.000Z' },
+    ], { now: new Date('2026-08-10T12:00:00.000Z') })
+
+    expect(result.valuationAsOf).toBe('2026-08-01T00:00:00.000Z')
+    expect(result.staleQuoteCount).toBe(1)
+    expect(result.valuationStatus).toBe('complete')
+    expect(result.unsupportedMetrics).toEqual(['ytdReturn', 'realCashPercentage', 'sectorConcentration'])
   })
 })

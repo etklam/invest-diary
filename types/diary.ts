@@ -56,6 +56,8 @@ export interface DiaryInput {
   risk?: string
   execution?: string
   reviewDueAt?: string | Date | null
+  /** Explicit owner-only Company context; Quick Note append unions these links. */
+  stockSymbols?: string[]
 }
 
 // Prisma-like return shape used by APIs
@@ -90,6 +92,7 @@ export interface Diary {
   reviewSummary?: string | null
   reviewLearning?: string | null
   reviewAdjustment?: string | null
+  stockSymbols?: string[]
 }
 
 export interface DiariesApiResponse {

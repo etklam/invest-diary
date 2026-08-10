@@ -34,6 +34,7 @@
     "home": "首頁",
     "calendar": "月曆",
     "timeline": "時間軸",
+    "overview": "Overview",
     "diaries": "日記列表",
     "howToUse": "使用方式",
     "discipline": "交易紀律",
@@ -45,6 +46,7 @@
     "manageBlog": "交易手札管理",
     "journal": "投資日誌",
     "portfolio": "投資組合",
+    "companies": "Companies",
     "research": "研究",
     "more": "更多",
     "learn": "學習",
@@ -550,7 +552,7 @@
       "marketState": "市場",
       "refresh": "更新",
       "home": "回首頁",
-      "netLiquidity": "淨流動性",
+      "netLiquidity": "已定價市值",
       "totalPL": "總損益",
       "dayChange": "當日變動",
       "today": "今日",
@@ -566,7 +568,7 @@
       "price": "價格",
       "marketValue": "市值",
       "unrealizedPL": "未實現損益",
-      "portfolioPercent": "投資組合 %",
+      "portfolioPercent": "成本配置 %",
       "assetAllocation": "資產配置",
       "moreAssets": "再 + {count} 項資產",
       "quickTransaction": "快速交易",
@@ -577,7 +579,7 @@
     },
     "riskSummary": {
       "title": "投資組合風險摘要",
-      "description": "有即時價格就用市值；沒有價格就用成本基礎計算集中度。",
+      "description": "集中度只涵蓋有市場報價的持倉，並明確揭露部分資料狀態。",
       "warning": "集中度警告",
       "balanced": "分散尚可",
       "largestPosition": "最大持倉",
@@ -587,8 +589,34 @@
       "priceBasis": "價格基準",
       "costFallback": "成本 fallback",
       "costFallbackHint": "即時價格不可用時採用",
-      "byValue": "按價值計算",
+      "byValue": "按已定價市值計算",
       "noPosition": "無持倉"
+    },
+    "dataQuality": {
+      "title": "估值涵蓋率",
+      "unavailable": "無法取得",
+      "coverage": "已定價 {percent}% 持倉",
+      "asOf": "資料截至 {time}",
+      "stale": "{count} 筆報價可能已過期",
+      "pricedSubset": "僅涵蓋已定價持倉",
+      "noCostFallback": "缺少報價時不以成本假裝市值",
+      "unsupported": "YTD 報酬、真實現金比例與產業集中度目前沒有可信資料來源，因此不提供估算值。",
+      "emptyTitle": "建立第一筆投資組合持倉",
+      "emptyDescription": "在 Diary 記錄一筆 Transaction，或先到 Watchlist 研究公司。",
+      "addTransaction": "記錄 Transaction",
+      "openWatchlist": "開啟 Watchlist",
+      "status": {
+        "empty": "目前沒有持倉。",
+        "complete": "全部 {total} 筆持倉都有報價。",
+        "partial": "{total} 筆持倉中有 {priced} 筆已定價；未定價成本為 {cost}。",
+        "unavailable": "目前沒有任何持倉可取得報價；可信的成本資料仍保留。"
+      },
+      "statusLabel": {
+        "empty": "空白",
+        "complete": "完整",
+        "partial": "部分資料",
+        "unavailable": "無法估值"
+      }
     }
   },
   "settings": {
@@ -676,12 +704,12 @@
     "apiKeysEmptyHint": "建立一把限權 API key，讓外部 agent 可以幫 partner 帳號寫 diary，但不需要完整的網頁登入權限。"
   },
   "timeline": {
-    "title": "時間軸",
+    "title": "投資總覽",
     "viewMode": "時間軸檢視模式",
     "myTimeline": "我的時間軸",
     "pairView": "雙人檢視",
-    "kicker": "事件時間軸",
-    "subtitle": "依時間順序回顧您的投資歷程",
+    "kicker": "長期投資工作區",
+    "subtitle": "掌握持有內容、待關注事項、近期變化與需要複盤的決策。",
     "noEntries": "尚無時間軸紀錄",
     "loadFailed": "載入失敗",
     "entriesCount": "{count} 篇日記",
@@ -692,7 +720,17 @@
     "transactionsCount": "{count} 筆交易",
     "alertsCount": "{count} 個提醒",
     "viewDetails": "查看詳情 →",
-    "periodLabel": "{year}年 {month}月"
+    "periodLabel": "{year}年 {month}月",
+    "overview": {
+      "viewPortfolio": "查看 Portfolio",
+      "viewReviews": "查看 Reviews",
+      "sectionUnavailable": "此區塊暫時無法使用。",
+      "partialData": "部分證據暫時無法取得；仍顯示目前可用的項目。",
+      "portfolio": { "title": "Portfolio Overview", "pricedValue": "已定價市值", "empty": "目前沒有持倉；可先寫 Diary 或研究一家公司。", "loadFailed": "無法載入 Portfolio 持倉。", "quoteFailed": "部分或全部報價暫時無法取得；成本與數量不受影響。" },
+      "attention": { "title": "Needs Review", "empty": "目前沒有需要立即複查的事項。", "portfolio": "Portfolio 集中度", "concentration": "集中度警告", "reviewDue": "Diary Review 到期", "reasons": { "missing_thesis": "缺少 Investment Thesis", "overdue_thesis_review": "Thesis Review 已逾期", "invalidated_thesis_while_held": "持倉中的 Thesis 已失效", "overdue_diary_review": "Diary Review 已逾期", "position_concentration": "持倉集中度過高" } },
+      "activity": { "title": "Recent Investment Activity", "fullHistory": "完整 Timeline", "loadFailed": "無法載入近期 Diary 活動。", "empty": "目前沒有近期 Diary 活動。" },
+      "upcoming": { "title": "Upcoming / Pending Reviews", "loadFailed": "無法載入 Review 排程。", "empty": "目前沒有即將到期或待排程的 Review。" }
+    }
   },
   "compareDiary": {
     "kicker": "Partner 對照",
@@ -2106,13 +2144,15 @@
     "queue": {
       "kicker": "複盤流程",
       "title": "複盤佇列",
-      "description": "集中查看逾期、今日到期、未來排程與已完成的 diary 複盤。",
+      "description": "集中查看 Diary Review 與 Investment Thesis Review。",
       "openCount": "待處理",
       "overdueCount": "逾期",
       "todayCount": "今日",
       "loadFailed": "複盤載入失敗",
       "markedReviewed": "已標記為已複盤",
       "markReviewedFailed": "標記複盤失敗",
+      "thesisType": "Investment Thesis",
+      "latestOutcome": "最近一次 Thesis Review",
       "sections": {
         "needsAttention": "優先處理",
         "needsAttentionDesc": "逾期與今日到期的決策排在最前面。",
@@ -2125,7 +2165,7 @@
         "upcoming": "即將到期",
         "upcomingDesc": "已排程、未來要回看的複盤。",
         "completed": "已完成複盤",
-        "completedDesc": "最近已經處理完的 diary。"
+        "completedDesc": "最近完成的 Diary 與 Thesis Review。"
       },
       "empty": {
         "needsAttention": "目前沒有需要立即複盤的項目。",
@@ -2335,5 +2375,33 @@
       "risk_off": "Risk Off",
       "unknown": "未知"
     }
+  },
+  "companyContext": {
+    "label": "相關公司（選填）", "placeholder": "MSFT, NVDA", "hint": "最多 {max} 個股票代碼，以逗號分隔。"
+  },
+  "investmentThesis": {
+    "kicker": "目前持有邏輯", "title": "Investment Thesis", "empty": "尚未建立正式 Thesis；既有 Diary 與 Stock Note 不會被改動。",
+    "create": "建立 Thesis", "saveDraft": "儲存草稿", "activate": "儲存並啟用", "archive": "封存 Thesis", "saved": "Investment Thesis 已儲存",
+    "saveFailed": "無法儲存 Investment Thesis", "noSummary": "尚無摘要",
+    "health": { "draft": "草稿", "healthy": "有效", "needs_review": "需要 Review", "invalidated": "已失效", "archived": "已封存" },
+    "fields": { "summary": "摘要", "whyIOwnIt": "我為何持有", "growthDrivers": "成長動力", "risks": "風險", "invalidationConditions": "失效條件", "expectedHoldingPeriod": "預期持有期間", "reviewDueAt": "Review 到期日" },
+    "decisions": { "HOLD": "持有", "ADD": "加碼", "REDUCE": "減碼", "EXIT": "退出", "CONTINUE_WATCHING": "繼續觀察" },
+    "review": {
+      "start": "開始 Review", "title": "Thesis Review", "outcome": "結果", "decision": "Portfolio 決定", "whatImproved": "哪些變好了？",
+      "whatDeteriorated": "哪些變差了？", "whatChanged": "發生了什麼改變？", "invalidationTriggered": "已觸發失效條件", "complete": "完成 Review",
+      "history": "Review 歷史", "snapshot": "Review 當時的 Thesis", "validation": "請選擇結果與決定，並至少填寫一項有意義的反思。",
+      "saved": "Thesis Review 已儲存", "saveFailed": "無法儲存 Thesis Review"
+    }
+  },
+  "companyHub": {
+    "title": "公司中心", "kicker": "公司", "backToPortfolio": "返回 Portfolio", "loadFailed": "無法載入公司資料",
+    "position": {
+      "kicker": "我持有什麼", "title": "我的部位", "quantity": "數量", "averageCost": "平均成本", "marketPrice": "市場價格", "marketValue": "市場價值",
+      "concentration": "Portfolio 集中度", "costBasis": "完整 Portfolio 報價不可用，目前以成本基礎計算", "quoteMissing": "即時報價暫時不可用，成本資料仍可閱讀。",
+      "states": { "held": "持有中", "closed": "已清倉", "research_only": "僅研究", "untracked": "未持有或關注" }
+    },
+    "changes": { "kicker": "投資記憶", "title": "最近改變" }, "relatedDiaries": "相關 Diary", "recentNotes": "最近 Stock Note", "evidence": "來源證據",
+    "openSource": "開啟來源", "relations": { "explicit_context": "明確公司關聯", "transaction": "Transaction 關聯" }, "sources": { "me": "我" },
+    "empty": { "diaries": "尚無相關 Diary。", "notes": "尚無 Stock Note。", "evidence": "尚無來源證據。" }
   }
 }

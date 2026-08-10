@@ -30,6 +30,7 @@ export interface DiaryAuthoringForm {
   risk: string
   execution: string
   reviewDueAt: string
+  stockSymbols: string[]
   transactions: DiaryAuthoringTransaction[]
   alerts: DiaryAuthoringAlert[]
 }

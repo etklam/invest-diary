@@ -58,7 +58,7 @@ describe('findDiaryForUser', () => {
     expect(result).toEqual(baseDiary)
     expect(mockPrismaDiaryFindFirst).toHaveBeenCalledWith({
       where: { id: 1n, userId: 42n },
-      include: { transactions: true, alerts: true },
+      include: expect.objectContaining({ transactions: true, alerts: true, stockContexts: expect.any(Object) }),
     })
   })
 
@@ -70,7 +70,7 @@ describe('findDiaryForUser', () => {
     expect(result).toEqual(baseDiary)
     expect(mockPrismaDiaryFindFirst).toHaveBeenCalledWith({
       where: { id: 1n, userId: 42n },
-      include: { transactions: true, alerts: true },
+      include: expect.objectContaining({ transactions: true, alerts: true, stockContexts: expect.any(Object) }),
     })
   })
 
@@ -205,7 +205,7 @@ describe('findDiaryByDate', () => {
           lte: new Date('2026-05-17T23:59:59.999Z'),
         },
       },
-      include: { transactions: true, alerts: true },
+      include: expect.objectContaining({ transactions: true, alerts: true, stockContexts: expect.any(Object) }),
     })
   })
 
@@ -232,7 +232,7 @@ describe('findDiaryByDate', () => {
           lte: new Date('2026-05-17T23:59:59.999Z'),
         },
       },
-      include: { transactions: true, alerts: true },
+      include: expect.objectContaining({ transactions: true, alerts: true, stockContexts: expect.any(Object) }),
     })
   })
 

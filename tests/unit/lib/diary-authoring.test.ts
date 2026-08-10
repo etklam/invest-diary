@@ -85,6 +85,7 @@ describe('diary authoring module', () => {
       risk: undefined,
       execution: 'Followed the plan',
       reviewDueAt: '2026-05-25T12:00:00.000Z',
+      stockSymbols: [],
       date: '2026-05-18T12:00:00.000Z',
       transactions: [{
         symbol: 'AAPL',

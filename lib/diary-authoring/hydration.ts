@@ -75,6 +75,7 @@ export function createEmptyDiaryAuthoringForm(date: string): DiaryAuthoringForm 
     risk: '',
     execution: '',
     reviewDueAt: '',
+    stockSymbols: [],
     transactions: [],
     alerts: [],
   }
@@ -99,6 +100,13 @@ export function hydrateDiaryAuthoring(
     reviewDueAt: diary.reviewDueAt
       ? formatYmdInTimezone(diary.reviewDueAt, timeZone)
       : '',
+    stockSymbols: Array.isArray(diary.stockSymbols)
+      ? diary.stockSymbols.map((symbol: unknown) => String(symbol))
+      : Array.isArray(diary.stockContexts)
+        ? diary.stockContexts
+            .map((context: Record<string, any>) => String(context.stock?.symbol ?? ''))
+            .filter(Boolean)
+        : [],
     transactions: Array.isArray(diary.transactions)
       ? diary.transactions.map((transaction: Record<string, any>) => hydrateTransaction(transaction))
       : [],

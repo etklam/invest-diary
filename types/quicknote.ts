@@ -54,6 +54,7 @@ export interface QuickNoteComposerState {
   title: string
   content: string
   tags: string[]
+  stockSymbols: string[]
   reminders: QuickNoteReminders
   templateData: QuickNoteTemplateData
   titleTouched: boolean

@@ -48,6 +48,27 @@ enum StockNoteCreatedVia {
   AGENT
 }
 
+enum InvestmentThesisStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ThesisReviewOutcome {
+  INTACT
+  PARTIAL
+  INVALIDATED
+  UNCLEAR
+}
+
+enum ThesisPortfolioDecision {
+  HOLD
+  ADD
+  REDUCE
+  EXIT
+  CONTINUE_WATCHING
+}
+
 enum PostStatus {
   DRAFT
   PUBLISHED
@@ -74,20 +95,22 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  diaries               Diary[]
-  disciplines           Discipline[]
-  posts                 Post[]
-  refreshTokens         RefreshToken[]
-  etfWatchlist          EtfWatchlist[]
-  apiKeys               ApiKeyCredential[]
-  stockWatchlists       StockWatchlist[]
-  stockTimelineRecords  StockTimelineRecord[]
-  partnerLinksA         PartnerLink[]              @relation("PartnerLinkUserA")
-  partnerLinksB         PartnerLink[]              @relation("PartnerLinkUserB")
-  initiatedPartnerLinks PartnerLink[]              @relation("PartnerLinkInitiatedBy")
-  priceAlerts           PriceAlert[]
-  stockNotes            StockNote[]
-  tradePlans            TradePlan[]
+  diaries                   Diary[]
+  disciplines               Discipline[]
+  posts                     Post[]
+  refreshTokens             RefreshToken[]
+  etfWatchlist              EtfWatchlist[]
+  apiKeys                   ApiKeyCredential[]
+  stockWatchlists           StockWatchlist[]
+  stockTimelineRecords      StockTimelineRecord[]
+  partnerLinksA             PartnerLink[]              @relation("PartnerLinkUserA")
+  partnerLinksB             PartnerLink[]              @relation("PartnerLinkUserB")
+  initiatedPartnerLinks     PartnerLink[]              @relation("PartnerLinkInitiatedBy")
+  priceAlerts               PriceAlert[]
+  stockNotes                StockNote[]
+  investmentTheses          InvestmentThesis[]
+  thesisReviews             ThesisReview[]
+  tradePlans                TradePlan[]
   diaryReconciliationAudits DiaryReconciliationAudit[]
 
   @@map("users")
@@ -135,13 +158,14 @@ model Diary {
   alerts               Alert[]
   transactions         Transaction[]
   stockTimelineRecords StockTimelineRecord[] @relation("StockTimelineSourceDiary")
+  stockContexts        DiaryStock[]
   tradePlans           TradePlan[]
 
+  // Diary.date is the normalized UTC-noon representation of the user-local civil date.
+  @@unique([userId, date], map: "diaries_user_date_key")
   @@index([userId], map: "diaries_user_id_fkey")
   // 複合索引：優化使用者日記列表查詢（按建立時間排序）
   @@index([userId, createdAt(sort: Desc)], map: "diaries_user_created_idx")
-  // Diary.date is the normalized UTC-noon representation of the user-local civil date.
-  @@unique([userId, date], map: "diaries_user_date_key")
   @@map("diaries")
 }
 
@@ -396,9 +420,11 @@ model Stock {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  watchlists StockWatchlist[]
-  records    StockTimelineRecord[]
-  notes      StockNote[]
+  watchlists       StockWatchlist[]
+  records          StockTimelineRecord[]
+  notes            StockNote[]
+  diaryContexts    DiaryStock[]
+  investmentTheses InvestmentThesis[]
 
   @@index([symbol], map: "stocks_symbol_idx")
   @@map("stocks")
@@ -473,6 +499,80 @@ model StockNote {
   @@index([userId, stockId, date(sort: Desc)], map: "stock_notes_user_stock_date_idx")
   @@index([stockId, date(sort: Desc)], map: "stock_notes_stock_date_idx")
   @@map("stock_notes")
+}
+
+// One explicit Company context can be shared by a Full Diary and every
+// same-day Quick Note append without creating a second note/event entity.
+model DiaryStock {
+  diaryId   BigInt   @map("diary_id")
+  stockId   BigInt   @map("stock_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  diary Diary @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@id([diaryId, stockId])
+  @@index([stockId, diaryId], map: "diary_stocks_stock_diary_idx")
+  @@map("diary_stocks")
+}
+
+// Current, owner-only holding logic. Historical reasoning belongs to
+// ThesisReview snapshots; Diary.thesis remains the original Decision context.
+model InvestmentThesis {
+  id                     BigInt                 @id @default(autoincrement())
+  userId                 BigInt                 @map("user_id")
+  stockId                BigInt                 @map("stock_id")
+  status                 InvestmentThesisStatus @default(DRAFT)
+  summary                String?                @db.Text
+  whyIOwnIt              String?                @map("why_i_own_it") @db.Text
+  growthDrivers          String?                @map("growth_drivers") @db.Text
+  risks                  String?                @db.Text
+  invalidationConditions String?                @map("invalidation_conditions") @db.Text
+  expectedHoldingPeriod  String?                @map("expected_holding_period") @db.VarChar(255)
+  reviewDueAt            DateTime?              @map("review_due_at")
+  lastReviewedAt         DateTime?              @map("last_reviewed_at")
+  latestReviewOutcome    ThesisReviewOutcome?   @map("latest_review_outcome")
+  activatedAt            DateTime?              @map("activated_at")
+  archivedAt             DateTime?              @map("archived_at")
+  createdAt              DateTime               @default(now()) @map("created_at")
+  updatedAt              DateTime               @updatedAt @map("updated_at")
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock   Stock          @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  reviews ThesisReview[]
+
+  @@unique([userId, stockId], map: "investment_theses_user_stock_key")
+  @@index([userId, status, reviewDueAt], map: "investment_theses_user_status_due_idx")
+  @@map("investment_theses")
+}
+
+// Append-only record of what a Thesis said when the owner reviewed it.
+model ThesisReview {
+  id                             BigInt                  @id @default(autoincrement())
+  thesisId                       BigInt                  @map("thesis_id")
+  userId                         BigInt                  @map("user_id")
+  reviewedAt                     DateTime                @default(now()) @map("reviewed_at")
+  outcome                        ThesisReviewOutcome
+  whatImproved                   String?                 @map("what_improved") @db.Text
+  whatDeteriorated               String?                 @map("what_deteriorated") @db.Text
+  whatChanged                    String?                 @map("what_changed") @db.Text
+  invalidationTriggered          Boolean                 @default(false) @map("invalidation_triggered")
+  portfolioDecision              ThesisPortfolioDecision @map("portfolio_decision")
+  snapshotStatus                 InvestmentThesisStatus  @map("snapshot_status")
+  snapshotSummary                String?                 @map("snapshot_summary") @db.Text
+  snapshotWhyIOwnIt              String?                 @map("snapshot_why_i_own_it") @db.Text
+  snapshotGrowthDrivers          String?                 @map("snapshot_growth_drivers") @db.Text
+  snapshotRisks                  String?                 @map("snapshot_risks") @db.Text
+  snapshotInvalidationConditions String?                 @map("snapshot_invalidation_conditions") @db.Text
+  snapshotExpectedHoldingPeriod  String?                 @map("snapshot_expected_holding_period") @db.VarChar(255)
+  snapshotReviewDueAt            DateTime?               @map("snapshot_review_due_at")
+  createdAt                      DateTime                @default(now()) @map("created_at")
+
+  thesis InvestmentThesis @relation(fields: [thesisId], references: [id], onDelete: Cascade)
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, thesisId, reviewedAt(sort: Desc)], map: "thesis_reviews_user_thesis_time_idx")
+  @@map("thesis_reviews")
 }
 
 // ─── Phase 6.1: Stock Price Alerts ────────────────────────────────────────────

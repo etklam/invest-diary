@@ -63,6 +63,7 @@ interface QuickNoteDraft {
   title: string
   content: string
   tags: string[]
+  stockSymbols: string[]
   date: string
   saveMode: QuickNoteSaveMode
   templateKind: QuickNoteTemplateKind
@@ -106,6 +107,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     title: '',
     content: '',
     tags: [],
+    stockSymbols: [],
     date: '',
     saveMode: 'create',
     templateKind: 'blank',
@@ -127,6 +129,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       draft.value.title?.trim() ||
       draft.value.content?.trim() ||
       draft.value.tags?.length ||
+      draft.value.stockSymbols?.length ||
       draft.value.templateKind !== 'blank',
     )
   })
@@ -158,6 +161,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       title: '',
       content: '',
       tags: [],
+      stockSymbols: [],
       date: '',
       saveMode: 'create',
       templateKind: 'blank',
@@ -211,12 +215,14 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     date: string | Date
     saveMode?: QuickNoteSaveMode
     tags?: string[]
+    stockSymbols?: string[]
   }) {
     const body = {
       title: input.title,
       content: input.content,
       date: normalizeQuickNoteDate(input.date),
       tags: input.tags ?? [],
+      stockSymbols: input.stockSymbols ?? [],
       appendToToday: input.saveMode === 'append',
     }
 
@@ -240,6 +246,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     title: '',
     content: '',
     tags: [],
+    stockSymbols: [],
     reminders: reminders.value,
     templateData: createEmptyQuickNoteTemplateData(),
     titleTouched: false,
@@ -373,7 +380,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
   )
 
   watch(
-    () => [state.title, state.content, state.tags, state.date, state.saveMode, state.templateKind, state.templateData],
+    () => [state.title, state.content, state.tags, state.stockSymbols, state.date, state.saveMode, state.templateKind, state.templateData],
     () => {
       if (!readyForAutosave.value || suppressAutosave.value) return
       const hasMeaningfulDraft = Boolean(
@@ -388,6 +395,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
         title: state.title,
         content: state.content,
         tags: state.tags,
+        stockSymbols: state.stockSymbols,
         date: state.date,
         saveMode: state.saveMode,
         templateKind: state.templateKind,
@@ -410,6 +418,10 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
 
   function setTags(tags: string[]) {
     state.tags = tags
+  }
+
+  function setStockSymbols(stockSymbols: string[]) {
+    state.stockSymbols = [...new Set(stockSymbols.map(symbol => symbol.trim().toUpperCase()).filter(Boolean))].slice(0, 10)
   }
 
   function setDate(date: string) {
@@ -462,6 +474,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     state.saveMode = defaultSaveMode
     state.templateKind = defaultTemplateKind
     state.tags = []
+    state.stockSymbols = []
     Object.assign(state.templateData, createEmptyQuickNoteTemplateData())
     state.titleTouched = false
     state.contentTouched = false
@@ -514,6 +527,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
       date: state.date,
       saveMode: state.saveMode,
       tags: state.tags,
+      stockSymbols: state.stockSymbols,
     })
 
     clearDraft()
@@ -538,6 +552,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     state.title = draft.value.title || ''
     state.content = draft.value.content || ''
     state.tags = draft.value.tags || []
+    state.stockSymbols = draft.value.stockSymbols || []
     state.date = draft.value.date || getTodayDateString()
     state.saveMode = draft.value.saveMode || defaultSaveMode
     state.templateKind = draft.value.templateKind || defaultTemplateKind
@@ -581,6 +596,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     title: toRef(state, 'title'),
     content: toRef(state, 'content'),
     tags: toRef(state, 'tags'),
+    stockSymbols: toRef(state, 'stockSymbols'),
     date: toRef(state, 'date'),
     templateKind: toRef(state, 'templateKind'),
     templates,
@@ -598,6 +614,7 @@ export function useQuickNoteComposer(options: UseQuickNoteComposerOptions = {}) 
     setTitle,
     setContent,
     setTags,
+    setStockSymbols,
     setDate,
     setSaveMode,
     appendVoiceTranscript,

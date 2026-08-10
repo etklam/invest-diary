@@ -44,6 +44,27 @@ describe('Timeline-first page contracts', () => {
     expect(timeline).not.toContain('diary.reviewAdjustment')
   })
 
+  it('keeps /timeline as the bounded four-section Investment Overview above the canonical Diary Timeline', () => {
+    const timeline = source('pages/timeline/index.vue')
+
+    const portfolio = timeline.indexOf('overview-portfolio-title')
+    const attention = timeline.indexOf('overview-attention-title')
+    const activity = timeline.indexOf('overview-activity-title')
+    const upcoming = timeline.indexOf('overview-upcoming-title')
+    const fullTimeline = timeline.indexOf('id="diary-timeline"')
+
+    expect(portfolio).toBeGreaterThan(-1)
+    expect(portfolio).toBeLessThan(attention)
+    expect(attention).toBeLessThan(activity)
+    expect(activity).toBeLessThan(upcoming)
+    expect(upcoming).toBeLessThan(fullTimeline)
+    expect(timeline).toContain('diaries.value.slice(0, 5)')
+    expect(timeline).toContain('].slice(0, 4)')
+    expect(timeline).toContain("'/api/stocks/portfolio'")
+    expect(timeline).toContain("'/api/reviews'")
+    expect(timeline).not.toContain("'/overview'")
+  })
+
   it('shows owner Trade Plan signals in metadata priority order without changing Pair View privacy', () => {
     const timeline = source('pages/timeline/index.vue')
     const partnerQueries = source('server/utils/partner-queries.ts')

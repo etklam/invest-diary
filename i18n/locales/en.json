@@ -34,6 +34,7 @@
     "home": "Home",
     "calendar": "Calendar",
     "timeline": "Timeline",
+    "overview": "Overview",
     "diaries": "Diaries",
     "howToUse": "How to Use",
     "discipline": "Trading Discipline",
@@ -45,6 +46,7 @@
     "manageBlog": "Manage Trading Journal",
     "journal": "Journal",
     "portfolio": "Portfolio",
+    "companies": "Companies",
     "research": "Research",
     "more": "More",
     "learn": "Learn",
@@ -550,7 +552,7 @@
       "marketState": "Market",
       "refresh": "Refresh",
       "home": "Home",
-      "netLiquidity": "Net Liquidity",
+      "netLiquidity": "Priced Market Value",
       "totalPL": "Total P/L",
       "dayChange": "Day Change",
       "today": "Today",
@@ -566,7 +568,7 @@
       "price": "Price",
       "marketValue": "Market Value",
       "unrealizedPL": "Unrealized P/L",
-      "portfolioPercent": "Portfolio %",
+      "portfolioPercent": "Cost Allocation %",
       "assetAllocation": "Asset Allocation",
       "moreAssets": "+ {count} More Assets",
       "quickTransaction": "Quick Transaction",
@@ -577,7 +579,7 @@
     },
     "riskSummary": {
       "title": "Portfolio Risk Summary",
-      "description": "Concentration uses live market value when prices exist, otherwise cost basis.",
+      "description": "Concentration uses only positions with market quotes and discloses partial coverage.",
       "warning": "Concentration warning",
       "balanced": "Balanced",
       "largestPosition": "Largest position",
@@ -587,8 +589,34 @@
       "priceBasis": "Price basis",
       "costFallback": "Cost fallback",
       "costFallbackHint": "Used when live prices are unavailable",
-      "byValue": "by value",
+      "byValue": "by priced market value",
       "noPosition": "No position"
+    },
+    "dataQuality": {
+      "title": "Valuation coverage",
+      "unavailable": "Unavailable",
+      "coverage": "{percent}% of positions priced",
+      "asOf": "As of {time}",
+      "stale": "{count} quote(s) may be stale",
+      "pricedSubset": "priced positions only",
+      "noCostFallback": "Missing quotes are never replaced with cost",
+      "unsupported": "YTD return, real cash percentage, and sector concentration are unavailable because this product does not yet have trustworthy source data.",
+      "emptyTitle": "Build your first portfolio position",
+      "emptyDescription": "Record a Transaction in a Diary, or open the Watchlist to start researching a company.",
+      "addTransaction": "Record a Transaction",
+      "openWatchlist": "Open Watchlist",
+      "status": {
+        "empty": "No active positions.",
+        "complete": "All {total} positions have quotes.",
+        "partial": "{priced} of {total} positions are priced. Unpriced cost basis: {cost}.",
+        "unavailable": "No active position can currently be priced. Cost basis remains available."
+      },
+      "statusLabel": {
+        "empty": "Empty",
+        "complete": "Complete",
+        "partial": "Partial",
+        "unavailable": "Unavailable"
+      }
     }
   },
   "settings": {
@@ -676,12 +704,12 @@
     "apiKeysEmptyHint": "Create a scoped API key so an external agent can write diaries on behalf of a partner account without full web access."
   },
   "timeline": {
-    "title": "Timeline",
+    "title": "Investment Overview",
     "viewMode": "Timeline view",
     "myTimeline": "My Timeline",
     "pairView": "Pair View",
-    "kicker": "Event Timeline",
-    "subtitle": "A chronological view of your investment journey",
+    "kicker": "Long-term investment workspace",
+    "subtitle": "See what you own, what needs attention, what changed, and what to review.",
     "noEntries": "No entries yet",
     "loadFailed": "Load failed",
     "entriesCount": "{count} entries",
@@ -692,7 +720,17 @@
     "transactionsCount": "{count} transactions",
     "alertsCount": "{count} alerts",
     "viewDetails": "View Details →",
-    "periodLabel": "{year} {month}"
+    "periodLabel": "{year} {month}",
+    "overview": {
+      "viewPortfolio": "View Portfolio",
+      "viewReviews": "View Reviews",
+      "sectionUnavailable": "This section is temporarily unavailable.",
+      "partialData": "Some evidence is temporarily unavailable; available items are still shown.",
+      "portfolio": { "title": "Portfolio Overview", "pricedValue": "Priced market value", "empty": "No active position yet. Start with a Diary or research a company.", "loadFailed": "Portfolio holdings could not be loaded.", "quoteFailed": "Quotes are partially or temporarily unavailable; cost and quantity remain unchanged." },
+      "attention": { "title": "Needs Review", "empty": "Nothing needs immediate review.", "portfolio": "Portfolio concentration", "concentration": "Concentration warning", "reviewDue": "Diary review due", "reasons": { "missing_thesis": "Missing Investment Thesis", "overdue_thesis_review": "Thesis review overdue", "invalidated_thesis_while_held": "Invalidated Thesis while held", "overdue_diary_review": "Diary review overdue", "position_concentration": "Position concentration" } },
+      "activity": { "title": "Recent Investment Activity", "fullHistory": "Full Timeline", "loadFailed": "Recent Diary activity could not be loaded.", "empty": "No recent Diary activity." },
+      "upcoming": { "title": "Upcoming / Pending Reviews", "loadFailed": "Review schedule could not be loaded.", "empty": "No upcoming or pending Reviews." }
+    }
   },
   "compareDiary": {
     "kicker": "Partner Review",
@@ -2106,13 +2144,15 @@
     "queue": {
       "kicker": "Review workflow",
       "title": "Review Queue",
-      "description": "One place for overdue, due today, upcoming, and completed diary reviews.",
+      "description": "One place for Diary Reviews and Investment Thesis Reviews.",
       "openCount": "Open",
       "overdueCount": "Overdue",
       "todayCount": "Today",
       "loadFailed": "Failed to load reviews",
       "markedReviewed": "Diary marked as reviewed",
       "markReviewedFailed": "Failed to mark diary as reviewed",
+      "thesisType": "Investment Thesis",
+      "latestOutcome": "Latest Thesis Review",
       "sections": {
         "needsAttention": "Needs attention",
         "needsAttentionDesc": "Overdue and due-today decisions come first.",
@@ -2125,7 +2165,7 @@
         "upcoming": "Upcoming reviews",
         "upcomingDesc": "Future reviews already scheduled.",
         "completed": "Completed reviews",
-        "completedDesc": "Recently reviewed diaries."
+        "completedDesc": "Recently completed Diary and Thesis Reviews."
       },
       "empty": {
         "needsAttention": "Nothing needs immediate review.",
@@ -2335,5 +2375,49 @@
       "risk_off": "Risk Off",
       "unknown": "Unknown"
     }
+  },
+  "companyContext": {
+    "label": "Related companies (optional)",
+    "placeholder": "MSFT, NVDA",
+    "hint": "Up to {max} symbols, separated by commas."
+  },
+  "investmentThesis": {
+    "kicker": "Current holding logic",
+    "title": "Investment Thesis",
+    "empty": "No formal Thesis yet. Existing Diaries and Stock Notes remain unchanged.",
+    "create": "Create Thesis",
+    "saveDraft": "Save draft",
+    "activate": "Save and activate",
+    "archive": "Archive Thesis",
+    "saved": "Investment Thesis saved",
+    "saveFailed": "Could not save Investment Thesis",
+    "noSummary": "No summary yet",
+    "health": { "draft": "Draft", "healthy": "Healthy", "needs_review": "Needs review", "invalidated": "Invalidated", "archived": "Archived" },
+    "fields": {
+      "summary": "Summary", "whyIOwnIt": "Why I own it", "growthDrivers": "Growth drivers", "risks": "Risks",
+      "invalidationConditions": "Invalidation conditions", "expectedHoldingPeriod": "Expected holding period", "reviewDueAt": "Review due"
+    },
+    "decisions": { "HOLD": "Hold", "ADD": "Add", "REDUCE": "Reduce", "EXIT": "Exit", "CONTINUE_WATCHING": "Continue watching" },
+    "review": {
+      "start": "Start review", "title": "Thesis Review", "outcome": "Outcome", "decision": "Portfolio decision",
+      "whatImproved": "What improved?", "whatDeteriorated": "What deteriorated?", "whatChanged": "What changed?",
+      "invalidationTriggered": "An invalidation condition was triggered", "complete": "Complete review", "history": "Review history",
+      "snapshot": "Thesis at review time", "validation": "Choose an outcome and decision, then write at least one reflection.",
+      "saved": "Thesis Review saved", "saveFailed": "Could not save Thesis Review"
+    }
+  },
+  "companyHub": {
+    "title": "Company Hub", "kicker": "Company", "backToPortfolio": "Back to Portfolio", "loadFailed": "Could not load Company",
+    "position": {
+      "kicker": "What I own", "title": "My Position", "quantity": "Quantity", "averageCost": "Average cost", "marketPrice": "Market price",
+      "marketValue": "Market value", "concentration": "Portfolio concentration", "costBasis": "Based on cost while complete portfolio quotes are unavailable",
+      "quoteMissing": "Live quote unavailable. Cost data remains visible.",
+      "states": { "held": "Held", "closed": "Closed position", "research_only": "Research only", "untracked": "Not held or watched" }
+    },
+    "changes": { "kicker": "Investment memory", "title": "What Changed" },
+    "relatedDiaries": "Related Diaries", "recentNotes": "Recent Stock Notes", "evidence": "Source evidence", "openSource": "Open source",
+    "relations": { "explicit_context": "Explicit Company context", "transaction": "Transaction context" },
+    "sources": { "me": "Me" },
+    "empty": { "diaries": "No related Diaries yet.", "notes": "No Stock Notes yet.", "evidence": "No source evidence yet." }
   }
 }

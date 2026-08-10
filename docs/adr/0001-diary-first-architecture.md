@@ -4,6 +4,8 @@
 
 日記（Diary）是系統的核心聚合根，交易（Transaction）是日記的可選附件。一筆交易不能獨立存在，必須附屬於一篇日記。
 
+已登入首頁 `/timeline` 可以用 Portfolio attention 作為閱讀入口，組合 Portfolio、Review 與近期 Diary 的 bounded projection；這不建立新的 Portfolio 聚合根，也不改變 Transaction 必須附屬 Diary 的寫入契約。
+
 ## 原因
 
 目標使用者（0-3 年新手）的交易頻率極低——一個月可能零到一筆交易。但每日市場觀察（日記）應該是持續的習慣。如果系統以交易為中心設計，大部分日子使用者打開 app 會看到空白頁面，無法建立持續使用的動力。

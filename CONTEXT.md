@@ -5,7 +5,8 @@
 ## 產品資訊架構
 
 - **Quick Diary** 是全域捕捉動作，不是獨立工作區。
-- **Timeline** 是已登入使用者的主要工作區，按時間閱讀與重訪 Diary。
+- **Investment Overview** 沿用 `/timeline` 作為已登入使用者的主要工作區，先回答 Portfolio、待關注事項、近期變化與待 Review 項目，再銜接按時間閱讀與重訪 Diary 的完整 Timeline。
+- 產品閱讀流程是 Portfolio → Company → Investment Thesis → Memory → Review → Portfolio Decision；這是讀取與注意力入口，不改變 Diary 作為每日記憶與單次投資決策聚合根的寫入模型。
 - **Pair View** 是 Timeline 的雙人閱讀模式，沿用相同日期脈絡比較雙方 Diary。
 - **Diaries** 是搜尋、篩選與管理完整 Diary 紀錄的資料庫，不承擔首頁 dashboard 角色。
 - **Review** 保持獨立可達；結構化 Review 工作流不屬於 Timeline 導覽架構。

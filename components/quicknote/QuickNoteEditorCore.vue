@@ -133,6 +133,14 @@
             <QuickTags :model-value="tags" @update:model-value="emit('update:tags', $event)" />
           </section>
 
+          <section class="rounded-dt-md border p-4" style="border-color: var(--color-border); background: var(--color-surface);">
+            <CompanySymbolInput
+              input-id="quick-note-company-symbols"
+              :model-value="stockSymbols"
+              @update:model-value="emit('update:stockSymbols', $event)"
+            />
+          </section>
+
           <section class="space-y-3 rounded-dt-md border p-4" style="border-color: var(--color-border); background: var(--color-surface);">
             <div class="flex items-center justify-between gap-3">
               <h2 class="text-sm font-semibold" style="color: var(--color-text);">{{ t('quickDiary.editor.quickTemplates') }}</h2>
@@ -241,6 +249,11 @@
             <label class="block text-sm font-semibold" style="color: var(--color-text);" for="quick-note-title-mobile">{{ t('quickDiary.editor.titlePlaceholder') }}</label>
             <input id="quick-note-title-mobile" :value="title" type="text" class="min-h-12 w-full rounded-dt-sm border px-4 text-base outline-none placeholder:text-dt-text-soft focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20" style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);" :placeholder="t('quickDiary.editor.titlePlaceholder')" :aria-label="t('quickDiary.editor.titleAria')" @input="handleTitleInput" />
           </div>
+          <CompanySymbolInput
+            input-id="quick-note-company-symbols-mobile"
+            :model-value="stockSymbols"
+            @update:model-value="emit('update:stockSymbols', $event)"
+          />
           <button type="button" class="flex min-h-12 w-full cursor-pointer items-center justify-between rounded-dt-sm border px-4 text-sm font-semibold transition-colors hover:border-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="border-color: var(--color-border); color: var(--color-text-muted);" @click="openTemplateFromMoreOptions">{{ t('quickDiary.editor.openTemplatePicker') }}<Icon name="heroicons:chevron-right" class="h-4 w-4" /></button>
           <button type="button" class="min-h-11 w-full cursor-pointer rounded-dt-sm bg-dt-primary px-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-dt-primary/40" @click="closePicker">{{ t('common.save') }}</button>
         </div>
@@ -278,6 +291,7 @@ import VoiceInput from '~/components/VoiceInput.vue'
 import TemplateManager from '~/components/TemplateManager.vue'
 import QuickReminder from '~/components/QuickReminder.vue'
 import QuickNoteTemplateAssistant from '~/components/quicknote/QuickNoteTemplateAssistant.vue'
+import CompanySymbolInput from '~/components/stocks/CompanySymbolInput.vue'
 import { createQuickReminderOptions } from '~/lib/quicknote/quick-reminders'
 import { createEmptyQuickNoteTemplateData, type QuickNoteTemplateData } from '~/types/quicknote'
 import type { QuickNoteQuickReminderPreset, QuickNoteReminderKey, QuickNoteReminders, QuickNoteSaveMode, QuickNoteTemplateKind } from '~/types/quicknote'
@@ -295,6 +309,7 @@ const props = withDefaults(defineProps<{
   title: string
   content: string
   tags: string[]
+  stockSymbols?: string[]
   date: string
   saveMode: QuickNoteSaveMode
   saving: boolean
@@ -322,6 +337,7 @@ const props = withDefaults(defineProps<{
   templates: () => [],
   reminders: () => ({ reminder1: null }),
   activeReminders: () => [],
+  stockSymbols: () => [],
   existingDiaryForDate: false,
   checkingExistingDiaryForDate: false,
   autofocus: false,
@@ -332,6 +348,7 @@ const emit = defineEmits<{
   (e: 'update:title', value: string): void
   (e: 'update:content', value: string): void
   (e: 'update:tags', value: string[]): void
+  (e: 'update:stockSymbols', value: string[]): void
   (e: 'update:date', value: string): void
   (e: 'update:save-mode', value: QuickNoteSaveMode): void
   (e: 'append-text', value: string): void

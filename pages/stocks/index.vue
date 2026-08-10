@@ -42,7 +42,25 @@
     <!-- Main Content Grid -->
     <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Top Stats Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <section
+        v-if="!pending && totalHoldings === 0"
+        class="panel-dashboard mb-6 p-8 text-center"
+        aria-labelledby="portfolio-empty-title"
+      >
+        <Icon name="heroicons:chart-bar-square" class="mx-auto h-10 w-10 text-dt-text-soft" />
+        <h2 id="portfolio-empty-title" class="font-display mt-3 text-2xl text-dt-text">
+          {{ t('stock.dataQuality.emptyTitle') }}
+        </h2>
+        <p class="mx-auto mt-2 max-w-lg text-sm text-dt-text-muted">
+          {{ t('stock.dataQuality.emptyDescription') }}
+        </p>
+        <div class="mt-5 flex flex-wrap justify-center gap-3">
+          <NuxtLink to="/diaries/new" class="action-btn-dashboard">{{ t('stock.dataQuality.addTransaction') }}</NuxtLink>
+          <NuxtLink to="/stocks/watchlist" class="action-btn-muted-dashboard">{{ t('stock.dataQuality.openWatchlist') }}</NuxtLink>
+        </div>
+      </section>
+
+      <div v-if="pending || totalHoldings > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <!-- Portfolio Value -->
         <div class="stats-card">
           <div class="flex items-center justify-between mb-2">
@@ -50,9 +68,9 @@
             <Icon name="heroicons:banknotes" class="h-5 w-5 text-dt-primary opacity-50" />
           </div>
           <div class="font-data text-2xl font-bold tabular-nums text-dt-text">
-            {{ formatCurrency(currentMarketValue || totalCost) }}
+            {{ currentMarketValue !== null ? formatCurrency(currentMarketValue) : t('stock.dataQuality.unavailable') }}
           </div>
-          <div class="flex items-center gap-1.5 mt-1">
+          <div v-if="unrealizedAmount !== null" class="flex items-center gap-1.5 mt-1">
             <span class="text-xs font-medium" :class="(unrealizedAmount || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
               {{ (unrealizedAmount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(unrealizedAmount || 0) }}
             </span>
@@ -66,12 +84,12 @@
             <span class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('stock.dashboard.dayChange') }}</span>
             <Icon name="heroicons:bolt" class="h-5 w-5 text-dt-warning opacity-50" />
           </div>
-          <div class="text-2xl font-bold tabular-nums" :class="totalDayChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-            {{ totalDayChange >= 0 ? '+' : '' }}{{ formatCurrency(totalDayChange) }}
+          <div class="text-2xl font-bold tabular-nums" :class="(totalDayChange ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+            {{ totalDayChange === null ? t('stock.dataQuality.unavailable') : `${totalDayChange >= 0 ? '+' : ''}${formatCurrency(totalDayChange)}` }}
           </div>
-          <div class="flex items-center gap-1.5 mt-1">
-            <span class="text-xs font-medium" :class="totalDayChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-              {{ totalDayChange >= 0 ? '+' : '' }}{{ totalDayChangePercent.toFixed(2) }}%
+          <div v-if="totalDayChangePercent !== null" class="flex items-center gap-1.5 mt-1">
+            <span class="text-xs font-medium" :class="(totalDayChange ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+              {{ (totalDayChange ?? 0) >= 0 ? '+' : '' }}{{ totalDayChangePercent.toFixed(2) }}%
             </span>
             <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ t('stock.dashboard.today') }}</span>
           </div>
@@ -100,10 +118,10 @@
             <span class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('stock.dashboard.unrealizedPLPercent') }}</span>
             <Icon name="heroicons:arrow-trending-up" class="h-5 w-5 text-dt-success opacity-50" />
           </div>
-          <div class="text-2xl font-bold tabular-nums" :class="totalUnrealizedPct >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-            {{ totalUnrealizedPct >= 0 ? '+' : '' }}{{ totalUnrealizedPct.toFixed(2) }}%
+          <div class="text-2xl font-bold tabular-nums" :class="(totalUnrealizedPct ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+            {{ totalUnrealizedPct === null ? t('stock.dataQuality.unavailable') : `${totalUnrealizedPct >= 0 ? '+' : ''}${totalUnrealizedPct.toFixed(2)}%` }}
           </div>
-          <div class="flex items-center gap-1.5 mt-1">
+          <div v-if="totalUnrealizedPct !== null" class="flex items-center gap-1.5 mt-1">
             <div class="w-full bg-slate-200 dark:bg-slate-700 h-1 rounded-full overflow-hidden">
               <div 
                 class="h-full" 
@@ -114,6 +132,30 @@
           </div>
         </div>
       </div>
+
+      <section
+        v-if="totalHoldings > 0"
+        class="panel-dashboard mb-6 p-4"
+        :aria-label="t('stock.dataQuality.title')"
+        role="status"
+      >
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-bold text-dt-text">{{ t('stock.dataQuality.title') }}</h2>
+            <p class="mt-1 text-xs text-dt-text-muted">
+              {{ t(`stock.dataQuality.status.${valuationStatus}`, { priced: pricedPositionCount, total: totalHoldings, cost: formatCurrency(unpricedCostBasis) }) }}
+            </p>
+          </div>
+          <div class="text-right text-xs text-dt-text-muted">
+            <p>{{ t('stock.dataQuality.coverage', { percent: quoteCoveragePct.toFixed(0) }) }}</p>
+            <p v-if="valuationAsOf">{{ t('stock.dataQuality.asOf', { time: formatQuoteTime(valuationAsOf) }) }}</p>
+            <p v-if="staleQuoteCount > 0" class="text-dt-warning">{{ t('stock.dataQuality.stale', { count: staleQuoteCount }) }}</p>
+          </div>
+        </div>
+        <p class="mt-3 border-t border-dt-border pt-3 text-xs text-dt-text-soft">
+          {{ t('stock.dataQuality.unsupported') }}
+        </p>
+      </section>
 
       <section class="panel-dashboard p-6 mb-6">
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -137,13 +179,13 @@
         <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div class="risk-metric">
             <span>{{ t('stock.riskSummary.largestPosition') }}</span>
-            <strong>{{ largestPositionPct.toFixed(1) }}%</strong>
+            <strong>{{ largestPositionPct === null ? '—' : `${largestPositionPct.toFixed(1)}%` }}</strong>
             <small>{{ largestPositionSymbol || t('stock.riskSummary.noPosition') }}</small>
           </div>
           <div class="risk-metric">
             <span>{{ t('stock.riskSummary.top3Concentration') }}</span>
-            <strong>{{ top3ConcentrationPct.toFixed(1) }}%</strong>
-            <small>{{ t('stock.riskSummary.byValue') }}</small>
+            <strong>{{ top3ConcentrationPct === null ? '—' : `${top3ConcentrationPct.toFixed(1)}%` }}</strong>
+            <small>{{ unpricedPositionCount > 0 ? t('stock.dataQuality.pricedSubset') : t('stock.riskSummary.byValue') }}</small>
           </div>
           <div class="risk-metric">
             <span>{{ t('stock.riskSummary.activePositionCount') }}</span>
@@ -152,15 +194,15 @@
           </div>
           <div class="risk-metric">
             <span>{{ t('stock.riskSummary.unrealizedPnl') }}</span>
-            <strong :class="unrealizedAmount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-              {{ unrealizedAmount >= 0 ? '+' : '' }}{{ formatCurrency(unrealizedAmount) }}
+            <strong :class="(unrealizedAmount ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+              {{ unrealizedAmount === null ? '—' : `${unrealizedAmount >= 0 ? '+' : ''}${formatCurrency(unrealizedAmount)}` }}
             </strong>
-            <small>{{ totalUnrealizedPct >= 0 ? '+' : '' }}{{ totalUnrealizedPct.toFixed(2) }}%</small>
+            <small>{{ totalUnrealizedPct === null ? t('stock.dataQuality.unavailable') : `${totalUnrealizedPct >= 0 ? '+' : ''}${totalUnrealizedPct.toFixed(2)}%` }}</small>
           </div>
           <div class="risk-metric">
             <span>{{ t('stock.riskSummary.priceBasis') }}</span>
-            <strong>{{ t('stock.riskSummary.costFallback') }}</strong>
-            <small>{{ t('stock.riskSummary.costFallbackHint') }}</small>
+            <strong>{{ t(`stock.dataQuality.statusLabel.${valuationStatus}`) }}</strong>
+            <small>{{ t('stock.dataQuality.noCostFallback') }}</small>
           </div>
         </div>
       </section>
@@ -232,7 +274,10 @@
                   >
                     <td class="px-6 py-4">
                       <div class="flex flex-col">
-                        <span class="text-sm font-bold text-blue-600 dark:text-blue-400">{{ holding.symbol }}</span>
+                        <NuxtLink
+                          :to="`/stocks/${encodeURIComponent(holding.symbol)}`"
+                          class="text-sm font-bold text-blue-600 hover:underline dark:text-blue-400"
+                        >{{ holding.symbol }}</NuxtLink>
                         <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ formatQuantity(holding.quantity) }} {{ t('stock.dashboard.shares') }}</span>
                       </div>
                     </td>
@@ -248,7 +293,7 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                       <div class="text-sm font-medium tabular-nums text-dt-text">
-                        {{ holding.marketValue ? formatCurrency(holding.marketValue) : formatCurrency(holding.totalCost) }}
+                        {{ holding.marketValue !== null ? formatCurrency(holding.marketValue) : '—' }}
                       </div>
                     </td>
                     <td class="px-6 py-4 text-right">
@@ -258,8 +303,8 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                       <div class="flex flex-col items-end">
-                        <span class="text-sm font-bold tabular-nums" :class="(holding.unrealizedAmount || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-                          {{ (holding.unrealizedAmount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(holding.unrealizedAmount || 0) }}
+                        <span class="text-sm font-bold tabular-nums" :class="(holding.unrealizedAmount ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                          {{ holding.unrealizedAmount === null ? '—' : `${holding.unrealizedAmount >= 0 ? '+' : ''}${formatCurrency(holding.unrealizedAmount)}` }}
                         </span>
                         <span v-if="holding.unrealizedPct !== null" class="text-[10px] font-medium opacity-80" :class="holding.unrealizedPct >= 0 ? 'text-green-500' : 'text-red-500'">
                           {{ holding.unrealizedPct >= 0 ? '+' : '' }}{{ holding.unrealizedPct.toFixed(2) }}%
@@ -659,6 +704,13 @@ const top3ConcentrationPct = computed(() => stats.value.top3ConcentrationPct)
 const activePositionCount = computed(() => stats.value.activePositionCount)
 const concentrationWarning = computed(() => stats.value.concentrationWarning)
 const largestPositionSymbol = computed(() => stats.value.largestPositionSymbol)
+const pricedPositionCount = computed(() => stats.value.pricedPositionCount)
+const unpricedPositionCount = computed(() => stats.value.unpricedPositionCount)
+const unpricedCostBasis = computed(() => stats.value.unpricedCostBasis)
+const quoteCoveragePct = computed(() => stats.value.quoteCoveragePct)
+const valuationAsOf = computed(() => stats.value.valuationAsOf)
+const staleQuoteCount = computed(() => stats.value.staleQuoteCount)
+const valuationStatus = computed(() => stats.value.valuationStatus)
 
 // ── Portfolio Exposure panel (T7) ──────────────────────────────────
 const {
@@ -673,6 +725,10 @@ const {
 // Formatting
 const formatQuantity = (qty: number) => formatHoldingQuantity(qty)
 const formatPercentage = (cost: number) => formatHoldingShare(cost, totalCost.value)
+const formatQuoteTime = (value: string) => new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+}).format(new Date(value))
 
 // Chart data
 const donutSlices = computed(() => buildHoldingChartSegments(baseHoldings.value, {
@@ -732,7 +788,8 @@ const fetchStockPrices = async () => {
         ...h,
         price: quote.regularMarketPrice,
         dayChange: quote.change,
-        dayChangePercent: quote.changePercent
+        dayChangePercent: quote.changePercent,
+        quoteAsOf: quote.lastUpdateTime,
       }
     })
 

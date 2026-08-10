@@ -22,7 +22,115 @@
       </div>
     </header>
 
-    <TimelineModeSwitch />
+    <div class="grid gap-4 lg:grid-cols-2" aria-label="Investment overview">
+      <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-portfolio-title">
+        <div class="flex items-center justify-between gap-3">
+          <h2 id="overview-portfolio-title" class="font-display text-xl text-dt-text">{{ t('timeline.overview.portfolio.title') }}</h2>
+          <NuxtLink to="/stocks" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.viewPortfolio') }}</NuxtLink>
+        </div>
+        <AppSkeleton v-if="holdingsPending" class="mt-4" variant="card" :count="1" />
+        <div v-else-if="holdingsError" class="mt-4 rounded-dt-sm border border-dt-danger/30 p-4" role="alert">
+          <p class="text-sm text-dt-danger">{{ t('timeline.overview.portfolio.loadFailed') }}</p>
+          <BaseButton variant="secondary" class="mt-3" @click="refreshPortfolio()">{{ t('common.retry') }}</BaseButton>
+        </div>
+        <div v-else-if="portfolioStats.totalHoldings === 0" class="mt-4">
+          <p class="text-sm text-dt-text-muted">{{ t('timeline.overview.portfolio.empty') }}</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <NuxtLink to="/diaries/new" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('stock.dataQuality.addTransaction') }}</NuxtLink>
+            <NuxtLink to="/stocks/watchlist" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('stock.dataQuality.openWatchlist') }}</NuxtLink>
+          </div>
+        </div>
+        <div v-else class="mt-4">
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div>
+              <p class="text-xs text-dt-text-soft">{{ t('timeline.overview.portfolio.pricedValue') }}</p>
+              <p class="font-data mt-1 text-lg font-bold text-dt-text">{{ portfolioStats.currentMarketValue === null ? '—' : formatCurrency(portfolioStats.currentMarketValue) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-dt-text-soft">{{ t('stock.dashboard.totalInvested') }}</p>
+              <p class="font-data mt-1 text-lg font-bold text-dt-text">{{ formatCurrency(portfolioStats.totalCost) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-dt-text-soft">{{ t('stock.riskSummary.largestPosition') }}</p>
+              <p class="font-data mt-1 text-lg font-bold text-dt-text">{{ portfolioStats.largestPositionPct === null ? '—' : `${portfolioStats.largestPositionPct.toFixed(1)}%` }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-dt-text-soft">{{ t('stock.riskSummary.top3Concentration') }}</p>
+              <p class="font-data mt-1 text-lg font-bold text-dt-text">{{ portfolioStats.top3ConcentrationPct === null ? '—' : `${portfolioStats.top3ConcentrationPct.toFixed(1)}%` }}</p>
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-dt-text-muted" role="status">
+            {{ t(`stock.dataQuality.status.${portfolioStats.valuationStatus}`, { priced: portfolioStats.pricedPositionCount, total: portfolioStats.totalHoldings, cost: formatCurrency(portfolioStats.unpricedCostBasis) }) }}
+            <template v-if="portfolioStats.valuationAsOf"> · {{ t('stock.dataQuality.asOf', { time: formatOverviewDate(portfolioStats.valuationAsOf) }) }}</template>
+          </p>
+          <p v-if="portfolioQuoteError" class="mt-2 text-xs text-dt-warning">{{ t('timeline.overview.portfolio.quoteFailed') }}</p>
+        </div>
+      </section>
+
+      <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-attention-title">
+        <div class="flex items-center justify-between gap-3">
+          <h2 id="overview-attention-title" class="font-display text-xl text-dt-text">{{ t('timeline.overview.attention.title') }}</h2>
+          <NuxtLink to="/reviews" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.viewReviews') }}</NuxtLink>
+        </div>
+        <AppSkeleton v-if="reviewsPending || attentionPending" class="mt-4" variant="card" :count="1" />
+        <div v-else-if="attentionError && reviewsError && holdingsError" class="mt-4" role="alert">
+          <p class="text-sm text-dt-danger">{{ t('timeline.overview.sectionUnavailable') }}</p>
+        </div>
+        <ul v-else-if="needsReviewItems.length" class="mt-4 space-y-2">
+          <li v-for="item in needsReviewItems" :key="item.id">
+            <NuxtLink :to="item.to" class="flex min-h-11 items-center justify-between rounded-dt-sm border border-dt-border px-3 py-2 text-sm hover:bg-dt-surface-strong">
+              <span class="font-medium text-dt-text">{{ item.label }}</span>
+              <span class="text-xs text-dt-danger">{{ item.reason }}</span>
+            </NuxtLink>
+          </li>
+        </ul>
+        <p v-else class="mt-4 text-sm text-dt-text-muted">{{ t('timeline.overview.attention.empty') }}</p>
+        <p v-if="attentionError || attentionPartial || reviewsError || holdingsError" class="mt-3 text-xs text-dt-warning" role="status">{{ t('timeline.overview.partialData') }}</p>
+      </section>
+
+      <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-activity-title">
+        <div class="flex items-center justify-between gap-3">
+          <h2 id="overview-activity-title" class="font-display text-xl text-dt-text">{{ t('timeline.overview.activity.title') }}</h2>
+          <a href="#diary-timeline" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.activity.fullHistory') }}</a>
+        </div>
+        <AppSkeleton v-if="activityPending" class="mt-4" variant="card" :count="1" />
+        <p v-else-if="activityError" class="mt-4 text-sm text-dt-danger" role="alert">{{ t('timeline.overview.activity.loadFailed') }}</p>
+        <ul v-else-if="activityItems.length" class="mt-4 divide-y divide-dt-border">
+          <li v-for="item in activityItems" :key="item.id">
+            <NuxtLink :to="item.destination" class="flex min-h-11 items-center justify-between gap-3 py-2 text-sm hover:text-dt-primary">
+              <span class="min-w-0 truncate font-medium">{{ item.symbol ? `${item.symbol} · ` : '' }}{{ item.title }}</span>
+              <time class="shrink-0 text-xs text-dt-text-soft">{{ formatCompactDate(item.occurredAt) }}</time>
+            </NuxtLink>
+          </li>
+        </ul>
+        <p v-else class="mt-4 text-sm text-dt-text-muted">{{ t('timeline.overview.activity.empty') }}</p>
+      </section>
+
+      <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-upcoming-title">
+        <div class="flex items-center justify-between gap-3">
+          <h2 id="overview-upcoming-title" class="font-display text-xl text-dt-text">{{ t('timeline.overview.upcoming.title') }}</h2>
+          <NuxtLink to="/reviews" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.viewReviews') }}</NuxtLink>
+        </div>
+        <AppSkeleton v-if="reviewsPending" class="mt-4" variant="card" :count="1" />
+        <div v-else-if="reviewsError" class="mt-4" role="alert">
+          <p class="text-sm text-dt-danger">{{ t('timeline.overview.upcoming.loadFailed') }}</p>
+          <BaseButton variant="secondary" class="mt-3" @click="refreshReviews()">{{ t('common.retry') }}</BaseButton>
+        </div>
+        <ul v-else-if="upcomingReviewItems.length" class="mt-4 divide-y divide-dt-border">
+          <li v-for="review in upcomingReviewItems" :key="String(review.id)">
+            <NuxtLink :to="review.targetType === 'thesis' ? `/stocks/${encodeURIComponent(review.symbol || '')}?tab=thesis&review=${review.thesisId || review.id}` : `/diaries/${review.id}/review`" class="flex min-h-11 items-center justify-between gap-3 py-2 text-sm hover:text-dt-primary">
+              <span class="min-w-0 truncate font-medium">{{ review.targetType === 'thesis' && review.symbol ? `${review.symbol} · ` : '' }}{{ review.title }}</span>
+              <span class="shrink-0 text-xs text-dt-text-soft">{{ review.reviewDueAt ? formatOverviewDate(review.reviewDueAt) : t('review.queue.sections.unscheduled') }}</span>
+            </NuxtLink>
+          </li>
+        </ul>
+        <p v-else class="mt-4 text-sm text-dt-text-muted">{{ t('timeline.overview.upcoming.empty') }}</p>
+      </section>
+    </div>
+
+    <div id="diary-timeline" class="scroll-mt-4">
+      <TimelineModeSwitch />
+    </div>
 
     <!-- Filters -->
     <details class="rounded-dt-sm border border-dt-border bg-dt-surface px-4 py-3">
@@ -212,12 +320,94 @@
 
 <script setup lang="ts">
 import { formatShortDate } from '~/lib/dates'
+import { formatCurrency } from '~/lib/format'
+import { computePortfolioAggregations, type PortfolioValuationResponse } from '~/lib/stocks-view'
+import type { PortfolioAttentionItem } from '~/lib/portfolio-attention'
+import type { SerializedId } from '~/types/common'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useTimelineDiaries } from '~/composables/useTimelineDiaries'
 import { useAppShell } from '~/composables/useAppShell'
 
 const { t, locale } = useI18n()
 const { user } = useAuth()
+
+interface OverviewReviewItem {
+  id: SerializedId
+  title: string
+  reviewDueAt?: string | null
+  targetType?: 'diary' | 'thesis'
+  symbol?: string | null
+  thesisId?: SerializedId
+}
+
+interface OverviewReviewGroups {
+  unscheduled: OverviewReviewItem[]
+  overdue: OverviewReviewItem[]
+  today: OverviewReviewItem[]
+  upcoming: OverviewReviewItem[]
+  completed: OverviewReviewItem[]
+}
+
+const emptyReviewGroups = (): OverviewReviewGroups => ({
+  unscheduled: [],
+  overdue: [],
+  today: [],
+  upcoming: [],
+  completed: [],
+})
+
+const emptyPortfolioProjection = (): PortfolioValuationResponse => ({
+  holdings: [],
+  valuation: computePortfolioAggregations([]),
+  quoteErrors: [],
+  marketState: null,
+})
+
+const {
+  data: portfolioProjection,
+  pending: holdingsPending,
+  error: holdingsError,
+  refresh: refreshPortfolio,
+} = await useLazyFetch<PortfolioValuationResponse>('/api/stocks/portfolio', {
+  default: emptyPortfolioProjection,
+})
+const portfolioStats = computed(() => portfolioProjection.value?.valuation ?? computePortfolioAggregations([]))
+const portfolioQuoteError = computed(() => (portfolioProjection.value?.quoteErrors.length ?? 0) > 0)
+
+const {
+  data: attentionProjection,
+  pending: attentionPending,
+  error: attentionError,
+} = await useLazyFetch<{ items: PortfolioAttentionItem[]; asOf: string; coverage: { complete: boolean; priced: number; total: number } }>('/api/portfolio/attention', {
+  default: () => ({ items: [], asOf: new Date().toISOString(), coverage: { complete: false, priced: 0, total: 0 } }),
+})
+
+const {
+  data: activityProjection,
+  pending: activityPending,
+  error: activityError,
+} = await useLazyFetch<{ items: Array<{ id: string; title: string; symbol: string | null; occurredAt: string; destination: string }>; nextCursor: string | null }>('/api/investment-activity', {
+  query: { limit: 5 },
+  default: () => ({ items: [], nextCursor: null }),
+})
+
+const {
+  data: overviewReviews,
+  pending: reviewsPending,
+  error: reviewsError,
+  refresh: refreshReviews,
+} = await useLazyFetch<OverviewReviewGroups>('/api/reviews', {
+  default: emptyReviewGroups,
+})
+const reviewGroups = computed(() => overviewReviews.value ?? emptyReviewGroups())
+const upcomingReviewItems = computed(() => [
+  ...reviewGroups.value.upcoming,
+  ...reviewGroups.value.unscheduled,
+].slice(0, 4))
+const formatOverviewDate = (value: string) => new Intl.DateTimeFormat(locale.value || 'zh-TW', {
+  dateStyle: 'medium',
+  timeZone: user.value?.timezone || 'Asia/Taipei',
+}).format(new Date(value))
 
 const timelineTimezone = computed(() => user.value?.timezone || 'Asia/Taipei')
 
@@ -250,12 +440,34 @@ const {
   error,
   loadingMore,
   filters,
+  diaries,
   hasMore,
   groupedDiaries,
   loadMore,
   refresh,
   resetFilters
 } = useTimelineDiaries()
+
+const recentDiaries = computed(() => diaries.value.slice(0, 5))
+const activityItems = computed(() => activityProjection.value
+  ? activityProjection.value.items
+  : recentDiaries.value.map(diary => ({
+      id: `diary:${diary.id}`,
+      title: diary.title,
+      symbol: null,
+      occurredAt: String(diary.date || diary.createdAt),
+      destination: `/diaries/${diary.id}`,
+    })))
+const attentionPartial = computed(() => {
+  const coverage = attentionProjection.value?.coverage
+  return Boolean(coverage && coverage.total > 0 && !coverage.complete)
+})
+const needsReviewItems = computed(() => (attentionProjection.value?.items ?? []).slice(0, 5).map(item => ({
+  id: item.id,
+  label: item.symbol || item.evidence.title || t('timeline.overview.attention.portfolio'),
+  reason: t(`timeline.overview.attention.reasons.${item.reason}`),
+  to: item.action,
+})))
 
 const { openQuickDiary: openGlobalQuickDiary } = useAppShell()
 const openQuickDiary = () => openGlobalQuickDiary({ source: 'timeline' })

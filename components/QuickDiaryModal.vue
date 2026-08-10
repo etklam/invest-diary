@@ -65,6 +65,7 @@
               :title="state.title"
               :content="state.content"
               :tags="state.tags"
+              :stock-symbols="state.stockSymbols"
               :date="state.date"
               :saving="saving"
               :draft-hint="draftHint"
@@ -86,6 +87,7 @@
               @update:title="setTitle"
               @update:content="setContent"
               @update:tags="setTags"
+              @update:stock-symbols="setStockSymbols"
               @update:date="setDate"
               @update:save-mode="setSaveMode"
               @append-text="appendVoiceTranscript"
@@ -162,6 +164,7 @@ const {
   setTitle,
   setContent,
   setTags,
+  setStockSymbols,
   setDate,
   setSaveMode,
   appendVoiceTranscript,

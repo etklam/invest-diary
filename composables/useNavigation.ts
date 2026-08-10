@@ -56,7 +56,7 @@ export const useNavigation = () => {
     return [
       { label: t('nav.calendar'), to: '/calendar', icon: 'calendar' },
       { label: t('nav.timeline'), to: '/timeline', icon: 'clock' },
-      { label: t('nav.diaries'), to: '/diaries', icon: 'document-text' },
+              { label: t('nav.diaries'), to: '/diaries', icon: 'document-text' },
       { label: t('nav.reviewQueue'), to: '/reviews', icon: 'clipboard-document-check' },
       { label: t('nav.tradePlans'), to: '/trade-plans', icon: 'clipboard-document-list' },
       { label: t('nav.strategyPerformance'), to: '/strategy-performance', icon: 'chart-pie' },
@@ -117,7 +117,7 @@ export const useNavigation = () => {
         icon: 'chart-bar',
         items: [
           { label: t('nav.stocks'), to: '/stocks', icon: 'chart-bar' },
-          { label: t('nav.watchlist'), to: '/stocks/watchlist', icon: 'eye' },
+          { id: 'companies', label: t('nav.companies'), to: '/stocks/watchlist', icon: 'eye' },
           { label: t('nav.strategyPerformance'), to: '/strategy-performance', icon: 'chart-pie' },
           { label: t('nav.positionSizing'), to: '/tools/position-sizing', icon: 'calculator' },
         ],
@@ -156,7 +156,7 @@ export const useNavigation = () => {
   // Combined route inventory for secondary/mobile menus.
   const allNavItems = computed<NavItem[]>(() => [...mainNavItems.value, ...toolNavItems.value])
   const bottomNavItems = computed<BottomNavItem[]>(() => [
-    { id: 'timeline', label: t('nav.timeline'), to: '/timeline', icon: 'clock' },
+    { id: 'timeline', label: t('nav.overview'), to: '/timeline', icon: 'clock' },
     { id: 'portfolio', label: t('nav.portfolio'), to: '/stocks', icon: 'chart-bar' },
     { id: 'quick-diary', label: t('diary.quickDiary'), icon: 'pencil-square', action: 'quick-diary' },
     { id: 'review', label: t('nav.reviewQueue'), to: '/reviews', icon: 'clipboard-document-check' },

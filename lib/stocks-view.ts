@@ -6,6 +6,7 @@ export interface HoldingViewInput {
   price?: number
   dayChange?: number
   dayChangePercent?: number
+  quoteAsOf?: string
 }
 
 export interface HoldingView extends HoldingViewInput {
@@ -22,17 +23,36 @@ export interface HoldingView extends HoldingViewInput {
 export interface PortfolioAggregations {
   totalHoldings: number
   totalCost: number
-  currentMarketValue: number
-  unrealizedAmount: number
-  unrealizedPct: number
-  totalDayChange: number
-  totalDayChangePercent: number
-  largestPositionPct: number
-  top3ConcentrationPct: number
+  currentMarketValue: number | null
+  unrealizedAmount: number | null
+  unrealizedPct: number | null
+  totalDayChange: number | null
+  totalDayChangePercent: number | null
+  largestPositionPct: number | null
+  top3ConcentrationPct: number | null
   activePositionCount: number
   concentrationWarning: boolean
   largestPositionSymbol: string | null
+  pricedPositionCount: number
+  unpricedPositionCount: number
+  pricedCostBasis: number
+  unpricedCostBasis: number
+  quoteCoveragePct: number
+  valuationAsOf: string | null
+  staleQuoteCount: number
+  valuationStatus: 'empty' | 'complete' | 'partial' | 'unavailable'
+  unsupportedMetrics: readonly ['ytdReturn', 'realCashPercentage', 'sectorConcentration']
 }
+
+export interface PortfolioValuationResponse {
+  holdings: HoldingViewInput[]
+  valuation: PortfolioAggregations
+  quoteErrors: string[]
+  marketState: string | null
+}
+
+const hasFiniteQuote = (holding: HoldingViewInput) =>
+  typeof holding.price === 'number' && Number.isFinite(holding.price) && holding.price >= 0
 
 export type ProfitStatusFilter = 'all' | 'gain' | 'loss' | 'no-quote'
 export type ConcentrationFilter = 'all' | 'ge10' | 'ge20'
@@ -62,7 +82,7 @@ export function applyStocksView(
   const search = options.search.trim().toLowerCase()
 
   const withDerived: HoldingView[] = holdings.map((holding) => {
-    const hasQuote = typeof holding.price === 'number'
+    const hasQuote = hasFiniteQuote(holding)
     const marketValue = hasQuote ? holding.price! * holding.quantity : null
     const unrealizedAmount = hasQuote ? marketValue! - holding.totalCost : null
     const unrealizedPct = hasQuote && holding.totalCost > 0
@@ -140,38 +160,70 @@ export function applyStocksView(
  * @returns Portfolio-level statistics
  */
 export function computePortfolioAggregations(
-  holdings: HoldingViewInput[]
+  holdings: HoldingViewInput[],
+  options: { now?: Date; staleAfterMs?: number } = {},
 ): PortfolioAggregations {
   const totalHoldings = holdings.length
   const totalCost = holdings.reduce((sum, h) => sum + h.totalCost, 0)
-  const currentMarketValue = holdings.reduce(
-    (sum, h) => sum + (typeof h.price === 'number' ? h.price * h.quantity : h.totalCost),
-    0
+  const pricedHoldings = holdings.filter(hasFiniteQuote)
+  const unpricedHoldings = holdings.filter(holding => !hasFiniteQuote(holding))
+  const pricedPositionCount = pricedHoldings.length
+  const unpricedPositionCount = unpricedHoldings.length
+  const pricedCostBasis = pricedHoldings.reduce((sum, holding) => sum + holding.totalCost, 0)
+  const unpricedCostBasis = unpricedHoldings.reduce((sum, holding) => sum + holding.totalCost, 0)
+  const pricedMarketValue = pricedHoldings.reduce(
+    (sum, holding) => sum + holding.price! * holding.quantity,
+    0,
   )
-  const unrealizedAmount = currentMarketValue - totalCost
-  const unrealizedPct = totalCost > 0 ? (unrealizedAmount / totalCost) * 100 : 0
+  const currentMarketValue = pricedPositionCount > 0 ? pricedMarketValue : null
+  const unrealizedAmount = currentMarketValue === null ? null : currentMarketValue - pricedCostBasis
+  const unrealizedPct = unrealizedAmount !== null && pricedCostBasis > 0
+    ? (unrealizedAmount / pricedCostBasis) * 100
+    : null
 
-  const totalDayChange = holdings.reduce(
+  const dayChangeHoldings = pricedHoldings.filter(h => typeof h.dayChange === 'number' && Number.isFinite(h.dayChange))
+  const totalDayChange = dayChangeHoldings.length > 0 ? dayChangeHoldings.reduce(
     (sum, h) => sum + (typeof h.dayChange === 'number' ? h.dayChange * h.quantity : 0),
     0
-  )
-  const prevMarketValue = currentMarketValue - totalDayChange
-  const totalDayChangePercent = prevMarketValue > 0 ? (totalDayChange / prevMarketValue) * 100 : 0
-  const positionValues = holdings
+  ) : null
+  const prevMarketValue = currentMarketValue !== null && totalDayChange !== null
+    ? currentMarketValue - totalDayChange
+    : null
+  const totalDayChangePercent = prevMarketValue !== null && prevMarketValue > 0 && totalDayChange !== null
+    ? (totalDayChange / prevMarketValue) * 100
+    : null
+  const positionValues = pricedHoldings
     .map(holding => ({
       symbol: holding.symbol,
-      value: typeof holding.price === 'number' ? holding.price * holding.quantity : holding.totalCost,
+      value: holding.price! * holding.quantity,
     }))
     .filter(holding => holding.value > 0)
     .sort((a, b) => b.value - a.value)
   const largestPosition = positionValues[0] ?? null
-  const largestPositionPct = largestPosition && currentMarketValue > 0
+  const largestPositionPct = largestPosition && currentMarketValue !== null && currentMarketValue > 0
     ? (largestPosition.value / currentMarketValue) * 100
-    : 0
+    : null
   const top3Value = positionValues.slice(0, 3).reduce((sum, holding) => sum + holding.value, 0)
-  const top3ConcentrationPct = currentMarketValue > 0 ? (top3Value / currentMarketValue) * 100 : 0
-  const activePositionCount = positionValues.length
-  const concentrationWarning = largestPositionPct >= 25 || top3ConcentrationPct >= 60
+  const top3ConcentrationPct = currentMarketValue !== null && currentMarketValue > 0
+    ? (top3Value / currentMarketValue) * 100
+    : null
+  const activePositionCount = holdings.length
+  const concentrationWarning = (largestPositionPct ?? 0) >= 25 || (top3ConcentrationPct ?? 0) >= 60
+  const quoteCoveragePct = totalHoldings > 0 ? (pricedPositionCount / totalHoldings) * 100 : 0
+  const quoteTimes = pricedHoldings
+    .map(holding => holding.quoteAsOf ? Date.parse(holding.quoteAsOf) : Number.NaN)
+    .filter(Number.isFinite)
+  const valuationAsOf = quoteTimes.length > 0 ? new Date(Math.min(...quoteTimes)).toISOString() : null
+  const nowMs = (options.now ?? new Date()).getTime()
+  const staleAfterMs = options.staleAfterMs ?? 72 * 60 * 60 * 1000
+  const staleQuoteCount = quoteTimes.filter(time => nowMs - time > staleAfterMs).length
+  const valuationStatus = totalHoldings === 0
+    ? 'empty'
+    : pricedPositionCount === 0
+      ? 'unavailable'
+      : unpricedPositionCount > 0
+        ? 'partial'
+        : 'complete'
 
   return {
     totalHoldings,
@@ -186,5 +238,14 @@ export function computePortfolioAggregations(
     activePositionCount,
     concentrationWarning,
     largestPositionSymbol: largestPosition?.symbol ?? null,
+    pricedPositionCount,
+    unpricedPositionCount,
+    pricedCostBasis,
+    unpricedCostBasis,
+    quoteCoveragePct,
+    valuationAsOf,
+    staleQuoteCount,
+    valuationStatus,
+    unsupportedMetrics: ['ytdReturn', 'realCashPercentage', 'sectorConcentration'],
   }
 }

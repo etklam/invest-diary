@@ -70,6 +70,7 @@
         <DiaryEditor
           v-model:title="form.title"
           v-model:content="form.content"
+          v-model:stock-symbols="form.stockSymbols"
         />
       </LedgerCard>
 

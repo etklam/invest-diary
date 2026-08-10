@@ -36,6 +36,7 @@ import { TRADE_PLAN_STATUSES, type TradePlanStatus } from '~/types/trade-plan'
 const DIARY_FULL_INCLUDE = {
   transactions: true,
   alerts: true,
+  stockContexts: { include: { stock: { select: { symbol: true } } } },
 } as const
 
 const DIARY_DETAIL_INCLUDE = {
@@ -60,6 +61,7 @@ const DIARY_DETAIL_INCLUDE = {
     },
     orderBy: { id: 'asc' as const },
   },
+  stockContexts: { include: { stock: { select: { symbol: true } } } },
 } satisfies Prisma.DiaryInclude
 
 /**
@@ -214,6 +216,9 @@ const DIARY_LIST_SELECT = {
       status: true,
     },
   },
+  stockContexts: {
+    select: { stock: { select: { symbol: true } } },
+  },
 } satisfies Prisma.DiarySelect
 
 export interface TradePlanSummary {
@@ -250,7 +255,7 @@ export interface DiaryListFilters {
 }
 
 export interface DiaryListItem {
-  id: bigint
+  id: bigint | string
   userId: bigint
   title: string
   content: string
@@ -285,6 +290,7 @@ export interface DiaryListItem {
   // ponytail: tags is parsed from tagsString — kept on the item so handlers
   // don't need to re-map. serialize() leaves arrays untouched.
   tags: string[]
+  stockSymbols: string[]
 }
 
 /**
@@ -355,10 +361,11 @@ export async function listDiariesForUser(
 
   const items = rawItems.map(
     (d: Prisma.DiaryGetPayload<{ select: typeof DIARY_LIST_SELECT }>) => {
-      const { tradePlans, ...diary } = d
+      const { tradePlans, stockContexts, ...diary } = d
       return {
         ...diary,
         tags: parseDiaryTags(d.tagsString),
+        stockSymbols: (stockContexts ?? []).map(context => context.stock.symbol),
         tradePlanSummary: summarizeTradePlans(tradePlans ?? []),
       }
     },
@@ -382,7 +389,7 @@ const REVIEW_SELECT = {
 } satisfies Prisma.DiarySelect
 
 export type ReviewItem = {
-  id: bigint
+  id: bigint | string
   title: string
   date: Date
   thesis: string | null
@@ -393,6 +400,13 @@ export type ReviewItem = {
   reviewStatus: string | null
   reviewedAt: Date | null
   reviewOutcome: string | null
+  /** Discriminator added additively for the mixed Review Queue. */
+  targetType?: 'diary' | 'thesis'
+  thesisId?: bigint
+  symbol?: string | null
+  thesisStatus?: string | null
+  latestReviewOutcome?: string | null
+  portfolioDecision?: string | null
 }
 
 export interface ReviewBuckets {
@@ -483,11 +497,95 @@ export async function buildReviewBuckets(
       reviewStatus: item.reviewStatus || 'none',
     }))
 
-  return {
+  const diaryBuckets: ReviewBuckets = {
     unscheduled: normalize(unscheduled as ReviewItem[]),
     overdue: normalize(overdue as ReviewItem[]),
     today: normalize(today as ReviewItem[]),
     upcoming: normalize(upcoming as ReviewItem[]),
     completed: normalize(completed as ReviewItem[]),
   }
+
+  for (const item of [...diaryBuckets.unscheduled, ...diaryBuckets.overdue, ...diaryBuckets.today, ...diaryBuckets.upcoming, ...diaryBuckets.completed]) {
+    item.targetType = 'diary'
+  }
+
+  // The additive Thesis delegate is deliberately optional here. This keeps
+  // older generated clients and existing Structured Review tests compatible
+  // during expand-first deployment; a database without the new table simply
+  // returns the original Diary-only queue.
+  const thesisDelegate = (prisma as unknown as { investmentThesis?: {
+    findMany: (args: unknown) => Promise<Array<{
+      id: bigint
+      status: string
+      summary: string | null
+      reviewDueAt: Date | null
+      lastReviewedAt: Date | null
+      latestReviewOutcome: string | null
+      stock: { symbol: string }
+      reviews: Array<{ outcome: string; portfolioDecision: string; reviewedAt: Date }>
+    }>>
+  } }).investmentThesis
+
+  if (thesisDelegate) {
+    const theses = await thesisDelegate.findMany({
+      where: { userId, status: 'ACTIVE' },
+      orderBy: [{ reviewDueAt: 'asc' }, { updatedAt: 'desc' }],
+      take: 100,
+      include: {
+        stock: { select: { symbol: true } },
+        reviews: {
+          orderBy: [{ reviewedAt: 'desc' }, { id: 'desc' }],
+          take: 1,
+          select: { outcome: true, portfolioDecision: true, reviewedAt: true },
+        },
+      },
+    })
+
+    const thesisItems: ReviewBuckets = { unscheduled: [], overdue: [], today: [], upcoming: [], completed: [] }
+    for (const thesis of theses) {
+      const latest = thesis.reviews[0]
+      const completed = Boolean(latest && (!thesis.reviewDueAt || latest.reviewedAt >= thesis.reviewDueAt))
+      const item: ReviewItem = {
+        id: `thesis:${thesis.id.toString()}`,
+        title: `${thesis.stock.symbol} Investment Thesis`,
+        date: latest?.reviewedAt ?? thesis.reviewDueAt ?? new Date(),
+        thesis: thesis.summary,
+        risk: null,
+        reviewDueAt: thesis.reviewDueAt,
+        reviewStatus: completed ? 'reviewed' : thesis.reviewDueAt ? 'pending' : 'none',
+        reviewedAt: latest?.reviewedAt ?? thesis.lastReviewedAt,
+        reviewOutcome: latest?.outcome ?? null,
+        targetType: 'thesis',
+        thesisId: thesis.id,
+        symbol: thesis.stock.symbol,
+        thesisStatus: thesis.status,
+        latestReviewOutcome: thesis.latestReviewOutcome,
+        portfolioDecision: latest?.portfolioDecision ?? null,
+      }
+      if (completed) {
+        thesisItems.completed.push(item)
+      } else if (!thesis.reviewDueAt) {
+        thesisItems.unscheduled.push(item)
+      } else if (thesis.reviewDueAt < todayStart) {
+        thesisItems.overdue.push(item)
+      } else if (thesis.reviewDueAt < tomorrowStart) {
+        thesisItems.today.push(item)
+      } else {
+        thesisItems.upcoming.push(item)
+      }
+    }
+
+    for (const bucket of Object.keys(diaryBuckets) as Array<keyof ReviewBuckets>) {
+      diaryBuckets[bucket].push(...thesisItems[bucket])
+      diaryBuckets[bucket].sort((a, b) => {
+        const aTime = (a.reviewDueAt ?? a.reviewedAt ?? a.date).getTime()
+        const bTime = (b.reviewDueAt ?? b.reviewedAt ?? b.date).getTime()
+        if (aTime !== bTime) return aTime - bTime
+        if (a.id === b.id) return 0
+        return a.id < b.id ? -1 : 1
+      })
+    }
+  }
+
+  return diaryBuckets
 }

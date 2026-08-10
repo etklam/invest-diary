@@ -35,7 +35,7 @@ const { openQuickDiary } = useAppShell()
               :aria-current="isActive('/timeline') ? 'page' : undefined"
             >
               <Icon name="heroicons:clock" class="h-[18px] w-[18px]" />
-              <span>{{ t('nav.timeline') }}</span>
+              <span>{{ t('nav.overview') }}</span>
             </NuxtLink>
           </li>
           <li v-for="group in desktopNavGroups" :key="group.id">

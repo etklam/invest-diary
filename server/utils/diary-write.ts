@@ -4,7 +4,12 @@ import type { DiaryInput, Diary, TransactionInput } from '~/types/diary'
 import { getUtcDayRange, toUtcNoonDate } from '~/lib/dates/normalize'
 import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'
-import { attachDiaryTags } from '~/server/utils/diary-response'
+import { attachDiaryMetadata } from '~/server/utils/diary-response'
+import {
+  normalizeDiaryStockSymbols,
+  replaceDiaryStockContexts,
+  unionDiaryStockContexts,
+} from '~/server/utils/diary-stock-context'
 import { persistAlerts, replaceAlerts } from '~/server/utils/alert-persistence'
 import {
   calculateLedgerHoldings,
@@ -276,6 +281,7 @@ function normalizeDiaryDate(value: string | Date | undefined): Date {
 export async function createDiaryForUser(input: CreateDiaryForUserInput): Promise<Diary> {
   const userId = typeof input.userId === 'bigint' ? input.userId : BigInt(input.userId)
   const { body } = input
+  const stockSymbols = normalizeDiaryStockSymbols(body.stockSymbols)
 
   // Validate before any read/write so malformed rows cannot reach persistence.
   validateDiaryInput(body.title, body.transactions, { baselineAvailable: false })
@@ -316,7 +322,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
       content: `${existingDiary.content ?? ''}${separator}${content}`,
       ...(mergedTags ? { tagsString: stringifyDiaryTags(mergedTags) } : {}),
     }
-    const hasChildWrites = Boolean(transactions?.length || alerts?.length)
+    const hasChildWrites = Boolean(transactions?.length || alerts?.length || stockSymbols.length)
 
     try {
       if (!hasChildWrites) {
@@ -326,9 +332,10 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
           include: {
             transactions: true,
             alerts: true,
+            stockContexts: { include: { stock: { select: { symbol: true } } } },
           },
         })
-        return attachDiaryTags(updatedDiary as Diary)
+        return attachDiaryMetadata(updatedDiary) as unknown as Diary
       }
 
       const updatedDiary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -347,17 +354,20 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
           await persistAlerts(tx, existingDiary.id, alerts, timezone)
         }
 
+        await unionDiaryStockContexts(tx, existingDiary.id, stockSymbols)
+
         return tx.diary.update({
           where: { id: existingDiary.id },
           data: appendData,
           include: {
             transactions: true,
             alerts: true,
+            stockContexts: { include: { stock: { select: { symbol: true } } } },
           },
         })
       })
 
-      return attachDiaryTags(updatedDiary as Diary)
+      return attachDiaryMetadata(updatedDiary) as unknown as Diary
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw Errors.diaryAlreadyExists(diaryDateLabel(diaryDate))
@@ -401,23 +411,32 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
     include: {
       transactions: true,
       alerts: true,
+      stockContexts: { include: { stock: { select: { symbol: true } } } },
     },
   }
 
   try {
-    if (alerts) {
+    if (alerts || stockSymbols.length) {
       const diary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const createdDiary = await tx.diary.create(diaryCreateArgs)
-        const timezone = await resolveUserTimezone(tx, userId)
-        const persistedAlerts = await persistAlerts(tx, createdDiary.id, alerts, timezone)
-        return { ...createdDiary, alerts: persistedAlerts }
+        let persistedAlerts = createdDiary.alerts
+        if (alerts) {
+          const timezone = await resolveUserTimezone(tx, userId)
+          persistedAlerts = await persistAlerts(tx, createdDiary.id, alerts, timezone)
+        }
+        await unionDiaryStockContexts(tx, createdDiary.id, stockSymbols)
+        return {
+          ...createdDiary,
+          alerts: persistedAlerts,
+          stockContexts: stockSymbols.map(symbol => ({ stock: { symbol } })),
+        }
       })
 
-      return attachDiaryTags(diary as Diary)
+      return attachDiaryMetadata(diary) as unknown as Diary
     }
 
     const diary = await prisma.diary.create(diaryCreateArgs)
-    return attachDiaryTags(diary as Diary)
+    return attachDiaryMetadata(diary) as unknown as Diary
   } catch (error) {
     // The database constraint is the authority for concurrent creates. The
     // application preflight above is only a fast UX path.
@@ -449,6 +468,9 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
   const userId = typeof input.userId === 'bigint' ? input.userId : BigInt(input.userId)
   const diaryId = typeof input.diaryId === 'bigint' ? input.diaryId : BigInt(input.diaryId)
   const { body } = input
+  const stockSymbols = body.stockSymbols === undefined
+    ? undefined
+    : normalizeDiaryStockSymbols(body.stockSymbols)
 
   // --- Scalar validation ---
 
@@ -508,6 +530,9 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
         const timezone = await resolveUserTimezone(tx, userId)
         await replaceAlerts(tx, diaryId, alerts, timezone)
       }
+      if (stockSymbols !== undefined) {
+        await replaceDiaryStockContexts(tx, diaryId, stockSymbols)
+      }
 
       // Update the diary record
       return await tx.diary.update({
@@ -528,11 +553,12 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
         include: {
           transactions: true,
           alerts: true,
+          stockContexts: { include: { stock: { select: { symbol: true } } } },
         },
       })
     })
 
-    return attachDiaryTags(diary as Diary)
+    return attachDiaryMetadata(diary) as unknown as Diary
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       throw Errors.diaryAlreadyExists(diaryDateLabel(targetDiaryDate))

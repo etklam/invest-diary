@@ -17,8 +17,10 @@ describe('portfolio risk summary contract', () => {
   it('keeps risk summary deterministic and non-AI', () => {
     const content = readFileSync(resolve(process.cwd(), 'lib/stocks-view.ts'), 'utf8')
 
-    expect(content).toContain('holding.price * holding.quantity : holding.totalCost')
-    expect(content).toContain('largestPositionPct >= 25 || top3ConcentrationPct >= 60')
+    expect(content).toContain('const pricedHoldings = holdings.filter(hasFiniteQuote)')
+    expect(content).not.toContain('h.price * h.quantity : h.totalCost')
+    expect(content).toContain('(largestPositionPct ?? 0) >= 25')
+    expect(content).toContain('(top3ConcentrationPct ?? 0) >= 60')
     expect(content).not.toMatch(/openai|claude|gemini|llm|auto-summary/i)
   })
 })
