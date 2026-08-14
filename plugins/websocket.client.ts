@@ -26,6 +26,16 @@ let isManualDisconnect = false
 const publicRoutes = new Set(['/auth/login', '/auth/register'])
 const alertSubscribers = new Set<(alert: AlertPayload) => void>()
 
+// Pending dismissAlert settlers. Kept at module level so a dead socket
+// (disconnect or destroySocket) settles every waiting promise with false,
+// letting the caller fall back to HTTP instead of awaiting forever.
+const DISMISS_TIMEOUT_MS = 5000
+const pendingDismissSettlers = new Set<(result: boolean) => void>()
+
+const settlePendingDismisses = (result: boolean) => {
+  for (const settle of [...pendingDismissSettlers]) settle(result)
+}
+
 const isAuthConnectError = (message: string) => {
   const normalized = message.toLowerCase()
   return normalized.includes('authentication') || normalized.includes('invalid token')
@@ -48,6 +58,8 @@ const destroySocket = (
   } = options
 
   isManualDisconnect = true
+
+  settlePendingDismisses(false)
 
   if (socket) {
     socket.removeAllListeners()
@@ -86,6 +98,8 @@ const attachSocketListeners = (currentSocket: Socket<ServerToClientEvents, Clien
   currentSocket.on('disconnect', (reason) => {
     isConnected.value = false
     isConnecting = false
+    // A socket death settles any in-flight dismiss so HTTP fallback can run.
+    settlePendingDismisses(false)
 
     if (!isManualDisconnect && currentSocket.active && reason !== 'io client disconnect') {
       connectionStatus.value = 'reconnecting'
@@ -200,23 +214,28 @@ const dismissAlert = (alertId: string): Promise<boolean> => {
   return new Promise((resolve) => {
     if (!socket?.connected) return resolve(false)
 
-    const handleOk = (data: { alertId: string }) => {
-      if (data.alertId === alertId) {
-        cleanup()
-        resolve(true)
-      }
-    }
-
-    const handleErr = () => {
-      cleanup()
-      resolve(false)
-    }
-
-    const cleanup = () => {
+    let settled = false
+    const settle = (result: boolean) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeoutId)
+      pendingDismissSettlers.delete(settle)
       socket?.off('alert:dismissed', handleOk)
       socket?.off('alert:error', handleErr)
+      resolve(result)
     }
 
+    const handleOk = (data: { alertId: string }) => {
+      if (data.alertId === alertId) settle(true)
+    }
+
+    const handleErr = () => settle(false)
+
+    // ponytail: fixed 5s race — server silence or a mismatched id must not
+    // block the HTTP fallback forever.
+    const timeoutId = setTimeout(() => settle(false), DISMISS_TIMEOUT_MS)
+
+    pendingDismissSettlers.add(settle)
     socket.on('alert:dismissed', handleOk)
     socket.on('alert:error', handleErr)
     socket.emit('alert:dismiss', alertId)

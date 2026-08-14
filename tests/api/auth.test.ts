@@ -357,6 +357,31 @@ describe('Auth API', () => {
       })
     })
 
+    it('maps a concurrent duplicate-email registration (P2002) to 409 instead of 500', async () => {
+      // Pre-check passes (no user yet), but another request wins the insert
+      // race — the unique constraint error must surface as the same 409.
+      mockUserFindUnique.mockResolvedValue(null)
+      mockBcryptHash.mockResolvedValue('hashed-password')
+      mockUserCreate.mockRejectedValue({
+        code: 'P2002',
+        meta: { target: ['email'] },
+      })
+
+      mockReadBody.mockResolvedValue({
+        email: 'race@example.com',
+        password: 'password123',
+        name: 'Race User',
+      })
+
+      const { default: handler } = await import('~/server/api/auth/register.post')
+      const mockEvent = { context: {} } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 409,
+        statusMessage: 'Email race@example.com already registered',
+      })
+    })
+
     it('should reject invalid email format', async () => {
       mockReadBody.mockResolvedValue({
         email: 'invalid-email',

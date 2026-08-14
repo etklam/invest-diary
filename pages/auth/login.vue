@@ -14,19 +14,19 @@
       </div>
       <div class="aside-note space-y-4 text-sm">
         <div class="aside-row">
-          <span>Desk</span>
-          <strong>Journal first</strong>
+          <span>{{ $t('auth.aside.desk') }}</span>
+          <strong>{{ $t('auth.aside.deskValue') }}</strong>
         </div>
         <div class="aside-row">
-          <span>Focus</span>
+          <span>{{ $t('auth.aside.focus') }}</span>
           <strong>{{ $t('home.features.diary.title') }}</strong>
         </div>
         <div class="aside-row">
-          <span>Loop</span>
+          <span>{{ $t('auth.aside.loop') }}</span>
           <strong>{{ $t('home.features.alerts.title') }}</strong>
         </div>
         <p class="text-sm leading-7 text-stone-300">
-          寫下理由、回看決策、修正節奏。登入不是進入一個後台，是回到你自己的交易工作桌。
+          {{ $t('auth.aside.pitch') }}
         </p>
       </div>
     </section>
@@ -104,7 +104,7 @@
         </fieldset>
 
         <p v-if="!isHydrated" class="text-xs font-medium text-slate-500 dark:text-slate-400">
-          正在準備登入表單，載入完成後即可提交。
+          {{ $t('auth.preparingForm') }}
         </p>
       </form>
     </section>
@@ -118,6 +118,7 @@ definePageMeta({
 })
 
 const { login, isLoading } = useAuth()
+const { t } = useI18n()
 
 const form = ref({
   email: '',
@@ -138,7 +139,7 @@ const validateEmail = () => {
   }
 
   const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
-  emailError.value = emailRegex.test(form.value.email) ? '' : '請輸入有效的電子郵件地址'
+  emailError.value = emailRegex.test(form.value.email) ? '' : t('auth.emailInvalid')
 }
 
 const handleLogin = async () => {

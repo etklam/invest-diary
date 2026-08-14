@@ -13,6 +13,13 @@
         </p>
       </div>
 
+      <NuxtLink
+        to="/partners"
+        class="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-dt-text-muted transition-colors hover:text-dt-text lg:self-end"
+      >
+        <Icon name="heroicons:arrow-left" class="h-4 w-4" />
+        {{ t('common.back') }}
+      </NuxtLink>
     </header>
 
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

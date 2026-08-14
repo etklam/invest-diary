@@ -193,7 +193,7 @@ const bulkPublish = async () => {
 const bulkDelete = async () => {
   const ids = Array.from(selectedPosts.value)
   if (ids.length === 0) return
-  if (!confirm(`確定刪除選取的 ${ids.length} 篇文章？`)) return
+  if (!confirm(t('blog.confirmBulkDelete', { count: ids.length }))) return
   try {
     await $fetch('/api/blog/admin/bulk-delete', {
       method: 'POST',

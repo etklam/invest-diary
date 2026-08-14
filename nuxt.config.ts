@@ -189,6 +189,7 @@ export default defineNuxtConfig({
       { code: 'zh-CN', name: '简体中文', file: 'zh-CN.json' }
     ],
     defaultLocale: 'en',
+    fallbackLocale: 'en',
     lazy: true,
     langDir: 'locales',
     strategy: 'no_prefix',

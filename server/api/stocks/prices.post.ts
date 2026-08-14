@@ -1,6 +1,6 @@
 import { logger } from '~/lib/logger'
 import { fetchQuote, type QuoteResponse } from '~/lib/yahoo-finance'
-import { rateLimiters } from '~/lib/rate-limiter'
+import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { requireUser } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
 import {
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
     throw Errors.validationError([{ field: 'symbols', message: `Maximum ${MAX_SYMBOLS_PER_REQUEST} symbols per request` }]).toH3Error()
   }
 
-  const ip = getRequestIP(event) || 'unknown'
+  const ip = getRateLimitIdentifier(event)
   try {
     await rateLimiters.generalApi(ip)
   } catch {

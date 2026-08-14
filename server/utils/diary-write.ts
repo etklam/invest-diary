@@ -13,10 +13,26 @@ import {
 import { persistAlerts, replaceAlerts } from '~/server/utils/alert-persistence'
 import {
   calculateLedgerHoldings,
+  validateDiaryPayloadLimits,
   validateTransactionLedger,
   validateTransactionValues,
   type HoldingsInput,
 } from '~/lib/diary-authoring/validation'
+
+/** Enforce payload size caps before any ledger math or DB read. */
+function enforceDiaryPayloadLimits(
+  body: { title?: string | null, content?: string | null, transactions?: readonly unknown[] | null, alerts?: readonly unknown[] | null },
+): void {
+  const violation = validateDiaryPayloadLimits({
+    title: body.title,
+    content: body.content,
+    transactions: body.transactions,
+    alerts: body.alerts,
+  })
+  if (violation) {
+    throw Errors.validationError([violation])
+  }
+}
 
 /**
  * Normalize a string-or-Date input into a native Date.
@@ -196,6 +212,22 @@ export function mapTransactionWriteData(t: TransactionInput): TransactionWriteDa
 }
 
 /**
+ * Validate a client-supplied transaction row id. Raw JSON here — BigInt("abc")
+ * or BigInt(1.5) would throw SyntaxError/RangeError → 500. Same digits-only
+ * rule as parsePositiveBigIntParam; surfaces a 400 validation error instead.
+ */
+function parseTransactionRowId(id: string | number | bigint, index: number): bigint {
+  const normalized = typeof id === 'string' ? id : String(id)
+  if (/^[1-9]\d*$/.test(normalized)) {
+    return BigInt(normalized)
+  }
+  throw Errors.validationError([{
+    field: `transactions.${index}.id`,
+    message: `Transaction id must be a positive integer (got ${normalized})`,
+  }])
+}
+
+/**
  * Separate incoming transactions into "to create" (no DB id) and
  * "to update" (has a DB id that should be preserved).
  *
@@ -207,11 +239,11 @@ export function diffTransactions(
   const toCreate: TransactionWriteData[] = []
   const toUpdate: ResolvedTransactionUpdate[] = []
 
-  for (const t of incoming ?? []) {
+  for (const [index, t] of (incoming ?? []).entries()) {
     const data = mapTransactionWriteData(t)
 
     if (t.id != null) {
-      toUpdate.push({ id: BigInt(t.id), data })
+      toUpdate.push({ id: parseTransactionRowId(t.id, index), data })
     } else {
       toCreate.push(data)
     }
@@ -283,6 +315,10 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
   const { body } = input
   const stockSymbols = normalizeDiaryStockSymbols(body.stockSymbols)
 
+  // Size caps first — cheap checks that stop oversized payloads before the
+  // ledger reads below.
+  enforceDiaryPayloadLimits(body)
+
   // Validate before any read/write so malformed rows cannot reach persistence.
   validateDiaryInput(body.title, body.transactions, { baselineAvailable: false })
 
@@ -313,32 +349,28 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
       await validateDiaryTransactionsForUser(userId, transactions)
     }
 
-    const separator = '\n\n---\n\n'
-    const mergedTags = tags?.length
-      ? normalizeDiaryTags([...parseDiaryTags(existingDiary.tagsString), ...tags])
-      : null
-
-    const appendData = {
-      content: `${existingDiary.content ?? ''}${separator}${content}`,
-      ...(mergedTags ? { tagsString: stringifyDiaryTags(mergedTags) } : {}),
-    }
-    const hasChildWrites = Boolean(transactions?.length || alerts?.length || stockSymbols.length)
-
     try {
-      if (!hasChildWrites) {
-        const updatedDiary = await prisma.diary.update({
-          where: { id: existingDiary.id },
-          data: appendData,
-          include: {
-            transactions: true,
-            alerts: true,
-            stockContexts: { include: { stock: { select: { symbol: true } } } },
-          },
-        })
-        return attachDiaryMetadata(updatedDiary) as unknown as Diary
-      }
-
       const updatedDiary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        // Re-read the diary row INSIDE the transaction with a locking read.
+        // Concurrent appends (web + API-key agent, double-submit) serialize
+        // on the row lock, so each appends to the latest committed content
+        // instead of overwriting the other's merge.
+        const rows = (await tx.$queryRaw`SELECT content, tags FROM diaries WHERE id = ${existingDiary.id} FOR UPDATE`) as Array<{ content: string | null; tags: string | null }>
+        const current = rows[0]
+        if (!current) {
+          throw Errors.diaryNotFound(String(existingDiary.id))
+        }
+
+        const separator = '\n\n---\n\n'
+        const mergedTags = tags?.length
+          ? normalizeDiaryTags([...parseDiaryTags(current.tags), ...tags])
+          : null
+
+        const appendData = {
+          content: `${current.content ?? ''}${separator}${content}`,
+          ...(mergedTags ? { tagsString: stringifyDiaryTags(mergedTags) } : {}),
+        }
+
         for (const transaction of transactions ?? []) {
           await tx.transaction.create({
             data: {
@@ -473,6 +505,10 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
     : normalizeDiaryStockSymbols(body.stockSymbols)
 
   // --- Scalar validation ---
+
+  // Size caps first — cheap checks that stop oversized payloads before the
+  // ownership/ledger reads below.
+  enforceDiaryPayloadLimits(body)
 
   validateDiaryInput(body.title, body.transactions, { baselineAvailable: false })
 

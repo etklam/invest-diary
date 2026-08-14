@@ -140,7 +140,7 @@ export const useAuth = () => {
         user.value = response.data
         syncTimezone(response.data.timezone)
         isInitialized.value = true
-        toast.success('登入成功')
+        toast.success(t('auth.toasts.loginSuccess'))
         await navigateTo(AUTHENTICATED_HOME_ROUTE)
       }
     } catch (error) {
@@ -163,7 +163,7 @@ export const useAuth = () => {
       })
 
       if (response.success) {
-        toast.success('註冊成功，請登入')
+        toast.success(t('auth.toasts.registerSuccess'))
         await navigateTo('/auth/login')
       }
     } catch (error) {
@@ -242,7 +242,7 @@ export const useAuth = () => {
           ...response.settings,
         } as AuthUser
         syncTimezone(settings.timezone)
-        toast.success('設定已更新')
+        toast.success(t('auth.toasts.settingsUpdated'))
         return true
       }
       return false
@@ -263,7 +263,7 @@ export const useAuth = () => {
       })
 
       if (response.success) {
-        toast.success('密碼已更改')
+        toast.success(t('auth.toasts.passwordChanged'))
         return true
       }
       return false

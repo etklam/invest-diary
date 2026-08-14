@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { calculateHoldings, type TransactionForHolding } from '~/lib/position-state'
+import { calculateHoldingsWithStatus, type TransactionForHolding } from '~/lib/position-state'
 
 const { t } = useI18n()
 
@@ -75,10 +75,12 @@ const props = defineProps<{
 
 const holdingsResult = computed(() => {
   try {
-    return { items: calculateHoldings(props.transactions || []), unavailable: false }
+    // A Diary can validly SELL holdings acquired in an earlier Diary. When a
+    // SELL exceeds what the local subset can cover, the cost basis cannot be
+    // calculated on its own — surface that instead of a wrong empty table.
+    const { holdings, incomplete } = calculateHoldingsWithStatus(props.transactions || [])
+    return { items: holdings, unavailable: incomplete }
   } catch {
-    // A Diary can validly SELL holdings acquired in an earlier Diary. The
-    // local Transaction subset cannot calculate that cost basis on its own.
     return { items: [], unavailable: true }
   }
 })

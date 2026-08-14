@@ -8,6 +8,16 @@ import type {
   DiariesApiResponse
 } from '~/types/diary'
 
+/**
+ * Id-deduplicated merge for paginated diary lists (same contract as pages/diaries loadMore).
+ * Guards against a page being fetched twice or overlapping server-side inserts.
+ */
+export function mergeDiariesById<T extends { id: unknown }>(existing: T[], incoming: T[]): T[] {
+  const seen = new Set(existing.map(diary => String(diary.id)))
+  const additions = incoming.filter(diary => !seen.has(String(diary.id)))
+  return [...existing, ...additions]
+}
+
 export const useTimelineDiaries = (options?: { limit?: number; timezone?: string }) => {
   const { t, locale } = useI18n()
   const { user } = useAuth()
@@ -30,18 +40,15 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
   const pagination = ref<PaginationResponse | null>(null)
   const loadingMore = ref(false)
 
-  // Initial data fetch using useLazyFetch
+  // Initial first-page fetch using useLazyFetch.
+  // Fixed URL (page never in a reactive getter) so pagination cannot trigger
+  // useFetch's auto-refetch — loadMore() owns pages >= 2 via manual $fetch.
   const { pending, error, refresh: refreshFetch } = useLazyFetch<DiariesApiResponse>(
-    () => `/api/diaries?page=${page.value}&limit=${limit}`,
+    `/api/diaries?page=1&limit=${limit}`,
     {
       onResponse({ response }) {
         if (response._data?.data) {
-          // Assign on page 1, push on subsequent pages
-          if (page.value === 1) {
-            diaries.value = response._data.data
-          } else {
-            diaries.value.push(...response._data.data)
-          }
+          diaries.value = response._data.data
           pagination.value = response._data.pagination
         }
       }
@@ -61,25 +68,27 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
     return diaries.value.length < (pagination.value?.total || 0)
   })
 
-  // Load more diaries (client-only after hydration)
+  // Load more diaries (client-only after hydration).
+  // Page advances only on success; on failure the loaded list stays intact
+  // and a retry re-requests the same page.
   const loadMore = async () => {
     if (!isHydrated.value || loadingMore.value || !hasMore.value) return
 
+    const nextPage = page.value + 1
     loadingMore.value = true
-    page.value++
 
     try {
       const response = await $fetch<DiariesApiResponse>(
-        `/api/diaries?page=${page.value}&limit=${limit}`
+        `/api/diaries?page=${nextPage}&limit=${limit}`
       )
 
       if (response?.data) {
-        diaries.value.push(...response.data)
+        diaries.value = mergeDiariesById(diaries.value, response.data)
         pagination.value = response.pagination
       }
+      page.value = nextPage
     } catch (err) {
       toast.error(resolveErrorMessage(err, t))
-      page.value-- // Revert on error
     } finally {
       loadingMore.value = false
     }

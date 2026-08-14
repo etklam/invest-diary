@@ -28,7 +28,9 @@
     "copy": "複製",
     "copied": "已複製",
     "skipToContent": "跳到主要內容",
-    "retry": "重試"
+    "retry": "重試",
+    "error": "發生錯誤，請再試一次",
+    "more": "更多"
   },
   "nav": {
     "home": "首頁",
@@ -98,7 +100,22 @@
     "passwordLengthError": "密碼長度至少需要8個字元",
     "confirmPasswordPlaceholder": "再次輸入密碼",
     "passwordMismatchError": "密碼不一致",
-    "loginNow": "立即登入"
+    "loginNow": "立即登入",
+    "toasts": {
+      "loginSuccess": "登入成功",
+      "registerSuccess": "註冊成功，請登入",
+      "settingsUpdated": "設定已更新",
+      "passwordChanged": "密碼已更改"
+    },
+    "emailInvalid": "請輸入有效的電子郵件地址",
+    "preparingForm": "正在準備表單，載入完成後即可提交。",
+    "aside": {
+      "desk": "工作桌",
+      "deskValue": "日記優先",
+      "focus": "聚焦",
+      "loop": "節奏",
+      "pitch": "寫下理由、回看決策、修正節奏。登入不是進入一個後台，是回到你自己的交易工作桌。"
+    }
   },
   "quickDiary": {
     "shortcutHint": "快速日記（Ctrl/Cmd + J）",
@@ -163,12 +180,12 @@
     },
     "editor": {
       "eyebrow": "隨手筆記",
-    "intro": "",
-    "saveModeLabel": "保存方式",
-    "saveTo": "儲存至",
-    "moreOptions": "更多選項",
-    "optional": "選填",
-    "saveQuickDiary": "儲存隨手筆記",
+      "intro": "",
+      "saveModeLabel": "保存方式",
+      "saveTo": "儲存至",
+      "moreOptions": "更多選項",
+      "optional": "選填",
+      "saveQuickDiary": "儲存隨手筆記",
       "titleAria": "筆記標題",
       "contentAria": "筆記內容",
       "titlePlaceholder": "加入標題（選填）",
@@ -234,7 +251,14 @@
         "minutes": "{count} 分鐘",
         "hours": "{count} 小時",
         "hoursMinutes": "{hours} 小時 {minutes} 分鐘"
-      }
+      },
+      "customTitle": "自訂提醒",
+      "singleHint": "可設定 1 組",
+      "dateLabel": "提醒日期",
+      "timeLabel": "提醒時間",
+      "apply": "設定",
+      "clear": "清除",
+      "previewAt": "提醒時間：{time}"
     },
     "toasts": {
       "saved": "已儲存快速筆記"
@@ -323,7 +347,18 @@
     "successCreate": "已建立新日誌！",
     "successAppend": "已追加至既有日誌！",
     "changeTemplate": "更換模板",
-    "fillRequired": "請填寫必要資料"
+    "fillRequired": "請填寫必要資料",
+    "tags": {
+      "title": "標籤",
+      "hint": "按 Enter 新增，也可以輸入 # 標籤",
+      "placeholder": "#市場 或輸入標籤",
+      "inputLabel": "標籤輸入",
+      "add": "新增",
+      "selected": "已選標籤",
+      "recent": "最近使用",
+      "frequent": "常用標籤",
+      "removeTag": "移除標籤 {tag}"
+    }
   },
   "diary": {
     "title": "日記列表",
@@ -456,7 +491,11 @@
       "reviewPending": "這次決策尚未完成複盤。"
     },
     "updateSuccess": "日記更新成功",
-    "deleteFailed": "刪除失敗"
+    "deleteFailed": "刪除失敗",
+    "content": "內容",
+    "contentPlaceholder": "寫下你的研究筆記…",
+    "date": "日期",
+    "titlePlaceholder": "輸入筆記標題"
   },
   "alert": {
     "title": "提醒管理",
@@ -575,7 +614,16 @@
       "quickTransactionDesc": "新增一筆交易到您的日記以更新投資組合。",
       "logNewTrade": "記錄新交易",
       "portfolioUpdated": "投資組合已更新至最新市場資料",
-      "couldNotRefresh": "無法更新市場價格"
+      "couldNotRefresh": "無法更新市場價格",
+      "loadFailed": "載入持倉失敗",
+      "marketStates": {
+        "REGULAR": "盤中交易",
+        "PRE": "盤前交易",
+        "POST": "盤後交易",
+        "CLOSED": "已收盤",
+        "PREPRE": "盤前（尚未開始）",
+        "POSTPOST": "盤後（已結束）"
+      }
     },
     "riskSummary": {
       "title": "投資組合風險摘要",
@@ -617,6 +665,35 @@
         "partial": "部分資料",
         "unavailable": "無法估值"
       }
+    },
+    "performance": {
+      "title": "已實現績效",
+      "exportCsv": "匯出 CSV",
+      "exporting": "匯出中...",
+      "exportSuccess": "已匯出 CSV",
+      "exportFailed": "匯出失敗，請稍後再試",
+      "periodMonth": "月",
+      "periodQuarter": "季",
+      "periodYear": "年",
+      "monthly": "月度",
+      "quarterly": "季度",
+      "yearly": "年度",
+      "winRate": "勝率",
+      "tradeRecord": "{wins}W / {losses}L · {count} 筆",
+      "realizedPnL": "已實現損益",
+      "realizedPnLHint": "累積已關閉部位",
+      "maxDrawdown": "最大回撤",
+      "maxDrawdownHint": "損益曲線最大跌幅",
+      "sharpe": "夏普比率",
+      "sharpeHint": "月度風險調整後收益",
+      "pnlTrend": "損益走勢（{period}）",
+      "equityCurve": "資金曲線（累積損益）",
+      "bySymbol": "各股票損益（前 10）",
+      "topWins": "最佳交易",
+      "topLosses": "最差交易",
+      "emptyTitle": "尚無已實現交易",
+      "emptyDescription": "完成第一筆買入並賣出後，績效指標將會出現",
+      "cumulativePnL": "累積損益"
     }
   },
   "settings": {
@@ -694,7 +771,9 @@
     "apiKeyCreateSuccess": "API key 已建立",
     "apiKeyCreateFailed": "建立 API key 失敗",
     "apiKeyRevokedSuccess": "API key 已停用",
-    "apiKeyRevokeFailed": "停用 API key 失敗"
+    "apiKeyRevokeFailed": "停用 API key 失敗",
+    "excludeHolidays": "統計排除國定假日（依時區）",
+    "excludeHolidaysDesc": "以 Nager.Date 自動抓取假日，計算記錄率時不納入分母。"
   },
   "partners": {
     "title": "合作夥伴",
@@ -726,10 +805,38 @@
       "viewReviews": "查看 Reviews",
       "sectionUnavailable": "此區塊暫時無法使用。",
       "partialData": "部分證據暫時無法取得；仍顯示目前可用的項目。",
-      "portfolio": { "title": "Portfolio Overview", "pricedValue": "已定價市值", "empty": "目前沒有持倉；可先寫 Diary 或研究一家公司。", "loadFailed": "無法載入 Portfolio 持倉。", "quoteFailed": "部分或全部報價暫時無法取得；成本與數量不受影響。" },
-      "attention": { "title": "Needs Review", "empty": "目前沒有需要立即複查的事項。", "portfolio": "Portfolio 集中度", "concentration": "集中度警告", "reviewDue": "Diary Review 到期", "reasons": { "missing_thesis": "缺少 Investment Thesis", "overdue_thesis_review": "Thesis Review 已逾期", "invalidated_thesis_while_held": "持倉中的 Thesis 已失效", "overdue_diary_review": "Diary Review 已逾期", "position_concentration": "持倉集中度過高" } },
-      "activity": { "title": "Recent Investment Activity", "fullHistory": "完整 Timeline", "loadFailed": "無法載入近期 Diary 活動。", "empty": "目前沒有近期 Diary 活動。" },
-      "upcoming": { "title": "Upcoming / Pending Reviews", "loadFailed": "無法載入 Review 排程。", "empty": "目前沒有即將到期或待排程的 Review。" }
+      "portfolio": {
+        "title": "Portfolio Overview",
+        "pricedValue": "已定價市值",
+        "empty": "目前沒有持倉；可先寫 Diary 或研究一家公司。",
+        "loadFailed": "無法載入 Portfolio 持倉。",
+        "quoteFailed": "部分或全部報價暫時無法取得；成本與數量不受影響。"
+      },
+      "attention": {
+        "title": "Needs Review",
+        "empty": "目前沒有需要立即複查的事項。",
+        "portfolio": "Portfolio 集中度",
+        "concentration": "集中度警告",
+        "reviewDue": "Diary Review 到期",
+        "reasons": {
+          "missing_thesis": "缺少 Investment Thesis",
+          "overdue_thesis_review": "Thesis Review 已逾期",
+          "invalidated_thesis_while_held": "持倉中的 Thesis 已失效",
+          "overdue_diary_review": "Diary Review 已逾期",
+          "position_concentration": "持倉集中度過高"
+        }
+      },
+      "activity": {
+        "title": "Recent Investment Activity",
+        "fullHistory": "完整 Timeline",
+        "loadFailed": "無法載入近期 Diary 活動。",
+        "empty": "目前沒有近期 Diary 活動。"
+      },
+      "upcoming": {
+        "title": "Upcoming / Pending Reviews",
+        "loadFailed": "無法載入 Review 排程。",
+        "empty": "目前沒有即將到期或待排程的 Review。"
+      }
     }
   },
   "compareDiary": {
@@ -1256,7 +1363,8 @@
       "deleteFailed": "刪除失敗",
       "editSuccess": "紀律已更新",
       "editFailed": "更新失敗",
-      "contentRequired": "請輸入內容"
+      "contentRequired": "請輸入內容",
+      "reorderFailed": "排序更新失敗"
     },
     "actions": {
       "edit": "編輯",
@@ -1401,7 +1509,11 @@
     "shareWithOthers": "分享給更多人，讓大家一起成長。",
     "publishedDate": "發佈日期",
     "minute": "分鐘",
-    "readingTimeLabel": "閱讀時間"
+    "readingTimeLabel": "閱讀時間",
+    "noPostsDescription": "新的文章整理中，歡迎稍後再回來看看。",
+    "richTextSupported": "支援富文本格式",
+    "confirmBulkDelete": "確定刪除選取的 {count} 篇文章？",
+    "draftRestorePrompt": "偵測到尚未發布的草稿，是否恢復？"
   },
   "tools": {
     "positionSizing": {
@@ -1928,7 +2040,8 @@
       },
       "copyToClipboard": "複製為 Markdown",
       "copySuccess": "已複製到剪貼簿",
-      "copyFailed": "複製失敗"
+      "copyFailed": "複製失敗",
+      "copied": "已複製"
     },
     "relativeValue": {
       "title": "相對價值計算器",
@@ -2377,31 +2490,102 @@
     }
   },
   "companyContext": {
-    "label": "相關公司（選填）", "placeholder": "MSFT, NVDA", "hint": "最多 {max} 個股票代碼，以逗號分隔。"
+    "label": "相關公司（選填）",
+    "placeholder": "MSFT, NVDA",
+    "hint": "最多 {max} 個股票代碼，以逗號分隔。"
   },
   "investmentThesis": {
-    "kicker": "目前持有邏輯", "title": "Investment Thesis", "empty": "尚未建立正式 Thesis；既有 Diary 與 Stock Note 不會被改動。",
-    "create": "建立 Thesis", "saveDraft": "儲存草稿", "activate": "儲存並啟用", "archive": "封存 Thesis", "saved": "Investment Thesis 已儲存",
-    "saveFailed": "無法儲存 Investment Thesis", "noSummary": "尚無摘要",
-    "health": { "draft": "草稿", "healthy": "有效", "needs_review": "需要 Review", "invalidated": "已失效", "archived": "已封存" },
-    "fields": { "summary": "摘要", "whyIOwnIt": "我為何持有", "growthDrivers": "成長動力", "risks": "風險", "invalidationConditions": "失效條件", "expectedHoldingPeriod": "預期持有期間", "reviewDueAt": "Review 到期日" },
-    "decisions": { "HOLD": "持有", "ADD": "加碼", "REDUCE": "減碼", "EXIT": "退出", "CONTINUE_WATCHING": "繼續觀察" },
+    "kicker": "目前持有邏輯",
+    "title": "Investment Thesis",
+    "empty": "尚未建立正式 Thesis；既有 Diary 與 Stock Note 不會被改動。",
+    "create": "建立 Thesis",
+    "saveDraft": "儲存草稿",
+    "activate": "儲存並啟用",
+    "archive": "封存 Thesis",
+    "saved": "Investment Thesis 已儲存",
+    "saveFailed": "無法儲存 Investment Thesis",
+    "noSummary": "尚無摘要",
+    "health": {
+      "draft": "草稿",
+      "healthy": "有效",
+      "needs_review": "需要 Review",
+      "invalidated": "已失效",
+      "archived": "已封存"
+    },
+    "fields": {
+      "summary": "摘要",
+      "whyIOwnIt": "我為何持有",
+      "growthDrivers": "成長動力",
+      "risks": "風險",
+      "invalidationConditions": "失效條件",
+      "expectedHoldingPeriod": "預期持有期間",
+      "reviewDueAt": "Review 到期日"
+    },
+    "decisions": {
+      "HOLD": "持有",
+      "ADD": "加碼",
+      "REDUCE": "減碼",
+      "EXIT": "退出",
+      "CONTINUE_WATCHING": "繼續觀察"
+    },
     "review": {
-      "start": "開始 Review", "title": "Thesis Review", "outcome": "結果", "decision": "Portfolio 決定", "whatImproved": "哪些變好了？",
-      "whatDeteriorated": "哪些變差了？", "whatChanged": "發生了什麼改變？", "invalidationTriggered": "已觸發失效條件", "complete": "完成 Review",
-      "history": "Review 歷史", "snapshot": "Review 當時的 Thesis", "validation": "請選擇結果與決定，並至少填寫一項有意義的反思。",
-      "saved": "Thesis Review 已儲存", "saveFailed": "無法儲存 Thesis Review"
+      "start": "開始 Review",
+      "title": "Thesis Review",
+      "outcome": "結果",
+      "decision": "Portfolio 決定",
+      "whatImproved": "哪些變好了？",
+      "whatDeteriorated": "哪些變差了？",
+      "whatChanged": "發生了什麼改變？",
+      "invalidationTriggered": "已觸發失效條件",
+      "complete": "完成 Review",
+      "history": "Review 歷史",
+      "snapshot": "Review 當時的 Thesis",
+      "validation": "請選擇結果與決定，並至少填寫一項有意義的反思。",
+      "saved": "Thesis Review 已儲存",
+      "saveFailed": "無法儲存 Thesis Review"
     }
   },
   "companyHub": {
-    "title": "公司中心", "kicker": "公司", "backToPortfolio": "返回 Portfolio", "loadFailed": "無法載入公司資料",
+    "title": "公司中心",
+    "kicker": "公司",
+    "backToPortfolio": "返回 Portfolio",
+    "loadFailed": "無法載入公司資料",
     "position": {
-      "kicker": "我持有什麼", "title": "我的部位", "quantity": "數量", "averageCost": "平均成本", "marketPrice": "市場價格", "marketValue": "市場價值",
-      "concentration": "Portfolio 集中度", "costBasis": "完整 Portfolio 報價不可用，目前以成本基礎計算", "quoteMissing": "即時報價暫時不可用，成本資料仍可閱讀。",
-      "states": { "held": "持有中", "closed": "已清倉", "research_only": "僅研究", "untracked": "未持有或關注" }
+      "kicker": "我持有什麼",
+      "title": "我的部位",
+      "quantity": "數量",
+      "averageCost": "平均成本",
+      "marketPrice": "市場價格",
+      "marketValue": "市場價值",
+      "concentration": "Portfolio 集中度",
+      "costBasis": "完整 Portfolio 報價不可用，目前以成本基礎計算",
+      "quoteMissing": "即時報價暫時不可用，成本資料仍可閱讀。",
+      "states": {
+        "held": "持有中",
+        "closed": "已清倉",
+        "research_only": "僅研究",
+        "untracked": "未持有或關注"
+      }
     },
-    "changes": { "kicker": "投資記憶", "title": "最近改變" }, "relatedDiaries": "相關 Diary", "recentNotes": "最近 Stock Note", "evidence": "來源證據",
-    "openSource": "開啟來源", "relations": { "explicit_context": "明確公司關聯", "transaction": "Transaction 關聯" }, "sources": { "me": "我" },
-    "empty": { "diaries": "尚無相關 Diary。", "notes": "尚無 Stock Note。", "evidence": "尚無來源證據。" }
+    "changes": {
+      "kicker": "投資記憶",
+      "title": "最近改變"
+    },
+    "relatedDiaries": "相關 Diary",
+    "recentNotes": "最近 Stock Note",
+    "evidence": "來源證據",
+    "openSource": "開啟來源",
+    "relations": {
+      "explicit_context": "明確公司關聯",
+      "transaction": "Transaction 關聯"
+    },
+    "sources": {
+      "me": "我"
+    },
+    "empty": {
+      "diaries": "尚無相關 Diary。",
+      "notes": "尚無 Stock Note。",
+      "evidence": "尚無來源證據。"
+    }
   }
 }

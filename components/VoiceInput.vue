@@ -47,21 +47,20 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
 import { useSpeechRecognition } from '~/composables/useSpeechRecognition'
 
 const emit = defineEmits<{
   (e: 'result', text: string): void
 }>()
 
-const { isSupported, isListening, transcript, interimTranscript, start, stop } = useSpeechRecognition()
+const { isSupported, isListening, transcript, interimTranscript, start, stop } = useSpeechRecognition({
+  // Emit only the newly finalized utterance — downstream appends it to content,
+  // so the full session transcript must never be re-delivered here.
+  onFinal: text => emit('result', text),
+})
 
 function toggle() {
   if (!isSupported) return
   isListening.value ? stop() : start()
 }
-
-watch(transcript, (val) => {
-  if (val) emit('result', val)
-})
 </script>

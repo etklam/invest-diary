@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest'
 import {
   matchTrades,
   calcWinRate,
-  calcMaxDrawdown,
+  calcRealizedDrawdown,
   calcSharpe,
   groupByPeriod,
   calcPeriodStats,
-  buildEquityCurve,
+  buildMonthlyReturnPcts,
   type RawTransaction,
   type ClosedTrade,
 } from '~/lib/trade-analytics'
@@ -193,36 +193,69 @@ describe('calcWinRate', () => {
   })
 })
 
-// ─── calcMaxDrawdown ─────────────────────────────────────────────────────────
+// ─── calcRealizedDrawdown ────────────────────────────────────────────────────
 
-describe('calcMaxDrawdown', () => {
-  it('空陣列 → drawdown = 0', () => {
-    expect(calcMaxDrawdown([]).maxDrawdownPct).toBe(0)
+describe('calcRealizedDrawdown', () => {
+  const makeTrade = (id: string, date: string, qty: number, basis: number, pnl: number): ClosedTrade => ({
+    id,
+    symbol: 'X',
+    sellDate: new Date(date),
+    sellQuantity: qty,
+    sellPrice: basis / qty + pnl / qty,
+    avgCostBasis: basis / qty,
+    realizedPnL: pnl,
+    realizedPnLPct: (pnl / basis) * 100,
   })
 
-  it('單一值 → drawdown = 0', () => {
-    expect(calcMaxDrawdown([100]).maxDrawdownPct).toBe(0)
+  it('空陣列 → 全 0', () => {
+    expect(calcRealizedDrawdown([])).toEqual({
+      maxDrawdownPct: 0,
+      maxDrawdownDollars: 0,
+      peakPnL: 0,
+      troughPnL: 0,
+    })
   })
 
-  it('單調上升 → drawdown = 0', () => {
-    expect(calcMaxDrawdown([100, 110, 120, 130]).maxDrawdownPct).toBeCloseTo(0)
+  it('一路獲利（無回撤）→ 0', () => {
+    const r = calcRealizedDrawdown([
+      makeTrade('1', '2024-01-01', 10, 1000, 100),
+      makeTrade('2', '2024-02-01', 10, 1000, 50),
+    ])
+    expect(r.maxDrawdownPct).toBe(0)
+    expect(r.maxDrawdownDollars).toBe(0)
   })
 
-  it('單調下降 → drawdown ≈ (peak-trough)/peak * 100', () => {
-    const r = calcMaxDrawdown([100, 80, 60, 40])
-    // peak=100, trough=40 → (100-40)/100 = 60%
-    expect(r.maxDrawdownPct).toBeCloseTo(60)
-    expect(r.peakValue).toBe(100)
-    expect(r.troughValue).toBe(40)
+  it('50k 帳戶 2% 回撤 → 2%，不是虛構基底的 47%', () => {
+    // 舊實作 peak = 100 + 累積美元損益 → 垃圾百分比
+    const r = calcRealizedDrawdown([
+      makeTrade('1', '2024-01-01', 500, 50000, 1000),
+      makeTrade('2', '2024-02-01', 500, 50000, -2000),
+    ])
+    // cumPnL: +1000 → -1000；peak 1000，dd 2000；basis 50000+50000
+    expect(r.maxDrawdownDollars).toBeCloseTo(2000)
+    expect(r.maxDrawdownPct).toBeCloseTo(2, 1)
   })
 
-  it('先漲後跌再漲 → 正確找到最大回撤', () => {
-    // 100 → 200 → 80 → 250
-    // 最大回撤：從 200 跌到 80 = (200-80)/200 = 60%
-    const r = calcMaxDrawdown([100, 200, 80, 250])
-    expect(r.maxDrawdownPct).toBeCloseTo(60)
-    expect(r.peakValue).toBeCloseTo(200)
-    expect(r.troughValue).toBeCloseTo(80)
+  it('第一筆就虧損 → 從 0 起算回撤', () => {
+    const r = calcRealizedDrawdown([
+      makeTrade('1', '2024-01-01', 10, 1000, -500),
+    ])
+    expect(r.maxDrawdownDollars).toBeCloseTo(500)
+    expect(r.maxDrawdownPct).toBeCloseTo(50)
+    expect(r.peakPnL).toBe(0)
+    expect(r.troughPnL).toBeCloseTo(-500)
+  })
+
+  it('尺度不變：全部 10x → 相同百分比', () => {
+    const small = calcRealizedDrawdown([
+      makeTrade('1', '2024-01-01', 10, 1000, 100),
+      makeTrade('2', '2024-02-01', 10, 1000, -300),
+    ])
+    const big = calcRealizedDrawdown([
+      makeTrade('1', '2024-01-01', 100, 10000, 1000),
+      makeTrade('2', '2024-02-01', 100, 10000, -3000),
+    ])
+    expect(big.maxDrawdownPct).toBeCloseTo(small.maxDrawdownPct, 10)
   })
 })
 
@@ -359,57 +392,70 @@ describe('calcPeriodStats', () => {
   })
 })
 
-// ─── buildEquityCurve ────────────────────────────────────────────────────────
+// ─── buildMonthlyReturnPcts ──────────────────────────────────────────────────
 
-describe('buildEquityCurve', () => {
-  const makeTrade = (id: string, date: string, pnl: number): ClosedTrade => ({
+describe('buildMonthlyReturnPcts', () => {
+  const makeTrade = (id: string, date: string, qty: number, basis: number, pnl: number): ClosedTrade => ({
     id,
     symbol: 'X',
     sellDate: new Date(date),
-    sellQuantity: 1,
+    sellQuantity: qty,
     sellPrice: 0,
-    avgCostBasis: 0,
+    avgCostBasis: basis / qty,
     realizedPnL: pnl,
-    realizedPnLPct: 0,
+    realizedPnLPct: (pnl / basis) * 100,
   })
 
-  it('空陣列 → [initialCapital]', () => {
-    expect(buildEquityCurve([], 100)).toEqual([100])
+  it('空陣列 → []', () => {
+    expect(buildMonthlyReturnPcts([])).toEqual([])
   })
 
-  it('累積損益計算正確', () => {
+  it('每月報酬 = Σpnl / Σbasis（百分比，非美元）', () => {
     const trades = [
-      makeTrade('1', '2024-01-01', 50),
-      makeTrade('2', '2024-02-01', -30),
-      makeTrade('3', '2024-03-01', 80),
+      makeTrade('1', '2024-01-10', 10, 1000, 200),   // +20%
+      makeTrade('2', '2024-02-10', 10, 1500, -150),  // -10%
     ]
-    const curve = buildEquityCurve(trades, 100)
-    expect(curve).toEqual([100, 150, 120, 200])
+    expect(buildMonthlyReturnPcts(trades)).toEqual([20, -10])
   })
 
-  it('按日期升序排序（不受輸入順序影響）', () => {
+  it('同月多筆 → pnl 與 basis 各自加總後相除', () => {
     const trades = [
-      makeTrade('2', '2024-02-01', -30),
-      makeTrade('1', '2024-01-01', 50),
+      makeTrade('1', '2024-01-10', 10, 1000, 100),  // +10%
+      makeTrade('2', '2024-01-20', 10, 1000, -50),  // -5%
     ]
-    const curve = buildEquityCurve(trades, 100)
-    // 先 +50 再 -30
-    expect(curve).toEqual([100, 150, 120])
+    // (100-50) / 2000 = +2.5%
+    expect(buildMonthlyReturnPcts(trades)).toEqual([2.5])
+  })
+
+  it('中間沒有平倉的月份補 0', () => {
+    const trades = [
+      makeTrade('1', '2024-01-10', 10, 1000, 200),  // +20%
+      makeTrade('2', '2024-03-10', 10, 1000, -100), // -10%
+    ]
+    expect(buildMonthlyReturnPcts(trades)).toEqual([20, 0, -10])
+  })
+
+  it('跨年邊界（12月→2月）→ 補 1 月為 0', () => {
+    const trades = [
+      makeTrade('1', '2024-12-15', 10, 1000, 100),
+      makeTrade('2', '2025-02-15', 10, 1000, -100),
+    ]
+    expect(buildMonthlyReturnPcts(trades)).toEqual([10, 0, -10])
   })
 })
 
 // ─── 整合測試：完整流程 ───────────────────────────────────────────────────────
 
-describe('整合：matchTrades → calcWinRate → buildEquityCurve → calcMaxDrawdown', () => {
+describe('整合：matchTrades → calcWinRate → calcRealizedDrawdown → calcSharpe', () => {
   it('完整交易週期計算', () => {
     const txs: RawTransaction[] = [
-      // AAPL: 買 10 @ 100，賣 10 @ 120 → +200
+      // AAPL: 買 10 @ 100，賣 10 @ 120 → +200（basis 1000）
       { id: '1', symbol: 'AAPL', type: 'BUY',  quantity: 10, price: 100, tradeDate: new Date('2024-01-01') },
       { id: '2', symbol: 'AAPL', type: 'SELL', quantity: 10, price: 120, tradeDate: new Date('2024-02-01') },
-      // TSLA: 買 5 @ 200，賣 5 @ 160 → -200
+      // TSLA: 買 5 @ 200，賣 5 @ 160 → -200（basis 1000）
       { id: '3', symbol: 'TSLA', type: 'BUY',  quantity: 5,  price: 200, tradeDate: new Date('2024-01-15') },
       { id: '4', symbol: 'TSLA', type: 'SELL', quantity: 5,  price: 160, tradeDate: new Date('2024-03-01') },
-      // NVDA: 買 2 @ 500，賣 2 @ 600 → +200
+      // NVDA: 買 2 @ 500，賣 2 @ 600 → +200（basis 1000）
       { id: '5', symbol: 'NVDA', type: 'BUY',  quantity: 2,  price: 500, tradeDate: new Date('2024-02-15') },
       { id: '6', symbol: 'NVDA', type: 'SELL', quantity: 2,  price: 600, tradeDate: new Date('2024-04-01') },
     ]
@@ -422,12 +468,16 @@ describe('整合：matchTrades → calcWinRate → buildEquityCurve → calcMaxD
     expect(losses).toBe(1)
     expect(winRate).toBeCloseTo(66.667)
 
-    const curve = buildEquityCurve(closed, 1000)
     // 依日期：AAPL+200 → TSLA-200 → NVDA+200
-    expect(curve).toEqual([1000, 1200, 1000, 1200])
+    const dd = calcRealizedDrawdown(closed)
+    // cumPnL 從 +200 回落到 0，dd=200；當時累積 basis = 2000 → 10%
+    expect(dd.maxDrawdownDollars).toBeCloseTo(200)
+    expect(dd.maxDrawdownPct).toBeCloseTo(10)
 
-    const { maxDrawdownPct } = calcMaxDrawdown(curve)
-    // 從 1200 跌到 1000 → (1200-1000)/1200 = 16.67%
-    expect(maxDrawdownPct).toBeCloseTo(16.667)
+    // 月報酬序列：2月 +20%、3月 -20%、4月 +20%
+    const monthly = buildMonthlyReturnPcts(closed)
+    expect(monthly).toEqual([20, -20, 20])
+    const { sharpe } = calcSharpe(monthly)
+    expect(sharpe).not.toBeNull()
   })
 })

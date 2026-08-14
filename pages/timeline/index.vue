@@ -183,6 +183,12 @@
       <p class="mx-auto mt-2 max-w-sm text-sm text-dt-text-muted">
         {{ error.message }}
       </p>
+      <div class="mt-6">
+        <BaseButton variant="secondary" @click="refresh()">
+          <Icon name="heroicons:arrow-path" class="h-4 w-4" />
+          {{ t('common.retry') }}
+        </BaseButton>
+      </div>
     </div>
 
     <!-- Empty -->

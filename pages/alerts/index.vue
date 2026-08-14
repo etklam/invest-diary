@@ -21,6 +21,10 @@
           <p class="mt-1 text-sm text-dt-text-muted">
             {{ error.message }}
           </p>
+          <BaseButton variant="secondary" class="mt-3" @click="refresh()">
+            <Icon name="heroicons:arrow-path" class="h-4 w-4" />
+            {{ t('common.retry') }}
+          </BaseButton>
         </div>
       </div>
     </div>

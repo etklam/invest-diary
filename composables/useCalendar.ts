@@ -16,7 +16,7 @@ export const useCalendar = () => {
   const { getTimezone } = useTimezone()
   const { runWithAuthRecovery } = useAuthRecovery()
   const toast = useToast()
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
 
   // State
   const userTimezone = computed(() => user.value?.timezone || getTimezone() || 'Asia/Taipei')
@@ -46,8 +46,17 @@ export const useCalendar = () => {
   const loadingHolidays = ref(false)
   const pending = ref(false)
 
-  // Constants
-  const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+  // Weekday labels follow the active locale (index 0 = Sunday, matching
+  // firstDayOfWeek). 2023-01-01 is a Sunday; UTC keeps it stable across tz.
+  const weekDays = computed(() => {
+    const formatter = new Intl.DateTimeFormat(locale.value || 'en', {
+      weekday: 'short',
+      timeZone: 'UTC'
+    })
+    return Array.from({ length: 7 }, (_, i) => (
+      formatter.format(new Date(Date.UTC(2023, 0, 1 + i)))
+    ))
+  })
 
   // Computed
   const daysInMonth = computed(() => {
@@ -146,6 +155,10 @@ export const useCalendar = () => {
     }
   }
 
+  // Re-entrancy guard: rapid month switches must not let a stale 3-year
+  // fetch loop overwrite the latest holidayDateSet (last-wins).
+  let holidayLoadToken = 0
+
   const loadHolidays = async () => {
     if (!excludeHolidaysInStats.value) {
       holidayDateSet.value = new Set()
@@ -158,6 +171,7 @@ export const useCalendar = () => {
       return
     }
 
+    const token = ++holidayLoadToken
     loadingHolidays.value = true
     try {
       const years = [currentYear.value - 1, currentYear.value, currentYear.value + 1]
@@ -186,16 +200,22 @@ export const useCalendar = () => {
           }))
         }
 
+        if (token !== holidayLoadToken) return
         buildHolidaySet(holidays).forEach(date => holidayDates.add(date))
       }
 
+      if (token !== holidayLoadToken) return
       holidayDateSet.value = holidayDates
     } catch {
       // Holidays are an auxiliary feature backed by external date.nager.at;
       // on failure, degrade silently (no holiday markers) instead of toasting.
-      holidayDateSet.value = new Set()
+      if (token === holidayLoadToken) {
+        holidayDateSet.value = new Set()
+      }
     } finally {
-      loadingHolidays.value = false
+      if (token === holidayLoadToken) {
+        loadingHolidays.value = false
+      }
     }
   }
 

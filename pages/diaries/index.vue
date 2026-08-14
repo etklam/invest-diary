@@ -119,6 +119,10 @@
         <h3 class="font-display text-xl tracking-tight text-dt-text">{{ $t('desk.error.title') }}</h3>
         <p class="mt-1 text-sm text-dt-text-muted">{{ error.message }}</p>
       </div>
+      <BaseButton variant="secondary" @click="refreshAll()">
+        <Icon name="heroicons:arrow-path" class="h-4 w-4" />
+        {{ $t('common.retry') }}
+      </BaseButton>
     </section>
 
     <!-- Empty state -->

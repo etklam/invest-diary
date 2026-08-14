@@ -14,6 +14,7 @@ const mockTxTransactionCreate = vi.fn()
 const mockTxTransactionUpdateMany = vi.fn()
 const mockTxAlertDeleteMany = vi.fn()
 const mockTxAlertCreate = vi.fn()
+const mockTxQueryRaw = vi.fn()
 const mockDiaryLogInfo = vi.fn()
 const mockDiaryLogWarn = vi.fn()
 const mockDiaryLogError = vi.fn()
@@ -57,6 +58,7 @@ describe('Diary API Routes', () => {
     mockGetRouterParam.mockReturnValue(null)
     mockTransaction.mockImplementation(async (callback: (tx: any) => Promise<unknown>) => {
       const tx = {
+        $queryRaw: mockTxQueryRaw,
         transaction: {
           deleteMany: mockTxTransactionDeleteMany,
           create: mockTxTransactionCreate,
@@ -175,6 +177,7 @@ describe('Diary API Routes', () => {
         appendToToday: true,
       })
       mockDiaryFindFirst.mockResolvedValue({ id: 5n, content: 'Original content', tagsString: 'watch,learning' })
+      mockTxQueryRaw.mockResolvedValue([{ content: 'Original content', tags: 'watch,learning' }])
       mockDiaryUpdate.mockResolvedValue({
         id: 5n,
         content: 'Original content\n\n---\n\nAdditional content',

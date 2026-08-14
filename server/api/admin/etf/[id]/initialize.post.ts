@@ -29,17 +29,19 @@ export default defineEventHandler(async (event) => {
     // Fetch 5 years of monthly data from Yahoo Finance
     const monthlyData = await fetchMonthlyData(etf.symbol, 5)
 
-    // Prepare data for batch insert
+    // Prepare data for batch insert. Yahoo sometimes returns null OHLC on
+    // monthly bars; nothing downstream reads open/high/low (only close), so
+    // coalesce them to close instead of writing phantom zero wicks.
     const prices = monthlyData
-      .filter(d => d.close !== null)
+      .filter((d): d is typeof d & { close: number } => d.close !== null)
       .map(d => ({
         etfId,
         date: new Date(d.timestamp * 1000),
-        open: d.open ?? 0,
-        high: d.high ?? 0,
-        low: d.low ?? 0,
-        close: d.close ?? 0,
-        adjClose: d.adjClose ?? d.close ?? 0,
+        open: d.open ?? d.close,
+        high: d.high ?? d.close,
+        low: d.low ?? d.close,
+        close: d.close,
+        adjClose: d.adjClose ?? d.close,
         volume: d.volume ?? null,
       }))
 

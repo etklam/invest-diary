@@ -288,20 +288,30 @@ export function getMonthData(month: number): MonthData | null {
 }
 
 /**
+ * 取得指定時區的當前月份（1-12）
+ * timeZone 省略時用執行環境的本地時區
+ */
+export function getCurrentMonth(timeZone?: string, now: Date = new Date()): number {
+  const month = new Intl.DateTimeFormat('en-US', { timeZone, month: 'numeric' }).format(now)
+  return Number(month)
+}
+
+/**
  * 取得當前月份資料
  */
-export function getCurrentMonthData(): MonthData {
-  const currentMonth = new Date().getMonth() + 1
+export function getCurrentMonthData(timeZone?: string): MonthData {
+  const currentMonth = getCurrentMonth(timeZone)
   return getMonthData(currentMonth) ?? monthlyData[0]!
 }
 
 /**
- * 計算期間平均回報
+ * 計算期間平均回報（月均，非累計總和）
  */
 export function calculatePeriodAvgReturn(months: number[]): number {
   const relevantData = monthlyData.filter(m => months.includes(m.month))
+  if (!relevantData.length) return 0
   const totalReturn = relevantData.reduce((sum, m) => sum + m.avgReturn, 0)
-  return totalReturn
+  return totalReturn / relevantData.length
 }
 
 /**
@@ -362,8 +372,8 @@ export function getVolatilityColorClass(volatility: VolatilityLevel): string {
 /**
  * 完整季節性分析
  */
-export function analyzeSeasonality(): SeasonalityAnalysis {
-  const currentMonth = getCurrentMonthData()
+export function analyzeSeasonality(timeZone?: string): SeasonalityAnalysis {
+  const currentMonth = getCurrentMonthData(timeZone)
   const bestMonths = getBestMonths(3)
   const worstMonths = getWorstMonths(3)
   

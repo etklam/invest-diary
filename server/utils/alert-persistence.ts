@@ -1,5 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import { generateRecurringAlertsData } from '~/lib/recurring-alerts'
+import { DIARY_PAYLOAD_LIMITS } from '~/lib/diary-authoring/validation'
+import { Errors } from '~/lib/errors/factory'
 import type { AlertInput } from '~/types/diary'
 
 export async function persistAlert(
@@ -73,6 +75,16 @@ export async function persistAlerts(
   alerts: AlertInput[] | undefined,
   timezone: string,
 ) {
+  // Defensive cap — the diary create/update path already enforces this via
+  // validateDiaryPayloadLimits; this keeps the persistence layer safe for any
+  // future caller.
+  if ((alerts?.length ?? 0) > DIARY_PAYLOAD_LIMITS.alerts) {
+    throw Errors.validationError([{
+      field: 'alerts',
+      message: `A diary allows at most ${DIARY_PAYLOAD_LIMITS.alerts} alerts`,
+    }])
+  }
+
   const persisted = []
 
   for (const alert of alerts ?? []) {

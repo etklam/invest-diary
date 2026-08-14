@@ -12,9 +12,9 @@ describe('QuickReminder', () => {
       },
     })
 
-    expect(wrapper.text()).toContain('可設定 1 組')
-    expect(wrapper.text()).not.toContain('提醒 2')
-    expect(wrapper.text()).not.toContain('提醒 3')
+    // 元件走 useI18n（測試環境無 vue-i18n plugin → 渲染 key 本身），斷言 key
+    expect(wrapper.text()).toContain('quickDiary.reminders.customTitle')
+    expect(wrapper.text()).toContain('quickDiary.reminders.singleHint')
     expect(wrapper.findAll('input[type="date"]')).toHaveLength(1)
     expect(wrapper.findAll('input[type="time"]')).toHaveLength(1)
 

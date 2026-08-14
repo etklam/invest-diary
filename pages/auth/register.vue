@@ -144,7 +144,7 @@
         </fieldset>
 
         <p v-if="!isHydrated" class="text-xs font-medium" style="color: var(--color-text-soft);">
-          正在準備註冊表單，載入完成後即可提交。
+          {{ $t('auth.preparingForm') }}
         </p>
       </form>
     </section>
@@ -158,6 +158,7 @@ definePageMeta({
 })
 
 const { register, isLoading } = useAuth()
+const { t } = useI18n()
 
 const form = ref({
   name: '',
@@ -180,7 +181,7 @@ const validateEmail = () => {
   }
 
   const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
-  emailError.value = emailRegex.test(form.value.email) ? '' : '請輸入有效的電子郵件地址'
+  emailError.value = emailRegex.test(form.value.email) ? '' : t('auth.emailInvalid')
 }
 
 const isFormValid = computed(() => {

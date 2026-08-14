@@ -14,7 +14,7 @@
             </p>
             <span v-if="marketState" class="inline-flex items-center gap-1.5 rounded-full border border-dt-border bg-dt-surface-strong px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-dt-text-muted">
               <span class="h-1.5 w-1.5 rounded-full" :class="marketState === 'REGULAR' ? 'bg-dt-success animate-pulse' : 'bg-dt-warning'"></span>
-              {{ t('stock.dashboard.marketState') }}: {{ marketState }}
+              {{ t('stock.dashboard.marketState') }}: {{ marketStateLabel }}
             </span>
           </div>
         </div>
@@ -42,8 +42,15 @@
     <!-- Main Content Grid -->
     <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Top Stats Grid -->
+      <ErrorState
+        v-if="loadError"
+        :title="t('stock.dashboard.loadFailed')"
+        :message="loadError.message"
+        :retry-fn="refreshHoldings"
+      />
+
       <section
-        v-if="!pending && totalHoldings === 0"
+        v-else-if="!pending && totalHoldings === 0"
         class="panel-dashboard mb-6 p-8 text-center"
         aria-labelledby="portfolio-empty-title"
       >
@@ -60,7 +67,14 @@
         </div>
       </section>
 
-      <div v-if="pending || totalHoldings > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div v-else-if="pending" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div v-for="i in 4" :key="i" class="stats-card animate-pulse">
+          <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-20 mb-3"></div>
+          <div class="h-7 bg-slate-200 dark:bg-slate-700 rounded w-28"></div>
+        </div>
+      </div>
+
+      <div v-else-if="totalHoldings > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <!-- Portfolio Value -->
         <div class="stats-card">
           <div class="flex items-center justify-between mb-2">
@@ -395,7 +409,7 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold text-dt-text flex items-center gap-2">
             <Icon name="heroicons:chart-bar-square" class="text-indigo-500" />
-            已實現績效
+            {{ t('stock.performance.title') }}
           </h2>
           <div class="flex items-center gap-2">
             <!-- 匯出按鈕 -->
@@ -410,7 +424,7 @@
                 class="w-4 h-4"
                 :class="{ 'animate-spin': isExporting }"
               />
-              {{ isExporting ? '匯出中...' : '匯出 CSV' }}
+              {{ isExporting ? t('stock.performance.exporting') : t('stock.performance.exportCsv') }}
             </button>
             <!-- 時間範圍切換 -->
             <div class="flex items-center gap-1 rounded-dt-sm border border-dt-border bg-dt-surface-strong p-1">
@@ -442,7 +456,7 @@
           <!-- 勝率 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">勝率</span>
+              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">{{ t('stock.performance.winRate') }}</span>
               <Icon name="heroicons:trophy" class="w-5 h-5 text-amber-500 opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
@@ -450,41 +464,40 @@
               {{ perfData.summary.totalClosedTrades > 0 ? perfData.summary.winRate.toFixed(1) + '%' : 'N/A' }}
             </div>
             <div class="text-[10px] text-slate-400 mt-1">
-              {{ perfData.summary.wins }}W / {{ perfData.summary.losses }}L
-              · {{ perfData.summary.totalClosedTrades }} 筆
+              {{ t('stock.performance.tradeRecord', { wins: perfData.summary.wins, losses: perfData.summary.losses, count: perfData.summary.totalClosedTrades }) }}
             </div>
           </div>
 
           <!-- 已實現損益 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">已實現損益</span>
+              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">{{ t('stock.performance.realizedPnL') }}</span>
               <Icon name="heroicons:currency-dollar" class="w-5 h-5 text-emerald-500 opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
               :class="perfData.summary.totalRealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
               {{ perfData.summary.totalRealizedPnL >= 0 ? '+' : '' }}{{ formatCurrency(perfData.summary.totalRealizedPnL) }}
             </div>
-            <div class="text-[10px] text-slate-400 mt-1">累積已關閉部位</div>
+            <div class="text-[10px] text-slate-400 mt-1">{{ t('stock.performance.realizedPnLHint') }}</div>
           </div>
 
           <!-- 最大回撤 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">最大回撤</span>
+              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">{{ t('stock.performance.maxDrawdown') }}</span>
               <Icon name="heroicons:arrow-trending-down" class="w-5 h-5 text-red-500 opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
               :class="perfData.summary.maxDrawdownPct > 20 ? 'text-red-600 dark:text-red-400' : 'text-dt-text'">
               {{ perfData.summary.totalClosedTrades > 0 ? '-' + perfData.summary.maxDrawdownPct.toFixed(1) + '%' : 'N/A' }}
             </div>
-            <div class="text-[10px] text-slate-400 mt-1">損益曲線最大跌幅</div>
+            <div class="text-[10px] text-slate-400 mt-1">{{ t('stock.performance.maxDrawdownHint') }}</div>
           </div>
 
           <!-- 夏普比率 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">夏普比率</span>
+              <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">{{ t('stock.performance.sharpe') }}</span>
               <Icon name="heroicons:scale" class="w-5 h-5 text-purple-500 opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
@@ -493,7 +506,7 @@
                 perfData.summary.sharpe >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'">
               {{ perfData.summary.sharpe !== null ? perfData.summary.sharpe.toFixed(2) : 'N/A' }}
             </div>
-            <div class="text-[10px] text-slate-400 mt-1">月度風險調整後收益</div>
+            <div class="text-[10px] text-slate-400 mt-1">{{ t('stock.performance.sharpeHint') }}</div>
           </div>
         </div>
 
@@ -501,7 +514,7 @@
         <div v-if="perfData && perfData.periodStats.length > 0" class="panel-dashboard p-6 mb-6">
           <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-sm">
             <Icon name="heroicons:chart-bar" class="text-indigo-400" />
-            損益走勢（{{ periodLabel }}）
+            {{ t('stock.performance.pnlTrend', { period: periodLabel }) }}
           </h3>
           <div class="h-56">
             <Bar :data="barChartData" :options="barChartOptions" />
@@ -512,15 +525,15 @@
         <div v-else-if="!perfPending && (!perfData || perfData.summary.totalClosedTrades === 0)"
           class="panel-dashboard p-10 text-center">
           <Icon name="heroicons:chart-bar-square" class="w-12 h-12 text-slate-300 dark:text-slate-300 mx-auto mb-3" />
-          <p class="text-sm font-medium text-dt-text-muted">尚無已實現交易</p>
-          <p class="text-xs text-slate-400 dark:text-slate-400 mt-1">完成第一筆買入並賣出後，績效指標將會出現</p>
+          <p class="text-sm font-medium text-dt-text-muted">{{ t('stock.performance.emptyTitle') }}</p>
+          <p class="text-xs text-slate-400 dark:text-slate-400 mt-1">{{ t('stock.performance.emptyDescription') }}</p>
         </div>
 
         <!-- 資金曲線（折線圖） -->
         <div v-if="perfData && perfData.equityCurve && perfData.equityCurve.length > 1" class="panel-dashboard p-6 mb-6">
           <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-sm">
             <Icon name="heroicons:chart-bar" class="text-indigo-400" />
-            資金曲線（累積損益）
+            {{ t('stock.performance.equityCurve') }}
           </h3>
           <div class="h-48">
             <Line :data="equityCurveData" :options="equityCurveOptions" />
@@ -531,7 +544,7 @@
         <div v-if="perfData && perfData.symbolBreakdown && perfData.symbolBreakdown.length > 0" class="panel-dashboard p-6 mb-6">
           <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-sm">
             <Icon name="heroicons:chart-bar" class="text-emerald-400" />
-            各股票損益（前 10）
+            {{ t('stock.performance.bySymbol') }}
           </h3>
           <div :style="{ height: Math.min(perfData.symbolBreakdown.length, 10) * 36 + 24 + 'px' }">
             <Bar :data="symbolBarData" :options="symbolBarOptions" />
@@ -546,7 +559,7 @@
             <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-emerald-50/50 dark:bg-emerald-950/20">
               <h3 class="text-sm font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                 <Icon name="heroicons:arrow-trending-up" class="w-4 h-4" />
-                最佳交易
+                {{ t('stock.performance.topWins') }}
               </h3>
             </div>
             <div class="divide-y divide-slate-100 dark:divide-slate-800">
@@ -570,7 +583,7 @@
             <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-red-50/50 dark:bg-red-950/20">
               <h3 class="text-sm font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
                 <Icon name="heroicons:arrow-trending-down" class="w-4 h-4" />
-                最差交易
+                {{ t('stock.performance.topLosses') }}
               </h3>
             </div>
             <div class="divide-y divide-slate-100 dark:divide-slate-800">
@@ -636,14 +649,19 @@ import {
   type StocksSortKey
 } from '~/lib/stocks-view'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 definePageMeta({
   middleware: 'auth'
 })
 
 // Fetch holdings from API
-const { data: holdings, pending } = await useLazyFetch<HoldingViewInput[]>(
+const {
+  data: holdings,
+  pending,
+  error: loadError,
+  refresh: refreshHoldings,
+} = await useLazyFetch<HoldingViewInput[]>(
   '/api/stocks/holdings',
   {
     server: false,
@@ -711,6 +729,15 @@ const quoteCoveragePct = computed(() => stats.value.quoteCoveragePct)
 const valuationAsOf = computed(() => stats.value.valuationAsOf)
 const staleQuoteCount = computed(() => stats.value.staleQuoteCount)
 const valuationStatus = computed(() => stats.value.valuationStatus)
+
+// Map raw quote marketState (REGULAR/PRE/POST/CLOSED/...) to a localized label
+const marketStateLabel = computed(() => {
+  const raw = marketState.value
+  if (!raw) return ''
+  const key = `stock.dashboard.marketStates.${raw}`
+  const label = t(key)
+  return label === key ? raw : label
+})
 
 // ── Portfolio Exposure panel (T7) ──────────────────────────────────
 const {
@@ -880,16 +907,20 @@ interface PerformanceResult {
   symbolBreakdown: SymbolBreakdown[]
 }
 
-const periodOptions: { value: PerfPeriod; label: string }[] = [
-  { value: 'month', label: '月' },
-  { value: 'quarter', label: '季' },
-  { value: 'year', label: '年' },
-]
+const periodOptions = computed<{ value: PerfPeriod; label: string }[]>(() => [
+  { value: 'month', label: t('stock.performance.periodMonth') },
+  { value: 'quarter', label: t('stock.performance.periodQuarter') },
+  { value: 'year', label: t('stock.performance.periodYear') },
+])
 
 const selectedPeriod = ref<PerfPeriod>('month')
 
 const periodLabel = computed(() => {
-  const map: Record<PerfPeriod, string> = { month: '月度', quarter: '季度', year: '年度' }
+  const map: Record<PerfPeriod, string> = {
+    month: t('stock.performance.monthly'),
+    quarter: t('stock.performance.quarterly'),
+    year: t('stock.performance.yearly'),
+  }
   return map[selectedPeriod.value]
 })
 
@@ -902,7 +933,7 @@ const { data: perfData, pending: perfPending, refresh: refreshPerf } = await use
 watch(selectedPeriod, () => refreshPerf())
 
 function formatTradeDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })
+  return new Date(date).toLocaleDateString(locale.value, { month: '2-digit', day: '2-digit' })
 }
 
 // Chart.js Bar Chart 資料
@@ -912,7 +943,7 @@ const barChartData = computed<ChartData<'bar'>>(() => {
     labels: stats.map((s: any) => s.period),
     datasets: [
       {
-        label: '已實現損益',
+        label: t('stock.performance.realizedPnL'),
         data: stats.map((s: any) => s.realizedPnL),
         backgroundColor: stats.map((s: any) =>
           s.realizedPnL >= 0 ? 'rgba(22, 163, 74, 0.75)' : 'rgba(220, 38, 38, 0.75)'
@@ -964,7 +995,7 @@ const equityCurveData = computed<ChartData<'line'>>(() => {
     labels: curve.map((p) => p.date),
     datasets: [
       {
-        label: '累積損益',
+        label: t('stock.performance.cumulativePnL'),
         data: curve.map((p) => p.cumPnL),
         borderColor: 'rgba(99, 102, 241, 0.9)',
         backgroundColor: 'rgba(99, 102, 241, 0.08)',
@@ -1015,7 +1046,7 @@ const symbolBarData = computed<ChartData<'bar'>>(() => {
     labels: breakdown.map((s) => s.symbol),
     datasets: [
       {
-        label: '已實現損益',
+        label: t('stock.performance.realizedPnL'),
         data: breakdown.map((s) => Math.round(s.realizedPnL * 100) / 100),
         backgroundColor: breakdown.map((s) =>
           s.realizedPnL >= 0 ? 'rgba(22, 163, 74, 0.75)' : 'rgba(220, 38, 38, 0.75)'
@@ -1081,9 +1112,9 @@ async function exportTrades() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    toast.success('已匯出 CSV')
+    toast.success(t('stock.performance.exportSuccess'))
   } catch {
-    toast.error('匯出失敗，請稍後再試')
+    toast.error(t('stock.performance.exportFailed'))
   } finally {
     isExporting.value = false
   }

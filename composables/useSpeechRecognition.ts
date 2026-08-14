@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { getCurrentInstance, onUnmounted, ref } from 'vue'
 
 interface SpeechRecognitionAlternativeLike {
   transcript: string
@@ -37,7 +37,16 @@ interface SpeechRecognitionWindowLike extends Window {
   webkitSpeechRecognition?: SpeechRecognitionConstructorLike
 }
 
-export function useSpeechRecognition() {
+interface UseSpeechRecognitionOptions {
+  /**
+   * Called once per finalized utterance with ONLY the newly finalized segment.
+   * Use this to append text into content — watching `transcript` instead would
+   * re-deliver the full session text on every utterance.
+   */
+  onFinal?: (text: string) => void
+}
+
+export function useSpeechRecognition(options?: UseSpeechRecognitionOptions) {
   const speechWindow = typeof window !== 'undefined' ? window as SpeechRecognitionWindowLike : null
   const isSupported = Boolean(speechWindow && (speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition))
   const isListening = ref(false)
@@ -46,6 +55,8 @@ export function useSpeechRecognition() {
   const error = ref<string | null>(null)
 
   let recognition: SpeechRecognitionLike | null = null
+  // results[0..nextResultIndex-1] have already finalized and been delivered via onFinal
+  let nextResultIndex = 0
 
   const Ctor = speechWindow?.SpeechRecognition || speechWindow?.webkitSpeechRecognition
   if (Ctor) {
@@ -55,17 +66,21 @@ export function useSpeechRecognition() {
     recognition.interimResults = true
 
     recognition.onresult = (event) => {
-      let finalText = ''
+      const results = Array.from(event.results)
       let interimText = ''
-      for (const res of event.results) {
-        if (res.isFinal) {
-          finalText += res[0].transcript
-        } else {
+      let newFinalText = ''
+      for (let i = 0; i < results.length; i++) {
+        const res = results[i]!
+        if (!res.isFinal) {
           interimText += res[0].transcript
+        } else if (i >= nextResultIndex) {
+          newFinalText += res[0].transcript
+          nextResultIndex = i + 1
         }
       }
-      if (finalText.trim()) {
-        transcript.value = finalText.trim()
+      if (newFinalText.trim()) {
+        transcript.value = [transcript.value, newFinalText.trim()].filter(Boolean).join(' ')
+        options?.onFinal?.(newFinalText.trim())
       }
       interimTranscript.value = interimText.trim()
     }
@@ -85,6 +100,7 @@ export function useSpeechRecognition() {
     transcript.value = ''
     interimTranscript.value = ''
     error.value = null
+    nextResultIndex = 0
     recognition.start()
     isListening.value = true
   }
@@ -93,6 +109,28 @@ export function useSpeechRecognition() {
     if (!recognition || !isListening.value) return
     recognition.stop()
     isListening.value = false
+  }
+
+  // Stop the mic and drop callbacks so nothing writes into dead refs after unmount
+  function teardown() {
+    if (recognition) {
+      recognition.onresult = null
+      recognition.onerror = null
+      recognition.onend = null
+      if (isListening.value) {
+        try {
+          recognition.stop()
+        } catch {
+          // already stopped — nothing to do
+        }
+      }
+      recognition = null
+    }
+    isListening.value = false
+  }
+
+  if (getCurrentInstance()) {
+    onUnmounted(teardown)
   }
 
   return { isSupported, isListening, transcript, interimTranscript, error, start, stop }

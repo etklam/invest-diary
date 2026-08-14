@@ -5,10 +5,8 @@ import type { QuoteResponse } from '~/lib/yahoo-finance'
 
 const mockRequireUser = vi.fn()
 const mockGeneralApi = vi.fn()
-const mockGetRequestIP = vi.fn()
+const mockGetRateLimitIdentifier = vi.fn()
 const mockFetchQuote = vi.fn()
-
-vi.stubGlobal('getRequestIP', mockGetRequestIP)
 
 vi.mock('~/server/utils/auth', () => ({
   requireUser: mockRequireUser,
@@ -18,6 +16,7 @@ vi.mock('~/lib/rate-limiter', () => ({
   rateLimiters: {
     generalApi: mockGeneralApi,
   },
+  getRateLimitIdentifier: mockGetRateLimitIdentifier,
 }))
 
 vi.mock('~/lib/yahoo-finance', () => ({
@@ -51,7 +50,7 @@ describe('POST /api/stocks/prices', () => {
     vi.clearAllMocks()
     clearCache()
     mockRequireUser.mockReturnValue({ id: '1', email: 'user@test.com', role: 'USER' })
-    mockGetRequestIP.mockReturnValue('127.0.0.1')
+    mockGetRateLimitIdentifier.mockReturnValue('127.0.0.1')
     mockGeneralApi.mockResolvedValue(true)
   })
 
@@ -105,6 +104,19 @@ describe('POST /api/stocks/prices', () => {
       statusCode: 429,
     })
     expect(mockFetchQuote).not.toHaveBeenCalled()
+  })
+
+  it('uses the shared rate-limit identifier helper for the client IP', async () => {
+    mockGetRateLimitIdentifier.mockReturnValue('203.0.113.9')
+    mockReadBody.mockResolvedValue({ symbols: ['AAPL'] })
+    mockFetchQuote.mockResolvedValue(mockQuoteAAPL)
+
+    const { default: handler } = await import('~/server/api/stocks/prices.post')
+
+    await handler({ context: { user: { id: '1' } } } as any)
+
+    expect(mockGetRateLimitIdentifier).toHaveBeenCalled()
+    expect(mockGeneralApi).toHaveBeenCalledWith('203.0.113.9')
   })
 
   it('returns quote responses for symbols', async () => {

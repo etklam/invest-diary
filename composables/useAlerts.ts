@@ -258,9 +258,8 @@ export const useAlerts = () => {
       enqueueSingleAlert(alert)
     })
 
-    // 初始載入：只在已登入時透過 HTTP 載入現有 alerts。
-    await syncAlertTransport()
-
+    // Watchers 必須在同步階段註冊：await 之後 continuation 沒有 component
+    // instance，watcher 不會自動 dispose，layout 切換時會永久洩漏。
     // 監聽 WebSocket 連線狀態變化
     watch(isConnected, (connected) => {
       if (!isAuthenticated.value) {
@@ -280,6 +279,9 @@ export const useAlerts = () => {
     watch(isAuthenticated, () => {
       void syncAlertTransport()
     })
+
+    // 初始載入：只在已登入時透過 HTTP 載入現有 alerts。
+    await syncAlertTransport()
 
     // 啟動定期清理（每小時清理一次）
     cleanupTimer = setInterval(cleanupProcessedAlerts, 3600000) // 1 hour

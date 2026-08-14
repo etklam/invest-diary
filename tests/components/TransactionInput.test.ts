@@ -103,4 +103,38 @@ describe('TransactionInput', () => {
     // 這裡只確認選項存在且 UI 可操作不拋錯
     expect(emotionSelect.element.value).toBe('calm')
   })
+
+  it('驗證錯誤與展開筆記跟著自己的資料列走，移除某列後不會位移到其他列', async () => {
+    const txs = [
+      makeTx({ quantity: 0 }), // A：無效數量
+      makeTx({ quantity: 0 }), // B：無效數量
+      makeTx(),                // C：有效
+    ]
+    const wrapper = mountInput(txs)
+
+    // 觸發 A、B 兩列的驗證（quantity input 的 step 為 0.0001）
+    const qtyInputs = wrapper.findAll('input[type="number"]').filter(i => i.element.step === '0.0001')
+    expect(qtyInputs).toHaveLength(3)
+    await qtyInputs[0]!.setValue('0')
+    await qtyInputs[1]!.setValue('0')
+
+    // 展開 B 列（index 1）的交易筆記
+    const toggles = wrapper.findAll('button').filter(b => b.text().includes('diary.form.notesToggle'))
+    await toggles[1]!.trigger('click')
+
+    // 移除 A 列（index 0）
+    const removeButtons = wrapper.findAll('button[aria-label="diary.form.removeTransaction"]')
+    await removeButtons[0]!.trigger('click')
+
+    const cards = wrapper.findAll('.relative')
+    expect(cards).toHaveLength(2)
+
+    // B 列（現在的第一張卡）仍保有「自己的」驗證錯誤與展開狀態
+    expect(cards[0]!.text()).toContain('diary.form.positiveNumber')
+    expect(cards[0]!.find('textarea').exists()).toBe(true)
+
+    // 錯誤不應位移到 C 列
+    expect(cards[1]!.text()).not.toContain('diary.form.positiveNumber')
+    expect(cards[1]!.find('textarea').exists()).toBe(false)
+  })
 })

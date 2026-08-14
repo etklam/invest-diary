@@ -6,7 +6,7 @@
 
 import { fetchHistoricalData } from '~/lib/yahoo-finance'
 import type { HistoricalQuote } from '~/lib/yahoo-finance'
-import { rateLimiters } from '~/lib/rate-limiter'
+import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { Errors } from '~/lib/errors/factory'
 import {
   buildMarketHistoricalCacheKey,
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event): Promise<HistoricalQuote[]> => {
     throw Errors.validationError([{ field: 'symbol', message: 'Missing symbol' }]).toH3Error()
   }
 
-  const ip = getRequestIP(event) || 'unknown'
+  const ip = getRateLimitIdentifier(event)
   try {
     await rateLimiters.yahooFinance(ip)
   } catch {

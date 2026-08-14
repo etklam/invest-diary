@@ -332,6 +332,36 @@ describe('Blog API', () => {
       )
     })
 
+    it('must not request or leak the author email on the public slug endpoint', async () => {
+      const mockPost = {
+        id: 2,
+        title: 'No Author Email Leak',
+        slug: 'author-fields-only',
+        content: 'Full content here',
+        status: 'PUBLISHED',
+        publishedAt: new Date('2024-01-01'),
+        author: { id: 2, name: 'Author 2' },
+      }
+
+      mockPostFindFirst.mockResolvedValue(mockPost)
+      mockGetQuery.mockReturnValue({})
+
+      const { default: handler } = await import('~/server/api/blog/[slug].get')
+      const mockEvent = {
+        context: {
+          params: { slug: 'author-fields-only' },
+          requestId: 'req-blog-no-email',
+        },
+      } as any
+
+      const result = await handler(mockEvent)
+
+      const query = mockPostFindFirst.mock.calls.at(-1)?.[0]
+      expect(query.include.author.select).toEqual({ id: true, name: true })
+      expect(JSON.stringify(query)).not.toContain('"email"')
+      expect(result.author).not.toHaveProperty('email')
+    })
+
     it('should serialize bigint ids in slug response', async () => {
       const mockPost = {
         id: BigInt(3),

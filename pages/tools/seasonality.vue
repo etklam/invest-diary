@@ -14,14 +14,16 @@ import {
   getBestMonths,
   getWorstMonths,
   calculatePeriodAvgReturn,
+  getCurrentMonth,
   analyzeSeasonality
 } from '~/utils/stockSeasonality'
 import type { VolatilityLevel } from '~/utils/stockSeasonality'
 
 const { t, locale } = useI18n()
 const toast = useToast()
+const { getTimezone } = useTimezone()
 
-const currentMonth = new Date().getMonth() + 1
+const currentMonth = getCurrentMonth(getTimezone())
 const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1
 
 const currentMonthData = computed(() => monthlyData.find(m => m.month === currentMonth)!)
@@ -34,7 +36,7 @@ const weakPeriodMonths = [5, 6, 7, 8, 9, 10]
 
 const strongPeriodReturn = computed(() => calculatePeriodAvgReturn(strongPeriodMonths))
 const weakPeriodReturn = computed(() => calculatePeriodAvgReturn(weakPeriodMonths))
-const analysis = computed(() => analyzeSeasonality())
+const analysis = computed(() => analyzeSeasonality(getTimezone()))
 
 const getLocalizedName = (month: number) => getMonthName(month, locale.value)
 const getLocalizedShortName = (month: number) => getMonthShortName(month, locale.value)
@@ -145,7 +147,7 @@ definePageMeta({
           <!-- Strong-period spotlight (clean panel, no gradient) -->
           <div class="rounded-xl border border-dt-border bg-dt-bg p-5">
             <div class="text-xs font-bold uppercase tracking-[0.16em] text-dt-text-muted">{{ t('tools.seasonality.bestSixMonths') }}</div>
-            <div class="mt-2 overflow-wrap-anywhere break-words font-data text-4xl font-semibold leading-tight text-dt-text">{{ formatReturn(strongPeriodReturn) }}</div>
+            <div class="mt-2 overflow-wrap-anywhere break-words font-data text-4xl font-semibold leading-tight text-dt-text">{{ formatReturn(strongPeriodReturn) }}<span class="ml-1.5 text-sm font-normal text-dt-text-muted">{{ t('tools.seasonality.avgReturn') }}</span></div>
             <p class="mt-3 text-sm leading-6 text-dt-text-muted">
               {{ t(analysis.strongPeriod.descriptionKey) }}
             </p>
@@ -357,14 +359,14 @@ definePageMeta({
           <div class="mt-5 grid gap-4">
             <div class="min-w-0 rounded-lg border border-dt-border bg-dt-bg p-4">
               <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('tools.seasonality.bestSixMonths') }}</div>
-              <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight text-emerald-600 dark:text-emerald-400">{{ formatReturn(strongPeriodReturn) }}</div>
+              <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight text-emerald-600 dark:text-emerald-400">{{ formatReturn(strongPeriodReturn) }}<span class="ml-1.5 text-sm font-normal text-dt-text-muted">{{ t('tools.seasonality.avgReturn') }}</span></div>
               <p class="mt-3 text-sm leading-6 text-dt-text-muted">{{ t(analysis.strongPeriod.strategyKey) }}</p>
             </div>
 
             <div class="min-w-0 rounded-lg border border-dt-border bg-dt-bg p-4">
               <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('tools.seasonality.weakSixMonths') }}</div>
               <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight" :class="weakPeriodReturn >= 0 ? 'text-dt-warning' : 'text-dt-danger'">
-                {{ formatReturn(weakPeriodReturn) }}
+                {{ formatReturn(weakPeriodReturn) }}<span class="ml-1.5 text-sm font-normal text-dt-text-muted">{{ t('tools.seasonality.avgReturn') }}</span>
               </div>
               <p class="mt-3 text-sm leading-6 text-dt-text-muted">{{ t(analysis.weakPeriod.strategyKey) }}</p>
             </div>

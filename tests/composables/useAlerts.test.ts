@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
+import { mount } from '@vue/test-utils'
 
 const mockRunWithAuthRecovery = vi.hoisted(() => vi.fn())
 
@@ -90,5 +91,34 @@ describe('useAlerts dismiss flow', () => {
     websocket.dismissAlert.mockResolvedValue(true)
     await expect(alerts.dismissCurrentAlert()).resolves.toBe(true)
     expect(alerts.currentAlert.value).toBeNull()
+  })
+
+  it('disposes transport watchers on unmount so a dead layout cannot resurrect polling', async () => {
+    vi.useFakeTimers()
+    try {
+      mockFetch.mockResolvedValue([])
+      mockRunWithAuthRecovery.mockImplementation((operation: () => Promise<unknown>) => operation())
+
+      const Host = defineComponent({
+        setup: () => {
+          useAlerts()
+          return () => null
+        },
+      })
+      const wrapper = mount(Host)
+      // 讓 onMounted 內 await syncAlertTransport() 的 continuation 執行完畢
+      await vi.advanceTimersByTimeAsync(0)
+
+      // Layout 切換卸載元件後，殘留的 watcher 不得再拉起 /api/alerts 輪詢
+      wrapper.unmount()
+      mockFetch.mockClear()
+
+      websocket.isConnected.value = false
+      await vi.advanceTimersByTimeAsync(600_000)
+
+      expect(mockFetch).not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

@@ -213,7 +213,7 @@ const createPost = async () => {
 onMounted(() => {
   const hasDraft = draft.value.title || draft.value.content
   if (hasDraft) {
-    const shouldRestore = confirm('偵測到尚未發布的草稿，是否恢復？')
+    const shouldRestore = confirm(t('blog.draftRestorePrompt'))
     if (shouldRestore) {
       form.value = {
         ...form.value,

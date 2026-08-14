@@ -7,8 +7,44 @@ import { buildDiaryAuthoringPayload } from '~/lib/diary-authoring/payload'
 import { toDateTimeLocalValue } from '~/lib/dates/normalize'
 import {
   validateDiaryDraft,
+  validateDiaryPayloadLimits,
   validateTransactionLedger,
 } from '~/lib/diary-authoring/validation'
+
+describe('validateDiaryPayloadLimits', () => {
+  it('accepts payloads at the exact caps', () => {
+    expect(validateDiaryPayloadLimits({
+      title: 'x'.repeat(500),
+      content: 'x'.repeat(500_000),
+      transactions: Array.from({ length: 100 }, () => ({})),
+      alerts: Array.from({ length: 50 }, () => ({})),
+    })).toBeNull()
+  })
+
+  it('rejects one past each cap with the limit named in the message', () => {
+    expect(validateDiaryPayloadLimits({ title: 'x'.repeat(501) })).toMatchObject({
+      field: 'title',
+      message: expect.stringContaining('500'),
+    })
+    expect(validateDiaryPayloadLimits({ content: 'x'.repeat(500_001) })).toMatchObject({
+      field: 'content',
+      message: expect.stringContaining('500000'),
+    })
+    expect(validateDiaryPayloadLimits({ transactions: Array.from({ length: 101 }, () => ({})) })).toMatchObject({
+      field: 'transactions',
+      message: expect.stringContaining('100'),
+    })
+    expect(validateDiaryPayloadLimits({ alerts: Array.from({ length: 51 }, () => ({})) })).toMatchObject({
+      field: 'alerts',
+      message: expect.stringContaining('50'),
+    })
+  })
+
+  it('treats missing fields as empty (update payloads may omit them)', () => {
+    expect(validateDiaryPayloadLimits({ title: 'Valid' })).toBeNull()
+    expect(validateDiaryPayloadLimits({})).toBeNull()
+  })
+})
 
 describe('diary authoring module', () => {
   it('hydrates API scalar wrappers and both API transaction naming conventions', () => {

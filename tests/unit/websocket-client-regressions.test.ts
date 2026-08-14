@@ -34,4 +34,16 @@ describe('websocket client regressions', () => {
     expect(source).toContain("transports: ['polling', 'websocket']")
     expect(source).toContain('tryAllTransports: true')
   })
+
+  it('bounds dismissAlert with a timeout and settles pending dismisses when the socket dies', () => {
+    const source = readFileSync(resolve(process.cwd(), 'plugins/websocket.client.ts'), 'utf8')
+
+    // Timeout race: server silence or a mismatched id must resolve false so
+    // the HTTP fallback in useAlerts can run.
+    expect(source).toContain('DISMISS_TIMEOUT_MS')
+    expect(source).toContain('pendingDismissSettlers.add(settle)')
+    // Socket death (disconnect) and manual teardown (destroySocket) must both
+    // unblock every waiting caller.
+    expect(source.match(/settlePendingDismisses\(false\)/g)?.length).toBe(2)
+  })
 })

@@ -28,7 +28,9 @@
     "copy": "Copy",
     "copied": "Copied!",
     "skipToContent": "Skip to main content",
-    "retry": "Retry"
+    "retry": "Retry",
+    "error": "Something went wrong",
+    "more": "more"
   },
   "nav": {
     "home": "Home",
@@ -98,7 +100,22 @@
     "passwordMinLength": "At least 8 characters",
     "passwordLengthError": "Password must be at least 8 characters",
     "confirmPasswordPlaceholder": "Enter password again",
-    "passwordMismatchError": "Passwords do not match"
+    "passwordMismatchError": "Passwords do not match",
+    "toasts": {
+      "loginSuccess": "Logged in successfully",
+      "registerSuccess": "Registration successful, please log in",
+      "settingsUpdated": "Settings updated",
+      "passwordChanged": "Password changed"
+    },
+    "emailInvalid": "Please enter a valid email address",
+    "preparingForm": "Preparing the form — you can submit once loading finishes.",
+    "aside": {
+      "desk": "Desk",
+      "deskValue": "Journal first",
+      "focus": "Focus",
+      "loop": "Loop",
+      "pitch": "Write down your reasoning, revisit decisions, and adjust your rhythm. Logging in is not entering a back office — it is returning to your own trading desk."
+    }
   },
   "quickDiary": {
     "shortcutHint": "Quick Diary (Ctrl/Cmd + J)",
@@ -163,12 +180,12 @@
     },
     "editor": {
       "eyebrow": "Quick Note",
-    "intro": "",
-    "saveModeLabel": "Save Mode",
-    "saveTo": "Save to",
-    "moreOptions": "More options",
-    "optional": "Optional",
-    "saveQuickDiary": "Save Quick Diary",
+      "intro": "",
+      "saveModeLabel": "Save Mode",
+      "saveTo": "Save to",
+      "moreOptions": "More options",
+      "optional": "Optional",
+      "saveQuickDiary": "Save Quick Diary",
       "titleAria": "Quick note title",
       "contentAria": "Quick note content",
       "titlePlaceholder": "Add a title (optional)",
@@ -234,7 +251,14 @@
         "minutes": "{count} min",
         "hours": "{count} hr",
         "hoursMinutes": "{hours} hr {minutes} min"
-      }
+      },
+      "customTitle": "Custom reminder",
+      "singleHint": "Set up to 1",
+      "dateLabel": "Reminder date",
+      "timeLabel": "Reminder time",
+      "apply": "Set",
+      "clear": "Clear",
+      "previewAt": "Reminder time: {time}"
     },
     "toasts": {
       "saved": "Quick diary saved"
@@ -323,7 +347,18 @@
     "successCreate": "New diary created successfully!",
     "successAppend": "Appended to existing diary successfully!",
     "changeTemplate": "Change template",
-    "fillRequired": "Please fill required information"
+    "fillRequired": "Please fill required information",
+    "tags": {
+      "title": "Tags",
+      "hint": "Press Enter to add, or type #tags",
+      "placeholder": "#market or type a tag",
+      "inputLabel": "Tag input",
+      "add": "Add",
+      "selected": "Selected tags",
+      "recent": "Recent",
+      "frequent": "Frequent tags",
+      "removeTag": "Remove tag {tag}"
+    }
   },
   "diary": {
     "title": "Diaries",
@@ -456,7 +491,11 @@
       "reviewPending": "This decision has not been reviewed yet."
     },
     "updateSuccess": "Entry updated",
-    "deleteFailed": "Delete failed"
+    "deleteFailed": "Delete failed",
+    "content": "Content",
+    "contentPlaceholder": "Write down your research notes...",
+    "date": "Date",
+    "titlePlaceholder": "Add a note title"
   },
   "alert": {
     "title": "Alerts",
@@ -575,7 +614,16 @@
       "quickTransactionDesc": "Add a new trade to your diary to update your portfolio.",
       "logNewTrade": "Log New Trade",
       "portfolioUpdated": "Portfolio updated with latest market data",
-      "couldNotRefresh": "Could not refresh market prices"
+      "couldNotRefresh": "Could not refresh market prices",
+      "loadFailed": "Failed to load portfolio",
+      "marketStates": {
+        "REGULAR": "Market open",
+        "PRE": "Pre-market",
+        "POST": "After hours",
+        "CLOSED": "Market closed",
+        "PREPRE": "Pre-market (not yet open)",
+        "POSTPOST": "After hours (ended)"
+      }
     },
     "riskSummary": {
       "title": "Portfolio Risk Summary",
@@ -617,6 +665,35 @@
         "partial": "Partial",
         "unavailable": "Unavailable"
       }
+    },
+    "performance": {
+      "title": "Realized Performance",
+      "exportCsv": "Export CSV",
+      "exporting": "Exporting...",
+      "exportSuccess": "CSV exported",
+      "exportFailed": "Export failed, please try again later",
+      "periodMonth": "Month",
+      "periodQuarter": "Quarter",
+      "periodYear": "Year",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly",
+      "winRate": "Win Rate",
+      "tradeRecord": "{wins}W / {losses}L · {count} trades",
+      "realizedPnL": "Realized P/L",
+      "realizedPnLHint": "All closed positions",
+      "maxDrawdown": "Max Drawdown",
+      "maxDrawdownHint": "Largest peak-to-trough decline of the P/L curve",
+      "sharpe": "Sharpe Ratio",
+      "sharpeHint": "Monthly risk-adjusted return",
+      "pnlTrend": "P/L trend ({period})",
+      "equityCurve": "Equity curve (cumulative P/L)",
+      "bySymbol": "P/L by symbol (top 10)",
+      "topWins": "Best trades",
+      "topLosses": "Worst trades",
+      "emptyTitle": "No realized trades yet",
+      "emptyDescription": "Performance metrics will appear after your first complete buy-and-sell",
+      "cumulativePnL": "Cumulative P/L"
     }
   },
   "settings": {
@@ -694,7 +771,9 @@
     "apiKeyCreateSuccess": "API key created",
     "apiKeyCreateFailed": "Failed to create API key",
     "apiKeyRevokedSuccess": "API key revoked",
-    "apiKeyRevokeFailed": "Failed to revoke API key"
+    "apiKeyRevokeFailed": "Failed to revoke API key",
+    "excludeHolidays": "Exclude public holidays from stats (by timezone)",
+    "excludeHolidaysDesc": "Holidays are fetched automatically via Nager.Date and excluded from the recording-rate denominator."
   },
   "partners": {
     "title": "Partners",
@@ -726,10 +805,38 @@
       "viewReviews": "View Reviews",
       "sectionUnavailable": "This section is temporarily unavailable.",
       "partialData": "Some evidence is temporarily unavailable; available items are still shown.",
-      "portfolio": { "title": "Portfolio Overview", "pricedValue": "Priced market value", "empty": "No active position yet. Start with a Diary or research a company.", "loadFailed": "Portfolio holdings could not be loaded.", "quoteFailed": "Quotes are partially or temporarily unavailable; cost and quantity remain unchanged." },
-      "attention": { "title": "Needs Review", "empty": "Nothing needs immediate review.", "portfolio": "Portfolio concentration", "concentration": "Concentration warning", "reviewDue": "Diary review due", "reasons": { "missing_thesis": "Missing Investment Thesis", "overdue_thesis_review": "Thesis review overdue", "invalidated_thesis_while_held": "Invalidated Thesis while held", "overdue_diary_review": "Diary review overdue", "position_concentration": "Position concentration" } },
-      "activity": { "title": "Recent Investment Activity", "fullHistory": "Full Timeline", "loadFailed": "Recent Diary activity could not be loaded.", "empty": "No recent Diary activity." },
-      "upcoming": { "title": "Upcoming / Pending Reviews", "loadFailed": "Review schedule could not be loaded.", "empty": "No upcoming or pending Reviews." }
+      "portfolio": {
+        "title": "Portfolio Overview",
+        "pricedValue": "Priced market value",
+        "empty": "No active position yet. Start with a Diary or research a company.",
+        "loadFailed": "Portfolio holdings could not be loaded.",
+        "quoteFailed": "Quotes are partially or temporarily unavailable; cost and quantity remain unchanged."
+      },
+      "attention": {
+        "title": "Needs Review",
+        "empty": "Nothing needs immediate review.",
+        "portfolio": "Portfolio concentration",
+        "concentration": "Concentration warning",
+        "reviewDue": "Diary review due",
+        "reasons": {
+          "missing_thesis": "Missing Investment Thesis",
+          "overdue_thesis_review": "Thesis review overdue",
+          "invalidated_thesis_while_held": "Invalidated Thesis while held",
+          "overdue_diary_review": "Diary review overdue",
+          "position_concentration": "Position concentration"
+        }
+      },
+      "activity": {
+        "title": "Recent Investment Activity",
+        "fullHistory": "Full Timeline",
+        "loadFailed": "Recent Diary activity could not be loaded.",
+        "empty": "No recent Diary activity."
+      },
+      "upcoming": {
+        "title": "Upcoming / Pending Reviews",
+        "loadFailed": "Review schedule could not be loaded.",
+        "empty": "No upcoming or pending Reviews."
+      }
     }
   },
   "compareDiary": {
@@ -1256,7 +1363,8 @@
       "deleteFailed": "Failed to delete",
       "editSuccess": "Discipline updated",
       "editFailed": "Failed to update",
-      "contentRequired": "Content is required"
+      "contentRequired": "Content is required",
+      "reorderFailed": "Failed to save the new order"
     },
     "actions": {
       "edit": "Edit",
@@ -1401,7 +1509,11 @@
     "shareWithOthers": "Share with others and grow together.",
     "publishedDate": "Published date",
     "minute": "min",
-    "readingTimeLabel": "Reading time"
+    "readingTimeLabel": "Reading time",
+    "noPostsDescription": "New articles are on the way — check back soon.",
+    "richTextSupported": "Rich text formatting is supported",
+    "confirmBulkDelete": "Delete {count} selected posts?",
+    "draftRestorePrompt": "An unpublished draft was detected. Restore it?"
   },
   "tools": {
     "positionSizing": {
@@ -1928,7 +2040,8 @@
       },
       "copyToClipboard": "Copy as Markdown",
       "copySuccess": "Copied to clipboard",
-      "copyFailed": "Copy failed"
+      "copyFailed": "Copy failed",
+      "copied": "Copied!"
     },
     "relativeValue": {
       "title": "Relative Value Calculator",
@@ -2392,32 +2505,87 @@
     "saved": "Investment Thesis saved",
     "saveFailed": "Could not save Investment Thesis",
     "noSummary": "No summary yet",
-    "health": { "draft": "Draft", "healthy": "Healthy", "needs_review": "Needs review", "invalidated": "Invalidated", "archived": "Archived" },
-    "fields": {
-      "summary": "Summary", "whyIOwnIt": "Why I own it", "growthDrivers": "Growth drivers", "risks": "Risks",
-      "invalidationConditions": "Invalidation conditions", "expectedHoldingPeriod": "Expected holding period", "reviewDueAt": "Review due"
+    "health": {
+      "draft": "Draft",
+      "healthy": "Healthy",
+      "needs_review": "Needs review",
+      "invalidated": "Invalidated",
+      "archived": "Archived"
     },
-    "decisions": { "HOLD": "Hold", "ADD": "Add", "REDUCE": "Reduce", "EXIT": "Exit", "CONTINUE_WATCHING": "Continue watching" },
+    "fields": {
+      "summary": "Summary",
+      "whyIOwnIt": "Why I own it",
+      "growthDrivers": "Growth drivers",
+      "risks": "Risks",
+      "invalidationConditions": "Invalidation conditions",
+      "expectedHoldingPeriod": "Expected holding period",
+      "reviewDueAt": "Review due"
+    },
+    "decisions": {
+      "HOLD": "Hold",
+      "ADD": "Add",
+      "REDUCE": "Reduce",
+      "EXIT": "Exit",
+      "CONTINUE_WATCHING": "Continue watching"
+    },
     "review": {
-      "start": "Start review", "title": "Thesis Review", "outcome": "Outcome", "decision": "Portfolio decision",
-      "whatImproved": "What improved?", "whatDeteriorated": "What deteriorated?", "whatChanged": "What changed?",
-      "invalidationTriggered": "An invalidation condition was triggered", "complete": "Complete review", "history": "Review history",
-      "snapshot": "Thesis at review time", "validation": "Choose an outcome and decision, then write at least one reflection.",
-      "saved": "Thesis Review saved", "saveFailed": "Could not save Thesis Review"
+      "start": "Start review",
+      "title": "Thesis Review",
+      "outcome": "Outcome",
+      "decision": "Portfolio decision",
+      "whatImproved": "What improved?",
+      "whatDeteriorated": "What deteriorated?",
+      "whatChanged": "What changed?",
+      "invalidationTriggered": "An invalidation condition was triggered",
+      "complete": "Complete review",
+      "history": "Review history",
+      "snapshot": "Thesis at review time",
+      "validation": "Choose an outcome and decision, then write at least one reflection.",
+      "saved": "Thesis Review saved",
+      "saveFailed": "Could not save Thesis Review"
     }
   },
   "companyHub": {
-    "title": "Company Hub", "kicker": "Company", "backToPortfolio": "Back to Portfolio", "loadFailed": "Could not load Company",
+    "title": "Company Hub",
+    "kicker": "Company",
+    "backToPortfolio": "Back to Portfolio",
+    "loadFailed": "Could not load Company",
     "position": {
-      "kicker": "What I own", "title": "My Position", "quantity": "Quantity", "averageCost": "Average cost", "marketPrice": "Market price",
-      "marketValue": "Market value", "concentration": "Portfolio concentration", "costBasis": "Based on cost while complete portfolio quotes are unavailable",
+      "kicker": "What I own",
+      "title": "My Position",
+      "quantity": "Quantity",
+      "averageCost": "Average cost",
+      "marketPrice": "Market price",
+      "marketValue": "Market value",
+      "concentration": "Portfolio concentration",
+      "costBasis": "Based on cost while complete portfolio quotes are unavailable",
       "quoteMissing": "Live quote unavailable. Cost data remains visible.",
-      "states": { "held": "Held", "closed": "Closed position", "research_only": "Research only", "untracked": "Not held or watched" }
+      "states": {
+        "held": "Held",
+        "closed": "Closed position",
+        "research_only": "Research only",
+        "untracked": "Not held or watched"
+      }
     },
-    "changes": { "kicker": "Investment memory", "title": "What Changed" },
-    "relatedDiaries": "Related Diaries", "recentNotes": "Recent Stock Notes", "evidence": "Source evidence", "openSource": "Open source",
-    "relations": { "explicit_context": "Explicit Company context", "transaction": "Transaction context" },
-    "sources": { "me": "Me" },
-    "empty": { "diaries": "No related Diaries yet.", "notes": "No Stock Notes yet.", "evidence": "No source evidence yet." }
+    "changes": {
+      "kicker": "Investment memory",
+      "title": "What Changed"
+    },
+    "relatedDiaries": "Related Diaries",
+    "recentNotes": "Recent Stock Notes",
+    "evidence": "Source evidence",
+    "openSource": "Open source",
+    "relations": {
+      "explicit_context": "Explicit Company context",
+      "transaction": "Transaction context"
+    },
+    "sources": {
+      "me": "Me"
+    },
+    "empty": {
+      "diaries": "No related Diaries yet.",
+      "notes": "No Stock Notes yet.",
+      "evidence": "No source evidence yet."
+    }
   }
 }

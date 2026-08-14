@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { persistAlert } from '~/server/utils/alert-persistence'
+import { persistAlert, persistAlerts } from '~/server/utils/alert-persistence'
 
 describe('persistAlert', () => {
   it('links a recurring series using only rows created for that series', async () => {
@@ -38,5 +38,34 @@ describe('persistAlert', () => {
       ]),
     })
     expect(tx.alert.findMany).not.toHaveBeenCalled()
+  })
+})
+
+describe('persistAlerts', () => {
+  it('rejects more than 50 alerts with a validation error before any write', async () => {
+    const create = vi.fn()
+    const tx = { alert: { create } } as any
+    const alerts = Array.from({ length: 51 }, () => ({ message: 'Review' }))
+
+    await expect(persistAlerts(tx, 12n, alerts as any, 'Asia/Taipei')).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      statusCode: 400,
+      details: [{ field: 'alerts', message: expect.stringContaining('50') }],
+    })
+    expect(create).not.toHaveBeenCalled()
+  })
+
+  it('persists within the cap', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 1n })
+    const tx = { alert: { create } } as any
+    const alerts = [
+      { message: 'First', trigger_at: '2026-06-01T09:30:00Z' },
+      { message: 'Second', trigger_at: '2026-06-02T09:30:00Z' },
+    ]
+
+    const persisted = await persistAlerts(tx, 12n, alerts as any, 'Asia/Taipei')
+
+    expect(persisted).toHaveLength(2)
+    expect(create).toHaveBeenCalledTimes(2)
   })
 })

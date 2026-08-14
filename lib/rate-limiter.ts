@@ -81,14 +81,23 @@ export const rateLimiters = {
 }
 
 /**
- * Get client IP from H3 event for rate limiting
+ * Get client IP from H3 event for rate limiting.
+ *
+ * X-Forwarded-For is client-controlled behind append-mode proxies — trusting
+ * the first entry lets an attacker mint unlimited rate-limit buckets for
+ * login/register/password. Default (safe): ignore the header entirely and use
+ * the socket address. Deployments behind a trusted reverse proxy that APPENDS
+ * the real client IP can set TRUST_X_FORWARDED_FOR=true, in which case we use
+ * the LAST entry — the one appended by our own proxy, not the client.
  */
 export function getRateLimitIdentifier(event: { node?: { req?: { headers?: Record<string, string | string[] | undefined>, socket?: { remoteAddress?: string } } } }): string {
   const req = event.node?.req
-  const forwarded = req?.headers?.['x-forwarded-for']
-  if (typeof forwarded === 'string') {
-    const first = forwarded.split(',')[0]
-    return first ? first.trim() : 'unknown'
+  if (process.env.TRUST_X_FORWARDED_FOR === 'true') {
+    const forwarded = req?.headers?.['x-forwarded-for']
+    if (typeof forwarded === 'string') {
+      const last = forwarded.split(',').pop()?.trim()
+      if (last) return last
+    }
   }
   return req?.socket?.remoteAddress ?? 'unknown'
 }

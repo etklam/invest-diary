@@ -16,6 +16,7 @@ function createForm(overrides: Partial<DiaryAuthoringForm> = {}): DiaryAuthoring
     risk: '',
     execution: '',
     reviewDueAt: '',
+    stockSymbols: [],
     transactions: [],
     alerts: [],
     ...overrides,
@@ -87,6 +88,23 @@ describe('diary draft guard', () => {
     const after = serializeDiaryDraft(form)
 
     expect(after).not.toBe(before)
+  })
+
+  it('flags stockSymbols edits as dirty so they cannot be silently lost', () => {
+    const form = reactive(createForm({ stockSymbols: ['AAPL'] })) as unknown as DiaryAuthoringForm
+    const guard = createDiaryDraftGuard(() => form, vi.fn(() => false))
+
+    guard.markClean()
+    expect(guard.isDirty.value).toBe(false)
+
+    form.stockSymbols.push('MSFT')
+    expect(guard.isDirty.value).toBe(true)
+
+    form.stockSymbols = ['MSFT']
+    expect(guard.isDirty.value).toBe(true)
+
+    form.stockSymbols = ['AAPL']
+    expect(guard.isDirty.value).toBe(false)
   })
 })
 

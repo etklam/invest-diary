@@ -171,7 +171,7 @@ export default defineEventHandler(async (event) => {
 ### 5. Authentication Architecture
 
 - **Access Token**: 1h, httpOnly cookie (`access-token`)
-- **Refresh Token**: 30d, httpOnly cookie (`refresh-token`), DB stored, rotation on use
+- **Refresh Token**: 30d, httpOnly cookie (`refresh-token`), DB stored. 刻意不輪換（refresh 僅換發 access token）— 避免 cross-tab refresh race 造成強制登出；代價是無 stolen-token 重用偵測，失效只能靠 logout / 改密碼（tokenVersion）
 - **Token Versioning**: `tokenVersion` 改密碼即失效所有 token
 - **Auth Middleware**: `server/middleware/auth.ts` 跑在所有 `/api/**` routes
 - **Agent API**: 用 API Key + Bearer token，`requireApiKey(event, scopes)`

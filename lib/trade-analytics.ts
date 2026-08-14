@@ -47,10 +47,11 @@ export interface WinRateResult {
   winRate: number           // 0–100，N/A 時為 null
 }
 
-export interface DrawdownResult {
-  maxDrawdownPct: number    // 0–100（正值表示虧損幅度）
-  peakValue: number
-  troughValue: number
+export interface RealizedDrawdownResult {
+  maxDrawdownPct: number    // 0–100（正值表示虧損幅度，相對累積已投入成本）
+  maxDrawdownDollars: number // 累積已實現損益的 peak-to-trough 最大回撤（美元）
+  peakPnL: number
+  troughPnL: number
 }
 
 export interface SharpeResult {
@@ -76,6 +77,7 @@ import {
   toDate,
   createPosition,
   applyBuy,
+  applySell,
   isPositionClosed,
 } from '~/lib/position-state'
 import type { SymbolPosition } from '~/lib/position-state'
@@ -131,16 +133,12 @@ export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
         emotion: tx.emotion?.trim() || existingMeta.emotion,
       })
     } else if (tx.type === 'SELL') {
-      if (pos.totalQuantity <= 0) {
-        // 無持倉卻賣出（資料問題），跳過
-        continue
-      }
+      // applySell 容忍超賣/無持倉賣出（資料問題），只結算有持倉的部分
+      const { appliedQty, avgCost } = applySell(pos, qty)
+      if (appliedQty <= 0) continue
 
-      const avgCost = pos.totalCost / pos.totalQuantity
-      // 只計算有持倉的部分
-      const matchedQty = Math.min(qty, pos.totalQuantity)
-      const costBasis = matchedQty * avgCost
-      const proceeds = matchedQty * price
+      const costBasis = appliedQty * avgCost
+      const proceeds = appliedQty * price
       const realizedPnL = proceeds - costBasis
       const realizedPnLPct = costBasis > 0 ? (realizedPnL / costBasis) * 100 : 0
       const existingMeta = symbolMeta.get(sym) ?? { strategy: null, emotion: null }
@@ -149,7 +147,7 @@ export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
         id: String(tx.id),
         symbol: sym,
         sellDate: toDate(tx.tradeDate),
-        sellQuantity: matchedQty,
+        sellQuantity: appliedQty,
         sellPrice: price,
         avgCostBasis: avgCost,
         realizedPnL,
@@ -158,9 +156,6 @@ export function matchTrades(transactions: RawTransaction[]): ClosedTrade[] {
         emotion: tx.emotion?.trim() || existingMeta.emotion,
       })
 
-      // 更新持倉（matchTrades 容忍截斷，不拋錯）
-      pos.totalQuantity -= matchedQty
-      pos.totalCost -= matchedQty * avgCost
       if (isPositionClosed(pos)) {
         symbolState.delete(sym)
         symbolMeta.delete(sym)
@@ -190,38 +185,49 @@ export function calcWinRate(trades: ClosedTrade[]): WinRateResult {
 }
 
 /**
- * calcMaxDrawdown
- * 計算資金曲線的最大回撤百分比。
+ * calcRealizedDrawdown
+ * 從已關閉交易計算最大回撤。
  *
- * 輸入：時間序列的資產淨值（equity curve）。
- * 回傳：最大回撤百分比（正值，例如 25.3 表示最多跌了 25.3%）。
+ * 沒有帳戶出入金資料，無法重建真實權益曲線，因此：
+ * - 美元回撤 = 累積已實現損益的 peak-to-trough（從 0 起算，精確）
+ * - 百分比 = 該時點美元回撤 ÷ 當時累積已投入成本（已平倉的成本基礎）
  *
- * 邊界：空陣列或單一元素 → drawdown = 0。
+ * ponytail: 基底假設「每筆平倉的 basis 都是獨立投入的資金」；
+ * 若同一筆資金反覆滾動，百分比會低估（美元值仍精確）。
+ * 要更準確需要匯入帳戶出入金紀錄。
+ *
+ * 邊界：空陣列或無回撤 → 全部為 0。
  */
-export function calcMaxDrawdown(equityCurve: number[]): DrawdownResult {
-  if (equityCurve.length < 2) {
-    const first = equityCurve[0] ?? 0
-    return { maxDrawdownPct: 0, peakValue: first, troughValue: first }
+export function calcRealizedDrawdown(trades: ClosedTrade[]): RealizedDrawdownResult {
+  const result: RealizedDrawdownResult = {
+    maxDrawdownPct: 0,
+    maxDrawdownDollars: 0,
+    peakPnL: 0,
+    troughPnL: 0,
+  }
+  if (!trades.length) return result
+
+  const sorted = [...trades].sort((a, b) => a.sellDate.getTime() - b.sellDate.getTime())
+
+  let cumPnL = 0
+  let cumBasis = 0
+  let peak = 0 // 起點 0 視為初始權益
+
+  for (const trade of sorted) {
+    cumPnL += trade.realizedPnL
+    cumBasis += trade.sellQuantity * trade.avgCostBasis
+    if (cumPnL > peak) peak = cumPnL
+
+    const drawdown = peak - cumPnL
+    if (drawdown > result.maxDrawdownDollars && cumBasis > 0) {
+      result.maxDrawdownDollars = drawdown
+      result.maxDrawdownPct = (drawdown / cumBasis) * 100
+      result.peakPnL = peak
+      result.troughPnL = cumPnL
+    }
   }
 
-  let peak: number = equityCurve[0]!
-  let maxDrawdownPct = 0
-  let peakValue: number = equityCurve[0]!
-  let troughValue: number = equityCurve[0]!
-
-  for (const value of equityCurve) {
-    if (value > peak) {
-      peak = value
-    }
-    const drawdown = peak > 0 ? ((peak - value) / peak) * 100 : 0
-    if (drawdown > maxDrawdownPct) {
-      maxDrawdownPct = drawdown
-      peakValue = peak
-      troughValue = value
-    }
-  }
-
-  return { maxDrawdownPct, peakValue, troughValue }
+  return result
 }
 
 /**
@@ -306,37 +312,45 @@ export function calcPeriodStats(
 }
 
 /**
- * buildEquityCurve
- * 從已關閉的交易建立資金曲線（累積損益）。
- * 用於 calcMaxDrawdown 的輸入。
+ * buildMonthlyReturnPcts
+ * 建立每月已實現報酬序列（百分比），供 calcSharpe 使用。
  *
- * @param initialCapital - 初始資本（預設 100，只看相對變化）
+ * 每月報酬 = 該月 ΣrealizedPnL / 該月已平倉 round-trips 的 Σ成本基礎 × 100。
+ * 首個至最後一個活躍月份之間沒有平倉的月份補 0（該月無已實現損益）。
+ *
+ * 邊界：空陣列 → []。
  */
-export function buildEquityCurve(
-  trades: ClosedTrade[],
-  initialCapital = 100
-): number[] {
-  if (!trades.length) return [initialCapital]
+export function buildMonthlyReturnPcts(trades: ClosedTrade[]): number[] {
+  if (!trades.length) return []
 
-  // 按日期升序排序
-  const sorted = [...trades].sort((a, b) => a.sellDate.getTime() - b.sellDate.getTime())
-
-  let equity = initialCapital
-  const curve: number[] = [equity]
-
-  for (const trade of sorted) {
-    // 相對於初始資本的損益增量
-    equity += trade.realizedPnL
-    curve.push(equity)
+  const byMonth = new Map<string, { pnl: number; basis: number }>()
+  for (const trade of trades) {
+    const key = periodKey(trade.sellDate, 'month')
+    const agg = byMonth.get(key) ?? { pnl: 0, basis: 0 }
+    agg.pnl += trade.realizedPnL
+    agg.basis += trade.sellQuantity * trade.avgCostBasis
+    byMonth.set(key, agg)
   }
 
-  return curve
+  const keys = [...byMonth.keys()].sort()
+  const start = keys[0]!.split('-').map(Number) as [number, number]
+  const [endY, endM] = keys[keys.length - 1]!.split('-').map(Number) as [number, number]
+
+  const returns: number[] = []
+  let [y, m] = start
+  while (y < endY || (y === endY && m <= endM)) {
+    const agg = byMonth.get(`${y}-${String(m).padStart(2, '0')}`)
+    returns.push(agg && agg.basis > 0 ? (agg.pnl / agg.basis) * 100 : 0)
+    if (m === 12) { m = 1; y++ } else { m++ }
+  }
+
+  return returns
 }
 
 /**
  * buildEquityCurveWithDates
- * 同 buildEquityCurve，但每個點帶上日期，方便前端圖表 X 軸使用。
- * cumPnL = 累積已實現損益（不含初始資本偏移，從 0 開始）
+ * 累積已實現損益曲線，每個點帶上日期，方便前端圖表 X 軸使用。
+ * cumPnL = 累積已實現損益（從 0 開始，不含任何虛構初始資本）
  */
 export interface EquityCurvePoint {
   date: string    // ISO date string (YYYY-MM-DD)

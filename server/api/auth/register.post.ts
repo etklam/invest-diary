@@ -10,6 +10,14 @@ import {
   createUserForRegistration,
 } from '~/server/utils/user-queries'
 
+/** Prisma's unique-constraint error, checked structurally (same pattern as diary-write.ts). */
+function isUniqueConstraintError(error: unknown): boolean {
+  return typeof error === 'object'
+    && error !== null
+    && 'code' in error
+    && (error as { code?: unknown }).code === 'P2002'
+}
+
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
   try {
@@ -43,12 +51,22 @@ export default defineEventHandler(async (event) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(validatedData.password, 10)
 
-    // Create user
-    const user = await createUserForRegistration({
-      email: validatedData.email,
-      hashedPassword,
-      name: validatedData.name,
-    })
+    // Create user. The pre-check above is a fast UX path only — two
+    // concurrent registrations of the same email lose the race and surface
+    // as P2002, which must map to the same 409 the pre-check returns.
+    let user
+    try {
+      user = await createUserForRegistration({
+        email: validatedData.email,
+        hashedPassword,
+        name: validatedData.name,
+      })
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw Errors.userEmailExists(validatedData.email)
+      }
+      throw error
+    }
 
     log.info('User registered', { userId: String(user.id) })
 

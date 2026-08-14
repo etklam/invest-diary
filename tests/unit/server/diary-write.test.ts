@@ -18,6 +18,7 @@ const {
   mockTxAlertCreateMany,
   mockTxAlertUpdate,
   mockTxUserFindUnique,
+  mockTxQueryRaw,
 } = vi.hoisted(() => ({
   mockPrismaDiaryFindFirst: vi.fn(),
   mockPrismaDiaryCreate: vi.fn(),
@@ -35,6 +36,7 @@ const {
   mockTxAlertCreateMany: vi.fn(),
   mockTxAlertUpdate: vi.fn(),
   mockTxUserFindUnique: vi.fn(),
+  mockTxQueryRaw: vi.fn(),
 }))
 
 vi.mock('~/lib/prisma', () => ({
@@ -194,6 +196,44 @@ describe('diffTransactions', () => {
     expect(result.toUpdate[0].id).toBe(777n)
   })
 
+  it.each(['abc', '1.5', '-1', '0', ''])('rejects malformed string transaction id %j with a 400 validation error', (id) => {
+    const incoming: TransactionInput[] = [
+      { id, symbol: 'AAPL', type: 'BUY', quantity: 1, price: 10 } as unknown as TransactionInput,
+    ]
+
+    let caught: any
+    try {
+      diffTransactions(incoming)
+    } catch (error) {
+      caught = error
+    }
+
+    expect(caught).toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      statusCode: 400,
+      details: [{ field: 'transactions.0.id' }],
+    })
+  })
+
+  it.each([1.5, -1, 0, Number.NaN])('rejects malformed numeric transaction id %s with a 400 validation error', (id) => {
+    const incoming: TransactionInput[] = [
+      { id, symbol: 'AAPL', type: 'BUY', quantity: 1, price: 10 } as unknown as TransactionInput,
+    ]
+
+    let caught: any
+    try {
+      diffTransactions(incoming)
+    } catch (error) {
+      caught = error
+    }
+
+    expect(caught).toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      statusCode: 400,
+      details: [{ field: 'transactions.0.id' }],
+    })
+  })
+
   it('recognizes Prisma unique constraint errors without requiring Prisma runtime classes', () => {
     expect(isUniqueConstraintError({ code: 'P2002' })).toBe(true)
     expect(isUniqueConstraintError({ code: 'P2025' })).toBe(false)
@@ -351,12 +391,17 @@ describe('createDiaryForUser', () => {
       content: 'Existing content',
       tagsString: 'watch',
     })
-    mockPrismaDiaryUpdate.mockResolvedValue({
+    mockTxQueryRaw.mockResolvedValue([{ content: 'Existing content', tags: 'watch' }])
+    mockTxDiaryUpdate.mockResolvedValue({
       ...baseCreatedDiary,
       id: 99n,
       content: 'Existing content\n\n---\n\nNew content',
       tagsString: 'watch,mistake',
     })
+    mockPrismaTransaction.mockImplementation(async (cb: any) => cb({
+      $queryRaw: mockTxQueryRaw,
+      diary: { update: mockTxDiaryUpdate },
+    }))
 
     await createDiaryForUser({
       userId: '1',
@@ -368,15 +413,63 @@ describe('createDiaryForUser', () => {
       },
     })
 
-    expect(mockPrismaDiaryUpdate).toHaveBeenCalledWith(
+    // The append must re-read the diary row inside the transaction with a
+    // locking read, then merge against what that read returned.
+    expect(mockTxQueryRaw).toHaveBeenCalled()
+    expect(String(mockTxQueryRaw.mock.calls[0]?.[0])).toContain('FOR UPDATE')
+    expect(mockTxDiaryUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 99n },
         data: expect.objectContaining({
+          content: 'Existing content\n\n---\n\nNew content',
           tagsString: 'watch,mistake',
         }),
       })
     )
     expect(mockPrismaDiaryCreate).not.toHaveBeenCalled()
+  })
+
+  it('appends to the content re-read inside the transaction, not the stale outer read', async () => {
+    // Simulates a concurrent append committing between the outer findFirst and
+    // the transaction: the locking re-read must see the newer content and the
+    // update must build on it, not on the stale snapshot.
+    mockPrismaDiaryFindFirst.mockResolvedValue({
+      id: 99n,
+      userId: 1n,
+      content: 'Stale content',
+      tagsString: null,
+    })
+    mockTxQueryRaw.mockResolvedValue([{
+      content: 'Stale content\n\n---\n\nConcurrent append',
+      tags: null,
+    }])
+    mockTxDiaryUpdate.mockResolvedValue({
+      ...baseCreatedDiary,
+      id: 99n,
+      content: 'Stale content\n\n---\n\nConcurrent append\n\n---\n\nNew content',
+    })
+    mockPrismaTransaction.mockImplementation(async (cb: any) => cb({
+      $queryRaw: mockTxQueryRaw,
+      diary: { update: mockTxDiaryUpdate },
+    }))
+
+    await createDiaryForUser({
+      userId: '1',
+      body: {
+        title: 'Test Diary',
+        content: 'New content',
+        appendToToday: true,
+      },
+    })
+
+    expect(mockTxDiaryUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 99n },
+        data: expect.objectContaining({
+          content: 'Stale content\n\n---\n\nConcurrent append\n\n---\n\nNew content',
+        }),
+      })
+    )
   })
 
   it('persists appended transactions and alerts atomically with the content merge', async () => {
@@ -386,6 +479,7 @@ describe('createDiaryForUser', () => {
       content: 'Existing content',
       tagsString: 'watch',
     })
+    mockTxQueryRaw.mockResolvedValue([{ content: 'Existing content', tags: 'watch' }])
     mockTxTransactionCreate.mockResolvedValue({ id: 701n })
     mockTxAlertCreate.mockResolvedValue({ id: 702n })
     mockTxDiaryUpdate.mockResolvedValue({
@@ -396,6 +490,7 @@ describe('createDiaryForUser', () => {
       alerts: [{ id: 702n }],
     })
     mockPrismaTransaction.mockImplementation(async (cb: any) => cb({
+      $queryRaw: mockTxQueryRaw,
       transaction: { create: mockTxTransactionCreate },
       alert: {
         create: mockTxAlertCreate,
@@ -496,6 +591,67 @@ describe('createDiaryForUser', () => {
       userId: '1',
       body: { title: 'Concurrent diary', content: 'Conflict' },
     })).rejects.toMatchObject({ code: 'DIARY_ALREADY_EXISTS', statusCode: 409 })
+  })
+
+  it('rejects more than 100 transactions per diary before any DB access', async () => {
+    const transactions = Array.from({ length: 101 }, () => ({
+      symbol: 'AAPL',
+      type: 'BUY' as const,
+      quantity: 1,
+      price: 1,
+    }))
+
+    await expect(createDiaryForUser({
+      userId: '1',
+      body: { title: 'Too many rows', content: 'Should not persist', transactions },
+    })).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      statusCode: 400,
+      details: [{ field: 'transactions', message: expect.stringContaining('100') }],
+    })
+
+    expect(mockPrismaDiaryFindFirst).not.toHaveBeenCalled()
+    expect(mockPrismaDiaryCreate).not.toHaveBeenCalled()
+  })
+
+  it('rejects more than 50 alerts per diary before any DB access', async () => {
+    const alerts = Array.from({ length: 51 }, () => ({ message: 'Review' }))
+
+    await expect(createDiaryForUser({
+      userId: '1',
+      body: { title: 'Too many alerts', content: 'Should not persist', alerts },
+    })).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      statusCode: 400,
+      details: [{ field: 'alerts', message: expect.stringContaining('50') }],
+    })
+
+    expect(mockPrismaDiaryFindFirst).not.toHaveBeenCalled()
+    expect(mockPrismaTransaction).not.toHaveBeenCalled()
+  })
+
+  it('rejects a title longer than 500 characters', async () => {
+    await expect(createDiaryForUser({
+      userId: '1',
+      body: { title: 'x'.repeat(501), content: 'Should not persist' },
+    })).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      details: [{ field: 'title', message: expect.stringContaining('500') }],
+    })
+
+    expect(mockPrismaDiaryCreate).not.toHaveBeenCalled()
+  })
+
+  it('rejects content longer than 500000 characters', async () => {
+    await expect(createDiaryForUser({
+      userId: '1',
+      body: { title: 'Valid title', content: 'x'.repeat(500_001) },
+    })).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      details: [{ field: 'content', message: expect.stringContaining('500000') }],
+    })
+
+    expect(mockPrismaDiaryCreate).not.toHaveBeenCalled()
   })
 
   it('allows a SELL in a later diary when the owned ledger has prior holdings', async () => {
@@ -833,6 +989,25 @@ describe('updateDiaryForUser', () => {
     ).rejects.toMatchObject({
       code: 'SYS_VALIDATION_ERROR',
     })
+  })
+
+  it('rejects oversized payloads on update before any DB access', async () => {
+    const alerts = Array.from({ length: 51 }, () => ({ message: 'Review' }))
+
+    await expect(
+      updateDiaryForUser({
+        userId: '1',
+        diaryId: '12',
+        body: { title: 'Title', content: 'Content', alerts },
+      })
+    ).rejects.toMatchObject({
+      code: 'SYS_VALIDATION_ERROR',
+      statusCode: 400,
+      details: [{ field: 'alerts', message: expect.stringContaining('50') }],
+    })
+
+    expect(mockPrismaDiaryFindFirst).not.toHaveBeenCalled()
+    expect(mockPrismaTransaction).not.toHaveBeenCalled()
   })
 
   it('should throw diaryNotFound when diary does not exist', async () => {

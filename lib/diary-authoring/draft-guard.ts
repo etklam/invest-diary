@@ -27,6 +27,7 @@ export function serializeDiaryDraft(
     risk: form.risk,
     execution: form.execution,
     reviewDueAt: form.reviewDueAt,
+    stockSymbols: form.stockSymbols,
     transactions: form.transactions.map(transaction => ({
       id: transaction.id ?? null,
       symbol: transaction.symbol,

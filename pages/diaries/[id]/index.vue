@@ -4,7 +4,7 @@
     <p class="mt-3 text-sm text-dt-text-muted">{{ t('common.loading') }}</p>
   </div>
 
-  <ErrorState v-else-if="error" :title="t('diary.loadFailed')" :message="error.message" />
+  <ErrorState v-else-if="error" :title="t('diary.loadFailed')" :message="error.message" :retry-fn="refresh" />
 
   <div v-else-if="diary" class="mx-auto w-full max-w-[1040px] space-y-6 pb-16">
     <header class="flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
@@ -34,8 +34,12 @@
           <Icon name="heroicons:pencil" class="h-4 w-4" aria-hidden="true" />
           {{ t('common.edit') }}
         </BaseButton>
-        <BaseButton variant="danger" class="flex-1 sm:flex-none" @click="deleteDiary">
-          <Icon name="heroicons:trash" class="h-4 w-4" aria-hidden="true" />
+        <BaseButton variant="danger" class="flex-1 sm:flex-none" :disabled="deleting" @click="deleteDiary">
+          <Icon
+            :name="deleting ? 'svg-spinners:180-ring-with-bg' : 'heroicons:trash'"
+            class="h-4 w-4"
+            aria-hidden="true"
+          />
           {{ t('common.delete') }}
         </BaseButton>
       </div>
@@ -313,7 +317,7 @@ const toast = useToast()
 const { runWithAuthRecovery } = useAuthRecovery()
 const { formatLocaleDate, formatLocaleDateTime } = useTimezone()
 
-const { data: diary, pending, error } = await useLazyFetch<DecisionRecordDiary>(`/api/diaries/${id}`)
+const { data: diary, pending, error, refresh } = await useLazyFetch<DecisionRecordDiary>(`/api/diaries/${id}`)
 
 const transactions = computed(() => diary.value?.transactions ?? [])
 const tradePlans = computed(() => diary.value?.tradePlans ?? [])
@@ -377,9 +381,13 @@ const formatDecisionDate = (value: Date | string) => formatLocaleDate(value, {
   day: 'numeric',
 })
 
+const deleting = ref(false)
+
 const deleteDiary = async () => {
+  if (deleting.value) return
   if (!confirm(t('diary.deleteConfirm'))) return
 
+  deleting.value = true
   try {
     await runWithAuthRecovery(async (): Promise<void> => {
       await $fetch(`/api/diaries/${id}` as string, { method: 'DELETE' })
@@ -390,6 +398,8 @@ const deleteDiary = async () => {
     if (isAuthSessionError(error)) return
     toast.error(t('diary.deleteFailed'))
     console.error(error)
+  } finally {
+    deleting.value = false
   }
 }
 </script>

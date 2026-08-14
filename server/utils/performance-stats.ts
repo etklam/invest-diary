@@ -8,11 +8,11 @@
 import {
   matchTrades,
   calcWinRate,
-  calcMaxDrawdown,
+  calcRealizedDrawdown,
   calcSharpe,
   groupByPeriod,
   calcPeriodStats,
-  buildEquityCurve,
+  buildMonthlyReturnPcts,
   buildEquityCurveWithDates,
   type GroupPeriod,
   type ClosedTrade,
@@ -173,14 +173,15 @@ export function computePerformanceStats(
   )
 
   const winRateResult = calcWinRate(closedTrades)
-  const equityCurve = buildEquityCurve(closedTrades)
-  const drawdownResult = calcMaxDrawdown(equityCurve)
+  const drawdownResult = calcRealizedDrawdown(closedTrades)
   const equityCurveWithDates = buildEquityCurveWithDates(closedTrades)
 
   const grouped = groupByPeriod(closedTrades, 'month')
   const periodStatsResult = calcPeriodStats(grouped)
-  const monthlyReturns = periodStatsResult.map((p) => p.realizedPnL)
-  const sharpeResult = calcSharpe(monthlyReturns)
+  // Sharpe 必須吃百分比報酬（月報酬 = 該月 ΣrealizedPnL / Σ平倉成本基礎），
+  // 不能直接餵美元損益 —— 否則大倉位月份會被放大，與報酬率無關。
+  const monthlyReturnPcts = buildMonthlyReturnPcts(closedTrades)
+  const sharpeResult = calcSharpe(monthlyReturnPcts)
 
   const requestedGrouped =
     config.period === 'month' ? grouped : groupByPeriod(closedTrades, config.period)
@@ -189,12 +190,13 @@ export function computePerformanceStats(
       ? periodStatsResult
       : calcPeriodStats(requestedGrouped)
 
+  // 先 filter 再 slice：slice(0,5).filter 會在前 5 名夾雜虧損時擠掉第 6 名的獲利
   const sortedByPnL = [...closedTrades].sort((a, b) => b.realizedPnL - a.realizedPnL)
-  const topWins = sortedByPnL.slice(0, 5).filter((t) => t.realizedPnL > 0)
+  const topWins = sortedByPnL.filter((t) => t.realizedPnL > 0).slice(0, 5)
   const topLosses = [...closedTrades]
     .sort((a, b) => a.realizedPnL - b.realizedPnL)
-    .slice(0, 5)
     .filter((t) => t.realizedPnL < 0)
+    .slice(0, 5)
 
   const symbolMap = new Map<string, { realizedPnL: number; trades: ClosedTrade[] }>()
   for (const trade of closedTrades) {

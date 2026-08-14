@@ -5,6 +5,9 @@
     </h1>
 
     <div class="space-y-6">
+      <!-- Profile + Display + Trading sections stay non-editable until user settings load,
+           so placeholder defaults (Asia/Taipei, 20 trades/mo) never flash as editable values. -->
+      <fieldset :disabled="!settingsLoaded" class="space-y-6">
       <!-- Profile Section -->
       <div class="settings-card">
         <h2 class="settings-h2 text-xl font-semibold mb-4">
@@ -71,10 +74,10 @@
                 type="checkbox"
                 class="settings-checkbox h-4 w-4 rounded"
               >
-              <span>統計排除國定假日（依時區）</span>
+              <span>{{ t('settings.excludeHolidays') }}</span>
             </label>
             <p class="settings-hint mt-1 text-xs">
-              以 Nager.Date 自動抓取假日，計算記錄率時不納入分母。
+              {{ t('settings.excludeHolidaysDesc') }}
             </p>
           </div>
         </div>
@@ -164,6 +167,7 @@
           </button>
         </div>
       </div>
+      </fieldset>
 
       <!-- Security Section -->
       <div class="settings-card">
@@ -331,6 +335,8 @@ watch(() => settingsForm.value.timezone, (newValue) => {
 })
 
 // Load user settings on mount
+const settingsLoaded = ref(false)
+
 onMounted(async () => {
   await fetchMe()
   if (user.value) {
@@ -344,6 +350,7 @@ onMounted(async () => {
     }
     originalSettings.value = { ...settingsForm.value }
   }
+  settingsLoaded.value = true
 })
 
 const handleSaveSettings = async () => {

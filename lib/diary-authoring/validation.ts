@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import type { DiaryAuthoringLedgerContext, DiaryAuthoringTransaction } from './types'
 
 export type LedgerInputTransaction = Pick<DiaryAuthoringTransaction, 'symbol' | 'type'> & {
@@ -6,6 +7,63 @@ export type LedgerInputTransaction = Pick<DiaryAuthoringTransaction, 'symbol' | 
   tradeDate?: Date | string
   trade_date?: Date | string
   price?: unknown
+}
+
+/**
+ * Hard caps for diary payloads. Enforced server-side on every diary
+ * create/update (web + API-key agent paths); the 100-transaction cap matches
+ * the agent API record precedent. Without them an oversized payload is an
+ * authenticated DoS that also slows every subsequent unbounded ledger read.
+ */
+export const DIARY_PAYLOAD_LIMITS = {
+  transactions: 100,
+  alerts: 50,
+  title: 500,
+  content: 500_000,
+} as const
+
+const diaryPayloadLimitsSchema = z.object({
+  title: z.string().max(
+    DIARY_PAYLOAD_LIMITS.title,
+    `Title must be at most ${DIARY_PAYLOAD_LIMITS.title} characters`,
+  ),
+  content: z.string().max(
+    DIARY_PAYLOAD_LIMITS.content,
+    `Content must be at most ${DIARY_PAYLOAD_LIMITS.content} characters`,
+  ),
+  transactions: z.array(z.unknown()).max(
+    DIARY_PAYLOAD_LIMITS.transactions,
+    `A diary allows at most ${DIARY_PAYLOAD_LIMITS.transactions} transactions`,
+  ),
+  alerts: z.array(z.unknown()).max(
+    DIARY_PAYLOAD_LIMITS.alerts,
+    `A diary allows at most ${DIARY_PAYLOAD_LIMITS.alerts} alerts`,
+  ),
+})
+
+/**
+ * Reject oversized diary payloads before ledger math or persistence.
+ * Returns the first violated limit as a validation detail, or null.
+ */
+export function validateDiaryPayloadLimits(payload: {
+  title?: string | null
+  content?: string | null
+  transactions?: readonly unknown[] | null
+  alerts?: readonly unknown[] | null
+}): { field: string; message: string } | null {
+  const parsed = diaryPayloadLimitsSchema.safeParse({
+    title: payload.title ?? '',
+    content: payload.content ?? '',
+    transactions: payload.transactions ?? [],
+    alerts: payload.alerts ?? [],
+  })
+  if (parsed.success) return null
+  const issue = parsed.error.issues[0]
+  if (!issue) return null
+  return {
+    field: String(issue.path[0] ?? 'payload'),
+    message: issue.message,
+  }
 }
 
 export type HoldingsInput = Map<string, number> | Record<string, number> | undefined

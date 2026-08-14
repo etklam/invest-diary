@@ -22,6 +22,16 @@ import { findDiaryForUser } from '~/server/utils/diary-read'
 const RecurringModeEnum = z.enum(['WEEK', 'MONTH'])
 
 /**
+ * trigger_at must parse to a real Date — an unparseable string would become
+ * an Invalid Date deep in recurring-alerts (RangeError → 500). Reject as 400.
+ */
+const TriggerAtValue = z
+  .union([z.string(), z.date()])
+  .refine((value) => !Number.isNaN(new Date(value).getTime()), {
+    message: 'trigger_at must be a valid date',
+  })
+
+/**
  * Create alert input.
  *
  * Public API (snake_case) is the canonical shape consumed by the HTTP body.
@@ -40,8 +50,8 @@ export const CreateAlertSchema = z
       .trim()
       .min(1, { message: 'Message is required' })
       .max(500, { message: 'Message must be at most 500 characters' }),
-    trigger_at: z.union([z.string(), z.date()]).optional(),
-    triggerAt: z.union([z.string(), z.date()]).optional(),
+    trigger_at: TriggerAtValue.optional(),
+    triggerAt: TriggerAtValue.optional(),
     recurring_mode: RecurringModeEnum.optional(),
     recurringMode: RecurringModeEnum.optional(),
   })

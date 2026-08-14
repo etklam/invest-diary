@@ -49,10 +49,11 @@ export default defineEventHandler(async (event: H3Event) => {
           where: baseWhere,
           include: {
             author: {
+              // Public endpoint — never expose author email (the query layer
+              // gates it behind includeEmail for admin paths only).
               select: {
                 id: true,
                 name: true,
-                email: true,
               },
             },
           },

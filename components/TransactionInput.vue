@@ -11,7 +11,7 @@
     <div v-else class="space-y-4">
       <div
         v-for="(transaction, index) in transactions"
-        :key="index"
+        :key="uidOf(transaction)"
         class="relative rounded-dt-sm border bg-dt-surface-strong p-4"
         :class="hasValidationError(transaction) ? 'border-dt-danger' : 'border-dt-border'"
       >
@@ -106,17 +106,17 @@
         <div class="mt-3 border-t border-dt-border pt-3">
           <button
             type="button"
-            @click="toggleNotes(index)"
+            @click="toggleNotes(transaction)"
             class="flex items-center text-xs text-dt-text-muted transition-colors hover:text-dt-primary"
           >
             <Icon
-              :name="expandedNotes.has(index) ? 'heroicons:chevron-down' : 'heroicons:chevron-right'"
+              :name="expandedNotes.has(uidOf(transaction)) ? 'heroicons:chevron-down' : 'heroicons:chevron-right'"
               class="mr-1 h-3 w-3"
             />
-            {{ expandedNotes.has(index) ? t('diary.form.notesToggleOpen') : t('diary.form.notesToggle') }}
+            {{ expandedNotes.has(uidOf(transaction)) ? t('diary.form.notesToggleOpen') : t('diary.form.notesToggle') }}
           </button>
 
-          <div v-if="expandedNotes.has(index)" class="mt-3 space-y-3">
+          <div v-if="expandedNotes.has(uidOf(transaction))" class="mt-3 space-y-3">
             <!-- notes -->
             <div>
               <label :for="`notes-${index}`" class="block text-xs font-medium text-dt-text-muted">
@@ -232,17 +232,31 @@ const transactions = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-// Validation errors map
-const validationErrors = ref<Map<number, string>>(new Map())
+// Rows are keyed by a stable client-side uid (object identity), never index —
+// removing a row must not shift errors or expanded notes onto another row.
+let uidSeq = 0
+const rowUids = new WeakMap<Transaction, string>()
+const uidOf = (tx: Transaction): string => {
+  let uid = rowUids.get(tx)
+  if (!uid) {
+    uid = `tx-${++uidSeq}`
+    rowUids.set(tx, uid)
+  }
+  return uid
+}
 
-// 展開交易筆記的索引集合
-const expandedNotes = ref<Set<number>>(new Set())
+// Validation errors map（key: row uid）
+const validationErrors = ref<Map<string, string>>(new Map())
 
-const toggleNotes = (index: number) => {
-  if (expandedNotes.value.has(index)) {
-    expandedNotes.value.delete(index)
+// 展開交易筆記的 row uid 集合
+const expandedNotes = ref<Set<string>>(new Set())
+
+const toggleNotes = (tx: Transaction) => {
+  const uid = uidOf(tx)
+  if (expandedNotes.value.has(uid)) {
+    expandedNotes.value.delete(uid)
   } else {
-    expandedNotes.value.add(index)
+    expandedNotes.value.add(uid)
   }
   // trigger reactivity
   expandedNotes.value = new Set(expandedNotes.value)
@@ -333,23 +347,21 @@ const validateTransaction = (index: number) => {
   if (errors.length > 0) {
     const firstError = errors[0]
     if (firstError) {
-      validationErrors.value.set(index, firstError)
+      validationErrors.value.set(uidOf(tx), firstError)
     }
   } else {
-    validationErrors.value.delete(index)
+    validationErrors.value.delete(uidOf(tx))
   }
 }
 
 // Check if transaction has validation error
 const hasValidationError = (tx: Transaction): boolean => {
-  const index = transactions.value.indexOf(tx)
-  return validationErrors.value.has(index)
+  return validationErrors.value.has(uidOf(tx))
 }
 
 // Get validation error message
 const getValidationError = (tx: Transaction): string | undefined => {
-  const index = transactions.value.indexOf(tx)
-  return validationErrors.value.get(index)
+  return validationErrors.value.get(uidOf(tx))
 }
 
 const addTransaction = () => {
@@ -366,18 +378,16 @@ const addTransaction = () => {
 }
 
 const removeTransaction = (index: number) => {
+  const removed = transactions.value[index]
   transactions.value.splice(index, 1)
-  // Clear validation error and revalidate remaining transactions
-  validationErrors.value.delete(index)
-  // Clear notes expanded state for this index
-  expandedNotes.value.delete(index)
+  if (!removed) return
+  // Clear validation error and expanded notes keyed to the removed row
+  validationErrors.value.delete(uidOf(removed))
+  expandedNotes.value.delete(uidOf(removed))
   expandedNotes.value = new Set(expandedNotes.value)
-  // Revalidate all SELL transactions after removing one
+  // Revalidate ALL remaining transactions (holdings may have shifted)
   transactions.value.forEach((_, idx) => {
-    const tx = transactions.value[idx]
-    if (tx?.type === 'SELL') {
-      validateTransaction(idx)
-    }
+    validateTransaction(idx)
   })
 }
 

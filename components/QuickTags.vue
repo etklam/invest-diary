@@ -2,8 +2,8 @@
   <section class="quick-tags space-y-4" aria-labelledby="quick-tags-title">
     <div class="flex items-center justify-between gap-3">
       <div>
-        <h3 id="quick-tags-title" class="text-sm font-semibold" style="color: var(--color-text);">標籤</h3>
-        <p class="mt-1 text-xs" style="color: var(--color-text-soft);">按 Enter 新增，也可以輸入 # 標籤</p>
+        <h3 id="quick-tags-title" class="text-sm font-semibold" style="color: var(--color-text);">{{ t('quickDiary.tags.title') }}</h3>
+        <p class="mt-1 text-xs" style="color: var(--color-text-soft);">{{ t('quickDiary.tags.hint') }}</p>
       </div>
       <span v-if="selectedTags.length" class="font-data text-xs" style="color: var(--color-text-soft);">
         {{ selectedTags.length }}
@@ -16,8 +16,8 @@
         type="text"
         class="min-w-0 flex-1 rounded-dt-sm border px-3 py-2.5 text-sm outline-none transition-colors focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20"
         style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);"
-        placeholder="#市場 或 輸入標籤"
-        aria-label="標籤輸入"
+        :placeholder="t('quickDiary.tags.placeholder')"
+        :aria-label="t('quickDiary.tags.inputLabel')"
         @keydown.enter.prevent="addFromInput"
         @blur="addFromInput"
       />
@@ -27,12 +27,12 @@
         style="border-color: var(--color-border); background: var(--color-surface); color: var(--color-text-muted);"
         @click="addFromInput"
       >
-        新增
+        {{ t('quickDiary.tags.add') }}
       </button>
     </div>
 
     <div v-if="selectedTags.length" class="space-y-2">
-      <p class="text-[11px] font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">已選標籤</p>
+      <p class="text-[11px] font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">{{ t('quickDiary.tags.selected') }}</p>
       <div class="flex flex-wrap gap-2">
         <span
           v-for="tag in selectedTags"
@@ -44,7 +44,7 @@
           <button
             type="button"
             class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-dt-primary/10 focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
-            :aria-label="`移除標籤 ${tag}`"
+            :aria-label="t('quickDiary.tags.removeTag', { tag })"
             @click="removeSelected(tag)"
           >
             <Icon name="heroicons:x-mark" class="h-3.5 w-3.5" />
@@ -54,7 +54,7 @@
     </div>
 
     <div v-if="recentTags.length" class="space-y-2">
-      <p class="text-[11px] font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">最近使用</p>
+      <p class="text-[11px] font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">{{ t('quickDiary.tags.recent') }}</p>
       <div class="flex flex-wrap gap-2">
         <button
           v-for="tag in recentTags"
@@ -73,7 +73,7 @@
     </div>
 
     <div class="space-y-2">
-      <p class="text-[11px] font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">常用標籤</p>
+      <p class="text-[11px] font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">{{ t('quickDiary.tags.frequent') }}</p>
       <div class="flex flex-wrap gap-2">
         <button
           v-for="tag in tags"
