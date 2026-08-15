@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { reactive, ref } from 'vue'
 import QuickNoteEditorCore from '~/components/quicknote/QuickNoteEditorCore.vue'
+import type { QuickNoteEditorController } from '~/lib/quicknote/editor-controller'
 
 const messages: Record<string, string> = {
   'common.save': '儲存',
@@ -51,6 +53,50 @@ const messages: Record<string, string> = {
   'quickDiary.reminders.presets.nextMonth': '下個月',
 }
 
+const controller = {
+  state: reactive({
+    title: '2026/03/22 Diary',
+    content: 'Initial note',
+    tags: ['watch'],
+    stockSymbols: [],
+    date: '2026-03-22',
+    saveMode: 'create' as const,
+    templateKind: 'blank' as const,
+    templateData: {},
+  }),
+  templates: ref([{ id: 'template-1', name: '學習紀錄', content: '今天學到：', createdAt: '', updatedAt: '' }]),
+  reminders: ref({ reminder1: null }),
+  draftHint: ref('草稿已儲存'),
+  draftStatus: ref<'idle' | 'saving' | 'saved' | 'failed'>('idle'),
+  activeReminders: ref([{ key: 'reminder1', label: '提醒 1', remaining: '59 分鐘' }]),
+  existingDiaryForDate: ref(true),
+  checkingExistingDiaryForDate: ref(false),
+  hasTemplateChangesPending: ref(false),
+  templateOptions: ref([
+    { kind: 'blank', label: '自由編輯', description: '直接記錄', icon: 'heroicons:pencil-square-solid', iconClass: '' },
+  ]),
+  templatePickerOpen: ref(false),
+  setTitle: vi.fn(),
+  setContent: vi.fn(),
+  setTags: vi.fn(),
+  setStockSymbols: vi.fn(),
+  setDate: vi.fn(),
+  setSaveMode: vi.fn(),
+  appendVoiceTranscript: vi.fn(),
+  applyTemplate: vi.fn(),
+  updateTemplateData: vi.fn(),
+  applyTemplateChanges: vi.fn(),
+  regenerateFromTemplate: vi.fn(),
+  setQuickReminder: vi.fn(),
+  setReminder: vi.fn(),
+  clearReminder: vi.fn(),
+  setTemplatePickerOpen: vi.fn((value: boolean) => { controller.templatePickerOpen.value = value }),
+  selectTemplateKind: vi.fn(),
+  retryDraftSave: vi.fn(),
+  save: vi.fn(),
+  cancel: vi.fn(),
+} as unknown as QuickNoteEditorController
+
 function mountEditorCore() {
   vi.stubGlobal('useI18n', () => ({
     t: (key: string) => messages[key] || key,
@@ -61,23 +107,8 @@ function mountEditorCore() {
 
   return mount(QuickNoteEditorCore, {
     props: {
-      title: '2026/03/22 Diary',
-      content: 'Initial note',
-      tags: ['watch'],
-      date: '2026-03-22',
-      saveMode: 'create',
+      controller,
       saving: false,
-      draftHint: '草稿已儲存',
-      templates: [
-        { id: 'template-1', name: '學習紀錄', content: '今天學到：', createdAt: '', updatedAt: '' },
-      ],
-      reminders: {
-        reminder1: null,
-      },
-      activeReminders: [
-        { key: 'reminder1', label: '提醒 1', remaining: '59 分鐘' },
-      ],
-      existingDiaryForDate: true,
     },
     global: {
       stubs: {
@@ -121,10 +152,10 @@ describe('QuickNoteEditorCore', () => {
     await wrapper.get('[data-test="tags"]').trigger('click')
     await wrapper.get('#quick-note-date').setValue('2026-03-23')
 
-    expect(wrapper.emitted('update:title')).toEqual([['Manual title']])
-    expect(wrapper.emitted('update:content')).toEqual([['Updated note']])
-    expect(wrapper.emitted('update:tags')).toEqual([[['watch', 'profit']]])
-    expect(wrapper.emitted('update:date')).toEqual([['2026-03-23']])
+    expect(controller.setTitle).toHaveBeenCalledWith('Manual title')
+    expect(controller.setContent).toHaveBeenCalledWith('Updated note')
+    expect(controller.setTags).toHaveBeenCalledWith(['watch', 'profit'])
+    expect(controller.setDate).toHaveBeenCalledWith('2026-03-23')
   })
 
   it('emits editor actions for voice, template, reminders, save mode, and save', async () => {
@@ -139,15 +170,15 @@ describe('QuickNoteEditorCore', () => {
     await wrapper.findAll('button').find(button => button.text().includes('追加到當日'))!.trigger('click')
     await wrapper.get('[data-test="quick-capture-save"]').trigger('click')
 
-    expect(wrapper.emitted('append-text')).toEqual([['voice text']])
-    expect(wrapper.emitted('apply-template')).toEqual([['模板內容']])
-    expect(wrapper.emitted('reminder-set')).toEqual([[{ key: 'reminder1', time: '2026-03-22T12:00:00.000Z' }]])
-    expect(wrapper.emitted('reminder-clear')).toEqual([[{ key: 'reminder1' }]])
-    expect(wrapper.emitted('update:save-mode')).toEqual([['append']])
-    expect(wrapper.emitted('save')).toBeTruthy()
+    expect(controller.appendVoiceTranscript).toHaveBeenCalledWith('voice text')
+    expect(controller.applyTemplate).toHaveBeenCalledWith('模板內容')
+    expect(controller.setReminder).toHaveBeenCalledWith({ key: 'reminder1', time: '2026-03-22T12:00:00.000Z' })
+    expect(controller.clearReminder).toHaveBeenCalledWith({ key: 'reminder1' })
+    expect(controller.setSaveMode).toHaveBeenCalledWith('append')
+    expect(controller.save).toHaveBeenCalled()
   })
 
-  it('renders semantic quick reminder buttons and emits reminder presets', async () => {
+  it('renders semantic quick reminder buttons and forwards reminder presets', async () => {
     const wrapper = mountEditorCore()
 
     await wrapper.get('[data-test="quick-note-row-reminder"]').trigger('click')
@@ -164,11 +195,9 @@ describe('QuickNoteEditorCore', () => {
     await nextWeekButton!.trigger('click')
     await nextMonthButton!.trigger('click')
 
-    expect(wrapper.emitted('set-quick-reminder')).toEqual([
-      ['tomorrow'],
-      ['nextWeek'],
-      ['nextMonth'],
-    ])
+    expect(controller.setQuickReminder).toHaveBeenCalledWith('tomorrow')
+    expect(controller.setQuickReminder).toHaveBeenCalledWith('nextWeek')
+    expect(controller.setQuickReminder).toHaveBeenCalledWith('nextMonth')
   })
 
   it('keeps the title behind More options on mobile', async () => {

@@ -1,6 +1,13 @@
 import type { QuickNoteTemplateKind } from '~/types/quicknote'
 
-type Translate = (key: string) => string
+type Translate = (key: string, params?: Record<string, unknown>) => string
+
+export type QuickNoteSaveErrorSeverity = 'error' | 'warning'
+
+export interface QuickNoteSaveErrorToast {
+  message: string
+  severity: QuickNoteSaveErrorSeverity
+}
 
 export interface QuickNoteModalTemplateOption {
   kind: QuickNoteTemplateKind
@@ -53,4 +60,25 @@ export function resolveQuickNoteSaveErrorMessage(error: any, t: Translate): stri
   }
 
   return t('quickDiary.errors.createFailedPrefix') + (error?.data?.statusMessage || error?.message || 'Unknown error')
+}
+
+export function resolveQuickNoteSaveErrorToast(
+  error: any,
+  t: Translate,
+  severity: QuickNoteSaveErrorSeverity = 'error',
+): QuickNoteSaveErrorToast {
+  return {
+    message: resolveQuickNoteSaveErrorMessage(error, t),
+    severity,
+  }
+}
+
+export function showQuickNoteSaveErrorToast(
+  toast: { error: (message: string) => void; warning: (message: string) => void },
+  error: any,
+  t: Translate,
+  severity: QuickNoteSaveErrorSeverity = 'error',
+) {
+  const resolved = resolveQuickNoteSaveErrorToast(error, t, severity)
+  toast[resolved.severity](resolved.message)
 }

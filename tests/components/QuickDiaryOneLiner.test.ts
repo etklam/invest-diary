@@ -111,6 +111,7 @@ function createMockState() {
     title: '',
     content: '',
     tags: [] as string[],
+    stockSymbols: [] as string[],
     reminders: { reminder1: null as string | null },
     templateData: {} as Record<string, unknown>,
     titleTouched: false,

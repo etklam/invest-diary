@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createQuickNoteModalTemplates, resolveQuickNoteSaveErrorMessage } from '~/lib/quicknote/modal-shell'
+import {
+  createQuickNoteModalTemplates,
+  resolveQuickNoteSaveErrorMessage,
+  resolveQuickNoteSaveErrorToast,
+} from '~/lib/quicknote/modal-shell'
 
 describe('quicknote modal shell helpers', () => {
   const messages: Record<string, string> = {
@@ -43,5 +47,18 @@ describe('quicknote modal shell helpers', () => {
       .toBe('請填寫必要資訊')
     expect(resolveQuickNoteSaveErrorMessage({ message: 'Oops', data: { statusMessage: 'Server bad' } }, t))
       .toBe('建立失敗：Server bad')
+  })
+
+  it('keeps save-error messages shared while allowing the entry point to choose severity', () => {
+    const error = { message: 'CONTENT_REQUIRED' }
+
+    expect(resolveQuickNoteSaveErrorToast(error, t, 'error')).toEqual({
+      message: '請填寫必要資訊',
+      severity: 'error',
+    })
+    expect(resolveQuickNoteSaveErrorToast(error, t, 'warning')).toEqual({
+      message: '請填寫必要資訊',
+      severity: 'warning',
+    })
   })
 })

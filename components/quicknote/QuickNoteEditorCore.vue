@@ -89,7 +89,7 @@
                   ? 'border-color: var(--color-primary); background: var(--color-surface-muted); color: var(--color-primary);'
                   : 'border-color: var(--color-border); background: var(--color-surface); color: var(--color-text);'"
                 :aria-pressed="saveMode === option.value"
-                @click="emit('update:save-mode', option.value)"
+                @click="controller.setSaveMode(option.value)"
               >
                 <span>
                   <span class="block text-sm font-semibold">{{ option.label }}</span>
@@ -130,14 +130,14 @@
           </button>
 
           <section class="rounded-dt-md border p-4" style="border-color: var(--color-border); background: var(--color-surface);">
-            <QuickTags :model-value="tags" @update:model-value="emit('update:tags', $event)" />
+            <QuickTags :model-value="tags" @update:model-value="controller.setTags($event)" />
           </section>
 
           <section class="rounded-dt-md border p-4" style="border-color: var(--color-border); background: var(--color-surface);">
             <CompanySymbolInput
               input-id="quick-note-company-symbols"
               :model-value="stockSymbols"
-              @update:model-value="emit('update:stockSymbols', $event)"
+              @update:model-value="controller.setStockSymbols($event)"
             />
           </section>
 
@@ -170,12 +170,12 @@
         <div class="flex min-h-10 items-center gap-2 text-xs" aria-live="polite">
           <span v-if="draftHint" class="h-2 w-2 shrink-0 rounded-full" :class="saving ? 'animate-pulse motion-reduce:animate-none' : ''" :style="{ background: saving ? 'var(--color-primary)' : 'var(--color-accent)' }" />
           <span style="color: var(--color-text-muted);">{{ draftHint }}</span>
-          <button v-if="draftStatus === 'failed'" type="button" class="cursor-pointer font-semibold underline underline-offset-2 hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="color: var(--color-primary);" @click="emit('retry-draft')">{{ t('quickDiary.draft.retry') }}</button>
+          <button v-if="draftStatus === 'failed'" type="button" class="cursor-pointer font-semibold underline underline-offset-2 hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="color: var(--color-primary);" @click="controller.retryDraftSave()">{{ t('quickDiary.draft.retry') }}</button>
         </div>
         <div class="flex gap-3">
-          <button type="button" class="min-h-11 cursor-pointer rounded-dt-sm border px-5 text-sm font-semibold transition-colors hover:bg-dt-surface-muted focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="border-color: var(--color-border); color: var(--color-text-muted);" @click="emit('cancel')">{{ t('common.cancel') }}</button>
-          <button type="button" data-test="quick-capture-save" class="min-h-11 cursor-pointer rounded-dt-sm px-6 text-sm font-semibold text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-dt-primary/40 disabled:cursor-not-allowed disabled:opacity-60" style="background: var(--color-primary); box-shadow: var(--shadow-sm);" :disabled="saving || !content.trim()" @click="emit('save')">
-            <span class="inline-flex items-center gap-2"><Icon v-if="saving" name="heroicons:arrow-path" class="h-4 w-4 animate-spin motion-reduce:animate-none" />{{ saving ? (savingLabel || t('common.loading')) : t('quickDiary.editor.saveQuickDiary') }}</span>
+          <button type="button" class="min-h-11 cursor-pointer rounded-dt-sm border px-5 text-sm font-semibold transition-colors hover:bg-dt-surface-muted focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="border-color: var(--color-border); color: var(--color-text-muted);" @click="controller.cancel()">{{ t('common.cancel') }}</button>
+          <button type="button" data-test="quick-capture-save" class="min-h-11 cursor-pointer rounded-dt-sm px-6 text-sm font-semibold text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-dt-primary/40 disabled:cursor-not-allowed disabled:opacity-60" style="background: var(--color-primary); box-shadow: var(--shadow-sm);" :disabled="saving || !content.trim()" @click="controller.save()">
+            <span class="inline-flex items-center gap-2"><Icon v-if="saving" name="heroicons:arrow-path" class="h-4 w-4 animate-spin motion-reduce:animate-none" />{{ saving ? (savingLabel || t('common.loading')) : (saveLabel || t('quickDiary.editor.saveQuickDiary')) }}</span>
           </button>
         </div>
       </div>
@@ -183,13 +183,13 @@
       <div class="space-y-3 lg:hidden">
         <div v-if="draftStatus === 'failed'" class="flex items-center justify-between text-xs" aria-live="polite">
           <span style="color: var(--color-danger);">{{ draftHint }}</span>
-          <button type="button" class="cursor-pointer font-semibold underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="color: var(--color-primary);" @click="emit('retry-draft')">{{ t('quickDiary.draft.retry') }}</button>
+          <button type="button" class="cursor-pointer font-semibold underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="color: var(--color-primary);" @click="controller.retryDraftSave()">{{ t('quickDiary.draft.retry') }}</button>
         </div>
-        <button type="button" data-test="quick-capture-save" class="min-h-12 w-full cursor-pointer rounded-dt-sm px-5 text-sm font-semibold text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-dt-primary/40 disabled:cursor-not-allowed disabled:opacity-60" style="background: var(--color-primary); box-shadow: var(--shadow-sm);" :disabled="saving || !content.trim()" @click="emit('save')">
-          <span class="inline-flex items-center gap-2"><Icon v-if="saving" name="heroicons:arrow-path" class="h-4 w-4 animate-spin motion-reduce:animate-none" />{{ saving ? (savingLabel || t('common.loading')) : t('quickDiary.editor.saveQuickDiary') }}</span>
+        <button type="button" data-test="quick-capture-save" class="min-h-12 w-full cursor-pointer rounded-dt-sm px-5 text-sm font-semibold text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-dt-primary/40 disabled:cursor-not-allowed disabled:opacity-60" style="background: var(--color-primary); box-shadow: var(--shadow-sm);" :disabled="saving || !content.trim()" @click="controller.save()">
+          <span class="inline-flex items-center gap-2"><Icon v-if="saving" name="heroicons:arrow-path" class="h-4 w-4 animate-spin motion-reduce:animate-none" />{{ saving ? (savingLabel || t('common.loading')) : (saveLabel || t('quickDiary.editor.saveQuickDiary')) }}</span>
         </button>
         <div class="grid grid-cols-2 gap-2">
-          <VoiceInput class="justify-center" @result="handleVoiceResult" />
+          <VoiceInput class="justify-center" @result="controller.appendVoiceTranscript" />
           <button type="button" class="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-dt-sm px-3 text-sm font-semibold transition-colors hover:bg-dt-surface-muted hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="color: var(--color-text-muted);" :aria-expanded="templatePickerVisible" :aria-controls="templatePickerId" @click="setTemplatePickerOpen(!templatePickerVisible)">
             <Icon name="heroicons:document-text" class="h-4 w-4" />{{ t('quickDiary.editor.openTemplatePicker') }}
           </button>
@@ -228,20 +228,20 @@
         </div>
 
         <div v-else-if="activePicker === 'tags'" class="space-y-4">
-          <QuickTags :model-value="tags" @update:model-value="emit('update:tags', $event)" />
+          <QuickTags :model-value="tags" @update:model-value="controller.setTags($event)" />
           <button type="button" class="min-h-11 w-full cursor-pointer rounded-dt-sm bg-dt-primary px-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-dt-primary/40" @click="closePicker">{{ t('common.save') }}</button>
         </div>
 
         <div v-else-if="activePicker === 'reminder'" class="space-y-4">
           <div class="grid grid-cols-3 gap-2">
-            <button v-for="option in quickReminderOptions" :key="option.preset" type="button" class="min-h-11 cursor-pointer rounded-dt-sm border px-2 text-sm font-semibold transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-muted);" @click="emit('set-quick-reminder', option.preset)">{{ option.label }}</button>
+            <button v-for="option in quickReminderOptions" :key="option.preset" type="button" class="min-h-11 cursor-pointer rounded-dt-sm border px-2 text-sm font-semibold transition-colors hover:border-dt-primary hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-muted);" @click="controller.setQuickReminder(option.preset)">{{ option.label }}</button>
           </div>
           <div v-if="reminders.reminder1" class="flex items-center justify-between gap-3 rounded-dt-sm border px-3 py-2.5 text-sm" style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text-muted);">
             <span>{{ reminderLabel }}</span>
-            <button type="button" class="min-h-9 cursor-pointer rounded-dt-sm px-2 text-xs font-semibold hover:text-dt-danger focus:outline-none focus:ring-2 focus:ring-dt-danger/30" @click="emit('reminder-clear', { key: 'reminder1' })">{{ t('quickDiary.reminders.cleared') }}</button>
+            <button type="button" class="min-h-9 cursor-pointer rounded-dt-sm px-2 text-xs font-semibold hover:text-dt-danger focus:outline-none focus:ring-2 focus:ring-dt-danger/30" @click="controller.clearReminder({ key: 'reminder1' })">{{ t('quickDiary.reminders.cleared') }}</button>
           </div>
           <button type="button" class="flex min-h-11 w-full cursor-pointer items-center justify-between rounded-dt-sm border px-3 text-sm font-semibold transition-colors hover:border-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="border-color: var(--color-border); color: var(--color-text-muted);" @click="showCustomReminder = !showCustomReminder">{{ t('quickDiary.editor.customReminder') }}<Icon name="heroicons:chevron-down" class="h-4 w-4" :class="showCustomReminder ? 'rotate-180' : ''" /></button>
-          <QuickReminder v-if="showCustomReminder" :reminders="reminders" @set="emit('reminder-set', $event)" @clear="emit('reminder-clear', $event)" />
+          <QuickReminder v-if="showCustomReminder" :reminders="reminders" @set="controller.setReminder($event)" @clear="controller.clearReminder($event)" />
         </div>
 
         <div v-else class="space-y-5">
@@ -252,7 +252,7 @@
           <CompanySymbolInput
             input-id="quick-note-company-symbols-mobile"
             :model-value="stockSymbols"
-            @update:model-value="emit('update:stockSymbols', $event)"
+            @update:model-value="controller.setStockSymbols($event)"
           />
           <button type="button" class="flex min-h-12 w-full cursor-pointer items-center justify-between rounded-dt-sm border px-4 text-sm font-semibold transition-colors hover:border-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="border-color: var(--color-border); color: var(--color-text-muted);" @click="openTemplateFromMoreOptions">{{ t('quickDiary.editor.openTemplatePicker') }}<Icon name="heroicons:chevron-right" class="h-4 w-4" /></button>
           <button type="button" class="min-h-11 w-full cursor-pointer rounded-dt-sm bg-dt-primary px-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-dt-primary/40" @click="closePicker">{{ t('common.save') }}</button>
@@ -276,16 +276,16 @@
           <div class="flex items-center justify-between gap-3"><p class="text-xs font-semibold uppercase tracking-[0.12em]" style="color: var(--color-text-soft);">{{ t('quickDiary.editor.quickTemplates') }}</p><button type="button" class="min-h-10 cursor-pointer rounded-dt-sm px-2 text-xs font-semibold hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="color: var(--color-text-muted);" @click="openTemplateManager">{{ t('quickDiary.editor.manageTemplates') }}</button></div>
           <div class="grid gap-1.5 sm:grid-cols-2"><button v-for="template in templates" :key="`picker-${template.id}`" type="button" class="flex min-h-11 cursor-pointer items-center gap-2 rounded-dt-sm px-2.5 text-left text-sm hover:bg-dt-surface-muted hover:text-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="color: var(--color-text-muted);" @click="applyQuickTemplate(template.content)"><Icon name="heroicons:document-text" class="h-4 w-4 shrink-0" /><span class="truncate">{{ template.name }}</span></button></div>
         </div>
-        <div v-if="templateKind !== 'blank'" class="mt-5 border-t pt-5" style="border-color: var(--color-border);"><QuickNoteTemplateAssistant :template-kind="templateKind" :template-data="templateData" :has-template-changes-pending="hasTemplateChangesPending" @update:template-data="emit('update:template-data', $event)" @apply-template-changes="emit('apply-template-changes')" @regenerate-template="emit('regenerate-template')" /></div>
+          <div v-if="templateKind !== 'blank'" class="mt-5 border-t pt-5" style="border-color: var(--color-border);"><QuickNoteTemplateAssistant :template-kind="templateKind" :template-data="templateData" :has-template-changes-pending="hasTemplateChangesPending" @update:template-data="controller.updateTemplateData($event)" @apply-template-changes="controller.applyTemplateChanges()" @regenerate-template="controller.regenerateFromTemplate()" /></div>
       </section>
     </div>
 
-    <TemplateManager v-model="showTemplateManager" @apply="emit('apply-template', $event)" />
+    <TemplateManager v-model="showTemplateManager" @apply="controller.applyTemplate($event)" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, unref, watch } from 'vue'
 import QuickTags from '~/components/QuickTags.vue'
 import VoiceInput from '~/components/VoiceInput.vue'
 import TemplateManager from '~/components/TemplateManager.vue'
@@ -293,117 +293,69 @@ import QuickReminder from '~/components/QuickReminder.vue'
 import QuickNoteTemplateAssistant from '~/components/quicknote/QuickNoteTemplateAssistant.vue'
 import CompanySymbolInput from '~/components/stocks/CompanySymbolInput.vue'
 import { createQuickReminderOptions } from '~/lib/quicknote/quick-reminders'
-import { createEmptyQuickNoteTemplateData, type QuickNoteTemplateData } from '~/types/quicknote'
-import type { QuickNoteQuickReminderPreset, QuickNoteReminderKey, QuickNoteReminders, QuickNoteSaveMode, QuickNoteTemplateKind } from '~/types/quicknote'
-import type { QuickNoteTemplate } from '~/composables/useQuickNoteTemplates'
-
-interface QuickNoteTemplateOption {
-  kind: QuickNoteTemplateKind
-  label: string
-  description?: string
-}
+import type { QuickNoteEditorController } from '~/lib/quicknote/editor-controller'
+import type { QuickNoteSaveMode } from '~/types/quicknote'
 
 type PickerKind = 'tags' | 'reminder' | 'date' | 'saveMode' | 'more'
 
 const props = withDefaults(defineProps<{
-  title: string
-  content: string
-  tags: string[]
-  stockSymbols?: string[]
-  date: string
-  saveMode: QuickNoteSaveMode
+  controller: QuickNoteEditorController
   saving: boolean
-  draftHint: string
-  draftStatus?: 'idle' | 'saving' | 'saved' | 'failed'
   saveLabel?: string
   savingLabel?: string
-  templates: QuickNoteTemplate[]
-  reminders: QuickNoteReminders
-  activeReminders: Array<{ key: string; label: string; remaining: string }>
-  existingDiaryForDate?: boolean
-  checkingExistingDiaryForDate?: boolean
-  templateKind?: QuickNoteTemplateKind
-  templateData?: QuickNoteTemplateData
-  hasTemplateChangesPending?: boolean
-  templateOptions?: QuickNoteTemplateOption[]
-  templatePickerOpen?: boolean
   autofocus?: boolean
   scrollable?: boolean
 }>(), {
-  draftStatus: 'idle',
-  templateKind: 'blank',
-  templateData: () => createEmptyQuickNoteTemplateData(),
-  hasTemplateChangesPending: false,
-  templates: () => [],
-  reminders: () => ({ reminder1: null }),
-  activeReminders: () => [],
-  stockSymbols: () => [],
-  existingDiaryForDate: false,
-  checkingExistingDiaryForDate: false,
   autofocus: false,
   scrollable: false,
 })
 
-const emit = defineEmits<{
-  (e: 'update:title', value: string): void
-  (e: 'update:content', value: string): void
-  (e: 'update:tags', value: string[]): void
-  (e: 'update:stockSymbols', value: string[]): void
-  (e: 'update:date', value: string): void
-  (e: 'update:save-mode', value: QuickNoteSaveMode): void
-  (e: 'append-text', value: string): void
-  (e: 'apply-template', value: string): void
-  (e: 'update:template-data', value: Partial<QuickNoteTemplateData>): void
-  (e: 'apply-template-changes'): void
-  (e: 'regenerate-template'): void
-  (e: 'save'): void
-  (e: 'cancel'): void
-  (e: 'retry-draft'): void
-  (e: 'set-quick-reminder', value: QuickNoteQuickReminderPreset): void
-  (e: 'reminder-set', payload: { key: QuickNoteReminderKey; time: string }): void
-  (e: 'reminder-clear', payload: { key: QuickNoteReminderKey }): void
-  (e: 'update:template-picker-open', value: boolean): void
-  (e: 'select-template-kind', value: QuickNoteTemplateKind): void
-}>()
-
 const { t } = useI18n()
 const { getTodayDateString } = useTimezone()
+const controller = props.controller
 const contentInput = ref<HTMLTextAreaElement | null>(null)
 const pickerPanel = ref<HTMLElement | null>(null)
 const activePicker = ref<PickerKind | null>(null)
 const pickerTrigger = ref<HTMLElement | null>(null)
 const showCustomReminder = ref(false)
 const showTemplateManager = ref(false)
-const internalTemplatePickerOpen = ref(false)
 const templatePickerId = 'quick-note-template-picker'
 
+const title = computed(() => controller.state.title)
+const content = computed(() => controller.state.content)
+const tags = computed(() => controller.state.tags)
+const stockSymbols = computed(() => controller.state.stockSymbols)
+const date = computed(() => controller.state.date)
+const saveMode = computed(() => controller.state.saveMode)
+const draftHint = computed(() => unref(controller.draftHint))
+const draftStatus = computed(() => unref(controller.draftStatus))
+const templates = computed(() => unref(controller.templates))
+const reminders = computed(() => unref(controller.reminders) ?? { reminder1: null })
+const existingDiaryForDate = computed(() => unref(controller.existingDiaryForDate))
+const checkingExistingDiaryForDate = computed(() => unref(controller.checkingExistingDiaryForDate))
+const templateKind = computed(() => controller.state.templateKind)
+const templateData = computed(() => controller.state.templateData)
+const hasTemplateChangesPending = computed(() => unref(controller.hasTemplateChangesPending))
 const scrollable = computed(() => props.scrollable)
-const templatePickerVisible = computed(() => props.templatePickerOpen ?? internalTemplatePickerOpen.value)
-const templateData = computed(() => props.templateData)
+const templatePickerVisible = computed(() => controller.templatePickerOpen.value)
 const saveModeOptions = computed<Array<{ value: QuickNoteSaveMode; label: string; description: string }>>(() => [
   { value: 'append', label: t('quickDiary.saveModes.append.label'), description: t('quickDiary.saveModes.append.description') },
   { value: 'create', label: t('quickDiary.saveModes.create.label'), description: t('quickDiary.saveModes.create.description') },
 ])
-const availableSaveModeOptions = computed(() => saveModeOptions.value.filter(option => props.existingDiaryForDate ? option.value === 'append' : option.value === 'create'))
-const fallbackTemplateOptions = computed<QuickNoteTemplateOption[]>(() => [
-  { kind: 'blank', label: t('quickDiary.templates.blank'), description: t('quickDiary.templates.blankDesc') },
-  { kind: 'trading', label: t('quickDiary.templates.trading'), description: t('quickDiary.templates.tradingDesc') },
-  { kind: 'reflection', label: t('quickDiary.templates.reflection'), description: t('quickDiary.templates.reflectionDesc') },
-  { kind: 'observation', label: t('quickDiary.templates.observation'), description: t('quickDiary.templates.observationDesc') },
-])
-const templateOptions = computed(() => props.templateOptions?.length ? props.templateOptions : fallbackTemplateOptions.value)
+const availableSaveModeOptions = computed(() => saveModeOptions.value.filter(option => existingDiaryForDate.value ? option.value === 'append' : option.value === 'create'))
+const templateOptions = computed(() => unref(controller.templateOptions))
 const quickReminderOptions = computed(() => createQuickReminderOptions(t))
-const dateLabel = computed(() => props.date === getTodayDateString() ? t('quickDiary.editor.today') : props.date)
+const dateLabel = computed(() => date.value === getTodayDateString() ? t('quickDiary.editor.today') : date.value)
 const reminderLabel = computed(() => {
-  const value = props.reminders.reminder1
+  const value = reminders.value.reminder1
   if (!value) return t('quickDiary.editor.unset')
   const parsed = new Date(value)
   return Number.isFinite(parsed.getTime()) ? parsed.toLocaleString() : t('quickDiary.editor.unset')
 })
-const selectedTagSummary = computed(() => props.tags.length ? props.tags.map(tag => `#${tag}`).join(' · ') : t('quickDiary.editor.unset'))
+const selectedTagSummary = computed(() => tags.value.length ? tags.value.map(tag => `#${tag}`).join(' · ') : t('quickDiary.editor.unset'))
 const saveDestinationLabel = computed(() => {
-  if (props.checkingExistingDiaryForDate) return t('quickDiary.capture.checking')
-  return props.saveMode === 'append' ? t('quickDiary.saveModes.append.label') : t('quickDiary.saveModes.create.label')
+  if (checkingExistingDiaryForDate.value) return t('quickDiary.capture.checking')
+  return saveMode.value === 'append' ? t('quickDiary.saveModes.append.label') : t('quickDiary.saveModes.create.label')
 })
 const mobileRows = computed<Array<{ kind: PickerKind; icon: string; label: string; value: string; ariaLabel: string }>>(() => [
   { kind: 'date', icon: 'heroicons:calendar-days', label: t('quickDiary.date'), value: dateLabel.value, ariaLabel: t('quickDiary.editor.openDatePicker') },
@@ -412,7 +364,7 @@ const mobileRows = computed<Array<{ kind: PickerKind; icon: string; label: strin
   { kind: 'tags', icon: 'heroicons:tag', label: t('quickDiary.tools.tags'), value: selectedTagSummary.value, ariaLabel: t('quickDiary.editor.openTagPicker') },
   { kind: 'more', icon: 'heroicons:ellipsis-horizontal', label: t('quickDiary.editor.moreOptions'), value: titleSummary.value, ariaLabel: t('quickDiary.editor.moreOptions') },
 ])
-const titleSummary = computed(() => props.title.trim() || t('quickDiary.editor.optional'))
+const titleSummary = computed(() => title.value.trim() || t('quickDiary.editor.optional'))
 const pickerTitle = computed(() => {
   if (activePicker.value === 'tags') return t('quickDiary.editor.tagPickerTitle')
   if (activePicker.value === 'reminder') return t('quickDiary.editor.reminderPickerTitle')
@@ -421,10 +373,9 @@ const pickerTitle = computed(() => {
   return t('quickDiary.editor.datePickerTitle')
 })
 
-function handleContentInput(event: Event) { emit('update:content', (event.target as HTMLTextAreaElement).value) }
-function handleTitleInput(event: Event) { emit('update:title', (event.target as HTMLInputElement).value) }
-function handleDateInput(event: Event) { emit('update:date', (event.target as HTMLInputElement).value) }
-function handleVoiceResult(transcript: string) { emit('append-text', transcript) }
+function handleContentInput(event: Event) { controller.setContent((event.target as HTMLTextAreaElement).value) }
+function handleTitleInput(event: Event) { controller.setTitle((event.target as HTMLInputElement).value) }
+function handleDateInput(event: Event) { controller.setDate((event.target as HTMLInputElement).value) }
 
 function openPicker(kind: PickerKind, event?: Event) {
   pickerTrigger.value = event?.currentTarget instanceof HTMLElement ? event.currentTarget : null
@@ -438,7 +389,7 @@ function closePicker() {
 }
 
 function selectSaveMode(mode: QuickNoteSaveMode) {
-  emit('update:save-mode', mode)
+  controller.setSaveMode(mode)
   closePicker()
 }
 
@@ -448,8 +399,7 @@ function closeTransientPanel() {
 }
 
 function setTemplatePickerOpen(value: boolean) {
-  if (props.templatePickerOpen !== undefined) emit('update:template-picker-open', value)
-  else internalTemplatePickerOpen.value = value
+  controller.setTemplatePickerOpen(value)
 }
 
 function openTemplateFromMoreOptions() {
@@ -457,10 +407,10 @@ function openTemplateFromMoreOptions() {
   setTemplatePickerOpen(true)
 }
 
-function selectTemplateKind(kind: QuickNoteTemplateKind) { emit('select-template-kind', kind) }
+function selectTemplateKind(kind: typeof controller.state.templateKind) { controller.selectTemplateKind(kind) }
 function applyQuickTemplate(content: string) {
   if (!content) return
-  emit('apply-template', content)
+  controller.applyTemplate(content)
   setTemplatePickerOpen(false)
 }
 function openTemplateManager() { showTemplateManager.value = true }
@@ -481,7 +431,7 @@ function handlePickerKeydown(event: KeyboardEvent) {
 }
 
 function focusContent() {
-  if (!props.autofocus || props.content.trim() || !contentInput.value) return
+  if (!props.autofocus || content.value.trim() || !contentInput.value) return
   contentInput.value.focus()
 }
 

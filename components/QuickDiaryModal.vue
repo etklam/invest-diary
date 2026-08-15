@@ -61,48 +61,12 @@
             </header>
 
             <QuickNoteEditorCore
-              :save-mode="state.saveMode"
-              :title="state.title"
-              :content="state.content"
-              :tags="state.tags"
-              :stock-symbols="state.stockSymbols"
-              :date="state.date"
+              :controller="controller"
               :saving="saving"
-              :draft-hint="draftHint"
-              :draft-status="draftStatus"
               :save-label="state.saveMode === 'append' ? t('quickDiary.appendDiary') : t('quickDiary.createDiary')"
               :saving-label="state.saveMode === 'append' ? t('quickDiary.appending') : t('quickDiary.creating')"
-              :templates="templatesFromStorage"
-              :reminders="reminders"
-              :active-reminders="activeReminders"
-              :existing-diary-for-date="existingDiaryForDate"
-              :checking-existing-diary-for-date="checkingExistingDiaryForDate"
-              :template-kind="state.templateKind"
-              :template-data="state.templateData"
-              :has-template-changes-pending="hasTemplateChangesPending"
-              :template-options="templates"
-              :template-picker-open="showTemplatePicker"
               :autofocus="autofocusEditor"
               scrollable
-              @update:title="setTitle"
-              @update:content="setContent"
-              @update:tags="setTags"
-              @update:stock-symbols="setStockSymbols"
-              @update:date="setDate"
-              @update:save-mode="setSaveMode"
-              @append-text="appendVoiceTranscript"
-              @apply-template="handleApplyTemplate"
-              @update:template-data="updateTemplateData"
-              @apply-template-changes="applyTemplateChanges"
-              @regenerate-template="regenerateFromTemplate"
-              @update:template-picker-open="showTemplatePicker = $event"
-              @select-template-kind="selectTemplate"
-              @set-quick-reminder="handleSetQuickReminder"
-              @reminder-set="handleSetReminder"
-              @reminder-clear="handleClearReminder"
-              @retry-draft="retryDraftSave"
-              @save="handleSave"
-              @cancel="close"
             />
           </div>
         </div>
@@ -112,17 +76,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, unref, watch } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import QuickNoteEditorCore from '~/components/quicknote/QuickNoteEditorCore.vue'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useDialogA11y } from '~/composables/useDialogA11y'
 import { useQuickNoteComposer } from '~/composables/useQuickNoteComposer'
-import { getQuickReminderLabel } from '~/lib/quicknote/quick-reminders'
-import { createQuickNoteModalTemplates, resolveQuickNoteSaveErrorMessage } from '~/lib/quicknote/modal-shell'
+import { createQuickNoteEditorController } from '~/lib/quicknote/editor-controller'
+import { createQuickNoteModalTemplates, showQuickNoteSaveErrorToast } from '~/lib/quicknote/modal-shell'
 import type {
   QuickDiaryContext,
-  QuickNoteQuickReminderPreset,
   QuickNoteTemplateKind,
 } from '~/types/quicknote'
 
@@ -149,40 +112,11 @@ const autofocusEditor = ref(false)
 const dialogPanel = ref<HTMLElement | null>(null)
 const lastTemplateKind = useLocalStorage<QuickNoteTemplateKind>(LAST_TEMPLATE_KEY, 'blank')
 
-const {
-  state,
-  templates: templatesFromStorage,
-  reminders,
-  draftHint,
-  draftStatus,
-  activeReminders,
-  existingDiaryForDate,
-  checkingExistingDiaryForDate,
-  hasTemplateChangesPending,
-  applyTemplateKind,
-  updateTemplateData,
-  setTitle,
-  setContent,
-  setTags,
-  setStockSymbols,
-  setDate,
-  setSaveMode,
-  appendVoiceTranscript,
-  applySnippet,
-  applyTemplateChanges,
-  regenerateFromTemplate,
-  setQuickReminder,
-  handleReminderSet,
-  handleReminderClear,
-  retryDraftSave,
-  save,
-  initialize,
-  dispose,
-  resetState,
-} = useQuickNoteComposer({
+const composer = useQuickNoteComposer({
   defaultTemplateKind: 'blank',
   defaultSaveMode: 'create',
 })
+const { state } = composer
 
 const { handleKeydown: handleDialogKeydown } = useDialogA11y(dialogPanel, {
   open: () => props.show,
@@ -201,6 +135,21 @@ const templates = computed(() => {
   ]
 })
 
+const controller = createQuickNoteEditorController(composer, {
+  t,
+  toast,
+  confirmOverwrite: message => confirm(message),
+  templateOptions: templates,
+  templatePickerOpen: showTemplatePicker,
+  selectTemplateKind: (kind) => {
+    composer.applyTemplateKind(kind)
+    lastTemplateKind.value = kind
+  },
+  save: handleSave,
+  cancel: close,
+})
+const draftHint = computed(() => unref(controller.draftHint))
+
 function applyOpenContext(restoredDraft: boolean) {
   const prefillContent = props.context?.content?.trim() ?? ''
   const prefillSymbols = props.context?.stockSymbols ?? []
@@ -210,22 +159,22 @@ function applyOpenContext(restoredDraft: boolean) {
     // Draft protection (PRD §38): never silently overwrite a restored draft.
     // Confirm = prepend prefill above the draft text; cancel = keep draft untouched.
     if (!confirm(t('quickDiary.draft.prefillAppendPrompt'))) return
-    if (prefillContent) setContent([prefillContent, state.content].filter(Boolean).join('\n\n'))
-    if (prefillSymbols.length) setStockSymbols([...state.stockSymbols, ...prefillSymbols])
+    if (prefillContent) composer.setContent([prefillContent, state.content].filter(Boolean).join('\n\n'))
+    if (prefillSymbols.length) composer.setStockSymbols([...state.stockSymbols, ...prefillSymbols])
     return
   }
 
-  if (props.context?.templateKind) applyTemplateKind(props.context.templateKind)
-  if (props.context?.date) setDate(props.context.date)
-  if (prefillContent) setContent(prefillContent)
-  if (prefillSymbols.length) setStockSymbols(prefillSymbols)
+  if (props.context?.templateKind) composer.applyTemplateKind(props.context.templateKind)
+  if (props.context?.date) composer.setDate(props.context.date)
+  if (prefillContent) composer.setContent(prefillContent)
+  if (prefillSymbols.length) composer.setStockSymbols(prefillSymbols)
 }
 
 watch(
   () => props.show,
   (show) => {
     if (show) {
-      const restored = Boolean(initialize((message) => confirm(message)))
+      const restored = Boolean(composer.initialize((message) => confirm(message)))
       applyOpenContext(restored)
       autofocusEditor.value = !restored && !state.content.trim()
       showTemplatePicker.value = false
@@ -234,47 +183,17 @@ watch(
       })
       return
     }
-    dispose()
+    composer.dispose()
     showTemplatePicker.value = false
     autofocusEditor.value = false
   },
   { immediate: true },
 )
 
-function selectTemplate(kind: QuickNoteTemplateKind) {
-  applyTemplateKind(kind)
-  lastTemplateKind.value = kind
-}
-
 function close() {
   showTemplatePicker.value = false
-  resetState()
+  composer.resetState()
   emit('close')
-}
-
-function handleApplyTemplate(templateContent: string) {
-  if (!templateContent) return
-  if (state.content.trim()) {
-    const replace = confirm(t('quickDiary.confirm.templateOverwrite'))
-    applySnippet(templateContent, replace)
-    return
-  }
-  applySnippet(templateContent)
-}
-
-function handleSetQuickReminder(preset: QuickNoteQuickReminderPreset) {
-  setQuickReminder(preset)
-  toast.info(t('quickDiary.reminders.presetSet', { label: getQuickReminderLabel(preset, t) }))
-}
-
-function handleSetReminder(payload: { key: 'reminder1'; time: string }) {
-  handleReminderSet(payload)
-  toast.info(t('quickDiary.reminders.set'))
-}
-
-function handleClearReminder(payload: { key: 'reminder1' }) {
-  handleReminderClear(payload)
-  toast.info(t('quickDiary.reminders.cleared'))
 }
 
 async function handleSave() {
@@ -284,7 +203,7 @@ async function handleSave() {
     const mode = state.saveMode
     const date = state.date
     const kind = state.templateKind
-    const diary = await save()
+    const diary = await composer.save()
     const diaryId = String(diary?.id ?? '')
 
     lastTemplateKind.value = kind
@@ -296,7 +215,7 @@ async function handleSave() {
     close()
   } catch (error: any) {
     console.error('Error creating quick diary:', error)
-    toast.error(resolveQuickNoteSaveErrorMessage(error, t))
+    showQuickNoteSaveErrorToast(toast, error, t)
   } finally {
     saving.value = false
   }
