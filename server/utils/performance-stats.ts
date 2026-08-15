@@ -17,6 +17,13 @@ import {
   type GroupPeriod,
   type ClosedTrade,
 } from '~/lib/trade-analytics'
+import type { PerformanceStatsResult } from '~/lib/performance-stats'
+import type {
+  AttributeBreakdownEntry as SharedAttributeBreakdownEntry,
+  PerformanceSummary as SharedPerformanceSummary,
+  PerformanceTrade as SharedPerformanceTrade,
+  SymbolBreakdownEntry as SharedSymbolBreakdownEntry,
+} from '~/lib/performance-stats'
 
 // ─── 輸入型別 ──────────────────────────────────────────────────────────────────
 
@@ -37,55 +44,12 @@ export interface PerformanceConfig {
 
 // ─── 輸出型別 ──────────────────────────────────────────────────────────────────
 
-export interface FormattedTrade {
-  id: string
-  symbol: string
-  sellDate: Date
-  sellQuantity: number
-  sellPrice: number
-  avgCostBasis: number
-  realizedPnL: number
-  realizedPnLPct: number
-  strategy: string | null
-  emotion: string | null
-}
+export type FormattedTrade = Omit<SharedPerformanceTrade, 'sellDate'> & { sellDate: Date }
+export type SymbolBreakdownEntry = SharedSymbolBreakdownEntry
+export type AttributeBreakdownEntry = SharedAttributeBreakdownEntry
+export type PerformanceSummary = SharedPerformanceSummary
 
-export interface SymbolBreakdownEntry {
-  symbol: string
-  tradeCount: number
-  realizedPnL: number
-  winRate: number
-}
-
-export interface AttributeBreakdownEntry {
-  name: string
-  tradeCount: number
-  realizedPnL: number
-  winRate: number
-}
-
-export interface PerformanceSummary {
-  totalClosedTrades: number
-  totalRealizedPnL: number
-  winRate: number
-  wins: number
-  losses: number
-  maxDrawdownPct: number
-  sharpe: number | null
-}
-
-export interface PerformanceResult {
-  summary: PerformanceSummary
-  periodStats: ReturnType<typeof calcPeriodStats>
-  equityCurve: ReturnType<typeof buildEquityCurveWithDates>
-  topWins: FormattedTrade[]
-  topLosses: FormattedTrade[]
-  symbolBreakdown: SymbolBreakdownEntry[]
-  strategyBreakdown: AttributeBreakdownEntry[]
-  emotionBreakdown: AttributeBreakdownEntry[]
-  bestStrategy: AttributeBreakdownEntry | null
-  worstStrategy: AttributeBreakdownEntry | null
-}
+export type PerformanceResult = PerformanceStatsResult<Date>
 
 // ─── 空結果 ────────────────────────────────────────────────────────────────────
 

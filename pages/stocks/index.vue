@@ -626,6 +626,12 @@ import {
 } from 'chart.js'
 import type { QuoteResponse } from '~/lib/market-data/yahoo'
 import { formatCurrency } from '~/lib/format'
+import {
+  performancePeriodLabel,
+  performancePeriodOptions,
+  type PerformanceStatsPayload,
+  type PerfPeriod,
+} from '~/lib/performance-stats'
 import { watchDebounced } from '@vueuse/core'
 import { usePortfolioExposure } from '~/composables/usePortfolioExposure'
 
@@ -860,71 +866,23 @@ onScopeDispose(() => {
 
 // ─── 績效儀表板 ───────────────────────────────────────────────────────────────
 
-type PerfPeriod = 'month' | 'quarter' | 'year'
-
-interface PerfSummary {
-  totalClosedTrades: number
-  totalRealizedPnL: number
-  winRate: number
-  wins: number
-  losses: number
-  maxDrawdownPct: number
-  sharpe: number | null
+const stockPeriodOptionLabel = (key: string) => {
+  const period = key.split('.').at(-1)
+  return t(`stock.performance.${period === 'month' ? 'periodMonth' : period === 'quarter' ? 'periodQuarter' : 'periodYear'}`)
 }
-
-interface PerfTrade {
-  id: string
-  symbol: string
-  sellDate: string | Date
-  sellQuantity: number
-  sellPrice: number
-  avgCostBasis: number
-  realizedPnL: number
-  realizedPnLPct: number
+const stockPeriodLabel = (key: string) => {
+  const period = key.split('.').at(-1)
+  return t(`stock.performance.${period === 'month' ? 'monthly' : period === 'quarter' ? 'quarterly' : 'yearly'}`)
 }
-
-interface PerfPeriodStat {
-  period: string
-  realizedPnL: number
-  tradeCount: number
-  winCount: number
-  winRate: number
-}
-
-interface SymbolBreakdown {
-  symbol: string
-  tradeCount: number
-  realizedPnL: number
-  winRate: number
-}
-
-interface PerformanceResult {
-  summary: PerfSummary
-  periodStats: PerfPeriodStat[]
-  equityCurve: { date: string; cumPnL: number }[]
-  topWins: PerfTrade[]
-  topLosses: PerfTrade[]
-  symbolBreakdown: SymbolBreakdown[]
-}
-
-const periodOptions = computed<{ value: PerfPeriod; label: string }[]>(() => [
-  { value: 'month', label: t('stock.performance.periodMonth') },
-  { value: 'quarter', label: t('stock.performance.periodQuarter') },
-  { value: 'year', label: t('stock.performance.periodYear') },
-])
+const periodOptions = computed(() => performancePeriodOptions(stockPeriodOptionLabel, 'period'))
 
 const selectedPeriod = ref<PerfPeriod>('month')
 
 const periodLabel = computed(() => {
-  const map: Record<PerfPeriod, string> = {
-    month: t('stock.performance.monthly'),
-    quarter: t('stock.performance.quarterly'),
-    year: t('stock.performance.yearly'),
-  }
-  return map[selectedPeriod.value]
+  return performancePeriodLabel(stockPeriodLabel, 'period', selectedPeriod.value)
 })
 
-const { data: perfData, pending: perfPending, refresh: refreshPerf } = await useLazyFetch<PerformanceResult | null>(
+const { data: perfData, pending: perfPending, refresh: refreshPerf } = await useLazyFetch<PerformanceStatsPayload | null>(
   () => `/api/stats/performance?period=${selectedPeriod.value}`,
   { server: false, default: () => null }
 )
@@ -958,6 +916,11 @@ const barChartData = computed<ChartData<'bar'>>(() => {
   }
 })
 
+function formatPnLTooltip(ctx: { raw: unknown }): string {
+  const value = Number(ctx.raw)
+  return ` ${value >= 0 ? '+' : ''}${value.toFixed(2)}`
+}
+
 const barChartOptions: ChartOptions<'bar'> = {
   responsive: true,
   maintainAspectRatio: false,
@@ -965,10 +928,7 @@ const barChartOptions: ChartOptions<'bar'> = {
     legend: { display: false },
     tooltip: {
       callbacks: {
-        label: (ctx) => {
-          const v = ctx.raw as number
-          return ` ${v >= 0 ? '+' : ''}${v.toFixed(2)}`
-        },
+        label: formatPnLTooltip,
       },
     },
   },
@@ -1016,10 +976,7 @@ const equityCurveOptions: ChartOptions<'line'> = {
     legend: { display: false },
     tooltip: {
       callbacks: {
-        label: (ctx) => {
-          const v = ctx.raw as number
-          return ` ${v >= 0 ? '+' : ''}${v.toFixed(2)}`
-        },
+        label: formatPnLTooltip,
       },
     },
   },
@@ -1069,10 +1026,7 @@ const symbolBarOptions: ChartOptions<'bar'> = {
     legend: { display: false },
     tooltip: {
       callbacks: {
-        label: (ctx) => {
-          const v = ctx.raw as number
-          return ` ${v >= 0 ? '+' : ''}${v.toFixed(2)}`
-        },
+        label: formatPnLTooltip,
       },
     },
   },

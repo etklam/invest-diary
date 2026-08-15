@@ -97,60 +97,23 @@ definePageMeta({
   middleware: 'auth',
 })
 
-type PerfPeriod = 'month' | 'quarter' | 'year'
-
-interface PerformanceSummary {
-  totalClosedTrades: number
-  totalRealizedPnL: number | null
-  winRate: number | null
-}
-
-interface BreakdownEntry {
-  name: string
-  tradeCount: number
-  realizedPnL: number
-  winRate: number
-}
-
-interface StrategyPerformanceResult {
-  summary: PerformanceSummary
-  strategyBreakdown: BreakdownEntry[]
-  emotionBreakdown: BreakdownEntry[]
-  bestStrategy: BreakdownEntry | null
-  worstStrategy: BreakdownEntry | null
-}
+import { formatCurrency, formatPercent } from '~/lib/format'
+import { performancePeriodOptions, type PerformanceStatsPayload, type PerfPeriod } from '~/lib/performance-stats'
 
 const { t } = useI18n()
 
-const periodOptions = computed(() => [
-  { value: 'month' as const, label: t('strategyPerformance.period.month') },
-  { value: 'quarter' as const, label: t('strategyPerformance.period.quarter') },
-  { value: 'year' as const, label: t('strategyPerformance.period.year') },
-])
+const periodOptions = computed(() => performancePeriodOptions((key) => t(`strategyPerformance.${key}`), 'period'))
 const selectedPeriod = ref<PerfPeriod>('month')
 
-const { data, pending, error, refresh } = await useLazyFetch<StrategyPerformanceResult>('/api/stats/performance', {
+const { data, pending, error, refresh } = await useLazyFetch<PerformanceStatsPayload>('/api/stats/performance', {
   query: { period: selectedPeriod },
-  default: () => ({
-    summary: { totalClosedTrades: 0, totalRealizedPnL: 0, winRate: 0 },
-    strategyBreakdown: [],
-    emotionBreakdown: [],
-    bestStrategy: null,
-    worstStrategy: null,
-  }),
 })
 
 const hasClosedTrades = computed(() => (data.value?.summary.totalClosedTrades ?? 0) > 0)
 
-const formatMoney = (value: number | null | undefined) => {
-  if (value == null || !Number.isFinite(value)) return '—'
-  const sign = value > 0 ? '+' : ''
-  return `${sign}${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
-}
-
-const formatPercent = (value: number | null | undefined) => (
-  value == null || !Number.isFinite(value) ? '—' : `${value.toFixed(1)}%`
-)
+const formatMoney = (value: number | null | undefined) => value == null || !Number.isFinite(value)
+  ? '—'
+  : `${value > 0 ? '+' : ''}${formatCurrency(value)}`
 const pnlClass = (value: number | null | undefined) => value != null && value < 0
   ? 'text-rose-600 dark:text-rose-400'
   : 'text-emerald-600 dark:text-emerald-400'

@@ -18,10 +18,12 @@ import { requireUser } from '~/server/utils/auth'
 import { computePerformanceStats, type PerformanceConfig } from '~/server/utils/performance-stats'
 import type { GroupPeriod } from '~/lib/trade-analytics'
 import { readPerformanceTransactions } from '~/server/utils/transaction-read'
+import { serialize, type Serialized } from '~/server/utils/serialize'
+import type { PerformanceResult } from '~/server/utils/performance-stats'
 
 const VALID_PERIODS: GroupPeriod[] = ['month', 'quarter', 'year']
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<Serialized<PerformanceResult>> => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
@@ -46,7 +48,7 @@ export default defineEventHandler(async (event) => {
       period,
     })
 
-    return result
+    return serialize(result)
   } catch (error) {
     handleApiError(error, log)
   }

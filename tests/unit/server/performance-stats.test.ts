@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { computePerformanceStats } from '~/server/utils/performance-stats'
 import type { RawTransactionRecord } from '~/server/utils/performance-stats'
+import { serialize, type Serialized } from '~/server/utils/serialize'
+import type { PerformanceStatsResult, PerformanceStatsPayload } from '~/lib/performance-stats'
 
 // ─── 測試輔助 ────────────────────────────────────────────────────────────────
 
@@ -31,6 +33,16 @@ function roundTrip(
     makeTx({ id: `${id}-s`, symbol, type: 'SELL', quantity, price: sellPrice, tradeDate: new Date(sellDate) }),
   ]
 }
+
+describe('performance stats API contract', () => {
+  it('keeps the serialized server result assignable to the client payload', () => {
+    const result: PerformanceStatsResult<Date> = computePerformanceStats([], { period: 'month' })
+    const serialized: Serialized<PerformanceStatsResult<Date>> = serialize(result)
+    const clientPayload: PerformanceStatsPayload = serialized
+
+    expect(clientPayload.summary.totalClosedTrades).toBe(0)
+  })
+})
 
 // ─── Sharpe：百分比報酬，非美元損益 ──────────────────────────────────────────
 
