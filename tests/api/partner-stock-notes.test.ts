@@ -3,7 +3,7 @@ import { mockGetQuery, mockReadBody } from '../vi-setup'
 
 // ── Prisma mocks ──────────────────────────────────────────────────────────
 const mockPartnerLinkFindUnique = vi.fn()
-const mockPartnerLinkFindFirst = vi.fn()
+const mockPartnerLinkFindMany = vi.fn()
 const mockPartnerLinkUpdate = vi.fn()
 const mockStockFindUnique = vi.fn()
 const mockStockNoteFindMany = vi.fn()
@@ -26,7 +26,7 @@ vi.mock('~/lib/prisma', () => ({
   default: {
     partnerLink: {
       findUnique: mockPartnerLinkFindUnique,
-      findFirst: mockPartnerLinkFindFirst,
+      findMany: mockPartnerLinkFindMany,
       update: mockPartnerLinkUpdate,
     },
     stock: {
@@ -92,6 +92,7 @@ describe('Partner Stock Notes', () => {
     mockRequireUser.mockReturnValue(currentUser)
     mockReadBody.mockReset()
     mockGetQuery.mockReturnValue({})
+    mockPartnerLinkFindMany.mockResolvedValue([])
     mockParsePositiveBigIntParam.mockReturnValue(1n)
   })
 
@@ -233,12 +234,12 @@ describe('Partner Stock Notes', () => {
     it('returns 403 when partner link is not accepted', async () => {
       mockGetQuery.mockReturnValue({ partnerId: '2', page: '1', limit: '20' })
       mockStockFindUnique.mockResolvedValue({ id: 10n })
-      mockPartnerLinkFindFirst.mockResolvedValue({
+      mockPartnerLinkFindMany.mockResolvedValue([{
         id: 1n,
         userAId: 1n,
         userBId: 2n,
         acceptedAt: null, // not accepted
-      })
+      }])
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.get')
 
@@ -256,7 +257,7 @@ describe('Partner Stock Notes', () => {
     it('returns 403 when partner has not enabled stock notes sharing', async () => {
       mockGetQuery.mockReturnValue({ partnerId: '2', page: '1', limit: '20' })
       mockStockFindUnique.mockResolvedValue({ id: 10n })
-      mockPartnerLinkFindFirst.mockResolvedValue({
+      mockPartnerLinkFindMany.mockResolvedValue([{
         id: 1n,
         userAId: 1n,
         userBId: 2n,
@@ -270,7 +271,7 @@ describe('Partner Stock Notes', () => {
         updatedAt: new Date('2026-01-01'),
         userA: { id: 1n, email: 'user@example.com', name: 'User' },
         userB: { id: 2n, email: 'partner@example.com', name: 'Ana' },
-      })
+      }])
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.get')
 
@@ -288,7 +289,7 @@ describe('Partner Stock Notes', () => {
     it('can fetch partner notes when sharing is enabled', async () => {
       mockGetQuery.mockReturnValue({ partnerId: '2', page: '1', limit: '20' })
       mockStockFindUnique.mockResolvedValue({ id: 10n })
-      mockPartnerLinkFindFirst.mockResolvedValue({
+      mockPartnerLinkFindMany.mockResolvedValue([{
         id: 1n,
         userAId: 1n,
         userBId: 2n,
@@ -302,7 +303,7 @@ describe('Partner Stock Notes', () => {
         updatedAt: new Date('2026-01-01'),
         userA: { id: 1n, email: 'user@example.com', name: 'User' },
         userB: { id: 2n, email: 'partner@example.com', name: 'Ana' },
-      })
+      }])
       mockStockNoteFindMany.mockResolvedValue([makeStockNote({ id: 200n, createdVia: 'AGENT' })])
       mockStockNoteCount.mockResolvedValue(1)
 
@@ -324,7 +325,7 @@ describe('Partner Stock Notes', () => {
     it('partner notes have isOwnedByViewer=false', async () => {
       mockGetQuery.mockReturnValue({ partnerId: '2', page: '1', limit: '20' })
       mockStockFindUnique.mockResolvedValue({ id: 10n })
-      mockPartnerLinkFindFirst.mockResolvedValue({
+      mockPartnerLinkFindMany.mockResolvedValue([{
         id: 1n,
         userAId: 1n,
         userBId: 2n,
@@ -338,7 +339,7 @@ describe('Partner Stock Notes', () => {
         updatedAt: new Date('2026-01-01'),
         userA: { id: 1n, email: 'user@example.com', name: 'User' },
         userB: { id: 2n, email: 'partner@example.com', name: 'Ana' },
-      })
+      }])
       mockStockNoteFindMany.mockResolvedValue([
         makeStockNote({ id: 201n, createdVia: 'AGENT', createdByLabel: 'OpenClaw' }),
         makeStockNote({ id: 202n, createdVia: 'AGENT' }),

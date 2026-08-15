@@ -3,8 +3,7 @@ import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { calculateHoldings } from '~/lib/position-state'
 import { concentration } from '~/lib/stocks-view'
 import { getCachedQuote } from '~/lib/market-data/quote'
-import { getPartnerSide, getPartnerLinkStatus } from '~/lib/partners/policy'
-import { findUserPartnerLinks } from '~/server/utils/partner-queries'
+import { listSharingPartners } from '~/server/utils/partner'
 import { readPortfolioTransactions } from '~/server/utils/transaction-read'
 import {
   findCurrentThesisBySymbol,
@@ -12,7 +11,6 @@ import {
   toCurrentInvestmentThesis,
   toThesisReviewRecord,
 } from '~/server/utils/investment-thesis-queries'
-import type { PartnerLinkRecord } from '~/types/partner'
 import type { CompanyHubDiary, CompanyHubResponse } from '~/types/company-hub'
 
 const HUB_LIMIT = 10
@@ -102,14 +100,14 @@ async function readRelatedDiaries(
  */
 export async function getCompanyHub(userId: bigint, symbolRaw: string): Promise<CompanyHubResponse> {
   const symbol = normalizeStockSymbol(symbolRaw)
-  const [stock, transactions, thesis, partnerLinks, quote] = await Promise.all([
+  const [stock, transactions, thesis, sharedPartners, quote] = await Promise.all([
     prisma.stock.findUnique({
       where: { symbol },
       select: { id: true, symbol: true, name: true, currency: true },
     }),
     readPortfolioTransactions(userId),
     findCurrentThesisBySymbol(userId, symbol),
-    findUserPartnerLinks(userId),
+    listSharingPartners(userId, 'stockNotes'),
     readQuote(symbol),
   ])
 
@@ -126,13 +124,10 @@ export async function getCompanyHub(userId: bigint, symbolRaw: string): Promise<
       })
     : null
 
-  const connectedLinks = (partnerLinks as PartnerLinkRecord[]).filter(
-    link => getPartnerLinkStatus(link, userId) === 'connected',
-  )
-  const sharedPartnerOwners = connectedLinks
-    .map(link => getPartnerSide(link, userId))
-    .filter(side => side.partnerSharesStockNotes)
-    .map(side => ({ id: side.partner.id, name: side.partner.name || side.partner.email }))
+  const sharedPartnerOwners = sharedPartners.map(({ partnerId, name }) => ({
+    id: partnerId,
+    name,
+  }))
   const sharedOwnerIds = sharedPartnerOwners.map(owner => owner.id)
   const sourceNameByUserId = new Map(sharedPartnerOwners.map(owner => [owner.id.toString(), owner.name]))
 

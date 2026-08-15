@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   diaryFindMany: vi.fn(),
   readTransactions: vi.fn(),
   findThesis: vi.fn(),
-  partnerLinks: vi.fn(),
+  sharingPartners: vi.fn(),
   fetchQuote: vi.fn(),
 }))
 
@@ -25,7 +25,7 @@ vi.mock('~/server/utils/investment-thesis-queries', () => ({
   toCurrentInvestmentThesis: vi.fn(),
   toThesisReviewRecord: vi.fn(),
 }))
-vi.mock('~/server/utils/partner-queries', () => ({ findUserPartnerLinks: mocks.partnerLinks }))
+vi.mock('~/server/utils/partner', () => ({ listSharingPartners: mocks.sharingPartners }))
 vi.mock('~/lib/yahoo-finance', () => ({ fetchQuote: mocks.fetchQuote }))
 vi.mock('~/lib/market-data/cache', () => ({
   buildMarketQuoteCacheKey: vi.fn(value => value),
@@ -40,7 +40,7 @@ describe('Company Hub query', () => {
     vi.clearAllMocks()
     mocks.stockFindUnique.mockResolvedValue(null)
     mocks.findThesis.mockResolvedValue(null)
-    mocks.partnerLinks.mockResolvedValue([])
+    mocks.sharingPartners.mockResolvedValue([])
     mocks.fetchQuote.mockRejectedValue(new Error('no quote'))
     mocks.readTransactions.mockResolvedValue([
       { id: '1', symbol: 'AAPL', type: 'BUY', quantity: 2, price: 100, tradeDate: '2026-08-01' },

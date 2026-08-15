@@ -10,10 +10,10 @@ import type { PartnerLinkRecord } from '~/types/partner'
 import {
   createPartnerLinkRecord,
   deletePartnerLinkRecord,
-  findPartnerLinkBetweenUsers,
   findPartnerLinkById,
   findPartnerLinkByUserPair,
   findPartnerUserByEmail,
+  findUserPartnerLinks,
   updatePartnerLinkRecord,
 } from '~/server/utils/partner-queries'
 
@@ -27,6 +27,14 @@ export {
   toBigIntId,
 } from '~/lib/partners/policy'
 export type { PartnerLinkRecord, PartnerParticipant } from '~/types/partner'
+
+export type SharingResource = 'diaries' | 'stockNotes'
+
+export interface SharingPartner {
+  partnerId: bigint
+  name: string
+  link: PartnerLinkRecord
+}
 
 export async function createPartnerLink(currentUserId: string | bigint, partnerEmail: string) {
   const initiatorId = toBigIntId(currentUserId)
@@ -74,25 +82,58 @@ export async function updatePartnerSharing(
   return updatePartnerLinkRecord(linkId, data)
 }
 
-export async function resolveSharedStockNotesOwner(viewerId: string | bigint, partnerId: string) {
+export async function listSharingPartners(
+  viewerId: string | bigint,
+  resource: SharingResource,
+): Promise<SharingPartner[]> {
   const currentUserId = toBigIntId(viewerId)
+  const links = await findUserPartnerLinks(currentUserId)
+
+  return (links as PartnerLinkRecord[])
+    .map((link) => {
+      const side = getPartnerSide(link, currentUserId)
+      return {
+        link,
+        side,
+        sharesResource: sideSharesResource(side, resource),
+      }
+    })
+    .filter(({ side, sharesResource }) => side.status === 'connected' && sharesResource)
+    .map(({ link, side }) => ({
+      partnerId: side.partner.id,
+      name: side.partner.name || side.partner.email,
+      link,
+    }))
+}
+
+export async function resolveSharedStockNotesOwner(viewerId: string | bigint, partnerId: string) {
   const partnerUserId = parsePartnerUserId(partnerId)
-  const link = await findPartnerLinkBetweenUsers(currentUserId, partnerUserId)
+  const partner = (await listSharingPartners(viewerId, 'stockNotes'))
+    .find(({ partnerId: sharedPartnerId }) => sharedPartnerId === partnerUserId)
 
-  if (!link) {
+  if (!partner) {
     throw Errors.partnerLinkAccessDenied()
   }
 
-  const typedLink = link as PartnerLinkRecord
-  const side = getPartnerSide(typedLink, currentUserId)
-  if (side.status !== 'connected') {
-    throw Errors.partnerLinkAccessDenied()
-  }
-  if (!side.partnerSharesStockNotes) {
-    throw Errors.forbidden('Partner has not enabled stock notes sharing')
-  }
+  return partner.partnerId
+}
 
-  return side.partner.id
+function sideSharesResource(
+  side: ReturnType<typeof getPartnerSide>,
+  resource: SharingResource,
+): boolean {
+  switch (resource) {
+    case 'diaries':
+      return side.partnerSharesDiaries
+    case 'stockNotes':
+      return side.partnerSharesStockNotes
+    default:
+      return assertNever(resource)
+  }
+}
+
+function assertNever(value: never): never {
+  throw new Error(`Unsupported partner sharing resource: ${value}`)
 }
 
 async function requirePartnerLink(linkId: bigint): Promise<PartnerLinkRecord> {

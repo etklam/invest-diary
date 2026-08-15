@@ -1,6 +1,7 @@
 import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
 import { getPartnerLinkStatus, getPartnerSide } from '~/lib/partners/policy'
+import { listSharingPartners } from '~/server/utils/partner'
 import type { PartnerLinkRecord } from '~/types/partner'
 
 export const PARTICIPANT_SELECT = {
@@ -187,22 +188,26 @@ export async function loadCompareContext(
 
   const side = getPartnerSide(selectedLink, viewer.id.toString())
 
-  const [ownerDiaries, partnerDiaries] = await Promise.all([
+  const [ownerDiaries, sharingPartners] = await Promise.all([
     prisma.diary.findMany({
       where: { userId: viewerId },
       orderBy: { date: 'desc' },
       take: limit,
       select: COMPARE_DIARY_SELECT,
     }),
-    side.partnerSharesDiaries
-      ? prisma.diary.findMany({
-          where: { userId: side.partner.id },
-          orderBy: { date: 'desc' },
-          take: limit,
-          select: COMPARE_DIARY_SELECT,
-        })
-      : Promise.resolve([]),
+    listSharingPartners(viewerId, 'diaries'),
   ])
+
+  const partnerDiaries = sharingPartners.some(
+    ({ partnerId }) => partnerId === side.partner.id,
+  )
+    ? await prisma.diary.findMany({
+        where: { userId: side.partner.id },
+        orderBy: { date: 'desc' },
+        take: limit,
+        select: COMPARE_DIARY_SELECT,
+      })
+    : []
 
   return {
     viewer,

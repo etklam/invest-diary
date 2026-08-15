@@ -21,6 +21,7 @@ const mockStockNoteCount = vi.fn()
 
 // Prisma mocks — PartnerLink (used by GET with partnerId)
 const mockPartnerLinkFindFirst = vi.fn()
+const mockPartnerLinkFindMany = vi.fn()
 
 // Logger mocks
 const mockStocksLogInfo = vi.fn()
@@ -52,6 +53,7 @@ vi.mock('~/lib/prisma', () => ({
     },
     partnerLink: {
       findFirst: mockPartnerLinkFindFirst,
+      findMany: mockPartnerLinkFindMany,
     },
   },
 }))
@@ -105,6 +107,7 @@ describe('Stock Notes API', () => {
     mockGetQuery.mockReturnValue({})
     mockReadBody.mockResolvedValue(null)
     mockStockWatchlistFindFirst.mockResolvedValue(null)
+    mockPartnerLinkFindMany.mockResolvedValue([])
     mockStockWatchlistUpsert.mockResolvedValue({
       id: 10n,
       stockId: 2n,
