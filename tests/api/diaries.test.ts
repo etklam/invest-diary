@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mockGetQuery, mockReadBody, mockGetRouterParam } from '../vi-setup'
+import { mockGetQuery, mockReadBody, mockGetRouterParam, mockLogger } from '../vi-setup'
+import { aDiary } from '../fixtures/builders'
 
 const mockDiaryFindMany = vi.fn()
 const mockDiaryCount = vi.fn()
@@ -15,15 +16,11 @@ const mockTxTransactionUpdateMany = vi.fn()
 const mockTxAlertDeleteMany = vi.fn()
 const mockTxAlertCreate = vi.fn()
 const mockTxQueryRaw = vi.fn()
-const mockDiaryLogInfo = vi.fn()
-const mockDiaryLogWarn = vi.fn()
-const mockDiaryLogError = vi.fn()
-const mockDiaryLog = {
-  info: mockDiaryLogInfo,
-  warn: mockDiaryLogWarn,
-  error: mockDiaryLogError,
-}
-const mockDiaryWithRequestId = vi.fn(() => mockDiaryLog)
+const diaryLogger = mockLogger('diary')
+const mockDiaryLogInfo = diaryLogger.log.info
+const mockDiaryLogError = diaryLogger.log.error
+const mockDiaryLog = diaryLogger.log
+const mockDiaryWithRequestId = diaryLogger.withRequestId
 
 vi.mock('~/lib/prisma', () => ({
   default: {
@@ -41,13 +38,7 @@ vi.mock('~/lib/prisma', () => ({
     $transaction: mockTransaction,
   },
 }))
-vi.mock('~/lib/logger', () => ({
-  logger: {
-    diary: {
-      withRequestId: mockDiaryWithRequestId,
-    },
-  },
-}))
+vi.mock('~/lib/logger', () => mockLogger('diary'))
 
 describe('Diary API Routes', () => {
   beforeEach(() => {
@@ -87,18 +78,16 @@ describe('Diary API Routes', () => {
       const now = new Date('2026-01-05T10:00:00.000Z')
       mockGetQuery.mockReturnValue({ page: '1', limit: '2' })
       mockDiaryFindMany.mockResolvedValue([
-        {
-          id: 1n,
-          userId: 1n,
-          title: 'First diary',
-          content: 'content',
-          tagsString: 'profit, watch',
+        aDiary({
           date: now,
           createdAt: now,
           updatedAt: now,
+          title: 'First diary',
+          content: 'content',
+          tagsString: 'profit, watch',
           alerts: [{ id: 11n, message: 'Alert', triggerAt: now, isDismissed: false }],
           transactions: [{ id: 21n, symbol: 'AAPL', type: 'BUY', quantity: 1, price: 100, tradeDate: now }],
-        },
+        }),
       ])
       mockDiaryCount.mockResolvedValue(1)
 
@@ -127,15 +116,13 @@ describe('Diary API Routes', () => {
         alerts: [{ message: 'Reminder', triggerAt: diaryDate }],
       })
       mockDiaryFindFirst.mockResolvedValue(null)
-      mockDiaryCreate.mockResolvedValue({
+      mockDiaryCreate.mockResolvedValue(aDiary({
         id: 100n,
         title: 'New Diary',
         content: 'New content',
         tagsString: 'profit,watch',
         date: diaryDate,
-        transactions: [],
-        alerts: [],
-      })
+      }))
 
       const { default: handler } = await import('~/server/api/diaries.post')
       const mockEvent = { context: { user: { id: '1' }, requestId: 'req-create' } } as any
@@ -178,11 +165,11 @@ describe('Diary API Routes', () => {
       })
       mockDiaryFindFirst.mockResolvedValue({ id: 5n, content: 'Original content', tagsString: 'watch,learning' })
       mockTxQueryRaw.mockResolvedValue([{ content: 'Original content', tags: 'watch,learning' }])
-      mockDiaryUpdate.mockResolvedValue({
+      mockDiaryUpdate.mockResolvedValue(aDiary({
         id: 5n,
         content: 'Original content\n\n---\n\nAdditional content',
         tagsString: 'watch,learning,profit',
-      })
+      }))
 
       const { default: handler } = await import('~/server/api/diaries.post')
 

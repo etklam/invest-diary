@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockGetQuery, mockReadBody } from '../vi-setup'
+import { aDiary } from '../fixtures/builders'
+import { mockLogger } from '../vi-setup'
 
 const mockTradePlanFindMany = vi.fn()
 const mockTradePlanFindFirst = vi.fn()
@@ -8,10 +10,6 @@ const mockTradePlanUpdate = vi.fn()
 const mockTradePlanDelete = vi.fn()
 const mockDiaryFindFirst = vi.fn()
 const mockParsePositiveBigIntParam = vi.fn()
-const mockLogInfo = vi.fn()
-const mockLogWarn = vi.fn()
-const mockLogError = vi.fn()
-
 vi.mock('~/lib/prisma', () => ({
   default: {
     tradePlan: {
@@ -27,17 +25,7 @@ vi.mock('~/lib/prisma', () => ({
   },
 }))
 
-vi.mock('~/lib/logger', () => ({
-  logger: {
-    diary: {
-      withRequestId: vi.fn(() => ({
-        info: mockLogInfo,
-        warn: mockLogWarn,
-        error: mockLogError,
-      })),
-    },
-  },
-}))
+vi.mock('~/lib/logger', () => mockLogger('diary'))
 
 vi.mock('~/server/utils/validation', async (importOriginal) => {
   const actual = await importOriginal<typeof import('~/server/utils/validation')>()
@@ -64,11 +52,11 @@ const samplePlan = {
   status: 'draft',
   createdAt: new Date('2026-06-14T08:00:00.000Z'),
   updatedAt: new Date('2026-06-14T09:00:00.000Z'),
-  diary: {
+  diary: aDiary({
     id: 2n,
     title: 'AAPL diary',
     date: new Date('2026-06-13T12:00:00.000Z'),
-  },
+  }),
 }
 
 describe('Trade Plan API Routes', () => {

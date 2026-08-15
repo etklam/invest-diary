@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { aDiary } from '../../fixtures/builders'
 
 const {
   mockDiaryCount,
@@ -39,22 +40,22 @@ describe('getDiarySummaryForUser', () => {
     })
     mockAlertCount.mockResolvedValue(4)
     mockTransactionCount.mockResolvedValue(8)
-    mockDiaryFindFirst.mockResolvedValue({
+    mockDiaryFindFirst.mockResolvedValue(aDiary({
       id: 99n,
       title: 'Latest',
       content: 'Latest content',
       date: new Date('2026-08-06T12:00:00Z'),
       createdAt: new Date('2026-08-06T12:01:00Z'),
-    })
+    }))
     mockDiaryFindMany.mockResolvedValue([
-      {
+      aDiary({
         id: 98n,
         title: 'Review me',
         date: new Date('2026-08-01T12:00:00Z'),
         thesis: 'Thesis',
         risk: 'Risk',
         reviewStatus: 'pending',
-      },
+      }),
     ])
   })
 

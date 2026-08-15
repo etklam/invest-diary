@@ -1,17 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockLogger, mockRequireUser } from '../vi-setup'
 
 const {
-  mockRequireUser,
   mockParsePositiveBigIntParam,
   mockDismissAlert,
   mockSerialize,
-  mockLogger,
 } = vi.hoisted(() => ({
-  mockRequireUser: vi.fn(),
   mockParsePositiveBigIntParam: vi.fn(),
   mockDismissAlert: vi.fn(),
   mockSerialize: vi.fn(),
-  mockLogger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }))
 
 vi.mock('~/server/utils/auth', () => ({ requireUser: mockRequireUser }))
@@ -19,9 +16,7 @@ vi.mock('~/server/utils/validation', () => ({ parsePositiveBigIntParam: mockPars
 vi.mock('~/server/utils/alert-queries', () => ({ dismissAlert: mockDismissAlert }))
 vi.mock('~/server/utils/serialize', () => ({ serialize: mockSerialize }))
 vi.mock('~/server/utils/error-handler', () => ({ handleApiError: vi.fn() }))
-vi.mock('~/lib/logger', () => ({
-  logger: { alert: { withRequestId: vi.fn(() => mockLogger) } },
-}))
+vi.mock('~/lib/logger', () => mockLogger('alert'))
 
 import handler from '~/server/api/alerts/[id]/dismiss.put'
 

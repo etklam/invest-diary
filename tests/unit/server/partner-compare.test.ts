@@ -1,21 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { aDiary, type DiaryFixture } from '../../fixtures/builders'
 
 // ─── 測試用型別 ─────────────────────────────────────────────────────────────────
 
-interface TestDiary {
-  id: bigint
-  userId: bigint
-  title: string
-  content: string
-  tagsString: string | null
-  createdVia: string
-  createdByLabel: string | null
-  date: Date
-  createdAt: Date
-  updatedAt: Date
-  transactions?: any[]
-  alerts?: any[]
-}
+type TestDiary = DiaryFixture
 
 interface CompareDay {
   dateKey: string
@@ -34,18 +22,7 @@ vi.mock('~/lib/dates/format', () => ({
 // ─── 工廠函數 ─────────────────────────────────────────────────────────────────
 
 function makeDiary(overrides: Partial<TestDiary> & { date: Date }): TestDiary {
-  return {
-    id: BigInt(Math.floor(Math.random() * 10000)),
-    userId: 5n,
-    title: 'Test Diary',
-    content: 'Some content',
-    tagsString: null,
-    createdVia: 'WEB',
-    createdByLabel: null,
-    createdAt: overrides.date,
-    updatedAt: overrides.date,
-    ...overrides,
-  }
+  return aDiary(overrides)
 }
 
 // ─── 測試 ─────────────────────────────────────────────────────────────────────

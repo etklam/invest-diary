@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createAlertPusher } from '~/server/schedulers/alert-pusher'
+import { anAlert, aDiary } from '../../fixtures/builders'
 
 describe('createAlertPusher', () => {
   const mockFindMany = vi.fn()
@@ -36,16 +37,12 @@ describe('createAlertPusher', () => {
     vi.setSystemTime(now)
 
     mockFindMany.mockResolvedValueOnce([
-      {
+      anAlert({
         id: 1n,
         message: 'Test alert',
         triggerAt: new Date(now.getTime() + 1000),
-        diary: {
-          id: 10n,
-          title: 'Morning entry',
-          userId: 5n,
-        },
-      },
+        diary: aDiary({ id: 10n, title: 'Morning entry', userId: 5n }),
+      }),
     ])
     mockEmitToUser.mockReturnValue(true)
 
@@ -87,16 +84,12 @@ describe('createAlertPusher', () => {
     vi.setSystemTime(now)
 
     mockFindMany.mockResolvedValueOnce([
-      {
+      anAlert({
         id: 2n,
         message: 'Offline alert',
         triggerAt: new Date(now.getTime() + 30000),
-        diary: {
-          id: 20n,
-          title: 'Evening entry',
-          userId: 7n,
-        },
-      },
+        diary: aDiary({ id: 20n, title: 'Evening entry', userId: 7n }),
+      }),
     ])
     mockEmitToUser.mockReturnValue(false)
 
@@ -135,18 +128,18 @@ describe('createAlertPusher', () => {
     vi.setSystemTime(now)
 
     mockFindMany.mockResolvedValueOnce([
-      {
+      anAlert({
         id: 1n,
         message: 'Good alert',
         triggerAt: new Date(now.getTime() + 1000),
-        diary: { id: 10n, title: 'Entry 1', userId: 1n },
-      },
-      {
+        diary: aDiary({ id: 10n, title: 'Entry 1', userId: 1n }),
+      }),
+      anAlert({
         id: 2n,
         message: 'Bad alert',
         triggerAt: new Date(now.getTime() + 2000),
-        diary: { id: 20n, title: 'Entry 2', userId: 2n },
-      },
+        diary: aDiary({ id: 20n, title: 'Entry 2', userId: 2n }),
+      }),
     ])
 
     // First user connected and succeeds, second throws

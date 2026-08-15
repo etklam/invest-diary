@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mockReadBody } from '../vi-setup'
+import { mockReadBody, mockLogger } from '../vi-setup'
+import { aDiary } from '../fixtures/builders'
 
 const mockDiaryFindFirst = vi.fn()
 const mockTransactionFindMany = vi.fn()
@@ -9,11 +10,6 @@ const mockTransactionUpdateMany = vi.fn()
 const mockTransactionCreate = vi.fn()
 const mockAlertDeleteMany = vi.fn()
 const mockPrismaTransaction = vi.fn()
-const mockWithRequestId = vi.fn(() => ({
-  info: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-}))
 const mockParsePositiveBigIntParam = vi.fn()
 
 vi.mock('~/lib/prisma', () => ({
@@ -28,13 +24,7 @@ vi.mock('~/lib/prisma', () => ({
   },
 }))
 
-vi.mock('~/lib/logger', () => ({
-  logger: {
-    diary: {
-      withRequestId: mockWithRequestId,
-    },
-  },
-}))
+vi.mock('~/lib/logger', () => mockLogger('diary'))
 
 vi.mock('~/server/utils/validation', async (importOriginal) => {
   const actual = await importOriginal<typeof import('~/server/utils/validation')>()
@@ -48,17 +38,16 @@ describe('PUT /api/diaries/:id transaction diff upsert', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockParsePositiveBigIntParam.mockReturnValue(12n)
-    mockDiaryFindFirst.mockResolvedValue({ id: 12n, userId: 1n })
+    mockDiaryFindFirst.mockResolvedValue(aDiary({ id: 12n, userId: 1n }))
     mockTransactionFindMany.mockResolvedValue([])
     mockTransactionUpdateMany.mockResolvedValue({ count: 1 })
-    mockDiaryUpdate.mockResolvedValue({
+    mockDiaryUpdate.mockResolvedValue(aDiary({
       id: 12n,
       title: 'Updated',
       content: 'Updated content',
       tagsString: 'a,b',
       transactions: [{ id: 100n, symbol: 'AAPL' }],
-      alerts: [],
-    })
+    }))
     mockPrismaTransaction.mockImplementation(async (cb: any) => cb({
       transaction: {
         deleteMany: mockTransactionDeleteMany,

@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mockGetQuery, mockGetRouterParam, mockReadBody } from '../vi-setup'
-
-const mockRequireUser = vi.fn()
+import { mockGetQuery, mockGetRouterParam, mockReadBody, mockLogger, mockRequireUser } from '../vi-setup'
+import { aStockNote } from '../fixtures/builders'
 
 // Prisma mocks — Stock
 const mockStockUpsert = vi.fn()
@@ -22,16 +21,6 @@ const mockStockNoteCount = vi.fn()
 // Prisma mocks — PartnerLink (used by GET with partnerId)
 const mockPartnerLinkFindFirst = vi.fn()
 const mockPartnerLinkFindMany = vi.fn()
-
-// Logger mocks
-const mockStocksLogInfo = vi.fn()
-const mockStocksLogWarn = vi.fn()
-const mockStocksLogError = vi.fn()
-const mockStocksWithRequestId = vi.fn(() => ({
-  info: mockStocksLogInfo,
-  warn: mockStocksLogWarn,
-  error: mockStocksLogError,
-}))
 
 vi.mock('~/lib/prisma', () => ({
   default: {
@@ -62,30 +51,9 @@ vi.mock('~/server/utils/auth', () => ({
   requireUser: mockRequireUser,
 }))
 
-vi.mock('~/lib/logger', () => ({
-  logger: {
-    stocks: {
-      withRequestId: mockStocksWithRequestId,
-    },
-  },
-}))
+vi.mock('~/lib/logger', () => mockLogger('stocks'))
 
 // Helper to build a stock note record
-const makeStockNote = (overrides: Record<string, unknown> = {}) => ({
-  id: 1n,
-  userId: 1n,
-  stockId: 2n,
-  title: 'Quarterly thesis update',
-  content: 'Earnings continue to grow. Maintaining overweight.',
-  date: new Date('2026-05-18T00:00:00.000Z'),
-  createdVia: 'USER',
-  createdByLabel: null,
-  createdAt: new Date('2026-05-18T12:00:00.000Z'),
-  updatedAt: new Date('2026-05-18T12:00:00.000Z'),
-  stock: { symbol: 'AAPL', name: 'Apple Inc.' },
-  ...overrides,
-})
-
 const makeStockNoteResponse = (overrides: Record<string, unknown> = {}) => ({
   id: '1',
   symbol: 'AAPL',
@@ -130,7 +98,7 @@ describe('Stock Notes API', () => {
       // upsertStockWatchlistItem flow
       mockStockUpsert.mockResolvedValue({ id: 2n, symbol: 'AAPL' })
       // createStockNote
-      mockStockNoteCreate.mockResolvedValue(makeStockNote({ title: 'AAPL thesis', content: 'Strong buy at current levels.' }))
+      mockStockNoteCreate.mockResolvedValue(aStockNote({ title: 'AAPL thesis', content: 'Strong buy at current levels.' }))
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.post')
       const result = await handler({
@@ -207,7 +175,7 @@ describe('Stock Notes API', () => {
         sortOrder: 0,
         stock: { id: 3n, symbol: 'NVDA', name: 'NVIDIA Corp.' },
       })
-      mockStockNoteCreate.mockResolvedValue(makeStockNote({ id: 2n, stockId: 3n, stock: { symbol: 'NVDA', name: 'NVIDIA Corp.' } }))
+      mockStockNoteCreate.mockResolvedValue(aStockNote({ id: 2n, stockId: 3n, stock: { symbol: 'NVDA', name: 'NVIDIA Corp.' } }))
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.post')
       const result = await handler({
@@ -245,7 +213,7 @@ describe('Stock Notes API', () => {
         sortOrder: 5,
         stock: { symbol: 'NVDA', name: 'NVIDIA Corp.' },
       })
-      mockStockNoteCreate.mockResolvedValue(makeStockNote({
+      mockStockNoteCreate.mockResolvedValue(aStockNote({
         id: 2n,
         stockId: 3n,
         stock: { symbol: 'NVDA', name: 'NVIDIA Corp.' },
@@ -286,7 +254,7 @@ describe('Stock Notes API', () => {
         sortOrder: 2,
         stock: { id: 3n, symbol: 'NVDA', name: 'NVIDIA Corp.' },
       })
-      mockStockNoteCreate.mockResolvedValue(makeStockNote({
+      mockStockNoteCreate.mockResolvedValue(aStockNote({
         id: 2n,
         stockId: 3n,
         stock: { symbol: 'NVDA', name: 'NVIDIA Corp.' },
@@ -329,7 +297,7 @@ describe('Stock Notes API', () => {
 
       mockStockUpsert.mockResolvedValue({ id: 2n, symbol: 'AAPL' })
       mockStockNoteCreate.mockResolvedValue(
-        makeStockNote({ title: 'Past thesis', content: 'Looking back at Q1.', date: new Date('2026-03-15T00:00:00.000Z') }),
+        aStockNote({ title: 'Past thesis', content: 'Looking back at Q1.', date: new Date('2026-03-15T00:00:00.000Z') }),
       )
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.post')
@@ -349,8 +317,8 @@ describe('Stock Notes API', () => {
     it('returns paginated notes for a symbol', async () => {
       mockStockFindUnique.mockResolvedValue({ id: 2n })
       mockStockNoteFindMany.mockResolvedValue([
-        makeStockNote({ id: 1n }),
-        makeStockNote({ id: 2n, title: 'Updated thesis' }),
+        aStockNote({ id: 1n }),
+        aStockNote({ id: 2n, title: 'Updated thesis' }),
       ])
       mockStockNoteCount.mockResolvedValue(2)
 
@@ -416,7 +384,7 @@ describe('Stock Notes API', () => {
     it('filters by createdVia=USER', async () => {
       mockGetQuery.mockReturnValue({ createdVia: 'USER' })
       mockStockFindUnique.mockResolvedValue({ id: 2n })
-      mockStockNoteFindMany.mockResolvedValue([makeStockNote()])
+      mockStockNoteFindMany.mockResolvedValue([aStockNote()])
       mockStockNoteCount.mockResolvedValue(1)
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/index.get')
@@ -473,9 +441,9 @@ describe('Stock Notes API', () => {
         title: 'Revised thesis',
         content: 'Updated earnings analysis.',
       })
-      mockStockNoteFindFirst.mockResolvedValue(makeStockNote())
+      mockStockNoteFindFirst.mockResolvedValue(aStockNote())
       mockStockNoteUpdate.mockResolvedValue(
-        makeStockNote({ title: 'Revised thesis', content: 'Updated earnings analysis.' }),
+        aStockNote({ title: 'Revised thesis', content: 'Updated earnings analysis.' }),
       )
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/[id].put')
@@ -515,7 +483,7 @@ describe('Stock Notes API', () => {
       mockGetRouterParam.mockReturnValue('1')
       mockReadBody.mockResolvedValue({ title: 'Hack attempt', content: '...' })
       mockStockNoteFindFirst.mockResolvedValue(
-        makeStockNote({ createdVia: 'AGENT', createdByLabel: 'Ana' }),
+        aStockNote({ createdVia: 'AGENT', createdByLabel: 'Ana' }),
       )
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/[id].put')
@@ -530,7 +498,7 @@ describe('Stock Notes API', () => {
     it('rejects empty content in partial update', async () => {
       mockGetRouterParam.mockReturnValue('1')
       mockReadBody.mockResolvedValue({ content: '' })
-      mockStockNoteFindFirst.mockResolvedValue(makeStockNote())
+      mockStockNoteFindFirst.mockResolvedValue(aStockNote())
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/[id].put')
 
@@ -547,8 +515,8 @@ describe('Stock Notes API', () => {
   describe('DELETE note', () => {
     it('deletes a USER-created note', async () => {
       mockGetRouterParam.mockReturnValue('1')
-      mockStockNoteFindFirst.mockResolvedValue(makeStockNote())
-      mockStockNoteDelete.mockResolvedValue(makeStockNote())
+      mockStockNoteFindFirst.mockResolvedValue(aStockNote())
+      mockStockNoteDelete.mockResolvedValue(aStockNote())
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/[id].delete')
       const result = await handler({
@@ -580,7 +548,7 @@ describe('Stock Notes API', () => {
     it('returns 403 when trying to delete an AGENT-created note', async () => {
       mockGetRouterParam.mockReturnValue('1')
       mockStockNoteFindFirst.mockResolvedValue(
-        makeStockNote({ createdVia: 'AGENT', createdByLabel: 'Ana' }),
+        aStockNote({ createdVia: 'AGENT', createdByLabel: 'Ana' }),
       )
 
       const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/[id].delete')

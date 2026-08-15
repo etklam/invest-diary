@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { aDiary } from '../../fixtures/builders'
 
 // Mock variables must be hoisted so they're available when vi.mock runs
 const {
@@ -303,20 +304,15 @@ describe('createDiaryForUser', () => {
     mockTxUserFindUnique.mockResolvedValue({ timezone: 'Asia/Taipei' })
   })
 
-  const baseCreatedDiary = {
+  const baseCreatedDiary = aDiary({
     id: 1n,
     userId: 1n,
     title: 'Test Diary',
     content: 'Some content',
-    tagsString: null,
-    createdVia: 'WEB',
-    createdByLabel: null,
     date: new Date('2026-05-17T12:00:00Z'),
     createdAt: new Date('2026-05-17T12:00:00Z'),
     updatedAt: new Date('2026-05-17T12:00:00Z'),
-    transactions: [],
-    alerts: [],
-  }
+  })
 
   it('should create a diary successfully', async () => {
     mockPrismaDiaryFindFirst.mockResolvedValue(null)

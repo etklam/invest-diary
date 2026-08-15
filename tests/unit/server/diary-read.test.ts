@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { aDiary, anAlert, aTransaction } from '../../fixtures/builders'
 
 // Mock variables must be hoisted so they're available when vi.mock runs
 const { mockPrismaDiaryFindFirst, mockPrismaDiaryFindMany, mockPrismaDiaryCount, mockPrismaInvestmentThesisFindMany } = vi.hoisted(() => ({
@@ -39,20 +40,14 @@ describe('findDiaryForUser', () => {
     vi.clearAllMocks()
   })
 
-  const baseDiary = {
+  const baseDiary = aDiary({
     id: 1n,
     userId: 42n,
     title: 'Test Diary',
-    content: 'Some content',
-    tagsString: null,
-    createdVia: 'WEB',
-    createdByLabel: null,
     date: new Date('2026-05-17T12:00:00Z'),
     createdAt: new Date('2026-05-17T12:00:00Z'),
     updatedAt: new Date('2026-05-17T12:00:00Z'),
-    transactions: [],
-    alerts: [],
-  }
+  })
 
   it('should return diary when found and owned by user (bigint)', async () => {
     mockPrismaDiaryFindFirst.mockResolvedValue(baseDiary)
@@ -112,10 +107,10 @@ describe('findDiaryForUser', () => {
     const diaryWithRelations = {
       ...baseDiary,
       transactions: [
-        { id: 100n, symbol: 'AAPL', type: 'BUY', quantity: 10, price: 150 },
+        aTransaction({ id: 100n, diaryId: 1n, userId: 42n, symbol: 'AAPL', quantity: 10, price: 150 }),
       ],
       alerts: [
-        { id: 50n, message: 'Check AAPL', triggerAt: new Date(), isDismissed: false },
+        anAlert({ id: 50n, diaryId: 1n, message: 'Check AAPL', triggerAt: new Date(), isDismissed: false }),
       ],
     }
     mockPrismaDiaryFindFirst.mockResolvedValue(diaryWithRelations)
@@ -135,14 +130,14 @@ describe('findDiaryDetailForUser', () => {
   })
 
   it('loads the complete owner Decision Record in one query', async () => {
-    mockPrismaDiaryFindFirst.mockResolvedValue({
+    mockPrismaDiaryFindFirst.mockResolvedValue(aDiary({
       id: 1n,
       userId: 42n,
       title: 'Decision',
       transactions: [],
       alerts: [],
       tradePlans: [],
-    })
+    }))
 
     await findDiaryDetailForUser(1n, 42n)
 
@@ -180,20 +175,14 @@ describe('findDiaryByDate', () => {
     vi.clearAllMocks()
   })
 
-  const baseDiary = {
+  const baseDiary = aDiary({
     id: 1n,
     userId: 42n,
     title: 'Test Diary',
-    content: 'Some content',
-    tagsString: null,
-    createdVia: 'WEB',
-    createdByLabel: null,
     date: new Date('2026-05-17T12:00:00Z'),
     createdAt: new Date('2026-05-17T12:00:00Z'),
     updatedAt: new Date('2026-05-17T12:00:00Z'),
-    transactions: [],
-    alerts: [],
-  }
+  })
 
   it('should return diary when found for the given date and user', async () => {
     mockPrismaDiaryFindFirst.mockResolvedValue(baseDiary)
@@ -261,19 +250,16 @@ describe('findLatestDiaryForUser', () => {
     vi.clearAllMocks()
   })
 
-  const latestDiary = {
+  const latestDiary = aDiary({
     id: 99n,
     userId: 7n,
     title: 'Newest',
     content: 'body',
-    tagsString: null,
-    createdVia: 'WEB',
-    createdByLabel: null,
     date: new Date('2026-07-01T12:00:00Z'),
     createdAt: new Date('2026-07-01T12:00:00Z'),
     updatedAt: new Date('2026-07-01T12:00:00Z'),
     transactions: [],
-  }
+  })
 
   it('returns the most recent diary ordered by createdAt desc', async () => {
     mockPrismaDiaryFindFirst.mockResolvedValue(latestDiary)
@@ -319,27 +305,18 @@ describe('listDiariesForUser', () => {
     mockPrismaDiaryCount.mockResolvedValue(0)
   })
 
-  const baseItem = {
+  const baseItem = aDiary({
     id: 1n,
     userId: 7n,
     title: 'T',
     content: 'C',
     tagsString: 'tech,ai',
-    createdVia: 'WEB',
-    createdByLabel: null,
     date: new Date('2026-07-01T12:00:00Z'),
     createdAt: new Date('2026-07-01T12:00:00Z'),
     updatedAt: new Date('2026-07-01T12:00:00Z'),
-    thesis: null,
-    risk: null,
-    execution: null,
-    reviewDueAt: null,
     reviewStatus: null,
-    reviewedAt: null,
-    alerts: [],
-    transactions: [],
     tradePlans: [],
-  }
+  })
 
   it('applies pagination: skip = (page-1)*limit, take = limit', async () => {
     await listDiariesForUser(7n, { page: 3, limit: 25 })
@@ -646,16 +623,13 @@ describe('buildReviewBuckets', () => {
 
   it('normalizes null reviewStatus to "none" on each bucket item', async () => {
     mockBuckets({
-      today: [{
+      today: [aDiary({
         id: 1n,
         title: 'T',
         date: new Date('2026-06-14T09:00:00Z'),
-        thesis: null,
-        risk: null,
         reviewDueAt: new Date('2026-06-14T15:00:00Z'),
         reviewStatus: null,
-        reviewedAt: null,
-      }],
+      })],
     })
 
     const { today } = await buildReviewBuckets(7n, 'Asia/Taipei')

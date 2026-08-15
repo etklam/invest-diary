@@ -5,6 +5,43 @@
 
 import { vi } from 'vitest'
 
+type MockLog = {
+  info: ReturnType<typeof vi.fn>
+  warn: ReturnType<typeof vi.fn>
+  error: ReturnType<typeof vi.fn>
+  debug: ReturnType<typeof vi.fn>
+}
+
+const loggerMocks = new Map<string, {
+  logger: Record<string, { withRequestId: ReturnType<typeof vi.fn> }>
+  log: MockLog
+  withRequestId: ReturnType<typeof vi.fn>
+}>()
+
+/** Build the logger module shape used by API handlers. */
+export function mockLogger(domain: string) {
+  const existing = loggerMocks.get(domain)
+  if (existing) return existing
+
+  const log: MockLog = {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  }
+  const withRequestId = vi.fn(() => log)
+  const mock = {
+    logger: { [domain]: { withRequestId } },
+    log,
+    withRequestId,
+  }
+  loggerMocks.set(domain, mock)
+  return mock
+}
+
+/** Shared auth mock; callers set the return value per test when needed. */
+export const mockRequireUser = vi.fn((user: unknown = { id: '1' }) => user)
+
 // Create mock toast functions that can be imported by tests
 const mockToastInfo = vi.fn()
 const mockToastSuccess = vi.fn()

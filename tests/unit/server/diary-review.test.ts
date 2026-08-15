@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { aDiary } from '../../fixtures/builders'
 
 const mockDiaryFindFirst = vi.fn()
 const mockDiaryUpdate = vi.fn()
@@ -52,8 +53,8 @@ describe('structured diary review domain', () => {
   it('writes normalized reflections and refreshes reviewedAt on every successful save', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-08-09T04:00:00.000Z'))
-    mockDiaryFindFirst.mockResolvedValue({ id: 10n })
-    mockDiaryUpdate.mockResolvedValue({ id: 10n, reviewOutcome: 'INVALIDATED' })
+    mockDiaryFindFirst.mockResolvedValue(aDiary({ id: 10n }))
+    mockDiaryUpdate.mockResolvedValue(aDiary({ id: 10n, reviewOutcome: 'INVALIDATED' }))
 
     const { saveStructuredReviewForUser } = await import('~/server/utils/diary-review')
     await saveStructuredReviewForUser(10n, 7n, {

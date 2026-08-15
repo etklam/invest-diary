@@ -1,12 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { anAlert, aDiary } from '../fixtures/builders'
+import { mockLogger, mockRequireUser } from '../vi-setup'
 
-const mockRequireUser = vi.fn()
 const mockAlertFindMany = vi.fn()
-const mockAlertWithRequestId = vi.fn(() => ({
-  info: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-}))
 
 vi.mock('~/lib/prisma', () => ({
   default: {
@@ -20,13 +16,7 @@ vi.mock('~/server/utils/auth', () => ({
   requireUser: mockRequireUser,
 }))
 
-vi.mock('~/lib/logger', () => ({
-  logger: {
-    alert: {
-      withRequestId: mockAlertWithRequestId,
-    },
-  },
-}))
+vi.mock('~/lib/logger', () => mockLogger('alert'))
 
 describe('GET /api/alerts — BigInt serialization contract', () => {
   beforeEach(() => {
@@ -37,16 +27,12 @@ describe('GET /api/alerts — BigInt serialization contract', () => {
   it('returns alert id and diary.id as string (not bigint)', async () => {
     // Prisma 回傳的原始資料，id 是 BigInt
     mockAlertFindMany.mockResolvedValue([
-      {
+      anAlert({
         id: 42n,
         message: 'Test alert',
-        triggerAt: '2026-06-14T10:00:00.000Z',
-        isDismissed: false,
-        diary: {
-          id: 7n,
-          title: 'My Diary',
-        },
-      },
+        triggerAt: new Date('2026-06-14T10:00:00.000Z'),
+        diary: aDiary({ id: 7n, title: 'My Diary' }),
+      }),
     ])
 
     const { default: handler } = await import('~/server/api/alerts/index.get')
@@ -67,16 +53,12 @@ describe('GET /api/alerts — BigInt serialization contract', () => {
 
   it('produces JSON-serializable output (no BigInt throws)', async () => {
     mockAlertFindMany.mockResolvedValue([
-      {
+      anAlert({
         id: 99n,
         message: 'Serialization test',
-        triggerAt: '2026-06-14T12:00:00.000Z',
-        isDismissed: false,
-        diary: {
-          id: 3n,
-          title: 'Diary 3',
-        },
-      },
+        triggerAt: new Date('2026-06-14T12:00:00.000Z'),
+        diary: aDiary({ id: 3n, title: 'Diary 3' }),
+      }),
     ])
 
     const { default: handler } = await import('~/server/api/alerts/index.get')

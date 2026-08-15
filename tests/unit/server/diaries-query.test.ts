@@ -1,18 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mockGetQuery } from '../../vi-setup'
+import { mockGetQuery, mockLogger } from '../../vi-setup'
+import { aDiary } from '../../fixtures/builders'
 
 // --- Hoisted mocks ---
 const mockDiaryFindMany = vi.fn()
 const mockDiaryCount = vi.fn()
-const mockDiaryLogInfo = vi.fn()
-const mockDiaryLogWarn = vi.fn()
-const mockDiaryLogError = vi.fn()
-const mockDiaryLog = {
-  info: mockDiaryLogInfo,
-  warn: mockDiaryLogWarn,
-  error: mockDiaryLogError,
-}
-const mockDiaryWithRequestId = vi.fn(() => mockDiaryLog)
+const diaryLogger = mockLogger('diary')
+const mockDiaryLog = diaryLogger.log
+const mockDiaryWithRequestId = diaryLogger.withRequestId
 
 vi.mock('~/lib/prisma', () => ({
   default: {
@@ -23,32 +18,29 @@ vi.mock('~/lib/prisma', () => ({
   },
 }))
 
-vi.mock('~/lib/logger', () => ({
-  logger: {
-    diary: {
-      withRequestId: mockDiaryWithRequestId,
-    },
-  },
-}))
+vi.mock('~/lib/logger', () => mockLogger('diary'))
 
 // ponytail: parseSearchQuery / parseDiarySortOption inlined into diaries.get.ts;
 // their behavior is now covered by the handler integration tests below.
 describe('GET /api/diaries handler — filter/sort integration', () => {
   const baseDiaries = [
-    {
-      id: 1n, userId: 1n, title: 'Alpha Trade', content: 'Bought AAPL',
-      tagsString: 'watch', createdVia: 'WEB', createdByLabel: null,
-      date: new Date('2026-06-01T12:00:00Z'), createdAt: new Date('2026-06-01T12:00:00Z'),
+    aDiary({
+      id: 1n,
+      title: 'Alpha Trade',
+      content: 'Bought AAPL',
+      tagsString: 'watch',
+      date: new Date('2026-06-01T12:00:00Z'),
+      createdAt: new Date('2026-06-01T12:00:00Z'),
       updatedAt: new Date('2026-06-01T12:00:00Z'),
-      alerts: [], transactions: [],
-    },
-    {
-      id: 2n, userId: 1n, title: 'Beta Review', content: 'Sold TSLA',
-      tagsString: null, createdVia: 'WEB', createdByLabel: null,
-      date: new Date('2026-05-20T12:00:00Z'), createdAt: new Date('2026-05-20T12:00:00Z'),
+    }),
+    aDiary({
+      id: 2n,
+      title: 'Beta Review',
+      content: 'Sold TSLA',
+      date: new Date('2026-05-20T12:00:00Z'),
+      createdAt: new Date('2026-05-20T12:00:00Z'),
       updatedAt: new Date('2026-05-20T12:00:00Z'),
-      alerts: [], transactions: [],
-    },
+    }),
   ]
 
   beforeEach(() => {

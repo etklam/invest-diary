@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { aDiary } from '../../fixtures/builders'
 
 const { mockDiaryFindMany } = vi.hoisted(() => ({ mockDiaryFindMany: vi.fn() }))
 
@@ -13,21 +14,21 @@ describe('getDiaryActivityForUser', () => {
 
   it('returns bounded civil-date activity without serializing diary content', async () => {
     mockDiaryFindMany.mockResolvedValue([
-      {
+      aDiary({
         id: 10n,
         date: new Date('2026-08-02T12:00:00.000Z'),
         _count: { alerts: 2, transactions: 1 },
-      },
-      {
+      }),
+      aDiary({
         id: 11n,
         date: new Date('2026-08-02T12:00:00.000Z'),
         _count: { alerts: 1, transactions: 3 },
-      },
-      {
+      }),
+      aDiary({
         id: 12n,
         date: new Date('2026-08-03T12:00:00.000Z'),
         _count: { alerts: 0, transactions: 0 },
-      },
+      }),
     ])
 
     const result = await getDiaryActivityForUser(7n, '2026-08-01', '2026-08-03')

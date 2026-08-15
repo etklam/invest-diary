@@ -1,14 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockReadBody } from '../vi-setup'
+import { aDiary } from '../fixtures/builders'
+import { mockLogger } from '../vi-setup'
 
 const mockDiaryFindMany = vi.fn()
 const mockDiaryFindFirst = vi.fn()
 const mockDiaryUpdate = vi.fn()
 const mockUserFindUnique = vi.fn()
 const mockThesisFindMany = vi.fn()
-const mockDiaryLogInfo = vi.fn()
-const mockDiaryLogWarn = vi.fn()
-const mockDiaryLogError = vi.fn()
 const mockParsePositiveBigIntParam = vi.fn()
 const mockGetUserTimezone = vi.fn()
 
@@ -28,17 +27,7 @@ vi.mock('~/lib/prisma', () => ({
   },
 }))
 
-vi.mock('~/lib/logger', () => ({
-  logger: {
-    diary: {
-      withRequestId: vi.fn(() => ({
-        info: mockDiaryLogInfo,
-        warn: mockDiaryLogWarn,
-        error: mockDiaryLogError,
-      })),
-    },
-  },
-}))
+vi.mock('~/lib/logger', () => mockLogger('diary'))
 
 vi.mock('~/server/utils/validation', async (importOriginal) => {
   const actual = await importOriginal<typeof import('~/server/utils/validation')>()
@@ -67,56 +56,11 @@ describe('Review API Routes', () => {
       vi.useFakeTimers()
       vi.setSystemTime(new Date('2026-06-14T12:00:00.000Z'))
 
-      const unscheduled = [{
-        id: 5n,
-        title: 'Pending without date',
-        date: new Date('2026-06-11T09:00:00.000Z'),
-        thesis: 'Needs a schedule',
-        risk: null,
-        reviewDueAt: null,
-        reviewStatus: 'pending',
-        reviewedAt: null,
-      }]
-      const overdue = [{
-        id: 1n,
-        title: 'Overdue diary',
-        date: new Date('2026-06-01T12:00:00.000Z'),
-        thesis: 'Breakout thesis',
-        risk: 'False breakout',
-        reviewDueAt: new Date('2026-06-13T10:00:00.000Z'),
-        reviewStatus: 'pending',
-        reviewedAt: null,
-      }]
-      const today = [{
-        id: 2n,
-        title: 'Today diary',
-        date: new Date('2026-06-14T09:00:00.000Z'),
-        thesis: null,
-        risk: null,
-        reviewDueAt: new Date('2026-06-14T15:00:00.000Z'),
-        reviewStatus: null,
-        reviewedAt: null,
-      }]
-      const upcoming = [{
-        id: 3n,
-        title: 'Upcoming diary',
-        date: new Date('2026-06-15T09:00:00.000Z'),
-        thesis: 'Wait for pullback',
-        risk: null,
-        reviewDueAt: new Date('2026-06-20T09:00:00.000Z'),
-        reviewStatus: 'pending',
-        reviewedAt: null,
-      }]
-      const completed = [{
-        id: 4n,
-        title: 'Completed diary',
-        date: new Date('2026-06-10T09:00:00.000Z'),
-        thesis: null,
-        risk: 'Sizing too large',
-        reviewDueAt: new Date('2026-06-12T09:00:00.000Z'),
-        reviewStatus: 'reviewed',
-        reviewedAt: new Date('2026-06-14T08:00:00.000Z'),
-      }]
+      const unscheduled = [aDiary({ id: 5n, title: 'Pending without date', date: new Date('2026-06-11T09:00:00.000Z'), thesis: 'Needs a schedule', reviewDueAt: null, reviewStatus: 'pending' })]
+      const overdue = [aDiary({ id: 1n, title: 'Overdue diary', date: new Date('2026-06-01T12:00:00.000Z'), thesis: 'Breakout thesis', risk: 'False breakout', reviewDueAt: new Date('2026-06-13T10:00:00.000Z'), reviewStatus: 'pending' })]
+      const today = [aDiary({ id: 2n, title: 'Today diary', date: new Date('2026-06-14T09:00:00.000Z'), reviewDueAt: new Date('2026-06-14T15:00:00.000Z'), reviewStatus: null })]
+      const upcoming = [aDiary({ id: 3n, title: 'Upcoming diary', date: new Date('2026-06-15T09:00:00.000Z'), thesis: 'Wait for pullback', reviewDueAt: new Date('2026-06-20T09:00:00.000Z'), reviewStatus: 'pending' })]
+      const completed = [aDiary({ id: 4n, title: 'Completed diary', date: new Date('2026-06-10T09:00:00.000Z'), risk: 'Sizing too large', reviewDueAt: new Date('2026-06-12T09:00:00.000Z'), reviewStatus: 'reviewed', reviewedAt: new Date('2026-06-14T08:00:00.000Z') })]
 
       mockDiaryFindMany
         .mockResolvedValueOnce(unscheduled)
@@ -190,19 +134,15 @@ describe('Review API Routes', () => {
         reviewLearning: ' ',
         reviewAdjustment: null,
       })
-      mockDiaryFindFirst.mockResolvedValue({ id: 10n, title: 'Reviewed diary' })
-      mockDiaryUpdate.mockResolvedValue({
+      mockDiaryFindFirst.mockResolvedValue(aDiary({ id: 10n, title: 'Reviewed diary' }))
+      mockDiaryUpdate.mockResolvedValue(aDiary({
         id: 10n,
         title: 'Reviewed diary',
         reviewStatus: 'reviewed',
         reviewedAt: new Date('2026-06-14T10:00:00.000Z'),
         reviewOutcome: 'PARTIAL',
         reviewSummary: 'The setup worked, entry did not.',
-        reviewLearning: null,
-        reviewAdjustment: null,
-        transactions: [],
-        tradePlans: [],
-      })
+      }))
 
       const { default: handler } = await import('~/server/api/diaries/[id]/review.patch')
       const result = await handler({ context: { user: { id: '7' }, requestId: 'req-review-patch' } } as any)
@@ -255,14 +195,13 @@ describe('Review API Routes', () => {
 
   describe('GET /api/diaries/:id/review', () => {
     it('returns only an owned diary with decision, transaction, and trade-plan context', async () => {
-      mockDiaryFindFirst.mockResolvedValue({
+      mockDiaryFindFirst.mockResolvedValue(aDiary({
         id: 10n,
         title: 'Decision context',
         reviewStatus: 'reviewed',
-        reviewOutcome: null,
         transactions: [{ id: 20n, symbol: 'AAPL' }],
         tradePlans: [{ id: 30n, symbol: 'AAPL' }],
-      })
+      }))
 
       const { default: handler } = await import('~/server/api/diaries/[id]/review.get')
       const result = await handler({ context: { user: { id: '7' }, requestId: 'req-review-get' } } as any)
