@@ -2,10 +2,10 @@
  * Portfolio exposure analysis.
  *
  * Pure functions — no Prisma, no Decimal, no side effects.
- * `HoldingView` is the normalized input shape (see `~/lib/stocks-view`).
+ * `Holding` is the unvalued position shape (see `~/lib/position-state`).
  */
 
-import type { HoldingView } from '~/lib/stocks-view'
+import type { Holding } from '~/lib/position-state'
 import { classifyBetaBucket, type BetaBucket } from './beta-buckets'
 
 export interface PortfolioExposure {
@@ -59,29 +59,14 @@ const EMPTY_EXPOSURE: PortfolioExposure = {
 /**
  * Resolve the market value of a single holding.
  *
- * Precedence: explicit `marketValue` > `price * quantity` > `totalCost`.
- * A marketValue of 0 is treated as missing (falls through to the next source),
- * matching the semantics used elsewhere in the codebase.
- *
- * Returns `null` when every fallback resolves to NaN / Infinity / non-numeric
- * (e.g. when upstream `Number(tx.quantity)` was fed a malformed Decimal).
- * Caller must skip + count these so the percentages shown to the user stay
- * finite instead of silently producing Infinity.
+ * Exposure intentionally consumes the unvalued position read model. In the
+ * absence of a quote, totalCost is the stable cost-basis proxy for exposure.
+ * Invalid cost values are skipped and counted so percentages stay finite.
  */
-function resolveMarketValue(h: HoldingView): number | null {
-  if (typeof h.marketValue === 'number' && h.marketValue !== 0 && Number.isFinite(h.marketValue)) {
-    return h.marketValue
-  }
-  if (
-    typeof h.price === 'number' && h.price !== 0 && Number.isFinite(h.price) &&
-    typeof h.quantity === 'number' && Number.isFinite(h.quantity)
-  ) {
-    return h.price * h.quantity
-  }
-  if (typeof h.totalCost === 'number' && Number.isFinite(h.totalCost)) {
-    return h.totalCost
-  }
-  return null
+function resolveMarketValue(h: Holding): number | null {
+  return typeof h.totalCost === 'number' && Number.isFinite(h.totalCost)
+    ? h.totalCost
+    : null
 }
 
 /**
@@ -91,7 +76,7 @@ function resolveMarketValue(h: HoldingView): number | null {
  * into that bucket, and the resulting percentages returned. Unknown buckets
  * are surfaced (not silently dropped) so T7 can warn the user.
  */
-export function computePortfolioExposure(holdings: HoldingView[]): PortfolioExposure {
+export function computePortfolioExposure(holdings: Holding[]): PortfolioExposure {
   if (holdings.length === 0) return { ...EMPTY_EXPOSURE }
 
   const bucketTotals = new Map<BetaBucket, number>()

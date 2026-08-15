@@ -1,18 +1,14 @@
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
-import { calculateHoldings } from '~/lib/position-state'
 import { requireUser } from '~/server/utils/auth'
-import { readPortfolioTransactions } from '~/server/utils/transaction-read'
+import { loadPortfolioHoldings } from '~/server/utils/portfolio-read'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   try {
-    const transactions = await readPortfolioTransactions(BigInt(user.id))
-
-    // 計算持股（已經排序好，不需要在 calculateHoldings 中再排序）
-    const holdings = calculateHoldings(transactions)
+    const holdings = await loadPortfolioHoldings(BigInt(user.id))
 
     log.debug('Calculated holdings', {
       userId: user.id,

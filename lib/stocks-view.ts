@@ -51,7 +51,7 @@ export interface PortfolioValuationResponse {
   marketState: string | null
 }
 
-const hasFiniteQuote = (holding: HoldingViewInput) =>
+export const hasFiniteQuote = (holding: HoldingViewInput) =>
   typeof holding.price === 'number' && Number.isFinite(holding.price) && holding.price >= 0
 
 export type ConcentrationBasis = 'market_value' | 'cost_basis'

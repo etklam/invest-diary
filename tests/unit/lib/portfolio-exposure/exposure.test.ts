@@ -5,27 +5,19 @@ import {
   type PortfolioExposure,
   type SuggestedAllocation,
 } from '~/lib/portfolio-exposure/exposure'
-import type { HoldingView } from '~/lib/stocks-view'
+import type { Holding } from '~/lib/position-state'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 function makeHolding(
   symbol: string,
   totalCost: number,
-  overrides: Partial<HoldingView> = {}
-): HoldingView {
+  overrides: Partial<Holding> = {}
+): Holding {
   return {
     symbol,
     quantity: 10,
     avgCost: totalCost / 10,
     totalCost,
-    price: undefined,
-    dayChange: undefined,
-    dayChangePercent: undefined,
-    marketValue: null,
-    unrealizedAmount: null,
-    unrealizedPct: null,
-    concentrationPct: 0,
-    dayChangeAmount: null,
     ...overrides,
   }
 }
@@ -72,7 +64,7 @@ describe('computePortfolioExposure', () => {
 
   describe('all known tickers', () => {
     it('AC2: sum of all buckets = 100', () => {
-      const holdings: HoldingView[] = [
+      const holdings: Holding[] = [
         makeHolding('QQQ', 1000),
         makeHolding('SOXX', 1000),
         makeHolding('NVDA', 1000),
@@ -81,51 +73,21 @@ describe('computePortfolioExposure', () => {
       expect(Math.round(sumPct(result) * 100) / 100).toBe(100)
     })
 
-    it('distributes by market value when available', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', 500, { price: 100, quantity: 10, marketValue: 1000 }),
-        makeHolding('SOXX', 500, { price: 100, quantity: 30, marketValue: 3000 }),
+    it('uses the raw holding cost basis as the exposure proxy', () => {
+      const holdings: Holding[] = [
+        makeHolding('QQQ', 1000),
+        makeHolding('SOXX', 3000),
       ]
       const result = computePortfolioExposure(holdings)
+      expect(result.totalValue).toBe(4000)
       expect(result.coreIndexPct).toBeCloseTo(25, 2)
       expect(result.highBetaPct).toBeCloseTo(75, 2)
-    })
-
-    it('falls back to totalCost when marketValue is null', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', 1000),
-        makeHolding('SOXX', 1000),
-      ]
-      const result = computePortfolioExposure(holdings)
-      expect(result.coreIndexPct).toBeCloseTo(50, 2)
-      expect(result.highBetaPct).toBeCloseTo(50, 2)
-    })
-
-    it('falls back to price * quantity when marketValue is null but price set', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', 500, { price: 50, quantity: 20, marketValue: null }),
-        makeHolding('SOXX', 500),
-      ]
-      const result = computePortfolioExposure(holdings)
-      expect(result.totalValue).toBeCloseTo(1500, 2)
-      expect(result.coreIndexPct).toBeCloseTo((1000 / 1500) * 100, 2)
-      expect(result.highBetaPct).toBeCloseTo((500 / 1500) * 100, 2)
-    })
-
-    it('falls back to totalCost when marketValue=0 and price missing', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', 1000, { marketValue: 0 }),
-        makeHolding('SOXX', 1000, { marketValue: 0 }),
-      ]
-      const result = computePortfolioExposure(holdings)
-      expect(result.coreIndexPct).toBeCloseTo(50, 2)
-      expect(result.highBetaPct).toBeCloseTo(50, 2)
     })
   })
 
   describe('all unknown tickers', () => {
     it('AC3: unknownPct = 100', () => {
-      const holdings: HoldingView[] = [
+      const holdings: Holding[] = [
         makeHolding('FOO', 500),
         makeHolding('BAR', 500),
       ]
@@ -137,7 +99,7 @@ describe('computePortfolioExposure', () => {
 
   describe('mixed known/unknown', () => {
     it('AC4: distributes by market value proportion', () => {
-      const holdings: HoldingView[] = [
+      const holdings: Holding[] = [
         makeHolding('QQQ', 1000),
         makeHolding('UNKNOWN_TICKER', 1000),
       ]
@@ -149,7 +111,7 @@ describe('computePortfolioExposure', () => {
 
   describe('case insensitivity', () => {
     it('AC5: nVdA and NVDA map to same bucket', () => {
-      const holdings: HoldingView[] = [
+      const holdings: Holding[] = [
         makeHolding('nVdA', 500),
         makeHolding('NVDA', 500),
       ]
@@ -161,7 +123,7 @@ describe('computePortfolioExposure', () => {
 
   describe('concentrationWarning boundary', () => {
     it('AC6: exactly 50% → false', () => {
-      const holdings: HoldingView[] = [
+      const holdings: Holding[] = [
         makeHolding('QQQ', 500),
         makeHolding('SOXX', 500),
       ]
@@ -173,7 +135,7 @@ describe('computePortfolioExposure', () => {
 
     it('AC6: 50.01% → true', () => {
       // QQQ 5000.01 / SOXX 4999.99 → QQQ ratio slightly over 50
-      const holdings: HoldingView[] = [
+      const holdings: Holding[] = [
         makeHolding('QQQ', 5000.01),
         makeHolding('SOXX', 4999.99),
       ]
@@ -183,7 +145,7 @@ describe('computePortfolioExposure', () => {
     })
 
     it('cash_proxy > 50% does NOT trigger warning', () => {
-      const holdings: HoldingView[] = [
+      const holdings: Holding[] = [
         makeHolding('BIL', 9000),
         makeHolding('QQQ', 1000),
       ]
@@ -195,7 +157,7 @@ describe('computePortfolioExposure', () => {
 
   describe('largestTheme', () => {
     it('returns largest non-unknown bucket name', () => {
-      const holdings: HoldingView[] = [
+      const holdings: Holding[] = [
         makeHolding('QQQ', 600),
         makeHolding('SOXX', 300),
         makeHolding('BIL', 100),
@@ -205,7 +167,7 @@ describe('computePortfolioExposure', () => {
     })
 
     it('returns null when all unknown', () => {
-      const holdings: HoldingView[] = [makeHolding('FOO', 1000)]
+      const holdings: Holding[] = [makeHolding('FOO', 1000)]
       const result = computePortfolioExposure(holdings)
       expect(result.largestTheme).toBeNull()
     })
@@ -218,9 +180,9 @@ describe('computePortfolioExposure', () => {
 
   describe('totalValue', () => {
     it('sums all holdings market value', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', 500, { price: 100, quantity: 10, marketValue: 1000 }),
-        makeHolding('SOXX', 500, { price: 50, quantity: 20, marketValue: 1000 }),
+      const holdings: Holding[] = [
+        makeHolding('QQQ', 1000),
+        makeHolding('SOXX', 1000),
       ]
       const result = computePortfolioExposure(holdings)
       expect(result.totalValue).toBeCloseTo(2000, 2)
@@ -229,45 +191,14 @@ describe('computePortfolioExposure', () => {
 
   // ─── Critical gap from eng review (2026-06-18) ────────────────────────
   // Source: `Number(tx.quantity)` in lib/position-state.ts can emit NaN when a Decimal
-  // is malformed; downstream `HoldingView` may then carry NaN/Infinity values.
+  // is malformed; the raw holding's totalCost may then carry NaN/Infinity values.
   // Those holdings must be skipped + counted, never silently allowed to
   // produce Infinity in the resulting percentages.
   describe('invalid holdings (NaN / Infinity guard)', () => {
-    it('NaN marketValue falls back to price * quantity when finite', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', 0, { marketValue: NaN, price: 100, quantity: 5 }),
-      ]
-      const result = computePortfolioExposure(holdings)
-      expect(result.coreIndexPct).toBeCloseTo(100, 2)
-      expect(result.totalValue).toBeCloseTo(500, 2)
-      expect(result.skippedCount).toBe(0)
-    })
-
-    it('NaN marketValue falls back to totalCost when price/quantity also NaN', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', 1000, { marketValue: NaN, price: NaN, quantity: NaN }),
-      ]
-      const result = computePortfolioExposure(holdings)
-      expect(result.coreIndexPct).toBeCloseTo(100, 2)
-      expect(result.totalValue).toBeCloseTo(1000, 2)
-      expect(result.skippedCount).toBe(0)
-    })
-
-    it('Infinity marketValue does not leak — falls back to finite price * quantity', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', 0, { marketValue: Infinity, price: 100, quantity: 5 }),
-      ]
-      const result = computePortfolioExposure(holdings)
-      expect(Number.isFinite(result.totalValue)).toBe(true)
-      expect(result.totalValue).toBeCloseTo(500, 2)
-      expect(result.coreIndexPct).toBeCloseTo(100, 2)
-      expect(result.skippedCount).toBe(0)
-    })
-
     it('all-invalid holdings → ALL_ZERO with skippedCount = N', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', NaN, { marketValue: NaN, price: NaN, quantity: NaN }),
-        makeHolding('SOXX', Infinity, { marketValue: Infinity, price: undefined, quantity: undefined }),
+      const holdings: Holding[] = [
+        makeHolding('QQQ', NaN),
+        makeHolding('SOXX', Infinity),
       ]
       const result = computePortfolioExposure(holdings)
       expect(result.totalValue).toBe(0)
@@ -280,10 +211,10 @@ describe('computePortfolioExposure', () => {
     })
 
     it('mixed valid + invalid: valid holdings determine percentages, invalid counted', () => {
-      const holdings: HoldingView[] = [
+      const holdings: Holding[] = [
         makeHolding('QQQ', 1000), // valid → core_index
         makeHolding('SOXX', 1000), // valid → high_beta
-        makeHolding('NVDA', NaN, { marketValue: NaN, price: NaN, quantity: NaN }), // invalid
+        makeHolding('NVDA', NaN), // invalid
       ]
       const result = computePortfolioExposure(holdings)
       expect(result.totalValue).toBeCloseTo(2000, 2)
@@ -294,10 +225,8 @@ describe('computePortfolioExposure', () => {
     })
 
     it('result is always finite even when every numeric source is NaN', () => {
-      const holdings: HoldingView[] = [
-        makeHolding('QQQ', NaN, {
-          marketValue: NaN, price: NaN, quantity: NaN, avgCost: NaN,
-        }),
+      const holdings: Holding[] = [
+        makeHolding('QQQ', NaN, { avgCost: NaN }),
       ]
       const result = computePortfolioExposure(holdings)
       const allPcts = [

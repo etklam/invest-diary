@@ -1,10 +1,9 @@
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
-import { calculateHoldings } from '~/lib/position-state'
 import { concentration } from '~/lib/stocks-view'
 import { getCachedQuote } from '~/lib/market-data/quote'
 import { listSharingPartners } from '~/server/utils/partner'
-import { readPortfolioTransactions } from '~/server/utils/transaction-read'
+import { loadPortfolioSnapshot } from '~/server/utils/portfolio-read'
 import {
   findCurrentThesisBySymbol,
   listThesisReviews,
@@ -100,18 +99,18 @@ async function readRelatedDiaries(
  */
 export async function getCompanyHub(userId: bigint, symbolRaw: string): Promise<CompanyHubResponse> {
   const symbol = normalizeStockSymbol(symbolRaw)
-  const [stock, transactions, thesis, sharedPartners, quote] = await Promise.all([
+  const [stock, portfolio, thesis, sharedPartners, quote] = await Promise.all([
     prisma.stock.findUnique({
       where: { symbol },
       select: { id: true, symbol: true, name: true, currency: true },
     }),
-    readPortfolioTransactions(userId),
+    loadPortfolioSnapshot(userId),
     findCurrentThesisBySymbol(userId, symbol),
     listSharingPartners(userId, 'stockNotes'),
     readQuote(symbol),
   ])
 
-  const holdings = calculateHoldings(transactions)
+  const { holdings, transactions } = portfolio
   const holding = holdings.find(item => item.symbol === symbol) ?? null
   const symbolTransactions = transactions.filter(item => item.symbol === symbol)
   // Hub concentration is explicitly cost-basis so the % survives a missing

@@ -4,7 +4,7 @@
  * GET /api/stocks/exposure
  *
  * Combines:
- *   - user holdings (from transactions → calculateHoldings)
+ *   - user holdings (from the unvalued portfolio read model)
  *   - market rotation snapshot (optional, for marketState + betaAllocation)
  *
  * Returns current portfolio exposure vs suggested beta allocation.
@@ -17,9 +17,7 @@ import { serialize } from '~/server/utils/serialize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
-import { calculateHoldings } from '~/lib/position-state'
-import { readPortfolioTransactions } from '~/server/utils/transaction-read'
-import type { HoldingView } from '~/lib/stocks-view'
+import { loadPortfolioHoldings } from '~/server/utils/portfolio-read'
 import {
   computePortfolioExposure,
   compareExposureToTarget,
@@ -59,34 +57,13 @@ interface ExposureResponse {
   lastUpdated: string | null
 }
 
-function toHoldingView(h: { symbol: string; quantity: number; avgCost: number; totalCost: number }): HoldingView {
-  // No live quote in this pipeline; marketValue falls back to totalCost
-  return {
-    symbol: h.symbol,
-    quantity: h.quantity,
-    avgCost: h.avgCost,
-    totalCost: h.totalCost,
-    price: undefined,
-    dayChange: undefined,
-    dayChangePercent: undefined,
-    marketValue: null,
-    unrealizedAmount: null,
-    unrealizedPct: null,
-    concentrationPct: 0,
-    dayChangeAmount: null,
-  }
-}
-
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   try {
     // ── Step 1: Holdings ────────────────────────────────────────────
-    const transactions = await readPortfolioTransactions(BigInt(user.id))
-
-    const rawHoldings = calculateHoldings(transactions)
-    const holdings: HoldingView[] = rawHoldings.map(toHoldingView)
+    const holdings = await loadPortfolioHoldings(BigInt(user.id))
 
     log.debug('Loaded holdings for exposure', {
       userId: String(user.id),

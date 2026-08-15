@@ -1,12 +1,10 @@
 import prisma from '~/lib/prisma'
-import { calculateHoldings } from '~/lib/position-state'
 import { evaluatePortfolioAttention } from '~/lib/portfolio-attention'
-import { computePortfolioAggregations, concentration } from '~/lib/stocks-view'
-import { fetchQuotesBounded } from '~/lib/market-data/quote'
+import { concentration } from '~/lib/stocks-view'
 import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
-import { readPortfolioTransactions } from '~/server/utils/transaction-read'
+import { loadValuedHoldings } from '~/server/utils/portfolio-read'
 import { listCurrentThesisProjections } from '~/server/utils/investment-thesis-queries'
 import { serialize } from '~/server/utils/serialize'
 import type { PortfolioAttentionResponse } from '~/types/portfolio-attention'
@@ -26,18 +24,10 @@ export default defineEventHandler(async (event): Promise<PortfolioAttentionRespo
     const user = requireUser(event)
     const userId = BigInt(user.id)
     const asOf = new Date()
-    const holdings = calculateHoldings(await readPortfolioTransactions(userId))
-    const { quotes } = await fetchQuotesBounded(holdings.map(holding => holding.symbol))
-
-    const enrichedHoldings = holdings.map(holding => {
-      const quote = quotes.get(holding.symbol)
-      return quote ? { ...holding, price: quote.regularMarketPrice } : holding
-    })
-    const valuation = computePortfolioAggregations(enrichedHoldings)
-    // Attention concentration is explicitly market-value basis, computed over
-    // the priced subset — a missing quote excludes that holding from numerator
-    // and denominator instead of nulling the whole portfolio.
-    const concentrationBySymbol = concentration(enrichedHoldings, { basis: 'market_value' })
+    const { holdings, pricedHoldings, valuation } = await loadValuedHoldings(userId)
+    // The read module owns the priced subset. Concentration therefore cannot
+    // accidentally re-weight an unpriced holding into the denominator.
+    const concentrationBySymbol = concentration(pricedHoldings, { basis: 'market_value' })
 
     const diaryReviews = await prisma.diary.findMany({
       where: { userId, reviewStatus: { not: 'reviewed' }, reviewDueAt: { not: null } },
