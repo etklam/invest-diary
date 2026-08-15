@@ -1,7 +1,10 @@
-import { calcAboveMaPct, calcRatioNDaily, countMove4Pct } from './breadth'
+import {
+  calcAboveMaPct,
+  calcRatioNDaily,
+  countMove4Pct,
+  MARKET_BREADTH_MIN_COVERAGE_PCT,
+} from './breadth'
 import { determineRegime } from './regime'
-
-const COVERAGE_STALE_THRESHOLD = 90
 
 export interface YahooChartQuote {
   date?: Date
@@ -211,7 +214,7 @@ export function calculateBreadthRows(
       regime: regime.regime,
       score: regime.score,
       coveragePct,
-      isStale: coveragePct < COVERAGE_STALE_THRESHOLD,
+      isStale: coveragePct < MARKET_BREADTH_MIN_COVERAGE_PCT,
     })
   }
 

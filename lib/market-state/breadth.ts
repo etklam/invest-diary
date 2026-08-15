@@ -13,6 +13,9 @@ interface BreadthHistoryItem {
   down4Count: number
 }
 
+/** Minimum universe coverage for a breadth snapshot to be considered fresh. */
+export const MARKET_BREADTH_MIN_COVERAGE_PCT = 90
+
 function isFiniteNumber(value: number): boolean {
   return Number.isFinite(value)
 }

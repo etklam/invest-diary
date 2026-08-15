@@ -31,6 +31,7 @@ import {
   getLatestMonitorRows,
   resolveMarketState,
   getMonitorTrendSeries,
+  getRotationDashboardContext,
 } from '~/server/utils/market-rotation-monitor-queries'
 
 // --- Helpers ---
@@ -78,6 +79,24 @@ function buildSectorRawRow(overrides: Partial<Record<string, unknown>> = {}) {
     rankDelta2W: -2,
     signal: 'turning_strong',
     signalStatus: 'complete',
+    ...overrides,
+  }
+}
+
+function buildBreadthRow(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    universeKey: 'SP500_NDX',
+    date: new Date('2026-06-10'),
+    up4Count: 5,
+    down4Count: 2,
+    up4Pct: dec(45),
+    down4Pct: dec(18),
+    ratio10d: dec(1.4),
+    above40dPct: dec(60),
+    regime: 'RISK_ON',
+    score: 70,
+    coveragePct: dec(98.7),
+    isStale: false,
     ...overrides,
   }
 }
@@ -280,6 +299,8 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         universeKey: 'SP500_NDX',
         date: new Date('2026-06-10'),
         regime: 'RISK_ON',
+        coveragePct: dec(98.7),
+        isStale: false,
       })
 
       const result = await resolveMarketState(prisma as any)
@@ -288,7 +309,6 @@ describe('server/utils/market-rotation-monitor-queries', () => {
       expect(mockBreadthFindFirst).toHaveBeenCalledWith({
         where: { universeKey: 'SP500_NDX' },
         orderBy: { date: 'desc' },
-        select: { regime: true },
       })
     })
 
@@ -297,6 +317,8 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         universeKey: 'SP500_NDX',
         date: new Date('2026-06-10'),
         regime: 'BULLISH_THRUST',
+        coveragePct: dec(98.7),
+        isStale: false,
       })
 
       const result = await resolveMarketState(prisma as any)
@@ -309,6 +331,8 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         universeKey: 'SP500_NDX',
         date: new Date('2026-06-10'),
         regime: 'NEUTRAL',
+        coveragePct: dec(98.7),
+        isStale: false,
       })
 
       const result = await resolveMarketState(prisma as any)
@@ -321,6 +345,8 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         universeKey: 'SP500_NDX',
         date: new Date('2026-06-10'),
         regime: 'RISK_OFF',
+        coveragePct: dec(98.7),
+        isStale: false,
       })
 
       const result = await resolveMarketState(prisma as any)
@@ -333,6 +359,8 @@ describe('server/utils/market-rotation-monitor-queries', () => {
         universeKey: 'SP500_NDX',
         date: new Date('2026-06-10'),
         regime: 'CAPITULATION_WATCH',
+        coveragePct: dec(98.7),
+        isStale: false,
       })
 
       const result = await resolveMarketState(prisma as any)
@@ -358,6 +386,63 @@ describe('server/utils/market-rotation-monitor-queries', () => {
       const result = await resolveMarketState(prisma as any)
 
       expect(result).toBe('unknown')
+    })
+
+    it('returns unknown for stale breadth even when regime is present', async () => {
+      mockBreadthFindFirst.mockResolvedValue(buildBreadthRow({ isStale: true }))
+
+      await expect(resolveMarketState(prisma as any)).resolves.toBe('unknown')
+    })
+
+    it('returns unknown when breadth coverage is below the freshness threshold', async () => {
+      mockBreadthFindFirst.mockResolvedValue(buildBreadthRow({ coveragePct: dec(89.9) }))
+
+      await expect(resolveMarketState(prisma as any)).resolves.toBe('unknown')
+    })
+  })
+
+  describe('getRotationDashboardContext', () => {
+    it('always derives breadth summary rows from sectors for a non-sector scope', async () => {
+      mockSnapshotGroupBy.mockImplementation(async (args: { where: { rankScope: string } }) => [
+        { date: new Date('2026-06-15'), _count: { symbol: args.where.rankScope === 'sectors' ? 11 : 8 } },
+        { date: new Date('2026-06-14'), _count: { symbol: args.where.rankScope === 'sectors' ? 11 : 8 } },
+      ])
+      mockSnapshotFindMany.mockImplementation(async (args: { where: { rankScope: string } }) => {
+        if (args.where.rankScope === 'sectors') {
+          return [buildSectorRawRow({ above50d: true })]
+        }
+
+        return [buildSectorRawRow({
+          symbol: 'SPY',
+          rankScope: 'indexes',
+          groupType: 'index',
+          sectorName: null,
+          above50d: false,
+        })]
+      })
+      mockBreadthFindFirst.mockResolvedValue(buildBreadthRow())
+
+      const context = await getRotationDashboardContext(prisma as any, { scope: 'indexes' })
+
+      expect(context.payload?.summary.above50d).toEqual({ count: 1, total: 1, ratio: 1 })
+      expect(context.payload?.summary.marketState).toBe('risk_on')
+    })
+
+    it.each([
+      ['stale breadth', { coveragePct: dec(98.7), isStale: true }],
+      ['under-covered breadth', { coveragePct: dec(89), isStale: false }],
+    ])('marks the assembled Market State unknown for %s', async (_label, breadthOverrides) => {
+      mockSnapshotGroupBy.mockResolvedValue([
+        { date: new Date('2026-06-15'), _count: { symbol: 11 } },
+      ])
+      mockSnapshotFindMany.mockResolvedValue([buildSectorRawRow()])
+      mockBreadthFindFirst.mockResolvedValue(buildBreadthRow(breadthOverrides))
+
+      const context = await getRotationDashboardContext(prisma as any, { scope: 'sectors' })
+
+      expect(context.marketState).toBe('unknown')
+      expect(context.payload?.summary.marketState).toBe('unknown')
+      expect(context.betaAllocation).not.toBeNull()
     })
   })
 

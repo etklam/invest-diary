@@ -2,8 +2,16 @@ export const rankScopes = ['sectors', 'indexes', 'core'] as const
 
 export type RankScope = typeof rankScopes[number]
 
-export function isRankScope(value: string): value is RankScope {
-  return rankScopes.includes(value as RankScope)
+export const batchScopes = [...rankScopes, 'all'] as const
+
+export type BatchScope = typeof batchScopes[number]
+
+export function isRankScope(value: unknown): value is RankScope {
+  return typeof value === 'string' && rankScopes.includes(value as RankScope)
+}
+
+export function isBatchScope(value: unknown): value is BatchScope {
+  return typeof value === 'string' && batchScopes.includes(value as BatchScope)
 }
 
 /**

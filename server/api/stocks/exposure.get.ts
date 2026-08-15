@@ -27,13 +27,9 @@ import {
   type ExposureGap,
   type SuggestedAllocation,
 } from '~/lib/portfolio-exposure/exposure'
-import { decideBetaAllocation, type BetaAllocationResult } from '~/lib/beta-allocation/policy'
+import type { BetaAllocationResult } from '~/lib/beta-allocation/policy'
 import type { MarketState } from '~/lib/market-rotation/state'
-import { buildMarketRotationMonitorPayload } from '~/lib/market-rotation/monitor'
-import {
-  getLatestMonitorRows,
-  resolveMarketState,
-} from '~/server/utils/market-rotation-monitor-queries'
+import { getRotationDashboardContext } from '~/server/utils/market-rotation-monitor-queries'
 
 const NO_MARKET_DATA_EXPLANATION =
   'Market regime unclear. No market regime data available. Showing current exposure only.'
@@ -106,37 +102,19 @@ export default defineEventHandler(async (event) => {
     let lastUpdated: string | null = null
 
     try {
-      const { rows, asOfDate } = await getLatestMonitorRows(prisma, 'sectors')
+      const context = await getRotationDashboardContext(prisma, { scope: 'sectors' })
 
-      if (rows.length > 0 && asOfDate) {
-        const resolvedState = await resolveMarketState(prisma)
-        const payload = buildMarketRotationMonitorPayload({
-          asOfDate: asOfDate.toISOString().slice(0, 10),
-          comparisonDate: null,
-          rankScope: 'sectors',
-          marketState: resolvedState,
-          rows,
-        })
+      if (context.payload && context.betaAllocation && context.lastUpdated) {
+        const decided = context.betaAllocation
 
-        const decided = decideBetaAllocation({
-          marketState: payload.summary.marketState,
-          breadthConfirmation: payload.summary.breadthConfirmation,
-          above50dRatio: payload.summary.above50d.ratio,
-          averageRsi: payload.summary.averageRsi,
-          leadership: {
-            topImproving: payload.topImproving.map(row => row.sectorName ?? row.symbol),
-            bottomWeakening: payload.bottomWeakening.map(row => row.sectorName ?? row.symbol),
-          },
-        })
-
-        marketState = payload.summary.marketState
+        marketState = context.marketState
         suggestedAllocation = {
           highBetaTargetPct: decided.highBetaTargetPct,
           coreIndexTargetPct: decided.coreIndexTargetPct,
           cashTargetPct: decided.cashTargetPct,
         }
         betaAllocation = decided
-        lastUpdated = asOfDate.toISOString()
+        lastUpdated = context.lastUpdated.toISOString()
       } else {
         log.warn('No rotation snapshots found; returning exposure-only payload', {
           userId: String(user.id),

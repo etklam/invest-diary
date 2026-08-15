@@ -18,23 +18,10 @@ import { Errors } from '~/lib/errors/factory'
 import { serialize } from '~/server/utils/serialize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
-import { isRankScope } from '~/lib/market-rotation/types'
-import type { RankScope } from '~/lib/market-rotation/types'
-import { buildMarketRotationMonitorPayload } from '~/lib/market-rotation/monitor'
-import { generateMarketSummary } from '~/lib/market-rotation/summary'
-import { decideBetaAllocation } from '~/lib/beta-allocation/policy'
-import {
-  getLatestMonitorRows,
-  resolveMarketState,
-  getMonitorTrendSeries,
-} from '~/server/utils/market-rotation-monitor-queries'
+import { isRankScope, rankScopes } from '~/lib/market-rotation/types'
+import { getRotationDashboardContext } from '~/server/utils/market-rotation-monitor-queries'
 
-const VALID_SCOPES = ['sectors', 'indexes', 'core'] as const
 const DEFAULT_SCOPE = 'sectors'
-
-function toDateString(date: Date): string {
-  return date.toISOString().slice(0, 10)
-}
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
@@ -45,86 +32,18 @@ export default defineEventHandler(async (event) => {
 
     if (!isRankScope(scopeRaw)) {
       throw Errors.validationError([
-        { field: 'scope', message: `Must be one of: ${VALID_SCOPES.join(', ')}` },
+        { field: 'scope', message: `Must be one of: ${rankScopes.join(', ')}` },
       ]).toH3Error()
     }
 
-    // Step 1: Load latest monitor rows for the requested scope
-    const rankScope: RankScope = scopeRaw
-    const { rows, asOfDate, comparisonWindow } = await getLatestMonitorRows(prisma, rankScope)
-    const { rows: sectorSummaryRows } = rankScope === 'sectors'
-      ? { rows }
-      : await getLatestMonitorRows(prisma, 'sectors')
+    const context = await getRotationDashboardContext(prisma, { scope: scopeRaw })
 
-    if (rows.length === 0) {
+    if (!context.payload) {
       log.warn('No rotation snapshots found', { scope: scopeRaw })
       throw Errors.notFound(`No rotation snapshots found for scope "${scopeRaw}". Run the batch job first.`).toH3Error()
     }
 
-    // Step 2: Resolve market state (from market_breadth_daily regime)
-    const marketState = await resolveMarketState(prisma)
-
-    // Step 3: Use the same qualified-date window that selected the latest
-    // rows. This keeps persisted deltas, metadata, and trend data on one
-    // canonical comparison boundary for the Rank Scope.
-    const comparisonDate = comparisonWindow.comparisonDate
-      ? toDateString(comparisonWindow.comparisonDate)
-      : null
-
-    const trendSeries = comparisonDate
-      ? await getMonitorTrendSeries(prisma, rankScope, comparisonWindow)
-      : new Map()
-    const rowsWithTrend = rows.map(row => ({
-      ...row,
-      twoWeekTrend: trendSeries.get(row.symbol) ?? [],
-    }))
-
-    // Step 4: Build the dashboard payload (summary, rows, improving/weakening, dataQuality)
-    const payload = buildMarketRotationMonitorPayload({
-      asOfDate: toDateString(asOfDate!),
-      comparisonDate,
-      rankScope,
-      marketState,
-      rows: rowsWithTrend,
-      summaryRows: sectorSummaryRows.length > 0 ? sectorSummaryRows : rowsWithTrend,
-    })
-
-    // Step 5: Decide beta allocation via pure function (decideBetaAllocation)
-    const betaAllocation = decideBetaAllocation({
-      marketState: payload.summary.marketState,
-      breadthConfirmation: payload.summary.breadthConfirmation,
-      above50dRatio: payload.summary.above50d.ratio,
-      averageRsi: payload.summary.averageRsi,
-      leadership: {
-        topImproving: payload.topImproving.map(row => row.sectorName ?? row.symbol),
-        bottomWeakening: payload.bottomWeakening.map(row => row.sectorName ?? row.symbol),
-      },
-    })
-
-    // Step 6: Generate deterministic current market summary.
-    // Pass the already-computed betaAllocation so decideBetaAllocation runs
-    // exactly once per request (summary.ts no longer re-invokes it).
-    const currentMarketSummary = generateMarketSummary({
-      marketState: payload.summary.marketState,
-      breadthCondition: payload.summary.breadthCondition,
-      breadthConfirmation: payload.summary.breadthConfirmation,
-      topImproving: payload.topImproving.map(row => ({
-        symbol: row.symbol,
-        sectorName: row.sectorName,
-      })),
-      bottomWeakening: payload.bottomWeakening.map(row => ({
-        symbol: row.symbol,
-        sectorName: row.sectorName,
-      })),
-      above50dRatio: payload.summary.above50d.ratio,
-      averageRsi: payload.summary.averageRsi,
-      beta: betaAllocation,
-    })
-
-    return serialize({
-      ...payload,
-      currentMarketSummary,
-    })
+    return serialize(context.payload)
   }
   catch (error) {
     handleApiError(error, log)

@@ -64,6 +64,16 @@ function makeEvent() {
   return { context: { requestId: 'test-req-id' } }
 }
 
+function makeBreadthRow(regime = 'RISK_ON') {
+  return {
+    universeKey: 'SP500_NDX',
+    date: SNAPSHOT_DATE,
+    regime,
+    coveragePct: decimal(98.7),
+    isStale: false,
+  }
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────
 
 describe('GET /api/stocks/exposure', () => {
@@ -115,7 +125,7 @@ describe('GET /api/stocks/exposure', () => {
     mockSnapshotGroupBy.mockResolvedValue([
       { date: SNAPSHOT_DATE, _count: { symbol: sectorRows.length } },
     ])
-    mockBreadthFindFirst.mockResolvedValue({ regime: 'RISK_ON' })
+    mockBreadthFindFirst.mockResolvedValue(makeBreadthRow('RISK_ON'))
 
     const { default: handler } = await import('~/server/api/stocks/exposure.get')
     const result = await handler(makeEvent())
@@ -219,7 +229,7 @@ describe('GET /api/stocks/exposure', () => {
     mockSnapshotGroupBy.mockResolvedValue([
       { date: SNAPSHOT_DATE, _count: { symbol: sectorRows.length } },
     ])
-    mockBreadthFindFirst.mockResolvedValue({ regime: 'RISK_ON' })
+    mockBreadthFindFirst.mockResolvedValue(makeBreadthRow('RISK_ON'))
 
     const { default: handler } = await import('~/server/api/stocks/exposure.get')
     const result = await handler(makeEvent())
@@ -266,7 +276,7 @@ describe('GET /api/stocks/exposure', () => {
     mockSnapshotGroupBy.mockResolvedValue([
       { date: SNAPSHOT_DATE, _count: { symbol: sectorRows.length } },
     ])
-    mockBreadthFindFirst.mockResolvedValue({ regime: 'NEUTRAL' })
+    mockBreadthFindFirst.mockResolvedValue(makeBreadthRow('NEUTRAL'))
 
     const { default: handler } = await import('~/server/api/stocks/exposure.get')
     const result = await handler(makeEvent())

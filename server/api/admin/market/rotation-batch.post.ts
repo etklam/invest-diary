@@ -13,8 +13,7 @@ import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { runScopeBatch, runFullBatch } from '~/server/utils/market-rotation-batch'
 import { Errors } from '~/lib/errors/factory'
-
-const VALID_SCOPES = ['sectors', 'indexes', 'core', 'all'] as const
+import { batchScopes, isBatchScope } from '~/lib/market-rotation/types'
 
 export default defineEventHandler(async (event) => {
   const log = logger.admin.withRequestId(event.context.requestId)
@@ -23,10 +22,10 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event).catch(() => ({}))
     const scope = String(body?.scope ?? 'all')
 
-    if (!VALID_SCOPES.includes(scope as typeof VALID_SCOPES[number])) {
+    if (!isBatchScope(scope)) {
       throw Errors.validationError([{
         field: 'scope',
-        message: `Invalid scope. Must be one of: ${VALID_SCOPES.join(', ')}`,
+        message: `Invalid scope. Must be one of: ${batchScopes.join(', ')}`,
         value: scope,
       }])
     }

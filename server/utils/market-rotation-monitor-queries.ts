@@ -9,15 +9,23 @@
  * for testability, consistent with market-rotation-queries.ts.
  */
 
-import type { MarketRotationMonitorRow, MarketRotationTrendPoint } from '~/lib/market-rotation/monitor'
+import {
+  buildMarketRotationMonitorPayload,
+  type MarketRotationMonitorPayload,
+  type MarketRotationMonitorRow,
+  type MarketRotationTrendPoint,
+} from '~/lib/market-rotation/monitor'
 import type { MarketState } from '~/lib/market-rotation/state'
-import { toMarketState } from '~/lib/market-rotation/state'
 import type { MaStatus, RotationSignal, SignalStatus } from '~/lib/market-rotation/signal'
 import { toNumber, type DecimalLike } from '~/lib/market-rotation/decimal'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
 import type { RankScope } from '~/lib/market-rotation/types'
 import { buildNormalizedTrendSeries } from '~/lib/market-rotation/trend-series'
 import { loadQualifiedDatesForScope, type QualifiedDateWindow } from '~/lib/market-rotation/qualified-date'
+import { decideBetaAllocation, type BetaAllocationResult } from '~/lib/beta-allocation/policy'
+import { generateMarketSummary } from '~/lib/market-rotation/summary'
+import { MARKET_BREADTH_MIN_COVERAGE_PCT } from '~/lib/market-state/breadth'
+import { getLatestBreadthSnapshot, type SnapshotResult } from '~/server/utils/market-state-queries'
 import {
   getComparisonWindow,
   type MarketRotationComparisonWindow,
@@ -50,8 +58,8 @@ interface MonitorPrisma {
     findFirst: (args: {
       where: { universeKey: string }
       orderBy: { date: 'desc' }
-      select: { regime: true }
-    }) => Promise<{ regime: string | null } | null>
+      select?: { regime: true }
+    }) => Promise<Record<string, unknown> | null>
   }
 }
 
@@ -107,6 +115,22 @@ function toMonitorRow(
 // ─── Query functions ───────────────────────────────────────────────────────
 
 const DEFAULT_UNIVERSE_KEY = 'SP500_NDX'
+export const MIN_BREADTH_COVERAGE_PCT = MARKET_BREADTH_MIN_COVERAGE_PCT
+
+export interface RotationDashboardContext {
+  payload: MarketRotationMonitorPayload | null
+  marketState: MarketState
+  betaAllocation: BetaAllocationResult | null
+  lastUpdated: Date | null
+}
+
+function resolveFreshMarketState(snapshot: SnapshotResult | null): MarketState {
+  if (!snapshot || snapshot.isStale || snapshot.coveragePct == null || snapshot.coveragePct < MIN_BREADTH_COVERAGE_PCT) {
+    return 'unknown'
+  }
+
+  return snapshot.regime
+}
 
 /**
  * getLatestMonitorRows
@@ -166,17 +190,97 @@ export async function getLatestMonitorRows(
 export async function resolveMarketState(
   prisma: MonitorPrisma,
 ): Promise<MarketState> {
-  const row = await prisma.marketBreadthDaily.findFirst({
-    where: { universeKey: DEFAULT_UNIVERSE_KEY },
-    orderBy: { date: 'desc' },
-    select: { regime: true },
-  })
+  const snapshot = await getLatestBreadthSnapshot(
+    prisma as unknown as Parameters<typeof getLatestBreadthSnapshot>[0],
+    DEFAULT_UNIVERSE_KEY,
+  )
 
-  if (!row) {
-    return 'unknown'
+  return resolveFreshMarketState(snapshot)
+}
+
+/**
+ * Assemble the shared rotation dashboard context consumed by both the
+ * rotation-monitor and exposure endpoints.
+ *
+ * This owns the dashboard invariants: sector breadth always comes from the
+ * sectors scope, breadth freshness is checked before resolving Market State,
+ * and beta allocation is derived exactly once from the assembled payload.
+ */
+export async function getRotationDashboardContext(
+  prisma: MonitorPrisma,
+  { scope }: { scope: RankScope },
+): Promise<RotationDashboardContext> {
+  const { rows, asOfDate, comparisonWindow } = await getLatestMonitorRows(prisma, scope)
+  const summaryRows = scope === 'sectors'
+    ? rows
+    : (await getLatestMonitorRows(prisma, 'sectors')).rows
+
+  if (rows.length === 0 || !asOfDate) {
+    return {
+      payload: null,
+      marketState: 'unknown',
+      betaAllocation: null,
+      lastUpdated: null,
+    }
   }
 
-  return toMarketState(row.regime)
+  const breadthSnapshot = await getLatestBreadthSnapshot(
+    prisma as unknown as Parameters<typeof getLatestBreadthSnapshot>[0],
+    DEFAULT_UNIVERSE_KEY,
+  )
+  const marketState = resolveFreshMarketState(breadthSnapshot)
+  const comparisonDate = comparisonWindow.comparisonDate
+    ? toDateString(comparisonWindow.comparisonDate)
+    : null
+  const trendSeries = comparisonDate
+    ? await getMonitorTrendSeries(prisma, scope, comparisonWindow)
+    : new Map<string, MarketRotationTrendPoint[]>()
+  const rowsWithTrend = rows.map(row => ({
+    ...row,
+    twoWeekTrend: trendSeries.get(row.symbol) ?? [],
+  }))
+
+  const basePayload = buildMarketRotationMonitorPayload({
+    asOfDate: toDateString(asOfDate),
+    comparisonDate,
+    rankScope: scope,
+    marketState,
+    rows: rowsWithTrend,
+    summaryRows,
+  })
+  const betaAllocation = decideBetaAllocation({
+    marketState: basePayload.summary.marketState,
+    breadthConfirmation: basePayload.summary.breadthConfirmation,
+    above50dRatio: basePayload.summary.above50d.ratio,
+    averageRsi: basePayload.summary.averageRsi,
+    leadership: {
+      topImproving: basePayload.topImproving.map(row => row.sectorName ?? row.symbol),
+      bottomWeakening: basePayload.bottomWeakening.map(row => row.sectorName ?? row.symbol),
+    },
+  })
+  const currentMarketSummary = generateMarketSummary({
+    marketState: basePayload.summary.marketState,
+    breadthCondition: basePayload.summary.breadthCondition,
+    breadthConfirmation: basePayload.summary.breadthConfirmation,
+    topImproving: basePayload.topImproving.map(row => ({
+      symbol: row.symbol,
+      sectorName: row.sectorName,
+    })),
+    bottomWeakening: basePayload.bottomWeakening.map(row => ({
+      symbol: row.symbol,
+      sectorName: row.sectorName,
+    })),
+    above50dRatio: basePayload.summary.above50d.ratio,
+    averageRsi: basePayload.summary.averageRsi,
+    beta: betaAllocation,
+  })
+
+  return {
+    payload: { ...basePayload, currentMarketSummary },
+    marketState,
+    betaAllocation,
+    lastUpdated: asOfDate,
+  }
 }
 
 /**

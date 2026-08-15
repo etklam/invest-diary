@@ -160,7 +160,13 @@ function setupFullFlowMocks(rows: ReturnType<typeof makeSnapshotRow>[], breadthR
     })),
   )
 
-  mockBreadthFindFirst.mockResolvedValue({ regime: breadthRegime })
+  mockBreadthFindFirst.mockResolvedValue({
+    universeKey: 'SP500_NDX',
+    date: SNAPSHOT_DATE,
+    regime: breadthRegime,
+    coveragePct: decimal(98.7),
+    isStale: false,
+  })
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────

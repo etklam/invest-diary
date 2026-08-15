@@ -22,14 +22,13 @@ import 'dotenv/config'
 
 import { createRequire } from 'node:module'
 import { createPrismaClientOptions } from '~/lib/prisma-client-options'
+import { batchScopes, isBatchScope, type BatchScope } from '~/lib/market-rotation/types'
 import { runFullBatch, runScopeBatch, type BatchJobResult, type FullBatchResult } from '~/server/utils/market-rotation-batch'
 
 const require = createRequire(import.meta.url)
 const { PrismaClient } = require('@prisma/client')
 
 // ─── Types ──────────────────────────────────────────────────────────
-
-export type BatchScope = 'sectors' | 'indexes' | 'core' | 'all'
 
 export interface ExecuteBatchOptions {
   prisma: unknown
@@ -49,8 +48,6 @@ export interface BatchOutput {
 
 // ─── Pure functions (testable) ──────────────────────────────────────
 
-const VALID_SCOPES: readonly BatchScope[] = ['sectors', 'indexes', 'core', 'all']
-
 /**
  * Parse and validate the --scope CLI argument.
  * Returns "all" when undefined or empty.
@@ -58,9 +55,9 @@ const VALID_SCOPES: readonly BatchScope[] = ['sectors', 'indexes', 'core', 'all'
  */
 export function parseBatchScope(raw: string | undefined): BatchScope {
   if (!raw || raw.trim() === '') return 'all'
-  const scope = raw.trim() as BatchScope
-  if (!VALID_SCOPES.includes(scope)) {
-    throw new Error(`Invalid scope "${raw}". Must be one of: ${VALID_SCOPES.join(', ')}`)
+  const scope = raw.trim()
+  if (!isBatchScope(scope)) {
+    throw new Error(`Invalid scope "${raw}". Must be one of: ${batchScopes.join(', ')}`)
   }
   return scope
 }
