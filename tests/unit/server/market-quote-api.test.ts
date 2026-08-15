@@ -4,7 +4,7 @@ import { mockGetQuery, mockGetRouterParam } from '../../vi-setup'
 
 const mockFetchQuote = vi.fn()
 const mockYahooFinanceLimiter = vi.fn()
-const mockGetRequestIP = vi.fn()
+const mockGetRateLimitIdentifier = vi.fn()
 
 vi.mock('~/lib/yahoo-finance', () => ({
   fetchQuote: mockFetchQuote,
@@ -14,9 +14,8 @@ vi.mock('~/lib/rate-limiter', () => ({
   rateLimiters: {
     yahooFinance: mockYahooFinanceLimiter,
   },
+  getRateLimitIdentifier: mockGetRateLimitIdentifier,
 }))
-
-global.getRequestIP = mockGetRequestIP
 
 describe('market quote api', () => {
   beforeEach(() => {
@@ -24,7 +23,7 @@ describe('market quote api', () => {
     vi.clearAllMocks()
     mockGetQuery.mockReturnValue({})
     mockGetRouterParam.mockReturnValue('SPY')
-    mockGetRequestIP.mockReturnValue('127.0.0.1')
+    mockGetRateLimitIdentifier.mockReturnValue('127.0.0.1')
     mockYahooFinanceLimiter.mockResolvedValue(undefined)
     mockFetchQuote.mockResolvedValue({ symbol: 'SPY', regularMarketPrice: 600 })
   })

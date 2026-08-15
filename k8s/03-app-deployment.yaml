@@ -25,7 +25,10 @@ spec:
             - name: PORT
               value: "3000"
             - name: DATABASE_URL
-              value: "mysql://diaryvue:puvCjALat7da1aBYz4ILuLqo@diary-vue-db.diary-vue.svc.cluster.local:3306/invest_diary"
+              valueFrom:
+                secretKeyRef:
+                  name: diary-vue-db-creds
+                  key: DATABASE_URL
             - name: NUXT_PUBLIC_APP_NAME
               value: "投資日記"
             - name: NUXT_PUBLIC_SITE_URL

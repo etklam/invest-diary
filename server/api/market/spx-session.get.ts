@@ -1,5 +1,5 @@
 import { fetchIntradayData } from '~/lib/yahoo-finance'
-import { rateLimiters } from '~/lib/rate-limiter'
+import { getRateLimitIdentifier, rateLimiters } from '~/lib/rate-limiter'
 import { buildSpxSessionSummary } from '~/lib/quicknote/market-session'
 import { requireUser } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
@@ -12,7 +12,7 @@ import {
 export default defineEventHandler(async (event) => {
   requireUser(event)
 
-  const ip = getRequestIP(event) || 'unknown'
+  const ip = getRateLimitIdentifier(event)
   try {
     await rateLimiters.yahooFinance(ip)
   } catch {

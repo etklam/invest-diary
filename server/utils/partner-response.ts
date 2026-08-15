@@ -1,23 +1,5 @@
-import { attachDiaryTags } from '~/server/utils/diary-response'
 import { getPartnerSide } from '~/lib/partners/policy'
 import type { PartnerLinkRecord } from '~/types/partner'
-
-export function serializeDiaryForPartnerView(diary: Record<string, any> | null) {
-  if (!diary) return null
-
-  return attachDiaryTags({
-    id: diary.id,
-    userId: diary.userId,
-    title: diary.title,
-    content: diary.content,
-    tagsString: diary.tagsString,
-    createdVia: diary.createdVia,
-    createdByLabel: diary.createdByLabel,
-    date: diary.date,
-    createdAt: diary.createdAt,
-    updatedAt: diary.updatedAt,
-  })
-}
 
 export function serializePartnerLink(link: PartnerLinkRecord, currentUserId: string | bigint) {
   const side = getPartnerSide(link, currentUserId)

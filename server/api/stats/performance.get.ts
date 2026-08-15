@@ -17,7 +17,7 @@ import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { computePerformanceStats, type PerformanceConfig } from '~/server/utils/performance-stats'
 import type { GroupPeriod } from '~/lib/trade-analytics'
-import { readPerformanceTransactions } from '~/server/utils/transaction-read'
+import { readPortfolioTransactions } from '~/server/utils/transaction-read'
 import { serialize, type Serialized } from '~/server/utils/serialize'
 import type { PerformanceResult } from '~/server/utils/performance-stats'
 
@@ -38,7 +38,10 @@ export default defineEventHandler(async (event): Promise<Serialized<PerformanceR
   try {
     const userId = BigInt(user.id)
 
-    const rawTxs = await readPerformanceTransactions(userId, symbolFilter)
+    const rawTxs = await readPortfolioTransactions(userId, {
+      symbol: symbolFilter,
+      withAttributes: true,
+    })
 
     const result = computePerformanceStats(rawTxs, { period } as PerformanceConfig)
 

@@ -71,24 +71,36 @@ describe('server/utils/transaction-read', () => {
     expect(query.select).not.toHaveProperty('userId')
   })
 
-  it('keeps performance strategy/emotion projection while preserving the same ownership set', async () => {
-    mockTransactionFindMany.mockResolvedValue([])
+  it('includes strategy/emotion when trade analytics attributes are requested', async () => {
+    mockTransactionFindMany.mockResolvedValue([
+      {
+        id: 20n,
+        symbol: 'AAPL',
+        type: 'BUY',
+        quantity: decimal(2.5),
+        price: decimal(100),
+        tradeDate: new Date('2026-01-01'),
+        strategy: 'Breakout',
+        emotion: 'calm',
+      },
+    ])
 
-    const { readPerformanceTransactions } = await import('~/server/utils/transaction-read')
-    await readPerformanceTransactions(7n, null)
+    const { readPortfolioTransactions } = await import('~/server/utils/transaction-read')
+    const rows = await readPortfolioTransactions(7n, { withAttributes: true })
 
     expect(mockTransactionFindMany).toHaveBeenCalledWith({
       where: { diary: { userId: 7n } },
       select: { ...BASE_SELECT, strategy: true, emotion: true },
       orderBy: STABLE_ORDER,
     })
+    expect(rows[0]).toMatchObject({ strategy: 'Breakout', emotion: 'calm' })
   })
 
   it('applies normalized symbol filter alongside ownership, never instead of ownership', async () => {
     mockTransactionFindMany.mockResolvedValue([])
 
-    const { readPerformanceTransactions } = await import('~/server/utils/transaction-read')
-    await readPerformanceTransactions(7n, ' aapl ')
+    const { readPortfolioTransactions } = await import('~/server/utils/transaction-read')
+    await readPortfolioTransactions(7n, { symbol: ' aapl ' })
 
     expect(mockTransactionFindMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { diary: { userId: 7n }, symbol: 'AAPL' },
@@ -98,22 +110,16 @@ describe('server/utils/transaction-read', () => {
     expect(query.where).not.toHaveProperty('userId')
   })
 
-  it('portfolio and recent reads share the same base ownership collection and ordering', async () => {
+  it('combines symbol filtering and analytics attributes in the canonical reader', async () => {
     mockTransactionFindMany.mockResolvedValue([])
 
-    const {
-      readPortfolioTransactions,
-      readRecentTradeTransactions,
-    } = await import('~/server/utils/transaction-read')
+    const { readPortfolioTransactions } = await import('~/server/utils/transaction-read')
+    await readPortfolioTransactions(7n, { symbol: ' msft ', withAttributes: true })
 
-    await readPortfolioTransactions(7n)
-    await readRecentTradeTransactions(7n)
-
-    expect(mockTransactionFindMany).toHaveBeenCalledTimes(2)
-    for (const [query] of mockTransactionFindMany.mock.calls) {
-      expect(query.where).toEqual({ diary: { userId: 7n } })
-      expect(query.select).toEqual(BASE_SELECT)
-      expect(query.orderBy).toEqual(STABLE_ORDER)
-    }
+    expect(mockTransactionFindMany).toHaveBeenCalledWith({
+      where: { diary: { userId: 7n }, symbol: 'MSFT' },
+      select: { ...BASE_SELECT, strategy: true, emotion: true },
+      orderBy: STABLE_ORDER,
+    })
   })
 })

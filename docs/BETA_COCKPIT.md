@@ -1,5 +1,8 @@
 # Beta Cockpit Design
 
+> **Archived:** Beta Cockpit UI 已退役；`decideBetaAllocation` 仍保留於
+> `lib/beta-allocation/policy.ts`。本文件保留作設計參考。
+
 > Design reference for the Beta Cockpit upgrade — Market Rotation Monitor evolved
 > from "observe market state" into "recommend a Beta allocation" that connects
 > market signals to portfolio decisions.

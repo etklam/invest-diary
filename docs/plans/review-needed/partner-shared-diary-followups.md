@@ -26,7 +26,7 @@ Status: Review needed — the original 85% estimate predates the current API-key
 ### 3. Auth & Privacy ✅
 - ✅ `server/utils/api-key.ts` - requireApiKey()
 - ✅ Scope validation: `DIARY_CREATE`
-- ✅ Privacy filtering in `serializeDiaryForPartnerView()`:
+- ✅ Privacy filtering in the partner diary response:
   ```typescript
   transactions: undefined,  // ❌ 排除持股資料
   alerts: undefined,         // ❌ 排除提醒
@@ -89,7 +89,7 @@ tests/api/partners.test.ts
    - 狀態：已實施，但未確認是否為正確行為
 
 3. **Empty slot behavior?**
-   - 當前實施：`serializeDiaryForPartnerView(null)` 返回 `null`
+   - 當前實施：空白 diary slot 返回 `null`
    - 狀態：已實施，但未確認 UX 是否符合預期
 
 4. **Rich schema for AI write API?**
@@ -133,10 +133,10 @@ tests/api/partners.test.ts
    // 需要測試
    describe('Compare privacy filtering', () => {
      it('should exclude transactions from partner view', () => {
-       // serializeDiaryForPartnerView 必須移除 transactions
+       // Partner diary response 必須移除 transactions
      })
      it('should exclude alerts from partner view', () => {
-       // serializeDiaryForPartnerView 必須移除 alerts
+       // Partner diary response 必須移除 alerts
      })
    })
    ```

@@ -238,7 +238,7 @@ by the scheduler (see §7).
   [`server/utils/price-alert-queries.ts`](../server/utils/price-alert-queries.ts)
   (`CreatePriceAlertSchema`, CRUD with ownership checks),
   [`server/utils/price-alert-condition.ts`](../server/utils/price-alert-condition.ts),
-  [`server/utils/trade-queries.ts`](../server/utils/trade-queries.ts)
+  [`server/utils/transaction-read.ts`](../server/utils/transaction-read.ts)
 - Library:
   [`lib/yahoo-finance.ts`](../lib/yahoo-finance.ts) (`fetchQuote`,
   `fetchHistorical`),
@@ -263,7 +263,7 @@ by the scheduler (see §7).
 - [`tests/unit/stock-watchlist-queries.test.ts`](../tests/unit/stock-watchlist-queries.test.ts)
 - [`tests/unit/stock-timeline-queries.test.ts`](../tests/unit/stock-timeline-queries.test.ts)
 - [`tests/unit/server/price-alert-queries.test.ts`](../tests/unit/server/price-alert-queries.test.ts)
-- [`tests/unit/server/trade-queries.test.ts`](../tests/unit/server/trade-queries.test.ts)
+- [`tests/unit/server/transaction-read.test.ts`](../tests/unit/server/transaction-read.test.ts)
 - [`tests/unit/server/market-quote-api.test.ts`](../tests/unit/server/market-quote-api.test.ts)
 - [`tests/unit/lib/yahoo-request-queue.test.ts`](../tests/unit/lib/yahoo-request-queue.test.ts)
 - [`tests/unit/lib/market-data-cache.test.ts`](../tests/unit/lib/market-data-cache.test.ts)
@@ -572,9 +572,8 @@ endpoints:
   [`server/utils/partner-compare.ts`](../server/utils/partner-compare.ts)
   (`buildCompareDays` pure function),
   [`server/utils/partner.ts`](../server/utils/partner.ts) (`getPartnerSide`),
-  [`server/utils/partner-response.ts`](../server/utils/partner-response.ts):5
-  (`serializeDiaryForPartnerView` strips transactions + alerts,
-  `serializePartnerLink`:15),
+  [`server/utils/partner-response.ts`](../server/utils/partner-response.ts)
+  (`serializePartnerLink`),
   [`server/utils/stock-timeline-queries.ts`](../server/utils/stock-timeline-queries.ts)
   (`createStockTimelineRecordsFromAgent`)
 - UI: [`pages/partners/`](../pages/partners)
@@ -593,9 +592,8 @@ endpoints:
 
 ### Known gotchas
 
-- `serializeDiaryForPartnerView` (`partner-response.ts`:5) strips both
-  `transactions` and `alerts`. Holdings therefore never leak through
-  partner compare.
+- Partner compare exposes diary fields through an explicit allowlist, so
+  transactions and alerts never leak through the partner view.
 - Agent endpoints accept both `x-api-key` and `Authorization: Bearer …`
   headers (`api-key.ts`:47). Don't rely on header name for identification.
 - API key IDs logged for audit use the credential's BigInt `id` — apply

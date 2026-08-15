@@ -5,7 +5,7 @@
  */
 
 import type { H3Event } from 'h3'
-import { rateLimiters } from '~/lib/rate-limiter'
+import { getRateLimitIdentifier, rateLimiters } from '~/lib/rate-limiter'
 import { Errors } from '~/lib/errors/factory'
 import { getCachedQuote } from '~/lib/market-data/quote'
 import { shouldBypassCache } from '~/lib/market-data/cache'
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     throw Errors.validationError([{ field: 'symbol', message: 'Missing symbol' }]).toH3Error()
   }
 
-  const ip = getRequestIP(event) || 'unknown'
+  const ip = getRateLimitIdentifier(event)
   try {
     await rateLimiters.yahooFinance(ip)
   } catch {

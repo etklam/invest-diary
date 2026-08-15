@@ -110,61 +110,23 @@ export function mapTransactionReadRow(row: {
   }
 }
 
-/** Read all owned transactions needed to calculate current portfolio holdings. */
-export async function readPortfolioTransactions(userId: bigint): Promise<TransactionReadRow[]> {
-  const rows = await prisma.transaction.findMany({
-    where: transactionOwnershipWhere(userId),
-    select: TRANSACTION_BASE_SELECT,
-    orderBy: TRANSACTION_TRADE_DATE_ASC_ORDER,
-  }) as TransactionProjectionRow[]
-
-  return rows.map(row => mapTransactionReadRow(row))
+export interface TransactionReadOptions {
+  symbol?: string | null
+  withAttributes?: boolean
 }
 
-/**
- * Read all owned transactions for performance analytics. The symbol filter is
- * applied alongside the diary ownership predicate and never replaces it.
- */
-export async function readPerformanceTransactions(
+/** Read all owned transactions for portfolio and trade analytics. */
+export async function readPortfolioTransactions(
   userId: bigint,
-  symbol: string | null,
+  options: TransactionReadOptions = {},
 ): Promise<TransactionReadRow[]> {
-  const normalizedSymbol = normalizeSymbolFilter(symbol)
+  const normalizedSymbol = normalizeSymbolFilter(options.symbol ?? null)
   const rows = await prisma.transaction.findMany({
     where: {
       ...transactionOwnershipWhere(userId),
       ...(normalizedSymbol ? { symbol: normalizedSymbol } : {}),
     },
-    select: TRANSACTION_PERFORMANCE_SELECT,
-    orderBy: TRANSACTION_TRADE_DATE_ASC_ORDER,
-  }) as TransactionProjectionRow[]
-
-  return rows.map(row => mapTransactionReadRow(row))
-}
-
-/** Read the complete owned history required to match recent closed trades. */
-export async function readRecentTradeTransactions(userId: bigint): Promise<TransactionReadRow[]> {
-  const rows = await prisma.transaction.findMany({
-    where: transactionOwnershipWhere(userId),
-    select: TRANSACTION_BASE_SELECT,
-    orderBy: TRANSACTION_TRADE_DATE_ASC_ORDER,
-  }) as TransactionProjectionRow[]
-
-  return rows.map(row => mapTransactionReadRow(row))
-}
-
-/** Read the complete owned history used by the closed-trade CSV export. */
-export async function readExportTransactions(
-  userId: bigint,
-  symbol: string | null,
-): Promise<TransactionReadRow[]> {
-  const normalizedSymbol = normalizeSymbolFilter(symbol)
-  const rows = await prisma.transaction.findMany({
-    where: {
-      ...transactionOwnershipWhere(userId),
-      ...(normalizedSymbol ? { symbol: normalizedSymbol } : {}),
-    },
-    select: TRANSACTION_BASE_SELECT,
+    select: options.withAttributes ? TRANSACTION_PERFORMANCE_SELECT : TRANSACTION_BASE_SELECT,
     orderBy: TRANSACTION_TRADE_DATE_ASC_ORDER,
   }) as TransactionProjectionRow[]
 

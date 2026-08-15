@@ -144,7 +144,7 @@ Examples: `recurring-alerts`, `blog`, `position-state`, `format`, `utils`, `mark
 | `unit/composables/` | `useAuth.test.ts` (older copy; the newer copy is at top-level `composables/`) |
 | `unit/lib/` | Deep lib tests: `market-rotation/` (16 files), `market-state/` (2 files), `dates/`, plus `jwt`, `logger`, `error-i18n-mapping`, `discipline-share-url`, `prisma-*`, `symbol-normalization`, `stocks-symbols`, `trade-analytics`, `yahoo-request-queue`, `market-data-cache` |
 | `unit/pages/` | 12 files. Page-level guards and contracts: admin route guards, article content rendering, discipline share/import URL handling, portfolio-risk / position-sizing / reviews / strategy-performance / trade-plans / tools-etf-profile-v2 contract tests, stocks-notes i18n |
-| `unit/server/` | 26 files. Server-side query-layer and middleware tests, all Prisma-mocked: `diary-write`, `diary-read`, `diaries-query`, `discipline-queries`, `etf-watchlist-queries`, `etf-profile-api`, `etf-detail-api`, `etf-ownership-regressions`, `market-quote-api`, `market-rotation-queries`, `market-rotation-monitor-queries`, `market-rotation-batch`, `spx-session-api`, `partner-queries`, `partner-compare`, `price-alert-queries`, `trade-queries`, `serialize`, `og-discipline-svg`, `phase2-auth-contracts`, `auth.middleware`, `auth.cookies`, `admin.middleware`, `health.get`, `alert-scheduler`, `alert-persistence` |
+| `unit/server/` | Server-side query-layer and middleware tests, all Prisma-mocked: `diary-write`, `diary-read`, `diaries-query`, `discipline-queries`, `etf-watchlist-queries`, `etf-profile-api`, `etf-detail-api`, `etf-ownership-regressions`, `market-quote-api`, `market-rotation-queries`, `market-rotation-monitor-queries`, `market-rotation-batch`, `spx-session-api`, `partner-queries`, `partner-compare`, `price-alert-queries`, `transaction-read`, `serialize`, `og-discipline-svg`, `phase2-auth-contracts`, `auth.middleware`, `auth.cookies`, `admin.middleware`, `health.get`, `alert-scheduler`, `alert-persistence` |
 | `unit/schedulers/` | `alert-pusher`, `price-alert-checker` — scheduler job logic |
 | `unit/websocket/` | `connectionManager`, `alertHandler` — Socket.IO server-side logic |
 | `unit/scripts/` | `market-rotation/run-batch`, `market-state/seed-universe-utils`, `market-state/update-breadth-utils` — tests for `scripts/` TypeScript entry points |
@@ -301,8 +301,8 @@ These are areas where coverage is known to be thin or where tests exist but are 
 
 ### Dead test infrastructure
 
-- `tests/setup.ts`, `tests/helpers/api.ts`, `tests/helpers/auth.ts`, `tests/helpers/database.ts` — these are DB-backed helpers that assume a live MySQL test database. They are not imported by any current Vitest test (the suite uses `vi.mock('~/lib/prisma')` exclusively). **Needs verification** — if truly unused, they should be deleted to avoid confusion.
-- `tests/helpers/mock.ts` — partially used. `createMockEvent`, `createMockData`, `mockH3Event` appear in some tests; the `mockPrisma()` factory and `mockNuxtComposable()` do not (each test file defines its own inline `vi.mock('~/lib/prisma')` block instead).
+- `tests/setup.ts` remains the shared Vitest setup. The old DB-backed helper modules were removed because no current test imported them.
+- `tests/helpers/mock.ts` contains only `mockLocalStorage`, the sole helper still used by the Vitest suite.
 
 ---
 

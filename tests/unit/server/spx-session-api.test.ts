@@ -3,11 +3,9 @@ import { clearCache } from '~/lib/market-data/cache'
 
 const mockRequireUser = vi.fn()
 const mockYahooFinanceLimiter = vi.fn()
-const mockGetRequestIP = vi.fn()
+const mockGetRateLimitIdentifier = vi.fn()
 const mockFetchQuote = vi.fn()
 const mockFetchIntradayData = vi.fn()
-
-vi.stubGlobal('getRequestIP', mockGetRequestIP)
 
 vi.mock('~/server/utils/auth', () => ({
   requireUser: mockRequireUser,
@@ -17,6 +15,7 @@ vi.mock('~/lib/rate-limiter', () => ({
   rateLimiters: {
     yahooFinance: mockYahooFinanceLimiter,
   },
+  getRateLimitIdentifier: mockGetRateLimitIdentifier,
 }))
 
 vi.mock('~/lib/yahoo-finance', () => ({
@@ -29,7 +28,7 @@ describe('GET /api/market/spx-session', () => {
     vi.clearAllMocks()
     clearCache()
     mockRequireUser.mockReturnValue({ id: '1' })
-    mockGetRequestIP.mockReturnValue('127.0.0.1')
+    mockGetRateLimitIdentifier.mockReturnValue('127.0.0.1')
     mockYahooFinanceLimiter.mockResolvedValue(undefined)
     mockFetchQuote.mockResolvedValue({
       symbol: '^GSPC',
