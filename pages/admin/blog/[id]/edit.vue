@@ -28,7 +28,7 @@
           {{ $t('blog.editPost') }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
-          編輯文章內容
+          {{ $t('blog.editDescription') }}
         </p>
       </div>
 
@@ -88,7 +88,7 @@
           <!-- Current Info -->
           <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
             <div class="text-sm text-gray-600 dark:text-gray-400">
-              <div>Slug: <code class="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">{{ form.slug }}</code></div>
+              <div>{{ $t('blog.slug') }}: <code class="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">{{ form.slug }}</code></div>
               <div class="mt-1">
                 {{ $t('blog.createdAt') }}: {{ formatDate(post.createdAt) }}
               </div>
@@ -127,9 +127,9 @@
 </template>
 
 <script setup lang="ts">
-import { useDebounceFn, useLocalStorage } from '@vueuse/core'
 import { formatDate } from '~/lib/dates'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
+import { useBlogDraft } from '~/composables/useBlogDraft'
 const { t } = useI18n()
 const toast = useToast()
 const router = useRouter()
@@ -142,17 +142,17 @@ definePageMeta({
 
 const postId = route.params.id as string
 const draftKey = `blog-draft:${postId}`
-const draft = useLocalStorage(draftKey, {
-  title: '',
-  content: '',
-  excerpt: '',
-  coverImage: '',
-  category: '',
-  tags: '',
-  status: 'DRAFT',
-  savedAt: ''
+const {
+  hasDraft,
+  persistDraft,
+  persistDraftNow,
+  restoreDraft,
+  clearDraft,
+  enableAutosave,
+  disableAutosave,
+} = useBlogDraft(draftKey, {
+  onPersist: () => toast.success(t('blog.draftSaved')),
 })
-const readyForAutosave = ref(false)
 
 // State
 const post = ref<any>(null)
@@ -179,20 +179,10 @@ const isFormValid = computed(() => {
          form.value.category !== ''
 })
 
-const persistDraft = useDebounceFn(() => {
-  if (!readyForAutosave.value) return
-  draft.value = {
-    ...draft.value,
-    ...form.value,
-    savedAt: new Date().toISOString()
-  }
-  toast.success('草稿已儲存')
-}, 5000)
-
 watch(
   () => [form.value.title, form.value.content],
   () => {
-    persistDraft()
+    persistDraft(form.value)
   }
 )
 
@@ -213,34 +203,16 @@ const fetchPost = async () => {
       slug: foundPost.slug
     }
 
-    const hasDraft = draft.value.title || draft.value.content
-    if (hasDraft) {
-      const shouldRestore = confirm(t('blog.draftRestorePrompt'))
-      if (shouldRestore) {
+    if (hasDraft.value) {
+      const restoredDraft = restoreDraft(confirm(t('blog.draftRestorePrompt')))
+      if (restoredDraft) {
         form.value = {
           ...form.value,
-          title: draft.value.title || form.value.title,
-          content: draft.value.content || form.value.content,
-          excerpt: draft.value.excerpt || form.value.excerpt,
-          coverImage: draft.value.coverImage || form.value.coverImage,
-          category: draft.value.category || form.value.category,
-          tags: draft.value.tags || form.value.tags,
-          status: draft.value.status || form.value.status
-        }
-      } else {
-        draft.value = {
-          title: '',
-          content: '',
-          excerpt: '',
-          coverImage: '',
-          category: '',
-          tags: '',
-          status: 'DRAFT',
-          savedAt: ''
+          ...restoredDraft,
         }
       }
     }
-    readyForAutosave.value = true
+    enableAutosave()
   } catch (err: any) {
     console.error('Failed to fetch post:', err)
     error.value = err
@@ -252,7 +224,7 @@ const fetchPost = async () => {
 // Update post
 const updatePost = async () => {
   if (!isFormValid.value) {
-    toast.error('請填寫標題、內容和分類')
+    toast.error(t('blog.validationRequired'))
     return
   }
 
@@ -272,24 +244,15 @@ const updatePost = async () => {
       }
     })
 
-    toast.success('文章已更新')
+    toast.success(t('blog.updateSuccess'))
     if (form.value.status === 'PUBLISHED') {
-      draft.value = {
-        title: '',
-        content: '',
-        excerpt: '',
-        coverImage: '',
-        category: '',
-        tags: '',
-        status: 'DRAFT',
-        savedAt: ''
-      }
+      clearDraft()
     }
-    readyForAutosave.value = false
+    disableAutosave()
     router.push('/admin/blog')
   } catch (err: any) {
     console.error('Failed to update post:', err)
-    toast.error(resolveErrorMessage(err, t, '更新失敗'))
+    toast.error(resolveErrorMessage(err, t, t('blog.updateFailed')))
   } finally {
     saving.value = false
   }
@@ -301,9 +264,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  readyForAutosave.value = false
-  if (persistDraft && typeof persistDraft === 'function') {
-    persistDraft()
-  }
+  persistDraftNow(form.value)
+  disableAutosave()
 })
 </script>

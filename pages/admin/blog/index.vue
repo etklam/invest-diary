@@ -58,13 +58,13 @@ const statusOptions = computed(() => [
 ])
 
 const sortOptions = computed(() => [
-  { value: 'createdAt_desc', label: '建立時間（新到舊）' },
-  { value: 'createdAt_asc', label: '建立時間（舊到新）' },
-  { value: 'updatedAt_desc', label: '更新時間（新到舊）' },
-  { value: 'publishedAt_desc', label: '發布時間（新到舊）' },
-  { value: 'publishedAt_asc', label: '發布時間（舊到新）' },
-  { value: 'title_asc', label: '標題（A → Z）' },
-  { value: 'title_desc', label: '標題（Z → A）' }
+  { value: 'createdAt_desc', label: t('blog.sort.createdAtDesc') },
+  { value: 'createdAt_asc', label: t('blog.sort.createdAtAsc') },
+  { value: 'updatedAt_desc', label: t('blog.sort.updatedAtDesc') },
+  { value: 'publishedAt_desc', label: t('blog.sort.publishedAtDesc') },
+  { value: 'publishedAt_asc', label: t('blog.sort.publishedAtAsc') },
+  { value: 'title_asc', label: t('blog.sort.titleAsc') },
+  { value: 'title_desc', label: t('blog.sort.titleDesc') }
 ])
 
 // Fetch posts
@@ -182,11 +182,11 @@ const bulkPublish = async () => {
       method: 'POST',
       body: { ids }
     })
-    toast.success('已批量發布')
+    toast.success(t('blog.bulkPublishSuccess'))
     await fetchPosts(pagination.value.page)
   } catch (error: any) {
     console.error('Failed to bulk publish:', error)
-    toast.error(resolveErrorMessage(error, t, '批量發布失敗'))
+    toast.error(resolveErrorMessage(error, t, t('blog.bulkPublishFailed')))
   }
 }
 
@@ -199,11 +199,11 @@ const bulkDelete = async () => {
       method: 'POST',
       body: { ids }
     })
-    toast.success('已批量刪除')
+    toast.success(t('blog.bulkDeleteSuccess'))
     await fetchPosts(pagination.value.page)
   } catch (error: any) {
     console.error('Failed to bulk delete:', error)
-    toast.error(resolveErrorMessage(error, t, '批量刪除失敗'))
+    toast.error(resolveErrorMessage(error, t, t('blog.bulkDeleteFailed')))
   }
 }
 </script>
@@ -218,7 +218,7 @@ const bulkDelete = async () => {
             {{ $t('blog.manageBlog') }}
           </h1>
           <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            管理博客文章
+            {{ $t('blog.manageDescription') }}
           </p>
         </div>
         <NuxtLink
@@ -226,7 +226,7 @@ const bulkDelete = async () => {
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           <i-heroicons-plus class="mr-2 h-5 w-5" />
-          新增文章
+          {{ $t('blog.addPost') }}
         </NuxtLink>
       </div>
 
@@ -236,14 +236,14 @@ const bulkDelete = async () => {
           <!-- Search -->
           <div class="md:col-span-2 xl:col-span-2">
             <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              搜尋標題
+              {{ $t('blog.searchTitle') }}
             </label>
             <div class="relative">
               <input
                 v-model="filters.search"
                 type="text"
                 id="search"
-                placeholder="搜尋文章標題..."
+                :placeholder="$t('blog.searchTitlePlaceholder')"
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
               />
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -255,13 +255,13 @@ const bulkDelete = async () => {
           <!-- Author -->
           <div class="md:col-span-1 xl:col-span-1">
             <label for="author" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              作者
+              {{ $t('blog.author') }}
             </label>
             <input
               id="author"
               v-model="filters.author"
               type="text"
-              placeholder="姓名或信箱"
+              :placeholder="$t('blog.authorPlaceholder')"
               class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
             />
           </div>
@@ -269,7 +269,7 @@ const bulkDelete = async () => {
           <!-- Status Filter -->
           <div>
             <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              狀態
+              {{ $t('blog.postStatus') }}
             </label>
             <select
               id="status"
@@ -285,7 +285,7 @@ const bulkDelete = async () => {
           <!-- Category Filter -->
           <div>
             <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              分類
+              {{ $t('blog.category') }}
             </label>
             <select
               id="category"
@@ -301,7 +301,7 @@ const bulkDelete = async () => {
           <!-- Date From -->
           <div>
             <label for="dateFrom" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              開始日期
+              {{ $t('blog.dateFrom') }}
             </label>
             <input
               id="dateFrom"
@@ -314,7 +314,7 @@ const bulkDelete = async () => {
           <!-- Date To -->
           <div>
             <label for="dateTo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              結束日期
+              {{ $t('blog.dateTo') }}
             </label>
             <input
               id="dateTo"
@@ -327,7 +327,7 @@ const bulkDelete = async () => {
           <!-- Sort -->
           <div>
             <label for="sortBy" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              排序
+              {{ $t('blog.sortLabel') }}
             </label>
             <select
               id="sortBy"
@@ -342,20 +342,20 @@ const bulkDelete = async () => {
         </div>
 
         <div v-if="selectedCount > 0" class="flex flex-wrap items-center gap-3 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-900/30 dark:text-indigo-100">
-          <span>已選取 {{ selectedCount }} 筆</span>
+          <span>{{ $t('blog.selectedCount', { count: selectedCount }) }}</span>
           <button
             type="button"
             class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
             @click="bulkPublish"
           >
-            批量發布
+            {{ $t('blog.bulkPublish') }}
           </button>
           <button
             type="button"
             class="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
             @click="bulkDelete"
           >
-            批量刪除
+            {{ $t('blog.bulkDelete') }}
           </button>
         </div>
       </div>
@@ -375,22 +375,22 @@ const bulkDelete = async () => {
                   />
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  標題
+                  {{ $t('blog.title') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  分類
+                  {{ $t('blog.category') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  狀態
+                  {{ $t('blog.postStatus') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  作者
+                  {{ $t('blog.author') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  建立時間
+                  {{ $t('blog.createdAt') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  操作
+                  {{ $t('blog.actions') }}
                 </th>
               </tr>
             </thead>
@@ -400,12 +400,12 @@ const bulkDelete = async () => {
                   <div class="flex justify-center">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" aria-hidden="true"></div>
                   </div>
-                  <span class="sr-only">{{ $t('common.loading') || '載入中...' }}</span>
+                  <span class="sr-only">{{ $t('common.loading') }}</span>
                 </td>
               </tr>
               <tr v-else-if="posts.length === 0">
                 <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                  沒有找到文章
+                  {{ $t('blog.noPosts') }}
                 </td>
               </tr>
               <tr v-else v-for="post in posts" :key="post.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -445,7 +445,7 @@ const bulkDelete = async () => {
                     <NuxtLink
                       :to="`/admin/blog/${post.id}/edit`"
                       class="inline-flex items-center justify-center p-2 rounded-lg text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30 transition-colors"
-                      title="編輯"
+                      :title="$t('common.edit')"
                     >
                       <i-heroicons-pencil class="h-5 w-5" />
                     </NuxtLink>
@@ -455,7 +455,7 @@ const bulkDelete = async () => {
                       v-if="post.status === 'DRAFT'"
                       @click="publishPost(post.id)"
                       class="inline-flex items-center justify-center p-2 rounded-lg text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30 transition-colors"
-                      title="發布"
+                      :title="$t('blog.publish')"
                     >
                       <i-heroicons-check-circle class="h-5 w-5" />
                     </button>
@@ -465,7 +465,7 @@ const bulkDelete = async () => {
                       v-if="post.status === 'PUBLISHED'"
                       @click="archivePost(post.id)"
                       class="inline-flex items-center justify-center p-2 rounded-lg text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:bg-yellow-900/30 transition-colors"
-                      title="歸檔"
+                      :title="$t('blog.archive')"
                     >
                       <i-heroicons-archive-box class="h-5 w-5" />
                     </button>
@@ -474,7 +474,7 @@ const bulkDelete = async () => {
                     <button
                       @click="deletePost(post.id, post.title)"
                       class="inline-flex items-center justify-center p-2 rounded-lg text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
-                      title="刪除"
+                      :title="$t('common.delete')"
                     >
                       <i-heroicons-trash class="h-5 w-5" />
                     </button>
@@ -494,26 +494,24 @@ const bulkDelete = async () => {
                 :disabled="pagination.page === 1"
                 class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                上一頁
+                    {{ $t('blog.previousPage') }}
               </button>
               <button
                 @click="fetchPosts(pagination.page + 1)"
                 :disabled="pagination.page === pagination.totalPages"
                 class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                下一頁
+                    {{ $t('blog.nextPage') }}
               </button>
             </div>
             <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p class="text-sm text-gray-700 dark:text-gray-300">
-                  顯示
-                  <span class="font-medium">{{ Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total) }}</span>
-                  至
-                  <span class="font-medium">{{ Math.min(pagination.page * pagination.limit, pagination.total) }}</span>
-                  共
-                  <span class="font-medium">{{ pagination.total }}</span>
-                  筆結果
+                  {{ $t('blog.showingResults', {
+                    from: Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total),
+                    to: Math.min(pagination.page * pagination.limit, pagination.total),
+                    total: pagination.total,
+                  }) }}
                 </p>
               </div>
               <div>

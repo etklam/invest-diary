@@ -6,7 +6,7 @@
         {{ $t('blog.createPost') }}
       </h1>
       <p class="text-gray-600 dark:text-gray-400">
-        建立新的投資教學文章
+        {{ $t('blog.createDescription') }}
       </p>
     </div>
 
@@ -90,8 +90,8 @@
 </template>
 
 <script setup lang="ts">
-import { useDebounceFn, useLocalStorage } from '@vueuse/core'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
+import { useBlogDraft } from '~/composables/useBlogDraft'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -115,17 +115,17 @@ const form = ref({
 
 const loading = ref(false)
 const draftKey = 'blog-draft:new'
-const draft = useLocalStorage(draftKey, {
-  title: '',
-  content: '',
-  excerpt: '',
-  coverImage: '',
-  category: '',
-  tags: '',
-  status: 'DRAFT',
-  savedAt: ''
+const {
+  hasDraft,
+  persistDraft,
+  persistDraftNow,
+  restoreDraft,
+  clearDraft,
+  enableAutosave,
+  disableAutosave,
+} = useBlogDraft(draftKey, {
+  onPersist: () => toast.success(t('blog.draftSaved')),
 })
-const readyForAutosave = ref(false)
 
 // Form validation
 const isFormValid = computed(() => {
@@ -140,27 +140,17 @@ const saveAsDraft = async () => {
   await createPost()
 }
 
-const persistDraft = useDebounceFn(() => {
-  if (!readyForAutosave.value) return
-  draft.value = {
-    ...draft.value,
-    ...form.value,
-    savedAt: new Date().toISOString()
-  }
-  toast.success('草稿已儲存')
-}, 5000)
-
 watch(
   () => [form.value.title, form.value.content],
   () => {
-    persistDraft()
+    persistDraft(form.value)
   }
 )
 
 // Create post
 const createPost = async () => {
   if (!isFormValid.value) {
-    toast.error('請填寫標題、內容和分類')
+    toast.error(t('blog.validationRequired'))
     return
   }
 
@@ -180,21 +170,12 @@ const createPost = async () => {
       }
     })
 
-    toast.success(form.value.status === 'PUBLISHED' ? '文章已發布' : '文章已儲存為草稿')
+    toast.success(form.value.status === 'PUBLISHED' ? t('blog.publishSuccess') : t('blog.saveDraftSuccess'))
 
     if (form.value.status === 'PUBLISHED') {
-      draft.value = {
-        title: '',
-        content: '',
-        excerpt: '',
-        coverImage: '',
-        category: '',
-        tags: '',
-        status: 'DRAFT',
-        savedAt: ''
-      }
+      clearDraft()
     }
-    readyForAutosave.value = false
+    disableAutosave()
 
     // Redirect to edit page or list
     if (form.value.status === 'PUBLISHED') {
@@ -204,47 +185,27 @@ const createPost = async () => {
     }
   } catch (error: any) {
     console.error('Failed to create post:', error)
-    toast.error(resolveErrorMessage(error, t, '建立失敗'))
+    toast.error(resolveErrorMessage(error, t, t('blog.createFailed')))
   } finally {
     loading.value = false
   }
 }
 
 onMounted(() => {
-  const hasDraft = draft.value.title || draft.value.content
-  if (hasDraft) {
-    const shouldRestore = confirm(t('blog.draftRestorePrompt'))
-    if (shouldRestore) {
+  if (hasDraft.value) {
+    const restoredDraft = restoreDraft(confirm(t('blog.draftRestorePrompt')))
+    if (restoredDraft) {
       form.value = {
         ...form.value,
-        title: draft.value.title || '',
-        content: draft.value.content || '',
-        excerpt: draft.value.excerpt || '',
-        coverImage: draft.value.coverImage || '',
-        category: draft.value.category || '',
-        tags: draft.value.tags || '',
-        status: draft.value.status || 'DRAFT'
-      }
-    } else {
-      draft.value = {
-        title: '',
-        content: '',
-        excerpt: '',
-        coverImage: '',
-        category: '',
-        tags: '',
-        status: 'DRAFT',
-        savedAt: ''
+        ...restoredDraft,
       }
     }
   }
-  readyForAutosave.value = true
+  enableAutosave()
 })
 
 onBeforeUnmount(() => {
-  readyForAutosave.value = false
-  if (persistDraft && typeof persistDraft === 'function') {
-    persistDraft()
-  }
+  persistDraftNow(form.value)
+  disableAutosave()
 })
 </script>
