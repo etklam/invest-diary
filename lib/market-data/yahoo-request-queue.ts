@@ -20,6 +20,8 @@
  * swap the implementation without touching call sites.
  */
 
+import { getYahooErrorMessage, isYahooRateLimitError } from './yahoo'
+
 const MAX_CONCURRENCY = 2
 const RETRY_COUNT = 2
 const BACKOFF_MS = [500, 1500]
@@ -62,12 +64,15 @@ function sleep(ms: number): Promise<void> {
  * rate-limit bursts surfaced as plain Errors) is treated as transient.
  */
 function isRetryableError(error: unknown): boolean {
-  if (error instanceof Error) {
-    const msg = error.message.toLowerCase()
-    if (msg.includes('not found') || msg.includes('invalid symbol')) {
-      return false
-    }
+  if (isYahooRateLimitError(error)) {
+    return true
   }
+
+  const message = getYahooErrorMessage(error)
+  if (message.includes('not found') || message.includes('invalid symbol')) {
+    return false
+  }
+
   return true
 }
 

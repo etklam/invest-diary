@@ -15,9 +15,13 @@ import type { EnrichedSnapshotInput } from '~/lib/market-rotation/comparison-enr
 import { runSnapshotPipeline, type SymbolPrices } from '~/lib/market-rotation/pipeline'
 import { pickLatestQualifiedCandidate, type SnapshotDateCoverage } from '~/lib/market-rotation/qualified-date'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
-import { normalizeYahooSymbol } from '~/lib/market-data/yahoo'
-import { runYahooRequest } from '~/lib/market-data/yahoo-request-queue'
-import { parseDailyPrices, resolveRangeStart, type DailyPriceInput, type YahooChartQuote } from '~/lib/market-state/update-breadth-utils'
+import {
+  fetchDailyOhlcv,
+  isYahooRateLimitError,
+  persistDailyPrices,
+  type DailyPricePrisma,
+  type YahooFinanceChartClient,
+} from '~/lib/market-data/daily-prices'
 import {
   getHistoricalPrices,
   getComparisonWindow,
@@ -30,20 +34,7 @@ import type { DailyPrice } from '~/lib/market-rotation/snapshot-builder'
 // ─── Types ──────────────────────────────────────────────────────────
 
 interface PrismaClient {
-  marketDailyPrice: Parameters<typeof getHistoricalPrices>[0]['marketDailyPrice'] & {
-    upsert: (args: {
-      where: { symbol_date: { symbol: string; date: Date } }
-      update: {
-        open: number
-        high: number
-        low: number
-        close: number
-        adjustedClose: number
-        volume: bigint
-      }
-      create: DailyPriceInput
-    }) => Promise<unknown>
-  }
+  marketDailyPrice: Parameters<typeof getHistoricalPrices>[0]['marketDailyPrice'] & DailyPricePrisma['marketDailyPrice']
   marketRotationSnapshot: Parameters<typeof getComparisonWindow>[0]['marketRotationSnapshot']
 }
 
@@ -67,14 +58,8 @@ export interface EnsureCanonicalPricesOptions {
   now?: Date
 }
 
-interface YahooFinanceClient {
-  chart: (symbol: string, options: Record<string, unknown>) => Promise<{ quotes: unknown[] }>
-}
-
 const DEFAULT_MIN_LOOKBACK_DAYS = 252
 const DEFAULT_STALE_AFTER_DAYS = 7
-
-let yahooFinanceClient: YahooFinanceClient | null = null
 
 function getLatestCandidateCoverage(
   symbolPrices: SymbolPrices[],
@@ -101,55 +86,10 @@ function getLatestCandidateCoverage(
   return pickLatestQualifiedCandidate([...counts.values()], universeSize)
 }
 
-async function getYahooFinanceClient(): Promise<YahooFinanceClient> {
-  if (yahooFinanceClient) return yahooFinanceClient
-
-  const module = await import('yahoo-finance2')
-  yahooFinanceClient = new module.default() as unknown as YahooFinanceClient
-  return yahooFinanceClient
-}
-
-async function fetchCanonicalPrices(symbol: string, client: YahooFinanceClient): Promise<DailyPriceInput[]> {
-  const normalized = normalizeYahooSymbol(symbol)
-  const chart = await runYahooRequest(
-    `canonical:${normalized}`,
-    () => client.chart(normalized, {
-      period1: resolveRangeStart('1y'),
-      period2: new Date(),
-      interval: '1d',
-      return: 'array',
-    }),
-  )
-
-  return parseDailyPrices(symbol, chart.quotes as YahooChartQuote[])
-}
-
-async function upsertCanonicalPrices(prisma: PrismaClient, prices: DailyPriceInput[]): Promise<void> {
-  for (const price of prices) {
-    await prisma.marketDailyPrice.upsert({
-      where: {
-        symbol_date: {
-          symbol: price.symbol,
-          date: price.date,
-        },
-      },
-      update: {
-        open: price.open,
-        high: price.high,
-        low: price.low,
-        close: price.close,
-        adjustedClose: price.adjustedClose,
-        volume: price.volume,
-      },
-      create: price,
-    })
-  }
-}
-
 export async function ensureCanonicalPrices(
   prisma: PrismaClient,
   symbols: string[],
-  client?: YahooFinanceClient,
+  client?: YahooFinanceChartClient,
   options: EnsureCanonicalPricesOptions = {},
 ): Promise<void> {
   const minLookbackDays = options.minLookbackDays ?? DEFAULT_MIN_LOOKBACK_DAYS
@@ -173,14 +113,12 @@ export async function ensureCanonicalPrices(
       continue
     }
 
-    const yahooFinance = client ?? await getYahooFinanceClient()
     try {
-      const prices = await fetchCanonicalPrices(symbol, yahooFinance)
-      await upsertCanonicalPrices(prisma, prices)
+      const prices = await fetchDailyOhlcv(symbol, '1y', client)
+      await persistDailyPrices(prisma, prices)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      const lower = message.toLowerCase()
-      if (lower.includes('rate') || lower.includes('429') || lower.includes('too many')) {
+      if (isYahooRateLimitError(error)) {
         console.warn(`[market-rotation] ${symbol} Yahoo rate-limit：${message}`)
       }
       throw error

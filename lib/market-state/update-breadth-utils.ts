@@ -61,17 +61,6 @@ export function toDateKey(date: Date): string {
   return toDateOnly(date).toISOString().slice(0, 10)
 }
 
-export function resolveRangeStart(range: string, now = new Date()): Date {
-  const start = new Date(now)
-  if (range === '1mo') {
-    start.setMonth(start.getMonth() - 1)
-    return start
-  }
-
-  start.setFullYear(start.getFullYear() - 1)
-  return start
-}
-
 export function isFinitePrice(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
 }

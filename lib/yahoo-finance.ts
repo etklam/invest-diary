@@ -1,4 +1,3 @@
-import YahooFinance from 'yahoo-finance2'
 import {
   normalizeYahooSymbol,
   parseYahooLibraryDailyQuotes,
@@ -11,13 +10,13 @@ import {
   type HistoricalQuote,
   type IntradayQuote,
 } from '~/lib/market-data/yahoo'
+import { getYahooFinanceClient } from '~/lib/market-data/daily-prices'
 import { runYahooRequest } from '~/lib/market-data/yahoo-request-queue'
 
 type YahooChartInterval = '1m' | '2m' | '5m' | '15m' | '30m' | '60m' | '90m' | '1h' | '1d' | '5d' | '1wk' | '1mo' | '3mo'
 
-const yahooFinance = new YahooFinance()
-
 type YahooLibraryQuoteInput = Parameters<typeof parseYahooLibraryQuote>[0]
+type YahooLibraryChartQuoteInput = Parameters<typeof parseYahooLibraryDailyQuotes>[0][number]
 
 export type {
   QuoteResponse,
@@ -37,6 +36,7 @@ export async function fetchQuote(symbol: string): Promise<QuoteResponse> {
   const normalized = normalizeYahooSymbol(symbol)
 
   return runYahooRequest(`quote:${normalized}`, async () => {
+    const yahooFinance = await getYahooFinanceClient()
     const quote = await yahooFinance.quote(normalized)
     const parsed = parseYahooLibraryQuote(quote as YahooLibraryQuoteInput)
 
@@ -57,6 +57,7 @@ export async function fetchHistoricalData(
   const key = `historical:${normalized}:${range}:${interval}`
 
   return runYahooRequest(key, async () => {
+    const yahooFinance = await getYahooFinanceClient()
     const quotes = await yahooFinance.chart(normalized, {
       period1: resolveYahooRangeStart(range),
       period2: new Date(),
@@ -64,7 +65,7 @@ export async function fetchHistoricalData(
       return: 'array',
     })
 
-    return parseYahooLibraryDailyQuotes(quotes.quotes)
+    return parseYahooLibraryDailyQuotes(quotes.quotes as YahooLibraryChartQuoteInput[])
   })
 }
 
@@ -77,6 +78,7 @@ export async function fetchIntradayData(
   const key = `intraday:${normalized}:${days}:${interval}`
 
   return runYahooRequest(key, async () => {
+    const yahooFinance = await getYahooFinanceClient()
     const start = new Date()
     start.setDate(start.getDate() - days)
 
@@ -87,7 +89,7 @@ export async function fetchIntradayData(
       return: 'array',
     })
 
-    return parseYahooLibraryIntradayQuotes(quotes.quotes)
+    return parseYahooLibraryIntradayQuotes(quotes.quotes as YahooLibraryChartQuoteInput[])
   })
 }
 
@@ -101,6 +103,7 @@ export async function fetchMonthlyData(symbol: string, years = 5): Promise<Yahoo
   const key = `monthly:${normalized}:${years}`
 
   return runYahooRequest(key, async () => {
+    const yahooFinance = await getYahooFinanceClient()
     const start = new Date()
     start.setFullYear(start.getFullYear() - years)
 
@@ -111,7 +114,7 @@ export async function fetchMonthlyData(symbol: string, years = 5): Promise<Yahoo
       return: 'array',
     })
 
-    const parsed = parseYahooLibraryMonthlyQuotes(quotes.quotes)
+    const parsed = parseYahooLibraryMonthlyQuotes(quotes.quotes as YahooLibraryChartQuoteInput[])
     if (parsed.length === 0) {
       throw new Error('Yahoo historical data unavailable')
     }

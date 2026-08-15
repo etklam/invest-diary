@@ -5,15 +5,15 @@ import { createRequire } from 'node:module'
 import { createPrismaClientOptions } from '../../lib/prisma-client-options'
 import {
   calculateBreadthRows,
-  parseDailyPrices,
-  resolveRangeStart,
   toDateKey,
   type BreadthDayResult,
   type DailyPriceInput,
-  type YahooChartQuote,
 } from '../../lib/market-state/update-breadth-utils'
-import { normalizeYahooSymbol } from '../../lib/market-data/yahoo'
-import { runYahooRequest } from '../../lib/market-data/yahoo-request-queue'
+import {
+  fetchDailyOhlcv,
+  isYahooRateLimitError,
+  persistDailyPrices,
+} from '../../lib/market-data/daily-prices'
 import { mapLimit } from '../map-limit'
 
 const require = createRequire(import.meta.url)
@@ -28,77 +28,16 @@ const BACKFILL_RANGE = '1y'
 const BACKFILL_DAYS = 260
 const INCREMENTAL_DAYS = 10
 
-type YahooChartInterval = '1d'
-
-interface YahooFinanceClient {
-  chart: (symbol: string, options: Record<string, unknown>) => Promise<{ quotes: unknown[] }>
-}
-
 const isBackfill = process.argv.includes('--backfill')
 const targetDays = isBackfill ? BACKFILL_DAYS : INCREMENTAL_DAYS
 const fetchRange = isBackfill ? BACKFILL_RANGE : INCREMENTAL_RANGE
-let yahooFinanceClient: YahooFinanceClient | null = null
-
-async function getYahooFinanceClient(): Promise<YahooFinanceClient> {
-  if (yahooFinanceClient) return yahooFinanceClient
-
-  const module = await import('yahoo-finance2')
-  yahooFinanceClient = new module.default() as unknown as YahooFinanceClient
-  return yahooFinanceClient
-}
 
 async function fetchSymbolPrices(symbol: string): Promise<DailyPriceInput[]> {
-  const yahooFinance = await getYahooFinanceClient()
-  const normalized = normalizeYahooSymbol(symbol)
-  const chart = await runYahooRequest(
-    `breadth:${normalized}:${fetchRange}`,
-    () => yahooFinance.chart(normalized, {
-      period1: resolveRangeStart(fetchRange),
-      period2: new Date(),
-      interval: '1d' as YahooChartInterval,
-      return: 'array',
-    }),
-  )
-
-  return parseDailyPrices(symbol, chart.quotes as YahooChartQuote[])
-}
-
-function isRateLimitError(message: string): boolean {
-  const lower = message.toLowerCase()
-  return lower.includes('rate') || lower.includes('429') || lower.includes('too many')
+  return fetchDailyOhlcv(symbol, fetchRange)
 }
 
 async function upsertPrices(prices: DailyPriceInput[]): Promise<void> {
-  if (prices.length === 0) return
-  // Batch insert — skip duplicates (upsert equivalent for initial load)
-  // For subsequent daily updates, volume is small enough that skipDuplicates is fine
-  try {
-    await prisma.marketDailyPrice.createMany({
-      data: prices,
-      skipDuplicates: true,
-    })
-  } catch {
-    // Fallback: upsert one-by-one only if batch fails (e.g. partial conflict)
-    for (const price of prices) {
-      await prisma.marketDailyPrice.upsert({
-        where: {
-          symbol_date: {
-            symbol: price.symbol,
-            date: price.date,
-          },
-        },
-        update: {
-          open: price.open,
-          high: price.high,
-          low: price.low,
-          close: price.close,
-          adjustedClose: price.adjustedClose,
-          volume: price.volume,
-        },
-        create: price,
-      })
-    }
-  }
+  await persistDailyPrices(prisma, prices)
 }
 
 async function upsertBreadthRows(rows: BreadthDayResult[]): Promise<void> {
@@ -176,7 +115,7 @@ async function main() {
     } catch (error) {
       failedCount += 1
       const message = error instanceof Error ? error.message : String(error)
-      if (isRateLimitError(message)) {
+      if (isYahooRateLimitError(error)) {
         console.warn(`[${index + 1}/${symbols.length}] ${symbol} Yahoo rate-limit：${message}`)
       } else {
         console.error(`[${index + 1}/${symbols.length}] ${symbol} 失敗：${message}`)

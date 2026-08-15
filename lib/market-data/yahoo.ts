@@ -84,6 +84,27 @@ export function normalizeYahooSymbol(symbol: string): string {
   return YAHOO_SYMBOL_ALIASES[normalized] ?? normalized
 }
 
+export function getYahooErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message.toLowerCase()
+  }
+
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+    return error.message.toLowerCase()
+  }
+
+  return String(error).toLowerCase()
+}
+
+export function isYahooRateLimitError(error: unknown): boolean {
+  if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 429) {
+    return true
+  }
+
+  const message = getYahooErrorMessage(error)
+  return message.includes('rate') || message.includes('429') || message.includes('too many')
+}
+
 export function getYahooSymbolAliasSuggestion(symbol: string): string | null {
   const trimmed = symbol.trim()
   if (!trimmed) {

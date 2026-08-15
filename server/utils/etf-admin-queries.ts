@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import prisma from '~/lib/prisma'
 import { AppError, Errors } from '~/lib/errors/factory'
+import { isYahooRateLimitError } from '~/lib/market-data/daily-prices'
 import { fetchMonthlyData, validateSymbol } from '~/lib/yahoo-finance'
 
 const ADMIN_ETF_INCLUDE = {
@@ -57,24 +58,9 @@ export const COMMON_ETFS = [
   { symbol: 'LQD', name: 'iShares iBoxx $ Investment Grade Corporate Bond ETF' },
 ] as const
 
-function isRateLimitError(error: unknown): boolean {
-  if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 429) {
-    return true
-  }
-
-  if (error instanceof Error) {
-    const message = error.message.toLowerCase()
-    return message.includes('429')
-      || message.includes('too many requests')
-      || message.includes('rate limit')
-  }
-
-  return false
-}
-
 function throwExternalServiceError(error: unknown): never {
   if (error instanceof AppError) throw error
-  if (isRateLimitError(error)) throw Errors.rateLimited()
+  if (isYahooRateLimitError(error)) throw Errors.rateLimited()
   throw Errors.externalServiceError('Failed to fetch historical data from Yahoo Finance')
 }
 
@@ -105,7 +91,7 @@ export async function createAdminEtf(input: AdminEtfCreateInput) {
       }
     } catch (error) {
       if (error instanceof AppError) throw error
-      if (isRateLimitError(error)) throw Errors.rateLimited()
+      if (isYahooRateLimitError(error)) throw Errors.rateLimited()
       throw error
     }
   }

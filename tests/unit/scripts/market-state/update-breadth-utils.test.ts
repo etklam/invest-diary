@@ -4,12 +4,12 @@ import {
   groupPricesBySymbol,
   isFinitePrice,
   parseDailyPrices,
-  resolveRangeStart,
   toDateKey,
   toDateOnly,
   type PricePoint,
   type YahooChartQuote,
 } from '~/lib/market-state/update-breadth-utils'
+import { resolveYahooRangeStart } from '~/lib/market-data/yahoo'
 
 function date(key: string): Date {
   return new Date(`${key}T12:34:56.789Z`)
@@ -43,11 +43,11 @@ describe('MarketState update breadth date helpers', () => {
     expect(toDateKey(date('2026-03-15'))).toBe('2026-03-15')
   })
 
-  it('resolveRangeStart 正確回推 1mo 與 1y', () => {
+  it('resolveYahooRangeStart 正確回推 1mo 與 1y', () => {
     const now = new Date('2026-06-05T08:30:00.000Z')
 
-    expect(resolveRangeStart('1mo', now).toISOString()).toBe('2026-05-05T08:30:00.000Z')
-    expect(resolveRangeStart('1y', now).toISOString()).toBe('2025-06-05T08:30:00.000Z')
+    expect(resolveYahooRangeStart('1mo', now).toISOString()).toBe('2026-05-05T08:30:00.000Z')
+    expect(resolveYahooRangeStart('1y', now).toISOString()).toBe('2025-06-05T08:30:00.000Z')
   })
 })
 

@@ -4,6 +4,7 @@ import 'dotenv/config'
 import { createRequire } from 'node:module'
 import { createPrismaClientOptions } from '../../lib/prisma-client-options'
 import { uniqueSymbols } from '../../lib/market-state/seed-universe-utils'
+import { getYahooFinanceClient, isYahooRateLimitError } from '../../lib/market-data/daily-prices'
 import { normalizeYahooSymbol } from '../../lib/market-data/yahoo'
 import { runYahooRequest } from '../../lib/market-data/yahoo-request-queue'
 import { mapLimit } from '../map-limit'
@@ -29,19 +30,6 @@ interface UniverseSeedItem {
   symbol: string
   name: string
   exchange: string
-}
-
-interface YahooFinanceClient {
-  quote: (symbol: string) => Promise<YahooQuoteRaw>
-}
-
-let yahooFinanceClient: YahooFinanceClient | null = null
-
-async function getYahooFinanceClient(): Promise<YahooFinanceClient> {
-  if (yahooFinanceClient) return yahooFinanceClient
-  const module = await import('yahoo-finance2')
-  yahooFinanceClient = new module.default() as unknown as YahooFinanceClient
-  return yahooFinanceClient
 }
 
 const NASDAQ_100_SYMBOLS = [
@@ -81,7 +69,7 @@ async function fetchUniverseItem(symbol: string): Promise<UniverseSeedItem> {
   const normalized = normalizeYahooSymbol(symbol)
   const rawQuote = await runYahooRequest(
     `seed:${normalized}`,
-    () => yahooFinance.quote(normalized),
+    () => yahooFinance.quote(normalized) as Promise<YahooQuoteRaw>,
   )
 
   return {
@@ -128,8 +116,7 @@ async function main() {
     } catch (error) {
       failedCount += 1
       const message = error instanceof Error ? error.message : String(error)
-      const lower = message.toLowerCase()
-      if (lower.includes('rate') || lower.includes('429') || lower.includes('too many')) {
+      if (isYahooRateLimitError(error)) {
         console.warn(`[${index + 1}/${symbols.length}] ${symbol} Yahoo rate-limit：${message}`)
       } else {
         console.error(`[${index + 1}/${symbols.length}] ${symbol} 失敗：${message}`)
