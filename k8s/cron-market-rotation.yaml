@@ -24,6 +24,8 @@ spec:
                       name: diary-vue-db-creds
                       key: DATABASE_URL
               command:
-                - npx
-                - tsx
-                - scripts/market-rotation/run-batch.ts
+                - sh
+                - -ec
+                - |
+                  ./node_modules/.bin/tsx scripts/market-rotation/run-batch.ts
+                  ./node_modules/.bin/tsx scripts/market-state/update-breadth.ts

@@ -469,11 +469,12 @@ docker system prune -a --volumes
 
 ## Batch CronJobs | 排程任務
 
-Market Rotation snapshot batch 採用 K8s CronJob，每日美東收盤後跑一次。詳細排程、scope 隔離、staleness contract 與 YAML 範例請參考 [Beta Cockpit batch cron schedule](../BETA_COCKPIT.md#batch-cron-schedule)。
+Market Rotation snapshot 與 Sector Breadth 共用 K8s CronJob，每日美東收盤後循序更新。Breadth 必須在 rotation 成功後執行，避免 Market State 繼續靜默使用過期的 `marketBreadthDaily`。詳細排程、scope 隔離、staleness contract 與 YAML 範例請參考 [Beta Cockpit batch cron schedule](../BETA_COCKPIT.md#batch-cron-schedule)。
 
 - **Manifest**: [`k8s/cron-market-rotation.yaml`](../../k8s/cron-market-rotation.yaml)
-- **Entry point**: `scripts/market-rotation/run-batch.ts`
+- **Entry points**: `scripts/market-rotation/run-batch.ts`，接著是 `scripts/market-state/update-breadth.ts`
 - **Schedule**: `30 21 * * 0-5` (21:30 UTC, Sunday–Friday)
+- **Database access**: 兩支 script 都在 CronJob 內直接使用 `DATABASE_URL` 連線資料庫，不經 HTTP。
 
 若以 Docker / CapRover 部署而非 K8s，需自備 cron 或外部排程器觸發同一支 script；`docs/BETA_COCKPIT.md` 的失敗處理與 staleness 契約仍然適用。
 
