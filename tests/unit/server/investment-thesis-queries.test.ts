@@ -85,20 +85,61 @@ describe('Investment Thesis queries', () => {
     }))
   })
 
-  it('enforces active Thesis completeness in the domain service, not only the HTTP handler', async () => {
-    mocks.thesisFindUnique.mockResolvedValue({
-      status: 'ACTIVE',
-      activatedAt: now,
-      summary: null,
-      whyIOwnIt: 'Reason',
-    })
+  it('replaces the thesis in full: a partial payload no longer merges with persisted values', async () => {
+    mocks.thesisFindUnique.mockResolvedValue({ activatedAt: now })
 
-    await expect(saveCurrentThesis({
+    await saveCurrentThesis({
       userId: 7n,
       symbol: 'AAPL',
-      draft: {},
-    })).rejects.toMatchObject({ code: 'SYS_VALIDATION_ERROR' })
-    expect(mocks.thesisUpsert).not.toHaveBeenCalled()
+      status: 'DRAFT',
+      draft: { summary: ' New only ' },
+    })
+
+    expect(mocks.thesisUpsert).toHaveBeenCalledWith(expect.objectContaining({
+      update: {
+        summary: 'New only',
+        whyIOwnIt: null,
+        growthDrivers: null,
+        risks: null,
+        invalidationConditions: null,
+        expectedHoldingPeriod: null,
+        reviewDueAt: null,
+        status: 'DRAFT',
+        activatedAt: now,
+        archivedAt: null,
+      },
+    }))
+  })
+
+  it('defaults absent status to DRAFT instead of inheriting the persisted status', async () => {
+    mocks.thesisFindUnique.mockResolvedValue({ activatedAt: now })
+
+    await saveCurrentThesis({ userId: 7n, symbol: 'AAPL', draft: {} })
+
+    expect(mocks.thesisUpsert).toHaveBeenCalledWith(expect.objectContaining({
+      update: expect.objectContaining({ status: 'DRAFT' }),
+    }))
+  })
+
+  it('leaves the ACTIVE-requires-summary rule to the PUT handler and persists whatever it is given', async () => {
+    await saveCurrentThesis({ userId: 7n, symbol: 'AAPL', status: 'ACTIVE', draft: {} })
+    expect(mocks.thesisUpsert).toHaveBeenCalledOnce()
+  })
+
+  it('preserves the original activation timestamp across re-activation', async () => {
+    const firstActivatedAt = new Date('2026-01-01T00:00:00.000Z')
+    mocks.thesisFindUnique.mockResolvedValue({ activatedAt: firstActivatedAt })
+
+    await saveCurrentThesis({
+      userId: 7n,
+      symbol: 'AAPL',
+      status: 'ACTIVE',
+      draft: { summary: 'S', whyIOwnIt: 'W' },
+    })
+
+    expect(mocks.thesisUpsert).toHaveBeenCalledWith(expect.objectContaining({
+      update: expect.objectContaining({ activatedAt: firstActivatedAt }),
+    }))
   })
 
   it('stores an immutable snapshot and updates only the current review projection atomically', async () => {

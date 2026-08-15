@@ -3,7 +3,7 @@ import {
   calculatePeriodAvgReturn,
   getCurrentMonth,
   analyzeSeasonality,
-} from '~/utils/stockSeasonality'
+} from '~/lib/stockSeasonality'
 
 describe('calculatePeriodAvgReturn', () => {
   it('回傳月均，不是總和', () => {

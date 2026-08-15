@@ -287,9 +287,9 @@ describe('GET /api/market/rotation-monitor', () => {
     expect(result.rows).toHaveLength(23)
   })
 
-  // ── Case 4b: betaAllocation 欄位在 response 中 ─────────────────
+  // ── Case 4b: betaAllocation stays server-side only ────────────────
 
-  it('sectors scope payload 含 betaAllocation 欄位（含配置與 mode）', async () => {
+  it('sectors scope payload 不外曝 betaAllocation，但摘要保留 beta 建議', async () => {
     const rows = makeSectorRows()
     // Reset previous mock implementations
     mockSnapshotFindFirst.mockReset()
@@ -301,15 +301,8 @@ describe('GET /api/market/rotation-monitor', () => {
     const { default: handler } = await import('~/server/api/market/rotation-monitor.get')
     const result = await handler(makeEvent({ scope: 'sectors' }))
 
-    expect(result.betaAllocation).toBeDefined()
-    expect(result.betaAllocation.suggestedMode).toBe('aggressive')
-    expect(result.betaAllocation.suggestedBetaLevel).toBe(1.3)
-    expect(result.betaAllocation.highBetaTargetPct).toBe(60)
-    expect(result.betaAllocation.coreIndexTargetPct).toBe(30)
-    expect(result.betaAllocation.cashTargetPct).toBe(10)
-    expect(result.betaAllocation.explanation).toBeTypeOf('string')
-    expect(result.betaAllocation.explanation.length).toBeGreaterThan(10)
-    expect(Array.isArray(result.betaAllocation.warnings)).toBe(true)
+    expect(result).not.toHaveProperty('betaAllocation')
+    expect(result.currentMarketSummary).toContain('aggressive')
   })
 
   it('currentMarketSummary 含 beta suggestion 段落文字', async () => {

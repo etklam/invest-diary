@@ -65,7 +65,7 @@ describe('EtfMobileCard', () => {
     const row = buildRow({ rotationRank: null })
     const wrapper = mount(EtfMobileCard, { props: { row } })
 
-    expect(wrapper.text()).toContain('--')
+    expect(wrapper.text()).toContain('marketRotation.common.notAvailable')
   })
 
   it('renders RSI value', () => {
@@ -81,7 +81,7 @@ describe('EtfMobileCard', () => {
 
     const el = wrapper.find('[data-testid="rsi-delta"]')
     expect(el.text()).toContain('+5.3 pts')
-    expect(el.classes()).toContain('text-emerald-600')
+    expect(el.classes()).toContain('text-dt-success')
   })
 
   it('renders RSI delta with negative color', () => {
@@ -90,7 +90,7 @@ describe('EtfMobileCard', () => {
 
     const el = wrapper.find('[data-testid="rsi-delta"]')
     expect(el.text()).toContain('-3.1 pts')
-    expect(el.classes()).toContain('text-red-600')
+    expect(el.classes()).toContain('text-dt-danger')
   })
 
   it('renders 2W performance with negative color', () => {
@@ -99,35 +99,35 @@ describe('EtfMobileCard', () => {
 
     const el = wrapper.find('[data-testid="2w-perf"]')
     expect(el.text()).toContain('-2.10%')
-    expect(el.classes()).toContain('text-red-600')
+    expect(el.classes()).toContain('text-dt-danger')
   })
 
   it('renders signal badge text', () => {
     const row = buildRow({ signal: 'turning_strong' })
     const wrapper = mount(EtfMobileCard, { props: { row } })
 
-    expect(wrapper.text()).toContain('turning strong')
+    expect(wrapper.text()).toContain('marketRotation.signals.turning_strong')
   })
 
   it('renders MA status badge text', () => {
     const row = buildRow({ maStatus: 'bullish_stack' })
     const wrapper = mount(EtfMobileCard, { props: { row } })
 
-    expect(wrapper.text()).toContain('bullish stack')
+    expect(wrapper.text()).toContain('marketRotation.maStatuses.bullish_stack')
   })
 
   it('renders above50d indicator', () => {
     const row = buildRow({ above50d: true })
     const wrapper = mount(EtfMobileCard, { props: { row } })
 
-    expect(wrapper.text()).toContain('Above 50d')
+    expect(wrapper.text()).toContain('marketRotation.filters.above_50d')
   })
 
   it('renders below50d indicator', () => {
     const row = buildRow({ above50d: false })
     const wrapper = mount(EtfMobileCard, { props: { row } })
 
-    expect(wrapper.text()).toContain('Below 50d')
+    expect(wrapper.text()).toContain('marketRotation.filters.below_50d')
   })
 
   it('handles null values gracefully showing --', () => {
@@ -140,11 +140,11 @@ describe('EtfMobileCard', () => {
     })
     const wrapper = mount(EtfMobileCard, { props: { row } })
 
-    expect(wrapper.find('[data-testid="last-price"]').text()).toBe('--')
-    expect(wrapper.find('[data-testid="rsi-value"]').text()).toBe('--')
-    expect(wrapper.find('[data-testid="rsi-delta"]').text()).toBe('--')
-    expect(wrapper.find('[data-testid="2w-perf"]').text()).toBe('--')
-    expect(wrapper.find('[data-testid="pct-high"]').text()).toBe('--')
+    expect(wrapper.find('[data-testid="last-price"]').text()).toBe('marketRotation.common.notAvailable')
+    expect(wrapper.find('[data-testid="rsi-value"]').text()).toBe('marketRotation.common.notAvailable')
+    expect(wrapper.find('[data-testid="rsi-delta"]').text()).toBe('marketRotation.common.notAvailable')
+    expect(wrapper.find('[data-testid="2w-perf"]').text()).toBe('marketRotation.common.notAvailable')
+    expect(wrapper.find('[data-testid="pct-high"]').text()).toBe('marketRotation.common.notAvailable')
   })
 
   it('emits click event when card is clicked', async () => {

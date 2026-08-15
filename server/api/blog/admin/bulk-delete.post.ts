@@ -1,10 +1,7 @@
 import prisma from '~/lib/prisma'
-import adminMiddleware from '~/server/middleware/admin'
 import { Errors } from '~/lib/errors/factory'
 
 export default defineEventHandler(async (event) => {
-  await adminMiddleware(event)
-
   const body = await readBody(event)
   const ids = Array.isArray(body?.ids) ? body.ids : []
 

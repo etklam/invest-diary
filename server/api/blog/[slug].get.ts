@@ -4,6 +4,7 @@ import { PostStatus } from '@prisma/client'
 import { logger } from '~/lib/logger'
 import { serialize } from '~/server/utils/serialize'
 import { Errors } from '~/lib/errors/factory'
+import { handleApiError } from '~/server/utils/error-handler'
 
 const resolveSlug = (event: H3Event) => {
   const rawFromParams = event.context.params?.slug
@@ -65,14 +66,8 @@ export default defineEventHandler(async (event: H3Event) => {
 
     setHeader(event, 'Cache-Control', 'no-store')
     return serialize(post)
-  } catch (error: any) {
-    if (error?.statusCode) {
-      throw error
-    }
-
-    log.error('Error fetching post', { slug, error: String(error) })
+  } catch (error) {
     setHeader(event, 'Cache-Control', 'no-store')
-
-    throw Errors.internalError(error).toH3Error()
+    handleApiError(error, log)
   }
 })

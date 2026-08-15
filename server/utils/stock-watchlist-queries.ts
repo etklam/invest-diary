@@ -70,6 +70,10 @@ type StockTimelineSourceType =
   | 'ARTICLE'
   | 'MANUAL'
   | 'SYSTEM'
+  | 'MARKET_ROTATION'
+  | 'SEC_FILING'
+  | 'RELATIVE_VALUE'
+  | 'SEASONALITY'
 
 export async function listUserWatchlistItems(userIdInput: string | bigint) {
   const userId = BigInt(userIdInput)

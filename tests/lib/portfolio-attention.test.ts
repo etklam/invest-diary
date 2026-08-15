@@ -52,6 +52,50 @@ describe('evaluatePortfolioAttention', () => {
     expect(items).toEqual([])
   })
 
+  it('clears overdue once a review is recorded at/after the due date', () => {
+    // completeThesisReview sets lastReviewedAt without advancing
+    // reviewDueAt — the overdue signal must flip off on that alone.
+    const reviewedAfterDue = evaluate({
+      theses: [{
+        symbol: 'MSFT',
+        status: 'active',
+        reviewDueAt: '2026-08-10T23:59:59.000Z',
+        lastReviewedAt: '2026-08-10T23:59:59.000Z',
+        latestOutcome: 'ON_TRACK',
+      }],
+    })
+    const staleReviewOnly = evaluate({
+      theses: [{
+        symbol: 'MSFT',
+        status: 'active',
+        reviewDueAt: '2026-08-10T23:59:59.000Z',
+        lastReviewedAt: '2026-08-09T00:00:00.000Z',
+        latestOutcome: 'ON_TRACK',
+      }],
+    })
+
+    expect(reviewedAfterDue).toEqual([])
+    expect(staleReviewOnly[0]).toMatchObject({ reason: 'overdue_thesis_review', symbol: 'MSFT' })
+  })
+
+  it('flips attention from overdue to clear when an overdue review is completed', () => {
+    // Regression for the user-visible bug: reviewDueAt stays in the past,
+    // only lastReviewedAt moves to "now" — the overdue card must disappear.
+    const overdueThesis = {
+      symbol: 'MSFT',
+      status: 'active',
+      reviewDueAt: '2026-08-10T23:59:59.000Z',
+      latestOutcome: null,
+    }
+    const before = evaluate({ theses: [{ ...overdueThesis, lastReviewedAt: null }] })
+    const after = evaluate({
+      theses: [{ ...overdueThesis, lastReviewedAt: AS_OF.toISOString() }],
+    })
+
+    expect(before.map(item => item.reason)).toEqual(['overdue_thesis_review'])
+    expect(after).toEqual([])
+  })
+
   it('surfaces an invalidated thesis while the holding is still active', () => {
     const items = evaluate({
       theses: [{ symbol: 'MSFT', status: 'active', latestOutcome: 'INVALIDATED' }],

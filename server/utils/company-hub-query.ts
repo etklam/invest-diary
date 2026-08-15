@@ -1,12 +1,8 @@
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { calculateHoldings } from '~/lib/position-state'
-import { fetchQuote } from '~/lib/yahoo-finance'
-import {
-  buildMarketQuoteCacheKey,
-  getMarketDataCacheTtlSeconds,
-  getOrSetCached,
-} from '~/lib/market-data/cache'
+import { concentration } from '~/lib/stocks-view'
+import { getCachedQuote } from '~/lib/market-data/quote'
 import { getPartnerSide, getPartnerLinkStatus } from '~/lib/partners/policy'
 import { findUserPartnerLinks } from '~/server/utils/partner-queries'
 import { readPortfolioTransactions } from '~/server/utils/transaction-read'
@@ -21,13 +17,13 @@ import type { CompanyHubDiary, CompanyHubResponse } from '~/types/company-hub'
 
 const HUB_LIMIT = 10
 
+/**
+ * Hub-specific projection of the cached quote read seam: price + currency or
+ * null — the hub degrades to cost-only display when the quote is unavailable.
+ */
 async function readQuote(symbol: string): Promise<{ price: number; currency: string | null } | null> {
   try {
-    const quote = await getOrSetCached(
-      buildMarketQuoteCacheKey(symbol),
-      getMarketDataCacheTtlSeconds('quote'),
-      () => fetchQuote(symbol),
-    )
+    const quote = await getCachedQuote(symbol)
     return typeof quote?.regularMarketPrice === 'number'
       ? { price: quote.regularMarketPrice, currency: quote.currency || null }
       : null
@@ -120,7 +116,9 @@ export async function getCompanyHub(userId: bigint, symbolRaw: string): Promise<
   const holdings = calculateHoldings(transactions)
   const holding = holdings.find(item => item.symbol === symbol) ?? null
   const symbolTransactions = transactions.filter(item => item.symbol === symbol)
-  const totalPortfolioCost = holdings.reduce((sum, item) => sum + item.totalCost, 0)
+  // Hub concentration is explicitly cost-basis so the % survives a missing
+  // quote; `concentrationBasis` declares that to the client.
+  const costShares = concentration(holdings, { basis: 'cost_basis' })
   const watchlist = stock
     ? await prisma.stockWatchlist.findUnique({
         where: { userId_stockId: { userId, stockId: stock.id } },
@@ -185,9 +183,7 @@ export async function getCompanyHub(userId: bigint, symbolRaw: string): Promise<
       totalCost: holding?.totalCost ?? 0,
       price: quote?.price ?? null,
       marketValue: holding && quote ? holding.quantity * quote.price : null,
-      concentrationPct: holding && totalPortfolioCost > 0
-        ? (holding.totalCost / totalPortfolioCost) * 100
-        : null,
+      concentrationPct: holding ? (costShares.get(symbol) ?? null) : null,
       concentrationBasis: holding ? 'cost_basis' : 'unavailable',
       quoteStatus: quote === null ? 'missing' : 'priced',
     },

@@ -5,10 +5,12 @@ const mockDiaryFindMany = vi.fn()
 const mockDiaryFindFirst = vi.fn()
 const mockDiaryUpdate = vi.fn()
 const mockUserFindUnique = vi.fn()
+const mockThesisFindMany = vi.fn()
 const mockDiaryLogInfo = vi.fn()
 const mockDiaryLogWarn = vi.fn()
 const mockDiaryLogError = vi.fn()
 const mockParsePositiveBigIntParam = vi.fn()
+const mockGetUserTimezone = vi.fn()
 
 vi.mock('~/lib/prisma', () => ({
   default: {
@@ -19,6 +21,9 @@ vi.mock('~/lib/prisma', () => ({
     },
     user: {
       findUnique: mockUserFindUnique,
+    },
+    investmentThesis: {
+      findMany: mockThesisFindMany,
     },
   },
 }))
@@ -43,13 +48,18 @@ vi.mock('~/server/utils/validation', async (importOriginal) => {
   }
 })
 
+vi.mock('~/server/utils/user-queries', () => ({
+  getUserTimezone: mockGetUserTimezone,
+}))
+
 describe('Review API Routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useRealTimers()
     mockReadBody.mockResolvedValue(null)
     mockParsePositiveBigIntParam.mockReturnValue(10n)
-    mockUserFindUnique.mockResolvedValue({ timezone: 'Asia/Taipei' })
+    mockGetUserTimezone.mockResolvedValue('Asia/Taipei')
+    mockThesisFindMany.mockResolvedValue([])
   })
 
   describe('GET /api/reviews', () => {
@@ -118,10 +128,7 @@ describe('Review API Routes', () => {
       const { default: handler } = await import('~/server/api/reviews.get')
       const result = await handler({ context: { user: { id: '7' }, requestId: 'req-reviews' } } as any)
 
-      expect(mockUserFindUnique).toHaveBeenCalledWith({
-        where: { id: 7n },
-        select: { timezone: true },
-      })
+      expect(mockGetUserTimezone).toHaveBeenCalledWith(7n)
       expect(mockDiaryFindMany).toHaveBeenCalledTimes(5)
       expect(mockDiaryFindMany.mock.calls[0]?.[0].where).toMatchObject({
         userId: 7n,
@@ -151,7 +158,7 @@ describe('Review API Routes', () => {
     it('uses the viewer timezone when grouping reviews due today', async () => {
       vi.useFakeTimers()
       vi.setSystemTime(new Date('2026-06-14T16:30:00.000Z'))
-      mockUserFindUnique.mockResolvedValue({ timezone: 'Asia/Taipei' })
+      mockGetUserTimezone.mockResolvedValue('Asia/Taipei')
 
       mockDiaryFindMany
         .mockResolvedValueOnce([])

@@ -165,42 +165,25 @@ export async function saveCurrentThesis(input: {
     create: { symbol },
     select: { id: true },
   })
+  // Full-replace semantics: absent draft fields clear, absent status defaults to DRAFT.
+  // The ACTIVE thesis requires summary/whyIOwnIt rule lives solely in the PUT handler's zod schema.
   const existing = await prisma.investmentThesis.findUnique({
     where: { userId_stockId: { userId: input.userId, stockId: stock.id } },
-    select: {
-      status: true,
-      activatedAt: true,
-      summary: true,
-      whyIOwnIt: true,
-      growthDrivers: true,
-      risks: true,
-      invalidationConditions: true,
-      expectedHoldingPeriod: true,
-      reviewDueAt: true,
-    },
+    select: { activatedAt: true },
   })
-  const status = input.status ?? existing?.status ?? 'DRAFT'
+  const status = input.status ?? 'DRAFT'
   const now = new Date()
-  const reviewDueAt = parseOptionalDate(input.draft.reviewDueAt)
-  const valueOrExisting = (value: string | null | undefined, previous: string | null | undefined) =>
-    value === undefined ? (previous ?? null) : cleanOptionalText(value)
   const data = {
-    summary: valueOrExisting(input.draft.summary, existing?.summary),
-    whyIOwnIt: valueOrExisting(input.draft.whyIOwnIt, existing?.whyIOwnIt),
-    growthDrivers: valueOrExisting(input.draft.growthDrivers, existing?.growthDrivers),
-    risks: valueOrExisting(input.draft.risks, existing?.risks),
-    invalidationConditions: valueOrExisting(input.draft.invalidationConditions, existing?.invalidationConditions),
-    expectedHoldingPeriod: valueOrExisting(input.draft.expectedHoldingPeriod, existing?.expectedHoldingPeriod),
-    reviewDueAt: reviewDueAt === undefined ? (existing?.reviewDueAt ?? null) : reviewDueAt,
+    summary: cleanOptionalText(input.draft.summary),
+    whyIOwnIt: cleanOptionalText(input.draft.whyIOwnIt),
+    growthDrivers: cleanOptionalText(input.draft.growthDrivers),
+    risks: cleanOptionalText(input.draft.risks),
+    invalidationConditions: cleanOptionalText(input.draft.invalidationConditions),
+    expectedHoldingPeriod: cleanOptionalText(input.draft.expectedHoldingPeriod),
+    reviewDueAt: parseOptionalDate(input.draft.reviewDueAt) ?? null,
     status,
     activatedAt: status === 'ACTIVE' ? (existing?.activatedAt ?? now) : existing?.activatedAt,
     archivedAt: status === 'ARCHIVED' ? now : null,
-  }
-  if (status === 'ACTIVE' && (!data.summary || !data.whyIOwnIt)) {
-    throw Errors.validationError([
-      ...(!data.summary ? [{ field: 'summary', message: 'Summary is required to activate a Thesis' }] : []),
-      ...(!data.whyIOwnIt ? [{ field: 'whyIOwnIt', message: 'Why I own it is required to activate a Thesis' }] : []),
-    ])
   }
 
   return prisma.investmentThesis.upsert({

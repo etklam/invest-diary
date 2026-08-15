@@ -105,47 +105,17 @@
 </template>
 
 <script setup lang="ts">
-import type { SerializedId } from '~/types/common'
+import { emptyReviewGroups, type ReviewGroups } from '~/types/reviews'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-type ReviewStatus = 'none' | 'pending' | 'reviewed'
-
-interface DiaryReviewItem {
-  id: SerializedId
-  title: string
-  date: string
-  thesis?: string | null
-  risk?: string | null
-  reviewDueAt?: string | null
-  reviewStatus: ReviewStatus
-  reviewedAt?: string | null
-  reviewOutcome?: string | null
-}
-
-interface ReviewGroups {
-  unscheduled: DiaryReviewItem[]
-  overdue: DiaryReviewItem[]
-  today: DiaryReviewItem[]
-  upcoming: DiaryReviewItem[]
-  completed: DiaryReviewItem[]
-}
-
-const emptyGroups = (): ReviewGroups => ({
-  unscheduled: [],
-  overdue: [],
-  today: [],
-  upcoming: [],
-  completed: [],
-})
-
 const { data, pending, error, refresh } = await useLazyFetch<ReviewGroups>('/api/reviews', {
-  default: emptyGroups,
+  default: emptyReviewGroups,
 })
 
-const reviewGroups = computed(() => data.value ?? emptyGroups())
+const reviewGroups = computed(() => data.value ?? emptyReviewGroups())
 const totalOpenReviews = computed(() =>
   reviewGroups.value.unscheduled.length + reviewGroups.value.overdue.length + reviewGroups.value.today.length + reviewGroups.value.upcoming.length
 )

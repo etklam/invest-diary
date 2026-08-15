@@ -1,5 +1,6 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { formatDateWithWeekday, formatYmdInTimezone } from '~/lib/dates'
+import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import type {
   Diary,
@@ -9,7 +10,7 @@ import type {
 } from '~/types/diary'
 
 /**
- * Id-deduplicated merge for paginated diary lists (same contract as pages/diaries loadMore).
+ * Id-deduplicated merge for paginated diary lists.
  * Guards against a page being fetched twice or overlapping server-side inserts.
  */
 export function mergeDiariesById<T extends { id: unknown }>(existing: T[], incoming: T[]): T[] {
@@ -25,7 +26,7 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
 
   // Options
   const limit = options?.limit || 20
-  const userTimezone = computed(() => options?.timezone || user.value?.timezone || 'Asia/Taipei')
+  const userTimezone = computed(() => options?.timezone || resolveUserTimezone(user.value))
 
   // Hydration gate - ensures server and client initial render match
   const isHydrated = ref(false)
@@ -40,12 +41,27 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
   const pagination = ref<PaginationResponse | null>(null)
   const loadingMore = ref(false)
 
+  // The API owns date filtering so every page uses the same result set.
+  const filters = reactive({
+    dateFrom: '',
+    dateTo: ''
+  })
+
+  const requestQuery = computed(() => ({
+    page: '1',
+    limit: String(limit),
+    ...(filters.dateFrom ? { dateFrom: filters.dateFrom } : {}),
+    ...(filters.dateTo ? { dateTo: filters.dateTo } : {}),
+  }))
+
   // Initial first-page fetch using useLazyFetch.
   // Fixed URL (page never in a reactive getter) so pagination cannot trigger
   // useFetch's auto-refetch — loadMore() owns pages >= 2 via manual $fetch.
   const { pending, error, refresh: refreshFetch } = useLazyFetch<DiariesApiResponse>(
-    `/api/diaries?page=1&limit=${limit}`,
+    '/api/diaries',
     {
+      query: requestQuery,
+      watch: false,
       onResponse({ response }) {
         if (response._data?.data) {
           diaries.value = response._data.data
@@ -53,6 +69,16 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
         }
       }
     }
+  )
+
+  watch(
+    () => [filters.dateFrom, filters.dateTo],
+    () => {
+      page.value = 1
+      diaries.value = []
+      pagination.value = null
+      void refreshFetch()
+    },
   )
 
   // Reset to page 1 and re-fetch (used after Quick Diary create/append)
@@ -79,7 +105,8 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
 
     try {
       const response = await $fetch<DiariesApiResponse>(
-        `/api/diaries?page=${nextPage}&limit=${limit}`
+        '/api/diaries',
+        { query: { ...requestQuery.value, page: String(nextPage) } },
       )
 
       if (response?.data) {
@@ -94,45 +121,15 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
     }
   }
 
-  // Filter state
-  const filters = reactive({
-    dateFrom: '',
-    dateTo: ''
-  })
-
-  // Reset filters (also resets pagination to page 1)
+  // Reset filters (the filter watcher also refreshes page 1)
   const resetFilters = () => {
     filters.dateFrom = ''
     filters.dateTo = ''
-    page.value = 1
-    diaries.value = []
-    pagination.value = null
   }
 
-  // Filter diaries by date range
+  // Date filtering is server-side; sort only for presentation before grouping.
   const filteredDiaries = computed(() => {
-    if (!diaries.value) return []
-
-    let result = [...diaries.value]
-
-    // Date from filter
-    if (filters.dateFrom) {
-      result = result.filter(d => {
-        const diaryYmd = formatYmdInTimezone(d.date || d.createdAt, userTimezone.value)
-        return diaryYmd >= filters.dateFrom
-      })
-    }
-
-    // Date to filter
-    if (filters.dateTo) {
-      result = result.filter(d => {
-        const diaryYmd = formatYmdInTimezone(d.date || d.createdAt, userTimezone.value)
-        return diaryYmd <= filters.dateTo
-      })
-    }
-
-    // Sort by date descending
-    return result.sort((a, b) => {
+    return [...diaries.value].sort((a, b) => {
       const dateA = new Date(a.date || a.createdAt).getTime()
       const dateB = new Date(b.date || b.createdAt).getTime()
       return dateB - dateA

@@ -101,7 +101,7 @@
           <ul v-if="hub.evidence.length" class="mt-3 space-y-3">
             <li v-for="record in hub.evidence" :key="record.id" class="rounded-dt-sm bg-dt-surface-strong p-4">
               <div class="flex flex-wrap justify-between gap-2 text-xs text-dt-text-soft">
-                <span>{{ record.sourceTitle || record.sourceType }}</span>
+                <span>{{ record.sourceTitle || t(`stock.watchlist.sourceTypes.${record.sourceType}`, record.sourceType) }}</span>
                 <time>{{ formatDate(record.occurredAt) }}</time>
               </div>
               <p class="mt-2 text-sm leading-6 text-dt-text-muted">{{ record.summary }}</p>

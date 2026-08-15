@@ -1,12 +1,11 @@
-import { fetchIntradayData, fetchQuote } from '~/lib/yahoo-finance'
+import { fetchIntradayData } from '~/lib/yahoo-finance'
 import { rateLimiters } from '~/lib/rate-limiter'
 import { buildSpxSessionSummary } from '~/lib/quicknote/market-session'
 import { requireUser } from '~/server/utils/auth'
 import { Errors } from '~/lib/errors/factory'
+import { getCachedQuote } from '~/lib/market-data/quote'
 import {
   buildMarketIntradayCacheKey,
-  buildMarketQuoteCacheKey,
-  getMarketDataCacheTtlSeconds,
   getOrSetCached,
 } from '~/lib/market-data/cache'
 
@@ -22,11 +21,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const [quote, intradayQuotes] = await Promise.all([
-      getOrSetCached(
-        buildMarketQuoteCacheKey('SPX'),
-        getMarketDataCacheTtlSeconds('quote'),
-        () => fetchQuote('SPX'),
-      ),
+      getCachedQuote('SPX'),
       getOrSetCached(
         buildMarketIntradayCacheKey('SPX', 3, '5m'),
         300,

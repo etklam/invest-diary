@@ -93,6 +93,7 @@ import {
   changeUserPassword,
   getUserProfile,
   getUserSettings,
+  getUserTimezone,
   updateUserSettings,
   listUsersAdmin,
   deleteUserAdmin,
@@ -320,6 +321,24 @@ describe('user-queries', () => {
       await expect(getUserSettings(OTHER_USER_ID)).rejects.toMatchObject({
         statusCode: 404,
       })
+    })
+  })
+
+  describe('getUserTimezone', () => {
+    it('returns the persisted timezone', async () => {
+      mockUserFindUnique.mockResolvedValue({ timezone: 'America/Los_Angeles' })
+
+      await expect(getUserTimezone(USER_ID)).resolves.toBe('America/Los_Angeles')
+      expect(mockUserFindUnique).toHaveBeenCalledWith({
+        where: { id: USER_ID },
+        select: { timezone: true },
+      })
+    })
+
+    it('uses the schema default when the user is missing', async () => {
+      mockUserFindUnique.mockResolvedValue(null)
+
+      await expect(getUserTimezone(USER_ID)).resolves.toBe('Asia/Taipei')
     })
   })
 

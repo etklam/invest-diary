@@ -1,18 +1,9 @@
-import { z } from 'zod'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
-import { createStockNote, toStockNoteResponse } from '~/lib/stocks/notes'
+import { createStockNote, requestSchema, SYMBOL_REGEX, toStockNoteResponse } from '~/lib/stocks/notes'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
-
-const SYMBOL_REGEX = /^[A-Za-z0-9.]{1,10}$/
-
-const requestSchema = z.object({
-  title: z.string().min(1).max(255),
-  content: z.string().min(1).max(50000),
-  date: z.string().datetime().optional(),
-})
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)

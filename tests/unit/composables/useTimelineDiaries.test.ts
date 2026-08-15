@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { mergeDiariesById } from '~/composables/useTimelineDiaries'
 
@@ -25,5 +27,16 @@ describe('mergeDiariesById', () => {
     const incoming = [{ id: '1' }, { id: 2 }]
 
     expect(mergeDiariesById(existing, incoming).map(d => String(d.id))).toEqual(['1', '2'])
+  })
+})
+
+describe('timeline date filtering contract', () => {
+  it('sends date filters with the initial and paginated server requests', () => {
+    const source = readFileSync(resolve(process.cwd(), 'composables/useTimelineDiaries.ts'), 'utf8')
+
+    expect(source).toContain('query: requestQuery')
+    expect(source).toContain('{ query: { ...requestQuery.value, page: String(nextPage) } }')
+    expect(source).not.toContain('return diaryYmd >= filters.dateFrom')
+    expect(source).not.toContain('return diaryYmd <= filters.dateTo')
   })
 })

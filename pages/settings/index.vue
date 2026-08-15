@@ -6,7 +6,7 @@
 
     <div class="space-y-6">
       <!-- Profile + Display + Trading sections stay non-editable until user settings load,
-           so placeholder defaults (Asia/Taipei, 20 trades/mo) never flash as editable values. -->
+           so placeholder defaults never flash as editable values. -->
       <fieldset :disabled="!settingsLoaded" class="space-y-6">
       <!-- Profile Section -->
       <div class="settings-card">
@@ -242,6 +242,8 @@
 </template>
 
 <script setup lang="ts">
+import { resolveUserTimezone } from '~/lib/dates/user-tz'
+
 const { t } = useI18n()
 const { user, fetchMe, updateSettings, changePassword, isLoading } = useAuth()
 const { commonTimezones, detectLocalTimezone } = useTimezone()
@@ -252,7 +254,7 @@ const settingsForm = ref({
   expectedMonthlyTrades: 20,
   expectedProfit: 0,
   expectedAvgHolding: 0,
-  timezone: 'Asia/Taipei',
+  timezone: '',
   excludeHolidaysInStats: true
 })
 
@@ -269,7 +271,7 @@ const originalSettings = ref({
   expectedMonthlyTrades: 20,
   expectedProfit: 0,
   expectedAvgHolding: 0,
-  timezone: 'Asia/Taipei',
+  timezone: '',
   excludeHolidaysInStats: true
 })
 
@@ -301,7 +303,6 @@ const groupedTimezones = computed(() => {
       label: t('settings.timezone') + ' - Asia',
       timezones: commonTimezones.filter(tz =>
         tz.value.startsWith('Asia/') ||
-        tz.value === 'Asia/Taipei' ||
         tz.value === 'Asia/Hong_Kong' ||
         tz.value === 'Asia/Shanghai' ||
         tz.value === 'Asia/Singapore' ||
@@ -345,7 +346,7 @@ onMounted(async () => {
       expectedMonthlyTrades: user.value.expectedMonthlyTrades || 20,
       expectedProfit: Number(user.value.expectedProfit) || 0,
       expectedAvgHolding: Number(user.value.expectedAvgHolding) || 0,
-      timezone: user.value.timezone || 'Asia/Taipei',
+      timezone: resolveUserTimezone(user.value),
       excludeHolidaysInStats: localStorage.getItem('exclude_holidays_in_stats') !== 'false'
     }
     originalSettings.value = { ...settingsForm.value }

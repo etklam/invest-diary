@@ -155,8 +155,11 @@ const reviewing = ref(false)
 const inputClass = 'mt-1 block min-h-11 w-full rounded-dt-sm border border-dt-border bg-dt-surface-strong p-3 text-sm font-normal text-dt-text outline-none focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20'
 const outcomes = THESIS_REVIEW_OUTCOMES
 const decisions = THESIS_PORTFOLIO_DECISIONS
-const emptyForm = () => ({ summary: '', whyIOwnIt: '', growthDrivers: '', risks: '', invalidationConditions: '', expectedHoldingPeriod: '', reviewDueAt: '' })
-const form = reactive(emptyForm())
+// Single source of truth for thesis form fields — Required<> makes emptyForm a
+// compiler-checked complete echo of InvestmentThesisDraft (new fields fail typecheck here).
+type ThesisForm = Required<InvestmentThesisDraft>
+const emptyForm = (): ThesisForm => ({ summary: '', whyIOwnIt: '', growthDrivers: '', risks: '', invalidationConditions: '', expectedHoldingPeriod: '', reviewDueAt: '' })
+const form = reactive<ThesisForm>(emptyForm())
 const reviewForm = reactive<{
   outcome: ThesisReviewOutcome | ''
   portfolioDecision: ThesisPortfolioDecision | ''
@@ -191,16 +194,10 @@ function submitThesis(status: InvestmentThesisStatus = 'ACTIVE') {
 function submitActive() { submitThesis('ACTIVE') }
 function archive() {
   if (!props.thesis) return
-  emit('save', {
-    summary: props.thesis.summary,
-    whyIOwnIt: props.thesis.whyIOwnIt,
-    growthDrivers: props.thesis.growthDrivers,
-    risks: props.thesis.risks,
-    invalidationConditions: props.thesis.invalidationConditions,
-    expectedHoldingPeriod: props.thesis.expectedHoldingPeriod,
-    reviewDueAt: props.thesis.reviewDueAt,
-    status: 'ARCHIVED',
-  })
+  // Re-hydrate from the stored thesis so archiving echoes persisted values
+  // (discarding any cancelled edits) through the same full-replace payload path.
+  hydrate()
+  submitThesis('ARCHIVED')
 }
 function submitReview() {
   reviewError.value = ''

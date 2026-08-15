@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock variables must be hoisted so they're available when vi.mock runs
-const { mockPrismaDiaryFindFirst, mockPrismaDiaryFindMany, mockPrismaDiaryCount } = vi.hoisted(() => ({
+const { mockPrismaDiaryFindFirst, mockPrismaDiaryFindMany, mockPrismaDiaryCount, mockPrismaInvestmentThesisFindMany } = vi.hoisted(() => ({
   mockPrismaDiaryFindFirst: vi.fn(),
   mockPrismaDiaryFindMany: vi.fn(),
   mockPrismaDiaryCount: vi.fn(),
+  mockPrismaInvestmentThesisFindMany: vi.fn(),
 }))
 
 vi.mock('~/lib/prisma', () => ({
@@ -13,6 +14,9 @@ vi.mock('~/lib/prisma', () => ({
       findFirst: mockPrismaDiaryFindFirst,
       findMany: mockPrismaDiaryFindMany,
       count: mockPrismaDiaryCount,
+    },
+    investmentThesis: {
+      findMany: mockPrismaInvestmentThesisFindMany,
     },
   },
 }))
@@ -517,6 +521,7 @@ describe('buildReviewBuckets', () => {
     vi.clearAllMocks()
     vi.useRealTimers()
     mockPrismaDiaryFindMany.mockResolvedValue([])
+    mockPrismaInvestmentThesisFindMany.mockResolvedValue([])
   })
 
   // Helper: build the 5-bucket Promise.all in the same order as the impl.
@@ -667,5 +672,61 @@ describe('buildReviewBuckets', () => {
 
     // All 5 dispatched before any resolved — sync calls recorded before await.
     expect(mockPrismaDiaryFindMany).toHaveBeenCalledTimes(5)
+  })
+
+  // ---- Thesis delegate (shared overdue rule with the attention engine) ----
+
+  const thesisRow = (overrides: Record<string, unknown>) => ({
+    id: 3n,
+    status: 'ACTIVE',
+    summary: 'Still a buy',
+    reviewDueAt: new Date('2026-06-10T00:00:00Z'),
+    lastReviewedAt: null,
+    latestReviewOutcome: null,
+    stock: { symbol: 'MSFT' },
+    reviews: [],
+    ...overrides,
+  })
+
+  it('moves a thesis reviewed at/after its due date to Completed, not Overdue', async () => {
+    // 2026-06-14T12:00 UTC = 2026-06-14 Taipei → todayStart = 2026-06-13T16:00Z.
+    // Due 2026-06-10 (past), review recorded 2026-06-12 — after the due date
+    // but before today. This is the /reviews side of the shared rule the
+    // Timeline attention engine applies (see portfolio-attention.test.ts).
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-14T12:00:00Z'))
+
+    mockBuckets({})
+    mockPrismaInvestmentThesisFindMany.mockResolvedValue([
+      thesisRow({
+        reviews: [{ outcome: 'ON_TRACK', portfolioDecision: 'HOLD', reviewedAt: new Date('2026-06-12T00:00:00Z') }],
+      }),
+    ])
+
+    const { completed, overdue } = await buildReviewBuckets(7n, 'Asia/Taipei')
+
+    expect(overdue).toEqual([])
+    expect(completed).toHaveLength(1)
+    expect(completed[0]).toMatchObject({
+      targetType: 'thesis',
+      symbol: 'MSFT',
+      reviewStatus: 'reviewed',
+      reviewDueAt: new Date('2026-06-10T00:00:00Z'),
+      reviewedAt: new Date('2026-06-12T00:00:00Z'),
+    })
+  })
+
+  it('keeps an unreviewed past-due thesis in Overdue via the same rule', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-14T12:00:00Z'))
+
+    mockBuckets({})
+    mockPrismaInvestmentThesisFindMany.mockResolvedValue([thesisRow({})])
+
+    const { overdue, completed } = await buildReviewBuckets(7n, 'Asia/Taipei')
+
+    expect(completed).toEqual([])
+    expect(overdue).toHaveLength(1)
+    expect(overdue[0]).toMatchObject({ targetType: 'thesis', symbol: 'MSFT', reviewStatus: 'pending' })
   })
 })

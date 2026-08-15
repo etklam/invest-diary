@@ -4,12 +4,16 @@ export type QuickNoteReminderKey = 'reminder1'
 export type QuickNoteQuickReminderPreset = 'tomorrow' | 'nextWeek' | 'nextMonth'
 
 /** Optional open context for QuickDiaryModal capture entry points */
-export type QuickDiaryCaptureSource = 'floating' | 'calendar' | 'timeline' | 'diaries'
+export type QuickDiaryCaptureSource = 'floating' | 'calendar' | 'timeline' | 'diaries' | 'research'
 
 export interface QuickDiaryContext {
   date?: string
   templateKind?: QuickNoteTemplateKind
   source?: QuickDiaryCaptureSource
+  /** Prefilled editable starting content (research capture pipeline) */
+  content?: string
+  /** Prefilled stock symbols (composer rules apply: ≤10, uppercased) */
+  stockSymbols?: string[]
 }
 
 export interface QuickNoteReminders {

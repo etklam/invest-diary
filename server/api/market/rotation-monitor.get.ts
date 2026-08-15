@@ -9,7 +9,6 @@
  *   - snapshot-backed rows with comparison deltas
  *   - top improving / bottom weakening rows
  *   - data-quality metadata
- *   - betaAllocation (decideBetaAllocation() output: mode, levels, warnings)
  *
  * Reads from persisted market_rotation_snapshot rows. No live Yahoo calls.
  */
@@ -125,7 +124,6 @@ export default defineEventHandler(async (event) => {
     return serialize({
       ...payload,
       currentMarketSummary,
-      betaAllocation,
     })
   }
   catch (error) {

@@ -16,6 +16,7 @@ import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
 import { persistAlert } from '~/server/utils/alert-persistence'
 import { findDiaryForUser } from '~/server/utils/diary-read'
+import { getUserTimezone } from '~/server/utils/user-queries'
 
 // ─── Zod Schemas ──────────────────────────────────────────────────────────────
 
@@ -124,13 +125,8 @@ export async function createAlertForDiary(
   // Throws diaryNotFound / diaryAccessDenied if not owned.
   await findDiaryForUser(diaryId, userId)
 
+  const timezone = await getUserTimezone(userId)
   return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const user = await tx.user.findUnique({
-      where: { id: userId },
-      select: { timezone: true },
-    })
-    const timezone = user?.timezone ?? 'Asia/Taipei'
-
     return persistAlert(tx, diaryId, {
       message: validated.message,
       trigger_at: validated.trigger_at,

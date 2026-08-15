@@ -1,34 +1,16 @@
-import prisma from '~/lib/prisma'
-import adminMiddleware from '~/server/middleware/admin'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { serialize } from '~/server/utils/serialize'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
+import { setPostStatus } from '~/server/utils/post-write'
 
 export default defineEventHandler(async (event) => {
   const log = logger.blog.withRequestId(event.context.requestId)
   // Check admin permission
-  await adminMiddleware(event)
-
   const postId = parsePositiveBigIntParam(event, 'id')
 
   try {
-    const post = await prisma.post.update({
-      where: { id: postId },
-      data: {
-        status: 'PUBLISHED',
-        publishedAt: new Date(),
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
-    })
+    const post = await setPostStatus(postId, 'PUBLISHED')
 
     log.info('Post published', { postId: String(post.id) })
     return serialize(post)

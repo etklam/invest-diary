@@ -1,28 +1,17 @@
-import prisma from '~/lib/prisma'
-import adminMiddleware from '~/server/middleware/admin'
 import { Errors } from '~/lib/errors/factory'
+import { bulkSetPostStatus, parsePostIds } from '~/server/utils/post-write'
 
 export default defineEventHandler(async (event) => {
-  await adminMiddleware(event)
-
   const body = await readBody(event)
-  const ids = Array.isArray(body?.ids) ? body.ids : []
+  const ids = parsePostIds(body?.ids)
 
   if (ids.length === 0) {
     throw Errors.validationError([{ field: 'ids', message: 'No post ids provided' }]).toH3Error()
   }
 
-  const result = await prisma.post.updateMany({
-    where: {
-      id: { in: ids }
-    },
-    data: {
-      status: 'PUBLISHED',
-      publishedAt: new Date()
-    }
-  })
+  const count = await bulkSetPostStatus(ids, 'PUBLISHED')
 
   return {
-    count: result.count
+    count
   }
 })

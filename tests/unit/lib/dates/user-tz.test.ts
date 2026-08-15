@@ -4,10 +4,25 @@ import {
   getUserDayRange,
   getUserTodayYmd,
   getUserYmdInTimezone,
+  resolveUserTimezone,
   resolveCountryCodeFromTimezone,
 } from '~/lib/dates/user-tz'
 
 describe('lib/dates/user-tz', () => {
+  describe('resolveUserTimezone', () => {
+    it('prefers the persisted user timezone', () => {
+      expect(resolveUserTimezone({ timezone: 'America/New_York' }, 'UTC')).toBe('America/New_York')
+    })
+
+    it('falls back to the browser timezone when the user has none', () => {
+      expect(resolveUserTimezone({ timezone: null }, 'Europe/London')).toBe('Europe/London')
+    })
+
+    it('falls back to Asia/Taipei when neither source is available', () => {
+      expect(resolveUserTimezone(undefined, undefined)).toBe('Asia/Taipei')
+    })
+  })
+
   // ─── getUserDayRange ────────────────────────────────────────────────────
 
   describe('getUserDayRange', () => {

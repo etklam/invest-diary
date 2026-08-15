@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { getRotationSignal } from '~/lib/market-rotation/signal'
+import { getRotationSignal, isNearHigh } from '~/lib/market-rotation/signal'
+
+describe('isNearHigh', () => {
+  it('keeps the near-high threshold canonical at -3%', () => {
+    expect(isNearHigh(-3)).toBe(true)
+    expect(isNearHigh(-2.99)).toBe(true)
+    expect(isNearHigh(-3.01)).toBe(false)
+    expect(isNearHigh(null)).toBe(false)
+  })
+})
 
 describe('getRotationSignal', () => {
   it('returns insufficient data instead of neutral when required comparison fields are missing', () => {

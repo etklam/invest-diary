@@ -133,7 +133,8 @@
       "failed": "保存失败",
       "retry": "重试",
       "restorePrompt": "我们为您保留了最近的草稿，需要恢复它吗？",
-      "restoreSuccess": "已为您恢复草稿内容"
+      "restoreSuccess": "已为您恢复草稿内容",
+      "prefillAppendPrompt": "已带入预填内容，但目前有未完成的草稿。要将预填内容附加到草稿吗？（取消则保留草稿不动）"
     },
     "confirm": {
       "templateOverwrite": "目前的内容将被模板覆盖，确定要这么做吗？"
@@ -507,7 +508,9 @@
     "triggerTime": "触发时间",
     "createdAt": "创建于",
     "loadFailed": "加载失败",
-    "dismissFailed": "关闭提醒失败"
+    "dismissFailed": "关闭提醒失败",
+    "recurringWeek": "本周",
+    "recurringMonth": "本月"
   },
   "howToUse": {
     "badge": "使用指南",
@@ -691,7 +694,11 @@
         "DIARY": "日记",
         "ARTICLE": "文章",
         "MANUAL": "手动",
-        "SYSTEM": "系统"
+        "SYSTEM": "系统",
+        "MARKET_ROTATION": "市场轮动",
+        "SEC_FILING": "SEC 申报文件",
+        "RELATIVE_VALUE": "相对价值",
+        "SEASONALITY": "季节性"
       },
       "editModal": {
         "title": "编辑追踪项目",
@@ -916,7 +923,7 @@
     "apiKeysEmptyHint": "建立一把限权 API key，让外部 agent 可以帮 partner 账号写 diary，但不需要完整的网页登录权限。"
   },
   "timeline": {
-    "title": "投资总览",
+    "title": "投资时间轴",
     "viewMode": "时间轴查看模式",
     "myTimeline": "我的时间轴",
     "pairView": "双人查看",
@@ -934,6 +941,13 @@
     "viewDetails": "查看详情 →",
     "periodLabel": "{year}年 {month}月",
     "overview": {
+      "summary": {
+        "label": "投资总览",
+        "portfolioValue": "投资组合市值",
+        "needsAttention": "项目待关注",
+        "reviewsUpcoming": "即将复盘",
+        "viewOverview": "查看总览"
+      },
       "viewPortfolio": "查看 Portfolio",
       "viewReviews": "查看 Reviews",
       "sectionUnavailable": "此区域暂时无法使用。",
@@ -1710,6 +1724,12 @@
       "dataSource": "数据来源：1950年至今S&P 500历史数据（Visual Capitalist / YCharts）",
       "copySuccess": "已复制到剪贴板",
       "copyFailed": "复制失败",
+      "export": {
+        "title": "美股月份季节性分析",
+        "disclaimer": "基于1950年至今的历史数据统计，为统计模式而非绝对预测。",
+        "monthlyOverview": "月份表现概览",
+        "generatedBy": "由股票季节性分析器生成"
+      },
       "months": {
         "jan": {
           "characteristics": "年初强势，常见「January Effect」（小型股更明显）",
@@ -1918,7 +1938,23 @@
       "copyToClipboard": "复制为 Markdown",
       "copySuccess": "已复制到剪贴板",
       "copyFailed": "复制失败",
-      "copied": "已复制"
+      "copied": "已复制",
+      "export": {
+        "title": "财务自由分析",
+        "parameter": "参数",
+        "value": "数值",
+        "financialTarget": "财务目标",
+        "progress": "完成进度",
+        "timeToFreedom": "距离财务自由",
+        "congratulations": "恭喜！您已达成财务自由！",
+        "yearsToFreedom": "所需年数",
+        "withdrawalCapacityAfterFreedom": "达成后可提领金额",
+        "yearlyProjectionFirst10": "年度成长预测（前10年）",
+        "starting": "期初",
+        "ending": "期末",
+        "yearN": "第 {n} 年",
+        "generatedBy": "由财务自由计算器生成"
+      }
     },
     "etf": {
       "title": "ETF 趋势分析",
@@ -2462,24 +2498,47 @@
       "other": "其他"
     }
   },
-  "betaCockpit": {
-    "title": "Beta 驾驶舱",
-    "marketState": "市场状态",
-    "suggestedMode": "建议模式",
-    "suggestedBetaLevel": "建议 Beta 水位",
-    "suggestedAllocation": "建议配置",
-    "highBeta": "高 Beta",
-    "coreIndex": "核心指数",
-    "cash": "现金",
-    "warnings": "警示",
-    "lastUpdated": "最后更新",
-    "explanation": "说明",
-    "modes": {
-      "aggressive": "积极进攻",
-      "balanced": "平衡",
-      "defensive": "防守",
-      "capital_preservation": "资本保全",
-      "unknown": "未知"
+  "marketRotation": {
+    "title": "市场轮动监控",
+    "badge": "每日市场轮动",
+    "description": "识别 Market State、产业广度与领涨产业变化，通过轮动分数、排名变化与 canonical signals 追踪双周趋势。",
+    "hero": {
+      "coreViewLabel": "核心画面",
+      "coreView": "Rotation Matrix Table",
+      "primarySortLabel": "主要排序",
+      "primarySort": "Rotation Rank",
+      "keySignalsLabel": "重点信号",
+      "keySignals": "Rotation Signals",
+      "lastRefresh": "最后刷新"
+    },
+    "scopes": {
+      "sectors": "美国产业",
+      "indexes": "指数 ETF"
+    },
+    "filters": {
+      "all": "全部",
+      "turning_strong": "转强中",
+      "losing_momentum": "动能转弱",
+      "rank_up": "排名上升",
+      "rank_down": "排名下降",
+      "above_50d": "高于 50 日",
+      "below_50d": "低于 50 日",
+      "near_high": "接近高点",
+      "extended": "过度延伸"
+    },
+    "columns": {
+      "ticker": "代码",
+      "sector": "产业",
+      "last": "最新价",
+      "rsi": "RSI",
+      "rsiDelta2W": "RSI Δ2W",
+      "rank": "排名",
+      "rankDelta2W": "排名 Δ2W",
+      "performance2W": "双周 %",
+      "fromHigh": "% 高点",
+      "trend2W": "双周趋势",
+      "maStatus": "均线状态",
+      "signal": "信号"
     },
     "marketStates": {
       "risk_on": "Risk On",
@@ -2487,6 +2546,105 @@
       "defensive": "防守",
       "risk_off": "Risk Off",
       "unknown": "未知"
+    },
+    "signals": {
+      "turning_strong": "转强中",
+      "strong_but_extended": "强势但过度延伸",
+      "losing_momentum": "动能转弱",
+      "breaking_down": "结构转坏",
+      "early_recovery": "初步复苏",
+      "neutral": "中性"
+    },
+    "maStatuses": {
+      "bullish_stack": "多头排列",
+      "healthy_pullback": "健康回调",
+      "short_term_weakness": "短线偏弱",
+      "recovering": "恢复中",
+      "breakdown": "跌破",
+      "unknown": "未知"
+    },
+    "breadthConditions": {
+      "broad_participation": "广泛参与",
+      "constructive": "建设性",
+      "narrowing": "扩散收窄",
+      "weak_breadth": "广度偏弱",
+      "unknown": "未知"
+    },
+    "breadthConfirmations": {
+      "confirming": "确认",
+      "mixed": "混合",
+      "warning": "警示",
+      "unknown": "未知"
+    },
+    "common": {
+      "notAvailable": "--",
+      "yes": "是",
+      "no": "否",
+      "na": "N/A",
+      "completeData": "资料完整",
+      "insufficientData": "资料不足"
+    },
+    "summary": {
+      "noSnapshots": "找不到范围“{scope}”的轮动快照，请先执行批次任务。",
+      "currentTitle": "当前市场摘要",
+      "asOf": "截至 {date}",
+      "vs": "对比 {date}",
+      "symbols": "{count} 个标的",
+      "completeSignals": "{count} 个完整信号",
+      "marketState": "市场状态",
+      "breadth": "{condition} 广度",
+      "averageRsi": "平均 RSI",
+      "topImproving": "改善最多",
+      "bottomWeakening": "转弱最多",
+      "rank": "排名 #{rank}",
+      "controlPanel": "控制面板",
+      "filter": "筛选",
+      "exportPng": "导出 PNG",
+      "exportCsv": "导出 CSV",
+      "copyTable": "复制表格",
+      "rotationMatrix": "Rotation Matrix",
+      "rankSorted": "Rotation Matrix · 按排名排序",
+      "above20d": "高于 20 日（{ratio}）",
+      "above50d": "高于 50 日（{ratio}）",
+      "loading": "正在加载市场轮动监控…",
+      "detail": "ETF 详情",
+      "lastPrice": "最新价格",
+      "rotationRank": "轮动排名",
+      "signal": "信号",
+      "rsi14": "RSI 14",
+      "rsiDelta2W": "RSI 双周变化",
+      "performance2W": "双周表现",
+      "fromHigh": "% 距高点",
+      "rotationScore": "轮动分数",
+      "above20dValue": "高于 20 日：{value}",
+      "above50dValue": "高于 50 日：{value}",
+      "trendAria": "{symbol} 双周标准化趋势",
+      "closeDetail": "关闭 ETF 详情",
+      "refreshAria": "刷新市场轮动监控"
+    },
+    "export": {
+      "title": "市场轮动监控",
+      "marketSummary": "市场摘要",
+      "marketState": "市场状态",
+      "breadthCondition": "广度条件",
+      "breadthConfirmation": "广度确认",
+      "asOfDate": "资料日期",
+      "comparisonDate": "比较日期",
+      "rankScope": "排名范围",
+      "ticker": "代码",
+      "sector": "产业",
+      "last": "最新价",
+      "rsi": "RSI",
+      "rsiDelta2W": "RSI 双周变化",
+      "rank": "排名",
+      "rankDelta2W": "排名双周变化",
+      "performance2W": "双周 %",
+      "trend2W": "双周趋势",
+      "fromHigh": "% 距高点",
+      "maStatus": "均线状态",
+      "signal": "信号",
+      "sortedBy": "排序依据",
+      "summaryPrefix": "市场摘要："
     }
   },
   "companyContext": {
@@ -2543,6 +2701,48 @@
       "validation": "请选择结果与决定，并至少填写一项有意义的反思。",
       "saved": "Thesis Review 已保存",
       "saveFailed": "无法保存 Thesis Review"
+    }
+  },
+  "researchCapture": {
+    "title": "捕捉洞见",
+    "captureInsight": "捕捉洞见",
+    "source": "来源",
+    "insight": "洞见",
+    "insightPlaceholder": "写下你想保留的观察……",
+    "insightRequired": "请先输入洞见。",
+    "saveTo": "保存到",
+    "quickDiary": "快速日记",
+    "companyEvidence": "公司证据",
+    "selectCompany": "选择公司",
+    "companyPlaceholder": "例如 MSFT",
+    "companyRequired": "保存公司证据前，请先选择公司。",
+    "continue": "继续",
+    "save": "保存",
+    "cancel": "取消",
+    "saving": "保存中……",
+    "evidenceSaved": "证据已保存",
+    "viewCompany": "查看公司",
+    "saveFailed": "证据保存失败，已保留你输入的内容。",
+    "sources": {
+      "marketRotation": "市场轮动监控",
+      "secFiling": "SEC Filing",
+      "relativeValue": "相对价值",
+      "seasonality": "季节性"
+    },
+    "context": {
+      "source": "来源",
+      "title": "标题",
+      "asOf": "截至",
+      "signal": "信号：{value}",
+      "rotationRank": "轮动排名：{value}",
+      "rankChange2W": "双周排名变化：{value}",
+      "performance2W": "双周表现：{value}",
+      "marketRotationImproving": "{subject} 领导地位正在改善。",
+      "marketRotationObservation": "{subject} 的轮动信号为 {signal}。",
+      "marketRotationSummary": "记录当前的市场轮动摘要。",
+      "secFilingObservation": "记录你从 {title} 观察到的内容。",
+      "relativeValueObservation": "{primary} vs {relative}\n比率：{ratio}\n历史区间：{range}",
+      "seasonalityObservation": "在选定的季节性窗口中，{month} 平均回报为 {returnValue}。最强月份：{strongest}；最弱月份：{weakest}。"
     }
   },
   "companyHub": {

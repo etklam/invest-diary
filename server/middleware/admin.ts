@@ -2,10 +2,10 @@ import authMiddleware from '~/server/middleware/auth'
 import { Errors } from '~/lib/errors/factory'
 
 /**
- * Backward-compatible admin middleware.
+ * Global admin guard for admin APIs and blog write routes.
  *
- * Used by many handlers via `~/server/middleware/admin`.
- * We only enforce checks on known admin-protected route families.
+ * This is the single owner of the admin-protected route definition. Handlers
+ * under these routes must not call this middleware again.
  */
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
@@ -15,15 +15,16 @@ export default defineEventHandler(async (event) => {
   const isBlogWriteRoute = (
     (path === '/api/blog' && method === 'POST')
     || (/^\/api\/blog\/[^/]+$/.test(path) && ['PUT', 'PATCH', 'DELETE'].includes(method))
-    || path.startsWith('/api/blog/admin')
+    || path === '/api/blog/admin'
+    || path.startsWith('/api/blog/admin/')
   )
-  const isProtectedRoute = path.startsWith('/api/admin') || isBlogWriteRoute
+  const isAdminRoute = path === '/api/admin' || path.startsWith('/api/admin/')
+  const isProtectedRoute = isAdminRoute || isBlogWriteRoute
   if (!isProtectedRoute) return
 
   // 防止保護路由被誤快取（例如 401/403 被 CDN 或瀏覽器快取）
   setHeader(event, 'Cache-Control', 'no-store')
 
-  // 此 middleware 同時被作為 Nitro 全域 middleware 與 handler 內部 guard 使用。
   // 若全域執行順序早於 auth middleware，這裡補跑一次 auth 以取得 user context。
   if (!event.context.user) {
     await authMiddleware(event)

@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { normalizeAlert, type AlertApiResponse, type AlertItem, type AlertPayload } from '~/types/alert'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 
@@ -51,8 +51,6 @@ export const useAlerts = () => {
     : noopDismissAlert
   const { runWithAuthRecovery } = useAuthRecovery()
   const { isAuthenticated } = useAuth()
-
-  const hasNextAlert = computed(() => alertQueue.value.length > 0)
 
   // ============ Polling 邏輯（Fallback）============
 
@@ -302,15 +300,6 @@ export const useAlerts = () => {
   return {
     currentAlert,
     showAlert,
-    hasNextAlert,
-    enqueueAlerts,
     dismissCurrentAlert,
-    stopPolling,
-    applyBackoff,
-    scheduleNextPoll,
-    checkDailyReset,
-    setBaseInterval: () => (currentPollInterval = BASE_POLL_INTERVAL),
-    // 新增：WebSocket 連線狀態
-    isWebSocketConnected: isConnected
   }
 }

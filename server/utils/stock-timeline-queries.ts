@@ -1,5 +1,8 @@
+import { randomUUID } from 'node:crypto'
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { isUniqueConstraintError } from '~/server/utils/diary-write'
+import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 
 type StockTimelineSourceType =
   | 'TRADE_BASIC_DIARY'
@@ -8,6 +11,10 @@ type StockTimelineSourceType =
   | 'ARTICLE'
   | 'MANUAL'
   | 'SYSTEM'
+  | 'MARKET_ROTATION'
+  | 'SEC_FILING'
+  | 'RELATIVE_VALUE'
+  | 'SEASONALITY'
 type StockTimelineCreatedVia = 'API_KEY' | 'WEB' | 'SYSTEM'
 
 export interface AgentTimelineRecordInput {
@@ -23,6 +30,62 @@ export interface AgentTimelineRecordInput {
   sourceExcerpt?: string
   confidence?: number
   metadataJson?: string
+}
+
+export interface WebTimelineRecordInput {
+  summary: string
+  sourceType: StockTimelineSourceType
+  occurredAt: string
+  idempotencyKey?: string
+  sourceTitle?: string
+  sourceUrl?: string
+  metadataJson?: string
+}
+
+/**
+ * Web evidence write path. Deliberately different from the agent path:
+ * the agent skips symbols that are not WATCHING, but a web capture
+ * auto-upserts the watchlist first (same precedent as createStockNote) so
+ * manually captured research is never silently dropped. Evidence is
+ * immutable — a double-submit with the same idempotencyKey returns the
+ * existing record instead of overwriting it.
+ */
+export async function createStockTimelineRecordFromWeb(
+  userIdInput: string | bigint,
+  symbolRaw: string,
+  input: WebTimelineRecordInput,
+) {
+  const userId = BigInt(userIdInput)
+  const { stock } = await upsertStockWatchlistItem({ userId, symbol: symbolRaw })
+  const idempotencyKey = input.idempotencyKey ?? randomUUID()
+
+  try {
+    return await prisma.stockTimelineRecord.create({
+      data: {
+        userId,
+        stockId: stock.id,
+        summary: input.summary,
+        sourceType: input.sourceType,
+        sourceTitle: input.sourceTitle ?? null,
+        sourceUrl: input.sourceUrl ?? null,
+        idempotencyKey,
+        occurredAt: new Date(input.occurredAt),
+        createdVia: 'WEB',
+        metadataJson: input.metadataJson ?? null,
+      },
+      include: { stock: { select: { symbol: true } } },
+    })
+  } catch (error) {
+    if (!isUniqueConstraintError(error)) throw error
+    const existing = await prisma.stockTimelineRecord.findUnique({
+      where: {
+        userId_stockId_idempotencyKey: { userId, stockId: stock.id, idempotencyKey },
+      },
+      include: { stock: { select: { symbol: true } } },
+    })
+    if (!existing) throw error
+    return existing
+  }
 }
 
 export async function createStockTimelineRecordsFromAgent(input: {

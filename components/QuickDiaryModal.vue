@@ -195,9 +195,23 @@ const templates = computed(() => {
 })
 
 function applyOpenContext(restoredDraft: boolean) {
-  if (restoredDraft) return
+  const prefillContent = props.context?.content?.trim() ?? ''
+  const prefillSymbols = props.context?.stockSymbols ?? []
+
+  if (restoredDraft) {
+    if (!prefillContent && !prefillSymbols.length) return
+    // Draft protection (PRD §38): never silently overwrite a restored draft.
+    // Confirm = prepend prefill above the draft text; cancel = keep draft untouched.
+    if (!confirm(t('quickDiary.draft.prefillAppendPrompt'))) return
+    if (prefillContent) setContent([prefillContent, state.content].filter(Boolean).join('\n\n'))
+    if (prefillSymbols.length) setStockSymbols([...state.stockSymbols, ...prefillSymbols])
+    return
+  }
+
   if (props.context?.templateKind) applyTemplateKind(props.context.templateKind)
   if (props.context?.date) setDate(props.context.date)
+  if (prefillContent) setContent(prefillContent)
+  if (prefillSymbols.length) setStockSymbols(prefillSymbols)
 }
 
 watch(

@@ -17,6 +17,8 @@ const requestSchema = z.object({
   expectedHoldingPeriod: optionalText(255),
   reviewDueAt: z.string().datetime().nullable().optional(),
 }).superRefine((value, context) => {
+  // Single authority for the "ACTIVE thesis requires summary/whyIOwnIt" rule —
+  // saveCurrentThesis is full-replace and does not re-validate against persisted values.
   if (value.status !== 'ACTIVE') return
   if (!value.summary?.trim()) context.addIssue({ code: 'custom', path: ['summary'], message: 'Summary is required to activate a Thesis' })
   if (!value.whyIOwnIt?.trim()) context.addIssue({ code: 'custom', path: ['whyIOwnIt'], message: 'Why I own it is required to activate a Thesis' })

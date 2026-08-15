@@ -100,7 +100,11 @@ export interface MarketRotationMonitorPayload {
   topImproving: MarketRotationMonitorRow[]
   bottomWeakening: MarketRotationMonitorRow[]
   dataQuality: MarketRotationMonitorDataQuality
+  currentMarketSummary: string
 }
+
+/** Payload produced by the shared builder before the endpoint adds its summary text. */
+export type MarketRotationMonitorBasePayload = Omit<MarketRotationMonitorPayload, 'currentMarketSummary'>
 
 function buildRatio(rows: MarketRotationMonitorRow[], field: 'above20d' | 'above50d'): RatioMetric {
   const eligible = rows.filter(row => row[field] != null)
@@ -136,7 +140,7 @@ function compareRowsByRank(a: MarketRotationMonitorRow, b: MarketRotationMonitor
     || a.symbol.localeCompare(b.symbol)
 }
 
-export function buildMarketRotationMonitorPayload(input: MarketRotationMonitorInput): MarketRotationMonitorPayload {
+export function buildMarketRotationMonitorPayload(input: MarketRotationMonitorInput): MarketRotationMonitorBasePayload {
   const rows = [...input.rows].sort(compareRowsByRank)
   const summaryRows = [...(input.summaryRows ?? input.rows)].sort(compareRowsByRank)
   const above20d = buildRatio(summaryRows, 'above20d')

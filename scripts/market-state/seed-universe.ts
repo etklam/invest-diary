@@ -2,23 +2,16 @@
 import 'dotenv/config'
 
 import { createRequire } from 'node:module'
-import { PrismaMariaDb } from '@prisma/adapter-mariadb'
+import { createPrismaClientOptions } from '../../lib/prisma-client-options'
 import { uniqueSymbols } from '../../lib/market-state/seed-universe-utils'
 import { normalizeYahooSymbol } from '../../lib/market-data/yahoo'
 import { runYahooRequest } from '../../lib/market-data/yahoo-request-queue'
+import { mapLimit } from '../map-limit'
 
 const require = createRequire(import.meta.url)
 const { PrismaClient } = require('@prisma/client')
 
-function getDatabaseUrl() {
-  const url = process.env.DATABASE_URL
-  if (!url) throw new Error('DATABASE_URL is required')
-  return url
-}
-
-const prisma = new PrismaClient({
-  adapter: new PrismaMariaDb(getDatabaseUrl()),
-})
+const prisma = new PrismaClient(createPrismaClientOptions())
 
 const UNIVERSE_KEY = 'SP500_NDX'
 const CONCURRENCY_LIMIT = Number(process.env.MARKET_DATA_CONCURRENCY) || 2
@@ -82,26 +75,6 @@ const SP500_LARGE_CAP_SYMBOLS = [
   'NSC', 'AFL', 'PSA', 'GM', 'FDX', 'HLT', 'SLB', 'PCAR', 'TRV', 'ROST',
   'BK', 'AZO', 'MET', 'O', 'DLR', 'DHI', 'SPG', 'KMB', 'AEP', 'ALL',
 ]
-
-async function mapLimit<T, R>(
-  items: T[],
-  limit: number,
-  mapper: (item: T, index: number) => Promise<R>,
-): Promise<R[]> {
-  const results = new Array<R>(items.length)
-  let nextIndex = 0
-
-  async function worker() {
-    while (nextIndex < items.length) {
-      const index = nextIndex
-      nextIndex += 1
-      results[index] = await mapper(items[index], index)
-    }
-  }
-
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
-  return results
-}
 
 async function fetchUniverseItem(symbol: string): Promise<UniverseSeedItem> {
   const yahooFinance = await getYahooFinanceClient()

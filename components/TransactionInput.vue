@@ -54,9 +54,6 @@
           <div class="sm:col-span-1">
             <label :for="`quantity-${index}`" class="block text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">
               {{ t('diary.form.quantity') }}
-              <span v-if="transaction.type === 'SELL' && getCurrentHolding(transaction.symbol)" class="font-mono text-[11px] normal-case tracking-normal text-dt-text-soft">
-                ({{ t('diary.form.available') }} {{ formatQuantity(getCurrentHolding(transaction.symbol)) }})
-              </span>
             </label>
             <input
               type="number"
@@ -181,42 +178,18 @@
         </BaseButton>
       </div>
     </div>
-
-    <!-- Holdings Summary -->
-    <div v-if="holdings.length > 0" class="rounded-dt-sm border border-dt-border bg-dt-surface-strong p-3">
-      <h4 class="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('diary.form.holdingsThisTable') }}</h4>
-      <div class="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-        <div v-for="holding in holdings" :key="holding.symbol" class="rounded-dt-sm border border-dt-border bg-dt-surface p-2">
-          <span class="font-semibold text-dt-text">{{ holding.symbol }}</span>
-          <span class="ml-2 font-mono text-dt-text-muted">{{ formatQuantity(holding.quantity) }}</span>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import {
-  calculateLedgerHoldings,
-  holdingBeforeTransaction,
-  validateTransactionValues,
-} from '~/lib/diary-authoring/validation'
-import type {
-  DiaryAuthoringLedgerContext,
-  DiaryAuthoringTransaction,
-} from '~/lib/diary-authoring/types'
+import { validateTransactionValues } from '~/lib/diary-authoring/validation'
+import type { DiaryAuthoringTransaction } from '~/lib/diary-authoring/types'
 
 type Transaction = DiaryAuthoringTransaction
 
-interface Holding {
-  symbol: string
-  quantity: number
-}
-
 const props = defineProps<{
   modelValue: Transaction[]
-  ledgerContext?: DiaryAuthoringLedgerContext
 }>()
 
 const emit = defineEmits<{
@@ -269,44 +242,6 @@ const updateField = (index: number, field: 'notes' | 'strategy' | 'emotion', val
   ;(tx as any)[field] = value || undefined
 }
 
-// A missing context means the portfolio baseline is unknown, not empty.
-const ledgerContext = computed<DiaryAuthoringLedgerContext>(() => (
-  props.ledgerContext ?? { available: false }
-))
-
-const calculateHoldings = (): Holding[] => {
-  if (!ledgerContext.value.available) return []
-
-  try {
-    return Array.from(calculateLedgerHoldings(
-      ledgerContext.value.holdings,
-      transactions.value,
-    ).entries())
-      .filter(([, quantity]) => quantity > 0.0001)
-      .map(([symbol, quantity]) => ({ symbol, quantity }))
-  } catch {
-    // The server remains the authority for invalid ledgers. The component
-    // should not turn an unknown/legacy baseline into a false blocking error.
-    return []
-  }
-}
-
-// Holdings for display
-const holdings = computed(() => calculateHoldings())
-
-// Get current holding for a symbol
-const getCurrentHolding = (symbol: string): number => {
-  const holding = holdings.value.find(h => h.symbol === symbol?.trim())
-  return holding ? holding.quantity : 0
-}
-
-// Format quantity for display
-const formatQuantity = (qty: number | string | undefined): string => {
-  const num = typeof qty === 'string' ? parseFloat(qty) : (qty || 0)
-  if (isNaN(num)) return '0'
-  return num.toFixed(4).replace(/\.?0+$/, '')
-}
-
 // Validate a single transaction
 const validateTransaction = (index: number) => {
   const tx = transactions.value[index]
@@ -323,24 +258,6 @@ const validateTransaction = (index: number) => {
 
     if (!symbol) {
       errors.push(t('diary.form.sellNeedsSymbol'))
-    } else {
-      // Only enforce holdings when the server-provided baseline is known.
-      if (ledgerContext.value.available) {
-        const available = holdingBeforeTransaction(
-          transactions.value,
-          index,
-          ledgerContext.value,
-        )
-
-        if (available <= 0) {
-          errors.push(t('diary.form.sellNoHolding', { symbol }))
-        } else if ((tx.quantity || 0) > available) {
-          errors.push(t('diary.form.sellExceeds', {
-            qty: formatQuantity(tx.quantity),
-            available: formatQuantity(available),
-          }))
-        }
-      }
     }
   }
 

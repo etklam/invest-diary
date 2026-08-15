@@ -54,6 +54,47 @@ export interface PortfolioValuationResponse {
 const hasFiniteQuote = (holding: HoldingViewInput) =>
   typeof holding.price === 'number' && Number.isFinite(holding.price) && holding.price >= 0
 
+export type ConcentrationBasis = 'market_value' | 'cost_basis'
+
+/**
+ * Single concentration formula: each holding's share of the portfolio in %,
+ * under one declared basis.
+ *
+ * - 'market_value' — share of the priced subset. Holdings without a finite
+ *   quote are excluded from the map entirely, so partial quote coverage shows
+ *   up as missing entries instead of silently re-weighted percentages.
+ * - 'cost_basis' — share of total cost across all holdings.
+ *
+ * The map is empty when the chosen denominator is <= 0. Keys are holding
+ * symbols; callers turn absence into their own null/0 semantics.
+ */
+export function concentration(
+  holdings: HoldingViewInput[],
+  options: { basis: ConcentrationBasis },
+): Map<string, number> {
+  const shares = new Map<string, number>()
+
+  if (options.basis === 'cost_basis') {
+    const totalCostAll = holdings.reduce((sum, h) => sum + h.totalCost, 0)
+    if (totalCostAll <= 0) return shares
+    for (const holding of holdings) {
+      shares.set(holding.symbol, (holding.totalCost / totalCostAll) * 100)
+    }
+    return shares
+  }
+
+  const pricedHoldings = holdings.filter(hasFiniteQuote)
+  const pricedMarketValue = pricedHoldings.reduce(
+    (sum, h) => sum + h.price! * h.quantity,
+    0,
+  )
+  if (pricedMarketValue <= 0) return shares
+  for (const holding of pricedHoldings) {
+    shares.set(holding.symbol, ((holding.price! * holding.quantity) / pricedMarketValue) * 100)
+  }
+  return shares
+}
+
 export type ProfitStatusFilter = 'all' | 'gain' | 'loss' | 'no-quote'
 export type ConcentrationFilter = 'all' | 'ge10' | 'ge20'
 export type SortDirection = 'asc' | 'desc'
@@ -78,7 +119,9 @@ export function applyStocksView(
   holdings: HoldingViewInput[],
   options: StocksViewOptions
 ): HoldingView[] {
-  const totalCostAll = holdings.reduce((sum, h) => sum + h.totalCost, 0)
+  // Per-holding display concentration is explicitly cost-basis (a holding's
+  // share is knowable even before quotes load).
+  const concentrationBySymbol = concentration(holdings, { basis: 'cost_basis' })
   const search = options.search.trim().toLowerCase()
 
   const withDerived: HoldingView[] = holdings.map((holding) => {
@@ -88,7 +131,7 @@ export function applyStocksView(
     const unrealizedPct = hasQuote && holding.totalCost > 0
       ? (unrealizedAmount! / holding.totalCost) * 100
       : null
-    const concentrationPct = totalCostAll > 0 ? (holding.totalCost / totalCostAll) * 100 : 0
+    const concentrationPct = concentrationBySymbol.get(holding.symbol) ?? 0
     const dayChangeAmount = (holding.dayChange !== undefined && holding.quantity) 
       ? holding.dayChange * holding.quantity 
       : null
@@ -192,22 +235,21 @@ export function computePortfolioAggregations(
   const totalDayChangePercent = prevMarketValue !== null && prevMarketValue > 0 && totalDayChange !== null
     ? (totalDayChange / prevMarketValue) * 100
     : null
-  const positionValues = pricedHoldings
-    .map(holding => ({
-      symbol: holding.symbol,
-      value: holding.price! * holding.quantity,
-    }))
-    .filter(holding => holding.value > 0)
-    .sort((a, b) => b.value - a.value)
-  const largestPosition = positionValues[0] ?? null
-  const largestPositionPct = largestPosition && currentMarketValue !== null && currentMarketValue > 0
-    ? (largestPosition.value / currentMarketValue) * 100
-    : null
-  const top3Value = positionValues.slice(0, 3).reduce((sum, holding) => sum + holding.value, 0)
-  const top3ConcentrationPct = currentMarketValue !== null && currentMarketValue > 0
-    ? (top3Value / currentMarketValue) * 100
+  // Largest / top-3 concentration is explicitly market-value basis, computed by
+  // the single concentration() formula over the priced subset.
+  const marketValueShares = concentration(holdings, { basis: 'market_value' })
+  const rankedShares = [...marketValueShares.entries()].sort((a, b) => b[1] - a[1])
+  const largestPosition = rankedShares[0] ?? null
+  const largestPositionPct = largestPosition ? largestPosition[1] : null
+  const top3ConcentrationPct = rankedShares.length > 0
+    ? rankedShares.slice(0, 3).reduce((sum, [, pct]) => sum + pct, 0)
     : null
   const activePositionCount = holdings.length
+  // Display-tier risk flag (largest >= 25% or top-3 >= 60%). This is a distinct
+  // concept from the attention engine's `position_concentration` alert
+  // (portfolio-attention.ts): that one fires a single-position card at a
+  // configurable threshold (default 25% market value). Shared formula, separate
+  // semantics — do not merge the thresholds.
   const concentrationWarning = (largestPositionPct ?? 0) >= 25 || (top3ConcentrationPct ?? 0) >= 60
   const quoteCoveragePct = totalHoldings > 0 ? (pricedPositionCount / totalHoldings) * 100 : 0
   const quoteTimes = pricedHoldings
@@ -237,7 +279,7 @@ export function computePortfolioAggregations(
     top3ConcentrationPct,
     activePositionCount,
     concentrationWarning,
-    largestPositionSymbol: largestPosition?.symbol ?? null,
+    largestPositionSymbol: largestPosition?.[0] ?? null,
     pricedPositionCount,
     unpricedPositionCount,
     pricedCostBasis,

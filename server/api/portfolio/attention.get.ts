@@ -1,8 +1,8 @@
 import prisma from '~/lib/prisma'
-import { fetchQuote } from '~/lib/yahoo-finance'
 import { calculateHoldings } from '~/lib/position-state'
 import { evaluatePortfolioAttention } from '~/lib/portfolio-attention'
-import { buildMarketQuoteCacheKey, getMarketDataCacheTtlSeconds, getOrSetCached } from '~/lib/market-data/cache'
+import { computePortfolioAggregations, concentration } from '~/lib/stocks-view'
+import { fetchQuotesBounded } from '~/lib/market-data/quote'
 import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
@@ -25,25 +25,18 @@ export default defineEventHandler(async (event) => {
     const userId = BigInt(user.id)
     const asOf = new Date()
     const holdings = calculateHoldings(await readPortfolioTransactions(userId))
-    const quotes = new Map<string, { price: number }>()
-    await Promise.all(holdings.map(async holding => {
-      try {
-        const quote = await getOrSetCached(
-          buildMarketQuoteCacheKey(holding.symbol),
-          getMarketDataCacheTtlSeconds('quote'),
-          () => fetchQuote(holding.symbol),
-        )
-        if (quote?.regularMarketPrice != null) quotes.set(holding.symbol, { price: quote.regularMarketPrice })
-      } catch (error) {
-        log.warn('Attention quote unavailable', { symbol: holding.symbol, error })
-      }
-    }))
+    const { quotes } = await fetchQuotesBounded(holdings.map(holding => holding.symbol))
 
-    const pricedValue = holdings.reduce((sum, holding) => {
+    const enrichedHoldings = holdings.map(holding => {
       const quote = quotes.get(holding.symbol)
-      return sum + (quote ? quote.price * holding.quantity : 0)
-    }, 0)
-    const completeCoverage = holdings.length === 0 || quotes.size === holdings.length
+      return quote ? { ...holding, price: quote.regularMarketPrice } : holding
+    })
+    const valuation = computePortfolioAggregations(enrichedHoldings)
+    // Attention concentration is explicitly market-value basis, computed over
+    // the priced subset — a missing quote excludes that holding from numerator
+    // and denominator instead of nulling the whole portfolio.
+    const concentrationBySymbol = concentration(enrichedHoldings, { basis: 'market_value' })
+
     const diaryReviews = await prisma.diary.findMany({
       where: { userId, reviewStatus: { not: 'reviewed' }, reviewDueAt: { not: null } },
       orderBy: [{ reviewDueAt: 'asc' }, { id: 'asc' }],
@@ -60,19 +53,16 @@ export default defineEventHandler(async (event) => {
     const items = evaluatePortfolioAttention({
       asOf,
       maxItems: MAX_ITEMS,
-      holdings: holdings.map(holding => {
-        const quote = quotes.get(holding.symbol)
-        const marketValue = quote ? quote.price * holding.quantity : null
-        return {
-          symbol: holding.symbol,
-          quantity: holding.quantity,
-          concentrationPct: completeCoverage && pricedValue > 0 && marketValue !== null ? (marketValue / pricedValue) * 100 : null,
-        }
-      }),
+      holdings: holdings.map(holding => ({
+        symbol: holding.symbol,
+        quantity: holding.quantity,
+        concentrationPct: concentrationBySymbol.get(holding.symbol) ?? null,
+      })),
       theses: theses.map(thesis => ({
         symbol: thesis.stock.symbol,
         status: thesis.status,
         reviewDueAt: thesis.reviewDueAt,
+        lastReviewedAt: thesis.lastReviewedAt,
         latestOutcome: thesis.latestReviewOutcome,
       })),
       diaryReviews: diaryReviews.map(review => ({
@@ -83,7 +73,16 @@ export default defineEventHandler(async (event) => {
         symbol: review.stockContexts[0]?.stock.symbol ?? null,
       })),
     })
-    return { items, asOf: asOf.toISOString(), coverage: { complete: completeCoverage, priced: quotes.size, total: holdings.length } }
+    return {
+      items,
+      asOf: asOf.toISOString(),
+      coverage: {
+        valuationStatus: valuation.valuationStatus,
+        complete: valuation.valuationStatus === 'complete' || valuation.valuationStatus === 'empty',
+        priced: valuation.pricedPositionCount,
+        total: valuation.totalHoldings,
+      },
+    }
   } catch (error) {
     handleApiError(error, log)
   }

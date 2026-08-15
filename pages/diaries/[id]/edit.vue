@@ -275,10 +275,8 @@ import { buildDiaryAuthoringPayload } from '~/lib/diary-authoring/payload'
 import type { DiaryAuthoringForm } from '~/lib/diary-authoring/types'
 import { validateDiaryDraft } from '~/lib/diary-authoring/validation'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
-import {
-  createLatestLookupGate,
-  useDiaryDraftGuard,
-} from '~/lib/diary-authoring/draft-guard'
+import { useDiaryDraftGuard } from '~/lib/diary-authoring/draft-guard'
+import { useDiaryDateConflict } from '~/lib/diary-authoring/date-conflict'
 
 definePageMeta({
   middleware: 'auth'
@@ -292,15 +290,6 @@ const toast = useToast()
 const { t } = useI18n()
 const { runWithAuthRecovery } = useAuthRecovery()
 const { getTodayDateString, getTimezone } = useTimezone()
-const checkingDate = ref(false)
-const dateLookupError = ref(false)
-const pendingConflict = ref<{ date: string; diary: Record<string, any> } | null>(null)
-const appendToExisting = ref(false)
-const currentDiaryId = ref<string | null>(routeId)
-const committedDate = ref(getTodayDateString())
-const latestDateLookup = createLatestLookupGate()
-const ignoreDateWatchFor = ref<string | null>(null)
-
 const inputClass = 'mt-1 block w-full min-h-[44px] rounded-dt-sm border border-dt-border bg-dt-surface px-3 text-sm text-dt-text focus:border-dt-primary focus:outline-none disabled:opacity-50'
 
 // Fetch disciplines for trade discipline checking
@@ -309,6 +298,28 @@ const { data: diary, pending, error, refresh } = await useLazyFetch<any>(`/api/d
 
 const form = reactive<DiaryAuthoringForm>(createEmptyDiaryAuthoringForm(getTodayDateString()))
 const draftGuard = useDiaryDraftGuard(() => form)
+
+const {
+  checkingDate,
+  dateLookupError,
+  pendingConflict,
+  appendToExisting,
+  committedDate,
+  diaryId: currentDiaryId,
+  replaceForm,
+  resolveDateConflict,
+  retryDateLookup,
+} = useDiaryDateConflict({
+  form,
+  draftGuard,
+  fetchDiaryByDate: (date) => runWithAuthRecovery(() => $fetch<any>(
+    `/api/diaries/by-date?date=${encodeURIComponent(date)}`
+  )),
+  reportLookupError: (error) => toast.error(resolveErrorMessage(error, t, t('diary.form.checkExistingFailed'))),
+  timeZone: () => getTimezone(),
+  initialDiaryId: routeId,
+  initialCommittedDate: getTodayDateString(),
+})
 
 // Progressive disclosure：進階區塊預設收合，有資料時自動展開
 const showTransactions = ref(form.transactions.length > 0)
@@ -322,8 +333,7 @@ watch(diary, (newDiary) => {
       timeZone: getTimezone(),
       fallbackDate: getTodayDateString(),
     })
-    ignoreDateWatchFor.value = hydrated.date
-    Object.assign(form, hydrated)
+    replaceForm(hydrated)
     currentDiaryId.value = String(newDiary.id ?? routeId)
     committedDate.value = hydrated.date
     appendToExisting.value = false
@@ -332,119 +342,6 @@ watch(diary, (newDiary) => {
     draftGuard.markClean()
   }
 }, { immediate: true })
-
-function replaceForm(nextForm: DiaryAuthoringForm) {
-  ignoreDateWatchFor.value = nextForm.date
-  Object.assign(form, nextForm)
-}
-
-function restoreCommittedDate() {
-  ignoreDateWatchFor.value = committedDate.value
-  form.date = committedDate.value
-}
-
-function resetToNewDiary(date: string) {
-  replaceForm(createEmptyDiaryAuthoringForm(date))
-  currentDiaryId.value = null
-  appendToExisting.value = false
-}
-
-interface DateLookupOptions {
-  preserveDraft?: boolean
-}
-
-async function lookupDiaryForDate(date: string, options: DateLookupOptions = {}) {
-  const token = latestDateLookup.begin()
-  checkingDate.value = true
-  dateLookupError.value = false
-
-  try {
-    const existingDiary = await runWithAuthRecovery(() => $fetch<any>(
-      `/api/diaries/by-date?date=${encodeURIComponent(date)}`
-    ))
-
-    // Ignore a response that belongs to an older date selection.
-    if (!latestDateLookup.isLatest(token)) return
-
-    if (existingDiary) {
-      pendingConflict.value = { date, diary: existingDiary }
-      return
-    }
-
-    if (options.preserveDraft) {
-      // A retry that finds no Diary must not erase the draft retained after a
-      // transient lookup failure.
-      return
-    }
-
-    if (draftGuard.isContentDirty.value && !draftGuard.confirmDraftReplacement()) {
-      restoreCommittedDate()
-      return
-    }
-
-    resetToNewDiary(date)
-    committedDate.value = date
-    pendingConflict.value = null
-    draftGuard.markClean()
-  } catch (lookupError: any) {
-    if (isAuthSessionError(lookupError)) return
-    if (!latestDateLookup.isLatest(token)) return
-
-    dateLookupError.value = true
-    pendingConflict.value = null
-    if (date !== committedDate.value) restoreCommittedDate()
-    toast.error(resolveErrorMessage(lookupError, t, t('diary.form.checkExistingFailed')))
-  } finally {
-    if (latestDateLookup.isLatest(token)) checkingDate.value = false
-  }
-}
-
-function resolveDateConflict(choice: 'edit' | 'append' | 'cancel') {
-  const conflict = pendingConflict.value
-  if (!conflict) return
-
-  if (choice === 'cancel') {
-    restoreCommittedDate()
-    pendingConflict.value = null
-    return
-  }
-
-  if (choice === 'edit') {
-    replaceForm(hydrateDiaryAuthoring(conflict.diary, {
-      timeZone: getTimezone(),
-      fallbackDate: conflict.date,
-    }))
-    currentDiaryId.value = String(conflict.diary.id)
-    appendToExisting.value = false
-    committedDate.value = conflict.date
-    pendingConflict.value = null
-    dateLookupError.value = false
-    draftGuard.markClean()
-    return
-  }
-
-  // Append keeps the current form and makes the POST intent explicit. It does
-  // not hydrate the existing Diary into the current draft.
-  currentDiaryId.value = null
-  appendToExisting.value = true
-  committedDate.value = conflict.date
-  pendingConflict.value = null
-  dateLookupError.value = false
-}
-
-watch(() => form.date, (newDate, oldDate) => {
-  if (!newDate || newDate === oldDate) return
-  if (ignoreDateWatchFor.value === newDate) {
-    ignoreDateWatchFor.value = null
-    return
-  }
-
-  void lookupDiaryForDate(newDate)
-})
-
-const retryDateLookup = () => {
-  void lookupDiaryForDate(committedDate.value, { preserveDraft: true })
-}
 
 const cancelEditing = () => {
   if (!draftGuard.confirmLeave()) return
@@ -480,7 +377,7 @@ const saveDiary = async () => {
 
   // The server owns the portfolio baseline. Without a fetched baseline the
   // client must not mistake this diary's draft for the whole portfolio.
-  const validationError = validateDiaryDraft(form.transactions, { available: false })
+  const validationError = validateDiaryDraft(form.transactions)
   if (validationError) {
     toast.error(`${t('diary.form.validationFailed')}: ${validationError.message}`)
     return

@@ -18,6 +18,23 @@ import { formatYmdInTimezone } from './format'
 
 export { formatYmdInTimezone as getUserYmdInTimezone } from './format'
 
+export interface UserTimezoneSource {
+  timezone?: string | null
+}
+
+function detectBrowserTimezone(): string | undefined {
+  if (typeof window === 'undefined') return undefined
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined
+}
+
+/** Resolve user profile timezone, then browser timezone, then the app default. */
+export function resolveUserTimezone(
+  user?: UserTimezoneSource | null,
+  browserTimezone: string | undefined = detectBrowserTimezone(),
+): string {
+  return user?.timezone || browserTimezone || 'Asia/Taipei'
+}
+
 // ─── 內部輔助 ──────────────────────────────────────────────────────────────
 
 type DateInput = Date | string

@@ -8,26 +8,27 @@
  * rotation snapshots to market_rotation_snapshot.
  */
 
-import { requireUser } from '~/server/utils/auth'
-import adminMiddleware from '~/server/middleware/admin'
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { runScopeBatch, runFullBatch } from '~/server/utils/market-rotation-batch'
+import { Errors } from '~/lib/errors/factory'
 
 const VALID_SCOPES = ['sectors', 'indexes', 'core', 'all'] as const
 
 export default defineEventHandler(async (event) => {
   const log = logger.admin.withRequestId(event.context.requestId)
-  requireUser(event)
-  await adminMiddleware(event)
 
   try {
     const body = await readBody(event).catch(() => ({}))
     const scope = String(body?.scope ?? 'all')
 
     if (!VALID_SCOPES.includes(scope as typeof VALID_SCOPES[number])) {
-      throw new Error(`Invalid scope. Must be one of: ${VALID_SCOPES.join(', ')}`)
+      throw Errors.validationError([{
+        field: 'scope',
+        message: `Invalid scope. Must be one of: ${VALID_SCOPES.join(', ')}`,
+        value: scope,
+      }])
     }
 
     log.info('Starting market rotation batch', { scope })

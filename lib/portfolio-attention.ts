@@ -36,6 +36,7 @@ export interface AttentionThesis {
   symbol: string
   status?: string | null
   reviewDueAt?: Date | string | null
+  lastReviewedAt?: Date | string | null
   latestOutcome?: string | null
 }
 
@@ -92,6 +93,23 @@ function isOpenThesis(thesis: AttentionThesis): boolean {
   return thesis.status !== 'archived'
 }
 
+/**
+ * Single-source overdue rule for thesis reviews: a thesis is overdue when its
+ * due date has passed the baseline instant AND no review was recorded at or
+ * after that due date. Completing an overdue review sets lastReviewedAt
+ * without advancing reviewDueAt, so the review dashboard and the Timeline
+ * attention engine must both clear the overdue signal through this predicate.
+ */
+export function isThesisReviewOverdue(
+  thesis: Pick<AttentionThesis, 'reviewDueAt' | 'lastReviewedAt'>,
+  baseline: Date,
+): boolean {
+  const dueAt = parseDate(thesis.reviewDueAt)
+  if (!dueAt || dueAt.getTime() >= baseline.getTime()) return false
+  const lastReviewedAt = parseDate(thesis.lastReviewedAt)
+  return !lastReviewedAt || lastReviewedAt.getTime() < dueAt.getTime()
+}
+
 function addItem(
   items: Map<string, PortfolioAttentionItem>,
   item: PortfolioAttentionItem,
@@ -137,7 +155,7 @@ export function evaluatePortfolioAttention(input: PortfolioAttentionInput): Port
       })
     } else {
       const dueAt = parseDate(thesis.reviewDueAt)
-      if (isOpenThesis(thesis) && dueAt && dueAt.getTime() < asOf.getTime()) {
+      if (isOpenThesis(thesis) && isThesisReviewOverdue(thesis, asOf)) {
         addItem(items, {
           id: `stock:${symbol}:overdue_thesis_review`,
           reason: 'overdue_thesis_review',
@@ -147,7 +165,7 @@ export function evaluatePortfolioAttention(input: PortfolioAttentionInput): Port
           priority: ATTENTION_PRIORITY.overdue_thesis_review,
           action: `/stocks/${encodeURIComponent(symbol)}?tab=thesis&review=1`,
           evidence: {
-            reviewDueAt: dueAt.toISOString(),
+            reviewDueAt: dueAt ? dueAt.toISOString() : null,
             latestOutcome: thesis.latestOutcome ?? null,
           },
           asOf: asOfIso,

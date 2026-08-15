@@ -1,14 +1,9 @@
 import prisma from '~/lib/prisma'
 import { connectionManager } from '~/server/websocket/connectionManager'
-import { fetchQuote } from '~/lib/yahoo-finance'
 import { logger } from '~/lib/logger'
 import { createAlertPusher } from '~/server/schedulers/alert-pusher'
 import { createPriceAlertChecker } from '~/server/schedulers/price-alert-checker'
-import {
-  buildMarketQuoteCacheKey,
-  getMarketDataCacheTtlSeconds,
-  getOrSetCached,
-} from '~/lib/market-data/cache'
+import { getCachedQuote } from '~/lib/market-data/quote'
 
 /**
  * Alert 排程器組合 Plugin
@@ -44,13 +39,7 @@ export default defineNitroPlugin(() => {
     prisma,
     broadcaster: connectionManager,
     logger: schedulerLogger,
-    fetchQuote: async (symbol: string) => {
-      return getOrSetCached(
-        buildMarketQuoteCacheKey(symbol),
-        getMarketDataCacheTtlSeconds('quote'),
-        () => fetchQuote(symbol),
-      )
-    },
+    fetchQuote: (symbol: string) => getCachedQuote(symbol),
   })
 
   alertPusher.start()

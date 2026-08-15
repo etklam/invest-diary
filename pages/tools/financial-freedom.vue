@@ -2,7 +2,7 @@
 import {
   withdrawalRatePresets,
 } from '~/lib/financialFreedom'
-import { formatCurrency, formatPercent } from '~/lib/format'
+import { formatCurrency, formatCompactCurrency, formatPercent } from '~/lib/format'
 import { formatYearMonth as formatDate } from '~/lib/dates'
 import { useFinancialFreedomCalculator } from '~/composables/useFinancialFreedomCalculator'
 import LedgerCard from '~/components/LedgerCard.vue'
@@ -19,14 +19,33 @@ const {
   expectedReturn,
   withdrawalRatePreset,
   currentAge,
-  copySuccess,
   returnRateLevel,
-  returnRateIndicator,
   withdrawalRate,
   isValidInput,
   result,
   progressColor
 } = useFinancialFreedomCalculator()
+
+const copySuccess = ref(false)
+
+const returnRateIndicator = computed(() => {
+  const levels = ['conservative', 'target', 'expert'] as const
+  const currentIndex = levels.indexOf(returnRateLevel.value)
+
+  return levels.map((level, index) => {
+    const isActive = index === currentIndex
+    const isPast = index < currentIndex
+
+    let colorClass = 'bg-gray-200 dark:bg-gray-700'
+    if (isActive) {
+      colorClass = level === 'conservative' ? 'bg-gray-500' : level === 'target' ? 'bg-green-500' : 'bg-violet-500'
+    } else if (isPast) {
+      colorClass = level === 'conservative' ? 'bg-gray-400' : 'bg-green-400'
+    }
+
+    return { level, colorClass }
+  })
+})
 
 // UI-specific computed
 const localizedRecommendation = computed(() => {
@@ -64,85 +83,58 @@ const getPresetName = (preset: typeof withdrawalRatePresets[0]) => {
 
 const formatCurrencyLocal = (value: number) => formatCurrency(value, { decimals: 0, locale: locale.value })
 
-const formatCompactValue = (value: number) => {
-  const abs = Math.abs(value)
-  const currentLocale = locale.value
-
-  const formatCompactNumber = (scaled: number) => {
-    const digits = Math.abs(scaled) >= 100 ? 0 : Math.abs(scaled) >= 10 ? 1 : 1
-    return new Intl.NumberFormat(currentLocale === 'en' ? 'en-US' : currentLocale, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: digits
-    }).format(scaled)
-  }
-
-  if (currentLocale === 'en') {
-    if (abs >= 1_000_000) return `$${formatCompactNumber(value / 1_000_000)}M`
-    if (abs >= 1_000) return `$${formatCompactNumber(value / 1_000)}K`
-    return formatCurrencyLocal(value)
-  }
-
-  if (abs >= 1_000_000) return `$${formatCompactNumber(value / 1_000_000)}百萬`
-  if (abs >= 10_000) return `$${formatCompactNumber(value / 10_000)}萬`
-  if (abs >= 1_000) return `$${formatCompactNumber(value / 1_000)}千`
-  return formatCurrencyLocal(value)
-}
-
 // Actions
 const copyToClipboard = async () => {
   if (!result.value) return
 
   const lines: string[] = []
-  const isEnglish = locale.value === 'en'
-  const isTraditional = locale.value === 'zh-TW'
-
-  lines.push(isEnglish ? '# Financial Freedom Analysis' : (isTraditional ? '# 財務自由分析' : '# 财务自由分析'))
+  lines.push(`# ${t('tools.financialFreedom.export.title')}`)
   lines.push('')
-  lines.push(isEnglish ? '## Input Parameters' : (isTraditional ? '## 輸入參數' : '## 输入参数'))
+  lines.push(`## ${t('tools.financialFreedom.inputParams')}`)
   lines.push('')
-  lines.push(`| ${isEnglish ? 'Parameter' : '參數'} | ${isEnglish ? 'Value' : '數值'} |`)
+  lines.push(`| ${t('tools.financialFreedom.export.parameter')} | ${t('tools.financialFreedom.export.value')} |`)
   lines.push('|------|------|')
-  lines.push(`| ${isEnglish ? 'Annual Expenses' : '年度支出'} | ${formatCurrencyLocal(annualExpenses.value!)} |`)
-  lines.push(`| ${isEnglish ? 'Current Assets' : '目前資產'} | ${formatCurrencyLocal(currentAssets.value!)} |`)
-  lines.push(`| ${isEnglish ? 'Monthly Contribution' : '每月投入'} | ${formatCurrencyLocal(monthlyContribution.value!)} |`)
-  lines.push(`| ${isEnglish ? 'Expected Return' : '預期報酬率'} | ${expectedReturn.value}% |`)
-  lines.push(`| ${isEnglish ? 'Withdrawal Rate' : '提領率'} | ${withdrawalRate.value}% |`)
+  lines.push(`| ${t('tools.financialFreedom.annualExpenses')} | ${formatCurrencyLocal(annualExpenses.value!)} |`)
+  lines.push(`| ${t('tools.financialFreedom.currentAssets')} | ${formatCurrencyLocal(currentAssets.value!)} |`)
+  lines.push(`| ${t('tools.financialFreedom.monthlyContribution')} | ${formatCurrencyLocal(monthlyContribution.value!)} |`)
+  lines.push(`| ${t('tools.financialFreedom.expectedReturn')} | ${expectedReturn.value}% |`)
+  lines.push(`| ${t('tools.financialFreedom.withdrawalRate')} | ${withdrawalRate.value}% |`)
   lines.push('')
-  lines.push(isEnglish ? '## Financial Target' : (isTraditional ? '## 財務目標' : '## 财务目标'))
+  lines.push(`## ${t('tools.financialFreedom.export.financialTarget')}`)
   lines.push('')
-  lines.push(`- **${isEnglish ? 'FIRE Number' : '財務自由金額'}**: ${formatCurrencyLocal(result.value.fireNumber)}`)
-  lines.push(`- **${isEnglish ? 'Progress' : '完成進度'}**: ${result.value.currentProgress.toFixed(1)}%`)
-  lines.push(`- **${isEnglish ? 'Amount Needed' : '還需要'}**: ${formatCurrencyLocal(result.value.amountNeeded)}`)
+  lines.push(`- **${t('tools.financialFreedom.fireNumber')}**: ${formatCurrencyLocal(result.value.fireNumber)}`)
+  lines.push(`- **${t('tools.financialFreedom.export.progress')}**: ${result.value.currentProgress.toFixed(1)}%`)
+  lines.push(`- **${t('tools.financialFreedom.amountNeeded')}**: ${formatCurrencyLocal(result.value.amountNeeded)}`)
   lines.push('')
-  lines.push(isEnglish ? '## Time to Freedom' : (isTraditional ? '## 距離財務自由' : '## 距离财务自由'))
+  lines.push(`## ${t('tools.financialFreedom.export.timeToFreedom')}`)
   lines.push('')
   if (result.value.yearsToFreedom === 0) {
-    lines.push(`- 🎉 **${isEnglish ? 'Congratulations! You are financially free!' : '恭喜！您已達成財務自由！'}**`)
+    lines.push(`- 🎉 **${t('tools.financialFreedom.export.congratulations')}**`)
   } else if (result.value.yearsToFreedom !== null) {
-    lines.push(`- **${isEnglish ? 'Years to Freedom' : '所需年數'}**: ${result.value.yearsToFreedom.toFixed(1)} ${isEnglish ? 'years' : '年'}`)
-    lines.push(`- **${isEnglish ? 'Target Date' : '預計達成'}**: ${formatDate(result.value.freedomDate!, locale.value)}`)
+    lines.push(`- **${t('tools.financialFreedom.export.yearsToFreedom')}**: ${result.value.yearsToFreedom.toFixed(1)} ${t('tools.financialFreedom.years')}`)
+    lines.push(`- **${t('tools.financialFreedom.freedomDate')}**: ${formatDate(result.value.freedomDate!, locale.value)}`)
   }
   lines.push('')
-  lines.push(isEnglish ? '## Withdrawal Capacity (After Freedom)' : (isTraditional ? '## 達成後可提領金額' : '## 达成后可提领金额'))
+  lines.push(`## ${t('tools.financialFreedom.export.withdrawalCapacityAfterFreedom')}`)
   lines.push('')
-  lines.push(`- **${isEnglish ? 'Monthly' : '每月'}**: ${formatCurrencyLocal(result.value.monthlyWithdrawal)}`)
-  lines.push(`- **${isEnglish ? 'Weekly' : '每週'}**: ${formatCurrencyLocal(result.value.weeklyWithdrawal)}`)
-  lines.push(`- **${isEnglish ? 'Daily' : '每日'}**: ${formatCurrencyLocal(result.value.dailyWithdrawal)}`)
+  lines.push(`- **${t('tools.financialFreedom.monthly')}**: ${formatCurrencyLocal(result.value.monthlyWithdrawal)}`)
+  lines.push(`- **${t('tools.financialFreedom.weekly')}**: ${formatCurrencyLocal(result.value.weeklyWithdrawal)}`)
+  lines.push(`- **${t('tools.financialFreedom.daily')}**: ${formatCurrencyLocal(result.value.dailyWithdrawal)}`)
   lines.push('')
-  lines.push(isEnglish ? '## Yearly Projection (First 10 Years)' : (isTraditional ? '## 年度成長預測（前10年）' : '## 年度成长预测（前10年）'))
+  lines.push(`## ${t('tools.financialFreedom.export.yearlyProjectionFirst10')}`)
   lines.push('')
-  lines.push(`| ${isEnglish ? 'Year' : '年份'} | ${isEnglish ? 'Starting' : '期初'} | ${isEnglish ? 'Contribution' : '投入'} | ${isEnglish ? 'Returns' : '報酬'} | ${isEnglish ? 'Ending' : '期末'} |`)
+  lines.push(`| ${t('tools.financialFreedom.year')} | ${t('tools.financialFreedom.export.starting')} | ${t('tools.financialFreedom.contribution')} | ${t('tools.financialFreedom.returns')} | ${t('tools.financialFreedom.export.ending')} |`)
   lines.push('|------|----------|----------|----------|----------|')
 
   for (const year of result.value.yearlyProjection.slice(0, 10)) {
-    const yearLabel = isEnglish ? `Year ${year.year}` : `第 ${year.year} 年`
+    const yearLabel = t('tools.financialFreedom.export.yearN', { n: year.year })
     const freedTag = year.isFreed ? ' ✅' : ''
     lines.push(`| ${yearLabel}${freedTag} | ${formatCurrencyLocal(year.startingAssets)} | +${formatCurrencyLocal(year.contribution)} | ${year.returns >= 0 ? '+' : ''}${formatCurrencyLocal(year.returns)} | ${formatCurrencyLocal(year.endingAssets)} |`)
   }
 
   lines.push('')
   lines.push('---')
-  lines.push(`*${isEnglish ? 'Generated by Financial Freedom Calculator' : '由財務自由計算機產生'}*`)
+  lines.push(`*${t('tools.financialFreedom.export.generatedBy')}*`)
 
   try {
     await navigator.clipboard.writeText(lines.join('\n'))
@@ -186,13 +178,13 @@ definePageMeta({
               <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
                 <span class="data-label">{{ t('tools.financialFreedom.fireNumber') }}</span>
                 <span class="data-value">
-                  {{ result ? formatCompactValue(result.fireNumber) : '—' }}
+                  {{ result ? formatCompactCurrency(result.fireNumber, locale) : '—' }}
                 </span>
               </div>
               <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
                 <span class="data-label">{{ t('tools.financialFreedom.amountNeeded') }}</span>
                 <span class="data-value">
-                  {{ result ? formatCompactValue(result.amountNeeded) : '—' }}
+                  {{ result ? formatCompactCurrency(result.amountNeeded, locale) : '—' }}
                 </span>
               </div>
               <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
@@ -235,11 +227,11 @@ definePageMeta({
             <div class="mt-6 grid gap-3 sm:grid-cols-2">
               <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-3">
                 <span class="data-label">{{ t('tools.financialFreedom.monthlyContribution') }}</span>
-                <span class="data-value">{{ monthlyContribution ? formatCompactValue(monthlyContribution) : '—' }}</span>
+                <span class="data-value">{{ monthlyContribution ? formatCompactCurrency(monthlyContribution, locale) : '—' }}</span>
               </div>
               <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-3">
                 <span class="data-label">{{ t('tools.financialFreedom.currentAssets') }}</span>
-                <span class="data-value">{{ currentAssets !== null ? formatCompactValue(currentAssets) : '—' }}</span>
+                <span class="data-value">{{ currentAssets !== null ? formatCompactCurrency(currentAssets, locale) : '—' }}</span>
               </div>
             </div>
           </div>
@@ -389,7 +381,7 @@ definePageMeta({
                   {{ t('tools.financialFreedom.fireNumber') }}
                 </p>
                 <div class="mt-2 text-4xl font-semibold tracking-tight text-white">
-                  {{ formatCompactValue(result.fireNumber) }}
+                  {{ formatCompactCurrency(result.fireNumber, locale) }}
                 </div>
               </div>
               <BaseButton variant="primary" class="w-full sm:w-auto" @click="copyToClipboard">
@@ -412,7 +404,7 @@ definePageMeta({
           <div class="grid gap-4 border-t border-dt-border bg-dt-surface p-6 sm:grid-cols-3 sm:p-7">
             <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
               <span class="data-label">{{ t('tools.financialFreedom.amountNeeded') }}</span>
-              <span class="data-value">{{ formatCompactValue(result.amountNeeded) }}</span>
+              <span class="data-value">{{ formatCompactCurrency(result.amountNeeded, locale) }}</span>
             </div>
             <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
               <span class="data-label">{{ t('tools.financialFreedom.yearsToFreedom') }}</span>
@@ -461,15 +453,15 @@ definePageMeta({
           <div class="grid gap-4 sm:grid-cols-3">
             <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
               <span class="data-label">{{ t('tools.financialFreedom.monthly') }}</span>
-              <span class="data-value">{{ formatCompactValue(result.monthlyWithdrawal) }}</span>
+              <span class="data-value">{{ formatCompactCurrency(result.monthlyWithdrawal, locale) }}</span>
             </div>
             <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
               <span class="data-label">{{ t('tools.financialFreedom.weekly') }}</span>
-              <span class="data-value">{{ formatCompactValue(result.weeklyWithdrawal) }}</span>
+              <span class="data-value">{{ formatCompactCurrency(result.weeklyWithdrawal, locale) }}</span>
             </div>
             <div class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
               <span class="data-label">{{ t('tools.financialFreedom.daily') }}</span>
-              <span class="data-value">{{ formatCompactValue(result.dailyWithdrawal) }}</span>
+              <span class="data-value">{{ formatCompactCurrency(result.dailyWithdrawal, locale) }}</span>
             </div>
           </div>
         </LedgerCard>
@@ -518,7 +510,7 @@ definePageMeta({
                     <span v-if="year.age !== null && year.age !== undefined" class="ml-2 font-normal text-dt-text-muted">· {{ year.age }} {{ t('tools.financialFreedom.yearsOld') }}</span>
                   </div>
                   <div class="mt-1 text-xs text-dt-text-muted">
-                    {{ t('tools.financialFreedom.startingAssets') }} {{ formatCompactValue(year.startingAssets) }}
+                    {{ t('tools.financialFreedom.startingAssets') }} {{ formatCompactCurrency(year.startingAssets, locale) }}
                   </div>
                 </div>
                 <div v-if="year.isFreed" class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -529,17 +521,17 @@ definePageMeta({
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 <div role="group" :aria-label="t('tools.financialFreedom.contribution')" class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
                   <span class="data-label">{{ t('tools.financialFreedom.contribution') }}</span>
-                  <span class="data-value">+{{ formatCompactValue(year.contribution) }}</span>
+                  <span class="data-value">+{{ formatCompactCurrency(year.contribution, locale) }}</span>
                 </div>
                 <div role="group" :aria-label="t('tools.financialFreedom.returns')" class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
                   <span class="data-label">{{ t('tools.financialFreedom.returns') }}</span>
                   <span class="data-value" :class="year.returns >= 0 ? 'text-dt-success' : 'text-dt-danger'">
-                    {{ year.returns >= 0 ? '+' : '' }}{{ formatCompactValue(year.returns) }}
+                    {{ year.returns >= 0 ? '+' : '' }}{{ formatCompactCurrency(year.returns, locale) }}
                   </span>
                 </div>
                 <div role="group" :aria-label="t('tools.financialFreedom.endingAssets')" class="min-w-0 border border-dt-border rounded-lg bg-dt-surface p-4">
                   <span class="data-label">{{ t('tools.financialFreedom.endingAssets') }}</span>
-                  <span class="data-value">{{ formatCompactValue(year.endingAssets) }}</span>
+                  <span class="data-value">{{ formatCompactCurrency(year.endingAssets, locale) }}</span>
                 </div>
               </div>
             </div>

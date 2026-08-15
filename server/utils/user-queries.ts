@@ -14,6 +14,7 @@
  * Symmetric with discipline-queries.ts in structure.
  */
 
+import type { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import prisma from '~/lib/prisma'
@@ -103,6 +104,24 @@ const USER_PROFILE_SELECT = {
   createdAt: true,
   updatedAt: true,
 } as const
+
+type UserTimezoneClient = Pick<Prisma.TransactionClient, 'user'>
+
+async function resolveUserTimezone(client: UserTimezoneClient, userId: bigint): Promise<string> {
+  const user = await client.user.findUnique({
+    where: { id: userId },
+    select: { timezone: true },
+  })
+  return user?.timezone ?? 'Asia/Taipei'
+}
+
+/** Read the canonical timezone for a user, with the schema default fallback. */
+export async function getUserTimezone(
+  userId: bigint,
+  client: UserTimezoneClient = prisma,
+): Promise<string> {
+  return resolveUserTimezone(client, userId)
+}
 
 // ─── Auth / Session writes ────────────────────────────────────────────────────
 

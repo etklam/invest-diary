@@ -22,7 +22,42 @@
       </div>
     </header>
 
-    <div class="grid gap-4 lg:grid-cols-2" aria-label="Investment overview">
+    <details class="timeline-overview rounded-dt-md border border-dt-border bg-dt-surface shadow-dt-sm" :aria-label="t('timeline.overview.summary.label')">
+      <summary class="cursor-pointer rounded-dt-md p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30 sm:p-5">
+        <div class="grid grid-cols-3 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center">
+          <div class="min-w-0">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
+              {{ t('timeline.overview.summary.portfolioValue') }}
+            </p>
+            <p class="font-data mt-1 truncate text-base font-bold text-dt-text sm:text-lg">
+              {{ holdingsPending || holdingsError || portfolioStats.currentMarketValue === null ? '—' : formatCurrency(portfolioStats.currentMarketValue) }}
+            </p>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
+              {{ t('timeline.overview.summary.needsAttention') }}
+            </p>
+            <p class="font-data mt-1 truncate text-base font-bold text-dt-text sm:text-lg">
+              {{ attentionPending || attentionError ? '—' : attentionCount }}
+            </p>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
+              {{ t('timeline.overview.summary.reviewsUpcoming') }}
+            </p>
+            <p class="font-data mt-1 truncate text-base font-bold text-dt-text sm:text-lg">
+              {{ reviewsPending || reviewsError ? '—' : upcomingReviewCount }}
+            </p>
+          </div>
+          <span class="col-span-3 inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-dt-primary sm:col-span-1 sm:justify-self-end">
+            {{ t('timeline.overview.summary.viewOverview') }}
+            <Icon name="heroicons:chevron-down" class="timeline-overview-toggle-icon h-4 w-4" aria-hidden="true" />
+          </span>
+        </div>
+      </summary>
+
+      <div class="border-t border-dt-border p-3 sm:p-4">
+        <div class="grid gap-4 lg:grid-cols-2">
       <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-portfolio-title">
         <div class="flex items-center justify-between gap-3">
           <h2 id="overview-portfolio-title" class="font-display text-xl text-dt-text">{{ t('timeline.overview.portfolio.title') }}</h2>
@@ -126,7 +161,9 @@
         </ul>
         <p v-else class="mt-4 text-sm text-dt-text-muted">{{ t('timeline.overview.upcoming.empty') }}</p>
       </section>
-    </div>
+        </div>
+      </div>
+    </details>
 
     <div id="diary-timeline" class="scroll-mt-4">
       <TimelineModeSwitch />
@@ -299,7 +336,7 @@
               </div>
 
               <p class="mt-2.5 line-clamp-2 text-sm leading-[1.55] text-dt-text-muted">
-                {{ diary.content ? diary.content.replace(/[#*`]/g, '') : t('timeline.noContent') }}
+                {{ stripDiaryMarkdown(diary.content) || t('timeline.noContent') }}
               </p>
             </NuxtLink>
           </div>
@@ -326,41 +363,19 @@
 
 <script setup lang="ts">
 import { formatShortDate } from '~/lib/dates'
+import { resolveUserTimezone } from '~/lib/dates/user-tz'
+import { stripDiaryMarkdown } from '~/lib/diary-excerpt'
 import { formatCurrency } from '~/lib/format'
 import { computePortfolioAggregations, type PortfolioValuationResponse } from '~/lib/stocks-view'
-import type { PortfolioAttentionItem } from '~/lib/portfolio-attention'
-import type { SerializedId } from '~/types/common'
+import type { InvestmentActivityItem, InvestmentActivityPage } from '~/lib/investment-activity'
+import type { PortfolioAttentionResponse } from '~/types/portfolio-attention'
+import { emptyReviewGroups, type ReviewGroups } from '~/types/reviews'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useTimelineDiaries } from '~/composables/useTimelineDiaries'
 import { useAppShell } from '~/composables/useAppShell'
 
 const { t, locale } = useI18n()
 const { user } = useAuth()
-
-interface OverviewReviewItem {
-  id: SerializedId
-  title: string
-  reviewDueAt?: string | null
-  targetType?: 'diary' | 'thesis'
-  symbol?: string | null
-  thesisId?: SerializedId
-}
-
-interface OverviewReviewGroups {
-  unscheduled: OverviewReviewItem[]
-  overdue: OverviewReviewItem[]
-  today: OverviewReviewItem[]
-  upcoming: OverviewReviewItem[]
-  completed: OverviewReviewItem[]
-}
-
-const emptyReviewGroups = (): OverviewReviewGroups => ({
-  unscheduled: [],
-  overdue: [],
-  today: [],
-  upcoming: [],
-  completed: [],
-})
 
 const emptyPortfolioProjection = (): PortfolioValuationResponse => ({
   holdings: [],
@@ -384,17 +399,17 @@ const {
   data: attentionProjection,
   pending: attentionPending,
   error: attentionError,
-} = await useLazyFetch<{ items: PortfolioAttentionItem[]; asOf: string; coverage: { complete: boolean; priced: number; total: number } }>('/api/portfolio/attention', {
-  default: () => ({ items: [], asOf: new Date().toISOString(), coverage: { complete: false, priced: 0, total: 0 } }),
+} = await useLazyFetch<PortfolioAttentionResponse>('/api/portfolio/attention', {
+  default: (): PortfolioAttentionResponse => ({ items: [], asOf: new Date().toISOString(), coverage: { valuationStatus: 'empty', complete: false, priced: 0, total: 0 } }),
 })
 
 const {
   data: activityProjection,
   pending: activityPending,
   error: activityError,
-} = await useLazyFetch<{ items: Array<{ id: string; title: string; symbol: string | null; occurredAt: string; destination: string }>; nextCursor: string | null }>('/api/investment-activity', {
+} = await useLazyFetch<InvestmentActivityPage>('/api/investment-activity', {
   query: { limit: 5 },
-  default: () => ({ items: [], nextCursor: null }),
+  default: () => ({ items: [], nextCursor: null, asOf: new Date().toISOString() }),
 })
 
 const {
@@ -402,7 +417,7 @@ const {
   pending: reviewsPending,
   error: reviewsError,
   refresh: refreshReviews,
-} = await useLazyFetch<OverviewReviewGroups>('/api/reviews', {
+} = await useLazyFetch<ReviewGroups>('/api/reviews', {
   default: emptyReviewGroups,
 })
 const reviewGroups = computed(() => overviewReviews.value ?? emptyReviewGroups())
@@ -410,12 +425,13 @@ const upcomingReviewItems = computed(() => [
   ...reviewGroups.value.upcoming,
   ...reviewGroups.value.unscheduled,
 ].slice(0, 4))
+const upcomingReviewCount = computed(() => reviewGroups.value.upcoming.length + reviewGroups.value.unscheduled.length)
 const formatOverviewDate = (value: string) => new Intl.DateTimeFormat(locale.value || 'zh-TW', {
   dateStyle: 'medium',
-  timeZone: user.value?.timezone || 'Asia/Taipei',
+  timeZone: resolveUserTimezone(user.value),
 }).format(new Date(value))
 
-const timelineTimezone = computed(() => user.value?.timezone || 'Asia/Taipei')
+const timelineTimezone = computed(() => resolveUserTimezone(user.value))
 
 const formatTimelinePart = (date: Date | string, options: Intl.DateTimeFormatOptions) => {
   return new Intl.DateTimeFormat(locale.value || 'zh-TW', {
@@ -463,7 +479,7 @@ const activityItems = computed(() => activityProjection.value
       symbol: null,
       occurredAt: String(diary.date || diary.createdAt),
       destination: `/diaries/${diary.id}`,
-    })))
+    } satisfies Pick<InvestmentActivityItem, 'id' | 'title' | 'symbol' | 'occurredAt' | 'destination'>)))
 const attentionPartial = computed(() => {
   const coverage = attentionProjection.value?.coverage
   return Boolean(coverage && coverage.total > 0 && !coverage.complete)
@@ -474,6 +490,7 @@ const needsReviewItems = computed(() => (attentionProjection.value?.items ?? [])
   reason: t(`timeline.overview.attention.reasons.${item.reason}`),
   to: item.action,
 })))
+const attentionCount = computed(() => attentionProjection.value?.items.length ?? 0)
 
 const { openQuickDiary: openGlobalQuickDiary } = useAppShell()
 const openQuickDiary = () => openGlobalQuickDiary({ source: 'timeline' })
@@ -487,6 +504,18 @@ onDiaryMutation(() => {
 <style scoped>
 .timeline-month--spaced {
   margin-top: 1.75rem;
+}
+
+.timeline-overview > summary {
+  list-style: none;
+}
+
+.timeline-overview > summary::-webkit-details-marker {
+  display: none;
+}
+
+.timeline-overview[open] .timeline-overview-toggle-icon {
+  transform: rotate(180deg);
 }
 
 .timeline-month-heading {

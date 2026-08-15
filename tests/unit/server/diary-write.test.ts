@@ -272,19 +272,9 @@ describe('validateDiaryInput', () => {
     }
   })
 
-  it('should throw validation error when transactions are invalid (SELL more than held)', () => {
-    const transactions = [
-      { symbol: 'AAPL', type: 'SELL' as const, quantity: 100, price: 10 },
-    ]
-
-    expect(() => validateDiaryInput('Valid Title', transactions)).toThrow()
-    try {
-      validateDiaryInput('Valid Title', transactions)
-    } catch (e: any) {
-      expect(e.code).toBe('SYS_VALIDATION_ERROR')
-      expect(e.details[0].field).toBe('transactions')
-    }
-  })
+  // Oversell (SELL more than held) is no longer validateDiaryInput's job —
+  // the ledger authority is calculateLedgerHoldings via
+  // validateDiaryTransactionsForUser, covered in tests/unit/lib/diary-authoring.test.ts.
 
   it('should pass with valid title and no transactions', () => {
     expect(() => validateDiaryInput('My Diary', undefined)).not.toThrow()

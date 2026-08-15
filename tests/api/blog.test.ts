@@ -430,9 +430,8 @@ describe('Blog API', () => {
 
       expect(mockBlogWithRequestId).toHaveBeenCalledWith('req-blog-error')
       expect(mockBlogLogError).toHaveBeenCalledWith(
-        'Error fetching post',
+        'Unexpected error',
         expect.objectContaining({
-          slug: 'error-post',
           error: expect.stringContaining('database failure'),
         })
       )
@@ -483,6 +482,63 @@ describe('Blog API', () => {
         excerpt: true,
       })
       expect(firstCall?.select).not.toHaveProperty('content')
+      expect(firstCall?.select).toMatchObject({
+        status: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      })
+    })
+
+    it('should return 400 for an invalid status param', async () => {
+      mockPostFindMany.mockResolvedValue([])
+      mockPostCount.mockResolvedValue(0)
+      mockGetQuery.mockReturnValue({ status: 'DELETED' })
+
+      const { default: handler } = await import('~/server/api/blog/admin/index.get')
+      const mockEvent = {
+        context: {
+          user: { id: '1', email: 'admin@test.com', role: 'ADMIN' },
+        },
+      } as any
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 400,
+        statusMessage: 'Validation failed',
+      })
+      expect(mockPostFindMany).not.toHaveBeenCalled()
+    })
+
+    it('should filter by author (name or email) on the admin route', async () => {
+      mockPostFindMany.mockResolvedValue([])
+      mockPostCount.mockResolvedValue(0)
+      mockGetQuery.mockReturnValue({ author: 'admin' })
+
+      const { default: handler } = await import('~/server/api/blog/admin/index.get')
+      const mockEvent = {
+        context: {
+          user: { id: '1', email: 'admin@test.com', role: 'ADMIN' },
+        },
+      } as any
+
+      await handler(mockEvent)
+
+      expect(mockPostFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            author: {
+              OR: [
+                { name: { contains: 'admin' } },
+                { email: { contains: 'admin' } },
+              ],
+            },
+          }),
+        })
+      )
     })
   })
 

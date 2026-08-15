@@ -30,6 +30,10 @@ export interface RotationSignalResult {
   signalStatus: SignalStatus
 }
 
+export function isNearHigh(percentFromHigh: number | null): boolean {
+  return percentFromHigh != null && percentFromHigh >= -3
+}
+
 function hasCompleteSignalData(input: RotationSignalInput): boolean {
   return input.maStatus !== 'unknown'
     && input.rsi != null

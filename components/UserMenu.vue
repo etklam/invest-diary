@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { resolveUserTimezone } from '~/lib/dates/user-tz'
+
 const { t } = useI18n()
 const { isAuthenticated, user, logout } = useAuth()
 const { getTimezoneInfo } = useTimezone()
@@ -8,7 +10,7 @@ const userMenuOpen = ref(false)
 
 // Get current timezone info
 const currentTimezone = computed(() => {
-  return getTimezoneInfo(user.value?.timezone)
+  return getTimezoneInfo(resolveUserTimezone(user.value))
 })
 
 const handleLogout = async () => {

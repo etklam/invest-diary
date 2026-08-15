@@ -56,6 +56,18 @@ describe('server/middleware/admin', () => {
     })
   })
 
+  it('should protect nested /api/admin/** routes and set no-store for admins', async () => {
+    const { default: handler } = await import('~/server/middleware/admin')
+    const event = {
+      method: 'GET',
+      context: { user: { id: '1', role: 'ADMIN' } },
+    } as any
+    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/admin/etf/7/initialize' })
+
+    await expect(handler(event)).resolves.toBeUndefined()
+    expect(global.setHeader).toHaveBeenCalledWith(event, 'Cache-Control', 'no-store')
+  })
+
   // ── non-protected routes (pass-through) ──
 
   it('should skip admin check for non-admin routes', async () => {
@@ -86,6 +98,17 @@ describe('server/middleware/admin', () => {
     await expect(handler({
       method: 'GET',
       context: {},
+    } as any)).resolves.toBeUndefined()
+    expect(global.setHeader).not.toHaveBeenCalled()
+  })
+
+  it('should not protect blog paths that do not match the write-route regex', async () => {
+    const { default: handler } = await import('~/server/middleware/admin')
+    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/blog/my-post/extra' })
+
+    await expect(handler({
+      method: 'DELETE',
+      context: { user: { id: '1', role: 'USER' } },
     } as any)).resolves.toBeUndefined()
     expect(global.setHeader).not.toHaveBeenCalled()
   })
@@ -240,6 +263,16 @@ describe('server/middleware/admin', () => {
       context: { user: { id: '1', role: 'USER' } },
     } as any)).resolves.toBeUndefined()
 
+    expect(global.setHeader).not.toHaveBeenCalled()
+  })
+
+  it('should not treat similarly prefixed paths as protected admin routes', async () => {
+    const { default: handler } = await import('~/server/middleware/admin')
+    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/administrator' })
+
+    await expect(handler({
+      context: { user: { id: '1', role: 'USER' } },
+    } as any)).resolves.toBeUndefined()
     expect(global.setHeader).not.toHaveBeenCalled()
   })
 })

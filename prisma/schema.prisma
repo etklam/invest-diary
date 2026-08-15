@@ -35,6 +35,10 @@ enum StockTimelineSourceType {
   ARTICLE
   MANUAL
   SYSTEM
+  MARKET_ROTATION
+  SEC_FILING
+  RELATIVE_VALUE
+  SEASONALITY
 }
 
 enum StockTimelineCreatedVia {

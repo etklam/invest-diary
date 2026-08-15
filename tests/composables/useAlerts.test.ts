@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, ref } from 'vue'
 import { mount } from '@vue/test-utils'
+import type { AlertPayload } from '~/types/alert'
 
 const mockRunWithAuthRecovery = vi.hoisted(() => vi.fn())
 
@@ -25,14 +26,19 @@ describe('useAlerts dismiss flow', () => {
   }
   let mockFetch: ReturnType<typeof vi.fn>
   let toast: { error: ReturnType<typeof vi.fn> }
+  let emitAlert: ((alert: AlertPayload) => void) | undefined
 
   beforeEach(() => {
     websocket = {
       isConnected: ref(true),
-      subscribeAlert: vi.fn(() => () => {}),
+      subscribeAlert: vi.fn((callback: (alert: AlertPayload) => void) => {
+        emitAlert = callback
+        return () => {}
+      }),
       dismissAlert: vi.fn(),
     }
     mockFetch = vi.fn()
+    mockFetch.mockResolvedValue([])
     toast = { error: vi.fn() }
 
     mockRunWithAuthRecovery.mockImplementation((operation: () => Promise<unknown>) => operation())
@@ -43,10 +49,25 @@ describe('useAlerts dismiss flow', () => {
     vi.stubGlobal('$fetch', mockFetch)
   })
 
+  const mountAlerts = async () => {
+    let instance: ReturnType<typeof useAlerts> | undefined
+    const Host = defineComponent({
+      setup: () => {
+        instance = useAlerts()
+        return () => null
+      },
+    })
+    const wrapper = mount(Host)
+    await Promise.resolve()
+    return { alerts: instance!, wrapper }
+  }
+
   it('advances only after WebSocket persistence succeeds', async () => {
     websocket.dismissAlert.mockResolvedValue(true)
-    const alerts = useAlerts()
-    alerts.enqueueAlerts([makeAlert('1'), makeAlert('2')])
+    const { alerts } = await mountAlerts()
+    mockFetch.mockClear()
+    emitAlert!(makeAlert('1'))
+    emitAlert!(makeAlert('2'))
 
     await expect(alerts.dismissCurrentAlert()).resolves.toBe(true)
 
@@ -59,8 +80,9 @@ describe('useAlerts dismiss flow', () => {
   it('falls back to HTTP when WebSocket fails, then advances after HTTP succeeds', async () => {
     websocket.dismissAlert.mockResolvedValue(false)
     mockFetch.mockResolvedValue({ id: '1', isDismissed: true })
-    const alerts = useAlerts()
-    alerts.enqueueAlerts([makeAlert('1'), makeAlert('2')])
+    const { alerts } = await mountAlerts()
+    emitAlert!(makeAlert('1'))
+    emitAlert!(makeAlert('2'))
 
     await expect(alerts.dismissCurrentAlert()).resolves.toBe(true)
 
@@ -71,22 +93,21 @@ describe('useAlerts dismiss flow', () => {
   it('keeps the alert visible after both transports fail and permits retry without duplicates', async () => {
     websocket.dismissAlert.mockResolvedValue(false)
     mockFetch.mockRejectedValue(new Error('HTTP unavailable'))
-    const alerts = useAlerts()
+    const { alerts } = await mountAlerts()
     const alert = makeAlert('1')
-    alerts.enqueueAlerts([alert])
-    alerts.enqueueAlerts([alert])
+    emitAlert!(alert)
+    emitAlert!(alert)
 
     await expect(alerts.dismissCurrentAlert()).resolves.toBe(false)
 
     expect(alerts.currentAlert.value?.id).toBe('1')
     expect(alerts.showAlert.value).toBe(true)
-    expect(alerts.hasNextAlert.value).toBe(false)
     expect(toast.error).toHaveBeenCalledWith('alert.dismissFailed')
 
     // Removing the processed marker must not allow the same visible alert to
     // be enqueued a second time while it is waiting for retry.
-    alerts.enqueueAlerts([alert])
-    expect(alerts.hasNextAlert.value).toBe(false)
+    emitAlert!(alert)
+    expect(alerts.currentAlert.value?.id).toBe('1')
 
     websocket.dismissAlert.mockResolvedValue(true)
     await expect(alerts.dismissCurrentAlert()).resolves.toBe(true)
@@ -99,13 +120,7 @@ describe('useAlerts dismiss flow', () => {
       mockFetch.mockResolvedValue([])
       mockRunWithAuthRecovery.mockImplementation((operation: () => Promise<unknown>) => operation())
 
-      const Host = defineComponent({
-        setup: () => {
-          useAlerts()
-          return () => null
-        },
-      })
-      const wrapper = mount(Host)
+      const { wrapper } = await mountAlerts()
       // 讓 onMounted 內 await syncAlertTransport() 的 continuation 執行完畢
       await vi.advanceTimersByTimeAsync(0)
 

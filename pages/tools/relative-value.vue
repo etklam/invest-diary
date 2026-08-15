@@ -13,6 +13,7 @@ import type { QuoteResponse, HistoricalQuote } from '~/lib/market-data/yahoo'
 import QuoteInput from '~/components/QuoteInput.vue'
 import LedgerCard from '~/components/LedgerCard.vue'
 import BaseButton from '~/components/BaseButton.vue'
+import { useResearchCapture } from '~/composables/useResearchCapture'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -31,6 +32,7 @@ ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, CategoryScale
 
 const { t, locale } = useI18n()
 const toast = useToast()
+const researchCapture = useResearchCapture()
 
 // Primary stock (主股票)
 const primarySymbol = ref<string>('')
@@ -240,6 +242,34 @@ const calculationResult = computed((): CalculationResult | null => {
   })
 })
 
+function openRelativeValueCapture(): void {
+  const result = calculationResult.value
+  if (!result) return
+
+  const range = historicalRange.value
+  const sourceTitle = `${result.primarySymbol} vs ${result.relativeSymbol} · ${range}`
+  researchCapture.open({
+    sourceLabel: `${t('researchCapture.sources.relativeValue')} · ${result.primarySymbol} vs ${result.relativeSymbol}`,
+    suggestedInsight: t('researchCapture.context.relativeValueObservation', {
+      primary: result.primarySymbol,
+      relative: result.relativeSymbol,
+      ratio: formatRatio(result.ratio),
+      range,
+    }),
+    metadata: {
+      sourceType: 'RELATIVE_VALUE',
+      sourceTitle,
+      occurredAt: new Date().toISOString(),
+      metadataJson: JSON.stringify({
+        primarySymbol: result.primarySymbol,
+        relativeSymbol: result.relativeSymbol,
+        ratio: result.ratio,
+        historicalRange: range,
+      }),
+    },
+  })
+}
+
 const sortedPriceTable = computed((): PricePoint[] => {
   if (!calculationResult.value) return []
   return [...calculationResult.value.priceTable].sort((a, b) => b.targetPrice - a.targetPrice)
@@ -273,56 +303,55 @@ function buildQuoteUrl(symbol: string): string {
   return `/api/market/quote/${encodeURIComponent(symbol.trim())}`
 }
 
-// Fetch quote functions
-async function fetchPrimaryQuote() {
-  if (!primarySymbol.value.trim()) {
-    primaryError.value = t('tools.relativeValue.symbolRequired')
+const createQuoteFetcher = (target: {
+  symbol: typeof primarySymbol
+  price: typeof primaryPrice
+  loading: typeof primaryLoading
+  quote: typeof primaryQuote
+  error: typeof primaryError
+  suggestion: typeof primarySymbolSuggestion
+}) => async () => {
+  if (!target.symbol.value.trim()) {
+    target.error.value = t('tools.relativeValue.symbolRequired')
     toast.error(t('tools.relativeValue.symbolRequired'))
     return
   }
 
-  primaryLoading.value = true
-  primaryError.value = ''
+  target.loading.value = true
+  target.error.value = ''
   try {
-    const response = await $fetch<QuoteResponse>(buildQuoteUrl(primarySymbol.value))
-    primaryQuote.value = response
-    primaryPrice.value = response.regularMarketPrice
+    const response = await $fetch<QuoteResponse>(buildQuoteUrl(target.symbol.value))
+    target.quote.value = response
+    target.price.value = response.regularMarketPrice
   } catch (error: unknown) {
-    primaryError.value = buildQuoteErrorMessage(
-      primarySymbol.value,
-      primarySymbolSuggestion.value,
+    target.error.value = buildQuoteErrorMessage(
+      target.symbol.value,
+      target.suggestion.value,
       error as ApiErrorLike
     )
-    toast.error(primaryError.value, 5000)
+    toast.error(target.error.value, 5000)
   } finally {
-    primaryLoading.value = false
+    target.loading.value = false
   }
 }
 
-async function fetchRelativeQuote() {
-  if (!relativeSymbol.value.trim()) {
-    relativeError.value = t('tools.relativeValue.symbolRequired')
-    toast.error(t('tools.relativeValue.symbolRequired'))
-    return
-  }
+const fetchPrimaryQuote = createQuoteFetcher({
+  symbol: primarySymbol,
+  price: primaryPrice,
+  loading: primaryLoading,
+  quote: primaryQuote,
+  error: primaryError,
+  suggestion: primarySymbolSuggestion,
+})
 
-  relativeLoading.value = true
-  relativeError.value = ''
-  try {
-    const response = await $fetch<QuoteResponse>(buildQuoteUrl(relativeSymbol.value))
-    relativeQuote.value = response
-    relativePrice.value = response.regularMarketPrice
-  } catch (error: unknown) {
-    relativeError.value = buildQuoteErrorMessage(
-      relativeSymbol.value,
-      relativeSymbolSuggestion.value,
-      error as ApiErrorLike
-    )
-    toast.error(relativeError.value, 5000)
-  } finally {
-    relativeLoading.value = false
-  }
-}
+const fetchRelativeQuote = createQuoteFetcher({
+  symbol: relativeSymbol,
+  price: relativePrice,
+  loading: relativeLoading,
+  quote: relativeQuote,
+  error: relativeError,
+  suggestion: relativeSymbolSuggestion,
+})
 
 async function fetchAllQuotes() {
   await Promise.all([
@@ -745,6 +774,10 @@ definePageMeta({
                 <Icon :name="copySuccess ? 'heroicons:check-circle' : 'heroicons:clipboard-document'" class="h-5 w-5" :class="{ 'text-emerald-500': copySuccess }" />
                 {{ copySuccess ? t('tools.relativeValue.copied') : t('tools.relativeValue.copyToClipboard') }}
               </BaseButton>
+              <BaseButton v-if="researchCapture.canCapture.value" variant="primary" class="mt-2 w-full" @click="openRelativeValueCapture">
+                <Icon name="heroicons:pencil-square" class="h-5 w-5" />
+                {{ t('researchCapture.captureInsight') }}
+              </BaseButton>
             </LedgerCard>
 
             <!-- Price Table -->
@@ -808,6 +841,7 @@ definePageMeta({
       </div>
     </div>
   </div>
+  <ResearchCaptureModal :capture="researchCapture" />
 </template>
 
 <style scoped>

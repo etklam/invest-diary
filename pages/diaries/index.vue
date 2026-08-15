@@ -229,6 +229,8 @@
 import type { DiariesApiResponse } from '~/types/diary'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useAppShell } from '~/composables/useAppShell'
+import { mergeDiariesById } from '~/composables/useTimelineDiaries'
+import { stripDiaryMarkdown } from '~/lib/diary-excerpt'
 
 definePageMeta({
   middleware: 'auth'
@@ -313,11 +315,10 @@ const loadMore = async () => {
     const response = await $fetch<DiariesApiResponse>('/api/diaries', {
       query: { ...queryParams.value, page: String(nextPage) },
     })
-    const existing = new Set(diaryItems.value.map(diary => String(diary.id)))
-    const nextItems = response.data.filter(diary => !existing.has(String(diary.id)))
+    const nextItems = mergeDiariesById(diaryItems.value, response.data)
     apiResponse.value = {
       ...response,
-      data: [...diaryItems.value, ...nextItems],
+      data: nextItems,
     }
     currentPage.value = nextPage
   } catch (error) {
@@ -362,7 +363,7 @@ const formatDiaryDate = (date: string | Date) => {
 }
 
 const getDiaryExcerpt = (diary: { content?: string }) => {
-  const plainText = (diary.content || '').replace(/[#*`>\-\n]/g, ' ').replace(/\s+/g, ' ').trim()
+  const plainText = stripDiaryMarkdown(diary.content)
   return plainText || t('desk.list.noExcerpt')
 }
 </script>

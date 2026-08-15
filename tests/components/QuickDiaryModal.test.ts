@@ -94,6 +94,7 @@ const messages: Record<string, string> = {
   'quickDiary.templateAssistant.description': '模板欄位會更新建議標題與內容，送出前仍可自由編輯。',
   'quickDiary.templateAssistant.applyChanges': '套用模板變更',
   'quickDiary.templateAssistant.regenerate': '重新產生模板內容',
+  'quickDiary.draft.prefillAppendPrompt': '已帶入預填內容，但目前有未完成的草稿。要將預填內容附加到草稿嗎？（取消則保留草稿不動）',
   'diary.diaryTitle': '日記標題',
 }
 
@@ -103,6 +104,11 @@ const setReminderMock = vi.fn()
 const clearReminderMock = vi.fn()
 const applyTemplateKindMock = vi.fn()
 const setDateMock = vi.fn()
+const setContentMock = vi.fn()
+const setStockSymbolsMock = vi.fn()
+const initializeMock = vi.fn()
+const confirmMock = vi.fn()
+const restoreDraftMock = ref(false)
 const resetStateMock = vi.fn()
 const notifyDiaryCreatedMock = vi.fn()
 const localStorageMap = new Map<string, any>()
@@ -116,6 +122,7 @@ function createMockState() {
     title: '',
     content: '',
     tags: [] as string[],
+    stockSymbols: [] as string[],
     reminders: { reminder1: null as string | null },
     templateData: {} as Record<string, unknown>,
     titleTouched: false,
@@ -157,8 +164,9 @@ function createMockComposer() {
       }
     }),
     setTitle: vi.fn((title: string) => { state.title = title }),
-    setContent: vi.fn((content: string) => { state.content = content }),
+    setContent: setContentMock.mockImplementation((content: string) => { state.content = content }),
     setTags: vi.fn((tags: string[]) => { state.tags = tags }),
+    setStockSymbols: setStockSymbolsMock.mockImplementation((symbols: string[]) => { state.stockSymbols = symbols }),
     setDate: setDateMock.mockImplementation((date: string) => { state.date = date }),
     setSaveMode: vi.fn((mode: string) => { state.saveMode = mode }),
     appendVoiceTranscript: vi.fn(),
@@ -181,7 +189,12 @@ function createMockComposer() {
       clearReminderMock('reminder1')
       return { id: '42' }
     }),
-    initialize: vi.fn(() => false),
+    initialize: initializeMock.mockImplementation(() => {
+      if (!restoreDraftMock.value) return false
+      state.content = 'Restored draft body'
+      state.stockSymbols = ['NVDA']
+      return true
+    }),
     dispose: vi.fn(),
     resetState: resetStateMock,
   }
@@ -226,7 +239,7 @@ function mountModal(props: Record<string, unknown> = {}) {
     getTodayDateString: () => '2026-03-22',
   }))
   vi.stubGlobal('useToast', () => mockToast)
-  vi.stubGlobal('confirm', () => true)
+  vi.stubGlobal('confirm', confirmMock)
   vi.stubGlobal('setInterval', vi.fn(() => 1))
   vi.stubGlobal('clearInterval', vi.fn())
 
@@ -285,6 +298,8 @@ describe('QuickDiaryModal', () => {
     vi.clearAllMocks()
     localStorageMap.clear()
     existingDiaryForDateMock.value = false
+    restoreDraftMock.value = false
+    confirmMock.mockReturnValue(true)
     submitQuickNoteMock.mockResolvedValue({ id: '42' })
   })
 
@@ -328,6 +343,73 @@ describe('QuickDiaryModal', () => {
     await flushPromises()
 
     expect(setDateMock).toHaveBeenCalledWith('2026-07-04')
+  })
+
+  // --- Prefill pipeline (research capture context) ---
+
+  it('prefills content and stock symbols from context when no draft is restored', async () => {
+    const wrapper = mountModal({
+      context: { source: 'timeline', content: '  TSLA research note  ', stockSymbols: ['tsla', 'aapl'] },
+    })
+    await flushPromises()
+
+    expect(confirmMock).not.toHaveBeenCalled()
+    expect(setContentMock).toHaveBeenCalledWith('TSLA research note')
+    expect(setStockSymbolsMock).toHaveBeenCalledWith(['tsla', 'aapl'])
+    // Prefill is an editable starting point — it lands in the editor, nothing auto-saves
+    expect(wrapper.get('textarea[aria-label="筆記內容"]').element.value).toBe('TSLA research note')
+  })
+
+  it('does not prefill when neither content nor symbols are present', async () => {
+    mountModal({
+      context: { source: 'timeline', content: '   ', stockSymbols: [] },
+    })
+    await flushPromises()
+
+    expect(setContentMock).not.toHaveBeenCalled()
+    expect(setStockSymbolsMock).not.toHaveBeenCalled()
+  })
+
+  it('asks before touching a restored draft and prepends prefill on confirm', async () => {
+    restoreDraftMock.value = true
+    mountModal({
+      context: { source: 'timeline', content: 'Fresh research', stockSymbols: ['TSLA'] },
+    })
+    await flushPromises()
+
+    expect(confirmMock).toHaveBeenCalledWith('已帶入預填內容，但目前有未完成的草稿。要將預填內容附加到草稿嗎？（取消則保留草稿不動）')
+    expect(setContentMock).toHaveBeenCalledWith('Fresh research\n\nRestored draft body')
+    expect(setStockSymbolsMock).toHaveBeenCalledWith(['NVDA', 'TSLA'])
+    // Draft-owned context stays inert while a draft is restored
+    expect(applyTemplateKindMock).not.toHaveBeenCalled()
+    expect(setDateMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps a restored draft untouched when the prefill merge is declined', async () => {
+    restoreDraftMock.value = true
+    confirmMock.mockReturnValue(false)
+    mountModal({
+      context: { source: 'timeline', content: 'Fresh research', stockSymbols: ['TSLA'] },
+    })
+    await flushPromises()
+
+    expect(confirmMock).toHaveBeenCalledTimes(1)
+    expect(setContentMock).not.toHaveBeenCalled()
+    expect(setStockSymbolsMock).not.toHaveBeenCalled()
+    expect(applyTemplateKindMock).not.toHaveBeenCalled()
+    expect(setDateMock).not.toHaveBeenCalled()
+  })
+
+  it('does not prompt about prefill when a restored draft exists but context carries none', async () => {
+    restoreDraftMock.value = true
+    mountModal({
+      context: { source: 'floating', date: '2026-07-04', templateKind: 'trading' },
+    })
+    await flushPromises()
+
+    expect(confirmMock).not.toHaveBeenCalled()
+    expect(applyTemplateKindMock).not.toHaveBeenCalled()
+    expect(setDateMock).not.toHaveBeenCalled()
   })
 
   it('resets composer state when the modal closes', async () => {

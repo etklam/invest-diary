@@ -10,14 +10,13 @@ function setViewport(width: number, height = 800) {
 }
 
 describe('useMobileDetection', () => {
-  describe('isMobile / isTablet / isDesktop（layouts/mobile.vue 契約）', () => {
-    it('手機寬度 → isMobile=true, isDesktop=false', async () => {
+  describe('isMobile / isTablet（layouts/mobile.vue 契約）', () => {
+    it('手機寬度 → isMobile=true, isTablet=false', async () => {
       setViewport(375)
-      const { isMobile, isTablet, isDesktop } = useMobileDetection()
+      const { isMobile, isTablet } = useMobileDetection()
       await nextTick()
       expect(isMobile.value).toBe(true)
       expect(isTablet.value).toBe(false)
-      expect(isDesktop.value).toBe(false)
     })
 
     it('平板寬度 → isTablet=true', async () => {
@@ -35,15 +34,5 @@ describe('useMobileDetection', () => {
       expect(isMobile.value).toBe(false)
       expect(isTablet.value).toBe(false)
     })
-  })
-})
-
-// ponytail: isDesktop 在無觸控桌面應為 true；happy-dom 預設 non-coarse pointer
-describe('useMobileDetection - isDesktop', () => {
-  it('桌面寬度且無觸控 → isDesktop=true', async () => {
-    setViewport(1440)
-    const { isDesktop } = useMobileDetection()
-    await nextTick()
-    expect(isDesktop.value).toBe(true)
   })
 })

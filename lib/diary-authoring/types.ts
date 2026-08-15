@@ -35,15 +35,6 @@ export interface DiaryAuthoringForm {
   alerts: DiaryAuthoringAlert[]
 }
 
-/**
- * Optional client-side ledger context. The UI must treat `available: false`
- * as unknown rather than as an empty portfolio.
- */
-export interface DiaryAuthoringLedgerContext {
-  available: boolean
-  holdings?: Record<string, number>
-}
-
 export type DiaryAuthoringPayload = DiaryInput & {
   transactions: Array<{
     id?: string

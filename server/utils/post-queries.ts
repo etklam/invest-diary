@@ -4,7 +4,7 @@ import { Errors } from '~/lib/errors/factory'
 
 const DEFAULT_PAGE = 1
 const DEFAULT_LIMIT = 20
-export const PUBLIC_DEFAULT_LIMIT = 9
+const PUBLIC_DEFAULT_LIMIT = 9
 const MAX_LIMIT = 50
 
 const LEGACY_CATEGORY_ALIASES: Record<string, string[]> = {
@@ -25,16 +25,23 @@ const SORT_OPTIONS: Record<string, Record<string, 'asc' | 'desc'>> = {
   title_desc: { title: 'desc' },
 }
 
-export interface PostQueryConfig {
+type PostStatusFilter = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+
+/**
+ * Internal query plumbing — NOT for handler use.
+ * Handlers go through the persona entry points (queryPostsAdmin/queryPostsPublic),
+ * which pin the persona-specific toggles so callers never touch Prisma semantics.
+ */
+interface PostQueryConfig {
   /** Filter by status. undefined = all statuses. */
-  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+  status?: PostStatusFilter
   /** Filter by category. */
   category?: string
   /** Filter by tag substring. */
   tag?: string
   /** Search string. */
   search?: string
-  /** Filter by author name or email via contains. */
+  /** Filter by author name or email via contains. Admin only — never wired in public. */
   author?: string
   /** Date range start (inclusive). */
   dateFrom?: Date
@@ -42,8 +49,6 @@ export interface PostQueryConfig {
   dateTo?: Date
   /** Which date column to filter on. Default: 'publishedAt'. */
   dateField?: 'publishedAt' | 'createdAt'
-  /** Whether invalid dates should throw 400. Default: false. */
-  strictDateValidation?: boolean
   /** Sort key. */
   sortBy?: string
   /** Fallback sort when sortBy is not specified. Default: 'publishedAt_desc'. */
@@ -97,15 +102,12 @@ function normalizeString(value: unknown): string | undefined {
   return str || undefined
 }
 
-function parseDateParam(value: unknown, strict: boolean): Date | undefined {
+function parseDateParam(value: unknown): Date | undefined {
   const str = normalizeString(value)
   if (!str) return undefined
   const parsed = new Date(str)
   if (Number.isNaN(parsed.getTime())) {
-    if (strict) {
-      throw Errors.validationError([{ field: 'date', message: 'Invalid date format' }]).toH3Error()
-    }
-    return undefined
+    throw Errors.validationError([{ field: 'date', message: 'Invalid date format' }]).toH3Error()
   }
   return parsed
 }
@@ -116,13 +118,7 @@ function endOfDay(date: Date): Date {
   return d
 }
 
-/**
- * Query blog posts with filtering, sorting, and pagination.
- *
- * The only function callers need to list posts — hides Prisma query
- * construction, serialization, and pagination math behind a single call.
- */
-export async function queryPosts(config: PostQueryConfig = {}): Promise<PostListResult> {
+async function queryPosts(config: PostQueryConfig = {}): Promise<PostListResult> {
   const effectiveDefaultLimit = config.defaultLimit ?? DEFAULT_LIMIT
   const page = config.page ?? DEFAULT_PAGE
   const limit = resolveLimit(config.limit, effectiveDefaultLimit)
@@ -235,31 +231,70 @@ export async function queryPosts(config: PostQueryConfig = {}): Promise<PostList
   }
 }
 
-/**
- * Parse query parameters from an H3Event into a PostQueryConfig.
- * Route handlers can spread this into queryPosts().
- *
- * Does NOT resolve limit — passes raw value so queryPosts can apply
- * route-specific defaults (defaultLimit).
- */
-const VALID_STATUSES = new Set(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
+// ---- Persona entry points ----
 
-export function parsePostQueryConfig(
-  query: Record<string, unknown>,
-  options?: { strictDateValidation?: boolean }
-): PostQueryConfig {
-  const rawStatus = normalizeString(query.status)
-  const strict = options?.strictDateValidation ?? false
+const VALID_STATUSES: ReadonlySet<string> = new Set(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
+
+/** Shared raw-query parsing (dates strict → 400). Persona entries layer status/author on top. */
+function parseCommonFilters(query: Record<string, unknown>) {
   return {
-    status: rawStatus && VALID_STATUSES.has(rawStatus) ? rawStatus as PostQueryConfig['status'] : undefined,
     category: normalizeString(query.category),
     tag: normalizeString(query.tag),
     search: normalizeString(query.search),
-    author: normalizeString(query.author),
-    dateFrom: parseDateParam(query.dateFrom, strict),
-    dateTo: parseDateParam(query.dateTo, strict),
+    dateFrom: parseDateParam(query.dateFrom),
+    dateTo: parseDateParam(query.dateTo),
     sortBy: normalizeString(query.sortBy),
     page: parsePage(query.page),
     limit: Number(query.limit) || undefined,
   }
+}
+
+/** Admin status filter. Single validation point: invalid status → 400, not silent drop. */
+function parseAdminStatus(value: unknown): PostStatusFilter | undefined {
+  const raw = normalizeString(value)
+  if (raw === undefined) return undefined
+  if (!VALID_STATUSES.has(raw)) {
+    throw Errors.validationError([{ field: 'status', message: `Invalid status: ${raw}` }])
+  }
+  return raw as PostStatusFilter
+}
+
+/**
+ * List posts for the admin console: all statuses, createdAt filtering/sorting,
+ * author/email search, lean 20-per-page. Invalid `status` → 400.
+ */
+export function queryPostsAdmin(query: Record<string, unknown>): Promise<PostListResult> {
+  return queryPosts({
+    ...parseCommonFilters(query),
+    status: parseAdminStatus(query.status),
+    author: normalizeString(query.author),
+    dateField: 'createdAt',
+    defaultSortBy: 'createdAt_desc',
+    enableCategoryAliases: false,
+    searchFields: ['title'],
+    includeEmail: true,
+    includeStatus: true,
+    requirePublishedAt: false,
+  })
+}
+
+/**
+ * List posts for the public blog. The author/email filter is dropped here —
+ * email-enumeration protection is guaranteed by the module, not by callers
+ * remembering to strip it.
+ */
+export function queryPostsPublic(query: Record<string, unknown>): Promise<PostListResult> {
+  return queryPosts({
+    ...parseCommonFilters(query),
+    status: 'PUBLISHED',
+    dateField: 'publishedAt',
+    defaultSortBy: 'publishedAt_desc',
+    defaultLimit: PUBLIC_DEFAULT_LIMIT,
+    enableCategoryAliases: true,
+    searchFields: ['title', 'excerpt'],
+    searchMode: 'search',
+    includeEmail: false,
+    includeStatus: false,
+    requirePublishedAt: true,
+  })
 }

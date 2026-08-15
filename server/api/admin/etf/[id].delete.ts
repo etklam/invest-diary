@@ -3,43 +3,24 @@
  * Cascade deletes all related prices, alerts, and watchlist entries
  */
 
-import { requireUser } from '~/server/utils/auth'
-import adminMiddleware from '~/server/middleware/admin'
-import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
-import { Errors } from '~/lib/errors/factory'
+import { serialize } from '~/server/utils/serialize'
+import { deleteAdminEtf } from '~/server/utils/etf-admin-queries'
 
 export default defineEventHandler(async (event) => {
-  requireUser(event)
-  await adminMiddleware(event)
+  const log = logger.admin.withRequestId(event.context.requestId)
 
-  const etfId = parsePositiveBigIntParam(event, 'id')
+  try {
+    const etfId = parsePositiveBigIntParam(event, 'id')
+    const result = await deleteAdminEtf(etfId)
 
-  // Check if ETF exists
-  const etf = await prisma.etf.findUnique({
-    where: { id: etfId },
-    include: {
-      _count: {
-        select: {
-          prices: true,
-          watchlists: true,
-        },
-      },
-    },
-  })
-
-  if (!etf) {
-    throw Errors.etfNotFound(etfId.toString()).toH3Error()
-  }
-
-  // Delete ETF (cascade will handle related records)
-  await prisma.etf.delete({
-    where: { id: etfId },
-  })
-
-  return {
-    success: true,
-    deletedPrices: etf._count.prices,
-    deletedWatchlists: etf._count.watchlists,
+    return serialize({
+      success: true,
+      ...result,
+    })
+  } catch (error) {
+    handleApiError(error, log)
   }
 })

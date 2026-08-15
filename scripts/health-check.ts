@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+import 'dotenv/config'
 
 /**
  * System Health Check Script
@@ -14,6 +15,7 @@
 import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { createPrismaClientOptions } from '../lib/prisma-client-options'
 
 interface HealthCheckResult {
   name: string
@@ -162,11 +164,7 @@ runCheck(
       // If direct execute fails, try through Prisma Client
       try {
         const { PrismaClient } = require('@prisma/client')
-        const { PrismaMariaDb } = require('@prisma/adapter-mariadb')
-        const databaseUrl = process.env.DATABASE_URL || 'mysql://root:password@localhost:3306/test'
-        const prisma = new PrismaClient({
-          adapter: new PrismaMariaDb(databaseUrl)
-        })
+        const prisma = new PrismaClient(createPrismaClientOptions())
         prisma.$disconnect()
       } catch (prismaError) {
         throw new Error(`Cannot connect to database. Check DATABASE_URL and ensure MySQL is running.${appendErrorMessage(prismaError)}`)

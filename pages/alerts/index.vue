@@ -94,6 +94,7 @@
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 import { formatDate, formatShortDate } from '~/lib/dates'
+import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import type { AlertApiResponse } from '~/types/alert'
 
 const { t } = useI18n()
@@ -110,7 +111,7 @@ const { data: alerts, pending, error, refresh } = await useLazyFetch<AlertApiRes
 const toast = useToast()
 
 // Get user's timezone
-const userTimezone = computed(() => user.value?.timezone || 'Asia/Taipei')
+const userTimezone = computed(() => resolveUserTimezone(user.value))
 
 const dismissAlert = async (id: AlertApiResponse['id']) => {
   try {
@@ -128,8 +129,8 @@ const dismissAlert = async (id: AlertApiResponse['id']) => {
 }
 
 const getRecurringLabel = (mode: string) => {
-  if (mode === 'WEEK') return '本周'
-  if (mode === 'MONTH') return '本月'
+  if (mode === 'WEEK') return t('alert.recurringWeek')
+  if (mode === 'MONTH') return t('alert.recurringMonth')
   return ''
 }
 </script>

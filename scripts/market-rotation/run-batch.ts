@@ -21,7 +21,7 @@
 import 'dotenv/config'
 
 import { createRequire } from 'node:module'
-import { PrismaMariaDb } from '@prisma/adapter-mariadb'
+import { createPrismaClientOptions } from '~/lib/prisma-client-options'
 import { runFullBatch, runScopeBatch, type BatchJobResult, type FullBatchResult } from '~/server/utils/market-rotation-batch'
 
 const require = createRequire(import.meta.url)
@@ -136,24 +136,15 @@ export async function executeBatch(options: ExecuteBatchOptions): Promise<BatchO
   }
 }
 
-// ─── Prisma client factory ──────────────────────────────────────────
-
 /**
  * Create a standalone PrismaClient for the batch script.
  *
  * We can't use the `~/lib/prisma` singleton here because that module relies
- * on Nuxt's Nitro runtime context (useRuntimeConfig). In a bare tsx process
- * there's no Nitro, so we build the adapter directly — same pattern as
- * scripts/market-state/update-breadth.ts.
+ * on Nuxt's Nitro runtime context. In a bare tsx process there's no Nitro,
+ * so use the shared Prisma options factory directly.
  */
 function createBatchPrisma() {
-  const databaseUrl = process.env.DATABASE_URL
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL is required. Set it in the environment or .env file.')
-  }
-  return new PrismaClient({
-    adapter: new PrismaMariaDb(databaseUrl),
-  })
+  return new PrismaClient(createPrismaClientOptions())
 }
 
 // ─── Entry point ────────────────────────────────────────────────────

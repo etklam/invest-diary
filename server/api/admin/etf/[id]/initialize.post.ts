@@ -3,77 +3,24 @@
  * Fetches 5 years of monthly data from Yahoo Finance
  */
 
-import { requireUser } from '~/server/utils/auth'
-import adminMiddleware from '~/server/middleware/admin'
-import { fetchMonthlyData } from '~/lib/yahoo-finance'
-import prisma from '~/lib/prisma'
+import { logger } from '~/lib/logger'
+import { handleApiError } from '~/server/utils/error-handler'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
-import { Errors } from '~/lib/errors/factory'
+import { serialize } from '~/server/utils/serialize'
+import { initializeAdminEtf } from '~/server/utils/etf-admin-queries'
 
 export default defineEventHandler(async (event) => {
-  requireUser(event)
-  await adminMiddleware(event)
-
-  const etfId = parsePositiveBigIntParam(event, 'id')
-
-  // Check if ETF exists
-  const etf = await prisma.etf.findUnique({
-    where: { id: etfId },
-  })
-
-  if (!etf) {
-    throw Errors.etfNotFound(etfId.toString()).toH3Error()
-  }
+  const log = logger.admin.withRequestId(event.context.requestId)
 
   try {
-    // Fetch 5 years of monthly data from Yahoo Finance
-    const monthlyData = await fetchMonthlyData(etf.symbol, 5)
+    const etfId = parsePositiveBigIntParam(event, 'id')
+    const result = await initializeAdminEtf(etfId)
 
-    // Prepare data for batch insert. Yahoo sometimes returns null OHLC on
-    // monthly bars; nothing downstream reads open/high/low (only close), so
-    // coalesce them to close instead of writing phantom zero wicks.
-    const prices = monthlyData
-      .filter((d): d is typeof d & { close: number } => d.close !== null)
-      .map(d => ({
-        etfId,
-        date: new Date(d.timestamp * 1000),
-        open: d.open ?? d.close,
-        high: d.high ?? d.close,
-        low: d.low ?? d.close,
-        close: d.close,
-        adjClose: d.adjClose ?? d.close,
-        volume: d.volume ?? null,
-      }))
-
-    if (prices.length === 0) {
-      throw Errors.externalServiceError('No historical data available from Yahoo Finance').toH3Error()
-    }
-    const firstPrice = prices.at(0)
-    const lastPrice = prices.at(-1)
-    if (!firstPrice || !lastPrice) {
-      throw Errors.externalServiceError('No historical data available from Yahoo Finance').toH3Error()
-    }
-
-    // Batch insert with skipDuplicates
-    const result = await prisma.etfPrice.createMany({
-      data: prices,
-      skipDuplicates: true,
-    })
-
-    return {
+    return serialize({
       success: true,
-      added: result.count,
-      total: prices.length,
-      symbol: etf.symbol,
-      dateRange: {
-        from: new Date(firstPrice.date).toISOString().split('T')[0],
-        to: new Date(lastPrice.date).toISOString().split('T')[0],
-      },
-    }
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
-    }
-    throw Errors.externalServiceError('Failed to fetch historical data from Yahoo Finance').toH3Error()
+      ...result,
+    })
+  } catch (error) {
+    handleApiError(error, log)
   }
 })

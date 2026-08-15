@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const source = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
+const locale = (name: string) => JSON.parse(readFileSync(resolve(process.cwd(), 'i18n/locales', `${name}.json`), 'utf8'))
 
 describe('Timeline-first page contracts', () => {
   it('keeps the selected Pair View partner in the route query without a duplicate refresh', () => {
@@ -44,7 +45,7 @@ describe('Timeline-first page contracts', () => {
     expect(timeline).not.toContain('diary.reviewAdjustment')
   })
 
-  it('keeps /timeline as the bounded four-section Investment Overview above the canonical Diary Timeline', () => {
+  it('keeps the canonical Diary Timeline primary while preserving the four-section overview', () => {
     const timeline = source('pages/timeline/index.vue')
 
     const portfolio = timeline.indexOf('overview-portfolio-title')
@@ -53,6 +54,13 @@ describe('Timeline-first page contracts', () => {
     const upcoming = timeline.indexOf('overview-upcoming-title')
     const fullTimeline = timeline.indexOf('id="diary-timeline"')
 
+    expect(timeline).toContain('<details class="timeline-overview')
+    expect(timeline).toContain("t('timeline.overview.summary.viewOverview')")
+    expect(timeline).toContain("t('timeline.overview.summary.portfolioValue')")
+    expect(timeline).toContain("t('timeline.overview.summary.needsAttention')")
+    expect(timeline).toContain("t('timeline.overview.summary.reviewsUpcoming')")
+    expect(timeline).toContain('const upcomingReviewCount = computed')
+    expect(timeline).toContain('const attentionCount = computed')
     expect(portfolio).toBeGreaterThan(-1)
     expect(portfolio).toBeLessThan(attention)
     expect(attention).toBeLessThan(activity)
@@ -63,6 +71,14 @@ describe('Timeline-first page contracts', () => {
     expect(timeline).toContain("'/api/stocks/portfolio'")
     expect(timeline).toContain("'/api/reviews'")
     expect(timeline).not.toContain("'/overview'")
+    expect(timeline).toContain("t('timeline.title')")
+  })
+
+  it('keeps Timeline as the primary name across navigation and page headings', () => {
+    const locales = ['en', 'zh-TW', 'zh-CN'].map(locale)
+
+    expect(locales.map(messages => messages.nav.timeline)).toEqual(['Timeline', '時間軸', '时间轴'])
+    expect(locales.map(messages => messages.timeline.title)).toEqual(['Investment Timeline', '投資時間軸', '投资时间轴'])
   })
 
   it('shows owner Trade Plan signals in metadata priority order without changing Pair View privacy', () => {

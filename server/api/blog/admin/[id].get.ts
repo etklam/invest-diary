@@ -1,6 +1,5 @@
 import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
-import adminMiddleware from '~/server/middleware/admin'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { serialize } from '~/server/utils/serialize'
 import { Errors } from '~/lib/errors/factory'
@@ -8,8 +7,6 @@ import { handleApiError } from '~/server/utils/error-handler'
 
 export default defineEventHandler(async (event) => {
   const log = logger.blog.withRequestId(event.context.requestId)
-  await adminMiddleware(event)
-
   const postId = parsePositiveBigIntParam(event, 'id')
 
   try {

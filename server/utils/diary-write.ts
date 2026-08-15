@@ -5,6 +5,7 @@ import { getUtcDayRange, toUtcNoonDate } from '~/lib/dates/normalize'
 import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'
 import { attachDiaryMetadata } from '~/server/utils/diary-response'
+import { getUserTimezone } from '~/server/utils/user-queries'
 import {
   normalizeDiaryStockSymbols,
   replaceDiaryStockContexts,
@@ -14,9 +15,7 @@ import { persistAlerts, replaceAlerts } from '~/server/utils/alert-persistence'
 import {
   calculateLedgerHoldings,
   validateDiaryPayloadLimits,
-  validateTransactionLedger,
   validateTransactionValues,
-  type HoldingsInput,
 } from '~/lib/diary-authoring/validation'
 
 /** Enforce payload size caps before any ledger math or DB read. */
@@ -42,29 +41,7 @@ export function toInputDate(value: string | Date): Date {
   return value instanceof Date ? value : new Date(value)
 }
 
-/**
- * 查使用者 timezone，供 recurring alert 序列計算使用。
- * 找不到（理論上不會）時回退 schema default 'Asia/Taipei'。
- */
-async function resolveUserTimezone(
-  tx: Prisma.TransactionClient,
-  userId: bigint,
-): Promise<string> {
-  const user = await tx.user.findUnique({
-    where: { id: userId },
-    select: { timezone: true },
-  })
-  return user?.timezone ?? 'Asia/Taipei'
-}
-
 // ---- Shared validation ----
-
-export interface DiaryValidationOptions {
-  /** Baseline holdings at the target diary date. */
-  initialHoldings?: HoldingsInput
-  /** False means the caller deliberately has no reliable ledger context. */
-  baselineAvailable?: boolean
-}
 
 /** Prisma's unique constraint error, kept structural so this module remains testable without a DB client. */
 export function isUniqueConstraintError(error: unknown): boolean {
@@ -81,11 +58,12 @@ function diaryDateLabel(date: Date): string {
 /**
  * Validate diary input shared by both create and update.
  * Throws validation error if title is missing or transactions are invalid.
+ * Ledger validation (oversell against portfolio baseline) lives in
+ * validateDiaryTransactionsForUser — the server-side authority.
  */
 export function validateDiaryInput(
   title: string | undefined,
   transactions: TransactionInput[] | undefined,
-  options: DiaryValidationOptions = {},
 ): void {
   if (!title) {
     throw Errors.validationError([{ field: 'title', message: 'Title is required' }])
@@ -97,16 +75,6 @@ export function validateDiaryInput(
       field: `transactions.${valueError.index}.${valueError.field}`,
       message: valueError.message,
     }])
-  }
-
-  if (options.baselineAvailable === false) return
-
-  const transactionError = validateTransactionLedger(
-    options.initialHoldings,
-    transactions ?? [],
-  )?.message
-  if (transactionError) {
-    throw Errors.validationError([{ field: 'transactions', message: transactionError }])
   }
 }
 
@@ -320,7 +288,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
   enforceDiaryPayloadLimits(body)
 
   // Validate before any read/write so malformed rows cannot reach persistence.
-  validateDiaryInput(body.title, body.transactions, { baselineAvailable: false })
+  validateDiaryInput(body.title, body.transactions)
 
   if (!body.content) {
     throw Errors.validationError([{ field: 'content', message: 'Content is required' }])
@@ -382,7 +350,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
         }
 
         if (alerts?.length) {
-          const timezone = await resolveUserTimezone(tx, userId)
+          const timezone = await getUserTimezone(userId, tx)
           await persistAlerts(tx, existingDiary.id, alerts, timezone)
         }
 
@@ -453,7 +421,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
         const createdDiary = await tx.diary.create(diaryCreateArgs)
         let persistedAlerts = createdDiary.alerts
         if (alerts) {
-          const timezone = await resolveUserTimezone(tx, userId)
+          const timezone = await getUserTimezone(userId, tx)
           persistedAlerts = await persistAlerts(tx, createdDiary.id, alerts, timezone)
         }
         await unionDiaryStockContexts(tx, createdDiary.id, stockSymbols)
@@ -510,7 +478,7 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
   // ownership/ledger reads below.
   enforceDiaryPayloadLimits(body)
 
-  validateDiaryInput(body.title, body.transactions, { baselineAvailable: false })
+  validateDiaryInput(body.title, body.transactions)
 
   // --- Ownership check ---
   // SQL-level ownership filter collapses not-found and not-owned into a
@@ -563,7 +531,7 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
         await persistTransactionDiff(tx, diaryId, userId, diff)
       }
       if (alerts !== undefined) {
-        const timezone = await resolveUserTimezone(tx, userId)
+        const timezone = await getUserTimezone(userId, tx)
         await replaceAlerts(tx, diaryId, alerts, timezone)
       }
       if (stockSymbols !== undefined) {

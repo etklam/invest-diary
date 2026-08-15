@@ -22,6 +22,7 @@
 
 import type { Prisma } from '@prisma/client'
 import prisma from '~/lib/prisma'
+import { isThesisReviewOverdue } from '~/lib/portfolio-attention'
 import { getUtcDayRange } from '~/lib/dates/normalize'
 import { getUserDayRange } from '~/lib/dates/user-tz'
 import { parseDiaryTags } from '~/lib/diary-tags'
@@ -388,6 +389,8 @@ const REVIEW_SELECT = {
   reviewOutcome: true,
 } satisfies Prisma.DiarySelect
 
+export type ReviewStatus = 'none' | 'pending' | 'reviewed'
+
 export type ReviewItem = {
   id: bigint | string
   title: string
@@ -397,7 +400,7 @@ export type ReviewItem = {
   reviewDueAt: Date | null
   // Normalized to 'none' when null — review dashboard treats absent status as
   // "no review scheduled" rather than exposing the DB null.
-  reviewStatus: string | null
+  reviewStatus: ReviewStatus
   reviewedAt: Date | null
   reviewOutcome: string | null
   /** Discriminator added additively for the mixed Review Queue. */
@@ -509,82 +512,67 @@ export async function buildReviewBuckets(
     item.targetType = 'diary'
   }
 
-  // The additive Thesis delegate is deliberately optional here. This keeps
-  // older generated clients and existing Structured Review tests compatible
-  // during expand-first deployment; a database without the new table simply
-  // returns the original Diary-only queue.
-  const thesisDelegate = (prisma as unknown as { investmentThesis?: {
-    findMany: (args: unknown) => Promise<Array<{
-      id: bigint
-      status: string
-      summary: string | null
-      reviewDueAt: Date | null
-      lastReviewedAt: Date | null
-      latestReviewOutcome: string | null
-      stock: { symbol: string }
-      reviews: Array<{ outcome: string; portfolioDecision: string; reviewedAt: Date }>
-    }>>
-  } }).investmentThesis
-
-  if (thesisDelegate) {
-    const theses = await thesisDelegate.findMany({
-      where: { userId, status: 'ACTIVE' },
-      orderBy: [{ reviewDueAt: 'asc' }, { updatedAt: 'desc' }],
-      take: 100,
-      include: {
-        stock: { select: { symbol: true } },
-        reviews: {
-          orderBy: [{ reviewedAt: 'desc' }, { id: 'desc' }],
-          take: 1,
-          select: { outcome: true, portfolioDecision: true, reviewedAt: true },
-        },
+  const theses = await prisma.investmentThesis.findMany({
+    where: { userId, status: 'ACTIVE' },
+    orderBy: [{ reviewDueAt: 'asc' }, { updatedAt: 'desc' }],
+    take: 100,
+    include: {
+      stock: { select: { symbol: true } },
+      reviews: {
+        orderBy: [{ reviewedAt: 'desc' }, { id: 'desc' }],
+        take: 1,
+        select: { outcome: true, portfolioDecision: true, reviewedAt: true },
       },
+    },
+  })
+
+  const thesisItems: ReviewBuckets = { unscheduled: [], overdue: [], today: [], upcoming: [], completed: [] }
+  for (const thesis of theses) {
+    const latest = thesis.reviews[0]
+    const lastReviewedAt = latest?.reviewedAt ?? thesis.lastReviewedAt
+    const completed = Boolean(lastReviewedAt && (!thesis.reviewDueAt || lastReviewedAt >= thesis.reviewDueAt))
+    const item: ReviewItem = {
+      id: `thesis:${thesis.id.toString()}`,
+      title: `${thesis.stock.symbol} Investment Thesis`,
+      date: latest?.reviewedAt ?? thesis.reviewDueAt ?? new Date(),
+      thesis: thesis.summary,
+      risk: null,
+      reviewDueAt: thesis.reviewDueAt,
+      reviewStatus: completed ? 'reviewed' : thesis.reviewDueAt ? 'pending' : 'none',
+      reviewedAt: lastReviewedAt,
+      reviewOutcome: latest?.outcome ?? null,
+      targetType: 'thesis',
+      thesisId: thesis.id,
+      symbol: thesis.stock.symbol,
+      thesisStatus: thesis.status,
+      latestReviewOutcome: thesis.latestReviewOutcome,
+      portfolioDecision: latest?.portfolioDecision ?? null,
+    }
+    // Overdue asks the single-source rule from lib/portfolio-attention —
+    // the same predicate the Timeline attention engine uses, evaluated
+    // against the user-local day start as this dashboard's baseline.
+    if (completed) {
+      thesisItems.completed.push(item)
+    } else if (!thesis.reviewDueAt) {
+      thesisItems.unscheduled.push(item)
+    } else if (isThesisReviewOverdue({ reviewDueAt: thesis.reviewDueAt, lastReviewedAt }, todayStart)) {
+      thesisItems.overdue.push(item)
+    } else if (thesis.reviewDueAt < tomorrowStart) {
+      thesisItems.today.push(item)
+    } else {
+      thesisItems.upcoming.push(item)
+    }
+  }
+
+  for (const bucket of Object.keys(diaryBuckets) as Array<keyof ReviewBuckets>) {
+    diaryBuckets[bucket].push(...thesisItems[bucket])
+    diaryBuckets[bucket].sort((a, b) => {
+      const aTime = (a.reviewDueAt ?? a.reviewedAt ?? a.date).getTime()
+      const bTime = (b.reviewDueAt ?? b.reviewedAt ?? b.date).getTime()
+      if (aTime !== bTime) return aTime - bTime
+      if (a.id === b.id) return 0
+      return a.id < b.id ? -1 : 1
     })
-
-    const thesisItems: ReviewBuckets = { unscheduled: [], overdue: [], today: [], upcoming: [], completed: [] }
-    for (const thesis of theses) {
-      const latest = thesis.reviews[0]
-      const completed = Boolean(latest && (!thesis.reviewDueAt || latest.reviewedAt >= thesis.reviewDueAt))
-      const item: ReviewItem = {
-        id: `thesis:${thesis.id.toString()}`,
-        title: `${thesis.stock.symbol} Investment Thesis`,
-        date: latest?.reviewedAt ?? thesis.reviewDueAt ?? new Date(),
-        thesis: thesis.summary,
-        risk: null,
-        reviewDueAt: thesis.reviewDueAt,
-        reviewStatus: completed ? 'reviewed' : thesis.reviewDueAt ? 'pending' : 'none',
-        reviewedAt: latest?.reviewedAt ?? thesis.lastReviewedAt,
-        reviewOutcome: latest?.outcome ?? null,
-        targetType: 'thesis',
-        thesisId: thesis.id,
-        symbol: thesis.stock.symbol,
-        thesisStatus: thesis.status,
-        latestReviewOutcome: thesis.latestReviewOutcome,
-        portfolioDecision: latest?.portfolioDecision ?? null,
-      }
-      if (completed) {
-        thesisItems.completed.push(item)
-      } else if (!thesis.reviewDueAt) {
-        thesisItems.unscheduled.push(item)
-      } else if (thesis.reviewDueAt < todayStart) {
-        thesisItems.overdue.push(item)
-      } else if (thesis.reviewDueAt < tomorrowStart) {
-        thesisItems.today.push(item)
-      } else {
-        thesisItems.upcoming.push(item)
-      }
-    }
-
-    for (const bucket of Object.keys(diaryBuckets) as Array<keyof ReviewBuckets>) {
-      diaryBuckets[bucket].push(...thesisItems[bucket])
-      diaryBuckets[bucket].sort((a, b) => {
-        const aTime = (a.reviewDueAt ?? a.reviewedAt ?? a.date).getTime()
-        const bTime = (b.reviewDueAt ?? b.reviewedAt ?? b.date).getTime()
-        if (aTime !== bTime) return aTime - bTime
-        if (a.id === b.id) return 0
-        return a.id < b.id ? -1 : 1
-      })
-    }
   }
 
   return diaryBuckets

@@ -1,6 +1,7 @@
 import prisma from '~/lib/prisma'
 import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 import type { StockNoteCreatedVia, StockNoteResponse } from '~/types/stock-note'
+import { z } from 'zod'
 
 export interface CreateStockNoteInput {
   symbol: string
@@ -22,6 +23,14 @@ export interface UpdateStockNoteInput {
   content?: string
   date?: string
 }
+
+export const SYMBOL_REGEX = /^[A-Za-z0-9.]{1,10}$/
+
+export const requestSchema = z.object({
+  title: z.string().min(1).max(255),
+  content: z.string().min(1).max(50000),
+  date: z.string().datetime().optional(),
+})
 
 export async function createStockNote(userId: bigint, input: CreateStockNoteInput) {
   const { stock } = await upsertStockWatchlistItem({

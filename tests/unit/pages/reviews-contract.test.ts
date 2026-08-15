@@ -7,7 +7,8 @@ describe('review queue page contract', () => {
     const content = readFileSync(resolve(process.cwd(), 'pages/reviews/index.vue'), 'utf8')
     const section = readFileSync(resolve(process.cwd(), 'components/ReviewSection.vue'), 'utf8')
 
-    expect(content).toContain('unscheduled: DiaryReviewItem[]')
+    expect(content).toContain("from '~/types/reviews'")
+    expect(content).not.toContain('interface DiaryReviewItem')
     expect(content).toContain('reviewGroups.unscheduled')
     expect(content).toContain("review.queue.sections.unscheduled")
     expect(content).toContain('const needsAttention = computed')

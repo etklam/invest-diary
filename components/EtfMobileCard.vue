@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MarketRotationMonitorRow } from '~/lib/market-rotation/monitor'
 import type { MaStatus, RotationSignal } from '~/lib/market-rotation/signal'
+import { formatNumber, formatSignedPercent } from '~/lib/format'
 
 const props = defineProps<{
   row: MarketRotationMonitorRow
@@ -9,37 +10,21 @@ const props = defineProps<{
 const emit = defineEmits<{
   click: []
 }>()
-
-function formatNumber(value: number | null | undefined, decimals = 2): string {
-  if (value === null || value === undefined || !Number.isFinite(value)) return '--'
-  return value.toFixed(decimals)
-}
-
-function formatPercent(value: number | null | undefined, decimals = 2): string {
-  if (value === null || value === undefined || !Number.isFinite(value)) return '--'
-  const sign = value > 0 ? '+' : ''
-  return `${sign}${value.toFixed(decimals)}%`
-}
-
-function formatPointDelta(value: number | null | undefined, decimals = 1): string {
-  if (value === null || value === undefined || !Number.isFinite(value)) return '--'
-  const sign = value > 0 ? '+' : ''
-  return `${sign}${value.toFixed(decimals)} pts`
-}
+const { t } = useI18n()
 
 function changeColor(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return 'text-dt-text-muted'
   return value > 0
-    ? 'text-emerald-600 dark:text-emerald-400'
+    ? 'text-dt-success'
     : value < 0
-      ? 'text-red-600 dark:text-red-400'
+      ? 'text-dt-danger'
       : 'text-dt-text-muted'
 }
 
 function rsiColor(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return 'text-dt-text-muted'
-  if (value >= 50) return 'text-emerald-600 dark:text-emerald-400'
-  if (value < 40) return 'text-red-600 dark:text-red-400'
+  if (value >= 50) return 'text-dt-success'
+  if (value < 40) return 'text-dt-danger'
   return 'text-dt-text-muted'
 }
 
@@ -78,6 +63,14 @@ function maStatusTone(status: MaStatus): 'success' | 'warning' | 'danger' | 'neu
       return 'neutral'
   }
 }
+
+function signalLabel(signal: RotationSignal | null): string {
+  return signal ? t(`marketRotation.signals.${signal}`) : t('marketRotation.common.notAvailable')
+}
+
+function maStatusLabel(status: MaStatus): string {
+  return t(`marketRotation.maStatuses.${status}`)
+}
 </script>
 
 <template>
@@ -92,41 +85,41 @@ function maStatusTone(status: MaStatus): 'success' | 'warning' | 'danger' | 'neu
         <p class="text-xs text-dt-text-muted">{{ props.row.sectorName ?? props.row.name }}</p>
       </div>
       <div class="text-right">
-        <p class="text-xs text-dt-text-muted">RANK</p>
-        <p class="font-mono text-lg font-black text-dt-text">{{ props.row.rotationRank != null ? `#${props.row.rotationRank}` : '--' }}</p>
+        <p class="text-xs text-dt-text-muted">{{ t('marketRotation.columns.rank') }}</p>
+        <p class="font-mono text-lg font-black text-dt-text">{{ props.row.rotationRank != null ? `#${props.row.rotationRank}` : t('marketRotation.common.notAvailable') }}</p>
       </div>
     </div>
 
     <!-- Price + Signal -->
     <div class="mt-3 flex items-center justify-between gap-2">
-      <p data-testid="last-price" class="font-mono text-sm text-dt-text">{{ formatNumber(props.row.lastPrice) }}</p>
+      <p data-testid="last-price" class="font-mono text-sm text-dt-text">{{ props.row.lastPrice != null && Number.isFinite(props.row.lastPrice) ? formatNumber(props.row.lastPrice) : t('marketRotation.common.notAvailable') }}</p>
       <StatusBadge v-if="props.row.signal" :tone="signalTone(props.row.signal)">
-        {{ props.row.signal.replaceAll('_', ' ') }}
+        {{ signalLabel(props.row.signal) }}
       </StatusBadge>
     </div>
 
     <!-- Stats grid -->
     <div class="mt-3 grid grid-cols-4 gap-2 text-xs">
       <div>
-        <p class="text-dt-text-muted">RSI</p>
-        <p data-testid="rsi-value" class="font-mono font-semibold" :class="rsiColor(props.row.rsi14)">{{ formatNumber(props.row.rsi14, 1) }}</p>
+        <p class="text-dt-text-muted">{{ t('marketRotation.columns.rsi') }}</p>
+        <p data-testid="rsi-value" class="font-mono font-semibold" :class="rsiColor(props.row.rsi14)">{{ props.row.rsi14 != null && Number.isFinite(props.row.rsi14) ? formatNumber(props.row.rsi14) : t('marketRotation.common.notAvailable') }}</p>
       </div>
       <div>
-        <p class="text-dt-text-muted">RSI &Delta;</p>
+        <p class="text-dt-text-muted">{{ t('marketRotation.columns.rsiDelta2W') }}</p>
         <p data-testid="rsi-delta" class="font-mono font-semibold" :class="changeColor(props.row.rsiDelta2W)">
-          {{ formatPointDelta(props.row.rsiDelta2W) }}
+          {{ props.row.rsiDelta2W != null && Number.isFinite(props.row.rsiDelta2W) ? formatSignedPercent(props.row.rsiDelta2W, 1).replace('%', ' pts') : t('marketRotation.common.notAvailable') }}
         </p>
       </div>
       <div>
-        <p class="text-dt-text-muted">2W%</p>
+        <p class="text-dt-text-muted">{{ t('marketRotation.columns.performance2W') }}</p>
         <p data-testid="2w-perf" class="font-mono font-semibold" :class="changeColor(props.row.twoWeekPerformancePct)">
-          {{ formatPercent(props.row.twoWeekPerformancePct) }}
+          {{ props.row.twoWeekPerformancePct != null && Number.isFinite(props.row.twoWeekPerformancePct) ? formatSignedPercent(props.row.twoWeekPerformancePct) : t('marketRotation.common.notAvailable') }}
         </p>
       </div>
       <div>
-        <p class="text-dt-text-muted">% HI</p>
+        <p class="text-dt-text-muted">{{ t('marketRotation.columns.fromHigh') }}</p>
         <p data-testid="pct-high" class="font-mono font-semibold" :class="changeColor(props.row.percentFromHigh)">
-          {{ formatPercent(props.row.percentFromHigh) }}
+          {{ props.row.percentFromHigh != null && Number.isFinite(props.row.percentFromHigh) ? formatSignedPercent(props.row.percentFromHigh) : t('marketRotation.common.notAvailable') }}
         </p>
       </div>
     </div>
@@ -134,9 +127,9 @@ function maStatusTone(status: MaStatus): 'success' | 'warning' | 'danger' | 'neu
     <!-- MA status -->
     <div class="mt-3 flex items-center gap-2">
       <StatusBadge :tone="maStatusTone(props.row.maStatus)">
-        {{ props.row.maStatus.replaceAll('_', ' ') }}
+        {{ maStatusLabel(props.row.maStatus) }}
       </StatusBadge>
-      <span class="text-xs text-dt-text-muted">{{ props.row.above50d === true ? 'Above 50d' : props.row.above50d === false ? 'Below 50d' : '50d N/A' }}</span>
+      <span class="text-xs text-dt-text-muted">{{ props.row.above50d === true ? t('marketRotation.filters.above_50d') : props.row.above50d === false ? t('marketRotation.filters.below_50d') : t('marketRotation.common.na') }}</span>
     </div>
   </article>
 </template>

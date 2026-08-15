@@ -436,6 +436,20 @@ describe('useQuickNoteComposer', () => {
     expect(composer.state.templateData.symbols).toBe('AAPL, MSFT, GOOG')
   })
 
+  it('normalizes prefilled stock symbols: trims, uppercases, dedupes, caps at 10', async () => {
+    const { useQuickNoteComposer } = await import('~/composables/useQuickNoteComposer')
+    const composer = useQuickNoteComposer()
+
+    composer.setStockSymbols([' aapl ', 'AAPL', 'msft', ' goog'])
+
+    expect(composer.stockSymbols.value).toEqual(['AAPL', 'MSFT', 'GOOG'])
+
+    composer.setStockSymbols(Array.from({ length: 12 }, (_, index) => `s${index + 1}`))
+
+    expect(composer.stockSymbols.value).toHaveLength(10)
+    expect(composer.stockSymbols.value[9]).toBe('S10')
+  })
+
   it('shows hasTemplateChangesPending when content was manually edited and differs from template', async () => {
     const { useQuickNoteComposer } = await import('~/composables/useQuickNoteComposer')
     const composer = useQuickNoteComposer()

@@ -4,19 +4,12 @@ import { rateLimiters, getRateLimitIdentifier } from '~/lib/rate-limiter'
 import { logger } from '~/lib/logger'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
+import { isUniqueConstraintError } from '~/server/utils/diary-write'
 import {
   registerUserSchema,
   findUserByEmail,
   createUserForRegistration,
 } from '~/server/utils/user-queries'
-
-/** Prisma's unique-constraint error, checked structurally (same pattern as diary-write.ts). */
-function isUniqueConstraintError(error: unknown): boolean {
-  return typeof error === 'object'
-    && error !== null
-    && 'code' in error
-    && (error as { code?: unknown }).code === 'P2002'
-}
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)

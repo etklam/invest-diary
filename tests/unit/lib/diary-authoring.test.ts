@@ -6,9 +6,9 @@ import {
 import { buildDiaryAuthoringPayload } from '~/lib/diary-authoring/payload'
 import { toDateTimeLocalValue } from '~/lib/dates/normalize'
 import {
+  calculateLedgerHoldings,
   validateDiaryDraft,
   validateDiaryPayloadLimits,
-  validateTransactionLedger,
 } from '~/lib/diary-authoring/validation'
 
 describe('validateDiaryPayloadLimits', () => {
@@ -138,17 +138,22 @@ describe('diary authoring module', () => {
     })
   })
 
-  it('uses prior holdings when validating a later diary draft', () => {
+  it('enforces the oversell rule in the server-authoritative ledger walk', () => {
+    // The BUY/SELL walk lives in calculateLedgerHoldings, invoked server-side
+    // by validateDiaryTransactionsForUser — the single oversell authority.
+    expect(() => calculateLedgerHoldings({}, [
+      { symbol: 'AAPL', type: 'SELL', quantity: 100, price: 10 },
+    ])).toThrow()
+
+    expect(() => calculateLedgerHoldings({}, [
+      { symbol: 'AAPL', type: 'BUY', quantity: 10, price: 10 },
+      { symbol: 'AAPL', type: 'SELL', quantity: 4, price: 12 },
+    ])).not.toThrow()
+  })
+
+  it('validates a draft without any ledger context (client has none)', () => {
     expect(validateDiaryDraft([
       { symbol: 'AAPL', type: 'SELL', quantity: 4 },
-    ], { available: true, holdings: { AAPL: 10 } })).toBeNull()
-
-    expect(validateDiaryDraft([
-      { symbol: 'AAPL', type: 'SELL', quantity: 4 },
-    ], { available: false })).toBeNull()
-
-    expect(validateTransactionLedger({}, [
-      { symbol: 'AAPL', type: 'SELL', quantity: 4 },
-    ])).toMatchObject({ index: 0, symbol: 'AAPL' })
+    ])).toBeNull()
   })
 })

@@ -4,6 +4,7 @@ import { isAuthSessionError } from '~/lib/auth/session-error'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import type { DiaryActivityDay } from '~/types/diary'
 import { formatYmdInTimezone } from '~/lib/dates/format'
+import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import {
   buildHolidaySet,
   calculateMonthCoverage,
@@ -13,13 +14,12 @@ import {
 
 export const useCalendar = () => {
   const { isAuthenticated, user } = useAuth()
-  const { getTimezone } = useTimezone()
   const { runWithAuthRecovery } = useAuthRecovery()
   const toast = useToast()
   const { t, locale } = useI18n()
 
   // State
-  const userTimezone = computed(() => user.value?.timezone || getTimezone() || 'Asia/Taipei')
+  const userTimezone = computed(() => resolveUserTimezone(user.value))
   
   // Get current date in user timezone
   const getNowInTimezone = () => {

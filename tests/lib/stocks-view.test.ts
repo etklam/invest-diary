@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyStocksView, computePortfolioAggregations, type HoldingViewInput } from '~/lib/stocks-view'
+import { applyStocksView, computePortfolioAggregations, concentration, type HoldingViewInput } from '~/lib/stocks-view'
 
 const holdings: HoldingViewInput[] = [
   { symbol: 'AAPL', quantity: 1, avgCost: 100, totalCost: 100, price: 150 },
@@ -212,5 +212,51 @@ describe('computePortfolioAggregations', () => {
     expect(result.staleQuoteCount).toBe(1)
     expect(result.valuationStatus).toBe('complete')
     expect(result.unsupportedMetrics).toEqual(['ytdReturn', 'realCashPercentage', 'sectorConcentration'])
+  })
+})
+
+describe('concentration', () => {
+  // holdings fixture: AAPL cost 100 / price 150, TSLA cost 200 / price 150,
+  // MSFT cost 50 with no quote.
+  it('computes cost-basis shares across all holdings, priced or not', () => {
+    const shares = concentration(holdings, { basis: 'cost_basis' })
+
+    expect(shares.get('AAPL')).toBeCloseTo((100 / 350) * 100, 10)
+    expect(shares.get('TSLA')).toBeCloseTo((200 / 350) * 100, 10)
+    expect(shares.get('MSFT')).toBeCloseTo((50 / 350) * 100, 10)
+  })
+
+  it('computes market-value shares over the priced subset only, so a partial quote failure excludes the holding instead of nulling the portfolio', () => {
+    const shares = concentration(holdings, { basis: 'market_value' })
+
+    expect(shares.get('AAPL')).toBeCloseTo(50, 10)
+    expect(shares.get('TSLA')).toBeCloseTo(50, 10)
+    expect(shares.has('MSFT')).toBe(false)
+  })
+
+  it('gives different answers per basis for the same holdings — a multi-bagger looks bigger at market value', () => {
+    const baggers: HoldingViewInput[] = [
+      { symbol: 'NVDA', quantity: 1, avgCost: 10, totalCost: 10, price: 1000 },
+      { symbol: 'AAPL', quantity: 1, avgCost: 990, totalCost: 990, price: 990 },
+    ]
+
+    const cost = concentration(baggers, { basis: 'cost_basis' })
+    const market = concentration(baggers, { basis: 'market_value' })
+
+    expect(cost.get('NVDA')).toBeCloseTo(1, 10)
+    expect(market.get('NVDA')).toBeCloseTo((1000 / 1990) * 100, 10)
+  })
+
+  it('returns an empty map when the chosen denominator is zero', () => {
+    const noCost: HoldingViewInput[] = [
+      { symbol: 'A', quantity: 1, avgCost: 0, totalCost: 0 },
+    ]
+    const noMarket: HoldingViewInput[] = [
+      { symbol: 'B', quantity: 1, avgCost: 5, totalCost: 5, price: 0 },
+    ]
+
+    expect(concentration(noCost, { basis: 'cost_basis' }).size).toBe(0)
+    expect(concentration(noMarket, { basis: 'market_value' }).size).toBe(0)
+    expect(concentration([], { basis: 'market_value' }).size).toBe(0)
   })
 })
