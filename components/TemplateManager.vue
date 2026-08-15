@@ -11,9 +11,17 @@
       <div v-if="modelValue" class="fixed inset-0 z-[110]">
         <div class="absolute inset-0 bg-black/40" @click="close"></div>
 
-        <div class="relative mx-auto mt-10 w-[92%] max-w-2xl rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
+        <div
+          ref="dialogPanel"
+          class="relative mx-auto mt-10 w-[92%] max-w-2xl rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="template-manager-title"
+          tabindex="-1"
+          @keydown="handleKeydown"
+        >
           <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">模板管理</h3>
+            <h3 id="template-manager-title" class="text-base font-semibold text-gray-900 dark:text-gray-100">模板管理</h3>
             <button
               type="button"
               class="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
@@ -128,9 +136,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useDialogA11y } from '~/composables/useDialogA11y'
 import { useQuickNoteTemplates, type QuickNoteTemplate } from '~/composables/useQuickNoteTemplates'
 
-defineProps<{
+const props = defineProps<{
   modelValue: boolean
 }>()
 
@@ -144,8 +153,14 @@ const { templates, addTemplate, updateTemplate, removeTemplate } = useQuickNoteT
 const editingId = ref<string | null>(null)
 const formName = ref('')
 const formContent = ref('')
+const dialogPanel = ref<HTMLElement | null>(null)
 
 const close = () => emit('update:modelValue', false)
+
+const { handleKeydown } = useDialogA11y(dialogPanel, {
+  open: () => props.modelValue,
+  onEscape: close,
+})
 
 const resetForm = () => {
   editingId.value = null

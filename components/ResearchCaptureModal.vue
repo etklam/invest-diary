@@ -151,10 +151,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import BaseButton from '~/components/BaseButton.vue'
 import LedgerCard from '~/components/LedgerCard.vue'
 import StatusBadge from '~/components/StatusBadge.vue'
+import { useDialogA11y } from '~/composables/useDialogA11y'
 import type { ResearchCaptureController, ResearchCaptureDestination } from '~/composables/useResearchCapture'
 
 const props = defineProps<{
@@ -169,7 +170,6 @@ const symbol = ref('')
 const destination = ref<ResearchCaptureDestination>('quickDiary')
 const insightError = ref(false)
 const companyError = ref(false)
-const previousActiveElement = ref<HTMLElement | null>(null)
 
 const destinations = computed(() => [
   { value: 'quickDiary' as const, label: t('researchCapture.quickDiary') },
@@ -183,6 +183,13 @@ const isPending = computed(() => props.capture.pending.value)
 const saveError = computed(() => props.capture.saveError.value)
 const savedSymbol = computed(() => props.capture.savedSymbol.value)
 
+const { handleKeydown: handleDialogKeydown } = useDialogA11y(dialogPanel, {
+  open: isVisible,
+  disabled: isPending,
+  initialFocus: insightInput,
+  onEscape: close,
+})
+
 watch(captureContext, (nextContext) => {
   if (!nextContext) return
   insight.value = nextContext.suggestedInsight
@@ -191,28 +198,6 @@ watch(captureContext, (nextContext) => {
   insightError.value = false
   companyError.value = false
 }, { immediate: true })
-
-watch(isVisible, async (visible) => {
-  if (typeof document === 'undefined') return
-
-  if (visible) {
-    previousActiveElement.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    document.documentElement.style.overflow = 'hidden'
-    await nextTick()
-    insightInput.value?.focus()
-    return
-  }
-
-  document.documentElement.style.overflow = ''
-  previousActiveElement.value?.focus()
-  previousActiveElement.value = null
-}, { flush: 'post', immediate: true })
-
-onBeforeUnmount(() => {
-  if (typeof document === 'undefined') return
-  document.documentElement.style.overflow = ''
-  previousActiveElement.value?.focus()
-})
 
 function close() {
   props.capture.close()
@@ -235,28 +220,4 @@ async function submit() {
   await props.capture.saveEvidence(trimmedInsight, normalizedSymbol)
 }
 
-function handleDialogKeydown(event: KeyboardEvent) {
-  if (event.defaultPrevented) return
-  if (event.key === 'Escape') {
-    event.preventDefault()
-    if (!isPending.value) close()
-    return
-  }
-  if (event.key !== 'Tab' || !dialogPanel.value) return
-
-  const focusable = Array.from(dialogPanel.value.querySelectorAll<HTMLElement>(
-    'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
-  ))
-  if (!focusable.length) return
-
-  const first = focusable[0]!
-  const last = focusable[focusable.length - 1]!
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
-}
 </script>

@@ -6,10 +6,18 @@
         <div class="absolute inset-0 bg-black/50" @click="close" />
 
         <!-- Modal Content -->
-        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <div
+          ref="dialogPanel"
+          class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="stock-watchlist-edit-title"
+          tabindex="-1"
+          @keydown="handleKeydown"
+        >
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+            <h2 id="stock-watchlist-edit-title" class="text-lg font-semibold text-slate-900 dark:text-white">
               {{ t('stock.watchlist.editModal.title') }}
             </h2>
             <button
@@ -117,7 +125,8 @@
 </template>
 
 <script setup lang="ts">
-import { onKeyStroke } from '@vueuse/core'
+import { ref } from 'vue'
+import { useDialogA11y } from '~/composables/useDialogA11y'
 
 interface WatchlistItem {
   id: string
@@ -140,6 +149,7 @@ const { t } = useI18n()
 const toast = useToast()
 
 const saving = ref(false)
+const dialogPanel = ref<HTMLElement | null>(null)
 
 const form = reactive({
   status: 'WATCHING' as 'WATCHING' | 'ARCHIVED',
@@ -190,9 +200,9 @@ const save = async () => {
   }
 }
 
-// Close on Escape key
-onKeyStroke('Escape', () => {
-  if (props.isOpen) close()
+const { handleKeydown } = useDialogA11y(dialogPanel, {
+  open: () => props.isOpen,
+  onEscape: close,
 })
 </script>
 

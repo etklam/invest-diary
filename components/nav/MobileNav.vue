@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ThemeToggle from './ThemeToggle.vue'
-import { nextTick, onUnmounted, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
+import { useDialogA11y } from '~/composables/useDialogA11y'
 
 const props = defineProps<{
   isOpen: boolean
@@ -15,7 +16,6 @@ const { desktopNavGroups, mainNavItems, toolNavItems, isActive, isAuthenticated 
 const { user, logout } = useAuth()
 const route = useRoute()
 const panelRef = ref<HTMLElement | null>(null)
-const previousActiveElement = ref<HTMLElement | null>(null)
 
 const getIconName = (icon: string) => `heroicons:${icon}`
 const isGroupItemActive = (items: Array<{ to: string }>, to: string) => {
@@ -30,39 +30,9 @@ const handleLogout = async () => {
   await logout()
 }
 
-const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
-    event.preventDefault()
-    emit('close')
-    return
-  }
-  if (event.key !== 'Tab' || !panelRef.value) return
-
-  const focusable = Array.from(panelRef.value.querySelectorAll<HTMLElement>(
-    'a[href], button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-  ))
-  if (!focusable.length) return
-  const first = focusable[0]!
-  const last = focusable[focusable.length - 1]!
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
-}
-
-watch(() => props.isOpen, async (isOpen) => {
-  if (isOpen) {
-    previousActiveElement.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    document.documentElement.style.overflow = 'hidden'
-    await nextTick()
-    panelRef.value?.focus()
-    return
-  }
-  document.documentElement.style.overflow = ''
-  previousActiveElement.value?.focus()
+const { handleKeydown } = useDialogA11y(panelRef, {
+  open: () => props.isOpen,
+  onEscape: () => emit('close'),
 })
 
 // Close on route change
@@ -70,9 +40,6 @@ watch(() => route.path, () => {
   emit('close')
 })
 
-onUnmounted(() => {
-  document.documentElement.style.overflow = ''
-})
 </script>
 
 <template>

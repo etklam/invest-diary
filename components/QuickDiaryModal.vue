@@ -116,6 +116,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import QuickNoteEditorCore from '~/components/quicknote/QuickNoteEditorCore.vue'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
+import { useDialogA11y } from '~/composables/useDialogA11y'
 import { useQuickNoteComposer } from '~/composables/useQuickNoteComposer'
 import { getQuickReminderLabel } from '~/lib/quicknote/quick-reminders'
 import { createQuickNoteModalTemplates, resolveQuickNoteSaveErrorMessage } from '~/lib/quicknote/modal-shell'
@@ -146,7 +147,6 @@ const saving = ref(false)
 const showTemplatePicker = ref(false)
 const autofocusEditor = ref(false)
 const dialogPanel = ref<HTMLElement | null>(null)
-const previousActiveElement = ref<HTMLElement | null>(null)
 const lastTemplateKind = useLocalStorage<QuickNoteTemplateKind>(LAST_TEMPLATE_KEY, 'blank')
 
 const {
@@ -184,6 +184,13 @@ const {
   defaultSaveMode: 'create',
 })
 
+const { handleKeydown: handleDialogKeydown } = useDialogA11y(dialogPanel, {
+  open: () => props.show,
+  disabled: saving,
+  focusOnOpen: false,
+  onEscape: close,
+})
+
 const templates = computed(() => {
   const options = createQuickNoteModalTemplates(t)
   if (lastTemplateKind.value === 'blank') return options
@@ -218,10 +225,6 @@ watch(
   () => props.show,
   (show) => {
     if (show) {
-      if (process.client) {
-        previousActiveElement.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
-        document.documentElement.style.overflow = 'hidden'
-      }
       const restored = Boolean(initialize((message) => confirm(message)))
       applyOpenContext(restored)
       autofocusEditor.value = !restored && !state.content.trim()
@@ -234,10 +237,6 @@ watch(
     dispose()
     showTemplatePicker.value = false
     autofocusEditor.value = false
-    if (process.client) {
-      document.documentElement.style.overflow = ''
-      previousActiveElement.value?.focus()
-    }
   },
   { immediate: true },
 )
@@ -303,28 +302,4 @@ async function handleSave() {
   }
 }
 
-function handleDialogKeydown(event: KeyboardEvent) {
-  if (event.defaultPrevented) return
-  if (event.key === 'Escape') {
-    event.preventDefault()
-    close()
-    return
-  }
-  if (event.key !== 'Tab' || !dialogPanel.value) return
-
-  const focusable = Array.from(dialogPanel.value.querySelectorAll<HTMLElement>(
-    'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-  ))
-  if (!focusable.length) return
-
-  const first = focusable[0]!
-  const last = focusable[focusable.length - 1]!
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
-}
 </script>

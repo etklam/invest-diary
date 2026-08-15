@@ -6,6 +6,7 @@ import type { MarketState } from '~/lib/market-rotation/state'
 import type { BreadthCondition, BreadthConfirmation } from '~/lib/market-rotation/breadth'
 import type { RankScope } from '~/lib/market-rotation/types'
 import { formatSignedPercent } from '~/lib/format'
+import { useDialogA11y } from '~/composables/useDialogA11y'
 import { useResearchCapture } from '~/composables/useResearchCapture'
 
 type FilterKey = 'all' | 'turning_strong' | 'losing_momentum' | 'rank_up' | 'rank_down' | 'above_50d' | 'below_50d' | 'near_high' | 'extended'
@@ -87,6 +88,13 @@ const summary = computed(() => payload.value?.summary ?? null)
 const currentMarketSummary = computed(() => payload.value?.currentMarketSummary ?? '')
 const dataQuality = computed(() => payload.value?.dataQuality ?? null)
 const researchCapture = useResearchCapture()
+const detailPanel = ref<HTMLElement | null>(null)
+const { handleKeydown: handleDetailKeydown } = useDialogA11y(detailPanel, {
+  open: () => selectedRow.value !== null,
+  lockScroll: false,
+  trapFocus: false,
+  onEscape: () => { selectedRow.value = null },
+})
 
 function normalizeNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
@@ -939,15 +947,20 @@ definePageMeta({
     <div
       v-if="selectedRow"
       class="fixed inset-0 z-40 bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
       @click.self="selectedRow = null"
     >
-      <aside class="ml-auto flex h-full w-full max-w-md flex-col overflow-hidden rounded-dt-lg border border-dt-border bg-dt-surface shadow-dt-lg">
+      <aside
+        ref="detailPanel"
+        class="ml-auto flex h-full w-full max-w-md flex-col overflow-hidden rounded-dt-lg border border-dt-border bg-dt-surface shadow-dt-lg"
+        role="region"
+        aria-labelledby="market-rotation-detail-title"
+        tabindex="-1"
+        @keydown="handleDetailKeydown"
+      >
         <div class="flex items-start justify-between gap-4 border-b border-dt-border p-5">
           <div>
             <p class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('marketRotation.summary.detail') }}</p>
-            <h2 class="text-2xl font-black text-dt-text">{{ selectedRow.symbol }}</h2>
+            <h2 id="market-rotation-detail-title" class="text-2xl font-black text-dt-text">{{ selectedRow.symbol }}</h2>
             <p class="text-sm text-dt-text-muted">{{ selectedRow.sectorName ?? selectedRow.name }}</p>
           </div>
           <div class="flex shrink-0 items-center gap-2">
