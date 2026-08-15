@@ -4,8 +4,9 @@ import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
 import { buildReviewBuckets } from '~/server/utils/diary-read'
 import { getUserTimezone } from '~/server/utils/user-queries'
+import type { ReviewGroups } from '~/types/reviews'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<ReviewGroups> => {
   const log = logger.diary.withRequestId(event.context.requestId)
 
   try {

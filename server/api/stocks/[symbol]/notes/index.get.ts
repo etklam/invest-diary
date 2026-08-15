@@ -5,8 +5,10 @@ import { listStockNotes, toStockNoteResponse } from '~/lib/stocks/notes'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { handleApiError } from '~/server/utils/error-handler'
 import { resolveSharedStockNotesOwner } from '~/server/utils/partner'
+import { serialize } from '~/server/utils/serialize'
+import type { StockNotesResponse } from '~/types/stock-note'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<StockNotesResponse> => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
@@ -23,7 +25,7 @@ export default defineEventHandler(async (event) => {
     const stockSymbol = normalizeStockSymbol(symbol)
     const stock = await prisma.stock.findUnique({ where: { symbol: stockSymbol }, select: { id: true } })
     if (!stock) {
-      return { notes: [], total: 0, page, limit }
+      return serialize({ notes: [], total: 0, page, limit })
     }
 
     let targetUserId = BigInt(user.id)
@@ -35,7 +37,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const result = await listStockNotes(targetUserId, BigInt(stock.id), { page, limit, createdVia })
-    return {
+    return serialize({
       notes: result.notes.map((n: Parameters<typeof toStockNoteResponse>[0]) => ({
         ...toStockNoteResponse(n),
         isOwnedByViewer,
@@ -43,7 +45,7 @@ export default defineEventHandler(async (event) => {
       total: result.total,
       page: result.page,
       limit: result.limit,
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

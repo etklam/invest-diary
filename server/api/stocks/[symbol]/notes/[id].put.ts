@@ -4,6 +4,8 @@ import { requireUser } from '~/server/utils/auth'
 import { getStockNoteById, updateStockNote, toStockNoteResponse } from '~/lib/stocks/notes'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
+import type { StockNoteResponse } from '~/types/stock-note'
 
 const requestSchema = z.object({
   title: z.string().min(1).max(255).optional(),
@@ -11,7 +13,7 @@ const requestSchema = z.object({
   date: z.string().datetime().optional(),
 })
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<StockNoteResponse> => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
@@ -35,7 +37,7 @@ export default defineEventHandler(async (event) => {
       throw Errors.stockNoteNotFound().toH3Error()
     }
 
-    return toStockNoteResponse(updated)
+    return serialize(toStockNoteResponse(updated))
   } catch (error) {
     handleApiError(error, log)
   }

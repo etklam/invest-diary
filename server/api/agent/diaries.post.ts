@@ -4,9 +4,9 @@ import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireApiKey } from '~/server/utils/api-key'
 import { createDiaryForUser } from '~/server/utils/diary-write'
-import { serialize } from '~/server/utils/serialize'
+import { serialize, type Serialized } from '~/server/utils/serialize'
 
-export default defineEventHandler(async (event): Promise<Diary> => {
+export default defineEventHandler(async (event): Promise<Serialized<Diary>> => {
   const log = logger.diary.withRequestId(event.context.requestId)
 
   try {

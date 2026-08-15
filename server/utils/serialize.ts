@@ -13,23 +13,40 @@
  * not the raw original. Prisma results don't legitimately cycle — this is
  * purely defensive against accidental circular refs.
  */
-export function serialize<T>(obj: T, seen?: WeakMap<object, unknown>): T {
-  if (obj === null || obj === undefined) return obj
-  if (typeof obj === 'bigint') return String(obj) as T
-  if (Array.isArray(obj)) return obj.map((v) => serialize(v, seen)) as T
-  if (obj instanceof Date) return obj as T
+/**
+ * The JSON-boundary representation produced by `serialize`.
+ *
+ * Dates remain Date instances until the framework JSON-encodes the response;
+ * `Date.toJSON()` then produces the string represented here. Keeping that
+ * distinction in the type prevents handlers from claiming that a BigInt or
+ * Date will cross the HTTP boundary unchanged, without changing runtime
+ * behaviour.
+ */
+export type Serialized<T> =
+  T extends bigint ? string
+    : T extends Date ? string
+      : T extends (...args: never[]) => unknown ? T
+        : T extends readonly (infer U)[] ? Serialized<U>[]
+          : T extends object ? { [K in keyof T]: Serialized<T[K]> }
+            : T
+
+export function serialize<T>(obj: T, seen?: WeakMap<object, unknown>): Serialized<T> {
+  if (obj === null || obj === undefined) return obj as Serialized<T>
+  if (typeof obj === 'bigint') return String(obj) as Serialized<T>
+  if (Array.isArray(obj)) return obj.map((v) => serialize(v, seen)) as Serialized<T>
+  if (obj instanceof Date) return obj as Serialized<T>
   if (typeof obj === 'object') {
     // ponytail: guard `seen` — when serialize is used as a .map/.forEach
     // callback, the runtime passes (value, index, array), so `seen` can arrive
     // as a number/array. Only treat it as the cycle map when it's a WeakMap.
     const map = seen instanceof WeakMap ? seen : new WeakMap()
-    if (map.has(obj as object)) return map.get(obj as object) as T
+    if (map.has(obj as object)) return map.get(obj as object) as Serialized<T>
     const result: Record<string, unknown> = {}
     map.set(obj as object, result)
     for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
       result[k] = serialize(v, map)
     }
-    return result as T
+    return result as Serialized<T>
   }
-  return obj
+  return obj as Serialized<T>
 }

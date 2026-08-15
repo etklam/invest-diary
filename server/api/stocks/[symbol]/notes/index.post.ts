@@ -4,8 +4,10 @@ import { createStockNote, requestSchema, SYMBOL_REGEX, toStockNoteResponse } fro
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
+import { serialize } from '~/server/utils/serialize'
+import type { StockNoteResponse } from '~/types/stock-note'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<StockNoteResponse> => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
@@ -28,7 +30,7 @@ export default defineEventHandler(async (event) => {
       createdByLabel: undefined,
     })
 
-    return toStockNoteResponse(note)
+    return serialize(toStockNoteResponse(note))
   } catch (error) {
     handleApiError(error, log)
   }

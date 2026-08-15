@@ -341,7 +341,7 @@ import {
   normalizeQuickNoteObservationType,
   normalizeQuickNoteReflectionMarketCondition,
 } from '~/lib/quicknote/template-localization'
-import type { QuickNoteTemplateData, QuickNoteTemplateKind, RecentClosedTrade } from '~/types/quicknote'
+import type { QuickNoteTemplateData, QuickNoteTemplateKind, RecentClosedTrade, RecentClosedTradesResponse } from '~/types/quicknote'
 
 const props = defineProps<{
   templateKind: QuickNoteTemplateKind
@@ -375,7 +375,7 @@ const spxConditionLabel = computed(() =>
 // ── 近期交易（reflection 模板用）────────────────────────────────────────────
 
 // 只有在 reflection 模板時才發請求（lazy: true + 手動 execute）
-const { data: recentTradesData, pending: recentTradesPending, execute: fetchRecentTrades } = useFetch<{ trades: RecentClosedTrade[] }>(
+const { data: recentTradesData, pending: recentTradesPending, execute: fetchRecentTrades } = useFetch<RecentClosedTradesResponse>(
   '/api/stats/recent-trades',
   {
     immediate: false,

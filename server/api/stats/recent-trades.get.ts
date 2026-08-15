@@ -15,8 +15,9 @@ import { matchTrades } from '~/lib/trade-analytics'
 import { serialize } from '~/server/utils/serialize'
 import { prepareTransactionsForMatching } from '~/server/utils/trade-queries'
 import { readRecentTradeTransactions } from '~/server/utils/transaction-read'
+import type { RecentClosedTradesResponse } from '~/types/quicknote'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<RecentClosedTradesResponse> => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
@@ -38,7 +39,7 @@ export default defineEventHandler(async (event) => {
     const rawTxs = await readRecentTradeTransactions(userId)
 
     if (!rawTxs.length) {
-      return { trades: [] }
+      return serialize({ trades: [] })
     }
 
     const closedTrades = matchTrades(prepareTransactionsForMatching(rawTxs))

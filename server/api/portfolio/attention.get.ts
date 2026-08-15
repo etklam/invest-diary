@@ -8,6 +8,8 @@ import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { readPortfolioTransactions } from '~/server/utils/transaction-read'
 import { listCurrentThesisProjections } from '~/server/utils/investment-thesis-queries'
+import { serialize } from '~/server/utils/serialize'
+import type { PortfolioAttentionResponse } from '~/types/portfolio-attention'
 
 const MAX_ITEMS = 50
 type AttentionDiaryRow = {
@@ -18,7 +20,7 @@ type AttentionDiaryRow = {
   stockContexts: Array<{ stock: { symbol: string } }>
 }
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<PortfolioAttentionResponse> => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   try {
     const user = requireUser(event)
@@ -66,14 +68,14 @@ export default defineEventHandler(async (event) => {
         latestOutcome: thesis.latestReviewOutcome,
       })),
       diaryReviews: diaryReviews.map(review => ({
-        id: review.id.toString(),
+        id: String(review.id),
         title: review.title,
         reviewDueAt: review.reviewDueAt,
         reviewStatus: review.reviewStatus,
         symbol: review.stockContexts[0]?.stock.symbol ?? null,
       })),
     })
-    return {
+    return serialize({
       items,
       asOf: asOf.toISOString(),
       coverage: {
@@ -82,7 +84,7 @@ export default defineEventHandler(async (event) => {
         priced: valuation.pricedPositionCount,
         total: valuation.totalHoldings,
       },
-    }
+    })
   } catch (error) {
     handleApiError(error, log)
   }

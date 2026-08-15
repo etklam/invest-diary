@@ -33,6 +33,10 @@ export interface RecentClosedTrade {
   realizedPnLPct: number
 }
 
+export interface RecentClosedTradesResponse {
+  trades: RecentClosedTrade[]
+}
+
 export interface QuickNoteTemplateData {
   tradingType?: string
   symbols?: string
