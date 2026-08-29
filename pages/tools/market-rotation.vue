@@ -164,7 +164,7 @@ function rsiClass(value: number | null | undefined): string {
   if (normalized > 70) return 'bg-dt-warning/15 text-dt-warning'
   if (normalized >= 50) return 'bg-dt-success/15 text-dt-success'
   if (normalized >= 30) return 'bg-dt-danger/15 text-dt-danger'
-  return 'bg-dt-primary/15 text-dt-primary'
+  return 'bg-dt-primary-solid/15 text-dt-primary'
 }
 
 function fromHighClass(value: number | null | undefined): string {
@@ -307,7 +307,18 @@ function scopeLabel(scope: RankScope): string {
   return t(`marketRotation.scopes.${scope}`)
 }
 
+// ponytail: WeakMap memo — rows are re-created on each data refresh so the
+// cache self-invalidates; kills the double template call per row per render.
+const sparklineCache = new WeakMap<MarketRotationMonitorRow, string>()
 function sparklinePoints(row: MarketRotationMonitorRow): string {
+  const cached = sparklineCache.get(row)
+  if (cached !== undefined) return cached
+  const result = computeSparklinePoints(row)
+  sparklineCache.set(row, result)
+  return result
+}
+
+function computeSparklinePoints(row: MarketRotationMonitorRow): string {
   const values = row.twoWeekTrend.map(point => point.value)
   const numericValues = values.filter((value): value is number => value != null && Number.isFinite(value))
   if (numericValues.length < 2) return ''
@@ -664,8 +675,13 @@ definePageMeta({
               <div
                 v-for="row in topImproving"
                 :key="`improving-${row.symbol}`"
-                class="flex cursor-pointer items-center justify-between gap-3 rounded-dt-md border border-dt-border bg-dt-bg p-3 transition hover:bg-dt-surface-strong"
+                role="button"
+                tabindex="0"
+                class="flex cursor-pointer items-center justify-between gap-3 rounded-dt-md border border-dt-border bg-dt-bg p-3 transition hover:bg-dt-surface-strong focus-visible:bg-dt-surface-strong focus-visible:outline-2 focus-visible:-outline-offset-2"
+                :aria-label="`${row.symbol} ${row.rankDelta2W}`"
                 @click="selectedRow = row"
+                @keydown.enter.prevent="selectedRow = row"
+                @keydown.space.prevent="selectedRow = row"
               >
                 <div class="min-w-0">
                   <p class="font-mono text-sm font-bold text-dt-text">{{ row.symbol }}</p>
@@ -697,8 +713,13 @@ definePageMeta({
               <div
                 v-for="row in bottomWeakening"
                 :key="`weakening-${row.symbol}`"
-                class="flex cursor-pointer items-center justify-between gap-3 rounded-dt-md border border-dt-border bg-dt-bg p-3 transition hover:bg-dt-surface-strong"
+                role="button"
+                tabindex="0"
+                class="flex cursor-pointer items-center justify-between gap-3 rounded-dt-md border border-dt-border bg-dt-bg p-3 transition hover:bg-dt-surface-strong focus-visible:bg-dt-surface-strong focus-visible:outline-2 focus-visible:-outline-offset-2"
+                :aria-label="`${row.symbol} ${row.rankDelta2W}`"
                 @click="selectedRow = row"
+                @keydown.enter.prevent="selectedRow = row"
+                @keydown.space.prevent="selectedRow = row"
               >
                 <div class="min-w-0">
                   <p class="font-mono text-sm font-bold text-dt-text">{{ row.symbol }}</p>
@@ -740,7 +761,7 @@ definePageMeta({
                 :key="scope.key"
                 type="button"
                 class="flex min-h-11 items-center gap-2 rounded-dt-md border px-3 py-2 text-left text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
-                :class="activeScope === scope.key ? 'border-dt-primary bg-dt-primary text-white' : 'border-dt-border bg-dt-surface text-dt-text-soft hover:bg-dt-surface-strong'"
+                :class="activeScope === scope.key ? 'border-dt-primary-solid bg-dt-primary-solid text-white' : 'border-dt-border bg-dt-surface text-dt-text-soft hover:bg-dt-surface-strong'"
                 @click="selectScope(scope.key)"
               >
                 <Icon :name="scope.icon" class="h-4 w-4 shrink-0" />
@@ -758,7 +779,7 @@ definePageMeta({
                   :key="filter.key"
                   type="button"
                   class="rounded-dt-pill border px-3 py-1.5 text-xs font-bold transition focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
-                  :class="activeFilter === filter.key ? 'border-dt-primary bg-dt-primary text-white' : 'border-dt-border bg-dt-surface text-dt-text-soft hover:bg-dt-surface-strong'"
+                  :class="activeFilter === filter.key ? 'border-dt-primary-solid bg-dt-primary-solid text-white' : 'border-dt-border bg-dt-surface text-dt-text-soft hover:bg-dt-surface-strong'"
                   @click="activeFilter = filter.key"
                 >
                   {{ filter.label }}
@@ -783,7 +804,7 @@ definePageMeta({
           </LedgerCard>
 
           <!-- Main board -->
-          <main class="min-w-0 rounded-dt-lg border border-dt-border bg-dt-surface shadow-dt-sm">
+          <div class="min-w-0 rounded-dt-lg border border-dt-border bg-dt-surface shadow-dt-sm">
             <div class="border-b border-dt-border p-4 sm:p-5">
               <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <div class="min-w-0">
@@ -870,7 +891,16 @@ definePageMeta({
                       class="cursor-pointer border-b border-dt-border transition hover:bg-dt-surface-strong"
                       @click="selectedRow = row"
                     >
-                      <td class="border border-dt-border px-3 py-2 font-black text-dt-text">{{ row.symbol }}</td>
+                      <td class="border border-dt-border px-3 py-2 font-black text-dt-text">
+                        <button
+                          type="button"
+                          class="block w-full text-left focus-visible:outline-2 focus-visible:-outline-offset-2"
+                          :aria-label="`${row.symbol} ${row.sectorName ?? row.name}`"
+                          @click.stop="selectedRow = row"
+                        >
+                          {{ row.symbol }}
+                        </button>
+                      </td>
                       <td class="border border-dt-border px-3 py-2 text-dt-text-soft">{{ row.sectorName ?? row.name }}</td>
                       <td class="border border-dt-border px-3 py-2 text-right font-mono text-dt-text">{{ formatNumber(row.lastPrice) }}</td>
                       <td class="border border-dt-border px-3 py-2 text-right">
@@ -938,7 +968,7 @@ definePageMeta({
                 />
               </div>
             </template>
-          </main>
+          </div>
         </section>
       </template>
     </div>
