@@ -61,13 +61,13 @@ export function toggleSelectAllIds(ids: string[], current: ReadonlySet<string>):
 export function getBlogStatusBadgeClass(status: string): string {
   switch (status) {
     case 'PUBLISHED':
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+      return 'bg-dt-success/10 text-dt-success-strong'
     case 'DRAFT':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+      return 'bg-dt-warning/10 text-dt-warning-strong'
     case 'ARCHIVED':
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+      return 'bg-dt-surface-strong text-dt-text-muted'
     default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+      return 'bg-dt-surface-strong text-dt-text-muted'
   }
 }
 

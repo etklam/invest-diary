@@ -5,19 +5,19 @@ const props = defineProps<{
 
 const badgeClass = computed(() => {
   if (props.regimeFit === 'Leader in Risk-On') {
-    return 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-200'
+    return 'border-dt-success/20 bg-dt-success/10 text-dt-success-strong'
   }
   if (props.regimeFit === 'Defensive Relative Strength') {
-    return 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-200'
+    return 'border-dt-info/20 bg-dt-info/10 text-dt-info'
   }
   if (props.regimeFit === 'Lagging Sector') {
-    return 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-200'
+    return 'border-dt-warning/20 bg-dt-warning/10 text-dt-warning-strong'
   }
   if (props.regimeFit === 'Oversold Reclaim Watch') {
-    return 'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-400/20 dark:bg-purple-400/10 dark:text-purple-200'
+    return 'border-dt-primary/20 bg-dt-primary/10 text-dt-primary'
   }
   if (props.regimeFit === 'Extended / Avoid Chasing') {
-    return 'border-red-200 bg-red-50 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200'
+    return 'border-dt-danger/20 bg-dt-danger/10 text-dt-danger-strong'
   }
   return ''
 })

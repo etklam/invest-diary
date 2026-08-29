@@ -16,6 +16,13 @@
   --color-panel-ink: #0B1220;
   --color-primary: #1D4ED8;
   --color-primary-active: #1E40AF;
+  /* Solid fills for filled buttons/CTAs — AA with white text in both modes */
+  --color-primary-solid: #1D4ED8;
+  --color-primary-solid-active: #1E40AF;
+  /* Strong text variants — AA on 10% semantic tints (badges) in light mode */
+  --color-success-strong: #047857;
+  --color-danger-strong: #B91C1C;
+  --color-warning-strong: #B45309;
   --color-secondary: #2563EB;
   --color-secondary-active: #1D4ED8;
   --color-accent: #059669;
@@ -76,6 +83,11 @@
   --color-panel-ink: #0F1623;
   --color-primary: #3B82F6;
   --color-primary-active: #60A5FA;
+  --color-primary-solid: #2563EB;
+  --color-primary-solid-active: #1D4ED8;
+  --color-success-strong: #34D399;
+  --color-danger-strong: #F87171;
+  --color-warning-strong: #FBBF24;
   --color-secondary: #60A5FA;
   --color-secondary-active: #93C5FD;
   --color-accent: #34D399;

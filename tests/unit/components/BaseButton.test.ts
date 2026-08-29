@@ -15,8 +15,8 @@ describe('BaseButton', () => {
   it('applies primary variant classes by default', () => {
     const wrapper = mount(BaseButton)
     const classes = wrapper.classes()
-    expect(classes).toContain('border-dt-primary')
-    expect(classes).toContain('bg-dt-primary')
+    expect(classes).toContain('border-dt-primary-solid')
+    expect(classes).toContain('bg-dt-primary-solid')
     expect(classes).toContain('text-white')
   })
 

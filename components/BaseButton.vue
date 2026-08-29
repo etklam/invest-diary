@@ -19,7 +19,7 @@ const props = withDefaults(
 const variantClass = computed(() => {
   return {
     primary:
-      'border-dt-primary bg-dt-primary text-white hover:bg-dt-primary-active hover:border-dt-primary-active',
+      'border-dt-primary-solid bg-dt-primary-solid text-white hover:bg-dt-primary-solid-active hover:border-dt-primary-solid-active',
     secondary:
       'border-dt-border bg-dt-surface text-dt-text hover:bg-dt-surface-strong hover:border-dt-border-strong',
     ghost:

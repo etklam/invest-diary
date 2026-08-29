@@ -36,7 +36,7 @@ describe('StatusBadge', () => {
     const span = wrapper.find('span')
     expect(span.classes()).toContain('border-dt-success/30')
     expect(span.classes()).toContain('bg-dt-success/10')
-    expect(span.classes()).toContain('text-dt-success')
+    expect(span.classes()).toContain('text-dt-success-strong')
   })
 
   it('applies danger tone classes when tone="danger"', () => {
@@ -47,7 +47,7 @@ describe('StatusBadge', () => {
     const span = wrapper.find('span')
     expect(span.classes()).toContain('border-dt-danger/30')
     expect(span.classes()).toContain('bg-dt-danger/10')
-    expect(span.classes()).toContain('text-dt-danger')
+    expect(span.classes()).toContain('text-dt-danger-strong')
   })
 
   it('applies warning tone classes when tone="warning"', () => {
@@ -58,7 +58,7 @@ describe('StatusBadge', () => {
     const span = wrapper.find('span')
     expect(span.classes()).toContain('border-dt-warning/30')
     expect(span.classes()).toContain('bg-dt-warning/10')
-    expect(span.classes()).toContain('text-dt-warning')
+    expect(span.classes()).toContain('text-dt-warning-strong')
   })
 
   it('applies accent tone classes when tone="accent"', () => {
@@ -69,6 +69,6 @@ describe('StatusBadge', () => {
     const span = wrapper.find('span')
     expect(span.classes()).toContain('border-dt-success/30')
     expect(span.classes()).toContain('bg-dt-success/10')
-    expect(span.classes()).toContain('text-dt-success')
+    expect(span.classes()).toContain('text-dt-success-strong')
   })
 })

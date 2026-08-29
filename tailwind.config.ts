@@ -13,25 +13,42 @@ export default <Config>{
   theme: {
     extend: {
       colors: {
-        // Design-token bridge — maps CSS vars to Tailwind utilities
-        'dt-primary': 'var(--color-primary)',
-        'dt-primary-active': 'var(--color-primary-active)',
-        'dt-secondary': 'var(--color-secondary)',
-        'dt-secondary-active': 'var(--color-secondary-active)',
-        'dt-accent': 'var(--color-accent)',
-        'dt-success': 'var(--color-success)',
-        'dt-danger': 'var(--color-danger)',
-        'dt-warning': 'var(--color-warning)',
-        'dt-info': 'var(--color-info)',
-        'dt-bg': 'var(--color-background)',
-        'dt-surface': 'var(--color-surface)',
-        'dt-surface-strong': 'var(--color-surface-strong)',
-        'dt-surface-muted': 'var(--color-surface-muted)',
-        'dt-border': 'var(--color-border)',
-        'dt-border-strong': 'var(--color-border-strong)',
-        'dt-text': 'var(--color-text)',
-        'dt-text-muted': 'var(--color-text-muted)',
-        'dt-text-soft': 'var(--color-text-soft)',
+        // Design-token bridge — maps CSS vars to Tailwind utilities.
+        // Wrapped in color-mix so /alpha modifiers (bg-dt-primary/10) compile:
+        // Tailwind 3.x can't apply opacity to bare var() colors.
+        ...Object.fromEntries(
+          [
+            'primary',
+            'primary-active',
+            'primary-solid',
+            'primary-solid-active',
+            'secondary',
+            'secondary-active',
+            'accent',
+            'success',
+            'success-strong',
+            'danger',
+            'danger-strong',
+            'warning',
+            'warning-strong',
+            'info',
+            'background',
+            'surface',
+            'surface-strong',
+            'surface-muted',
+            'border',
+            'border-strong',
+            'text',
+            'text-muted',
+            'text-soft',
+            'on-ink',
+          ].map((name) => [
+            `dt-${name}`,
+            `color-mix(in srgb, var(--color-${name}) calc(<alpha-value> * 100%), transparent)`,
+          ]),
+        ),
+        // legacy alias: pre-existing bg-dt-bg usages map to --color-background
+        'dt-bg': 'color-mix(in srgb, var(--color-background) calc(<alpha-value> * 100%), transparent)',
       },
       fontFamily: {
         display: ['var(--font-display)'],
