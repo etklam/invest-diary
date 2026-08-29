@@ -43,7 +43,7 @@
           <span class="truncate">#{{ displayTag(tag) }}</span>
           <button
             type="button"
-            class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-dt-primary/10 focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
+            class="inline-flex h-8 w-8 -m-1.5 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-dt-primary-solid/10 focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
             :aria-label="t('quickDiary.tags.removeTag', { tag })"
             @click="removeSelected(tag)"
           >

@@ -20,13 +20,12 @@
 
     <div
       v-if="pendingConflict"
-      role="dialog"
-      aria-modal="true"
+      aria-labelledby="diary-conflict-title"
       data-testid="diary-date-conflict"
       class="space-y-4 rounded-dt-md border border-dt-warning/40 bg-dt-warning/10 px-5 py-4"
     >
       <div>
-        <h2 class="font-display text-lg font-semibold text-dt-text">{{ t('quickDiary.errors.diaryExists') }}</h2>
+        <h2 id="diary-conflict-title" class="font-display text-lg font-semibold text-dt-text">{{ t('quickDiary.errors.diaryExists') }}</h2>
         <p class="mt-1 text-sm text-dt-text-muted">{{ t('diary.form.existingLoaded') }}</p>
       </div>
       <div class="flex flex-wrap justify-end gap-3">

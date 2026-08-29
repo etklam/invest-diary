@@ -130,10 +130,10 @@ const setItemRef = (el: unknown, index: number) => {
       :aria-expanded="isOpen"
       aria-haspopup="menu"
       :aria-label="group.label"
-      class="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[0.925rem] font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-2 dark:hover:bg-slate-800"
+      class="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[0.925rem] font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-2 hover:bg-dt-surface-strong"
       :class="active
         ? 'text-white shadow-sm hover:text-white'
-        : 'text-slate-600 hover:bg-[color:color-mix(in_srgb,var(--color-surface-strong)_82%,transparent)] hover:text-[color:var(--color-primary)] dark:text-slate-300'"
+        : 'text-dt-text-muted hover:bg-dt-surface-strong hover:text-dt-primary'"
       :style="active ? 'background: var(--color-primary);' : ''"
     >
       <Icon :name="getIconName(group.icon)" class="h-[18px] w-[18px]" width="18" height="18" />

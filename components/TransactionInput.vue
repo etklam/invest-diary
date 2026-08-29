@@ -32,7 +32,9 @@
               :id="`symbol-${index}`"
               :value="transaction.symbol"
               @input="updateSymbol(index, $event)"
-              :class="inputClass"
+              :aria-invalid="hasFieldValidationError(transaction, 'symbol')"
+              :aria-describedby="hasFieldValidationError(transaction, 'symbol') ? `txn-error-${uidOf(transaction)}` : undefined"
+              :class="[inputClass, hasFieldValidationError(transaction, 'symbol') ? 'border-dt-danger focus:border-dt-danger' : '']"
               class="uppercase"
               placeholder="AAPL"
             />
@@ -62,7 +64,9 @@
               @input="validateTransaction(index)"
               step="0.0001"
               min="0.0001"
-              :class="[inputClass, getValidationError(transaction) ? 'border-dt-danger focus:border-dt-danger' : '']"
+              :aria-invalid="hasFieldValidationError(transaction, 'quantity')"
+              :aria-describedby="hasFieldValidationError(transaction, 'quantity') ? `txn-error-${uidOf(transaction)}` : undefined"
+              :class="[inputClass, hasFieldValidationError(transaction, 'quantity') ? 'border-dt-danger focus:border-dt-danger' : '']"
               class="font-mono"
             />
           </div>
@@ -76,7 +80,9 @@
               @input="validateTransaction(index)"
               step="0.01"
               min="0.0001"
-              :class="inputClass"
+              :aria-invalid="hasFieldValidationError(transaction, 'price')"
+              :aria-describedby="hasFieldValidationError(transaction, 'price') ? `txn-error-${uidOf(transaction)}` : undefined"
+              :class="[inputClass, hasFieldValidationError(transaction, 'price') ? 'border-dt-danger focus:border-dt-danger' : '']"
               class="font-mono"
             />
           </div>
@@ -94,7 +100,7 @@
         </div>
 
         <!-- Validation Error Message -->
-        <div v-if="getValidationError(transaction)" class="mt-3 flex items-center text-sm text-dt-danger">
+        <div v-if="getValidationError(transaction)" :id="`txn-error-${uidOf(transaction)}`" role="alert" class="mt-3 flex items-center text-sm text-dt-danger">
           <Icon name="heroicons:exclamation-triangle" class="mr-1 h-4 w-4" />
           {{ getValidationError(transaction) }}
         </div>
@@ -187,6 +193,7 @@ import { validateTransactionValues } from '~/lib/diary-authoring/validation'
 import type { DiaryAuthoringTransaction } from '~/lib/diary-authoring/types'
 
 type Transaction = DiaryAuthoringTransaction
+type ValidationField = 'symbol' | 'quantity' | 'price'
 
 const props = defineProps<{
   modelValue: Transaction[]
@@ -220,6 +227,7 @@ const uidOf = (tx: Transaction): string => {
 
 // Validation errors map（key: row uid）
 const validationErrors = ref<Map<string, string>>(new Map())
+const validationFields = ref<Map<string, ValidationField>>(new Map())
 
 // 展開交易筆記的 row uid 集合
 const expandedNotes = ref<Set<string>>(new Set())
@@ -248,9 +256,13 @@ const validateTransaction = (index: number) => {
   if (!tx) return
 
   const errors: string[] = []
+  let errorField: ValidationField | undefined
 
   const valueError = validateTransactionValues([tx], { requirePrice: true })
-  if (valueError) errors.push(t('diary.form.positiveNumber'))
+  if (valueError) {
+    errors.push(t('diary.form.positiveNumber'))
+    errorField = valueError.field
+  }
 
   // Validate SELL transactions
   if (errors.length === 0 && tx.type === 'SELL') {
@@ -258,6 +270,7 @@ const validateTransaction = (index: number) => {
 
     if (!symbol) {
       errors.push(t('diary.form.sellNeedsSymbol'))
+      errorField = 'symbol'
     }
   }
 
@@ -265,9 +278,11 @@ const validateTransaction = (index: number) => {
     const firstError = errors[0]
     if (firstError) {
       validationErrors.value.set(uidOf(tx), firstError)
+      if (errorField) validationFields.value.set(uidOf(tx), errorField)
     }
   } else {
     validationErrors.value.delete(uidOf(tx))
+    validationFields.value.delete(uidOf(tx))
   }
 }
 
@@ -279,6 +294,10 @@ const hasValidationError = (tx: Transaction): boolean => {
 // Get validation error message
 const getValidationError = (tx: Transaction): string | undefined => {
   return validationErrors.value.get(uidOf(tx))
+}
+
+const hasFieldValidationError = (tx: Transaction, field: ValidationField): boolean => {
+  return validationFields.value.get(uidOf(tx)) === field
 }
 
 const addTransaction = () => {
@@ -300,6 +319,7 @@ const removeTransaction = (index: number) => {
   if (!removed) return
   // Clear validation error and expanded notes keyed to the removed row
   validationErrors.value.delete(uidOf(removed))
+  validationFields.value.delete(uidOf(removed))
   expandedNotes.value.delete(uidOf(removed))
   expandedNotes.value = new Set(expandedNotes.value)
   // Revalidate ALL remaining transactions (holdings may have shifted)
@@ -308,14 +328,19 @@ const removeTransaction = (index: number) => {
   })
 }
 
-// Watch for changes and validate SELL transactions
-watch(transactions, (newTxns) => {
-  newTxns.forEach((tx, index) => {
-    if (tx.type === 'SELL') {
-      validateTransaction(index)
-    }
-  })
-}, { deep: true })
+// Keep inline validation in sync with externally replaced rows without
+// traversing unrelated note fields on every render.
+watch(
+  () => transactions.value.map((tx) => ({
+    symbol: tx.symbol,
+    type: tx.type,
+    quantity: tx.quantity,
+    price: tx.price,
+  })),
+  () => {
+    transactions.value.forEach((_, index) => validateTransaction(index))
+  },
+)
 
 // Update symbol and convert to uppercase and trim
 const updateSymbol = (index: number, event: Event) => {

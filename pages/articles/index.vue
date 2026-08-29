@@ -1,17 +1,14 @@
 <template>
-  <main class="fintech-blog min-h-screen" style="color: var(--color-text)">
+  <div class="fintech-blog min-h-screen" style="color: var(--color-text)">
     <!-- Hero Section -->
     <section class="relative overflow-hidden px-4 pb-16 pt-12 sm:px-6 sm:pt-20 lg:pb-24 lg:pt-24">
-      <div class="bg-grid absolute inset-0 opacity-[0.15]" aria-hidden="true" />
-      <div class="orb orb-cyan hidden sm:block" aria-hidden="true" />
-      <div class="orb orb-amber hidden sm:block" aria-hidden="true" />
 
       <div class="relative mx-auto max-w-7xl">
-        <header class="reveal rounded-3xl">
+        <header class="reveal">
           <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div class="max-w-3xl">
               <div class="mb-6 flex items-center gap-3">
-                <span class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] backdrop-blur-sm" style="border-color: color-mix(in srgb, var(--color-info) 25%, transparent); background: color-mix(in srgb, var(--color-info) 8%, transparent); color: var(--color-info)">
+                <span class="inline-flex items-center gap-2 rounded-dt-pill border px-4 py-1.5 text-xs font-semibold" style="border-color: color-mix(in srgb, var(--color-info) 25%, transparent); background: color-mix(in srgb, var(--color-info) 8%, transparent); color: var(--color-info)">
                   <Icon name="heroicons:sparkles-20-solid" class="h-4 w-4" />
                   {{ $t('blog.insightAndAnalysis') }}
                 </span>
@@ -86,7 +83,7 @@
                 </div>
               </div>
 
-              <div class="rounded-3xl border p-6" style="border-color: var(--color-border); background: var(--color-surface)">
+              <div class="rounded-dt-md border p-6" style="border-color: var(--color-border); background: var(--color-surface)">
                 <h3 class="mb-4 text-xs font-bold uppercase tracking-wider" style="color: var(--color-text-soft)">
                   {{ $t('blog.categoriesLabel') }}
                 </h3>
@@ -101,7 +98,7 @@
               <AppSkeleton variant="card" :count="6" />
             </div>
 
-            <div v-else-if="error" class="rounded-3xl border p-8 text-center" style="border-color: color-mix(in srgb, var(--color-danger) 20%, transparent); background: color-mix(in srgb, var(--color-danger) 5%, transparent)">
+            <div v-else-if="error" class="rounded-dt-md border p-8 text-center" style="border-color: color-mix(in srgb, var(--color-danger) 20%, transparent); background: color-mix(in srgb, var(--color-danger) 5%, transparent)">
               <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style="background: color-mix(in srgb, var(--color-danger) 10%, transparent)">
                 <Icon name="heroicons:exclamation-triangle-20-solid" class="h-8 w-8" style="color: var(--color-danger)" />
               </div>
@@ -122,7 +119,7 @@
               </button>
             </div>
 
-            <div v-else-if="posts.length === 0" class="flex min-h-[400px] flex-col items-center justify-center rounded-3xl border-2 border-dashed px-4 py-16 text-center" style="border-color: var(--color-border); background: var(--color-surface)">
+            <div v-else-if="posts.length === 0" class="flex min-h-[400px] flex-col items-center justify-center rounded-dt-md border-2 border-dashed px-4 py-16 text-center" style="border-color: var(--color-border); background: var(--color-surface)">
               <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-full" style="background: var(--color-surface-strong); box-shadow: var(--shadow-sm)">
                 <Icon name="heroicons:document-magnifying-glass" class="h-10 w-10" style="color: var(--color-text-soft)" />
               </div>
@@ -172,9 +169,10 @@
 
             <!-- Pagination (Fallback) -->
             <div v-if="pagination && pagination.totalPages > 1 && !enableInfiniteScroll" class="mt-16 flex justify-center">
-              <nav class="flex items-center gap-2 rounded-2xl p-2" style="background: var(--color-surface); box-shadow: var(--shadow-sm)">
+              <nav aria-label="pagination" class="flex items-center gap-2 rounded-2xl p-2" style="background: var(--color-surface); box-shadow: var(--shadow-sm)">
                 <button
                   :disabled="pagination.page <= 1"
+                  :aria-label="$t('admin.pagination.previous')"
                   class="pagination-btn flex h-10 w-10 items-center justify-center rounded-xl transition-colors disabled:opacity-30"
                   @click="goToPage(pagination.page - 1)"
                 >
@@ -189,6 +187,7 @@
 
                 <button
                   :disabled="pagination.page >= pagination.totalPages"
+                  :aria-label="$t('admin.pagination.next')"
                   class="pagination-btn flex h-10 w-10 items-center justify-center rounded-xl transition-colors disabled:opacity-30"
                   @click="goToPage(pagination.page + 1)"
                 >
@@ -225,20 +224,25 @@
     <Transition name="fade">
       <div
         v-if="isMobile && showMobileFilters"
-        class="fixed inset-0 z-50 flex items-end justify-center backdrop-blur-sm lg:hidden"
-        style="background: color-mix(in srgb, var(--color-background) 60%, black)"
+        class="fixed inset-0 z-50 flex items-end justify-center lg:hidden"
         @click.self="toggleMobileFilters"
       >
+        <div
+          class="absolute inset-0"
+          aria-hidden="true"
+          style="background: color-mix(in srgb, var(--color-background) 60%, black)"
+          @click="toggleMobileFilters"
+        />
         <Transition name="slide-up">
-          <div class="w-full rounded-t-[2.5rem] p-8" style="background: var(--color-surface); box-shadow: var(--shadow-lg)">
+          <div role="dialog" aria-modal="true" aria-labelledby="mobile-filters-title" class="w-full rounded-t-dt-lg p-8" style="background: var(--color-surface); box-shadow: var(--shadow-lg)">
             <div class="mb-8 flex items-center justify-between">
               <div>
-                <h3 class="text-xl font-bold" style="color: var(--color-text)">{{ $t('blog.filterAndSearch') }}</h3>
+                <h2 id="mobile-filters-title" class="text-xl font-bold" style="color: var(--color-text)">{{ $t('blog.filterAndSearch') }}</h2>
                 <p class="mt-1 text-sm" style="color: var(--color-text-soft)">{{ $t('blog.findTopics') }}</p>
               </div>
               <button
                 type="button"
-                class="flex h-10 w-10 items-center justify-center rounded-full" style="background: var(--color-surface-strong); color: var(--color-text-soft)"
+                :aria-label="$t('common.close')" class="flex min-h-11 w-11 items-center justify-center rounded-full" style="background: var(--color-surface-strong); color: var(--color-text-soft)"
                 @click="toggleMobileFilters"
               >
                 <Icon name="heroicons:x-mark" class="h-6 w-6" />
@@ -275,7 +279,7 @@
         </Transition>
       </div>
     </Transition>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -563,36 +567,6 @@ await loadInitial()
   background-color: var(--color-background);
 }
 
-.bg-grid {
-  background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0);
-  background-size: 40px 40px;
-  color: var(--color-border);
-  opacity: 0.3;
-}
-
-.orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-  pointer-events: none;
-  opacity: 0.25;
-}
-
-.orb-cyan {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--color-info) 25%, transparent) 0%, transparent 70%);
-  top: -100px;
-  right: -50px;
-}
-
-.orb-amber {
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--color-secondary) 18%, transparent) 0%, transparent 70%);
-  bottom: 10%;
-  left: -50px;
-}
 
 .stats-card {
   display: flex;

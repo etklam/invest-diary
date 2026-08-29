@@ -130,20 +130,20 @@ onMounted(() => {
 // Role badge color
 const roleBadgeClass = (role: string) => {
   return role === 'ADMIN'
-    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+    ? 'bg-dt-danger/10 text-dt-danger-strong'
+    : 'bg-dt-surface-strong text-dt-text'
 }
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen bg-dt-bg">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 class="text-3xl font-bold text-dt-text">
           {{ t('admin.title') }}
         </h1>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <p class="mt-2 text-sm text-dt-text-muted">
           {{ t('admin.subtitle') }}
         </p>
       </div>
@@ -151,25 +151,25 @@ const roleBadgeClass = (role: string) => {
       <!-- Stats Grid -->
       <div v-if="stats || loading.stats" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <!-- Users -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="bg-dt-surface overflow-hidden shadow rounded-lg">
           <div class="p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <Icon name="heroicons:users" class="h-6 w-6 text-gray-400" />
+                <Icon name="heroicons:users" class="h-6 w-6 text-dt-text-soft" />
               </div>
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                  <dt class="text-sm font-medium text-dt-text-soft truncate">
                     {{ t('admin.stats.totalUsers') }}
                   </dt>
-                  <dd v-if="!loading.stats" class="text-lg font-medium text-gray-900 dark:text-white">
+                  <dd v-if="!loading.stats" class="text-lg font-medium text-dt-text">
                     {{ stats?.users?.total || 0 }}
-                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                    <span class="text-sm text-dt-text-soft">
                       ({{ t('admin.stats.admins') }}: {{ stats?.users?.admin || 0 }})
                     </span>
                   </dd>
-                  <dd v-else class="text-lg font-medium text-gray-900 dark:text-white">
-                    <div class="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <dd v-else class="text-lg font-medium text-dt-text">
+                    <div class="animate-pulse h-6 bg-dt-surface-muted rounded"></div>
                   </dd>
                 </dl>
               </div>
@@ -178,22 +178,22 @@ const roleBadgeClass = (role: string) => {
         </div>
 
         <!-- Diaries -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="bg-dt-surface overflow-hidden shadow rounded-lg">
           <div class="p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <Icon name="heroicons:book-open" class="h-6 w-6 text-gray-400" />
+                <Icon name="heroicons:book-open" class="h-6 w-6 text-dt-text-soft" />
               </div>
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                  <dt class="text-sm font-medium text-dt-text-soft truncate">
                     {{ t('admin.stats.totalDiaries') }}
                   </dt>
-                  <dd v-if="!loading.stats" class="text-lg font-medium text-gray-900 dark:text-white">
+                  <dd v-if="!loading.stats" class="text-lg font-medium text-dt-text">
                     {{ stats?.diaries?.total || 0 }}
                   </dd>
-                  <dd v-else class="text-lg font-medium text-gray-900 dark:text-white">
-                    <div class="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <dd v-else class="text-lg font-medium text-dt-text">
+                    <div class="animate-pulse h-6 bg-dt-surface-muted rounded"></div>
                   </dd>
                 </dl>
               </div>
@@ -202,25 +202,25 @@ const roleBadgeClass = (role: string) => {
         </div>
 
         <!-- Alerts -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="bg-dt-surface overflow-hidden shadow rounded-lg">
           <div class="p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <Icon name="heroicons:bell" class="h-6 w-6 text-gray-400" />
+                <Icon name="heroicons:bell" class="h-6 w-6 text-dt-text-soft" />
               </div>
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                  <dt class="text-sm font-medium text-dt-text-soft truncate">
                     {{ t('admin.stats.totalAlerts') }}
                   </dt>
-                  <dd v-if="!loading.stats" class="text-lg font-medium text-gray-900 dark:text-white">
+                  <dd v-if="!loading.stats" class="text-lg font-medium text-dt-text">
                     {{ stats?.alerts?.total || 0 }}
-                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                    <span class="text-sm text-dt-text-soft">
                       ({{ t('admin.stats.active') }}: {{ stats?.alerts?.active || 0 }})
                     </span>
                   </dd>
-                  <dd v-else class="text-lg font-medium text-gray-900 dark:text-white">
-                    <div class="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <dd v-else class="text-lg font-medium text-dt-text">
+                    <div class="animate-pulse h-6 bg-dt-surface-muted rounded"></div>
                   </dd>
                 </dl>
               </div>
@@ -229,22 +229,22 @@ const roleBadgeClass = (role: string) => {
         </div>
 
         <!-- Transactions -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="bg-dt-surface overflow-hidden shadow rounded-lg">
           <div class="p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <Icon name="heroicons:currency-dollar" class="h-6 w-6 text-gray-400" />
+                <Icon name="heroicons:currency-dollar" class="h-6 w-6 text-dt-text-soft" />
               </div>
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                  <dt class="text-sm font-medium text-dt-text-soft truncate">
                     {{ t('admin.stats.totalTransactions') }}
                   </dt>
-                  <dd v-if="!loading.stats" class="text-lg font-medium text-gray-900 dark:text-white">
+                  <dd v-if="!loading.stats" class="text-lg font-medium text-dt-text">
                     {{ stats?.transactions?.total || 0 }}
                   </dd>
-                  <dd v-else class="text-lg font-medium text-gray-900 dark:text-white">
-                    <div class="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <dd v-else class="text-lg font-medium text-dt-text">
+                    <div class="animate-pulse h-6 bg-dt-surface-muted rounded"></div>
                   </dd>
                 </dl>
               </div>
@@ -254,22 +254,23 @@ const roleBadgeClass = (role: string) => {
       </div>
 
       <!-- Users Management -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+      <div class="bg-dt-surface shadow rounded-lg">
+        <div class="px-4 py-5 sm:px-6 border-b border-dt-border">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+            <h2 class="text-lg leading-6 font-medium text-dt-text">
               {{ t('admin.users.title') }}
-            </h3>
+            </h2>
             <!-- Search -->
             <div class="relative">
               <input
                 v-model="searchQuery"
                 type="text"
+                :aria-label="t('admin.users.searchPlaceholder')"
                 :placeholder="t('admin.users.searchPlaceholder')"
-                class="block w-full sm:w-64 pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+                class="block w-full sm:w-64 pl-10 pr-3 py-2 border border-dt-border rounded-md leading-5 bg-dt-surface-strong placeholder:text-dt-text-soft focus:outline-none focus:ring-2 focus:ring-dt-primary/30 focus:border-dt-primary sm:text-sm text-dt-text"
               />
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Icon name="heroicons:magnifying-glass" class="h-5 w-5 text-gray-400" />
+                <Icon name="heroicons:magnifying-glass" class="h-5 w-5 text-dt-text-soft" />
               </div>
             </div>
           </div>
@@ -277,56 +278,57 @@ const roleBadgeClass = (role: string) => {
 
         <!-- Users table -->
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-900">
+          <table class="min-w-full divide-y divide-dt-border">
+            <thead class="bg-dt-surface-strong">
               <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ t('admin.users.email') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ t('admin.users.name') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ t('admin.users.role') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ t('admin.users.stats') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ t('admin.users.createdAt') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ t('admin.users.actions') }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="bg-dt-surface divide-y divide-dt-border">
               <tr v-if="loading.users" role="status" aria-live="polite">
-                <td :colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td :colspan="6" class="px-6 py-4 text-center text-dt-text-soft">
                   <div class="flex justify-center">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" aria-hidden="true"></div>
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-dt-primary" aria-hidden="true"></div>
                   </div>
                   <span class="sr-only">{{ $t('common.loading') || '載入中...' }}</span>
                 </td>
               </tr>
               <tr v-else-if="users.length === 0">
-                <td :colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td :colspan="6" class="px-6 py-4 text-center text-dt-text-soft">
                   {{ t('admin.users.noUsers') }}
                 </td>
               </tr>
               <tr v-else v-for="user in users" :key="user.id">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-dt-text">
                   {{ user.email }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-dt-text">
                   {{ user.name || '-' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <select
                     :value="user.role"
+                    :aria-label="t('admin.users.role')"
                     @change="updateUserRole(user.id, ($event.target as HTMLSelectElement).value as 'USER' | 'ADMIN')"
                     :disabled="user.id === currentUser?.id"
-                    class="text-sm rounded-md px-2 py-1 font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    class="text-sm rounded-md px-2 py-1 font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
                     :class="roleBadgeClass(user.role)"
                     :title="user.id === currentUser?.id ? t('admin.users.cannotModifyOwnRole') : ''"
                   >
@@ -334,23 +336,23 @@ const roleBadgeClass = (role: string) => {
                     <option value="ADMIN">ADMIN</option>
                   </select>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-dt-text-soft">
                   <span class="mr-2">{{ t('admin.diaries') }}: {{ user._count.diaries }}</span>
                   <span class="mr-2">{{ t('admin.alerts') }}: {{ user._count.alerts }}</span>
                   <span>{{ t('admin.transactions') }}: {{ user._count.transactions }}</span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-dt-text-soft">
                   {{ formatDate(user.createdAt) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
                     v-if="user.id !== currentUser?.id"
                     @click="deleteUser(user.id, user.email)"
-                    class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                    class="text-dt-danger hover:text-dt-danger-strong"
                   >
                     {{ t('admin.users.delete') }}
                   </button>
-                  <span v-else class="text-gray-400 dark:text-gray-400">
+                  <span v-else class="text-dt-text-soft">
                     {{ t('admin.users.current') }}
                   </span>
                 </td>
@@ -360,27 +362,29 @@ const roleBadgeClass = (role: string) => {
         </div>
 
         <!-- Pagination -->
-        <div v-if="pagination.totalPages > 1" class="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
+        <div v-if="pagination.totalPages > 1" class="bg-dt-surface px-4 py-3 border-t border-dt-border sm:px-6">
           <div class="flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
               <button
                 @click="fetchUsers(pagination.page - 1)"
                 :disabled="pagination.page === 1"
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :aria-label="t('admin.pagination.previous')"
+                class="relative inline-flex items-center px-4 py-2 border border-dt-border text-sm font-medium rounded-md text-dt-text bg-dt-surface hover:bg-dt-surface-strong disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ t('admin.pagination.previous') }}
               </button>
               <button
                 @click="fetchUsers(pagination.page + 1)"
                 :disabled="pagination.page === pagination.totalPages"
-                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :aria-label="t('admin.pagination.next')"
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-dt-border text-sm font-medium rounded-md text-dt-text bg-dt-surface hover:bg-dt-surface-strong disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ t('admin.pagination.next') }}
               </button>
             </div>
             <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
-                <p class="text-sm text-gray-700 dark:text-gray-300">
+                <p class="text-sm text-dt-text">
                   {{ t('admin.pagination.showing') }}
                   <span class="font-medium">{{ Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total) }}</span>
                   {{ t('admin.pagination.to') }}
@@ -391,18 +395,20 @@ const roleBadgeClass = (role: string) => {
                 </p>
               </div>
               <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                <nav aria-label="pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                   <button
                     @click="fetchUsers(pagination.page - 1)"
                     :disabled="pagination.page === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :aria-label="t('admin.pagination.previous')"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-dt-border bg-dt-surface text-sm font-medium text-dt-text-soft hover:bg-dt-surface-strong disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Icon name="heroicons:chevron-left" class="h-5 w-5" />
                   </button>
                   <button
                     @click="fetchUsers(pagination.page + 1)"
                     :disabled="pagination.page === pagination.totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :aria-label="t('admin.pagination.next')"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-dt-border bg-dt-surface text-sm font-medium text-dt-text-soft hover:bg-dt-surface-strong disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Icon name="heroicons:chevron-right" class="h-5 w-5" />
                   </button>

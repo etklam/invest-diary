@@ -599,7 +599,8 @@ definePageMeta({
                   <button
                     v-if="targetPricesInput"
                     type="button"
-                    class="absolute right-3 top-3 rounded-lg bg-dt-surface-raised p-1.5 text-dt-text-muted transition-colors"
+                    :aria-label="t('common.clear')"
+                    class="absolute right-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-dt-surface-strong text-dt-text-muted transition-colors"
                     @click="targetPricesInput = ''"
                   >
                     <Icon name="heroicons:x-mark" class="h-4 w-4" />
@@ -612,7 +613,7 @@ definePageMeta({
 
               <!-- Auto Generate Content -->
               <div v-if="targetPriceInputMode === 'auto'" class="space-y-4">
-                <div class="rounded-xl bg-dt-surface-raised p-4">
+                <div class="rounded-xl bg-dt-surface-strong p-4">
                   <div class="flex items-center gap-2 text-sm font-medium text-dt-text">
                     <Icon name="heroicons:sparkles" class="h-4 w-4 text-dt-secondary" />
                     {{ t('tools.relativeValue.autoGeneratePricePoints') }}
@@ -716,7 +717,7 @@ definePageMeta({
                     :key="rangeOption"
                     type="button"
                     class="rounded-full px-3 py-1 text-xs font-medium"
-                    :class="historicalRange === rangeOption ? 'bg-dt-primary text-white' : 'bg-dt-surface-raised text-dt-text-muted hover:bg-dt-surface'"
+                    :class="historicalRange === rangeOption ? 'bg-dt-primary-solid text-white' : 'bg-dt-surface-strong text-dt-text-muted hover:bg-dt-surface'"
                     @click="historicalRange = rangeOption as '1mo' | '3mo' | '6mo' | '1y' | '5y' | 'max'"
                   >
                     {{ rangeOption.toUpperCase() }}
@@ -771,7 +772,7 @@ definePageMeta({
 
               <!-- Copy Button -->
               <BaseButton variant="secondary" class="mt-5 w-full" @click="copyToClipboard">
-                <Icon :name="copySuccess ? 'heroicons:check-circle' : 'heroicons:clipboard-document'" class="h-5 w-5" :class="{ 'text-emerald-500': copySuccess }" />
+                <Icon :name="copySuccess ? 'heroicons:check-circle' : 'heroicons:clipboard-document'" class="h-5 w-5" :class="{ 'text-dt-success': copySuccess }" />
                 {{ copySuccess ? t('tools.relativeValue.copied') : t('tools.relativeValue.copyToClipboard') }}
               </BaseButton>
               <BaseButton v-if="researchCapture.canCapture.value" variant="primary" class="mt-2 w-full" @click="openRelativeValueCapture">
@@ -789,7 +790,7 @@ definePageMeta({
                     {{ t('tools.relativeValue.priceTable') }}
                   </h3>
                 </div>
-                <span class="rounded-full bg-dt-primary/10 px-3 py-1 text-xs font-semibold text-dt-primary">
+                <span class="rounded-full bg-dt-primary-solid/10 px-3 py-1 text-xs font-semibold text-dt-primary">
                   {{ sortedPriceTable.length }} points
                 </span>
               </div>
@@ -808,14 +809,21 @@ definePageMeta({
                   </thead>
                   <tbody>
                     <tr
-                      v-for="(row, index) in sortedPriceTable"
-                      :key="index"
-                      class="group cursor-pointer border-b border-dt-border last:border-0 transition-colors duration-150 hover:bg-dt-surface-raised"
-                      :class="{ 'bg-dt-surface-raised': row.targetPrice === primaryPrice }"
+                      v-for="row in sortedPriceTable"
+                      :key="row.targetPrice"
+                      class="group cursor-pointer border-b border-dt-border last:border-0 transition-colors duration-150 hover:bg-dt-surface-strong"
+                      :class="{ 'bg-dt-surface-strong': row.targetPrice === primaryPrice }"
                       @click="selectPriceTableRow(row.targetPrice, row.correspondingPrice)"
                     >
                       <td class="font-mono px-6 py-3 font-medium text-dt-text">
-                        {{ formatPrice(row.targetPrice) }}
+                        <button
+                          type="button"
+                          class="block w-full text-left font-medium focus-visible:outline-2 focus-visible:-outline-offset-2"
+                          :aria-label="`${t('tools.relativeValue.targetPrice')}: ${formatPrice(row.targetPrice)} → ${t('tools.relativeValue.currentPrice')}: ${formatPrice(row.correspondingPrice)}`"
+                          @click.stop="selectPriceTableRow(row.targetPrice, row.correspondingPrice)"
+                        >
+                          {{ formatPrice(row.targetPrice) }}
+                        </button>
                       </td>
                       <td class="font-mono px-6 py-3 text-right font-medium text-dt-text">
                         {{ formatPrice(row.correspondingPrice) }}
@@ -830,7 +838,7 @@ definePageMeta({
             <LedgerCard v-else class="flex flex-col items-center justify-center p-10 text-center">
               <Icon name="heroicons:chart-bar" class="mb-6 h-20 w-20 text-dt-text-muted" />
               <h3 class="mb-2 text-lg font-semibold text-dt-text">
-                No data yet
+                {{ t('common.noData') }}
               </h3>
               <p class="max-w-xs text-sm text-dt-text-muted">
                 {{ t('tools.relativeValue.emptyState') }}

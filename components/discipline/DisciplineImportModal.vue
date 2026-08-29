@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useEscapeKey } from '~/composables/useEscapeKey'
 import { useI18n } from 'vue-i18n'
 import type { DisciplineImportPreview } from '~/lib/disciplineShare'
 import { useToast } from '~/composables/useToast'
@@ -15,6 +16,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const toast = useToast()
+
+useEscapeKey(() => emit('close'), () => props.show)
 
 const importJSON = ref('')
 const importPreview = ref<DisciplineImportPreview | null>(null)
@@ -124,12 +127,12 @@ watch(() => props.show, (newVal) => {
 
 <template>
   <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/50" @click="emit('close')"></div>
-    <div class="relative border shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style="background: var(--color-surface); border-color: var(--color-border);">
+    <div class="absolute inset-0 bg-black/50" aria-hidden="true" @click="emit('close')"></div>
+    <div role="dialog" aria-modal="true" aria-labelledby="discipline-import-title" class="relative border shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style="background: var(--color-surface); border-color: var(--color-border);">
       <div class="p-6">
         <div class="flex items-center justify-between mb-8">
-          <h2 class="text-2xl font-semibold" style="color: var(--color-text); font-family: var(--font-display);">{{ t('discipline.import.title') }}</h2>
-          <button @click="emit('close')" class="transition-colors" style="color: var(--color-text-soft);">
+          <h2 id="discipline-import-title" class="text-2xl font-semibold" style="color: var(--color-text); font-family: var(--font-display);">{{ t('discipline.import.title') }}</h2>
+          <button @click="emit('close')" :aria-label="t('common.close')" class="flex min-h-11 min-w-11 items-center justify-center rounded-dt-sm transition-colors hover:bg-dt-surface-strong" style="color: var(--color-text-soft);">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
@@ -200,7 +203,7 @@ watch(() => props.show, (newVal) => {
             @click="executeImport"
             :disabled="importLoading"
             class="w-full px-6 py-3 text-white font-medium rounded-sm transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            style="background: var(--color-primary);"
+            style="background: var(--color-primary-solid);"
           >
             <span v-if="importLoading">{{ t('discipline.import.importing') }}</span>
             <span v-else>{{ t('discipline.import.importButton') }}</span>

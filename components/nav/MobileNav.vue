@@ -91,7 +91,7 @@ watch(() => route.path, () => {
                 :to="item.to"
                 class="flex min-h-11 items-center rounded-dt-sm px-3 py-2.5 pr-2 text-sm transition-colors duration-200"
                 :class="isGroupItemActive(group.items, item.to)
-                  ? 'bg-dt-primary text-white'
+                  ? 'bg-dt-primary-solid text-white'
                   : 'text-dt-text hover:bg-dt-surface-strong'"
                 :aria-current="isGroupItemActive(group.items, item.to) ? 'page' : undefined"
                 @click="emit('close')"
@@ -158,7 +158,7 @@ watch(() => route.path, () => {
             </NuxtLink>
             <NuxtLink
               to="/auth/register"
-              class="flex items-center rounded-dt-sm bg-dt-primary px-3 py-3 pr-2 text-white transition-colors font-semibold"
+              class="flex items-center rounded-dt-sm bg-dt-primary-solid px-3 py-3 pr-2 text-white transition-colors font-semibold"
               @click="emit('close')"
             >
               <Icon name="heroicons:user-plus" class="mr-3 h-5 w-5" />

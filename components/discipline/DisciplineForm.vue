@@ -47,6 +47,7 @@ defineExpose({ reset })
           class="w-full px-4 py-3 border rounded-sm focus:outline-none focus:ring-1 transition-colors duration-200 resize-none"
           style="background: var(--color-surface-muted); border-color: var(--color-border); color: var(--color-text);"
           :placeholder="t('discipline.createSection.placeholder')"
+          :aria-label="t('discipline.createSection.title')"
         />
       </div>
       <button

@@ -2,6 +2,8 @@
 import { computed, resolveComponent } from 'vue'
 import { useAppShell } from '~/composables/useAppShell'
 
+const { t } = useI18n()
+
 const { bottomNavItems, isBottomNavActive } = useNavigation()
 const { openQuickDiary, openMobileNavigation, showMobileNavigation } = useAppShell()
 
@@ -16,7 +18,7 @@ const runAction = (action?: 'quick-diary' | 'more') => {
 </script>
 
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 z-50 border-t border-dt-border bg-dt-surface pb-safe shadow-[0_-1px_0_rgba(15,23,42,0.04)]">
+  <nav :aria-label="t('nav.mobileLabel')" class="fixed bottom-0 left-0 right-0 z-50 border-t border-dt-border bg-dt-surface pb-safe shadow-[0_-1px_0_rgba(15,23,42,0.04)]">
     <div class="mx-auto flex h-16 max-w-md items-center justify-around px-2">
       <component
         v-for="item in navigationItems"
@@ -36,7 +38,7 @@ const runAction = (action?: 'quick-diary' | 'more') => {
       >
         <div
           class="relative flex h-8 w-8 items-center justify-center"
-          :class="item.action === 'quick-diary' ? 'rounded-full bg-dt-primary text-white shadow-dt-sm' : ''"
+          :class="item.action === 'quick-diary' ? 'rounded-full bg-dt-primary-solid text-white shadow-dt-sm' : ''"
         >
           <Icon :name="getIconName(item.icon)" :class="item.action === 'quick-diary' ? 'h-5 w-5' : 'h-6 w-6'" />
         </div>

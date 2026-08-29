@@ -1,17 +1,17 @@
 <template>
-  <article class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+  <article class="rounded-xl border border-dt-border bg-dt-surface hover:border-dt-border  transition-colors">
     <div class="p-5">
       <div class="flex items-start justify-between gap-3">
         <div class="flex-1 min-w-0">
-          <h3 class="text-base font-semibold text-slate-900 dark:text-white truncate">
+          <h3 class="text-base font-semibold text-dt-text truncate">
             {{ note.title }}
           </h3>
           <div class="flex items-center gap-2 mt-1.5">
-            <time class="text-xs text-slate-500 dark:text-slate-400">{{ formatDate(note.date) }}</time>
-            <span class="text-xs text-slate-300 dark:text-slate-600">·</span>
+            <time class="text-xs text-dt-text-soft">{{ formatDate(note.date) }}</time>
+            <span class="text-xs text-dt-text-muted">·</span>
             <span
               class="inline-flex items-center gap-1 text-xs font-medium"
-              :class="note.authorKind === 'agent' ? 'text-emerald-600 dark:text-emerald-400' : note.ownership === 'partner' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'"
+              :class="note.authorKind === 'agent' ? 'text-dt-success' : note.ownership === 'partner' ? 'text-dt-success' : 'text-dt-text-muted'"
             >
               <Icon
                 data-testid="stock-note-author-icon"
@@ -24,14 +24,16 @@
         </div>
         <div v-if="note.canEdit" class="flex items-center gap-1 flex-shrink-0">
           <button
-            class="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+            class="flex min-h-11 min-w-11 items-center justify-center text-dt-text-soft hover:text-dt-info transition-colors rounded-lg hover:bg-dt-surface-strong"
+            :aria-label="t('common.edit')"
             :title="t('common.edit')"
             @click="$emit('edit', note)"
           >
             <Icon name="heroicons:pencil" class="w-4 h-4" />
           </button>
           <button
-            class="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+            class="flex min-h-11 min-w-11 items-center justify-center text-dt-text-soft hover:text-dt-danger transition-colors rounded-lg hover:bg-dt-surface-strong"
+            :aria-label="t('common.delete')"
             :title="t('common.delete')"
             @click="$emit('delete', note)"
           >
@@ -39,7 +41,7 @@
           </button>
         </div>
       </div>
-      <div class="mt-3 text-sm leading-6 text-slate-700 dark:text-slate-300 prose prose-sm dark:prose-invert max-w-none line-clamp-4">
+      <div class="mt-3 text-sm leading-6 text-dt-text prose prose-sm dark:prose-invert max-w-none line-clamp-4">
         {{ note.content }}
       </div>
     </div>

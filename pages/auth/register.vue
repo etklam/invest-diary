@@ -1,5 +1,5 @@
 <template>
-  <div class="register-shell mx-auto w-full max-w-5xl self-start overflow-hidden rounded-[28px] border shadow-2xl md:grid md:grid-cols-2">
+  <div class="register-shell mx-auto w-full max-w-5xl self-start overflow-hidden rounded-dt-lg border shadow-dt-lg md:grid md:grid-cols-2">
     <section class="register-aside hidden p-8 md:flex md:flex-col md:justify-between lg:p-10">
       <div class="space-y-6">
         <p class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.16em] uppercase">
@@ -8,7 +8,7 @@
         <h1 class="text-3xl font-semibold leading-tight lg:text-4xl">
           {{ $t('auth.registerTitle') }}
         </h1>
-        <p class="text-sm leading-7 text-amber-50/90">
+        <p class="text-sm leading-7 text-dt-on-ink/90">
           {{ $t('home.cta.description') }}
         </p>
       </div>
@@ -216,7 +216,7 @@ const handleRegister = async () => {
 
 .register-aside {
   background: var(--color-panel-ink);
-  color: #f3eee6;
+  color: var(--color-on-ink);
 }
 
 .register-aside > div:first-child p {
@@ -225,12 +225,12 @@ const handleRegister = async () => {
 }
 
 .register-aside h1 {
-  color: #fff7ee;
+  color: var(--color-on-ink);
   font-family: var(--font-display);
 }
 
 .aside-features {
-  border: 1px solid rgba(243, 238, 230, 0.14);
+  border: 1px solid color-mix(in srgb, var(--color-on-ink) 14%, transparent);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.06);
   padding: 1.1rem 1.2rem;

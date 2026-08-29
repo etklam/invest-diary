@@ -31,7 +31,7 @@ const { openQuickDiary } = useAppShell()
             <NuxtLink
               to="/timeline"
               class="inline-flex min-h-[44px] items-center gap-2 rounded-dt-sm px-3 py-2 text-sm font-medium text-dt-text-muted transition-colors duration-150 hover:bg-dt-surface-strong hover:text-dt-primary"
-              :class="isActive('/timeline') ? 'bg-dt-primary text-white shadow-dt-sm hover:bg-dt-primary-active hover:text-white' : ''"
+              :class="isActive('/timeline') ? 'bg-dt-primary-solid text-white shadow-dt-sm hover:bg-dt-primary-solid-active hover:text-white' : ''"
               :aria-current="isActive('/timeline') ? 'page' : undefined"
             >
               <Icon name="heroicons:clock" class="h-[18px] w-[18px]" />
@@ -48,7 +48,7 @@ const { openQuickDiary } = useAppShell()
             <NuxtLink
               :to="item.to"
               class="inline-flex min-h-[44px] items-center gap-2 rounded-dt-sm px-3 py-2 text-sm font-medium text-dt-text-muted transition-colors duration-150 hover:bg-dt-surface-strong hover:text-dt-primary"
-              :class="isActive(item.to) ? 'bg-dt-primary text-white shadow-dt-sm hover:bg-dt-primary-active hover:text-white' : ''"
+              :class="isActive(item.to) ? 'bg-dt-primary-solid text-white shadow-dt-sm hover:bg-dt-primary-solid-active hover:text-white' : ''"
             >
               <Icon :name="getIconName(item.icon)" class="h-[18px] w-[18px]" width="18" height="18" />
               <span>{{ item.label }}</span>
@@ -88,7 +88,7 @@ const { openQuickDiary } = useAppShell()
           <li>
             <NuxtLink
               to="/auth/register"
-              class="inline-flex min-h-[44px] items-center rounded-dt-sm bg-dt-primary px-4 py-2 text-sm font-semibold text-white shadow-dt-sm transition-colors duration-150 hover:bg-dt-primary-active focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30"
+              class="inline-flex min-h-[44px] items-center rounded-dt-sm bg-dt-primary-solid px-4 py-2 text-sm font-semibold text-white shadow-dt-sm transition-colors duration-150 hover:bg-dt-primary-solid-active focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30"
             >
               {{ t('auth.register') }}
             </NuxtLink>

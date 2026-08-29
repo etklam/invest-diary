@@ -36,9 +36,9 @@
             <!-- Close button -->
             <button
               @click="close"
-              class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer"
+              class="flex-shrink-0 -m-2 min-h-11 min-w-11 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer"
               :style="{ color: 'var(--color-text-soft)' }"
-              :aria-label="$t('common.close') || '關閉'"
+              :aria-label="$t('common.close')"
             >
               <Icon name="heroicons:x-mark" class="h-4 w-4" />
             </button>

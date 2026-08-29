@@ -35,8 +35,8 @@ const { t } = useI18n()
 // scale — no decorative palette.
 const accentText = computed(() => props.isPrimary ? 'text-dt-primary' : 'text-dt-info')
 const accentBorder = computed(() => props.isPrimary ? 'focus:border-dt-primary focus:ring-dt-primary/15' : 'focus:border-dt-info focus:ring-dt-info/15')
-const accentBadge = computed(() => props.isPrimary ? 'bg-dt-primary/10 text-dt-primary' : 'bg-dt-info/10 text-dt-info')
-const accentBtn = computed(() => props.isPrimary ? 'bg-dt-primary hover:opacity-90 focus:ring-dt-primary' : 'bg-dt-info hover:opacity-90 focus:ring-dt-info')
+const accentBadge = computed(() => props.isPrimary ? 'bg-dt-primary-solid/10 text-dt-primary' : 'bg-dt-info/10 text-dt-info')
+const accentBtn = computed(() => props.isPrimary ? 'bg-dt-primary-solid hover:opacity-90 focus:ring-dt-primary' : 'bg-dt-info hover:opacity-90 focus:ring-dt-info')
 const inputId = computed(() => props.isPrimary ? 'primary' : 'relative')
 </script>
 
@@ -79,7 +79,8 @@ const inputId = computed(() => props.isPrimary ? 'primary' : 'relative')
               type="button"
               :disabled="!symbol.trim() || loading"
               :data-testid="isPrimary ? 'primary-quote-button' : 'relative-quote-button'"
-              class="absolute right-2 top-1/2 -translate-y-1/2 rounded-dt-sm px-3 py-1.5 text-xs font-semibold text-white transition-opacity duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              :aria-label="t('tools.relativeValue.fetchQuote')"
+              class="absolute right-2 top-1/2 -translate-y-1/2 rounded-dt-sm px-3 py-1.5 min-h-[44px] text-xs font-semibold text-white transition-opacity duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               :class="accentBtn"
               @click="emit('fetchQuote')"
             >

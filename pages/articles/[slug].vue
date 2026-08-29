@@ -1,8 +1,5 @@
 <template>
-  <main class="fintech-article-detail min-h-screen pb-24" style="color: var(--color-text)">
-    <div class="bg-grid absolute inset-0 -z-10 opacity-[0.08]" aria-hidden="true" />
-    <div class="orb orb-cyan hidden sm:block" aria-hidden="true" />
-    <div class="orb orb-amber hidden sm:block" aria-hidden="true" />
+  <div class="fintech-article-detail min-h-screen pb-24" style="color: var(--color-text)">
 
     <!-- Progress Bar -->
     <div
@@ -115,15 +112,17 @@
       <div v-if="isAdmin" class="fixed bottom-8 left-8 z-40 hidden flex-col gap-3 lg:flex">
         <NuxtLink
           :to="`/admin/blog/${post.id}/edit`"
-          class="admin-action-btn flex h-12 w-12 items-center justify-center rounded-2xl shadow-xl ring-1 transition-all hover:-translate-y-1"
+          :aria-label="$t('common.edit')"
+          class="admin-action-btn flex h-12 w-12 items-center justify-center rounded-dt-md shadow-dt-lg ring-1 transition-colors"
           style="background: var(--color-surface); color: var(--color-secondary); --tw-ring-color: var(--color-border)"
         >
           <Icon name="heroicons:pencil" class="h-6 w-6" />
         </NuxtLink>
         <button
-          @click="handleDelete"
-          class="admin-action-btn flex h-12 w-12 items-center justify-center rounded-2xl shadow-xl ring-1 transition-all hover:-translate-y-1"
+          :aria-label="$t('common.delete')"
+          class="admin-action-btn flex h-12 w-12 items-center justify-center rounded-dt-md shadow-dt-lg ring-1 transition-colors"
           style="background: var(--color-surface); color: var(--color-danger); --tw-ring-color: var(--color-border)"
+          @click="handleDelete"
         >
           <Icon name="heroicons:trash" class="h-6 w-6" />
         </button>
@@ -140,7 +139,7 @@
           prose-a:font-bold prose-a:no-underline hover:prose-a:underline
           prose-blockquote:border-l-4 prose-blockquote:py-4 prose-blockquote:px-8 prose-blockquote:rounded-r-2xl prose-blockquote:italic
           prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-[''] prose-code:after:content-[''] prose-code:font-semibold
-          prose-img:rounded-3xl prose-img:shadow-lg"
+          prose-img:rounded-dt-md prose-img:shadow-lg"
         >
           <div v-if="isHtmlContent" v-html="sanitizedContent" />
           <MDCRenderer
@@ -199,7 +198,7 @@
         </div>
       </div>
     </article>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -521,35 +520,5 @@ const handleDelete = async () => {
 
 .blog-back-link:hover {
   opacity: 0.75;
-}
-
-.bg-grid {
-  background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0);
-  background-size: 48px 48px;
-  color: var(--color-border);
-}
-
-.orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(100px);
-  pointer-events: none;
-  opacity: 0.25;
-}
-
-.orb-cyan {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--color-info) 20%, transparent) 0%, transparent 70%);
-  top: -100px;
-  right: -50px;
-}
-
-.orb-amber {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--color-secondary) 15%, transparent) 0%, transparent 70%);
-  bottom: 20%;
-  left: -100px;
 }
 </style>

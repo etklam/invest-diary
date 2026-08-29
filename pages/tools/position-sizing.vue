@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { calculatePositionSizing, validateRatios } from '~/lib/positionSizing'
+import { useEscapeKey } from '~/composables/useEscapeKey'
 import { formatCurrency as formatCurrencyUtil, formatNumber as formatNumberUtil } from '~/lib/format'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 import type { RoundingMode, PositionResult, CalculationSummary } from '~/lib/positionSizing'
@@ -102,6 +103,8 @@ const formatNumber = formatNumberUtil
 const copySuccess = ref(false)
 const showSaveToDiaryModal = ref(false)
 const savingToDiary = ref(false)
+
+useEscapeKey(() => { showSaveToDiaryModal.value = false }, () => showSaveToDiaryModal.value)
 
 const generateMarkdown = () => {
   if (!calculationResults.value.length || !summary.value || !effectiveCapital.value || !stockPrice.value) return ''
@@ -246,9 +249,9 @@ const createTradePlanFromPositionSizing = async () => {
 }
 
 useHead({
-  title: '建倉比例計算器 - 投資工具',
+  title: () => `${t('tools.positionSizing.title')} - ${t('nav.tools')}`,
   meta: [
-    { name: 'description', content: '免費線上建倉比例計算器，支援正金字塔(4-3-2-1)、矩形(3-3-3-1)、倒金字塔(1-2-3-4)等多種建倉策略，幫助您合理分配資金。' }
+    { name: 'description', content: () => t('tools.positionSizing.metaDescription') }
   ]
 })
 
@@ -410,7 +413,7 @@ definePageMeta({
         </div>
 
         <div v-if="isValidInput && summary" class="rounded-xl border border-dt-border bg-dt-surface shadow-dt-sm overflow-hidden">
-          <div class="bg-dt-primary p-6 sm:p-7">
+          <div class="bg-dt-primary-solid p-6 sm:p-7">
             <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
@@ -493,7 +496,7 @@ definePageMeta({
                 <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-soft">{{ t('tools.positionSizing.markdown.pros') }}</div>
                 <ul class="mt-3 space-y-2">
                   <li v-for="pro in selectedStrategy.pros" :key="pro" class="flex items-start gap-2.5">
-                    <Icon name="heroicons:check-circle" class="h-4 w-4 shrink-0 text-emerald-500" />
+                    <Icon name="heroicons:check-circle" class="h-4 w-4 shrink-0 text-dt-success" />
                     <span>{{ pro }}</span>
                   </li>
                 </ul>
@@ -557,7 +560,7 @@ definePageMeta({
                   {{ result.ratio }}%
                 </div>
               </div>
-              <span class="rounded-full bg-dt-primary/10 px-3 py-1 text-sm font-semibold text-dt-primary">
+              <span class="rounded-full bg-dt-primary-solid/10 px-3 py-1 text-sm font-semibold text-dt-primary">
                 {{ formatNumber(result.shares) }} {{ t('tools.positionSizing.shares') || '股' }}
               </span>
             </div>
@@ -604,20 +607,20 @@ definePageMeta({
     </section>
 
     <div v-if="showSaveToDiaryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div class="w-full max-w-lg rounded-xl border border-dt-border bg-dt-surface p-6 shadow-xl">
+      <div role="dialog" aria-modal="true" aria-labelledby="position-sizing-save-title" class="w-full max-w-lg rounded-xl border border-dt-border bg-dt-surface p-6 shadow-xl">
         <div class="flex items-start justify-between gap-4">
           <div>
             <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
               {{ t('tools.positionSizing.saveToDiary.kicker') }}
             </p>
-            <h2 class="mt-1 font-display text-2xl tracking-tight text-dt-text">
+            <h2 id="position-sizing-save-title" class="mt-1 font-display text-2xl tracking-tight text-dt-text">
               {{ t('tools.positionSizing.saveToDiary.title') }}
             </h2>
             <p class="mt-2 text-sm leading-6 text-dt-text-muted">
               {{ t('tools.positionSizing.saveToDiary.description') }}
             </p>
           </div>
-          <button class="rounded-md p-1 text-dt-text-muted hover:text-dt-text" type="button" @click="showSaveToDiaryModal = false">
+          <button class="flex min-h-11 min-w-11 items-center justify-center rounded-md text-dt-text-muted hover:text-dt-text" type="button" :aria-label="t('common.close')" @click="showSaveToDiaryModal = false">
             <Icon name="heroicons:x-mark" class="h-5 w-5" />
           </button>
         </div>

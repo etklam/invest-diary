@@ -1,6 +1,6 @@
 <template>
   <div class="category-filter">
-    <nav class="flex flex-col gap-1.5">
+    <nav :aria-label="t('blog.categoriesLabel')" class="flex flex-col gap-1.5">
       <NuxtLink
         v-for="cat in categories"
         :key="cat.key"
@@ -32,6 +32,7 @@
 <script setup lang="ts">
 import type { LocationQueryValue } from 'vue-router'
 
+const { t } = useI18n()
 const route = useRoute()
 
 interface Category {

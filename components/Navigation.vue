@@ -13,7 +13,7 @@ const {
 </script>
 
 <template>
-  <nav class="sticky top-4 z-40 px-3 sm:px-4 lg:px-6">
+  <nav :aria-label="t('nav.label')" class="sticky top-4 z-40 px-3 sm:px-4 lg:px-6">
     <DesktopNav>
       <template #mobile-trigger>
         <div class="ml-auto flex xl:hidden">

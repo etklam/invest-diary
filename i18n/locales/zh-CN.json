@@ -30,7 +30,9 @@
     "skipToContent": "跳到主要内容",
     "retry": "重试",
     "error": "发生错误，请再试一次",
-    "more": "更多"
+    "more": "更多",
+    "decrement": "减少",
+    "increment": "增加"
   },
   "nav": {
     "home": "首页",
@@ -74,7 +76,9 @@
     "partners": "合作伙伴",
     "reviewQueue": "复盘队列",
     "tradePlans": "交易计划",
-    "strategyPerformance": "策略表现"
+    "strategyPerformance": "策略表现",
+    "label": "主导航",
+    "mobileLabel": "行动导航"
   },
   "auth": {
     "login": "登录",
@@ -359,6 +363,19 @@
       "recent": "最近使用",
       "frequent": "常用标签",
       "removeTag": "移除标签 {tag}"
+    },
+    "templateManager": {
+      "title": "模板管理",
+      "close": "关闭模板管理",
+      "listTitle": "模板清单",
+      "default": "默认",
+      "apply": "套用",
+      "editTitle": "编辑模板",
+      "newTitle": "新增模板",
+      "nameLabel": "模板名称",
+      "contentLabel": "模板内容",
+      "update": "更新",
+      "copySuffix": "（副本）"
     }
   },
   "diary": {
@@ -1389,6 +1406,11 @@
       "moveDown": "下移",
       "share": "分享",
       "import": "导入"
+    },
+    "sharePage": {
+      "defaultTitle": "我的投资纪律",
+      "kicker": "投资日记 · Discipline",
+      "importCta": "汇入这份纪律"
     }
   },
   "admin": {
@@ -1725,7 +1747,8 @@
             "需要精准判断"
           ]
         }
-      }
+      },
+      "metaDescription": "免费在线建仓比例计算器，支持正金字塔(4-3-2-1)、矩形(3-3-3-1)、倒金字塔(1-2-3-4)等多种建仓策略，帮助您合理分配资金。"
     },
     "seasonality": {
       "title": "美股月份季节性分析",
@@ -1868,7 +1891,8 @@
         "name": "相对弱势期",
         "description": "5月～10月（「Sell in May and go away」现象）",
         "strategy": "波动性在秋季（尤其是9-10月）较高，夏季相对平稳"
-      }
+      },
+      "metaDescription": "基于1950年至今的历史数据，分析美股S&P 500月份季节性模式，了解最佳与最差月份，辅助投资决策。"
     },
     "financialFreedom": {
       "title": "财务自由计算器",
@@ -1989,7 +2013,8 @@
         "ending": "期末",
         "yearN": "第 {n} 年",
         "generatedBy": "由财务自由计算器生成"
-      }
+      },
+      "metaDescription": "计算您的财务自由金额（FIRE Number），了解目前进度与达成时间。支持多种提领率设定，帮助您规划财务自由之路。"
     },
     "etf": {
       "title": "ETF 趋势分析",
@@ -2822,5 +2847,13 @@
       "notes": "暂无 Stock Note。",
       "evidence": "暂无来源证据。"
     }
+  },
+  "voiceInput": {
+    "stopListening": "停止语音输入",
+    "startListening": "开始语音输入",
+    "stop": "停止",
+    "voice": "语音",
+    "unsupported": "不支持",
+    "transcribing": "语音转录中"
   }
 }

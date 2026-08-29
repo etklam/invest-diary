@@ -1,5 +1,5 @@
 <template>
-  <div class="login-shell mx-auto w-full max-w-5xl self-start overflow-hidden rounded-[28px] border shadow-2xl md:grid md:grid-cols-2">
+  <div class="login-shell mx-auto w-full max-w-5xl self-start overflow-hidden rounded-dt-lg border shadow-dt-lg md:grid md:grid-cols-2">
     <section class="login-aside hidden p-8 md:flex md:flex-col md:justify-between lg:p-10">
       <div class="space-y-6">
         <p class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.16em] uppercase">
@@ -8,7 +8,7 @@
         <h1 class="text-3xl font-semibold leading-tight lg:text-4xl">
           {{ $t('auth.loginTitle') }}
         </h1>
-        <p class="text-sm leading-7 text-amber-50/90">
+        <p class="text-sm leading-7 text-dt-on-ink/90">
           {{ $t('home.hero.subtitle') }}
         </p>
       </div>
@@ -25,7 +25,7 @@
           <span>{{ $t('auth.aside.loop') }}</span>
           <strong>{{ $t('home.features.alerts.title') }}</strong>
         </div>
-        <p class="text-sm leading-7 text-stone-300">
+        <p class="text-sm leading-7 text-dt-on-ink/80">
           {{ $t('auth.aside.pitch') }}
         </p>
       </div>
@@ -34,8 +34,8 @@
     <section class="login-form-panel p-6 sm:p-8 lg:p-10">
       <div class="mb-8 space-y-2">
         <p class="text-sm font-semibold tracking-[0.14em] uppercase text-[color:var(--color-secondary)]">{{ $t('common.appName') }}</p>
-        <h2 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">{{ $t('auth.loginTitle') }}</h2>
-        <p class="text-sm leading-7 text-slate-600 dark:text-slate-300">
+        <h2 class="text-3xl font-semibold tracking-tight text-dt-text">{{ $t('auth.loginTitle') }}</h2>
+        <p class="text-sm leading-7 text-dt-text-muted">
           {{ $t('auth.orCreateAccount') }}
           <NuxtLink
             to="/auth/register"
@@ -49,11 +49,11 @@
       <form class="space-y-5" @submit.prevent="handleLogin" @keydown.enter.prevent="handleLogin" onsubmit="return false" novalidate>
         <fieldset :disabled="!isHydrated || isLoading" :aria-busy="!isHydrated || isLoading" class="space-y-5">
           <div>
-            <label for="email" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+            <label for="email" class="mb-2 block text-sm font-semibold text-dt-text">
               {{ $t('auth.email') }}
             </label>
             <div class="relative">
-              <Icon name="heroicons:envelope" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <Icon name="heroicons:envelope" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-dt-text-soft" />
               <input
                 id="email"
                 v-model="form.email"
@@ -61,22 +61,24 @@
                 required
                 autocomplete="email"
                 class="login-input block w-full rounded-xl border py-3 pl-10 pr-3 text-sm outline-none transition-colors duration-200"
-                :class="emailError ? 'border-red-500 dark:border-red-500' : ''"
+                :class="emailError ? 'border-dt-danger' : ''"
+                :aria-invalid="Boolean(emailError)"
+                :aria-describedby="emailError ? 'email-error' : undefined"
                 :placeholder="$t('auth.emailPlaceholder')"
                 @blur="validateEmail"
               />
             </div>
-            <p v-if="emailError" class="mt-1 text-xs text-red-600 dark:text-red-400">
+            <p v-if="emailError" id="email-error" class="mt-1 text-xs text-dt-danger">
               {{ emailError }}
             </p>
           </div>
 
           <div>
-            <label for="password" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+            <label for="password" class="mb-2 block text-sm font-semibold text-dt-text">
               {{ $t('auth.password') }}
             </label>
             <div class="relative">
-              <Icon name="heroicons:lock-closed" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <Icon name="heroicons:lock-closed" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-dt-text-soft" />
               <input
                 id="password"
                 v-model="form.password"
@@ -103,7 +105,7 @@
           </button>
         </fieldset>
 
-        <p v-if="!isHydrated" class="text-xs font-medium text-slate-500 dark:text-slate-400">
+        <p v-if="!isHydrated" class="text-xs font-medium text-dt-text-soft">
           {{ $t('auth.preparingForm') }}
         </p>
       </form>
@@ -159,7 +161,7 @@ const handleLogin = async () => {
 
 .login-aside {
   background: var(--color-panel-ink);
-  color: #f3eee6;
+  color: var(--color-on-ink);
 }
 
 .login-aside > div:first-child p {
@@ -168,11 +170,11 @@ const handleLogin = async () => {
 }
 
 .login-aside h1 {
-  color: #fff7ee;
+  color: var(--color-on-ink);
 }
 
 .aside-note {
-  border: 1px solid rgba(243, 238, 230, 0.14);
+  border: 1px solid color-mix(in srgb, var(--color-on-ink) 14%, transparent);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.06);
   padding: 1.1rem 1.2rem;
@@ -183,7 +185,7 @@ const handleLogin = async () => {
   justify-content: space-between;
   gap: 1rem;
   padding-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(243, 238, 230, 0.1);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-on-ink) 10%, transparent);
   font-family: var(--font-data);
 }
 

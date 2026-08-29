@@ -137,4 +137,22 @@ describe('TransactionInput', () => {
     expect(cards[1]!.text()).not.toContain('diary.form.positiveNumber')
     expect(cards[1]!.find('textarea').exists()).toBe(false)
   })
+
+  it('將驗證狀態標記在實際錯誤欄位，且外部替換資料列後仍會驗證', async () => {
+    const wrapper = mountInput([makeTx()])
+
+    const priceInput = wrapper.find('input[id^="price-"]')
+    const quantityInput = wrapper.find('input[id^="quantity-"]')
+    await priceInput.setValue('0')
+
+    expect(priceInput.attributes('aria-invalid')).toBe('true')
+    expect(quantityInput.attributes('aria-invalid')).not.toBe('true')
+
+    const copiedSell = makeTx({ type: 'SELL', symbol: '' })
+    await wrapper.setProps({ modelValue: [copiedSell] })
+
+    const symbolInput = wrapper.find('input[id^="symbol-"]')
+    expect(symbolInput.attributes('aria-invalid')).toBe('true')
+    expect(symbolInput.attributes('aria-describedby')).toMatch(/^txn-error-/)
+  })
 })

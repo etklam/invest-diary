@@ -8,7 +8,7 @@
         <!-- Modal Content -->
         <div
           ref="dialogPanel"
-          class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+          class="relative bg-dt-surface rounded-dt-md shadow-dt-lg w-full max-w-md overflow-hidden"
           role="dialog"
           aria-modal="true"
           aria-labelledby="stock-watchlist-edit-title"
@@ -16,12 +16,13 @@
           @keydown="handleKeydown"
         >
           <!-- Header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-            <h2 id="stock-watchlist-edit-title" class="text-lg font-semibold text-slate-900 dark:text-white">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-dt-border">
+            <h2 id="stock-watchlist-edit-title" class="text-lg font-semibold text-dt-text">
               {{ t('stock.watchlist.editModal.title') }}
             </h2>
             <button
-              class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              class="flex min-h-11 min-w-11 items-center justify-center rounded-dt-sm text-dt-text-soft hover:text-dt-text transition-colors"
+              :aria-label="t('common.close')"
               @click="close"
             >
               <Icon name="heroicons:x-mark" class="w-5 h-5" />
@@ -31,19 +32,19 @@
           <!-- Body -->
           <div class="px-6 py-5 space-y-5">
             <!-- Symbol Display -->
-            <div class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-lg">
-              <div class="w-10 h-10 flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <Icon name="heroicons:chart-bar" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <div class="flex items-center gap-3 p-3 bg-dt-surface-strong/60 rounded-lg">
+              <div class="w-10 h-10 flex items-center justify-center bg-dt-info/10 rounded-lg">
+                <Icon name="heroicons:chart-bar" class="w-5 h-5 text-dt-info" />
               </div>
               <div>
-                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ item?.stock.symbol }}</p>
-                <p v-if="item?.stock.name" class="text-xs text-slate-500 dark:text-slate-400">{{ item.stock.name }}</p>
+                <p class="text-sm font-semibold text-dt-text">{{ item?.stock.symbol }}</p>
+                <p v-if="item?.stock.name" class="text-xs text-dt-text-soft">{{ item.stock.name }}</p>
               </div>
             </div>
 
             <!-- Status Toggle -->
             <div class="space-y-2">
-              <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label class="text-sm font-medium text-dt-text">
                 {{ t('stock.watchlist.editModal.status') }}
               </label>
               <div class="flex gap-2">
@@ -53,9 +54,8 @@
                   type="button"
                   class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all"
                   :class="form.status === statusOption.value
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'"
-                  "
+                    ? 'bg-dt-primary-solid text-white shadow-sm'
+                    : 'bg-dt-surface-strong text-dt-text hover:bg-dt-surface-strong'"
                   @click="form.status = statusOption.value"
                 >
                   {{ statusOption.label }}
@@ -65,52 +65,54 @@
 
             <!-- Sort Order -->
             <div class="space-y-2">
-              <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label class="text-sm font-medium text-dt-text">
                 {{ t('stock.watchlist.editModal.sortOrder') }}
               </label>
               <div class="flex items-center gap-3">
                 <button
                   type="button"
-                  class="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                  class="flex min-h-11 min-w-11 items-center justify-center bg-dt-surface-strong rounded-lg hover:bg-dt-surface-strong transition-colors"
                   :disabled="form.sortOrder >= 10000"
+                  :aria-label="t('common.increment')"
                   @click="form.sortOrder = Math.min(10000, form.sortOrder + 10)"
                 >
-                  <Icon name="heroicons:plus" class="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                  <Icon name="heroicons:plus" class="w-4 h-4 text-dt-text-muted" />
                 </button>
                 <input
                   v-model.number="form.sortOrder"
                   type="number"
                   min="0"
                   max="10000"
-                  class="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg text-center text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="flex-1 px-4 py-2.5 bg-dt-surface-strong/60 border border-dt-border rounded-lg text-center text-dt-text focus:ring-2 focus:ring-dt-primary/30 focus:border-transparent"
                 >
                 <button
                   type="button"
-                  class="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                  class="flex min-h-11 min-w-11 items-center justify-center bg-dt-surface-strong rounded-lg hover:bg-dt-surface-strong transition-colors"
                   :disabled="form.sortOrder <= 0"
+                  :aria-label="t('common.decrement')"
                   @click="form.sortOrder = Math.max(0, form.sortOrder - 10)"
                 >
-                  <Icon name="heroicons:minus" class="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                  <Icon name="heroicons:minus" class="w-4 h-4 text-dt-text-muted" />
                 </button>
               </div>
-              <p class="text-xs text-slate-500 dark:text-slate-400">
+              <p class="text-xs text-dt-text-soft">
                 {{ t('stock.watchlist.editModal.sortOrderHint') }}
               </p>
             </div>
           </div>
 
           <!-- Footer -->
-          <div class="flex gap-3 px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-700">
+          <div class="flex gap-3 px-6 py-4 bg-dt-surface-strong/60 border-t border-dt-border">
             <button
               type="button"
-              class="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              class="flex-1 px-4 py-2.5 text-sm font-medium text-dt-text hover:bg-dt-surface-strong rounded-lg transition-colors"
               @click="close"
             >
               {{ t('common.cancel') }}
             </button>
             <button
               type="button"
-              class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-dt-primary-solid hover:bg-dt-primary-solid-active rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="saving || !hasChanges"
               @click="save"
             >

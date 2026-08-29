@@ -209,21 +209,21 @@ const bulkDelete = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen bg-dt-bg">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header -->
       <div class="mb-8 flex justify-between items-center">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-3xl font-bold text-dt-text">
             {{ $t('blog.manageBlog') }}
           </h1>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p class="mt-2 text-sm text-dt-text-muted">
             {{ $t('blog.manageDescription') }}
           </p>
         </div>
         <NuxtLink
           to="/admin/blog/new"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-dt-primary-solid hover:bg-dt-primary-solid-active focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dt-primary/30"
         >
           <i-heroicons-plus class="mr-2 h-5 w-5" />
           {{ $t('blog.addPost') }}
@@ -231,11 +231,11 @@ const bulkDelete = async () => {
       </div>
 
       <!-- Filters -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mb-6 space-y-4">
+      <div class="bg-dt-surface shadow rounded-lg p-4 mb-6 space-y-4">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
           <!-- Search -->
           <div class="md:col-span-2 xl:col-span-2">
-            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="search" class="block text-sm font-medium text-dt-text mb-1">
               {{ $t('blog.searchTitle') }}
             </label>
             <div class="relative">
@@ -244,17 +244,17 @@ const bulkDelete = async () => {
                 type="text"
                 id="search"
                 :placeholder="$t('blog.searchTitlePlaceholder')"
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+                class="block w-full pl-10 pr-3 py-2 border border-dt-border rounded-md leading-5 bg-dt-surface-strong placeholder:text-dt-text-soft focus:outline-none focus:ring-2 focus:ring-dt-primary/30 focus:border-dt-primary sm:text-sm text-dt-text"
               />
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i-heroicons-magnifying-glass class="h-5 w-5 text-gray-400" />
+                <i-heroicons-magnifying-glass class="h-5 w-5 text-dt-text-soft" />
               </div>
             </div>
           </div>
 
           <!-- Author -->
           <div class="md:col-span-1 xl:col-span-1">
-            <label for="author" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="author" class="block text-sm font-medium text-dt-text mb-1">
               {{ $t('blog.author') }}
             </label>
             <input
@@ -262,19 +262,19 @@ const bulkDelete = async () => {
               v-model="filters.author"
               type="text"
               :placeholder="$t('blog.authorPlaceholder')"
-              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+              class="block w-full px-3 py-2 border border-dt-border rounded-md leading-5 bg-dt-surface-strong placeholder:text-dt-text-soft focus:outline-none focus:ring-2 focus:ring-dt-primary/30 focus:border-dt-primary sm:text-sm text-dt-text"
             />
           </div>
 
           <!-- Status Filter -->
           <div>
-            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="status" class="block text-sm font-medium text-dt-text mb-1">
               {{ $t('blog.postStatus') }}
             </label>
             <select
               id="status"
               v-model="filters.status"
-              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+              class="block w-full px-3 py-2 border border-dt-border rounded-md leading-5 bg-dt-surface-strong focus:outline-none focus:ring-2 focus:ring-dt-primary/30 focus:border-dt-primary sm:text-sm text-dt-text"
             >
               <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
@@ -284,13 +284,13 @@ const bulkDelete = async () => {
 
           <!-- Category Filter -->
           <div>
-            <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="category" class="block text-sm font-medium text-dt-text mb-1">
               {{ $t('blog.category') }}
             </label>
             <select
               id="category"
               v-model="filters.category"
-              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+              class="block w-full px-3 py-2 border border-dt-border rounded-md leading-5 bg-dt-surface-strong focus:outline-none focus:ring-2 focus:ring-dt-primary/30 focus:border-dt-primary sm:text-sm text-dt-text"
             >
               <option v-for="cat in categories" :key="cat.value" :value="cat.value">
                 {{ cat.label }}
@@ -300,39 +300,39 @@ const bulkDelete = async () => {
 
           <!-- Date From -->
           <div>
-            <label for="dateFrom" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="dateFrom" class="block text-sm font-medium text-dt-text mb-1">
               {{ $t('blog.dateFrom') }}
             </label>
             <input
               id="dateFrom"
               v-model="filters.dateFrom"
               type="date"
-              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+              class="block w-full px-3 py-2 border border-dt-border rounded-md leading-5 bg-dt-surface-strong focus:outline-none focus:ring-2 focus:ring-dt-primary/30 focus:border-dt-primary sm:text-sm text-dt-text"
             />
           </div>
 
           <!-- Date To -->
           <div>
-            <label for="dateTo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="dateTo" class="block text-sm font-medium text-dt-text mb-1">
               {{ $t('blog.dateTo') }}
             </label>
             <input
               id="dateTo"
               v-model="filters.dateTo"
               type="date"
-              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+              class="block w-full px-3 py-2 border border-dt-border rounded-md leading-5 bg-dt-surface-strong focus:outline-none focus:ring-2 focus:ring-dt-primary/30 focus:border-dt-primary sm:text-sm text-dt-text"
             />
           </div>
 
           <!-- Sort -->
           <div>
-            <label for="sortBy" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label for="sortBy" class="block text-sm font-medium text-dt-text mb-1">
               {{ $t('blog.sortLabel') }}
             </label>
             <select
               id="sortBy"
               v-model="filters.sortBy"
-              class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 dark:text-white"
+              class="block w-full px-3 py-2 border border-dt-border rounded-md leading-5 bg-dt-surface-strong focus:outline-none focus:ring-2 focus:ring-dt-primary/30 focus:border-dt-primary sm:text-sm text-dt-text"
             >
               <option v-for="option in sortOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
@@ -341,18 +341,18 @@ const bulkDelete = async () => {
           </div>
         </div>
 
-        <div v-if="selectedCount > 0" class="flex flex-wrap items-center gap-3 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-900/30 dark:text-indigo-100">
+        <div v-if="selectedCount > 0" class="flex flex-wrap items-center gap-3 rounded-lg border border-dt-primary/20 bg-dt-primary/10 px-4 py-3 text-sm text-dt-primary">
           <span>{{ $t('blog.selectedCount', { count: selectedCount }) }}</span>
           <button
             type="button"
-            class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+            class="inline-flex items-center rounded-md bg-dt-primary-solid px-3 py-1.5 text-xs font-semibold text-white hover:bg-dt-primary-solid-active"
             @click="bulkPublish"
           >
             {{ $t('blog.bulkPublish') }}
           </button>
           <button
             type="button"
-            class="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+            class="inline-flex items-center rounded-md bg-dt-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-dt-danger-strong"
             @click="bulkDelete"
           >
             {{ $t('blog.bulkDelete') }}
@@ -361,71 +361,71 @@ const bulkDelete = async () => {
       </div>
 
       <!-- Posts Table -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+      <div class="bg-dt-surface shadow rounded-lg overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-900">
+          <table class="min-w-full divide-y divide-dt-border">
+            <thead class="bg-dt-bg">
               <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   <input
                     type="checkbox"
-                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                    class="h-4 w-4 text-dt-primary border-dt-border rounded"
                     :checked="isAllSelected"
                     @change="toggleSelectAll"
                   />
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ $t('blog.title') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ $t('blog.category') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ $t('blog.postStatus') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ $t('blog.author') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ $t('blog.createdAt') }}
                 </th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-dt-text-soft uppercase tracking-wider">
                   {{ $t('blog.actions') }}
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="bg-dt-surface divide-y divide-dt-border">
               <tr v-if="loading" role="status" aria-live="polite">
-                <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="7" class="px-6 py-4 text-center text-dt-text-soft">
                   <div class="flex justify-center">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" aria-hidden="true"></div>
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-dt-primary" aria-hidden="true"></div>
                   </div>
                   <span class="sr-only">{{ $t('common.loading') }}</span>
                 </td>
               </tr>
               <tr v-else-if="posts.length === 0">
-                <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="7" class="px-6 py-4 text-center text-dt-text-soft">
                   {{ $t('blog.noPosts') }}
                 </td>
               </tr>
-              <tr v-else v-for="post in posts" :key="post.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <tr v-else v-for="post in posts" :key="post.id" class="hover:bg-dt-surface-strong">
                 <td class="px-6 py-4">
                   <input
                     type="checkbox"
-                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                    class="h-4 w-4 text-dt-primary border-dt-border rounded"
                     :checked="isSelected(String(post.id))"
                     @change="toggleSelection(String(post.id))"
                   />
                 </td>
                 <td class="px-6 py-4">
-                  <div class="text-sm font-medium text-gray-900 dark:text-white">
+                  <div class="text-sm font-medium text-dt-text">
                     {{ post.title }}
                   </div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                  <div class="text-sm text-dt-text-soft">
                     /articles/{{ post.slug }}
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-dt-text">
                   {{ post.category }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -433,10 +433,10 @@ const bulkDelete = async () => {
                     {{ statusLabel(post.status) }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-dt-text">
                   {{ post.author.name || post.author.email }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-dt-text-soft">
                   {{ formatDate(post.createdAt) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -444,7 +444,7 @@ const bulkDelete = async () => {
                     <!-- Edit -->
                     <NuxtLink
                       :to="`/admin/blog/${post.id}/edit`"
-                      class="inline-flex items-center justify-center p-2 rounded-lg text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30 transition-colors"
+                      class="inline-flex items-center justify-center p-2 rounded-lg text-dt-primary hover:bg-dt-primary/10 transition-colors"
                       :title="$t('common.edit')"
                     >
                       <i-heroicons-pencil class="h-5 w-5" />
@@ -454,7 +454,7 @@ const bulkDelete = async () => {
                     <button
                       v-if="post.status === 'DRAFT'"
                       @click="publishPost(post.id)"
-                      class="inline-flex items-center justify-center p-2 rounded-lg text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30 transition-colors"
+                      class="inline-flex items-center justify-center p-2 rounded-lg text-dt-success hover:bg-dt-success/10 transition-colors"
                       :title="$t('blog.publish')"
                     >
                       <i-heroicons-check-circle class="h-5 w-5" />
@@ -464,7 +464,7 @@ const bulkDelete = async () => {
                     <button
                       v-if="post.status === 'PUBLISHED'"
                       @click="archivePost(post.id)"
-                      class="inline-flex items-center justify-center p-2 rounded-lg text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:bg-yellow-900/30 transition-colors"
+                      class="inline-flex items-center justify-center p-2 rounded-lg text-dt-warning hover:bg-dt-warning/10 transition-colors"
                       :title="$t('blog.archive')"
                     >
                       <i-heroicons-archive-box class="h-5 w-5" />
@@ -473,7 +473,7 @@ const bulkDelete = async () => {
                     <!-- Delete -->
                     <button
                       @click="deletePost(post.id, post.title)"
-                      class="inline-flex items-center justify-center p-2 rounded-lg text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
+                      class="inline-flex items-center justify-center p-2 rounded-lg text-dt-danger hover:bg-dt-danger/10 transition-colors"
                       :title="$t('common.delete')"
                     >
                       <i-heroicons-trash class="h-5 w-5" />
@@ -486,27 +486,27 @@ const bulkDelete = async () => {
         </div>
 
         <!-- Pagination -->
-        <div v-if="pagination.totalPages > 1" class="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
+        <div v-if="pagination.totalPages > 1" class="bg-dt-surface px-4 py-3 border-t border-dt-border sm:px-6">
           <div class="flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
               <button
                 @click="fetchPosts(pagination.page - 1)"
                 :disabled="pagination.page === 1"
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="relative inline-flex items-center px-4 py-2 border border-dt-border text-sm font-medium rounded-md text-dt-text bg-dt-surface hover:bg-dt-surface-strong disabled:opacity-50 disabled:cursor-not-allowed"
               >
                     {{ $t('blog.previousPage') }}
               </button>
               <button
                 @click="fetchPosts(pagination.page + 1)"
                 :disabled="pagination.page === pagination.totalPages"
-                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-dt-border text-sm font-medium rounded-md text-dt-text bg-dt-surface hover:bg-dt-surface-strong disabled:opacity-50 disabled:cursor-not-allowed"
               >
                     {{ $t('blog.nextPage') }}
               </button>
             </div>
             <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
-                <p class="text-sm text-gray-700 dark:text-gray-300">
+                <p class="text-sm text-dt-text">
                   {{ $t('blog.showingResults', {
                     from: Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total),
                     to: Math.min(pagination.page * pagination.limit, pagination.total),
@@ -515,18 +515,20 @@ const bulkDelete = async () => {
                 </p>
               </div>
               <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                <nav aria-label="pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                   <button
                     @click="fetchPosts(pagination.page - 1)"
                     :disabled="pagination.page === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :aria-label="$t('admin.pagination.previous')"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-dt-border bg-dt-surface text-sm font-medium text-dt-text-soft hover:bg-dt-surface-strong disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <i-heroicons-chevron-left class="h-5 w-5" />
                   </button>
                   <button
                     @click="fetchPosts(pagination.page + 1)"
                     :disabled="pagination.page === pagination.totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :aria-label="$t('admin.pagination.next')"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-dt-border bg-dt-surface text-sm font-medium text-dt-text-soft hover:bg-dt-surface-strong disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <i-heroicons-chevron-right class="h-5 w-5" />
                   </button>

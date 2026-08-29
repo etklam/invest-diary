@@ -39,7 +39,7 @@
               <!-- Close button -->
               <button
                 @click="removeToast(toast.id)"
-                class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer"
+                class="flex-shrink-0 -m-2 min-h-11 min-w-11 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer"
                 style="color: var(--color-text-soft);"
                 :aria-label="$t('common.close')"
               >

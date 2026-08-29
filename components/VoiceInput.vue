@@ -8,7 +8,7 @@
         : 'border-dt-border bg-dt-surface-muted text-dt-text-muted hover:border-dt-primary hover:text-dt-primary'"
       :disabled="!isSupported"
       :aria-pressed="isListening"
-      :aria-label="isListening ? '停止語音輸入' : '開始語音輸入'"
+      :aria-label="isListening ? t('voiceInput.stopListening') : t('voiceInput.startListening')"
       @click="toggle"
     >
       <span class="relative inline-flex h-4 w-4 items-center justify-center">
@@ -18,7 +18,7 @@
         ></span>
         <Icon :name="isListening ? 'heroicons:stop-circle' : 'heroicons:microphone'" class="h-4 w-4" />
       </span>
-      <span class="font-medium">{{ isSupported ? (isListening ? '停止' : '語音') : '不支援' }}</span>
+      <span class="font-medium">{{ isSupported ? (isListening ? t('voiceInput.stop') : t('voiceInput.voice')) : t('voiceInput.unsupported') }}</span>
     </button>
 
     <Transition
@@ -36,7 +36,7 @@
         role="status"
         aria-live="polite"
       >
-        <p class="text-[11px]" style="color: var(--color-text-soft);">語音轉錄中</p>
+        <p class="text-[11px]" style="color: var(--color-text-soft);">{{ t('voiceInput.transcribing') }}</p>
         <p class="mt-1 leading-relaxed">
           <span v-if="transcript">{{ transcript }}</span>
           <span v-if="interimTranscript" class="opacity-70"> {{ interimTranscript }}</span>
@@ -58,6 +58,8 @@ const { isSupported, isListening, transcript, interimTranscript, start, stop } =
   // so the full session transcript must never be re-delivered here.
   onFinal: text => emit('result', text),
 })
+
+const { t } = useI18n()
 
 function toggle() {
   if (!isSupported) return

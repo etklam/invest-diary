@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useEscapeKey } from '~/composables/useEscapeKey'
+
 const { locale, locales, setLocale } = useI18n()
 type LocaleCode = 'en' | 'zh-TW' | 'zh-CN'
 
@@ -30,13 +32,17 @@ const selectLocale = async (code: LocaleCode) => {
 const closeDropdown = () => {
   isOpen.value = false
 }
+
+useEscapeKey(closeDropdown, () => isOpen.value)
 </script>
 
 <template>
   <div class="relative z-[90]" v-if="availableLocales.length > 0">
     <button
       @click="isOpen = !isOpen"
-      class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+      :aria-expanded="isOpen"
+      aria-haspopup="true"
+      class="p-2 rounded-lg text-dt-text-muted hover:bg-dt-surface-strong transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
       :aria-label="$t('common.switchLanguage')"
     >
       <Icon name="heroicons:language" class="h-5 w-5" />
@@ -52,7 +58,7 @@ const closeDropdown = () => {
     >
       <div
         v-if="isOpen"
-        class="absolute z-[100] mt-2 w-40 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800"
+        class="absolute z-[100] mt-2 w-40 rounded-lg bg-dt-surface shadow-dt-md border border-dt-border focus:outline-none"
         :class="props.dropdownPosition === 'left' ? 'left-0' : 'right-0'"
         @click.outside="closeDropdown"
       >
@@ -61,7 +67,7 @@ const closeDropdown = () => {
             v-for="loc in availableLocales"
             :key="loc.code"
             @click="selectLocale(loc.code)"
-            class="block w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+            class="block w-full text-left px-4 py-3 text-sm text-dt-text hover:bg-dt-surface-strong transition-colors min-h-[44px]"
           >
             {{ loc.name }}
           </button>
