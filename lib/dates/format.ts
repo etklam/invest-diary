@@ -24,6 +24,21 @@ function toDateInstance(input: DateInput): Date {
   return new Date(input)
 }
 
+// ponytail: Intl.DateTimeFormat 是瀏覽器最貴的 constructor 之一，熱路徑
+// (timeline 每項目每渲染多次) 不該每次重建。以 locale+options 為 key 做
+// module-level cache；組合數是靜態小集合，無需 eviction。
+const formatterCache = new Map<string, Intl.DateTimeFormat>()
+
+export function getDateTimeFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`
+  let formatter = formatterCache.get(key)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, options)
+    formatterCache.set(key, formatter)
+  }
+  return formatter
+}
+
 // ─── 核心函數 ──────────────────────────────────────────────────────────────────
 
 /**
@@ -39,7 +54,7 @@ export function formatDate(input: DateInput, options?: DateFormatOptions): strin
   const tz = options?.timezone || 'Asia/Taipei'
   const locale = options?.locale || 'zh-TW'
 
-  return new Intl.DateTimeFormat(locale, {
+  return getDateTimeFormat(locale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -62,7 +77,7 @@ export function formatShortDate(input: DateInput, timezone?: string): string {
   const date = toDateInstance(input)
   const tz = timezone || 'Asia/Taipei'
 
-  return new Intl.DateTimeFormat('zh-TW', {
+  return getDateTimeFormat('zh-TW', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -106,7 +121,7 @@ export function formatYmdInTimezone(input: DateInput, timeZone: string): string 
     throw new Error('Invalid date input')
   }
 
-  const parts = new Intl.DateTimeFormat('en-US', {
+  const parts = getDateTimeFormat('en-US', {
     timeZone,
     year: 'numeric',
     month: '2-digit',
@@ -133,7 +148,7 @@ export function formatYmdInTimezone(input: DateInput, timeZone: string): string 
  */
 export function formatYearMonth(date: DateInput, locale: string = 'zh-TW'): string {
   const d = toDateInstance(date)
-  return new Intl.DateTimeFormat(locale, {
+  return getDateTimeFormat(locale, {
     year: 'numeric',
     month: 'long',
   }).format(d)

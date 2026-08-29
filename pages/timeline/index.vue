@@ -280,10 +280,10 @@
 
             <div class="timeline-rail-cell relative flex min-h-full justify-center" aria-hidden="true">
               <span
-                class="timeline-node relative z-10 mt-4 block h-3 w-3 shrink-0 rounded-full border-2 border-dt-surface bg-dt-border-strong transition-colors duration-150 group-hover:bg-dt-primary"
+                class="timeline-node relative z-10 mt-4 block h-3 w-3 shrink-0 rounded-full border-2 border-dt-surface bg-dt-border-strong transition-colors duration-150 group-hover:bg-dt-primary-solid"
                 :class="{ '!bg-dt-warning': diary.alerts?.length }"
               />
-              <span class="timeline-connector absolute h-px bg-dt-border-strong transition-colors duration-150 group-hover:bg-dt-primary" />
+              <span class="timeline-connector absolute h-px bg-dt-border-strong transition-colors duration-150 group-hover:bg-dt-primary-solid" />
             </div>
 
             <NuxtLink
@@ -362,7 +362,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatShortDate } from '~/lib/dates'
+import { formatShortDate, getDateTimeFormat } from '~/lib/dates'
 import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import { stripDiaryMarkdown } from '~/lib/diary-excerpt'
 import { formatCurrency } from '~/lib/format'
@@ -434,7 +434,7 @@ const formatOverviewDate = (value: string) => new Intl.DateTimeFormat(locale.val
 const timelineTimezone = computed(() => resolveUserTimezone(user.value))
 
 const formatTimelinePart = (date: Date | string, options: Intl.DateTimeFormatOptions) => {
-  return new Intl.DateTimeFormat(locale.value || 'zh-TW', {
+  return getDateTimeFormat(locale.value || 'zh-TW', {
     ...options,
     timeZone: timelineTimezone.value,
   }).format(new Date(date))

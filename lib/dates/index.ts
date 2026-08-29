@@ -13,6 +13,7 @@ export {
   formatDateWithWeekday,
   formatYmdInTimezone,
   formatYearMonth,
+  getDateTimeFormat,
 } from './format'
 export type { DateFormatOptions } from './format'
 
