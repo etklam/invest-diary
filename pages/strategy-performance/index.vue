@@ -19,7 +19,7 @@
             :key="period.value"
             type="button"
             class="rounded-dt-sm px-3 py-2 text-sm font-semibold transition"
-            :class="selectedPeriod === period.value ? 'bg-dt-primary text-white' : 'text-dt-text-muted hover:text-dt-text'"
+            :class="selectedPeriod === period.value ? 'bg-dt-primary-solid text-white' : 'text-dt-text-muted hover:text-dt-text'"
             @click="selectedPeriod = period.value"
           >
             {{ period.label }}
@@ -115,8 +115,8 @@ const formatMoney = (value: number | null | undefined) => value == null || !Numb
   ? '—'
   : `${value > 0 ? '+' : ''}${formatCurrency(value)}`
 const pnlClass = (value: number | null | undefined) => value != null && value < 0
-  ? 'text-rose-600 dark:text-rose-400'
-  : 'text-emerald-600 dark:text-emerald-400'
+  ? 'text-dt-danger'
+  : 'text-dt-success'
 </script>
 
 <style scoped>

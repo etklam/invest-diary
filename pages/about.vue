@@ -1,5 +1,5 @@
 <template>
-  <main class="about-page min-h-screen text-slate-900 dark:text-slate-100">
+  <div class="about-page min-h-screen text-dt-text">
     <section class="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
       <div class="bg-grid absolute inset-0 opacity-35" aria-hidden="true" />
 
@@ -9,10 +9,10 @@
             <LandingBadge icon="heroicons:user-circle-20-solid">
               {{ $t('about.badge') }}
             </LandingBadge>
-            <h1 class="text-4xl font-semibold leading-tight text-slate-950 dark:text-slate-100 sm:text-5xl lg:text-6xl">
+            <h1 class="text-4xl font-semibold leading-tight text-dt-text sm:text-5xl lg:text-6xl">
               {{ $t('about.hero.title') }}
             </h1>
-            <p class="mt-6 max-w-2xl text-base leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg">
+            <p class="mt-6 max-w-2xl text-base leading-relaxed text-dt-text sm:text-lg">
               {{ $t('about.hero.subtitle') }}
             </p>
 
@@ -50,7 +50,7 @@
     <section class="px-4 pb-20 sm:px-6">
       <div class="mx-auto max-w-7xl">
         <div class="trust-strip reveal">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-dt-text-soft">
             {{ $t('home.promise.title') }}
           </p>
           <div class="mt-4 flex flex-wrap gap-3">
@@ -70,10 +70,10 @@
       <div class="workflow-grid">
         <article class="workflow-lead reveal">
           <p class="subpanel-kicker">{{ $t('about.intro.title') }}</p>
-          <h3 class="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+          <h3 class="mt-3 text-3xl font-semibold tracking-tight text-dt-text">
             {{ $t('about.motivation.title') }}
           </h3>
-          <p class="mt-4 max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">
+          <p class="mt-4 max-w-3xl text-base leading-7 text-dt-text-muted">
             {{ $t('about.intro.content') }}
           </p>
 
@@ -106,10 +106,10 @@
 
       <div class="workflow-footnote reveal">
         <p class="subpanel-kicker">{{ $t('about.personal.title') }}</p>
-        <h3 class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+        <h3 class="mt-3 text-2xl font-semibold tracking-tight text-dt-text">
           {{ $t('about.features.security.title') }}
         </h3>
-        <p class="mt-4 max-w-4xl text-base leading-7 text-slate-600 dark:text-slate-300">
+        <p class="mt-4 max-w-4xl text-base leading-7 text-dt-text-muted">
           {{ $t('about.motivation.paragraph2') }}
         </p>
       </div>
@@ -122,10 +122,10 @@
       <div class="split-grid">
         <div class="subpanel reveal">
           <p class="subpanel-kicker">{{ $t('about.tech.title') }}</p>
-          <h3 class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+          <h3 class="mt-3 text-2xl font-semibold tracking-tight text-dt-text">
             {{ $t('about.features.security.title') }}
           </h3>
-          <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
+          <p class="mt-4 text-base leading-7 text-dt-text-muted">
             {{ $t('about.features.security.description') }}
           </p>
           <div class="mt-8 flex flex-wrap gap-3">
@@ -137,10 +137,10 @@
 
         <div class="subpanel reveal reveal-2">
           <p class="subpanel-kicker">{{ $t('about.personal.title') }}</p>
-          <h3 class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+          <h3 class="mt-3 text-2xl font-semibold tracking-tight text-dt-text">
             {{ $t('about.hero.subtitle') }}
           </h3>
-          <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
+          <p class="mt-4 text-base leading-7 text-dt-text-muted">
             {{ $t('about.personal.content') }}
           </p>
           <div class="mt-8 flex flex-wrap gap-3">
@@ -175,7 +175,7 @@
           <p class="mt-6 text-sm leading-6">
             {{ $t('home.cta.disclaimer') }}
           </p>
-          <NuxtLink to="/auth/register" class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-orange-500 dark:bg-orange-700 px-7 py-3 text-base font-semibold text-white dark:text-orange-50 shadow-lg shadow-orange-500/30 dark:shadow-orange-700/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-400 dark:hover:bg-orange-600 cursor-pointer">
+          <NuxtLink to="/auth/register" class="mt-8 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-dt-md bg-dt-primary-solid hover:bg-dt-primary-solid-active px-7 py-3 text-base font-semibold text-white shadow-dt-lg transition-colors duration-200 cursor-pointer">
             {{ $t('home.cta.register') }}
             <Icon name="heroicons:arrow-up-right-20-solid" class="h-5 w-5" />
           </NuxtLink>
@@ -183,21 +183,21 @@
       </div>
     </section>
 
-    <footer class="border-t border-slate-200/70 bg-slate-50 px-4 py-10 dark:border-slate-700 dark:bg-slate-950 sm:px-6">
-      <div class="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:justify-between">
-        <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $t('common.appName') }}</p>
+    <footer class="border-t border-dt-border bg-dt-surface-strong px-4 py-10 sm:px-6">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-dt-text-muted sm:flex-row sm:items-center sm:justify-between">
+        <p class="font-semibold text-dt-text">{{ $t('common.appName') }}</p>
         <div class="flex items-center gap-6">
-          <NuxtLink to="/" class="transition-colors duration-200 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer">
+          <NuxtLink to="/" class="transition-colors duration-200 hover:text-dt-text cursor-pointer">
             {{ $t('nav.home') }}
           </NuxtLink>
-          <NuxtLink to="/about" class="transition-colors duration-200 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer">
+          <NuxtLink to="/about" class="transition-colors duration-200 hover:text-dt-text cursor-pointer">
             {{ $t('nav.about') }}
           </NuxtLink>
           <p>&copy; {{ currentYear }} {{ $t('about.footer.rights') }}</p>
         </div>
       </div>
     </footer>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">

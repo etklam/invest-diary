@@ -36,11 +36,11 @@ const returnRateIndicator = computed(() => {
     const isActive = index === currentIndex
     const isPast = index < currentIndex
 
-    let colorClass = 'bg-gray-200 dark:bg-gray-700'
+    let colorClass = 'bg-dt-surface-muted'
     if (isActive) {
-      colorClass = level === 'conservative' ? 'bg-gray-500' : level === 'target' ? 'bg-green-500' : 'bg-violet-500'
+      colorClass = level === 'conservative' ? 'bg-dt-text-soft' : level === 'target' ? 'bg-dt-success' : 'bg-dt-primary'
     } else if (isPast) {
-      colorClass = level === 'conservative' ? 'bg-gray-400' : 'bg-green-400'
+      colorClass = level === 'conservative' ? 'bg-dt-text-soft/60' : 'bg-dt-success/60'
     }
 
     return { level, colorClass }
@@ -149,9 +149,9 @@ const copyToClipboard = async () => {
 }
 
 useHead({
-  title: '財務自由計算機 - 投資工具',
+  title: () => `${t('tools.financialFreedom.title')} - ${t('nav.tools')}`,
   meta: [
-    { name: 'description', content: '計算您的財務自由金額（FIRE Number），了解目前進度與達成時間。支援多種提領率設定，幫助您規劃財務自由之路。' }
+    { name: 'description', content: () => t('tools.financialFreedom.metaDescription') }
   ]
 })
 
@@ -299,7 +299,7 @@ definePageMeta({
             </div>
           </div>
 
-          <div class="mt-6 min-w-0 border border-dt-border rounded-lg bg-dt-surface-raised p-4">
+          <div class="mt-6 min-w-0 border border-dt-border rounded-lg bg-dt-surface-strong p-4">
             <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-dt-text-muted">
                 {{ t('tools.financialFreedom.expectedReturn') }} {{ t('common.range') }}
@@ -308,9 +308,9 @@ definePageMeta({
             </div>
 
             <div class="grid gap-3 sm:grid-cols-3">
-              <div class="border border-dt-border rounded-lg bg-dt-surface p-4 text-left transition-colors duration-180" :class="returnRateLevel === 'conservative' ? 'border-dt-text-muted bg-dt-surface-raised' : ''">
+              <div class="border border-dt-border rounded-lg bg-dt-surface p-4 text-left transition-colors duration-180" :class="returnRateLevel === 'conservative' ? 'border-dt-text-muted bg-dt-surface-strong' : ''">
                 <div class="mb-2 flex items-center gap-2">
-                  <div class="h-2.5 w-2.5 rounded-full bg-slate-500" />
+                  <div class="h-2.5 w-2.5 rounded-full bg-dt-text-soft" />
                   <span class="text-sm font-semibold text-dt-text">
                     {{ t('tools.financialFreedom.returnRateLevels.conservative.label') }}
                   </span>
@@ -325,7 +325,7 @@ definePageMeta({
 
               <div class="border border-dt-border rounded-lg bg-dt-surface p-4 text-left transition-colors duration-180" :class="returnRateLevel === 'target' ? 'border-dt-accent bg-dt-surface' : ''">
                 <div class="mb-2 flex items-center gap-2">
-                  <div class="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  <div class="h-2.5 w-2.5 rounded-full bg-dt-success" />
                   <span class="text-sm font-semibold text-dt-text">
                     {{ t('tools.financialFreedom.returnRateLevels.target.label') }}
                   </span>
@@ -340,7 +340,7 @@ definePageMeta({
 
               <div class="border border-dt-border rounded-lg bg-dt-surface p-4 text-left transition-colors duration-180" :class="returnRateLevel === 'expert' ? 'border-dt-primary bg-dt-surface' : ''">
                 <div class="mb-2 flex items-center gap-2">
-                  <div class="h-2.5 w-2.5 rounded-full bg-violet-500" />
+                  <div class="h-2.5 w-2.5 rounded-full bg-dt-primary" />
                   <span class="text-sm font-semibold text-dt-text">
                     {{ t('tools.financialFreedom.returnRateLevels.expert.label') }}
                   </span>
@@ -374,7 +374,7 @@ definePageMeta({
         </LedgerCard>
 
         <div v-if="isValidInput && result" class="overflow-hidden rounded-xl border border-dt-border shadow-sm">
-          <div class="bg-dt-primary rounded-t-xl p-6 sm:p-7">
+          <div class="bg-dt-primary-solid rounded-t-xl p-6 sm:p-7">
             <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
@@ -445,7 +445,7 @@ definePageMeta({
                 {{ t('tools.financialFreedom.withdrawalCapacity') }}
               </h3>
             </div>
-            <span class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <span class="rounded-full border border-dt-success/20 bg-dt-success/10 px-3 py-1 text-sm font-semibold text-dt-success-strong">
               {{ formatPercent(withdrawalRate) }}
             </span>
           </div>
@@ -473,8 +473,8 @@ definePageMeta({
           <h3 class="text-xl font-semibold text-dt-text">
             {{ t('tools.financialFreedom.recommendation') }}
           </h3>
-          <div class="mt-5 flex gap-3 items-start border border-dt-border rounded-lg bg-dt-surface-raised p-4">
-            <Icon name="heroicons:light-bulb" class="h-5 w-5 shrink-0 text-emerald-500" />
+          <div class="mt-5 flex gap-3 items-start border border-dt-border rounded-lg bg-dt-surface-strong p-4">
+            <Icon name="heroicons:light-bulb" class="h-5 w-5 shrink-0 text-dt-success" />
             <p class="whitespace-pre-line text-sm leading-6 text-dt-text">
               {{ localizedRecommendation }}
             </p>
@@ -500,7 +500,7 @@ definePageMeta({
               :key="year.year"
               role="group"
               :aria-label="t('tools.financialFreedom.yearN', { n: year.year })"
-              class="min-w-0 border border-dt-border rounded-lg bg-dt-surface-raised p-4"
+              class="min-w-0 border border-dt-border rounded-lg bg-dt-surface-strong p-4"
               :class="year.isFreed ? 'border-dt-accent bg-dt-surface' : ''"
             >
               <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -513,7 +513,7 @@ definePageMeta({
                     {{ t('tools.financialFreedom.startingAssets') }} {{ formatCompactCurrency(year.startingAssets, locale) }}
                   </div>
                 </div>
-                <div v-if="year.isFreed" class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                <div v-if="year.isFreed" class="rounded-full bg-dt-success/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-dt-success-strong">
                   {{ t('tools.financialFreedom.freed') }}
                 </div>
               </div>

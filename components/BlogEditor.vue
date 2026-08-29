@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-6">
     <div>
-      <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {{ $t('blog.title') }} <span class="text-red-500">*</span>
+      <label for="title" class="block text-sm font-medium text-dt-text">
+        {{ $t('blog.title') }} <span class="text-dt-danger">*</span>
       </label>
       <div class="mt-1">
         <input
@@ -10,11 +10,11 @@
           v-model="localTitle"
           type="text"
           name="title"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          class="block w-full rounded-md border-dt-border bg-dt-surface text-dt-text shadow-dt-sm focus:border-dt-primary focus:ring-dt-primary/30 sm:text-sm"
           :placeholder="$t('blog.titlePlaceholder')"
         />
       </div>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <p class="mt-1 text-sm text-dt-text-soft">
         {{ $t('blog.slug') }}: {{ slugPreview }}
       </p>
     </div>

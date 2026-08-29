@@ -40,7 +40,7 @@
     </header>
 
     <!-- Main Content Grid -->
-    <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Top Stats Grid -->
       <ErrorState
         v-if="loadError"
@@ -69,8 +69,8 @@
 
       <div v-else-if="pending" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div v-for="i in 4" :key="i" class="stats-card animate-pulse">
-          <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-20 mb-3"></div>
-          <div class="h-7 bg-slate-200 dark:bg-slate-700 rounded w-28"></div>
+          <div class="h-3 bg-dt-surface-strong rounded w-20 mb-3"></div>
+          <div class="h-7 bg-dt-surface-strong rounded w-28"></div>
         </div>
       </div>
 
@@ -85,10 +85,10 @@
             {{ currentMarketValue !== null ? formatCurrency(currentMarketValue) : t('stock.dataQuality.unavailable') }}
           </div>
           <div v-if="unrealizedAmount !== null" class="flex items-center gap-1.5 mt-1">
-            <span class="text-xs font-medium" :class="(unrealizedAmount || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+            <span class="text-xs font-medium" :class="(unrealizedAmount || 0) >= 0 ? 'text-dt-success' : 'text-dt-danger'">
               {{ (unrealizedAmount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(unrealizedAmount || 0) }}
             </span>
-            <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ t('stock.dashboard.totalPL') }}</span>
+            <span class="text-[10px] text-dt-text-soft">{{ t('stock.dashboard.totalPL') }}</span>
           </div>
         </div>
 
@@ -98,14 +98,14 @@
             <span class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('stock.dashboard.dayChange') }}</span>
             <Icon name="heroicons:bolt" class="h-5 w-5 text-dt-warning opacity-50" />
           </div>
-          <div class="text-2xl font-bold tabular-nums" :class="(totalDayChange ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+          <div class="text-2xl font-bold tabular-nums" :class="(totalDayChange ?? 0) >= 0 ? 'text-dt-success' : 'text-dt-danger'">
             {{ totalDayChange === null ? t('stock.dataQuality.unavailable') : `${totalDayChange >= 0 ? '+' : ''}${formatCurrency(totalDayChange)}` }}
           </div>
           <div v-if="totalDayChangePercent !== null" class="flex items-center gap-1.5 mt-1">
-            <span class="text-xs font-medium" :class="(totalDayChange ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+            <span class="text-xs font-medium" :class="(totalDayChange ?? 0) >= 0 ? 'text-dt-success' : 'text-dt-danger'">
               {{ (totalDayChange ?? 0) >= 0 ? '+' : '' }}{{ totalDayChangePercent.toFixed(2) }}%
             </span>
-            <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ t('stock.dashboard.today') }}</span>
+            <span class="text-[10px] text-dt-text-soft">{{ t('stock.dashboard.today') }}</span>
           </div>
         </div>
 
@@ -122,7 +122,7 @@
             <span class="text-xs font-medium text-dt-text-muted">
               {{ totalHoldings }} {{ t('stock.dashboard.positions') }}
             </span>
-            <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ t('stock.dashboard.active') }}</span>
+            <span class="text-[10px] text-dt-text-soft">{{ t('stock.dashboard.active') }}</span>
           </div>
         </div>
 
@@ -132,14 +132,14 @@
             <span class="text-xs font-semibold uppercase tracking-wider text-dt-text-muted">{{ t('stock.dashboard.unrealizedPLPercent') }}</span>
             <Icon name="heroicons:arrow-trending-up" class="h-5 w-5 text-dt-success opacity-50" />
           </div>
-          <div class="text-2xl font-bold tabular-nums" :class="(totalUnrealizedPct ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+          <div class="text-2xl font-bold tabular-nums" :class="(totalUnrealizedPct ?? 0) >= 0 ? 'text-dt-success' : 'text-dt-danger'">
             {{ totalUnrealizedPct === null ? t('stock.dataQuality.unavailable') : `${totalUnrealizedPct >= 0 ? '+' : ''}${totalUnrealizedPct.toFixed(2)}%` }}
           </div>
           <div v-if="totalUnrealizedPct !== null" class="flex items-center gap-1.5 mt-1">
-            <div class="w-full bg-slate-200 dark:bg-slate-700 h-1 rounded-full overflow-hidden">
+            <div class="w-full bg-dt-surface-strong h-1 rounded-full overflow-hidden">
               <div 
                 class="h-full" 
-                :class="totalUnrealizedPct >= 0 ? 'bg-green-500' : 'bg-red-500'"
+                :class="totalUnrealizedPct >= 0 ? 'bg-dt-success' : 'bg-dt-danger'"
                 :style="{ width: Math.min(Math.abs(totalUnrealizedPct) * 2, 100) + '%' }"
               ></div>
             </div>
@@ -175,7 +175,7 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 class="font-bold text-dt-text flex items-center gap-2 text-base">
-              <Icon name="heroicons:shield-exclamation" class="text-amber-500" />
+              <Icon name="heroicons:shield-exclamation" class="text-dt-warning" />
               {{ t('stock.riskSummary.title') }}
             </h2>
             <p class="mt-1 text-xs text-dt-text-muted">
@@ -184,7 +184,7 @@
           </div>
           <span
             class="rounded-full px-3 py-1 text-xs font-bold"
-            :class="concentrationWarning ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'"
+            :class="concentrationWarning ? 'bg-dt-warning/10 text-dt-warning' : 'bg-dt-success/10 text-dt-success'"
           >
             {{ concentrationWarning ? t('stock.riskSummary.warning') : t('stock.riskSummary.balanced') }}
           </span>
@@ -208,7 +208,7 @@
           </div>
           <div class="risk-metric">
             <span>{{ t('stock.riskSummary.unrealizedPnl') }}</span>
-            <strong :class="(unrealizedAmount ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+            <strong :class="(unrealizedAmount ?? 0) >= 0 ? 'text-dt-success' : 'text-dt-danger'">
               {{ unrealizedAmount === null ? '—' : `${unrealizedAmount >= 0 ? '+' : ''}${formatCurrency(unrealizedAmount)}` }}
             </strong>
             <small>{{ totalUnrealizedPct === null ? t('stock.dataQuality.unavailable') : `${totalUnrealizedPct >= 0 ? '+' : ''}${totalUnrealizedPct.toFixed(2)}%` }}</small>
@@ -238,19 +238,19 @@
         <!-- Holdings Table Section -->
         <div class="lg:col-span-8 space-y-6">
           <div class="panel-dashboard overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+            <div class="px-6 py-4 border-b border-dt-border flex items-center justify-between bg-dt-surface-strong">
               <h3 class="font-bold text-dt-text flex items-center gap-2 text-base">
-                <Icon name="heroicons:list-bullet" class="text-blue-500" />
+                <Icon name="heroicons:list-bullet" class="text-dt-info" />
                 {{ t('stock.dashboard.activePositions') }}
               </h3>
               <div class="flex items-center gap-2">
                 <div class="relative">
-                  <Icon name="heroicons:magnifying-glass" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-400" />
+                  <Icon name="heroicons:magnifying-glass" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-dt-text-soft" />
                   <input
                     v-model="searchQuery"
                     type="text"
                     :placeholder="t('stock.dashboard.searchPlaceholder')"
-                    class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-dt-text placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    class="pl-8 pr-3 py-1.5 text-xs rounded-dt-sm border border-dt-border bg-dt-surface-strong text-dt-text placeholder:text-dt-text-soft focus:outline-none focus:ring-2 focus:ring-dt-primary/30"
                   >
                 </div>
               </div>
@@ -263,8 +263,8 @@
             <div v-else class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
-                    <th class="px-6 py-3 cursor-pointer hover:text-blue-500 transition-colors" @click="sortBy('symbol')">{{ t('stock.symbol') }}</th>
+                  <tr class="text-[10px] font-bold uppercase tracking-widest text-dt-text-soft bg-dt-surface-strong border-b border-dt-border">
+                    <th class="px-6 py-3 cursor-pointer hover:text-dt-info transition-colors" @click="sortBy('symbol')">{{ t('stock.symbol') }}</th>
                     <th class="px-6 py-3 text-right">{{ t('stock.dashboard.price') }} / Day %</th>
                     <th class="px-6 py-3 text-right">{{ t('stock.dashboard.marketValue') }}</th>
                     <th class="px-6 py-3 text-right">{{ t('stock.avgPrice') }}</th>
@@ -272,7 +272,7 @@
                     <th class="px-6 py-3 text-right">{{ t('stock.dashboard.portfolioPercent') }}</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                <tbody class="divide-y divide-dt-border">
                   <tr
                     v-for="holding in sortedHoldings"
                     :key="holding.symbol"
@@ -284,15 +284,15 @@
                       holding.unrealizedAmount,
                       holding.unrealizedPct
                     ]"
-                    class="group hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors"
+                    class="group hover:bg-dt-surface-strong transition-colors"
                   >
                     <td class="px-6 py-4">
                       <div class="flex flex-col">
                         <NuxtLink
                           :to="`/stocks/${encodeURIComponent(holding.symbol)}`"
-                          class="text-sm font-bold text-blue-600 hover:underline dark:text-blue-400"
+                          class="text-sm font-bold text-dt-primary hover:underline"
                         >{{ holding.symbol }}</NuxtLink>
-                        <span class="text-[10px] text-slate-400 dark:text-slate-400">{{ formatQuantity(holding.quantity) }} {{ t('stock.dashboard.shares') }}</span>
+                        <span class="text-[10px] text-dt-text-soft">{{ formatQuantity(holding.quantity) }} {{ t('stock.dashboard.shares') }}</span>
                       </div>
                     </td>
                     <td class="px-6 py-4 text-right">
@@ -300,7 +300,7 @@
                         <span class="text-sm font-semibold tabular-nums text-dt-text">
                           {{ holding.price ? formatCurrency(holding.price) : '—' }}
                         </span>
-                        <span v-if="holding.dayChangePercent !== undefined" class="text-[10px] font-bold tabular-nums" :class="holding.dayChangePercent >= 0 ? 'text-green-500' : 'text-red-500'">
+                        <span v-if="holding.dayChangePercent !== undefined" class="text-[10px] font-bold tabular-nums" :class="holding.dayChangePercent >= 0 ? 'text-dt-success' : 'text-dt-danger'">
                           {{ holding.dayChangePercent >= 0 ? '▲' : '▼' }} {{ Math.abs(holding.dayChangePercent).toFixed(2) }}%
                         </span>
                       </div>
@@ -317,10 +317,10 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                       <div class="flex flex-col items-end">
-                        <span class="text-sm font-bold tabular-nums" :class="(holding.unrealizedAmount ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                        <span class="text-sm font-bold tabular-nums" :class="(holding.unrealizedAmount ?? 0) >= 0 ? 'text-dt-success' : 'text-dt-danger'">
                           {{ holding.unrealizedAmount === null ? '—' : `${holding.unrealizedAmount >= 0 ? '+' : ''}${formatCurrency(holding.unrealizedAmount)}` }}
                         </span>
-                        <span v-if="holding.unrealizedPct !== null" class="text-[10px] font-medium opacity-80" :class="holding.unrealizedPct >= 0 ? 'text-green-500' : 'text-red-500'">
+                        <span v-if="holding.unrealizedPct !== null" class="text-[10px] font-medium opacity-80" :class="holding.unrealizedPct >= 0 ? 'text-dt-success' : 'text-dt-danger'">
                           {{ holding.unrealizedPct >= 0 ? '+' : '' }}{{ holding.unrealizedPct.toFixed(2) }}%
                         </span>
                       </div>
@@ -330,8 +330,8 @@
                         <span class="text-xs font-semibold text-dt-text-muted">
                           {{ formatPercentage(holding.totalCost) }}
                         </span>
-                        <div class="w-12 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden hidden sm:block">
-                          <div class="bg-blue-500 h-full" :style="{ width: formatPercentage(holding.totalCost) }"></div>
+                        <div class="w-12 bg-dt-surface-strong h-1.5 rounded-full overflow-hidden hidden sm:block">
+                          <div class="bg-dt-info h-full" :style="{ width: formatPercentage(holding.totalCost) }"></div>
                         </div>
                       </div>
                     </td>
@@ -347,7 +347,7 @@
           <!-- Allocation Card -->
           <div class="panel-dashboard p-6">
             <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-base">
-              <Icon name="heroicons:chart-pie" class="text-indigo-500" />
+              <Icon name="heroicons:chart-pie" class="text-dt-primary" />
               {{ t('stock.dashboard.assetAllocation') }}
             </h3>
 
@@ -365,12 +365,12 @@
                     :stroke-width="slice.strokeWidth"
                     :stroke-dasharray="slice.dashArray"
                     :stroke-dashoffset="slice.dashOffset"
-                    class="transition-all duration-1000 ease-out"
+                    class="transition-[stroke-dashoffset] duration-1000 ease-out"
                   />
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span class="text-2xl font-black text-dt-text">{{ totalHoldings }}</span>
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ t('stock.dashboard.assets') }}</span>
+                  <span class="text-[10px] font-bold text-dt-text-soft uppercase tracking-widest">{{ t('stock.dashboard.assets') }}</span>
                 </div>
               </div>
             </div>
@@ -379,24 +379,24 @@
               <div v-for="(slice, index) in pieSlices.slice(0, 5)" :key="index" class="flex items-center justify-between group">
                 <div class="flex items-center gap-2">
                   <div class="w-2 h-2 rounded-full" :style="{ backgroundColor: slice.color }"></div>
-                  <span class="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-blue-500 transition-colors">{{ slice.label }}</span>
+                  <span class="text-xs font-bold text-dt-text group-hover:text-dt-info transition-colors">{{ slice.label }}</span>
                 </div>
-                <span class="text-xs font-medium text-slate-500">{{ slice.percentage }}</span>
+                <span class="text-xs font-medium text-dt-text-muted">{{ slice.percentage }}</span>
               </div>
-              <div v-if="pieSlices.length > 5" class="pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ t('stock.dashboard.moreAssets', { count: pieSlices.length - 5 }) }}</span>
+              <div v-if="pieSlices.length > 5" class="pt-2 border-t border-dt-border text-center">
+                <span class="text-[10px] font-bold text-dt-text-soft uppercase tracking-widest">{{ t('stock.dashboard.moreAssets', { count: pieSlices.length - 5 }) }}</span>
               </div>
             </div>
           </div>
 
           <!-- Quick Trade Shortcut -->
-          <div class="panel-dashboard p-6 bg-blue-600/5 dark:bg-blue-400/5 border-blue-200 dark:border-blue-900/50">
+          <div class="panel-dashboard p-6 bg-dt-info/5 border-dt-info/30">
             <h3 class="font-bold text-dt-text flex items-center gap-2 mb-4 text-base">
-              <Icon name="heroicons:plus-circle" class="text-blue-500" />
+              <Icon name="heroicons:plus-circle" class="text-dt-info" />
               {{ t('stock.dashboard.quickTransaction') }}
             </h3>
             <p class="text-xs text-dt-text-muted mb-4">{{ t('stock.dashboard.quickTransactionDesc') }}</p>
-            <NuxtLink to="/diaries/new" class="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+            <NuxtLink to="/diaries/new" class="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-dt-primary-solid hover:bg-dt-primary-solid-active text-white rounded-dt-md font-bold text-sm transition-all shadow-dt-lg active:scale-95">
               <Icon name="heroicons:pencil-square" class="w-4 h-4" />
               {{ t('stock.dashboard.logNewTrade') }}
             </NuxtLink>
@@ -408,7 +408,7 @@
       <section class="mt-8">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold text-dt-text flex items-center gap-2">
-            <Icon name="heroicons:chart-bar-square" class="text-indigo-500" />
+            <Icon name="heroicons:chart-bar-square" class="text-dt-primary" />
             {{ t('stock.performance.title') }}
           </h2>
           <div class="flex items-center gap-2">
@@ -435,7 +435,7 @@
                 @click="selectedPeriod = opt.value"
                 class="min-h-11 min-w-11 rounded-dt-sm px-3 text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30"
                 :class="selectedPeriod === opt.value
-                  ? 'bg-dt-primary text-white shadow-sm'
+                  ? 'bg-dt-primary-solid text-white shadow-dt-sm'
                   : 'text-dt-text-muted hover:bg-dt-surface hover:text-dt-text'"
               >
                 {{ opt.label }}
@@ -447,8 +447,8 @@
         <!-- 績效統計卡片 -->
         <div v-if="perfPending" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div v-for="i in 4" :key="i" class="stats-card animate-pulse">
-            <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-20 mb-3"></div>
-            <div class="h-7 bg-slate-200 dark:bg-slate-700 rounded w-28"></div>
+            <div class="h-3 bg-dt-surface-strong rounded w-20 mb-3"></div>
+            <div class="h-7 bg-dt-surface-strong rounded w-28"></div>
           </div>
         </div>
 
@@ -457,13 +457,13 @@
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">{{ t('stock.performance.winRate') }}</span>
-              <Icon name="heroicons:trophy" class="w-5 h-5 text-amber-500 opacity-50" />
+              <Icon name="heroicons:trophy" class="w-5 h-5 text-dt-warning opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
-              :class="perfData.summary.winRate >= 50 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+              :class="perfData.summary.winRate >= 50 ? 'text-dt-success' : 'text-dt-danger'">
               {{ perfData.summary.totalClosedTrades > 0 ? perfData.summary.winRate.toFixed(1) + '%' : 'N/A' }}
             </div>
-            <div class="text-[10px] text-slate-400 mt-1">
+            <div class="text-[10px] text-dt-text-soft mt-1">
               {{ t('stock.performance.tradeRecord', { wins: perfData.summary.wins, losses: perfData.summary.losses, count: perfData.summary.totalClosedTrades }) }}
             </div>
           </div>
@@ -472,48 +472,48 @@
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">{{ t('stock.performance.realizedPnL') }}</span>
-              <Icon name="heroicons:currency-dollar" class="w-5 h-5 text-emerald-500 opacity-50" />
+              <Icon name="heroicons:currency-dollar" class="w-5 h-5 text-dt-success opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
-              :class="perfData.summary.totalRealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+              :class="perfData.summary.totalRealizedPnL >= 0 ? 'text-dt-success' : 'text-dt-danger'">
               {{ perfData.summary.totalRealizedPnL >= 0 ? '+' : '' }}{{ formatCurrency(perfData.summary.totalRealizedPnL) }}
             </div>
-            <div class="text-[10px] text-slate-400 mt-1">{{ t('stock.performance.realizedPnLHint') }}</div>
+            <div class="text-[10px] text-dt-text-soft mt-1">{{ t('stock.performance.realizedPnLHint') }}</div>
           </div>
 
           <!-- 最大回撤 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">{{ t('stock.performance.maxDrawdown') }}</span>
-              <Icon name="heroicons:arrow-trending-down" class="w-5 h-5 text-red-500 opacity-50" />
+              <Icon name="heroicons:arrow-trending-down" class="w-5 h-5 text-dt-danger opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
-              :class="perfData.summary.maxDrawdownPct > 20 ? 'text-red-600 dark:text-red-400' : 'text-dt-text'">
+              :class="perfData.summary.maxDrawdownPct > 20 ? 'text-dt-danger' : 'text-dt-text'">
               {{ perfData.summary.totalClosedTrades > 0 ? '-' + perfData.summary.maxDrawdownPct.toFixed(1) + '%' : 'N/A' }}
             </div>
-            <div class="text-[10px] text-slate-400 mt-1">{{ t('stock.performance.maxDrawdownHint') }}</div>
+            <div class="text-[10px] text-dt-text-soft mt-1">{{ t('stock.performance.maxDrawdownHint') }}</div>
           </div>
 
           <!-- 夏普比率 -->
           <div class="stats-card">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-semibold text-dt-text-muted uppercase tracking-wider">{{ t('stock.performance.sharpe') }}</span>
-              <Icon name="heroicons:scale" class="w-5 h-5 text-purple-500 opacity-50" />
+              <Icon name="heroicons:scale" class="w-5 h-5 text-dt-secondary opacity-50" />
             </div>
             <div class="text-2xl font-bold tabular-nums"
-              :class="perfData.summary.sharpe === null ? 'text-slate-400' :
-                perfData.summary.sharpe >= 1 ? 'text-green-600 dark:text-green-400' :
-                perfData.summary.sharpe >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'">
+              :class="perfData.summary.sharpe === null ? 'text-dt-text-soft' :
+                perfData.summary.sharpe >= 1 ? 'text-dt-success' :
+                perfData.summary.sharpe >= 0 ? 'text-dt-warning' : 'text-dt-danger'">
               {{ perfData.summary.sharpe !== null ? perfData.summary.sharpe.toFixed(2) : 'N/A' }}
             </div>
-            <div class="text-[10px] text-slate-400 mt-1">{{ t('stock.performance.sharpeHint') }}</div>
+            <div class="text-[10px] text-dt-text-soft mt-1">{{ t('stock.performance.sharpeHint') }}</div>
           </div>
         </div>
 
         <!-- 損益趨勢圖 -->
         <div v-if="perfData && perfData.periodStats.length > 0" class="panel-dashboard p-6 mb-6">
           <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-sm">
-            <Icon name="heroicons:chart-bar" class="text-indigo-400" />
+            <Icon name="heroicons:chart-bar" class="text-dt-primary" />
             {{ t('stock.performance.pnlTrend', { period: periodLabel }) }}
           </h3>
           <div class="h-56">
@@ -524,15 +524,15 @@
         <!-- 空狀態 -->
         <div v-else-if="!perfPending && (!perfData || perfData.summary.totalClosedTrades === 0)"
           class="panel-dashboard p-10 text-center">
-          <Icon name="heroicons:chart-bar-square" class="w-12 h-12 text-slate-300 dark:text-slate-300 mx-auto mb-3" />
+          <Icon name="heroicons:chart-bar-square" class="w-12 h-12 text-dt-text-soft mx-auto mb-3" />
           <p class="text-sm font-medium text-dt-text-muted">{{ t('stock.performance.emptyTitle') }}</p>
-          <p class="text-xs text-slate-400 dark:text-slate-400 mt-1">{{ t('stock.performance.emptyDescription') }}</p>
+          <p class="text-xs text-dt-text-soft mt-1">{{ t('stock.performance.emptyDescription') }}</p>
         </div>
 
         <!-- 資金曲線（折線圖） -->
         <div v-if="perfData && perfData.equityCurve && perfData.equityCurve.length > 1" class="panel-dashboard p-6 mb-6">
           <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-sm">
-            <Icon name="heroicons:chart-bar" class="text-indigo-400" />
+            <Icon name="heroicons:chart-bar" class="text-dt-primary" />
             {{ t('stock.performance.equityCurve') }}
           </h3>
           <div class="h-48">
@@ -543,7 +543,7 @@
         <!-- 各股票損益分析（橫條圖） -->
         <div v-if="perfData && perfData.symbolBreakdown && perfData.symbolBreakdown.length > 0" class="panel-dashboard p-6 mb-6">
           <h3 class="font-bold text-dt-text flex items-center gap-2 mb-6 text-sm">
-            <Icon name="heroicons:chart-bar" class="text-emerald-400" />
+            <Icon name="heroicons:chart-bar" class="text-dt-success" />
             {{ t('stock.performance.bySymbol') }}
           </h3>
           <div :style="{ height: Math.min(perfData.symbolBreakdown.length, 10) * 36 + 24 + 'px' }">
@@ -556,23 +556,23 @@
           class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Top Wins -->
           <div class="panel-dashboard overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-emerald-50/50 dark:bg-emerald-950/20">
-              <h3 class="text-sm font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+            <div class="px-5 py-4 border-b border-dt-border bg-dt-success/10">
+              <h3 class="text-sm font-bold text-dt-success flex items-center gap-2">
                 <Icon name="heroicons:arrow-trending-up" class="w-4 h-4" />
                 {{ t('stock.performance.topWins') }}
               </h3>
             </div>
-            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+            <div class="divide-y divide-dt-border">
               <div v-for="t in perfData.topWins" :key="t.id" class="px-5 py-3 flex items-center justify-between">
                 <div>
                   <span class="text-sm font-bold text-dt-text">{{ t.symbol }}</span>
-                  <span class="ml-2 text-xs text-slate-400">{{ formatTradeDate(t.sellDate) }}</span>
+                  <span class="ml-2 text-xs text-dt-text-soft">{{ formatTradeDate(t.sellDate) }}</span>
                 </div>
                 <div class="text-right">
-                  <div class="text-sm font-bold text-green-600 dark:text-green-400 tabular-nums">
+                  <div class="text-sm font-bold text-dt-success tabular-nums">
                     +{{ formatCurrency(t.realizedPnL) }}
                   </div>
-                  <div class="text-[10px] text-green-500 tabular-nums">+{{ t.realizedPnLPct.toFixed(1) }}%</div>
+                  <div class="text-[10px] text-dt-success tabular-nums">+{{ t.realizedPnLPct.toFixed(1) }}%</div>
                 </div>
               </div>
             </div>
@@ -580,23 +580,23 @@
 
           <!-- Top Losses -->
           <div class="panel-dashboard overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-red-50/50 dark:bg-red-950/20">
-              <h3 class="text-sm font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
+            <div class="px-5 py-4 border-b border-dt-border bg-dt-danger/10">
+              <h3 class="text-sm font-bold text-dt-danger flex items-center gap-2">
                 <Icon name="heroicons:arrow-trending-down" class="w-4 h-4" />
                 {{ t('stock.performance.topLosses') }}
               </h3>
             </div>
-            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+            <div class="divide-y divide-dt-border">
               <div v-for="t in perfData.topLosses" :key="t.id" class="px-5 py-3 flex items-center justify-between">
                 <div>
                   <span class="text-sm font-bold text-dt-text">{{ t.symbol }}</span>
-                  <span class="ml-2 text-xs text-slate-400">{{ formatTradeDate(t.sellDate) }}</span>
+                  <span class="ml-2 text-xs text-dt-text-soft">{{ formatTradeDate(t.sellDate) }}</span>
                 </div>
                 <div class="text-right">
-                  <div class="text-sm font-bold text-red-600 dark:text-red-400 tabular-nums">
+                  <div class="text-sm font-bold text-dt-danger tabular-nums">
                     {{ formatCurrency(t.realizedPnL) }}
                   </div>
-                  <div class="text-[10px] text-red-500 tabular-nums">{{ t.realizedPnLPct.toFixed(1) }}%</div>
+                  <div class="text-[10px] text-dt-danger tabular-nums">{{ t.realizedPnLPct.toFixed(1) }}%</div>
                 </div>
               </div>
             </div>
@@ -604,7 +604,7 @@
         </div>
 
       </section>
-    </main>
+    </section>
   </div>
 </template>
 
@@ -1081,18 +1081,7 @@ useHead({
 
 <style scoped>
 .stocks-page {
-  background: 
-    radial-gradient(at 0% 0%, color-mix(in srgb, var(--color-primary) 10%, transparent) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, color-mix(in srgb, var(--color-secondary) 10%, transparent) 0px, transparent 50%),
-    var(--color-background);
-}
-
-:global(.dark .stocks-page),
-:global(.dark-mode .stocks-page) {
-  background: 
-    radial-gradient(at 0% 0%, color-mix(in srgb, var(--color-primary) 20%, transparent) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, color-mix(in srgb, var(--color-secondary) 16%, transparent) 0px, transparent 50%),
-    var(--color-background);
+  background: var(--color-background);
 }
 
 .panel-dashboard {
@@ -1159,8 +1148,7 @@ useHead({
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #fff;
-  transition: opacity var(--motion-fast) ease;
+  color: var(--color-on-ink);
 }
 
 .action-btn-dashboard:hover {

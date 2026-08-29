@@ -11,7 +11,7 @@ function toggle(form: string) {
 <template>
   <LedgerCard>
     <div class="flex flex-wrap gap-2">
-      <button v-for="form in forms" :key="form" type="button" class="min-h-11 rounded-dt-pill border px-4 text-sm font-semibold" :class="modelValue.forms.includes(form) ? 'border-dt-primary bg-dt-primary text-white' : 'border-dt-border text-dt-text'" @click="toggle(form)">{{ form }}</button>
+      <button v-for="form in forms" :key="form" type="button" class="min-h-11 rounded-dt-pill border px-4 text-sm font-semibold" :class="modelValue.forms.includes(form) ? 'border-dt-primary-solid bg-dt-primary-solid text-white' : 'border-dt-border text-dt-text'" @click="toggle(form)">{{ form }}</button>
     </div>
     <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       <label class="text-xs font-semibold text-dt-text-muted">{{ t('secFilings.filedFrom') }}<input v-model="modelValue.filedFrom" type="date" class="mt-1 min-h-11 w-full rounded-dt-sm border border-dt-border bg-dt-bg px-3 text-dt-text"></label>

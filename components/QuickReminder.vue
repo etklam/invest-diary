@@ -1,8 +1,8 @@
 <template>
-  <div class="space-y-3 rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+  <div class="space-y-3 rounded-lg border border-dt-border bg-dt-surface p-4 text-sm text-dt-text">
     <div class="flex items-center justify-between">
       <h4 class="text-sm font-semibold">{{ t('quickDiary.reminders.customTitle') }}</h4>
-      <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('quickDiary.reminders.singleHint') }}</p>
+      <p class="text-xs text-dt-text-soft">{{ t('quickDiary.reminders.singleHint') }}</p>
     </div>
 
     <div class="space-y-2">
@@ -11,34 +11,34 @@
           <input
             v-model="form.reminder1.date"
             type="date"
-            class="w-full min-w-0 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+            class="w-full min-w-0 rounded-md border border-dt-border bg-dt-surface px-2 py-1 text-xs text-dt-text"
             :aria-label="t('quickDiary.reminders.dateLabel')"
           />
           <input
             v-model="form.reminder1.time"
             type="time"
-            class="w-full min-w-0 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+            class="w-full min-w-0 rounded-md border border-dt-border bg-dt-surface px-2 py-1 text-xs text-dt-text"
             :aria-label="t('quickDiary.reminders.timeLabel')"
           />
         </div>
         <div class="flex items-center gap-2">
           <button
             type="button"
-            class="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200"
+            class="rounded-md border border-dt-primary/20 bg-dt-primary/10 px-2 py-1 text-xs text-dt-primary hover:bg-dt-primary/20"
             @click="apply()"
           >
             {{ t('quickDiary.reminders.apply') }}
           </button>
           <button
             type="button"
-            class="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
+            class="rounded-md border border-dt-border bg-dt-surface px-2 py-1 text-xs text-dt-text-muted hover:border-dt-border-strong"
             @click="clear()"
           >
             {{ t('quickDiary.reminders.clear') }}
           </button>
         </div>
       </div>
-      <p v-if="reminderPreview" class="text-xs text-gray-500 dark:text-gray-400">
+      <p v-if="reminderPreview" class="text-xs text-dt-text-soft">
         {{ t('quickDiary.reminders.previewAt', { time: reminderPreview }) }}
       </p>
     </div>

@@ -42,12 +42,12 @@ const handleDismiss = () => {
     >
       <div class="bg-dt-surface rounded-dt-md shadow-dt-lg border border-dt-border overflow-hidden">
         <!-- Header accent -->
-        <div class="h-1 bg-dt-primary"></div>
+        <div class="h-1 bg-dt-primary-solid"></div>
 
         <div class="p-4">
           <div class="flex items-start gap-4">
             <!-- Icon -->
-            <div class="flex-shrink-0 w-12 h-12 bg-dt-primary rounded-dt-sm flex items-center justify-center">
+            <div class="flex-shrink-0 w-12 h-12 bg-dt-primary-solid rounded-dt-sm flex items-center justify-center">
               <Icon name="heroicons:arrow-path-solid" class="w-6 h-6 text-white animate-spin-slow" />
             </div>
 
@@ -68,7 +68,7 @@ const handleDismiss = () => {
             </button>
             <button
               @click="handleUpdate"
-              class="flex-1 px-4 py-2.5 text-sm font-medium bg-dt-primary text-white hover:opacity-90 rounded-dt-sm transition-opacity duration-200 cursor-pointer flex items-center justify-center gap-2"
+              class="flex-1 px-4 py-2.5 text-sm font-medium bg-dt-primary-solid text-white hover:opacity-90 rounded-dt-sm transition-opacity duration-200 cursor-pointer flex items-center justify-center gap-2"
             >
               <Icon name="heroicons:arrow-path-solid" class="w-4 h-4" />
               {{ t('pwa.update.refresh') }}

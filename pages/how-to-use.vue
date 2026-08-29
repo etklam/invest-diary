@@ -1,5 +1,5 @@
 <template>
-  <main class="how-to-use-page min-h-screen">
+  <div class="how-to-use-page min-h-screen">
     <section class="relative overflow-hidden px-4 pb-20 pt-20 sm:px-6 sm:pt-32">
       <div class="bg-grid absolute inset-0 opacity-20 dark:opacity-10" aria-hidden="true" />
       <div class="relative mx-auto max-w-7xl">
@@ -10,10 +10,10 @@
                 <Icon name="heroicons:map-20-solid" class="h-4 w-4" />
                 {{ $t('howToUse.badge') }}
               </p>
-              <h1 class="mt-6 max-w-4xl text-4xl font-extrabold leading-[1.1] tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-7xl">
+              <h1 class="mt-6 max-w-4xl text-4xl font-extrabold leading-[1.1] tracking-tight text-dt-text sm:text-5xl lg:text-7xl">
                 <span class="hero-title">{{ $t('howToUse.hero.title') }}</span>
               </h1>
-              <p class="mt-8 max-w-2xl text-lg leading-relaxed text-slate-600 dark:text-slate-400 sm:text-xl">
+              <p class="mt-8 max-w-2xl text-lg leading-relaxed text-dt-text-muted sm:text-xl">
                 {{ $t('howToUse.hero.subtitle') }}
               </p>
 
@@ -32,9 +32,9 @@
               <div class="flex items-center justify-between">
                 <p class="board-label">{{ $t('howToUse.workflow.title') }}</p>
                 <div class="flex gap-1.5" aria-hidden="true">
-                  <span class="h-2 w-2 rounded-full bg-red-400/60" />
-                  <span class="h-2 w-2 rounded-full bg-amber-400/60" />
-                  <span class="h-2 w-2 rounded-full bg-emerald-400/60" />
+                  <span class="h-2 w-2 rounded-full bg-dt-danger/60" />
+                  <span class="h-2 w-2 rounded-full bg-dt-warning/60" />
+                  <span class="h-2 w-2 rounded-full bg-dt-success/60" />
                 </div>
               </div>
               <div class="mt-6 space-y-4">
@@ -57,25 +57,25 @@
     <section class="px-4 pb-24 sm:px-6">
       <div class="mx-auto max-w-7xl">
         <div class="section-header reveal mb-12 text-center lg:text-left">
-          <h2 class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">
+          <h2 class="text-3xl font-bold tracking-tight text-dt-text sm:text-4xl lg:text-5xl">
             {{ $t('howToUse.gettingStarted.title') }}
           </h2>
-          <p class="mt-4 max-w-3xl text-lg text-slate-600 dark:text-slate-400">
+          <p class="mt-4 max-w-3xl text-lg text-dt-text-muted">
             {{ $t('howToUse.gettingStarted.subtitle') }}
           </p>
         </div>
 
         <div class="grid gap-8 lg:grid-cols-3">
-          <article v-for="(step, i) in 3" :key="i" class="guide-card reveal p-8" :class="{ 'reveal-2': i === 1, 'reveal-3': i === 2, 'border-amber-500/20 shadow-amber-500/5': i === 2 }">
-            <div class="guide-number" :class="{ 'bg-amber-500/10 text-amber-600 dark:text-amber-400': i === 2 }">{{ `0${i + 1}` }}</div>
-            <p class="guide-eyebrow mt-6" :class="{ 'text-amber-600 dark:text-amber-500': i === 2 }">{{ $t(`howToUse.gettingStarted.step${i + 1}.eyebrow`) }}</p>
-            <h3 class="mt-4 text-2xl font-bold text-slate-950 dark:text-white">
+          <article v-for="(step, i) in 3" :key="i" class="guide-card reveal p-8" :class="{ 'reveal-2': i === 1, 'reveal-3': i === 2, 'border-dt-warning/20': i === 2 }">
+            <div class="guide-number" :class="{ 'bg-dt-warning/10 text-dt-warning': i === 2 }">{{ `0${i + 1}` }}</div>
+            <p class="guide-eyebrow mt-6" :class="{ 'text-dt-warning': i === 2 }">{{ $t(`howToUse.gettingStarted.step${i + 1}.eyebrow`) }}</p>
+            <h3 class="mt-4 text-2xl font-bold text-dt-text">
               {{ $t(`howToUse.gettingStarted.step${i + 1}.title`) }}
             </h3>
-            <p class="mt-4 leading-relaxed text-slate-600 dark:text-slate-400">
+            <p class="mt-4 leading-relaxed text-dt-text-muted">
               {{ $t(`howToUse.gettingStarted.step${i + 1}.description`) }}
             </p>
-            <NuxtLink :to="gettingStartedLinks[i] ?? '/how-to-use'" class="guide-link mt-8 group" :class="{ 'text-amber-600 hover:text-amber-500': i === 2 }">
+            <NuxtLink :to="gettingStartedLinks[i] ?? '/how-to-use'" class="guide-link mt-8 group" :class="{ 'text-dt-warning hover:text-dt-warning-strong': i === 2 }">
               <span>{{ $t(`howToUse.gettingStarted.step${i + 1}.cta`) }}</span>
               <Icon name="heroicons:arrow-long-right-20-solid" class="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </NuxtLink>
@@ -113,10 +113,10 @@
     <section v-for="(group, groupIndex) in surfaceGroups" :id="group.id" :key="group.id" class="px-4 py-24 sm:px-6" :class="{ 'pb-24 pt-0': groupIndex === 1 }">
       <div class="mx-auto max-w-7xl">
         <div class="section-header reveal mb-16" :class="{ 'text-right lg:text-left': groupIndex === 1 }">
-          <h2 class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">
+          <h2 class="text-3xl font-bold tracking-tight text-dt-text sm:text-4xl lg:text-5xl">
             {{ $t(group.title) }}
           </h2>
-          <p class="mt-4 max-w-3xl text-lg text-slate-600 dark:text-slate-400" :class="{ 'lg:ml-0 lg:mr-auto ml-auto': groupIndex === 1 }">
+          <p class="mt-4 max-w-3xl text-lg text-dt-text-muted" :class="{ 'lg:ml-0 lg:mr-auto ml-auto': groupIndex === 1 }">
             {{ $t(group.subtitle) }}
           </p>
         </div>
@@ -126,9 +126,9 @@
             <div class="surface-browser-frame">
               <div class="surface-browser-header">
                 <div class="flex gap-1" aria-hidden="true">
-                  <span class="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
-                  <span class="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
-                  <span class="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                  <span class="h-1.5 w-1.5 rounded-full bg-dt-text-soft/40" />
+                  <span class="h-1.5 w-1.5 rounded-full bg-dt-text-soft/40" />
+                  <span class="h-1.5 w-1.5 rounded-full bg-dt-text-soft/40" />
                 </div>
               </div>
               <NuxtLink :to="feature.link" class="block overflow-hidden">
@@ -140,7 +140,7 @@
               <h3 class="surface-title mt-2 text-xl font-bold transition-colors">
                 {{ $t(`howToUse.${group.key}.${key}.title`) }}
               </h3>
-              <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              <p class="mt-3 text-sm leading-relaxed text-dt-text-muted">
                 {{ $t(`howToUse.${group.key}.${key}.description`) }}
               </p>
             </div>
@@ -156,7 +156,7 @@
             <h2 class="max-w-4xl text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
               {{ $t('howToUse.cta.title') }}
             </h2>
-            <p class="mt-8 max-w-2xl text-lg leading-relaxed text-slate-300 sm:text-xl">
+            <p class="mt-8 max-w-2xl text-lg leading-relaxed text-dt-on-ink/80 sm:text-xl">
               {{ $t('howToUse.cta.description') }}
             </p>
             <div class="mt-12 flex flex-col gap-4 sm:flex-row">
@@ -172,7 +172,7 @@
         </div>
       </div>
     </section>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -277,12 +277,12 @@ injectFAQSchema([
 }
 
 .bg-grid {
-  background-image: radial-gradient(rgb(36 62 104 / 0.14) 1px, transparent 1px);
+  background-image: radial-gradient(color-mix(in srgb, var(--color-primary) 14%, transparent) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
 :global(.dark .bg-grid), :global(.dark-mode .bg-grid) {
-  background-image: radial-gradient(rgb(200 180 150 / 0.12) 1px, transparent 1px);
+  background-image: radial-gradient(color-mix(in srgb, var(--color-text-soft) 12%, transparent) 1px, transparent 1px);
 }
 
 .hero-shell {
@@ -380,7 +380,7 @@ injectFAQSchema([
 :global(.dark .btn-secondary), :global(.dark-mode .btn-secondary) {
   background: transparent;
   border-color: rgb(255 255 255 / 0.1);
-  color: #f8fafc;
+  color: var(--color-on-ink);
 }
 
 :global(.dark .btn-secondary:hover), :global(.dark-mode .btn-secondary:hover) {
@@ -559,7 +559,7 @@ injectFAQSchema([
 
 .surface-browser-header {
   height: 1.75rem;
-  background: #f8fafc;
+  background: var(--color-on-ink);
   display: flex;
   align-items: center;
   padding: 0 0.75rem;

@@ -205,7 +205,7 @@
             <input
               :checked="isTradeSelected(trade.id)"
               type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-primary flex-shrink-0 focus:ring-primary/20"
+              class="h-4 w-4 rounded border-dt-border text-dt-primary flex-shrink-0 focus:ring-primary/20"
               @change="toggleTrade(trade, ($event.target as HTMLInputElement).checked)"
             />
             <div class="flex flex-1 items-center justify-between gap-2 min-w-0">
@@ -234,7 +234,7 @@
             <input
               :checked="Boolean(templateData.noRashTrading)"
               type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-primary transition-all focus:ring-primary/20"
+              class="h-4 w-4 rounded border-dt-border text-dt-primary transition-all focus:ring-primary/20"
               @change="updateField('noRashTrading', ($event.target as HTMLInputElement).checked)"
             />
             <span class="text-xs font-medium transition-colors group-hover:text-primary" style="color: var(--color-text-muted);">{{ t('quickDiary.reflection.noRashTrading') }}</span>

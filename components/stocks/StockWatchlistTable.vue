@@ -1,9 +1,9 @@
 <template>
-  <div class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+  <div class="rounded-xl border border-dt-border overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left">
-        <thead class="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800">
-          <tr class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <thead class="bg-dt-surface-strong/60 border-b border-dt-border">
+          <tr class="text-[11px] font-semibold uppercase tracking-wider text-dt-text-soft">
             <th class="px-4 py-3">{{ t('stock.symbol') }}</th>
             <th class="px-4 py-3">{{ t('stock.watchlist.editModal.status') }}</th>
             <th class="px-4 py-3 min-w-[240px]">{{ t('stock.watchlist.latestRecord') }}</th>
@@ -12,10 +12,10 @@
             <th class="px-4 py-3 text-right">{{ t('stock.watchlist.actions') }}</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-          <tr v-for="item in items" :key="item.id" class="hover:bg-slate-50/70 dark:hover:bg-slate-900/40">
+        <tbody class="divide-y divide-dt-border">
+          <tr v-for="item in items" :key="item.id" class="hover:bg-dt-surface-strong/70 ">
             <td class="px-4 py-3">
-              <NuxtLink :to="`/stocks/${item.stock.symbol}`" class="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+              <NuxtLink :to="`/stocks/${item.stock.symbol}`" class="font-semibold text-dt-info hover:underline">
                 {{ item.stock.symbol }}
               </NuxtLink>
             </td>
@@ -23,25 +23,25 @@
               <span
                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
                 :class="item.status === 'ARCHIVED'
-                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                  : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'"
+                  ? 'bg-dt-surface-strong text-dt-text-muted'
+                  : 'bg-dt-success/10 text-dt-success-strong'"
               >
                 <span
                   class="w-1.5 h-1.5 rounded-full"
-                  :class="item.status === 'ARCHIVED' ? 'bg-slate-400 dark:bg-slate-500' : 'bg-green-500 dark:bg-green-400'"
+                  :class="item.status === 'ARCHIVED' ? 'bg-dt-text-soft/60' : 'bg-dt-success/60'"
                 />
                 {{ t(`stock.watchlist.editModal.status${item.status === 'ARCHIVED' ? 'Archived' : 'Watching'}`) }}
               </span>
             </td>
-            <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
+            <td class="px-4 py-3 text-sm text-dt-text">
               {{ item.latestRecord?.summary || t('stock.watchlist.noRecord') }}
             </td>
-            <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{{ item.recordCount }}</td>
-            <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{{ formatAt(item.updatedAt) }}</td>
+            <td class="px-4 py-3 text-sm text-dt-text-muted">{{ item.recordCount }}</td>
+            <td class="px-4 py-3 text-sm text-dt-text-soft">{{ formatAt(item.updatedAt) }}</td>
             <td class="px-4 py-3">
               <div class="flex justify-end gap-2">
                 <button
-                  class="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400"
+                  class="inline-flex items-center gap-1 text-xs font-semibold text-dt-text-muted hover:text-dt-danger dark:hover:text-dt-danger"
                   :disabled="removingId === item.id"
                   @click="$emit('archive', item.id)"
                 >

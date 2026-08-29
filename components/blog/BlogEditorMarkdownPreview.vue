@@ -1,5 +1,5 @@
 <template>
-  <div class="editor-shell rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+  <div class="editor-shell rounded-xl border border-dt-border bg-dt-surface p-4">
     <BlogEditorToolbar />
 
     <ClientOnly>

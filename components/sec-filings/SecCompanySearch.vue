@@ -21,7 +21,7 @@ onMounted(() => { hydrated.value = true })
     </div>
     <ul v-if="results.length" class="absolute z-30 mt-2 max-h-80 w-full overflow-y-auto rounded-dt-md border border-dt-border bg-dt-surface p-2 shadow-dt-lg" role="listbox">
       <li v-for="company in results" :key="company.cik">
-        <button type="button" class="flex min-h-12 w-full items-center justify-between gap-4 rounded-dt-sm px-3 py-2 text-left hover:bg-dt-surface-raised" @click="emit('select', company)">
+        <button type="button" class="flex min-h-12 w-full items-center justify-between gap-4 rounded-dt-sm px-3 py-2 text-left hover:bg-dt-surface-strong" @click="emit('select', company)">
           <span class="min-w-0"><strong class="block truncate text-dt-text">{{ company.name }}</strong><span class="text-xs text-dt-text-muted">CIK {{ company.cik }}</span></span>
           <span class="shrink-0 font-data text-sm text-dt-primary">{{ company.tickers.join(', ') }}</span>
         </button>

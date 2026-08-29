@@ -3,15 +3,15 @@
     <header class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div class="flex items-center justify-between gap-3">
         <div>
-          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ t('stock.watchlist.title') }}</h1>
-          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ t('stock.watchlist.subtitle') }}</p>
+          <h1 class="text-2xl font-bold text-dt-text">{{ t('stock.watchlist.title') }}</h1>
+          <p class="text-sm text-dt-text-soft mt-1">{{ t('stock.watchlist.subtitle') }}</p>
         </div>
         <div class="flex items-center gap-4">
-          <NuxtLink to="/stocks" class="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+          <NuxtLink to="/stocks" class="inline-flex items-center gap-1.5 text-sm text-dt-text-muted hover:text-dt-text dark:hover:text-white">
             <Icon name="heroicons:arrow-left" class="w-4 h-4" />
             {{ t('stock.watchlist.backToDashboard') }}
           </NuxtLink>
-          <NuxtLink to="/partners" class="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+          <NuxtLink to="/partners" class="inline-flex items-center gap-1.5 text-sm text-dt-text-muted hover:text-dt-text dark:hover:text-white">
             <Icon name="heroicons:user-group" class="w-4 h-4" />
             {{ t('nav.partners') }}
           </NuxtLink>
@@ -22,8 +22,8 @@
       </div>
     </header>
 
-    <main class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-      <div v-if="pending" class="py-16 text-center text-sm text-slate-500 dark:text-slate-400">{{ t('stock.watchlist.loading') }}</div>
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div v-if="pending" class="py-16 text-center text-sm text-dt-text-soft">{{ t('stock.watchlist.loading') }}</div>
       <div v-else-if="!items.length" class="py-16">
         <StockEmptyTimeline />
       </div>
@@ -33,7 +33,7 @@
         :removing-id="removingId"
         @archive="archiveItem"
       />
-    </main>
+    </div>
   </div>
 </template>
 

@@ -9,10 +9,10 @@
       ]"
     >
       <div v-if="title || subtitle" class="mb-10">
-        <h2 v-if="title" class="section-title text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+        <h2 v-if="title" class="section-title text-3xl font-semibold tracking-tight text-dt-text sm:text-4xl">
           {{ title }}
         </h2>
-        <p v-if="subtitle" class="section-subtitle mt-3 max-w-3xl text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+        <p v-if="subtitle" class="section-subtitle mt-3 max-w-3xl text-base text-dt-text-muted sm:text-lg">
           {{ subtitle }}
         </p>
       </div>

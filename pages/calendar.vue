@@ -94,7 +94,7 @@
           <span
             class="inline-flex h-7 min-w-7 items-center justify-center rounded-md text-sm font-semibold tabular-nums"
             :class="isToday(day)
-              ? 'bg-dt-primary text-white'
+              ? 'bg-dt-primary-solid text-white'
               : 'text-dt-text-muted group-hover:text-dt-text'"
           >
             {{ day }}
@@ -106,7 +106,7 @@
             </div>
             <div class="absolute bottom-2.5 right-2.5 flex gap-1">
               <span
-                class="h-1.5 w-1.5 rounded-full bg-dt-primary"
+                class="h-1.5 w-1.5 rounded-full bg-dt-primary-solid"
                 :title="t('nav.diaries')"
               />
               <span
@@ -139,7 +139,7 @@
           <span>{{ t('calendar.notRecorded') }}</span>
         </div>
         <div class="flex items-center gap-1.5">
-          <div class="h-2.5 w-2.5 rounded-sm bg-dt-primary" />
+          <div class="h-2.5 w-2.5 rounded-sm bg-dt-primary-solid" />
           <span>{{ t('calendar.recorded') }}</span>
         </div>
       </div>
@@ -158,7 +158,7 @@
               :class="{
                 'bg-transparent': !cell,
                 'bg-dt-surface-muted': cell && cell.level === 0 && !cell.excluded,
-                'bg-dt-primary': cell && cell.level === 1,
+                'bg-dt-primary-solid': cell && cell.level === 1,
                 'bg-dt-border opacity-60': cell && cell.excluded,
               }"
               :title="cell

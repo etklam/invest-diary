@@ -24,7 +24,7 @@ const isActive = (to: string) => to === '/timeline'
       :key="mode.id"
       :to="mode.to"
       class="inline-flex min-h-9 min-w-0 items-center justify-center gap-2 rounded-dt-sm px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30"
-      :class="isActive(mode.to) ? 'bg-dt-primary text-white' : 'text-dt-text-muted hover:bg-dt-surface-strong hover:text-dt-text'"
+      :class="isActive(mode.to) ? 'bg-dt-primary-solid text-white' : 'text-dt-text-muted hover:bg-dt-surface-strong hover:text-dt-text'"
       :aria-current="isActive(mode.to) ? 'page' : undefined"
     >
       <Icon :name="mode.icon" class="h-4 w-4 shrink-0" />

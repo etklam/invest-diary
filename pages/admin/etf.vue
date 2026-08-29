@@ -188,10 +188,10 @@ definePageMeta({
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 class="text-3xl font-bold text-dt-text">
           {{ t('tools.etf.admin.title') }}
         </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">
+        <p class="text-dt-text-muted mt-1">
           {{ t('tools.etf.admin.subtitle') }}
         </p>
       </div>
@@ -199,13 +199,13 @@ definePageMeta({
         <button
           @click="seedCommonEtfs"
           :disabled="seeding"
-          class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
+          class="px-4 py-2 bg-dt-secondary hover:bg-dt-secondary-active disabled:opacity-50 text-white rounded-dt-sm font-medium transition-colors"
         >
           {{ seeding ? t('common.loading') : t('tools.etf.admin.seed') }}
         </button>
         <button
           @click="showAddForm = !showAddForm"
-          class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition"
+          class="px-4 py-2 bg-dt-primary-solid hover:bg-dt-primary-solid-active text-white rounded-dt-sm font-medium transition-colors"
         >
           {{ showAddForm ? t('common.cancel') : t('tools.etf.admin.addEtf') }}
         </button>
@@ -215,34 +215,34 @@ definePageMeta({
     <!-- Add ETF Form -->
     <div
       v-if="showAddForm"
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6"
+      class="bg-dt-surface rounded-dt-md shadow-dt-sm p-6 mb-6"
     >
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <h2 class="text-lg font-semibold text-dt-text mb-4">
         {{ t('tools.etf.admin.addNewEtf') }}
       </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label class="block text-sm font-medium text-dt-text mb-1">
             {{ t('tools.etf.symbol') }}
-            <span class="text-red-500">*</span>
+            <span class="text-dt-danger">*</span>
           </label>
           <input
             v-model="newSymbol"
             type="text"
             :placeholder="t('tools.etf.admin.symbolPlaceholder')"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            class="w-full px-3 py-2 border border-dt-border rounded-dt-sm bg-dt-surface-strong text-dt-text"
             :disabled="adding"
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label class="block text-sm font-medium text-dt-text mb-1">
             {{ t('tools.etf.name') }}
           </label>
           <input
             v-model="newName"
             type="text"
             :placeholder="t('tools.etf.admin.namePlaceholder')"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            class="w-full px-3 py-2 border border-dt-border rounded-dt-sm bg-dt-surface-strong text-dt-text"
             :disabled="adding"
           />
         </div>
@@ -255,13 +255,13 @@ definePageMeta({
             v-model="skipValidation"
             type="checkbox"
             :disabled="adding"
-            class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            class="w-4 h-4 text-dt-primary border-dt-border rounded focus:ring-dt-primary"
           />
-          <span class="text-sm text-gray-700 dark:text-gray-300">
+          <span class="text-sm text-dt-text-muted">
             {{ t('tools.etf.admin.skipValidation') }}
           </span>
         </label>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
+        <p class="mt-1 text-xs text-dt-text-muted ml-6">
           {{ t('tools.etf.admin.skipValidationHint') }}
         </p>
       </div>
@@ -270,69 +270,69 @@ definePageMeta({
         <button
           @click="addEtf"
           :disabled="adding || !newSymbol.trim()"
-          class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
+          class="px-4 py-2 bg-dt-success hover:opacity-90 disabled:opacity-50 text-white rounded-dt-sm font-medium transition-colors"
         >
           {{ adding ? t('common.loading') : t('tools.etf.admin.addEtf') }}
         </button>
         <button
           @click="showAddForm = false; newSymbol = ''; newName = ''; skipValidation = false"
-          class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition"
+          class="px-4 py-2 border border-dt-border bg-dt-surface hover:bg-dt-surface-strong text-dt-text rounded-dt-sm font-medium transition-colors"
         >
           {{ t('common.cancel') }}
         </button>
       </div>
-      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+      <p class="mt-2 text-sm text-dt-text-muted">
         {{ t('tools.etf.admin.addHint') }}
       </p>
     </div>
 
     <!-- ETF List -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-      <div v-if="loading" class="p-8 text-center text-gray-600 dark:text-gray-400">
+    <div class="bg-dt-surface rounded-dt-md shadow-dt-sm overflow-hidden">
+      <div v-if="loading" class="p-8 text-center text-dt-text-muted">
         {{ t('common.loading') }}
       </div>
 
-      <div v-else-if="etfs.length === 0" class="p-8 text-center text-gray-600 dark:text-gray-400">
+      <div v-else-if="etfs.length === 0" class="p-8 text-center text-dt-text-muted">
         {{ t('tools.etf.admin.noEtfs') }}
       </div>
 
       <div v-else class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-gray-50 dark:bg-gray-700">
+          <thead class="bg-dt-surface-strong">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-dt-text-muted uppercase">
                 {{ t('tools.etf.symbol') }}
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-dt-text-muted uppercase">
                 {{ t('tools.etf.name') }}
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-dt-text-muted uppercase">
                 {{ t('tools.etf.admin.priceCount') }}
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-dt-text-muted uppercase">
                 {{ t('tools.etf.admin.createdAt') }}
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+              <th class="px-4 py-3 text-left text-xs font-medium text-dt-text-muted uppercase">
                 {{ t('tools.etf.fields.actions') }}
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody class="divide-y divide-dt-border">
             <tr
               v-for="etf in etfs"
               :key="etf.id"
-              class="hover:bg-gray-50 dark:hover:bg-gray-700"
+              class="hover:bg-dt-surface-strong"
             >
-              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
+              <td class="px-4 py-3 font-medium text-dt-text">
                 {{ etf.symbol }}
               </td>
-              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-dt-text-muted">
                 {{ etf.name || '-' }}
               </td>
-              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-dt-text-muted">
                 {{ etf.priceCount }}
               </td>
-              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+              <td class="px-4 py-3 text-dt-text-muted">
                 {{ new Date(etf.createdAt).toLocaleDateString() }}
               </td>
               <td class="px-4 py-3">
@@ -340,13 +340,13 @@ definePageMeta({
                   <button
                     @click="initializeHistoricalData(etf.id, etf.symbol)"
                     :disabled="initializing === etf.id"
-                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded text-sm transition"
+                    class="px-3 py-1 bg-dt-info hover:opacity-90 disabled:opacity-50 text-white rounded-dt-sm text-sm transition-colors"
                   >
                     {{ initializing === etf.id ? t('common.loading') : t('tools.etf.admin.initialize') }}
                   </button>
                   <button
                     @click="deleteEtf(etf.id, etf.symbol)"
-                    class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition"
+                    class="px-3 py-1 bg-dt-danger hover:opacity-90 text-white rounded-dt-sm text-sm transition-colors"
                   >
                     {{ t('common.delete') }}
                   </button>
@@ -359,11 +359,11 @@ definePageMeta({
     </div>
 
     <!-- Info Box -->
-    <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
+    <div class="mt-6 bg-dt-info/10 rounded-dt-md p-4">
+      <h3 class="text-sm font-semibold text-dt-info mb-2">
         {{ t('tools.etf.admin.infoTitle') }}
       </h3>
-      <ul class="text-sm text-blue-800 dark:text-blue-400 space-y-1">
+      <ul class="text-sm text-dt-text space-y-1">
         <li>• {{ t('tools.etf.admin.infoPoint1') }}</li>
         <li>• {{ t('tools.etf.admin.infoPoint2') }}</li>
         <li>• {{ t('tools.etf.admin.infoPoint3') }}</li>

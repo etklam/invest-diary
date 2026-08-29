@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <div>
-      <label for="excerpt" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label for="excerpt" class="block text-sm font-medium text-dt-text">
         {{ $t('blog.excerpt') }}
       </label>
       <div class="mt-1">
@@ -10,17 +10,17 @@
           v-model="localExcerpt"
           name="excerpt"
           rows="3"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          class="block w-full rounded-md border-dt-border bg-dt-surface text-dt-text shadow-dt-sm focus:border-dt-primary focus:ring-dt-primary/30 sm:text-sm"
           :placeholder="$t('blog.excerptPlaceholder')"
         />
       </div>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <p class="mt-1 text-sm text-dt-text-soft">
         {{ $t('blog.excerptOptional') }}
       </p>
     </div>
 
     <div>
-      <label for="coverImage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label for="coverImage" class="block text-sm font-medium text-dt-text">
         {{ $t('blog.coverImage') }}
       </label>
       <div class="mt-1">
@@ -29,21 +29,21 @@
           v-model="localCoverImage"
           type="url"
           name="coverImage"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          class="block w-full rounded-md border-dt-border bg-dt-surface text-dt-text shadow-dt-sm focus:border-dt-primary focus:ring-dt-primary/30 sm:text-sm"
           :placeholder="$t('blog.coverImagePlaceholder')"
         />
       </div>
     </div>
 
     <div>
-      <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {{ $t('blog.category') }} <span class="text-red-500">*</span>
+      <label for="category" class="block text-sm font-medium text-dt-text">
+        {{ $t('blog.category') }} <span class="text-dt-danger">*</span>
       </label>
       <div class="mt-1">
         <select
           id="category"
           v-model="localCategory"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          class="block w-full rounded-md border-dt-border bg-dt-surface text-dt-text shadow-dt-sm focus:border-dt-primary focus:ring-dt-primary/30 sm:text-sm"
         >
           <option value="">{{ $t('blog.selectCategory') }}</option>
           <option v-for="cat in CATEGORY_OPTIONS" :key="cat" :value="cat">
@@ -54,7 +54,7 @@
     </div>
 
     <div>
-      <label for="tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label for="tags" class="block text-sm font-medium text-dt-text">
         {{ $t('blog.tags') }}
       </label>
       <div class="mt-1">
@@ -63,11 +63,11 @@
           v-model="localTags"
           type="text"
           name="tags"
-          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          class="block w-full rounded-md border-dt-border bg-dt-surface text-dt-text shadow-dt-sm focus:border-dt-primary focus:ring-dt-primary/30 sm:text-sm"
           :placeholder="$t('blog.tagsPlaceholder')"
         />
       </div>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <p class="mt-1 text-sm text-dt-text-soft">
         {{ $t('blog.tagsHint') }}
       </p>
     </div>

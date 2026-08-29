@@ -1,5 +1,5 @@
 <template>
-  <main class="fintech-home min-h-screen text-slate-900 dark:text-slate-100">
+  <div class="fintech-home min-h-screen text-dt-text">
     <!-- Hero Section -->
     <section class="relative px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
       <div class="mx-auto max-w-7xl">
@@ -9,10 +9,10 @@
             <span class="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.18em] text-dt-text-muted">
               {{ $t('home.hero.eyebrow') }}
             </span>
-            <h1 class="text-4xl font-semibold leading-tight text-slate-950 dark:text-slate-100 sm:text-5xl lg:text-6xl">
+            <h1 class="text-4xl font-semibold leading-tight text-dt-text sm:text-5xl lg:text-6xl">
               {{ $t('home.hero.title') }}
             </h1>
-            <p class="mt-6 max-w-2xl text-base leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg">
+            <p class="mt-6 max-w-2xl text-base leading-relaxed text-dt-text sm:text-lg">
               {{ $t('home.hero.description') }}
             </p>
 
@@ -43,7 +43,7 @@
     <section class="px-4 pb-20 sm:px-6">
       <div class="mx-auto max-w-7xl">
         <div class="trust-strip reveal">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ $t('home.promise.title') }}</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-dt-text-soft">{{ $t('home.promise.title') }}</p>
           <div class="mt-4 flex flex-wrap gap-3">
             <span v-for="pill in ['basics', 'risk', 'community', 'longTerm', 'noGuarantee']" :key="pill" class="trust-pill">
               {{ $t(`home.promise.${pill}`) }}
@@ -67,7 +67,7 @@
             :title="$t(`home.learning.${key}.title`)"
             :description="$t(`home.learning.${key}.description`)"
             :icon="key === 'basics' ? 'heroicons:academic-cap-20-solid' : key === 'risk' ? 'heroicons:shield-exclamation-20-solid' : 'heroicons:arrow-path-20-solid'"
-            :icon-color="key === 'basics' ? 'text-sky-700' : key === 'risk' ? 'text-amber-700' : 'text-emerald-700'"
+            :icon-color="key === 'basics' ? 'text-dt-info' : key === 'risk' ? 'text-dt-warning' : 'text-dt-success'"
             :reveal="true"
             :reveal-delay="idx + 1"
           />
@@ -76,7 +76,7 @@
         <div class="subpanel reveal reveal-2">
           <div class="mb-8">
             <p class="subpanel-kicker">{{ $t('home.community.title') }}</p>
-            <h3 class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+            <h3 class="mt-3 text-2xl font-semibold tracking-tight text-dt-text">
               {{ $t('home.community.subtitle') }}
             </h3>
           </div>
@@ -88,7 +88,7 @@
               :title="$t(`home.community.${key}.title`)"
               :description="$t(`home.community.${key}.description`)"
               :icon="key === 'share' ? 'heroicons:chat-bubble-left-right-20-solid' : key === 'feedback' ? 'heroicons:hand-thumb-up-20-solid' : 'heroicons:user-group-20-solid'"
-              :icon-color="key === 'share' ? 'text-cyan-700' : key === 'feedback' ? 'text-indigo-700' : 'text-rose-700'"
+              :icon-color="key === 'share' ? 'text-dt-info' : key === 'feedback' ? 'text-dt-primary' : 'text-dt-danger'"
             />
           </div>
         </div>
@@ -96,7 +96,7 @@
 
       <div class="mt-12 reveal">
         <p class="subpanel-kicker">{{ $t('home.turnaround.title') }}</p>
-        <h3 class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-slate-100 sm:text-3xl">
+        <h3 class="mt-2 text-2xl font-semibold tracking-tight text-dt-text sm:text-3xl">
           {{ $t('home.turnaround.subtitle') }}
         </h3>
         <div class="sequence-grid mt-8">
@@ -122,10 +122,10 @@
       <div class="workflow-grid">
         <article class="workflow-lead reveal">
           <p class="subpanel-kicker">{{ $t('home.features.diary.title') }}</p>
-          <h3 class="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+          <h3 class="mt-3 text-3xl font-semibold tracking-tight text-dt-text">
             {{ $t('home.features.diary.description') }}
           </h3>
-          <p class="mt-4 max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">
+          <p class="mt-4 max-w-3xl text-base leading-7 text-dt-text-muted">
             {{ $t('home.snapshot.description') }}
           </p>
 
@@ -172,7 +172,7 @@
         <div class="story-panel reveal">
           <div class="flex flex-wrap items-center justify-between gap-4">
             <h2 class="text-2xl font-semibold sm:text-3xl">{{ $t('home.cta.title') }}</h2>
-            <NuxtLink to="/auth/login" class="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition-colors duration-200 hover:text-cyan-100 cursor-pointer">
+            <NuxtLink to="/auth/login" class="inline-flex items-center gap-2 text-sm font-semibold text-dt-secondary transition-colors duration-200 hover:text-dt-secondary-active cursor-pointer">
               {{ $t('home.cta.login') }}
               <Icon name="heroicons:arrow-right-20-solid" class="h-4 w-4" />
             </NuxtLink>
@@ -198,18 +198,18 @@
       </div>
     </section>
 
-    <footer class="border-t border-slate-200/70 bg-slate-50 dark:bg-slate-950 dark:border-slate-700 px-4 py-10 sm:px-6">
-      <div class="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:justify-between">
-        <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $t('common.appName') }}</p>
+    <footer class="border-t border-dt-border bg-dt-surface-strong px-4 py-10 sm:px-6">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-dt-text-muted sm:flex-row sm:items-center sm:justify-between">
+        <p class="font-semibold text-dt-text">{{ $t('common.appName') }}</p>
         <div class="flex items-center gap-6">
-          <NuxtLink to="/about" class="transition-colors duration-200 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer">
+          <NuxtLink to="/about" class="transition-colors duration-200 hover:text-dt-text cursor-pointer">
             {{ $t('nav.about') }}
           </NuxtLink>
           <p>&copy; {{ currentYear }} {{ $t('home.footer.rights') }}</p>
         </div>
       </div>
     </footer>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">

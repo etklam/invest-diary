@@ -9,7 +9,7 @@
       </p>
     </header>
 
-    <main>
+    <div>
       <QuickDiaryOneLiner v-if="isHydrated" />
       <section
         v-else
@@ -20,7 +20,7 @@
           {{ t('common.loading') }}
         </p>
       </section>
-    </main>
+    </div>
   </div>
 </template>
 

@@ -118,9 +118,9 @@ const copyToClipboard = async () => {
 }
 
 useHead({
-  title: '美股月份季節性分析 - 投資工具',
+  title: () => `${t('tools.seasonality.title')} - ${t('nav.tools')}`,
   meta: [
-    { name: 'description', content: '基於1950年至今的歷史數據，分析美股S&P 500月份季節性模式，了解最佳與最差月份，輔助投資決策。' }
+    { name: 'description', content: () => t('tools.seasonality.metaDescription') }
   ]
 })
 
@@ -301,7 +301,7 @@ definePageMeta({
                   <td class="py-4 pr-4">
                     <div class="flex items-center gap-2">
                       <span class="font-medium text-dt-text">{{ getLocalizedShortName(month.month) }}</span>
-                      <span v-if="month.month === currentMonth" class="rounded-full bg-dt-primary px-2 py-0.5 text-[11px] font-semibold text-white">
+                      <span v-if="month.month === currentMonth" class="rounded-full bg-dt-primary-solid px-2 py-0.5 text-[11px] font-semibold text-white">
                         {{ t('tools.seasonality.now') }}
                       </span>
                     </div>
@@ -333,7 +333,7 @@ definePageMeta({
               <p class="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary">{{ t('tools.seasonality.bestMonths') }}</p>
               <h3 class="text-xl font-semibold text-dt-text">{{ t('tools.seasonality.bestMonths') }}</h3>
             </div>
-            <Icon name="heroicons:arrow-trending-up" class="h-5 w-5 text-emerald-500" />
+            <Icon name="heroicons:arrow-trending-up" class="h-5 w-5 text-dt-success" />
           </div>
 
           <div class="space-y-3">
@@ -345,7 +345,7 @@ definePageMeta({
                   <div class="text-xs text-dt-text-muted">{{ getLocalizedVolatility(month.volatility) }}</div>
                 </div>
               </div>
-              <span class="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{{ formatReturn(month.avgReturn) }}</span>
+              <span class="text-lg font-semibold text-dt-success">{{ formatReturn(month.avgReturn) }}</span>
             </div>
           </div>
         </LedgerCard>
@@ -379,7 +379,7 @@ definePageMeta({
           <div class="mt-5 grid gap-4">
             <div class="min-w-0 rounded-lg border border-dt-border bg-dt-bg p-4">
               <div class="text-xs font-bold uppercase tracking-[0.08em] text-dt-text-muted">{{ t('tools.seasonality.bestSixMonths') }}</div>
-              <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight text-emerald-600 dark:text-emerald-400">{{ formatReturn(strongPeriodReturn) }}<span class="ml-1.5 text-sm font-normal text-dt-text-muted">{{ t('tools.seasonality.avgReturn') }}</span></div>
+              <div class="mt-2 min-w-0 overflow-wrap-anywhere break-words font-data text-2xl font-semibold leading-tight text-dt-success">{{ formatReturn(strongPeriodReturn) }}<span class="ml-1.5 text-sm font-normal text-dt-text-muted">{{ t('tools.seasonality.avgReturn') }}</span></div>
               <p class="mt-3 text-sm leading-6 text-dt-text-muted">{{ t(analysis.strongPeriod.strategyKey) }}</p>
             </div>
 
@@ -397,15 +397,15 @@ definePageMeta({
         <LedgerCard :title="t('tools.seasonality.recommendations')">
           <ul class="mt-5 space-y-3">
             <li class="flex items-start gap-2.5">
-              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0 text-emerald-500" />
+              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0 text-dt-success" />
               <span class="text-dt-text">{{ t('tools.seasonality.recommendationsList.0') }}</span>
             </li>
             <li class="flex items-start gap-2.5">
-              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0 text-emerald-500" />
+              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0 text-dt-success" />
               <span class="text-dt-text">{{ t('tools.seasonality.recommendationsList.1') }}</span>
             </li>
             <li class="flex items-start gap-2.5">
-              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0 text-emerald-500" />
+              <Icon name="heroicons:check-circle" class="h-5 w-5 shrink-0 text-dt-success" />
               <span class="text-dt-text">{{ t('tools.seasonality.recommendationsList.2') }}</span>
             </li>
           </ul>

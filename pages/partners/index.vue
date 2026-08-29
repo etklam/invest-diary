@@ -65,6 +65,7 @@
           v-model="partnerEmail"
           type="email"
           :placeholder="t('settings.partnerEmailPlaceholder')"
+          :aria-label="t('settings.partnerEmailPlaceholder')"
           class="partner-input"
         >
         <button
@@ -218,6 +219,7 @@
           v-model="label"
           type="text"
           :placeholder="t('settings.apiKeyLabelPlaceholder')"
+          :aria-label="t('settings.apiKeyLabelPlaceholder')"
           class="partner-input"
         >
         <select
@@ -242,7 +244,7 @@
       <!-- New Key Reveal -->
       <div v-if="latestRawKey" class="key-reveal">
         <div class="key-reveal-header">
-          <Icon name="heroicons:exclamation-triangle" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          <Icon name="heroicons:exclamation-triangle" class="w-5 h-5 text-dt-warning" />
           <p class="font-semibold">{{ t('settings.apiKeyCreatedTitle') }}</p>
         </div>
         <p class="key-reveal-hint">{{ t('settings.apiKeyCreatedHint') }}</p>
@@ -531,7 +533,7 @@ const revokeKey = async (keyId: string) => {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: var(--color-text-muted, #A19687);
+  color: var(--color-text-muted);
   margin-bottom: 0.25rem;
 }
 
@@ -539,25 +541,17 @@ const revokeKey = async (keyId: string) => {
   font-family: var(--font-display, 'Source Sans 3', sans-serif);
   font-size: 2rem;
   font-weight: 700;
-  color: var(--color-text, #191714);
+  color: var(--color-text);
   line-height: 1.15;
   letter-spacing: -0.02em;
-}
-
-:root.dark .hero-title {
-  color: var(--color-text, #F3EEE6);
 }
 
 .hero-summary {
   margin-top: 0.5rem;
   font-size: 0.9375rem;
-  color: var(--color-text-soft, #4E463E);
+  color: var(--color-text-soft);
   line-height: 1.55;
   max-width: 36rem;
-}
-
-:root.dark .hero-summary {
-  color: var(--color-text-soft, #B7AEA2);
 }
 
 .hero-actions {
@@ -590,14 +584,9 @@ const revokeKey = async (keyId: string) => {
   gap: 0.25rem;
   padding: 1rem 0.75rem;
   border-radius: 1rem;
-  background: var(--color-surface, #F6F1E8);
-  border: 1px solid var(--color-border-soft, #D7CCBC);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   text-align: center;
-}
-
-:root.dark .stat-card {
-  background: var(--color-surface, #161C20);
-  border-color: var(--color-border, #2A343B);
 }
 
 .stat-icon {
@@ -605,22 +594,18 @@ const revokeKey = async (keyId: string) => {
   margin-bottom: 0.125rem;
 }
 
-.stat-connected .stat-icon { color: #1C6B5C; }
-.stat-pending .stat-icon { color: #A56A18; }
-.stat-sharing .stat-icon { color: #2F5E88; }
-.stat-apikeys .stat-icon { color: #17324D; }
+.stat-connected .stat-icon { color: var(--color-success); }
+.stat-pending .stat-icon { color: var(--color-warning); }
+.stat-sharing .stat-icon { color: var(--color-info); }
+.stat-apikeys .stat-icon { color: var(--color-primary); }
 
 .stat-value {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 1.5rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--color-text, #191714);
+  color: var(--color-text);
   line-height: 1;
-}
-
-:root.dark .stat-value {
-  color: var(--color-text, #F3EEE6);
 }
 
 .stat-label {
@@ -628,7 +613,7 @@ const revokeKey = async (keyId: string) => {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-text-muted, #A19687);
+  color: var(--color-text-muted);
 }
 
 /* ---- Content Sections ---- */
@@ -636,14 +621,9 @@ const revokeKey = async (keyId: string) => {
   max-width: 75rem;
   margin: 0 auto 1.5rem;
   padding: 1.5rem;
-  background: var(--color-surface, #F6F1E8);
-  border: 1px solid var(--color-border-soft, #D7CCBC);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 1.25rem;
-}
-
-:root.dark .content-section {
-  background: var(--color-surface-raised, #1C2328);
-  border-color: var(--color-border, #2A343B);
 }
 
 .section-head {
@@ -657,22 +637,14 @@ const revokeKey = async (keyId: string) => {
   font-family: var(--font-display, 'Source Sans 3', sans-serif);
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--color-text, #191714);
-}
-
-:root.dark .section-title {
-  color: var(--color-text, #F3EEE6);
+  color: var(--color-text);
 }
 
 .section-desc {
   margin-top: 0.25rem;
   font-size: 0.875rem;
-  color: var(--color-text-soft, #4E463E);
+  color: var(--color-text-soft);
   line-height: 1.5;
-}
-
-:root.dark .section-desc {
-  color: var(--color-text-soft, #B7AEA2);
 }
 
 /* ---- Add Form ---- */
@@ -687,46 +659,29 @@ const revokeKey = async (keyId: string) => {
   flex: 1;
   min-width: 200px;
   padding: 0.625rem 0.875rem;
-  border: 1px solid var(--color-border-soft, #D7CCBC);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
-  background: var(--color-surface-0, #fff);
+  background: var(--color-surface);
   font-size: 0.875rem;
-  color: var(--color-text, #191714);
+  color: var(--color-text);
   outline: none;
   transition: border-color 120ms;
 }
 
 .partner-input:focus {
-  border-color: #17324D;
-  box-shadow: 0 0 0 2px rgba(23, 50, 77, 0.12);
-}
-
-:root.dark .partner-input {
-  background: var(--color-surface, #161C20);
-  border-color: var(--color-border, #2A343B);
-  color: var(--color-text, #F3EEE6);
-}
-
-:root.dark .partner-input:focus {
-  border-color: #4A7CAA;
-  box-shadow: 0 0 0 2px rgba(74, 124, 170, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
 
 .scope-select {
   padding: 0.625rem 0.875rem;
-  border: 1px solid var(--color-border-soft, #D7CCBC);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
-  background: var(--color-surface-0, #fff);
+  background: var(--color-surface);
   font-size: 0.875rem;
-  color: var(--color-text, #191714);
+  color: var(--color-text);
   outline: none;
   cursor: pointer;
-}
-
-:root.dark .scope-select {
-  background: var(--color-surface, #161C20);
-  border-color: var(--color-border, #2A343B);
-  color: var(--color-text, #F3EEE6);
 }
 
 /* ---- Action Buttons ---- */
@@ -735,7 +690,7 @@ const revokeKey = async (keyId: string) => {
   align-items: center;
   gap: 0.375rem;
   padding: 0.625rem 1.125rem;
-  background: #17324D;
+  background: var(--color-primary-solid);
   color: #fff;
   border: none;
   border-radius: 0.75rem;
@@ -747,7 +702,7 @@ const revokeKey = async (keyId: string) => {
 }
 
 .action-btn-primary:hover {
-  background: #1E4062;
+  background: var(--color-primary-solid-active);
 }
 
 .action-btn-primary:disabled {
@@ -760,19 +715,19 @@ const revokeKey = async (keyId: string) => {
   align-items: center;
   gap: 0.375rem;
   padding: 0.5rem 0.875rem;
-  border: 1px solid var(--color-border-soft, #D7CCBC);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-text-soft, #4E463E);
+  color: var(--color-text-soft);
   background: transparent;
   text-decoration: none;
   transition: border-color 120ms, color 120ms;
 }
 
 .action-btn-muted:hover {
-  border-color: #17324D;
-  color: #17324D;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .action-btn-sm {
@@ -780,18 +735,18 @@ const revokeKey = async (keyId: string) => {
   align-items: center;
   gap: 0.25rem;
   padding: 0.375rem 0.75rem;
-  border: 1px solid var(--color-border-soft, #D7CCBC);
+  border: 1px solid var(--color-border);
   border-radius: 0.625rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #17324D;
+  color: var(--color-primary);
   background: transparent;
   text-decoration: none;
   transition: background 120ms;
 }
 
 .action-btn-sm:hover {
-  background: rgba(23, 50, 77, 0.06);
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
 }
 
 .action-btn-danger-sm {
@@ -799,11 +754,11 @@ const revokeKey = async (keyId: string) => {
   align-items: center;
   gap: 0.25rem;
   padding: 0.375rem 0.75rem;
-  border: 1px solid #e0c0b8;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 25%, var(--color-border));
   border-radius: 0.625rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #B33A2F;
+  color: var(--color-danger-strong);
   background: transparent;
   cursor: pointer;
   transition: background 120ms;
@@ -811,15 +766,6 @@ const revokeKey = async (keyId: string) => {
 
 .action-btn-danger-sm:hover {
   background: rgba(179, 58, 47, 0.06);
-}
-
-:root.dark .action-btn-danger-sm {
-  border-color: rgba(179, 58, 47, 0.3);
-  color: #E06050;
-}
-
-:root.dark .action-btn-danger-sm:hover {
-  background: rgba(179, 58, 47, 0.1);
 }
 
 /* ---- Empty State ---- */
@@ -833,24 +779,24 @@ const revokeKey = async (keyId: string) => {
 }
 
 .empty-icon {
-  color: var(--color-text-muted, #A19687);
+  color: var(--color-text-muted);
   margin-bottom: 0.75rem;
 }
 
 .empty-title {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--color-text, #191714);
+  color: var(--color-text);
   margin-bottom: 0.25rem;
 }
 
 :root.dark .empty-title {
-  color: var(--color-text, #F3EEE6);
+  color: var(--color-text);
 }
 
 .empty-desc {
   font-size: 0.875rem;
-  color: var(--color-text-muted, #A19687);
+  color: var(--color-text-muted);
   max-width: 24rem;
   line-height: 1.5;
 }
@@ -863,25 +809,17 @@ const revokeKey = async (keyId: string) => {
 }
 
 .partner-card {
-  border: 1px solid var(--color-border-soft, #D7CCBC);
+  border: 1px solid var(--color-border);
   border-radius: 1rem;
   overflow: hidden;
 }
 
 .partner-card.partner-connected {
-  border-left: 1px solid #1C6B5C;
+  border-left: 1px solid var(--color-success);
 }
 
 .partner-card.partner-pending {
-  border-left: 1px solid #A56A18;
-}
-
-:root.dark .partner-card.partner-connected {
-  border-left-color: #3A9A85;
-}
-
-:root.dark .partner-card.partner-pending {
-  border-left-color: #D49A3D;
+  border-left: 1px solid var(--color-warning);
 }
 
 .partner-card-top {
@@ -907,31 +845,22 @@ const revokeKey = async (keyId: string) => {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.75rem;
-  background: var(--color-surface-0, #fff);
-  border: 1px solid var(--color-border-soft, #D7CCBC);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   flex-shrink: 0;
-  color: var(--color-text-muted, #A19687);
-}
-
-:root.dark .partner-avatar {
-  background: var(--color-surface, #161C20);
-  border-color: var(--color-border, #2A343B);
+  color: var(--color-text-muted);
 }
 
 .partner-name {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--color-text, #191714);
-}
-
-:root.dark .partner-name {
-  color: var(--color-text, #F3EEE6);
+  color: var(--color-text);
 }
 
 .partner-email {
   margin-top: 0.125rem;
   font-size: 0.8125rem;
-  color: var(--color-text-muted, #A19687);
+  color: var(--color-text-muted);
 }
 
 .partner-status-badge {
@@ -947,32 +876,17 @@ const revokeKey = async (keyId: string) => {
 
 .badge-connected {
   background: rgba(28, 107, 92, 0.1);
-  color: #1C6B5C;
+  color: var(--color-success);
 }
 
 .badge-pending-incoming {
   background: rgba(165, 106, 24, 0.1);
-  color: #A56A18;
+  color: var(--color-warning);
 }
 
 .badge-pending-outgoing {
   background: rgba(79, 70, 62, 0.1);
-  color: #4E463E;
-}
-
-:root.dark .badge-connected {
-  background: rgba(58, 154, 133, 0.15);
-  color: #3A9A85;
-}
-
-:root.dark .badge-pending-incoming {
-  background: rgba(212, 154, 61, 0.15);
-  color: #D49A3D;
-}
-
-:root.dark .badge-pending-outgoing {
-  background: rgba(183, 174, 162, 0.15);
-  color: #B7AEA2;
+  color: var(--color-text-muted);
 }
 
 .partner-actions {
@@ -984,14 +898,9 @@ const revokeKey = async (keyId: string) => {
 
 /* ---- Partner Card Bottom (Sharing) ---- */
 .partner-card-bottom {
-  border-top: 1px solid var(--color-border-soft, #D7CCBC);
+  border-top: 1px solid var(--color-border);
   padding: 1rem 1.25rem;
-  background: var(--color-surface-0, #fafaf5);
-}
-
-:root.dark .partner-card-bottom {
-  background: rgba(22, 28, 32, 0.4);
-  border-top-color: var(--color-border, #2A343B);
+  background: var(--color-surface);
 }
 
 .sharing-summary {
@@ -1013,25 +922,25 @@ const revokeKey = async (keyId: string) => {
 
 .pill-on {
   background: rgba(28, 107, 92, 0.08);
-  color: #1C6B5C;
+  color: var(--color-success);
   border: 1px solid rgba(28, 107, 92, 0.2);
 }
 
 .pill-off {
   background: rgba(161, 150, 135, 0.08);
-  color: #A19687;
+  color: var(--color-text-soft);
   border: 1px solid rgba(161, 150, 135, 0.15);
 }
 
 :root.dark .pill-on {
   background: rgba(58, 154, 133, 0.12);
-  color: #3A9A85;
+  color: var(--color-success);
   border-color: rgba(58, 154, 133, 0.25);
 }
 
 :root.dark .pill-off {
   background: rgba(183, 174, 162, 0.08);
-  color: #B7AEA2;
+  color: var(--color-text-soft);
   border-color: rgba(183, 174, 162, 0.15);
 }
 
@@ -1053,9 +962,9 @@ const revokeKey = async (keyId: string) => {
   width: 1rem;
   height: 1rem;
   border-radius: 0.25rem;
-  border: 1.5px solid var(--color-border-soft, #D7CCBC);
+  border: 1.5px solid var(--color-border);
   cursor: pointer;
-  accent-color: #17324D;
+  accent-color: var(--color-primary);
   flex-shrink: 0;
 }
 
@@ -1063,18 +972,18 @@ const revokeKey = async (keyId: string) => {
   display: block;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-text, #191714);
+  color: var(--color-text);
 }
 
 :root.dark .toggle-title {
-  color: var(--color-text, #F3EEE6);
+  color: var(--color-text);
 }
 
 .toggle-hint {
   display: block;
   margin-top: 0.125rem;
   font-size: 0.75rem;
-  color: var(--color-text-muted, #A19687);
+  color: var(--color-text-muted);
   line-height: 1.4;
 }
 
@@ -1102,32 +1011,32 @@ const revokeKey = async (keyId: string) => {
 .key-reveal-header p {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-text, #191714);
+  color: var(--color-text);
 }
 
 :root.dark .key-reveal-header p {
-  color: var(--color-text, #F3EEE6);
+  color: var(--color-text);
 }
 
 .key-reveal-hint {
   font-size: 0.8125rem;
-  color: var(--color-text-soft, #4E463E);
+  color: var(--color-text-soft);
   margin-bottom: 0.75rem;
   line-height: 1.4;
 }
 
 :root.dark .key-reveal-hint {
-  color: var(--color-text-soft, #B7AEA2);
+  color: var(--color-text-soft);
 }
 
 .key-reveal-code {
   display: block;
   padding: 0.75rem 1rem;
-  background: #0F1316;
+  background: var(--color-surface-muted);
   border-radius: 0.625rem;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.8125rem;
-  color: #3A9A85;
+  color: var(--color-success);
   word-break: break-all;
   line-height: 1.5;
 }
@@ -1140,7 +1049,7 @@ const revokeKey = async (keyId: string) => {
 }
 
 .key-card {
-  border: 1px solid var(--color-border-soft, #D7CCBC);
+  border: 1px solid var(--color-border);
   border-radius: 0.875rem;
   padding: 1rem 1.25rem;
 }
@@ -1150,7 +1059,7 @@ const revokeKey = async (keyId: string) => {
 }
 
 :root.dark .key-card {
-  border-color: var(--color-border, #2A343B);
+  border-color: var(--color-border);
 }
 
 .key-card-top {
@@ -1168,11 +1077,11 @@ const revokeKey = async (keyId: string) => {
 .key-name {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--color-text, #191714);
+  color: var(--color-text);
 }
 
 :root.dark .key-name {
-  color: var(--color-text, #F3EEE6);
+  color: var(--color-text);
 }
 
 .key-scope-badge {
@@ -1181,7 +1090,7 @@ const revokeKey = async (keyId: string) => {
   padding: 0.125rem 0.5rem;
   border-radius: 999px;
   background: rgba(23, 50, 77, 0.08);
-  color: #17324D;
+  color: var(--color-primary);
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1190,7 +1099,7 @@ const revokeKey = async (keyId: string) => {
 
 :root.dark .key-scope-badge {
   background: rgba(74, 124, 170, 0.12);
-  color: #7EB4D5;
+  color: var(--color-secondary);
 }
 
 .key-status-badge {
@@ -1206,24 +1115,24 @@ const revokeKey = async (keyId: string) => {
 
 .key-status-revoked {
   background: rgba(179, 58, 47, 0.08);
-  color: #B33A2F;
+  color: var(--color-danger-strong);
 }
 
 :root.dark .key-status-revoked {
   background: rgba(224, 96, 80, 0.12);
-  color: #E06050;
+  color: var(--color-danger);
 }
 
 .key-prefix {
   margin-top: 0.25rem;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.8125rem;
-  color: var(--color-text-muted, #A19687);
+  color: var(--color-text-muted);
 }
 
 .key-meta {
   margin-top: 0.125rem;
   font-size: 0.75rem;
-  color: var(--color-text-muted, #A19687);
+  color: var(--color-text-muted);
 }
 </style>

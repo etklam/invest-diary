@@ -2,18 +2,18 @@
   <div class="max-w-4xl mx-auto px-4 py-8">
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
-      <i-svg-spinners-180-ring-with-bg class="h-8 w-8 text-indigo-600" />
-      <p class="mt-2 text-gray-500 dark:text-gray-400">{{ $t('common.loading') }}</p>
+      <i-svg-spinners-180-ring-with-bg class="h-8 w-8 text-dt-primary" />
+      <p class="mt-2 text-dt-text-soft">{{ $t('common.loading') }}</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 p-4 rounded-md">
+    <div v-else-if="error" class="bg-dt-danger/10 p-4 rounded-md">
       <div class="flex">
         <div class="flex-shrink-0">
-          <i-heroicons-x-circle class="h-5 w-5 text-red-400" />
+          <i-heroicons-x-circle class="h-5 w-5 text-dt-danger" />
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+          <h3 class="text-sm font-medium text-dt-danger-strong">
             {{ $t('blog.loadFailed') }}
           </h3>
         </div>
@@ -24,16 +24,16 @@
     <div v-else>
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <h1 class="text-3xl font-bold text-dt-text mb-2">
           {{ $t('blog.editPost') }}
         </h1>
-        <p class="text-gray-600 dark:text-gray-400">
+        <p class="text-dt-text-muted">
           {{ $t('blog.editDescription') }}
         </p>
       </div>
 
       <form @submit.prevent="updatePost" class="space-y-8">
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div class="bg-dt-surface shadow-dt-sm rounded-dt-sm p-6">
           <BlogEditor
             v-model:title="form.title"
             v-model:content="form.content"
@@ -45,7 +45,7 @@
 
           <!-- Status Selection -->
           <div class="mt-6">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-dt-text mb-2">
               {{ $t('blog.postStatus') }}
             </label>
             <div class="flex gap-4">
@@ -54,9 +54,9 @@
                   type="radio"
                   v-model="form.status"
                   value="DRAFT"
-                  class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                  class="focus:ring-dt-primary/30 h-4 w-4 text-dt-primary border-dt-border"
                 />
-                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                <span class="ml-2 text-sm text-dt-text">
                   {{ $t('blog.postStatuses.draft') }}
                 </span>
               </label>
@@ -65,9 +65,9 @@
                   type="radio"
                   v-model="form.status"
                   value="PUBLISHED"
-                  class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                  class="focus:ring-dt-primary/30 h-4 w-4 text-dt-primary border-dt-border"
                 />
-                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                <span class="ml-2 text-sm text-dt-text">
                   {{ $t('blog.postStatuses.published') }}
                 </span>
               </label>
@@ -76,9 +76,9 @@
                   type="radio"
                   v-model="form.status"
                   value="ARCHIVED"
-                  class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                  class="focus:ring-dt-primary/30 h-4 w-4 text-dt-primary border-dt-border"
                 />
-                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                <span class="ml-2 text-sm text-dt-text">
                   {{ $t('blog.postStatuses.archived') }}
                 </span>
               </label>
@@ -86,9 +86,9 @@
           </div>
 
           <!-- Current Info -->
-          <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
-            <div class="text-sm text-gray-600 dark:text-gray-400">
-              <div>{{ $t('blog.slug') }}: <code class="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">{{ form.slug }}</code></div>
+          <div class="mt-6 p-4 bg-dt-surface-strong rounded-md">
+            <div class="text-sm text-dt-text-muted">
+              <div>{{ $t('blog.slug') }}: <code class="bg-dt-surface-muted px-2 py-1 rounded">{{ form.slug }}</code></div>
               <div class="mt-1">
                 {{ $t('blog.createdAt') }}: {{ formatDate(post.createdAt) }}
               </div>
@@ -103,7 +103,7 @@
         <div class="flex justify-between items-center">
           <NuxtLink
             to="/admin/blog"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+            class="inline-flex items-center px-4 py-2 border border-dt-border text-sm font-medium rounded-md text-dt-text bg-dt-surface hover:bg-dt-surface-strong"
           >
             <i-heroicons-arrow-left class="mr-2 h-5 w-5" />
             {{ $t('common.cancel') }}
@@ -113,7 +113,7 @@
             <button
               type="submit"
               :disabled="saving || !isFormValid"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-dt-primary-solid hover:bg-dt-primary-solid-active focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dt-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <i-svg-spinners-180-ring-with-bg v-if="saving" class="mr-2 h-5 w-5" />
               <i-heroicons-check v-else class="mr-2 h-5 w-5" />

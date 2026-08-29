@@ -39,7 +39,7 @@
                 ref="contentInput"
                 :value="content"
                 data-test="quick-capture-input"
-                class="block w-full resize-none border-0 bg-transparent px-4 py-4 text-base leading-7 outline-none placeholder:text-dt-text-soft sm:min-h-[360px] sm:px-5 sm:py-5 lg:min-h-[330px] xl:min-h-[410px]"
+                class="block w-full resize-none border-0 bg-transparent px-4 py-4 text-base leading-7 outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/20 placeholder:text-dt-text-soft sm:min-h-[360px] sm:px-5 sm:py-5 lg:min-h-[330px] xl:min-h-[410px]"
                 :class="scrollable ? 'min-h-[min(36svh,18rem)]' : 'min-h-[12rem] max-[374px]:min-h-[10rem]'"
                 style="color: var(--color-text);"
                 :placeholder="t('quickDiary.editor.contentPlaceholder')"
@@ -217,7 +217,7 @@
         <div v-if="activePicker === 'date'" class="space-y-3">
           <label class="block text-sm font-semibold" style="color: var(--color-text-muted);" for="quick-note-date-mobile">{{ t('quickDiary.date') }}</label>
           <input id="quick-note-date-mobile" type="date" :value="date" class="min-h-12 w-full rounded-dt-sm border px-4 text-base outline-none focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20" style="border-color: var(--color-border); background: var(--color-surface-muted); color: var(--color-text);" @input="handleDateInput" />
-          <button type="button" class="min-h-11 w-full cursor-pointer rounded-dt-sm bg-dt-primary px-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-dt-primary/40" @click="closePicker">{{ t('common.save') }}</button>
+          <button type="button" class="min-h-11 w-full cursor-pointer rounded-dt-sm bg-dt-primary-solid px-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-dt-primary/40" @click="closePicker">{{ t('common.save') }}</button>
         </div>
 
         <div v-else-if="activePicker === 'saveMode'" class="grid gap-2">
@@ -229,7 +229,7 @@
 
         <div v-else-if="activePicker === 'tags'" class="space-y-4">
           <QuickTags :model-value="tags" @update:model-value="controller.setTags($event)" />
-          <button type="button" class="min-h-11 w-full cursor-pointer rounded-dt-sm bg-dt-primary px-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-dt-primary/40" @click="closePicker">{{ t('common.save') }}</button>
+          <button type="button" class="min-h-11 w-full cursor-pointer rounded-dt-sm bg-dt-primary-solid px-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-dt-primary/40" @click="closePicker">{{ t('common.save') }}</button>
         </div>
 
         <div v-else-if="activePicker === 'reminder'" class="space-y-4">
@@ -255,7 +255,7 @@
             @update:model-value="controller.setStockSymbols($event)"
           />
           <button type="button" class="flex min-h-12 w-full cursor-pointer items-center justify-between rounded-dt-sm border px-4 text-sm font-semibold transition-colors hover:border-dt-primary focus:outline-none focus:ring-2 focus:ring-dt-primary/30" style="border-color: var(--color-border); color: var(--color-text-muted);" @click="openTemplateFromMoreOptions">{{ t('quickDiary.editor.openTemplatePicker') }}<Icon name="heroicons:chevron-right" class="h-4 w-4" /></button>
-          <button type="button" class="min-h-11 w-full cursor-pointer rounded-dt-sm bg-dt-primary px-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-dt-primary/40" @click="closePicker">{{ t('common.save') }}</button>
+          <button type="button" class="min-h-11 w-full cursor-pointer rounded-dt-sm bg-dt-primary-solid px-4 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-dt-primary/40" @click="closePicker">{{ t('common.save') }}</button>
         </div>
       </section>
     </div>

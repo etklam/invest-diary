@@ -9,10 +9,10 @@
   >
     <div v-if="number" class="number-chip mb-4">{{ number }}</div>
     <Icon v-if="icon" :name="icon" :class="['feature-icon', iconColorClass]" />
-    <h3 v-if="title" :class="['mt-4 font-semibold text-slate-950 dark:text-slate-100 landing-card-title', titleSizeClass]">
+    <h3 v-if="title" :class="['mt-4 font-semibold text-dt-text landing-card-title', titleSizeClass]">
       {{ title }}
     </h3>
-    <p v-if="description" class="mt-2 text-slate-600 dark:text-slate-300">
+    <p v-if="description" class="mt-2 text-dt-text-muted">
       {{ description }}
     </p>
     <slot />

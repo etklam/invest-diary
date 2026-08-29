@@ -53,15 +53,15 @@
         :description="t('diary.decisionRecord.originalDecisionDesc')"
       >
         <div v-if="hasDecisionFields" class="grid gap-5 md:grid-cols-3">
-          <article v-if="diary.thesis" class="border-l-2 border-dt-secondary/50 pl-4">
+          <article v-if="diary.thesis" class="rounded-dt-sm border border-dt-secondary/25 bg-dt-secondary/5 p-4">
             <h3 class="text-xs font-semibold uppercase tracking-[0.1em] text-dt-text-muted">{{ t('diary.fields.thesis') }}</h3>
             <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-dt-text">{{ diary.thesis }}</p>
           </article>
-          <article v-if="diary.risk" class="border-l-2 border-dt-warning/50 pl-4">
+          <article v-if="diary.risk" class="rounded-dt-sm border border-dt-warning/25 bg-dt-warning/5 p-4">
             <h3 class="text-xs font-semibold uppercase tracking-[0.1em] text-dt-text-muted">{{ t('diary.fields.risk') }}</h3>
             <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-dt-text">{{ diary.risk }}</p>
           </article>
-          <article v-if="diary.execution" class="border-l-2 border-dt-primary/50 pl-4">
+          <article v-if="diary.execution" class="rounded-dt-sm border border-dt-primary/25 bg-dt-primary/5 p-4">
             <h3 class="text-xs font-semibold uppercase tracking-[0.1em] text-dt-text-muted">{{ t('diary.decisionRecord.executionIntent') }}</h3>
             <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-dt-text">{{ diary.execution }}</p>
           </article>

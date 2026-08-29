@@ -89,7 +89,7 @@ function statusTone(status: ExposureGap['status']): 'success' | 'neutral' | 'war
 
 function barTone(key: string): string {
   switch (key) {
-    case 'highBeta': return 'bg-dt-primary'
+    case 'highBeta': return 'bg-dt-primary-solid'
     case 'coreIndex': return 'bg-dt-info'
     case 'cash': return 'bg-dt-success'
     default: return 'bg-dt-border-strong'

@@ -17,17 +17,17 @@ const label = computed(() => {
 
 const badgeClass = computed(() => {
   if (props.sourceType === 'TRADE_BASIC_DIARY') {
-    return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-900'
+    return 'bg-dt-primary/10 text-dt-primary border-dt-primary/20'
   }
   if (props.sourceType === 'VIDEO_TRANSCRIBE_SUMMARIZE') {
-    return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-900'
+    return 'bg-dt-info/10 text-dt-info border-dt-info/20'
   }
   if (props.sourceType === 'ARTICLE') {
-    return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900'
+    return 'bg-dt-warning/10 text-dt-warning-strong border-dt-warning/20'
   }
   if (props.sourceType === 'DIARY') {
-    return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-900'
+    return 'bg-dt-success/10 text-dt-success-strong border-dt-success/20'
   }
-  return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+  return 'bg-dt-surface-strong text-dt-text-muted border-dt-border'
 })
 </script>

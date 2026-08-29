@@ -51,5 +51,5 @@ const formatMoney = (value: number) => {
 }
 
 const formatPercent = (value: number) => `${value.toFixed(1)}%`
-const pnlClass = (value: number) => value >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+const pnlClass = (value: number) => value >= 0 ? 'text-dt-success' : 'text-dt-danger'
 </script>
