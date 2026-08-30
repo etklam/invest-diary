@@ -183,7 +183,7 @@ definePageMeta({
 
     <!-- Main content -->
     <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
-      <div class="space-y-6">
+      <div class="min-w-0 space-y-6">
         <!-- Current & Next month highlight cards -->
         <div class="grid gap-6 xl:grid-cols-2">
           <div class="rounded-xl border border-dt-border bg-dt-surface p-5">
@@ -325,7 +325,7 @@ definePageMeta({
       </div>
 
       <!-- Sidebar -->
-      <div class="space-y-6">
+      <div class="min-w-0 space-y-6">
         <!-- Best months -->
         <LedgerCard>
           <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -425,8 +425,8 @@ definePageMeta({
         </div>
       </div>
     </section>
+    <ResearchCaptureModal :capture="researchCapture" />
   </div>
-  <ResearchCaptureModal :capture="researchCapture" />
 </template>
 
 <style scoped>

@@ -57,18 +57,30 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
   // Initial first-page fetch using useLazyFetch.
   // Fixed URL (page never in a reactive getter) so pagination cannot trigger
   // useFetch's auto-refetch — loadMore() owns pages >= 2 via manual $fetch.
-  const { pending, error, refresh: refreshFetch } = useLazyFetch<DiariesApiResponse>(
+  const {
+    data: diaryResponse,
+    pending,
+    error,
+    refresh: refreshFetch,
+  } = useLazyFetch<DiariesApiResponse>(
     '/api/diaries',
     {
       query: requestQuery,
       watch: false,
-      onResponse({ response }) {
-        if (response._data?.data) {
-          diaries.value = response._data.data
-          pagination.value = response._data.pagination
-        }
-      }
     }
+  )
+
+  // Read from useFetch data so Nuxt's SSR payload hydrates into the same list
+  // on the client. The onResponse hook does not run during payload hydration.
+  watch(
+    diaryResponse,
+    (response) => {
+      if (response?.data) {
+        diaries.value = response.data
+        pagination.value = response.pagination
+      }
+    },
+    { immediate: true },
   )
 
   watch(

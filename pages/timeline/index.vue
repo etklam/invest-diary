@@ -205,7 +205,7 @@
     </details>
 
     <!-- Loading -->
-    <div v-if="pending" class="rounded-dt-md border border-dt-border bg-dt-surface px-6 py-16 text-center shadow-dt-sm">
+    <div v-if="!isHydrated || pending" class="rounded-dt-md border border-dt-border bg-dt-surface px-6 py-16 text-center shadow-dt-sm">
       <Icon name="svg-spinners:180-ring-with-bg" class="mx-auto h-8 w-8 text-dt-primary" />
       <p class="mt-4 text-sm font-medium text-dt-text-muted">{{ t('common.loading') }}</p>
     </div>

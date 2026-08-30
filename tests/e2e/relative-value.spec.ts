@@ -23,8 +23,8 @@ test('/tools/relative-value loads and supports manual/auto target price modes on
   await page.waitForLoadState('networkidle').catch(() => {})
 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  await expect(page.locator('#amber-symbol')).toBeVisible()
-  await expect(page.locator('#violet-symbol')).toBeVisible()
+  await expect(page.locator('#primary-symbol')).toBeVisible()
+  await expect(page.locator('#relative-symbol')).toBeVisible()
 
   const targetPrices = page.locator('#target-prices')
   await expect(targetPrices).toBeHidden()
@@ -76,8 +76,8 @@ test('/tools/relative-value encodes caret-prefixed symbols when loading a preset
   await page.getByRole('button', { name: presetButtonName('^GSPC', 'SPY') }).click()
 
   await expect.poll(() => quoteUrls.length).toBe(2)
-  await expect(page.locator('#amber-price')).toHaveValue(String(mockedQuotePrices['^GSPC']))
-  await expect(page.locator('#violet-price')).toHaveValue(String(mockedQuotePrices.SPY))
+  await expect(page.locator('#primary-price')).toHaveValue(String(mockedQuotePrices['^GSPC']))
+  await expect(page.locator('#relative-price')).toHaveValue(String(mockedQuotePrices.SPY))
   expect(quoteUrls.some(url => url.includes('/api/market/quote/%5EGSPC'))).toBeTruthy()
 })
 
@@ -132,10 +132,10 @@ test('/tools/relative-value preset cards populate all symbol pairs and quotes', 
   for (const preset of presets) {
     await page.getByRole('button', { name: presetButtonName(preset.primary, preset.relative) }).click()
 
-    await expect(page.locator('#amber-symbol')).toHaveValue(preset.primary)
-    await expect(page.locator('#violet-symbol')).toHaveValue(preset.relative)
-    await expect(page.locator('#amber-price')).toHaveValue(String(mockedQuotePrices[preset.primary]))
-    await expect(page.locator('#violet-price')).toHaveValue(String(mockedQuotePrices[preset.relative]))
+    await expect(page.locator('#primary-symbol')).toHaveValue(preset.primary)
+    await expect(page.locator('#relative-symbol')).toHaveValue(preset.relative)
+    await expect(page.locator('#primary-price')).toHaveValue(String(mockedQuotePrices[preset.primary]))
+    await expect(page.locator('#relative-price')).toHaveValue(String(mockedQuotePrices[preset.relative]))
     await expect(page.getByText('Quote unavailable. Please try again later.')).toHaveCount(0)
   }
 

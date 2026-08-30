@@ -491,7 +491,7 @@ definePageMeta({
           <!-- Quick Presets -->
           <section class="mb-6">
             <div class="mb-4 flex items-center gap-2">
-              <Icon name="heroicons:lightning-bolt" class="h-5 w-5 text-dt-secondary" />
+              <Icon name="heroicons:bolt" class="h-5 w-5 text-dt-secondary" />
               <h2 class="text-lg font-semibold text-dt-text">
                 {{ t('tools.relativeValue.commonPresets') }}
               </h2>
@@ -690,7 +690,7 @@ definePageMeta({
                   class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-dt-border px-4 py-3 text-sm font-medium text-dt-text-muted transition-all duration-200 hover:border-dt-primary hover:bg-dt-surface hover:text-dt-primary"
                   @click="loadExample"
                 >
-                  <Icon name="heroicons:lightning-bolt" class="h-4 w-4" />
+                  <Icon name="heroicons:bolt" class="h-4 w-4" />
                   {{ t('tools.relativeValue.loadExample') }}: ^GSPC / SPY
                 </button>
               </div>
@@ -849,8 +849,8 @@ definePageMeta({
         </div>
       </div>
     </div>
+    <ResearchCaptureModal :capture="researchCapture" />
   </div>
-  <ResearchCaptureModal :capture="researchCapture" />
 </template>
 
 <style scoped>

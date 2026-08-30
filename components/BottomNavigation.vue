@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, resolveComponent } from 'vue'
+import { computed } from 'vue'
 import { useAppShell } from '~/composables/useAppShell'
 
 const { t } = useI18n()
@@ -23,7 +23,7 @@ const runAction = (action?: 'quick-diary' | 'more') => {
       <component
         v-for="item in navigationItems"
         :key="item.id"
-        :is="item.to ? resolveComponent('NuxtLink') : 'button'"
+        :is="item.to ? 'NuxtLink' : 'button'"
         :to="item.to"
         type="button"
         class="relative flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 transition-colors duration-150"
