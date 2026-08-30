@@ -9,8 +9,11 @@ describe('server/middleware/csrf', () => {
     mockSetCookie.mockReset()
   })
 
-  const buildEvent = (method: string, _pathname: string) =>
-    ({ method, context: {} }) as any
+  const buildEvent = (
+    method: string,
+    _pathname: string,
+    context: Record<string, unknown> = { authResolved: true },
+  ) => ({ method, context }) as any
 
   const stubHeaders = (headers: Record<string, string | undefined>) => {
     mockGetHeader.mockImplementation((_e: unknown, name: string) => {
@@ -123,27 +126,29 @@ describe('server/middleware/csrf', () => {
 
   // ── B1 regression: API key prefix must be `dva_`, not the legacy `sk_` ──
 
-  it('POST with Authorization: Bearer dva_... skips CSRF (API key path)', async () => {
+  it('POST with an unverified Authorization: Bearer dva_... does not skip CSRF', async () => {
     ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/diaries' })
     mockGetCookie.mockReturnValue(undefined)
     stubHeaders({ authorization: 'Bearer dva_abcdef123456' })
 
     const handler = await loadHandler()
-    await expect(handler(buildEvent('POST', '/api/diaries'))).resolves.toBeUndefined()
+    await expect(handler(buildEvent('POST', '/api/diaries'))).rejects.toMatchObject({
+      statusCode: 403,
+    })
   })
 
-  it('POST with x-api-key: dva_... skips CSRF', async () => {
+  it('POST with an unverified x-api-key does not skip CSRF', async () => {
     ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/diaries' })
     mockGetCookie.mockReturnValue(undefined)
     stubHeaders({ 'x-api-key': 'dva_abcdef123456' })
 
     const handler = await loadHandler()
-    await expect(handler(buildEvent('POST', '/api/diaries'))).resolves.toBeUndefined()
+    await expect(handler(buildEvent('POST', '/api/diaries'))).rejects.toMatchObject({
+      statusCode: 403,
+    })
   })
 
-  it('POST with legacy Authorization: Bearer sk_... is REJECTED (prefix漂移 invariant)', async () => {
-    // ponytail: pins the B1 fix — `sk_` is no longer the API key prefix.
-    // If someone hard-codes `sk_` again, this test fires.
+  it('POST with a raw legacy Authorization header does not skip CSRF', async () => {
     ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/diaries' })
     mockGetCookie.mockReturnValue(undefined)
     stubHeaders({ authorization: 'Bearer sk_legacytoken' })
@@ -154,7 +159,7 @@ describe('server/middleware/csrf', () => {
     })
   })
 
-  it('POST with non-dva Bearer token is REJECTED (does not blindly trust any Bearer)', async () => {
+  it('POST with a raw non-dva Bearer token does not skip CSRF', async () => {
     ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/diaries' })
     mockGetCookie.mockReturnValue(undefined)
     stubHeaders({ authorization: 'Bearer jwt-or-something-else' })
@@ -176,13 +181,30 @@ describe('server/middleware/csrf', () => {
     await expect(handler(buildEvent('POST', '/api/auth/login'))).resolves.toBeUndefined()
   })
 
-  it('POST /api/agent/diary skips CSRF (agent uses API key path)', async () => {
+  it('POST /api/agent/diary without verified API key still requires CSRF', async () => {
     ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/agent/diary' })
     mockGetCookie.mockReturnValue(undefined)
     stubHeaders({})
 
     const handler = await loadHandler()
-    await expect(handler(buildEvent('POST', '/api/agent/diary'))).resolves.toBeUndefined()
+    await expect(handler(buildEvent('POST', '/api/agent/diary'))).rejects.toMatchObject({
+      statusCode: 403,
+    })
+  })
+
+  it('POST with verified API key auth skips CSRF', async () => {
+    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/agent/diary' })
+    mockGetCookie.mockReturnValue(undefined)
+    stubHeaders({})
+
+    const handler = await loadHandler()
+    await expect(handler(buildEvent('POST', '/api/agent/diary', {
+      authResolved: true,
+      auth: {
+        transport: 'api-key',
+        user: { id: '7', email: 'agent@example.com', role: 'USER' },
+      },
+    }))).resolves.toBeUndefined()
   })
 
   it('POST to the former Telegram webhook path still requires CSRF', async () => {

@@ -83,14 +83,28 @@ export async function signRefreshToken(
  * Verify and decode a JWT token
  */
 export async function verifyToken(token: string): Promise<TokenPayload> {
-  const { payload } = await jwtVerify(token, getSecret())
+  const { payload } = await jwtVerify(token, getSecret(), {
+    algorithms: ['HS256'],
+  })
+
+  if (
+    typeof payload.userId !== 'string'
+    || payload.userId.length === 0
+    || typeof payload.email !== 'string'
+    || typeof payload.role !== 'string'
+    || typeof payload.tokenVersion !== 'number'
+    || !Number.isInteger(payload.tokenVersion)
+    || (payload.type !== 'access' && payload.type !== 'refresh')
+  ) {
+    throw new Error('Invalid token payload')
+  }
 
   return {
-    userId: payload.userId as string,
-    email: payload.email as string,
-    role: payload.role as string,
-    tokenVersion: payload.tokenVersion as number,
-    type: payload.type as 'access' | 'refresh',
+    userId: payload.userId,
+    email: payload.email,
+    role: payload.role,
+    tokenVersion: payload.tokenVersion,
+    type: payload.type,
     ...(typeof payload.jti === 'string' ? { jti: payload.jti } : {}),
   }
 }

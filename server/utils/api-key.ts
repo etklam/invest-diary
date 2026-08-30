@@ -19,32 +19,7 @@ export interface ApiKeyAuthResult {
   }
 }
 
-function extractApiKeyFromHeader(value?: string | null) {
-  if (!value) return null
-  if (value.startsWith('Bearer ')) {
-    return value.slice('Bearer '.length).trim()
-  }
-  return value.trim()
-}
-
-export function generateApiKey() {
-  const secret = randomBytes(24).toString('hex')
-  const rawKey = `${API_KEY_TOKEN_PREFIX}${secret}`
-
-  return {
-    rawKey,
-    keyHash: sha256Hex(rawKey),
-    keyPrefix: rawKey.slice(0, API_KEY_VISIBLE_PREFIX_LENGTH),
-  }
-}
-
-export async function requireApiKey(
-  event: any,
-  allowedScopes: Array<ApiKeyScope>
-): Promise<ApiKeyAuthResult> {
-  const headerValue = getHeader(event, 'x-api-key') || getHeader(event, 'authorization')
-  const rawKey = extractApiKeyFromHeader(headerValue)
-
+async function authenticateRawApiKey(rawKey: string, updateLastUsed = true): Promise<ApiKeyAuthResult> {
   if (!rawKey) {
     throw Errors.apiKeyInvalid().toH3Error()
   }
@@ -72,14 +47,12 @@ export async function requireApiKey(
     throw Errors.apiKeyRevoked().toH3Error()
   }
 
-  if (!allowedScopes.includes(credential.scope)) {
-    throw Errors.apiKeyScopeDenied().toH3Error()
+  if (updateLastUsed) {
+    await prisma.apiKeyCredential.update({
+      where: { id: credential.id },
+      data: { lastUsedAt: new Date() },
+    })
   }
-
-  await prisma.apiKeyCredential.update({
-    where: { id: credential.id },
-    data: { lastUsedAt: new Date() },
-  })
 
   return {
     apiKeyId: credential.id.toString(),
@@ -92,4 +65,57 @@ export async function requireApiKey(
       name: credential.user.name,
     },
   }
+}
+
+function extractApiKeyFromHeader(value?: string | null) {
+  if (!value) return null
+  if (value.startsWith('Bearer ')) {
+    return value.slice('Bearer '.length).trim()
+  }
+  return value.trim()
+}
+
+export function generateApiKey() {
+  const secret = randomBytes(24).toString('hex')
+  const rawKey = `${API_KEY_TOKEN_PREFIX}${secret}`
+
+  return {
+    rawKey,
+    keyHash: sha256Hex(rawKey),
+    keyPrefix: rawKey.slice(0, API_KEY_VISIBLE_PREFIX_LENGTH),
+  }
+}
+
+export async function requireApiKey(
+  event: any,
+  allowedScopes: Array<ApiKeyScope>
+): Promise<ApiKeyAuthResult> {
+  const verifiedAuth = event.context?.auth
+  if (verifiedAuth?.transport === 'api-key' && verifiedAuth.apiKey) {
+    if (!allowedScopes.includes(verifiedAuth.apiKey.scope)) {
+      throw Errors.apiKeyScopeDenied().toH3Error()
+    }
+    return verifiedAuth.apiKey
+  }
+
+  const headerValue = getHeader(event, 'x-api-key') || getHeader(event, 'authorization')
+  const rawKey = extractApiKeyFromHeader(headerValue)
+
+  const auth = await authenticateRawApiKey(rawKey ?? '', false)
+
+  if (!allowedScopes.includes(auth.scope)) {
+    throw Errors.apiKeyScopeDenied().toH3Error()
+  }
+
+  await prisma.apiKeyCredential.update({
+    where: { id: BigInt(auth.apiKeyId) },
+    data: { lastUsedAt: new Date() },
+  })
+
+  return auth
+}
+
+/** Authenticate an API key without applying an endpoint-specific scope. */
+export function authenticateApiKey(rawKey: string): Promise<ApiKeyAuthResult> {
+  return authenticateRawApiKey(rawKey)
 }

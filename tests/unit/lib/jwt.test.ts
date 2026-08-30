@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { SignJWT } from 'jose'
 import { signAccessToken, signRefreshToken, verifyToken } from '~/lib/jwt'
 
 describe('JWT Utils', () => {
@@ -151,6 +152,21 @@ describe('JWT Utils', () => {
   })
 
   describe('Error Handling', () => {
+    it.each([
+      [{ email: testEmail, role: testRole, tokenVersion: testTokenVersion, type: 'access' }],
+      [{ userId: testUserId, email: testEmail, role: testRole, tokenVersion: testTokenVersion }],
+      [{ userId: testUserId, email: testEmail, role: testRole, tokenVersion: testTokenVersion, type: 'other' }],
+      [{ userId: testUserId, email: testEmail, role: testRole, tokenVersion: '1', type: 'access' }],
+    ])('rejects a signed token with malformed claims', async (payload) => {
+      const token = await new SignJWT(payload)
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('1h')
+        .sign(new TextEncoder().encode(testSecret))
+
+      await expect(verifyToken(token)).rejects.toThrow('Invalid token payload')
+    })
+
     it('should throw error when JWT_SECRET is not defined during verification', async () => {
       const token = await signAccessToken(testUserId, testEmail, testRole, testTokenVersion)
       

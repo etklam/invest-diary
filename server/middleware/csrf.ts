@@ -1,12 +1,12 @@
 import crypto from 'node:crypto'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
-import { API_KEY_TOKEN_PREFIX } from '~/server/utils/api-key'
+import { resolveAuth } from '~/server/middleware/auth'
 
 const CSRF_COOKIE = 'csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
 const STATE_CHANGE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
-const SKIP_PATHS = ['/api/auth', '/api/agent']
+const SKIP_PATHS = ['/api/auth']
 
 const log = logger.auth
 
@@ -18,22 +18,11 @@ function generateToken(): string {
 }
 
 /**
- * Check if the request uses API key authentication (header-based auth).
- * API key authenticated requests skip CSRF since they don't use cookies.
- */
-function isApiKeyAuth(event: Parameters<typeof getRequestURL>[0]): boolean {
-  const authHeader = getHeader(event, 'authorization')
-  if (authHeader && authHeader.startsWith(`Bearer ${API_KEY_TOKEN_PREFIX}`)) return true
-  const apiKeyHeader = getHeader(event, 'x-api-key')
-  return !!apiKeyHeader
-}
-
-/**
  * CSRF protection middleware using double-submit cookie pattern.
  *
  * 1. On GET/HEAD/OPTIONS requests: if no csrf cookie exists, generate and set one.
  * 2. On state-changing methods (POST, PUT, PATCH, DELETE):
- *    - Skip if API key auth (header-based, no cookies)
+ *    - Skip if verified bearer or API key auth (header-based, no cookies)
  *    - Skip for /api/auth/* paths
  *    - Verify X-CSRF-Token header matches the csrf cookie value
  */
@@ -42,6 +31,9 @@ export default defineEventHandler(async (event) => {
 
   // Only apply to API routes
   if (!url.pathname.startsWith('/api/')) return
+
+  // Auth must be resolved before CSRF, even if middleware registration changes.
+  await resolveAuth(event)
 
   const method = (event.method || 'GET').toUpperCase()
 
@@ -62,8 +54,8 @@ export default defineEventHandler(async (event) => {
   }
 
   // For state-changing methods, verify CSRF
-  // Skip CSRF for API key authenticated requests
-  if (isApiKeyAuth(event)) return
+  // Only verified header transports bypass CSRF.
+  if (event.context.auth?.transport === 'bearer' || event.context.auth?.transport === 'api-key') return
 
   // Skip CSRF for auth routes (login, register, etc.)
   for (const skipPath of SKIP_PATHS) {
