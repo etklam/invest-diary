@@ -1,6 +1,7 @@
 // Diary-related shared types
 
 import type { Prisma } from '@prisma/client'
+import { z } from 'zod'
 import type { SerializedId } from './common'
 import type { TradePlan, TradePlanStatus } from './trade-plan'
 
@@ -18,6 +19,63 @@ export type TagKey = typeof DEFAULT_TAGS[number]['key']
 export const REVIEW_OUTCOMES = ['INTACT', 'PARTIAL', 'INVALIDATED', 'UNCLEAR'] as const
 export type ReviewOutcome = typeof REVIEW_OUTCOMES[number]
 export type ReviewStatus = 'none' | 'pending' | 'reviewed'
+
+export const DIARY_SORT_FIELDS = ['date-desc', 'date-asc', 'title-asc', 'title-desc'] as const
+export type DiarySortField = typeof DIARY_SORT_FIELDS[number]
+
+export const DIARY_REVIEW_STATUSES = ['none', 'pending', 'reviewed'] as const
+
+const diaryListPageSchema = z.preprocess((value) => {
+  const page = Number(value)
+  return Number.isFinite(page) && page >= 1 ? Math.floor(page) : 1
+}, z.number().int().min(1).describe('Invalid values silently fall back to page 1.'))
+
+const diaryListLimitSchema = z.preprocess((value) => {
+  const limit = Number(value)
+  return Number.isFinite(limit) && limit >= 1 && limit <= 100 ? Math.floor(limit) : 20
+}, z.number().int().min(1).max(100).describe('Invalid values silently fall back to limit 20; maximum is 100.'))
+
+const diaryListSearchSchema = z.preprocess((value) => {
+  if (value === undefined || value === null) return undefined
+  const search = String(value).trim()
+  return search ? search.slice(0, 500) : undefined
+}, z.string().max(500).optional().describe('Trimmed and silently truncated to 500 characters.'))
+
+const diaryListSortSchema = z.preprocess((value) => {
+  return typeof value === 'string' && DIARY_SORT_FIELDS.includes(value as DiarySortField)
+    ? value
+    : undefined
+}, z.enum(DIARY_SORT_FIELDS).optional().describe('Whitelist; invalid values use the default date-desc ordering.'))
+
+const diaryListDateSchema = z.string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must use YYYY-MM-DD format')
+  .refine((value) => {
+    const parts = value.split('-').map(Number)
+    const year = parts[0]!
+    const month = parts[1]!
+    const day = parts[2]!
+    const date = new Date(Date.UTC(year, month - 1, day))
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  }, 'Date must be a valid calendar date')
+
+/**
+ * Canonical GET /api/diaries query contract.
+ *
+ * This schema mirrors the existing handler's lax page/limit fallback and
+ * search truncation. The handler still owns runtime parsing so formalization
+ * does not change the endpoint's current behavior.
+ */
+export const diaryListParamsSchema = z.object({
+  page: diaryListPageSchema.optional().default(1),
+  limit: diaryListLimitSchema.optional().default(20),
+  search: diaryListSearchSchema,
+  sortBy: diaryListSortSchema,
+  dateFrom: diaryListDateSchema.optional(),
+  dateTo: diaryListDateSchema.optional(),
+  reviewStatus: z.enum(DIARY_REVIEW_STATUSES).optional().describe('Allowed vocabulary: none, pending, reviewed.'),
+})
+
+export type DiaryListParams = z.infer<typeof diaryListParamsSchema>
 
 // ---- Request types ----
 
@@ -139,7 +197,7 @@ export interface DiaryResponse {
   stockContexts?: Array<{ stock: { symbol: string } }>
 }
 
-export interface DiariesApiResponse {
+export interface DiaryListResponse {
   data: DiaryResponse[]
   pagination: {
     page: number
@@ -148,6 +206,9 @@ export interface DiariesApiResponse {
     totalPages: number
   }
 }
+
+/** @deprecated Use DiaryListResponse. */
+export type DiariesApiResponse = DiaryListResponse
 
 export interface DiaryActivityDay {
   date: string
