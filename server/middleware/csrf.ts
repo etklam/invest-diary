@@ -22,7 +22,7 @@ function generateToken(): string {
  *
  * 1. On GET/HEAD/OPTIONS requests: if no csrf cookie exists, generate and set one.
  * 2. On state-changing methods (POST, PUT, PATCH, DELETE):
- *    - Skip if verified bearer or API key auth (header-based, no cookies)
+ *    - Skip if auth was verified through bearer or API key transport
  *    - Skip for /api/auth/* paths
  *    - Verify X-CSRF-Token header matches the csrf cookie value
  */
@@ -53,9 +53,9 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // For state-changing methods, verify CSRF
-  // Only verified header transports bypass CSRF.
-  if (event.context.auth?.transport === 'bearer' || event.context.auth?.transport === 'api-key') return
+  // For state-changing methods, only verified non-cookie transports bypass CSRF.
+  const transport = event.context.auth?.transport
+  if (transport === 'bearer' || transport === 'api-key') return
 
   // Skip CSRF for auth routes (login, register, etc.)
   for (const skipPath of SKIP_PATHS) {

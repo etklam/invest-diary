@@ -207,6 +207,23 @@ describe('server/middleware/csrf', () => {
     }))).resolves.toBeUndefined()
   })
 
+  it('POST with verified Bearer auth skips CSRF without inspecting Authorization', async () => {
+    ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/diaries' })
+    mockGetCookie.mockReturnValue(undefined)
+    stubHeaders({ authorization: 'Bearer garbage' })
+
+    const handler = await loadHandler()
+    await expect(handler(buildEvent('POST', '/api/diaries', {
+      authResolved: true,
+      auth: {
+        transport: 'bearer',
+        user: { id: '7', email: 'native@example.com', role: 'USER' },
+      },
+    }))).resolves.toBeUndefined()
+
+    expect(mockGetHeader).not.toHaveBeenCalledWith(expect.anything(), 'authorization')
+  })
+
   it('POST to the former Telegram webhook path still requires CSRF', async () => {
     ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/telegram/webhook' })
     mockGetCookie.mockReturnValue(undefined)

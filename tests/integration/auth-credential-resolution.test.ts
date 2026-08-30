@@ -261,4 +261,13 @@ describe('auth and csrf middleware ordering', () => {
 
     expect(mockGetCookie).not.toHaveBeenCalled()
   })
+
+  it('does not let an invalid Bearer credential fall back to a valid cookie for CSRF', async () => {
+    mockGetCookie.mockReturnValue('valid-cookie')
+
+    const { default: csrf } = await import('~/server/middleware/csrf')
+
+    await expect(csrf(event())).rejects.toMatchObject({ statusCode: 401 })
+    expect(mockGetCookie).not.toHaveBeenCalled()
+  })
 })
