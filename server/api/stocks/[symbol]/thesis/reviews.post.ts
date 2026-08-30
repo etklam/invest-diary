@@ -8,6 +8,7 @@ import {
   toThesisReviewRecord,
 } from '~/server/utils/investment-thesis-queries'
 import { THESIS_PORTFOLIO_DECISIONS, THESIS_REVIEW_OUTCOMES } from '~/types/investment-thesis'
+import { normalizeStockSymbol, parseSymbolParam, symbolSchema } from '~/lib/stocks/symbols'
 
 const optionalReflection = z.string().trim().max(20000).nullable().optional()
 const requestSchema = z.object({
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'no-store')
 
   try {
-    const symbol = decodeURIComponent(String(event.context.params?.symbol ?? ''))
+    const symbol = normalizeStockSymbol(symbolSchema.parse(parseSymbolParam(event)))
     const reviewInput = requestSchema.parse(await readBody(event))
     const result = await completeThesisReview({
       userId: BigInt(user.id),

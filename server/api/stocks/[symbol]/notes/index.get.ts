@@ -2,7 +2,7 @@ import prisma from '~/lib/prisma'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { listStockNotes, toStockNoteResponse } from '~/lib/stocks/notes'
-import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { normalizeStockSymbol, parseSymbolParam } from '~/lib/stocks/symbols'
 import { handleApiError } from '~/server/utils/error-handler'
 import { resolveSharedStockNotesOwner } from '~/server/utils/partner'
 import { serialize } from '~/server/utils/serialize'
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event): Promise<StockNotesResponse> => 
   const user = requireUser(event)
 
   try {
-    const symbol = decodeURIComponent(String(event.context.params?.symbol))
+    const symbol = normalizeStockSymbol(parseSymbolParam(event) ?? '')
     const query = getQuery(event)
     const page = Math.max(1, parseInt(String(query.page || '1'), 10) || 1)
     const limit = Math.min(100, Math.max(1, parseInt(String(query.limit || '20'), 10) || 20))
@@ -22,8 +22,7 @@ export default defineEventHandler(async (event): Promise<StockNotesResponse> => 
       ? query.createdVia as 'USER' | 'AGENT'
       : undefined
 
-    const stockSymbol = normalizeStockSymbol(symbol)
-    const stock = await prisma.stock.findUnique({ where: { symbol: stockSymbol }, select: { id: true } })
+    const stock = await prisma.stock.findUnique({ where: { symbol }, select: { id: true } })
     if (!stock) {
       return serialize({ notes: [], total: 0, page, limit })
     }

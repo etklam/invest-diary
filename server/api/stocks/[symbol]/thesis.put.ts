@@ -1,10 +1,10 @@
 import { z } from 'zod'
-import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
 import { saveCurrentThesis, toCurrentInvestmentThesis } from '~/server/utils/investment-thesis-queries'
 import { INVESTMENT_THESIS_STATUSES } from '~/types/investment-thesis'
+import { normalizeStockSymbol, parseSymbolParam, symbolSchema } from '~/lib/stocks/symbols'
 
 const optionalText = (max: number) => z.string().trim().max(max).nullable().optional()
 const requestSchema = z.object({
@@ -30,8 +30,7 @@ export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'no-store')
 
   try {
-    const symbol = decodeURIComponent(String(event.context.params?.symbol ?? ''))
-    if (!symbol.trim()) throw Errors.validationError([{ field: 'symbol', message: 'symbol is required' }])
+    const symbol = normalizeStockSymbol(symbolSchema.parse(parseSymbolParam(event)))
     const body = requestSchema.parse(await readBody(event))
     const thesis = await saveCurrentThesis({
       userId: BigInt(user.id),

@@ -1,9 +1,8 @@
 import { z } from 'zod'
-import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { listUserTimelineBySymbol, toTimelineResponseItem } from '~/server/utils/stock-timeline-queries'
-import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { normalizeStockSymbol, parseSymbolParam, symbolSchema } from '~/lib/stocks/symbols'
 import { logger } from '~/lib/logger'
 
 const querySchema = z.object({
@@ -15,12 +14,8 @@ export default defineEventHandler(async (event) => {
   const user = requireUser(event)
 
   try {
-    const rawSymbol = event.context.params?.symbol
-    if (!rawSymbol) {
-      throw Errors.validationError([{ field: 'symbol', message: 'symbol is required' }]).toH3Error()
-    }
-
-    const symbol = normalizeStockSymbol(rawSymbol)
+    const rawSymbol = parseSymbolParam(event)
+    const symbol = normalizeStockSymbol(symbolSchema.parse(rawSymbol))
     const query = querySchema.parse(getQuery(event))
     const records = await listUserTimelineBySymbol(user.id, symbol, query.limit)
 
