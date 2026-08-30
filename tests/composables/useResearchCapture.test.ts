@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('~/composables/useAuth', () => ({
-  useAuth: () => ({ isAuthenticated: mocks.isAuthenticated }),
+  useAuth: () => ({ isAuthenticated: mocks.isAuthenticated, user: { value: null } }),
 }))
 
 vi.mock('~/composables/useAppShell', () => ({
@@ -35,6 +35,7 @@ describe('useResearchCapture', () => {
     vi.stubGlobal('crypto', { randomUUID: vi.fn(() => 'capture-id-1') })
     vi.stubGlobal('useI18n', () => ({
       t: (key: string) => key,
+      locale: { value: 'zh-TW' },
     }))
     vi.stubGlobal('useToast', () => ({
       success: mocks.toastSuccess,

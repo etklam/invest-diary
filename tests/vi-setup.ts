@@ -98,6 +98,17 @@ global.useI18n = () => ({
   setLocale: vi.fn(),
 })
 
+// Make useTimezone available as a global for auto-imported composables.
+// Per-file tests can override with vi.stubGlobal('useTimezone', ...) for
+// deterministic formatted output.
+global.useTimezone = () => ({
+  getTimezone: () => 'Asia/Taipei',
+  getTodayDateString: () => '2026-01-01',
+  formatLocaleDate: (d?: unknown) => (d == null ? '' : String(d)),
+  formatLocaleDateTime: (d?: unknown) => (d == null ? '' : String(d)),
+  formatLocaleTime: (d?: unknown) => (d == null ? '' : String(d)),
+})
+
 // Mock cachedEventHandler for Nuxt caching
 global.cachedEventHandler = (handler: Function) => handler
 
