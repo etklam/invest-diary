@@ -1,3 +1,5 @@
+import type { Prisma } from '@prisma/client'
+
 /**
  * Generic deep serializer for API responses.
  *
@@ -17,14 +19,14 @@
  * The JSON-boundary representation produced by `serialize`.
  *
  * Dates remain Date instances until the framework JSON-encodes the response;
- * `Date.toJSON()` then produces the string represented here. Keeping that
- * distinction in the type prevents handlers from claiming that a BigInt or
- * Date will cross the HTTP boundary unchanged, without changing runtime
- * behaviour.
+ * `Date.toJSON()` then produces the string represented here. Prisma Decimal
+ * values use their JSON representation immediately so response DTOs can stay
+ * primitive at the application boundary.
  */
 export type Serialized<T> =
   T extends bigint ? string
     : T extends Date ? string
+      : T extends Prisma.Decimal ? string
       : T extends (...args: never[]) => unknown ? T
         : T extends readonly (infer U)[] ? Serialized<U>[]
           : T extends object ? { [K in keyof T]: Serialized<T[K]> }
@@ -36,6 +38,23 @@ export function serialize<T>(obj: T, seen?: WeakMap<object, unknown>): Serialize
   if (Array.isArray(obj)) return obj.map((v) => serialize(v, seen)) as Serialized<T>
   if (obj instanceof Date) return obj as Serialized<T>
   if (typeof obj === 'object') {
+    // Prisma Decimal is intentionally detected structurally; importing its
+    // runtime constructor would pull Prisma into client-side bundles.
+    const decimal = obj as {
+      s?: unknown
+      e?: unknown
+      d?: unknown
+      toJSON?: () => unknown
+    }
+    if (
+      typeof decimal.s === 'number'
+      && typeof decimal.e === 'number'
+      && Array.isArray(decimal.d)
+      && typeof decimal.toJSON === 'function'
+    ) {
+      return decimal.toJSON() as Serialized<T>
+    }
+
     // ponytail: guard `seen` — when serialize is used as a .map/.forEach
     // callback, the runtime passes (value, index, array), so `seen` can arrive
     // as a number/array. Only treat it as the cycle map when it's a WeakMap.

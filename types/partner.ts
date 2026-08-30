@@ -1,5 +1,3 @@
-import type { Diary } from '~/types/diary'
-
 export type PartnerLinkStatus = 'pending_incoming' | 'pending_outgoing' | 'connected'
 
 export interface PartnerParticipant {
@@ -55,17 +53,18 @@ export interface PartnerCompareDay {
   partnerDiary: PartnerCompareDiary | null
 }
 
-export type PartnerCompareDiary = Pick<Diary,
-  | 'id'
-  | 'userId'
-  | 'title'
-  | 'content'
-  | 'createdVia'
-  | 'createdByLabel'
-  | 'date'
-  | 'createdAt'
-  | 'updatedAt'
-> & { tags?: string[] }
+export interface PartnerCompareDiary {
+  id: string
+  userId: string
+  title: string
+  content: string | null
+  createdVia: string
+  createdByLabel: string | null
+  date: string
+  createdAt: string
+  updatedAt: string
+  tags?: string[]
+}
 
 export interface PartnerCompareResponse {
   owner: PartnerAccountSummary

@@ -271,11 +271,11 @@
           >
             <time
               class="timeline-date hidden flex-col items-center text-center lg:flex"
-              :datetime="String(diary.date || diary.createdAt)"
+              :datetime="diary.date"
             >
-              <span class="timeline-date-day font-data">{{ formatTimelineDay(diary.date || diary.createdAt) }}</span>
-              <span class="timeline-date-month">{{ formatTimelineMonth(diary.date || diary.createdAt) }}</span>
-              <span class="timeline-date-weekday">{{ formatTimelineWeekday(diary.date || diary.createdAt) }}</span>
+              <span class="timeline-date-day font-data">{{ formatTimelineDay(diary.date) }}</span>
+              <span class="timeline-date-month">{{ formatTimelineMonth(diary.date) }}</span>
+              <span class="timeline-date-weekday">{{ formatTimelineWeekday(diary.date) }}</span>
             </time>
 
             <div class="timeline-rail-cell relative flex min-h-full justify-center" aria-hidden="true">
@@ -304,7 +304,7 @@
               <div class="timeline-meta mt-1.5 flex flex-wrap items-center text-[11px] leading-5 text-dt-text-soft sm:text-xs">
                 <time class="timeline-meta-item inline-flex items-center font-data text-dt-text-muted">
                   <Icon name="heroicons:calendar" class="mr-1 h-3.5 w-3.5 text-dt-text-soft" aria-hidden="true" />
-                  {{ formatCompactDate(diary.date || diary.createdAt) }}
+                  {{ formatCompactDate(diary.date) }}
                 </time>
                 <span
                   v-for="tag in (diary.tags || []).slice(0, 2)"
@@ -448,7 +448,7 @@ const formatCompactDate = (date: Date | string) => formatShortDate(date, timelin
 const reviewSignal = (outcome?: string | null) => outcome
   ? `${t('review.statusReviewed')} · ${t(`review.outcomes.${outcome}`)}`
   : t('review.statusReviewed')
-const tradePlanSignal = (summary: NonNullable<import('~/types/diary').Diary['tradePlanSummary']>) => [
+const tradePlanSignal = (summary: NonNullable<import('~/types/diary').DiaryResponse['tradePlanSummary']>) => [
   t('timeline.tradePlansCount', { count: summary.total }),
   ...summary.statuses.map(({ status, count }) => `${t(`tradePlan.status.${status}`)} ${count}`),
 ].join(' · ')
@@ -478,7 +478,7 @@ const activityItems = computed(() => activityProjection.value
       id: `diary:${diary.id}`,
       title: diary.title,
       symbol: null,
-      occurredAt: String(diary.date || diary.createdAt),
+      occurredAt: diary.date,
       destination: `/diaries/${diary.id}`,
     } satisfies Pick<InvestmentActivityItem, 'id' | 'title' | 'symbol' | 'occurredAt' | 'destination'>)))
 const attentionPartial = computed(() => {

@@ -1,4 +1,4 @@
-import type { Diary } from '~/types/diary'
+import type { DiaryResponse } from '~/types/diary'
 import { resolveCountryCodeFromTimezone, getUserYmdInTimezone } from '~/lib/dates/user-tz'
 
 // Re-export 維持向後相容（callers 可直接從 holiday-heatmap 匯入）
@@ -12,10 +12,10 @@ export const toDateKeyInTimezone = (date: Date | string, timezone: string): stri
   return getUserYmdInTimezone(date, timezone)
 }
 
-export const buildDailyActivityMap = (diaries: Diary[], timezone: string): Set<string> => {
+export const buildDailyActivityMap = (diaries: DiaryResponse[], timezone: string): Set<string> => {
   const activeDays = new Set<string>()
   diaries.forEach((diary) => {
-    const key = toDateKeyInTimezone(diary.date || diary.createdAt, timezone)
+    const key = toDateKeyInTimezone(diary.date, timezone)
     activeDays.add(key)
   })
   return activeDays

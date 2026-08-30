@@ -1,4 +1,4 @@
-import type { DiaryInput } from '~/types/diary'
+import type { CreateDiaryRequest } from '~/types/diary'
 
 export type AuthoringTransactionType = 'BUY' | 'SELL'
 
@@ -35,7 +35,7 @@ export interface DiaryAuthoringForm {
   alerts: DiaryAuthoringAlert[]
 }
 
-export type DiaryAuthoringPayload = DiaryInput & {
+export type DiaryAuthoringPayload = CreateDiaryRequest & {
   transactions: Array<{
     id?: string
     symbol: string

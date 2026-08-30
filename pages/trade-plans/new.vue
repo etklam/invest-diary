@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts">
+import type { DiariesApiResponse, DiaryResponse } from '~/types/diary'
 import type { TradePlanFormValue } from '~/types/trade-plan'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 
@@ -37,9 +38,9 @@ const { runWithAuthRecovery } = useAuthRecovery()
 const saving = ref(false)
 const statePrefill = ref<Partial<TradePlanFormValue>>({})
 
-const { data: diariesResponse } = await useLazyFetch<any>('/api/diaries', {
+const { data: diariesResponse } = await useLazyFetch<DiariesApiResponse>('/api/diaries', {
   query: { limit: '100' },
-  default: () => ({ data: [] }),
+  default: () => ({ data: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } }),
 })
 
 const queryValue = (name: string) => {
@@ -47,22 +48,22 @@ const queryValue = (name: string) => {
   return Array.isArray(value) ? value[0] || '' : String(value || '')
 }
 
-const contextDiary = ref<any>(null)
+const contextDiary = ref<DiaryResponse | null>(null)
 const routePrefill = ref<Pick<TradePlanFormValue, 'diaryId' | 'symbol'> | null>(null)
 const resolvingDiaryContext = ref(Boolean(queryValue('diaryId')))
-const diaryOptions = computed(() => {
+const diaryOptions = computed<DiaryResponse[]>(() => {
   const options = diariesResponse.value?.data ?? []
-  if (!contextDiary.value || options.some((diary: any) => String(diary.id) === String(contextDiary.value.id))) return options
+  if (!contextDiary.value || options.some(diary => String(diary.id) === String(contextDiary.value!.id))) return options
   return [contextDiary.value, ...options]
 })
 
 const routeDiary = computed(() => diaryOptions.value.find(
-  (diary: any) => String(diary.id) === queryValue('diaryId'),
+  diary => String(diary.id) === queryValue('diaryId'),
 ))
 
-const uniqueStructuredSymbol = (diary: any) => {
+const uniqueStructuredSymbol = (diary: DiaryResponse) => {
   const symbols = new Set<string>((diary?.transactions ?? [])
-    .map((transaction: any) => typeof transaction.symbol === 'string' ? transaction.symbol.trim() : '')
+    .map(transaction => typeof transaction.symbol === 'string' ? transaction.symbol.trim() : '')
     .filter(Boolean))
   return symbols.size === 1 ? ([...symbols][0] ?? '') : ''
 }
@@ -86,7 +87,7 @@ onMounted(async () => {
   if (!diaryId) return
 
   try {
-    const ownedDiary = routeDiary.value ?? await $fetch(`/api/diaries/${encodeURIComponent(diaryId)}`)
+    const ownedDiary = (routeDiary.value ?? await $fetch(`/api/diaries/${encodeURIComponent(diaryId)}`)) as DiaryResponse
     contextDiary.value = ownedDiary
     routePrefill.value = {
       diaryId: String(ownedDiary.id),

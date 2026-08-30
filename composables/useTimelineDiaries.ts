@@ -3,7 +3,7 @@ import { formatDateWithWeekday, formatUserDateTime, formatYmdInTimezone } from '
 import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import type {
-  Diary,
+  DiaryResponse,
   DiaryGroup,
   PaginationResponse,
   DiariesApiResponse
@@ -37,7 +37,7 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
 
   // Pagination state
   const page = ref(1)
-  const diaries = ref<Diary[]>([])
+  const diaries = ref<DiaryResponse[]>([])
   const pagination = ref<PaginationResponse | null>(null)
   const loadingMore = ref(false)
 
@@ -130,8 +130,8 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
   // Date filtering is server-side; sort only for presentation before grouping.
   const filteredDiaries = computed(() => {
     return [...diaries.value].sort((a, b) => {
-      const dateA = new Date(a.date || a.createdAt).getTime()
-      const dateB = new Date(b.date || b.createdAt).getTime()
+      const dateA = new Date(a.date).getTime()
+      const dateB = new Date(b.date).getTime()
       return dateB - dateA
     })
   })
@@ -141,7 +141,7 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
     const groups = new Map<string, DiaryGroup>()
 
     filteredDiaries.value.forEach(diary => {
-      const ymd = formatYmdInTimezone(diary.date || diary.createdAt, userTimezone.value)
+      const ymd = formatYmdInTimezone(diary.date, userTimezone.value)
       const [yearStr, monthStr] = ymd.split('-')
       const year = Number(yearStr)
       const month = Number(monthStr)

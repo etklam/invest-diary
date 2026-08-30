@@ -5,7 +5,7 @@ import {
   buildDailyActivityMap,
   toDateKeyInTimezone
 } from '~/lib/holiday-heatmap'
-import type { Diary } from '~/types/diary'
+import type { DiaryResponse } from '~/types/diary'
 
 describe('holiday-heatmap utilities', () => {
   it('maps known timezone to country code for Nager.Date', () => {
@@ -32,15 +32,17 @@ describe('holiday-heatmap utilities', () => {
   })
 
   it('builds day activity map in user timezone', () => {
-    const diaries: Diary[] = [
+    const diaries: DiaryResponse[] = [
       {
         id: '1',
         userId: '1',
         title: 'A',
         content: null,
-        date: new Date('2026-03-01T16:30:00.000Z'),
-        createdAt: new Date('2026-03-01T16:30:00.000Z'),
-        updatedAt: new Date('2026-03-01T16:30:00.000Z')
+        date: '2026-03-01T16:30:00.000Z',
+        createdAt: '2026-03-01T16:30:00.000Z',
+        updatedAt: '2026-03-01T16:30:00.000Z',
+        tags: [],
+        stockSymbols: [],
       }
     ]
 

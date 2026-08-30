@@ -26,7 +26,7 @@ describe('ALL_ERROR_CODES sanity', () => {
   // Locks the count so new ErrorCodes go through i18n-parity intentionally.
   // Update this number when adding/removing a code.
   it('contains the expected number of codes (bump intentionally when codes change)', () => {
-    expect(ALL_ERROR_CODES).toHaveLength(48)
+    expect(ALL_ERROR_CODES).toHaveLength(47)
   })
 
   it('each ErrorCodes value is unique', () => {

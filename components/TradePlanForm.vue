@@ -58,7 +58,7 @@
           >
             <option value="">{{ $t('tradePlan.form.noLinkedDiary') }}</option>
             <option v-for="diary in diaries" :key="String(diary.id)" :value="String(diary.id)">
-              {{ diary.title }} · {{ formatDate(diary.date || diary.createdAt) }}
+              {{ diary.title }} · {{ formatDate(diary.date) }}
             </option>
           </select>
         </label>
@@ -98,17 +98,11 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { TRADE_PLAN_STATUSES, type TradePlanFormValue } from '~/types/trade-plan'
-
-interface DiaryOption {
-  id: string
-  title: string
-  date?: string
-  createdAt?: string
-}
+import type { DiaryResponse } from '~/types/diary'
 
 const props = withDefaults(defineProps<{
   initial?: Partial<TradePlanFormValue>
-  diaries?: DiaryOption[]
+  diaries?: DiaryResponse[]
   saving?: boolean
   submitLabel: string
 }>(), {
@@ -145,8 +139,7 @@ watch(() => props.initial, (value) => {
   Object.assign(form, buildForm(value))
 }, { deep: true })
 
-const formatDate = (value?: string) => {
-  if (!value) return ''
+const formatDate = (value: string) => {
   return formatLocaleDate(value, { year: 'numeric', month: '2-digit', day: '2-digit' })
 }
 

@@ -177,7 +177,7 @@
         <div class="ledger-row-main min-w-0">
           <div class="flex flex-col gap-1">
             <p class="font-data text-xs uppercase tracking-[0.12em] text-dt-secondary">
-              {{ formatDiaryDate(diary.date || diary.createdAt) }}
+              {{ formatDiaryDate(diary.date) }}
             </p>
             <h3 class="font-display text-xl tracking-tight text-dt-text transition-colors group-hover:text-dt-primary">
               {{ diary.title || $t('desk.tasks.untitled') }}
@@ -300,7 +300,7 @@ onDiaryMutation(() => {
   void refreshAll()
 })
 
-const diaryItems = computed<any[]>(() => apiResponse.value?.data ?? [])
+const diaryItems = computed(() => apiResponse.value?.data ?? [])
 
 const filteredTotal = computed<number>(() => apiResponse.value?.pagination?.total ?? 0)
 const hasMore = computed(() => diaryItems.value.length < filteredTotal.value)
@@ -362,7 +362,7 @@ const formatDiaryDate = (date: string | Date) => {
   })
 }
 
-const getDiaryExcerpt = (diary: { content?: string }) => {
+const getDiaryExcerpt = (diary: { content?: string | null }) => {
   const plainText = stripDiaryMarkdown(diary.content)
   return plainText || t('desk.list.noExcerpt')
 }

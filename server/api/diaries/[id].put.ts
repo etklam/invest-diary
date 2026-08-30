@@ -1,12 +1,12 @@
-import type { Diary } from '~/types/diary'
+import type { DiaryResponse, UpdateDiaryRequest } from '~/types/diary'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { updateDiaryForUser } from '~/server/utils/diary-write'
 import { handleApiError } from '~/server/utils/error-handler'
-import { serialize, type Serialized } from '~/server/utils/serialize'
+import { serialize } from '~/server/utils/serialize'
 
-export default defineEventHandler(async (event): Promise<Serialized<Diary>> => {
+export default defineEventHandler(async (event): Promise<DiaryResponse> => {
   const log = logger.diary.withRequestId(event.context.requestId)
   const userId = event.context.user?.id
 
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event): Promise<Serialized<Diary>> => {
   }
 
   const diaryId = parsePositiveBigIntParam(event, 'id')
-  const body = await readBody(event)
+  const body = await readBody<UpdateDiaryRequest>(event)
 
   try {
     const reviewOwnedFields = [
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event): Promise<Serialized<Diary>> => {
     })
 
     log.info('Diary updated', { diaryId: String(diary.id), userId })
-    return serialize(diary)
+    return serialize(diary) as DiaryResponse
   } catch (error) {
     handleApiError(error, log)
   }

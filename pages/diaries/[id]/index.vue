@@ -286,21 +286,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Diary, DiaryAlert, TransactionInput } from '~/types/diary'
+import type { DiaryResponse, TransactionResponse } from '~/types/diary'
 import type { TradePlan } from '~/types/trade-plan'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
-
-type DecisionTransaction = TransactionInput & {
-  id: string | number
-  tradeDate: Date | string
-}
-
-type DecisionRecordDiary = Omit<Diary, 'transactions' | 'alerts' | 'tradePlans'> & {
-  transactions: DecisionTransaction[]
-  alerts: DiaryAlert[]
-  tradePlans: TradePlan[]
-}
 
 interface DisplayField {
   label: string
@@ -317,7 +306,7 @@ const toast = useToast()
 const { runWithAuthRecovery } = useAuthRecovery()
 const { formatLocaleDate, formatLocaleDateTime } = useTimezone()
 
-const { data: diary, pending, error, refresh } = await useLazyFetch<DecisionRecordDiary>(`/api/diaries/${id}`)
+const { data: diary, pending, error, refresh } = await useLazyFetch<DiaryResponse>(`/api/diaries/${id}`)
 
 const transactions = computed(() => diary.value?.transactions ?? [])
 const tradePlans = computed(() => diary.value?.tradePlans ?? [])
@@ -365,17 +354,17 @@ const tradePlanFields = (plan: TradePlan): DisplayField[] => {
   ].filter(field => hasValue(field.value)).map(field => ({ ...field, value: String(field.value) }))
 }
 
-const transactionContextFields = (transaction: DecisionTransaction): DisplayField[] => [
+const transactionContextFields = (transaction: TransactionResponse): DisplayField[] => [
   { label: t('diary.form.notes'), value: transaction.notes },
   { label: t('diary.form.strategy'), value: transaction.strategy },
   { label: t('diary.form.emotion'), value: transaction.emotion },
 ].filter((field): field is DisplayField => Boolean(field.value))
 
-const transactionTotal = (transaction: DecisionTransaction) => (
+const transactionTotal = (transaction: TransactionResponse) => (
   Number(transaction.quantity) * Number(transaction.price)
 ).toFixed(2)
 
-const formatDecisionDate = (value: Date | string) => formatLocaleDate(value, {
+const formatDecisionDate = (value: string) => formatLocaleDate(value, {
   year: 'numeric',
   month: 'long',
   day: 'numeric',

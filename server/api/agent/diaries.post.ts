@@ -1,17 +1,17 @@
-import type { Diary } from '~/types/diary'
+import type { CreateDiaryRequest, DiaryResponse } from '~/types/diary'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireApiKey } from '~/server/utils/api-key'
 import { createDiaryForUser } from '~/server/utils/diary-write'
-import { serialize, type Serialized } from '~/server/utils/serialize'
+import { serialize } from '~/server/utils/serialize'
 
-export default defineEventHandler(async (event): Promise<Serialized<Diary>> => {
+export default defineEventHandler(async (event): Promise<DiaryResponse> => {
   const log = logger.diary.withRequestId(event.context.requestId)
 
   try {
     const auth = await requireApiKey(event, ['DIARY_CREATE', 'AGENT_WRITE'])
-    const body = await readBody(event)
+    const body = await readBody<CreateDiaryRequest & { appendToToday?: boolean }>(event)
 
     if (body?.appendToToday) {
       throw Errors.validationError([
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event): Promise<Serialized<Diary>> => {
       apiKeyId: auth.apiKeyId,
     })
 
-    return serialize(diary)
+    return serialize(diary) as DiaryResponse
   } catch (error) {
     handleApiError(error, log)
   }

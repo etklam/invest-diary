@@ -19,16 +19,16 @@ export const REVIEW_OUTCOMES = ['INTACT', 'PARTIAL', 'INVALIDATED', 'UNCLEAR'] a
 export type ReviewOutcome = typeof REVIEW_OUTCOMES[number]
 export type ReviewStatus = 'none' | 'pending' | 'reviewed'
 
-// ---- API / Domain Types (backward compatible) ----
+// ---- Request types ----
 
 export interface TransactionInput {
-  id?: bigint | string | number  // pre-serialization input — accepts raw DB ID for updates
+  id?: string | number
   symbol: string
   type: 'BUY' | 'SELL'
-  quantity: Prisma.Decimal | number | string
-  price: Prisma.Decimal | number | string
-  tradeDate?: Date | string
-  trade_date?: Date | string
+  quantity: number | string
+  price: number | string
+  tradeDate?: string
+  trade_date?: string
   // 交易後填寫欄位（Phase 1 新增，柔性提示）
   notes?: string | null
   strategy?: string | null
@@ -44,38 +44,81 @@ export interface AlertInput {
   recurring_mode?: 'WEEK' | 'MONTH'
 }
 
-export interface DiaryInput {
+export interface CreateDiaryRequest {
   title: string
   content?: string
   tags?: string[]
-  date?: string | Date
+  date?: string
   transactions?: TransactionInput[]
   alerts?: AlertInput[]
   // Structured review fields
   thesis?: string
   risk?: string
   execution?: string
-  reviewDueAt?: string | Date | null
+  reviewDueAt?: string | null
   /** Explicit owner-only Company context; Quick Note append unions these links. */
   stockSymbols?: string[]
 }
 
-// Prisma-like return shape used by APIs
-export interface Diary {
+export interface UpdateDiaryRequest {
+  title: string
+  content?: string
+  tags?: string[]
+  date?: string
+  transactions?: TransactionInput[]
+  alerts?: AlertInput[]
+  thesis?: string
+  risk?: string
+  execution?: string
+  reviewDueAt?: string | null
+  stockSymbols?: string[]
+}
+
+// ---- Wire response types ----
+
+export interface TransactionResponse {
+  id: SerializedId
+  diaryId?: SerializedId
+  userId?: SerializedId
+  symbol: string
+  type: 'BUY' | 'SELL'
+  quantity: string
+  price: string
+  tradeDate: string
+  notes?: string | null
+  strategy?: string | null
+  emotion?: string | null
+  createdAt?: string
+}
+
+export interface DiaryAlertResponse {
+  id: SerializedId
+  diaryId?: SerializedId
+  message: string
+  triggerAt: string
+  isDismissed?: boolean
+  recurringMode?: 'WEEK' | 'MONTH' | string | null
+  parentId?: SerializedId | null
+  instanceNumber?: number | null
+  isPaused?: boolean
+  createdAt?: string
+}
+
+export interface DiaryResponse {
   id: SerializedId
   userId: SerializedId
   title: string
   content: string | null
-  tags?: string[]
-  tagsString?: string | null
+  tags: string[]
+  tagsString: string | null
   // TELEGRAM_BOT is retained for historical rows; new writes only use WEB/API_KEY.
-  createdVia?: 'WEB' | 'API_KEY' | 'TELEGRAM_BOT'
-  createdByLabel?: string | null
-  date: Date
-  createdAt: Date
-  updatedAt: Date
-  transactions?: TransactionInput[]
-  alerts?: AlertInput[]
+  createdVia: 'WEB' | 'API_KEY' | 'TELEGRAM_BOT'
+  createdByLabel: string | null
+  date: string
+  createdAt: string
+  updatedAt: string
+  transactions?: TransactionResponse[]
+  alerts?: DiaryAlertResponse[]
   tradePlans?: TradePlan[]
   tradePlanSummary?: {
     total: number
@@ -85,18 +128,19 @@ export interface Diary {
   thesis?: string | null
   risk?: string | null
   execution?: string | null
-  reviewDueAt?: Date | null
-  reviewStatus?: ReviewStatus | null
-  reviewedAt?: Date | null
-  reviewOutcome?: ReviewOutcome | null
+  reviewDueAt?: string | null
+  reviewStatus?: ReviewStatus | string | null
+  reviewedAt?: string | null
+  reviewOutcome?: ReviewOutcome | string | null
   reviewSummary?: string | null
   reviewLearning?: string | null
   reviewAdjustment?: string | null
-  stockSymbols?: string[]
+  stockSymbols: string[]
+  stockContexts?: Array<{ stock: { symbol: string } }>
 }
 
 export interface DiariesApiResponse {
-  data: Diary[]
+  data: DiaryResponse[]
   pagination: {
     page: number
     limit: number
@@ -119,15 +163,66 @@ export interface PaginationResponse {
   totalPages: number
 }
 
-export interface DiaryAlert {
-  id: SerializedId
-  message: string
-  triggerAt: Date | string
-  isDismissed?: boolean
-}
-
 export interface DiaryGroup {
   period: string
   periodLabel: string
-  diaries: Diary[]
+  diaries: DiaryResponse[]
+}
+
+// ---- Pre-serialization server records ----
+
+export interface DiaryRecordTransaction {
+  id: bigint
+  diaryId: bigint
+  userId: bigint
+  symbol: string
+  type: 'BUY' | 'SELL'
+  quantity: Prisma.Decimal
+  price: Prisma.Decimal
+  tradeDate: Date
+  notes: string | null
+  strategy: string | null
+  emotion: string | null
+  createdAt: Date
+}
+
+export interface DiaryRecordAlert {
+  id: bigint
+  diaryId: bigint
+  message: string
+  triggerAt: Date
+  isDismissed: boolean
+  recurringMode: 'WEEK' | 'MONTH' | null
+  parentId: bigint | null
+  instanceNumber: number | null
+  isPaused: boolean
+  createdAt: Date
+}
+
+export interface DiaryRecord {
+  id: bigint
+  userId: bigint
+  title: string
+  content: string | null
+  tagsString: string | null
+  createdVia: 'WEB' | 'API_KEY' | 'TELEGRAM_BOT'
+  createdByLabel: string | null
+  date: Date
+  createdAt: Date
+  updatedAt: Date
+  thesis: string | null
+  risk: string | null
+  execution: string | null
+  reviewDueAt: Date | null
+  reviewStatus: string | null
+  reviewedAt: Date | null
+  reviewOutcome: string | null
+  reviewSummary: string | null
+  reviewLearning: string | null
+  reviewAdjustment: string | null
+  transactions?: DiaryRecordTransaction[]
+  alerts?: DiaryRecordAlert[]
+  stockContexts?: Array<{ stock: { symbol: string } }>
+  tags?: string[]
+  stockSymbols?: string[]
 }

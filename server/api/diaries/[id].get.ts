@@ -5,8 +5,9 @@ import { findDiaryDetailForUser } from '~/server/utils/diary-read'
 import { attachDiaryMetadata } from '~/server/utils/diary-response'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
+import type { DiaryResponse } from '~/types/diary'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<DiaryResponse> => {
   const log = logger.diary.withRequestId(event.context.requestId)
   const rawUserId = event.context.user?.id
 
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
     const diary = await findDiaryDetailForUser(diaryId, rawUserId)
 
     log.info('Diary fetched', { diaryId: String(diaryId) })
-    return serialize(attachDiaryMetadata(diary))
+    return serialize(attachDiaryMetadata(diary)) as DiaryResponse
   } catch (error) {
     handleApiError(error, log)
   }

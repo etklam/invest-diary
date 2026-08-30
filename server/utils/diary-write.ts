@@ -1,6 +1,11 @@
 import type { Prisma } from '@prisma/client'
 import prisma from '~/lib/prisma'
-import type { DiaryInput, Diary, TransactionInput } from '~/types/diary'
+import type {
+  CreateDiaryRequest,
+  DiaryRecord,
+  TransactionInput,
+  UpdateDiaryRequest,
+} from '~/types/diary'
 import { getUtcDayRange, toUtcNoonDate } from '~/lib/dates/normalize'
 import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'
@@ -138,9 +143,9 @@ export interface TransactionWriteData {
 }
 
 function normalizeDecimalWrite(
-  value: Prisma.Decimal | number | string,
+  value: number | string,
   field: 'quantity' | 'price',
-): Prisma.Decimal | number {
+): number {
   const numberValue = Number(value)
   if (!Number.isFinite(numberValue) || numberValue <= 0) {
     throw Errors.validationError([{
@@ -265,7 +270,7 @@ async function persistTransactionDiff(
 
 export interface CreateDiaryForUserInput {
   userId: string | bigint
-  body: DiaryInput & { appendToToday?: boolean }
+  body: CreateDiaryRequest & { appendToToday?: boolean }
   createdVia?: 'WEB' | 'API_KEY'
   createdByLabel?: string | null
 }
@@ -278,7 +283,7 @@ function normalizeDiaryDate(value: string | Date | undefined): Date {
   }
 }
 
-export async function createDiaryForUser(input: CreateDiaryForUserInput): Promise<Diary> {
+export async function createDiaryForUser(input: CreateDiaryForUserInput): Promise<DiaryRecord> {
   const userId = typeof input.userId === 'bigint' ? input.userId : BigInt(input.userId)
   const { body } = input
   const stockSymbols = normalizeDiaryStockSymbols(body.stockSymbols)
@@ -367,7 +372,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
         })
       })
 
-      return attachDiaryMetadata(updatedDiary) as unknown as Diary
+      return attachDiaryMetadata(updatedDiary) as unknown as DiaryRecord
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw Errors.diaryAlreadyExists(diaryDateLabel(diaryDate))
@@ -377,7 +382,10 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
   }
 
   if (existingDiary) {
-    const errorDate = date ? (typeof date === 'string' ? date : date.toISOString()) : diaryDate.toISOString()
+    const rawDate: unknown = date
+    const errorDate = rawDate
+      ? (typeof rawDate === 'string' ? rawDate : rawDate instanceof Date ? rawDate.toISOString() : diaryDate.toISOString())
+      : diaryDate.toISOString()
     throw Errors.diaryAlreadyExists(errorDate)
   }
 
@@ -432,11 +440,11 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
         }
       })
 
-      return attachDiaryMetadata(diary) as unknown as Diary
+      return attachDiaryMetadata(diary) as unknown as DiaryRecord
     }
 
     const diary = await prisma.diary.create(diaryCreateArgs)
-    return attachDiaryMetadata(diary) as unknown as Diary
+    return attachDiaryMetadata(diary) as unknown as DiaryRecord
   } catch (error) {
     // The database constraint is the authority for concurrent creates. The
     // application preflight above is only a fast UX path.
@@ -452,7 +460,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
 export interface UpdateDiaryForUserInput {
   userId: string | bigint
   diaryId: string | bigint
-  body: DiaryInput
+  body: UpdateDiaryRequest
 }
 
 /**
@@ -464,7 +472,7 @@ export interface UpdateDiaryForUserInput {
  * - Existing DB transactions not in payload → delete
  * - Alerts: delete-all + recreate (alerts don't need stable IDs yet)
  */
-export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promise<Diary> {
+export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promise<DiaryRecord> {
   const userId = typeof input.userId === 'bigint' ? input.userId : BigInt(input.userId)
   const diaryId = typeof input.diaryId === 'bigint' ? input.diaryId : BigInt(input.diaryId)
   const { body } = input
@@ -562,7 +570,7 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
       })
     })
 
-    return attachDiaryMetadata(diary) as unknown as Diary
+    return attachDiaryMetadata(diary) as unknown as DiaryRecord
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       throw Errors.diaryAlreadyExists(diaryDateLabel(targetDiaryDate))

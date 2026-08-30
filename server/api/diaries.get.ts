@@ -4,6 +4,7 @@ import { getUtcDayRange, isValidYyyyMmDd } from '~/lib/dates/normalize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { serialize } from '~/server/utils/serialize'
+import type { DiariesApiResponse } from '~/types/diary'
 import {
   listDiariesForUser,
   type DiaryListFilters,
@@ -24,7 +25,7 @@ function parseDiaryFilterDate(value: unknown, field: 'dateFrom' | 'dateTo'): Dat
   return field === 'dateFrom' ? range.startOfDayUtc : range.endOfDayUtc
 }
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<DiariesApiResponse> => {
   const log = logger.diary.withRequestId(event.context.requestId)
   try {
     const user = requireUser(event)
@@ -84,7 +85,7 @@ export default defineEventHandler(async (event) => {
         total,
         totalPages: Math.ceil(total / limit),
       },
-    })
+    }) as DiariesApiResponse
   } catch (error: unknown) {
     handleApiError(error, log)
   }

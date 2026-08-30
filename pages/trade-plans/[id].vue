@@ -62,6 +62,7 @@
 </template>
 
 <script setup lang="ts">
+import type { DiariesApiResponse } from '~/types/diary'
 import type { TradePlan, TradePlanFormValue } from '~/types/trade-plan'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 
@@ -77,9 +78,9 @@ const deleting = ref(false)
 const tradePlanId = computed(() => String(route.params.id || ''))
 
 const { data: tradePlan, pending, error, refresh } = await useLazyFetch<TradePlan>(() => `/api/trade-plans/${tradePlanId.value}`)
-const { data: diariesResponse } = await useLazyFetch<any>('/api/diaries', {
+const { data: diariesResponse } = await useLazyFetch<DiariesApiResponse>('/api/diaries', {
   query: { limit: '100' },
-  default: () => ({ data: [] }),
+  default: () => ({ data: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } }),
 })
 
 const diaryOptions = computed(() => diariesResponse.value?.data ?? [])
