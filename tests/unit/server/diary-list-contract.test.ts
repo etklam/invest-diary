@@ -4,7 +4,7 @@ import {
   DIARY_SORT_FIELDS,
   diaryListParamsSchema,
   type DiaryListResponse,
-} from '~/types/diary'
+} from '~/lib/contracts/diary'
 
 describe('Diary list contract', () => {
   it('normalizes the current lax pagination and search behavior', () => {

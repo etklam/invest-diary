@@ -5,7 +5,7 @@ import {
   buildDailyActivityMap,
   toDateKeyInTimezone
 } from '~/lib/holiday-heatmap'
-import type { DiaryResponse } from '~/types/diary'
+import type { DiaryResponse } from '~/lib/contracts/diary'
 
 describe('holiday-heatmap utilities', () => {
   it('maps known timezone to country code for Nager.Date', () => {

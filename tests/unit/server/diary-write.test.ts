@@ -60,7 +60,7 @@ vi.mock('~/lib/prisma', () => ({
 // ============================================================
 
 import { diffTransactions, isUniqueConstraintError } from '~/server/utils/diary-write'
-import type { TransactionInput } from '~/types/diary'
+import type { TransactionInput } from '~/lib/contracts/diary'
 
 describe('diffTransactions', () => {
   it('should separate incoming transactions into toCreate (no id) and toUpdate (has id)', () => {

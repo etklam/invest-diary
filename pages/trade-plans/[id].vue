@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DiariesApiResponse } from '~/types/diary'
+import type { DiariesApiResponse } from '~/lib/contracts/diary'
 import type { TradePlan, TradePlanFormValue } from '~/types/trade-plan'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 

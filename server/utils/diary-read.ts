@@ -27,6 +27,7 @@ import { getUtcDayRange } from '~/lib/dates/normalize'
 import { getUserDayRange } from '~/lib/dates/user-tz'
 import { parseDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'
+import type { ReviewStatus } from '~/lib/contracts/review'
 import { TRADE_PLAN_STATUSES, type TradePlanStatus } from '~/types/trade-plan'
 
 /**
@@ -388,8 +389,6 @@ const REVIEW_SELECT = {
   reviewedAt: true,
   reviewOutcome: true,
 } satisfies Prisma.DiarySelect
-
-export type ReviewStatus = 'none' | 'pending' | 'reviewed'
 
 export type ReviewItem = {
   id: bigint | string

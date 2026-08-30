@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockReadBody } from '../../vi-setup'
-import { ErrorCodes } from '~/lib/errors/codes'
+import { ErrorCodes } from '~/lib/contracts/common/error-codes'
 
 const mockRequireUser = vi.fn()
 const mockTransactionFindMany = vi.fn()

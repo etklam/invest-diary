@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DiariesApiResponse, DiaryResponse } from '~/types/diary'
+import type { DiariesApiResponse, DiaryResponse } from '~/lib/contracts/diary'
 import type { TradePlanFormValue } from '~/types/trade-plan'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 

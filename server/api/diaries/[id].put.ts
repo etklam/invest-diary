@@ -1,4 +1,4 @@
-import type { DiaryResponse, UpdateDiaryRequest } from '~/types/diary'
+import type { DiaryResponse, UpdateDiaryRequest } from '~/lib/contracts/diary'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'

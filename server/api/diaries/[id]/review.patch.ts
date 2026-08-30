@@ -1,8 +1,8 @@
 import { logger } from '~/lib/logger'
+import { structuredReviewInputSchema } from '~/lib/contracts/review'
 import { requireUser } from '~/server/utils/auth'
 import {
   saveStructuredReviewForUser,
-  structuredReviewInputSchema,
 } from '~/server/utils/diary-review'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'

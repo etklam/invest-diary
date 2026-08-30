@@ -5,7 +5,7 @@ import { requireApiKey } from '~/server/utils/api-key'
 import { createStockTimelineRecordsFromAgent } from '~/server/utils/stock-timeline-queries'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { serialize } from '~/server/utils/serialize'
-import { agentAllowedSourceTypeSchema } from '~/lib/stocks/timeline-source'
+import { agentAllowedSourceTypeSchema } from '~/lib/contracts/stocks/timeline-source'
 
 const timelineRecordSchema = z.object({
   symbol: z.string().min(1).max(32).transform(normalizeStockSymbol),

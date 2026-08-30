@@ -1,4 +1,4 @@
-import type { DiaryResponse } from '~/types/diary'
+import type { DiaryResponse } from '~/lib/contracts/diary'
 import { resolveCountryCodeFromTimezone, getUserYmdInTimezone } from '~/lib/dates/user-tz'
 
 // Re-export 維持向後相容（callers 可直接從 holiday-heatmap 匯入）

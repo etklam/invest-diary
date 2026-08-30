@@ -1,11 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import prisma from '~/lib/prisma'
-import type {
-  CreateDiaryRequest,
-  DiaryRecord,
-  TransactionInput,
-  UpdateDiaryRequest,
-} from '~/types/diary'
+import type { DiaryRecord } from '~/types/diary'
+import type { CreateDiaryRequest, TransactionInput, UpdateDiaryRequest } from '~/lib/contracts/diary'
 import { getUtcDayRange, toUtcNoonDate } from '~/lib/dates/normalize'
 import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'

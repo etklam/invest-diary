@@ -1,4 +1,4 @@
-import type { CreateDiaryRequest, DiaryResponse } from '~/types/diary'
+import type { CreateDiaryRequest, DiaryResponse } from '~/lib/contracts/diary'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'

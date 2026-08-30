@@ -1,13 +1,7 @@
 // lib/errors/factory.ts
 
 import { createError, H3Error } from 'h3'
-import { ErrorCodes, type ErrorCode } from './codes'
-
-interface ErrorDetail {
-  field?: string
-  message?: string
-  value?: unknown
-}
+import { ErrorCodes, type ErrorCode, type ErrorDetail } from '~/lib/contracts/common/error-codes'
 
 interface AppErrorOptions {
   statusCode: number

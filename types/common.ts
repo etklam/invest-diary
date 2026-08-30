@@ -9,5 +9,5 @@
  * results, keep using `bigint` directly — this alias is NOT for those cases.
  */
 
-/** ID type after BigInt serialization. All API responses use string IDs. */
-export type SerializedId = string
+/** @deprecated Import shared IDs from `~/lib/contracts/common`. */
+export type { SerializedId } from '~/lib/contracts/common/ids'

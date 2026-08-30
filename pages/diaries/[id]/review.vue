@@ -151,7 +151,7 @@
 
 <script setup lang="ts">
 import { isAuthSessionError } from '~/lib/auth/session-error'
-import { REVIEW_OUTCOMES, type ReviewOutcome } from '~/types/diary'
+import { REVIEW_OUTCOMES, type ReviewOutcome } from '~/lib/contracts/review'
 
 definePageMeta({ middleware: 'auth' })
 

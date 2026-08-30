@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
-import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
+import type { StockTimelineSourceType } from '~/lib/contracts/stocks/timeline-source'
 import { isUniqueConstraintError } from '~/server/utils/diary-write'
 import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 

@@ -4,7 +4,7 @@ import { requireUser } from '~/server/utils/auth'
 import { createStockTimelineRecordFromWeb, toTimelineResponseItem } from '~/server/utils/stock-timeline-queries'
 import { normalizeStockSymbol, parseSymbolParam, symbolSchema } from '~/lib/stocks/symbols'
 import { handleApiError } from '~/server/utils/error-handler'
-import { stockTimelineSourceTypeSchema } from '~/lib/stocks/timeline-source'
+import { stockTimelineSourceTypeSchema } from '~/lib/contracts/stocks/timeline-source'
 
 const requestSchema = z.object({
   summary: z.string().min(1).max(10000),

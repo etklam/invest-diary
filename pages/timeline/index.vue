@@ -448,7 +448,7 @@ const formatCompactDate = (date: Date | string) => formatShortDate(date, timelin
 const reviewSignal = (outcome?: string | null) => outcome
   ? `${t('review.statusReviewed')} · ${t(`review.outcomes.${outcome}`)}`
   : t('review.statusReviewed')
-const tradePlanSignal = (summary: NonNullable<import('~/types/diary').DiaryResponse['tradePlanSummary']>) => [
+const tradePlanSignal = (summary: NonNullable<import('~/lib/contracts/diary').DiaryResponse['tradePlanSummary']>) => [
   t('timeline.tradePlansCount', { count: summary.total }),
   ...summary.statuses.map(({ status, count }) => `${t(`tradePlan.status.${status}`)} ${count}`),
 ].join(' · ')

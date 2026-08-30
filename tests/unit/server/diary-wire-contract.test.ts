@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import { serialize, type Serialized } from '~/server/utils/serialize'
-import type { DiaryResponse } from '~/types/diary'
+import type { DiaryResponse } from '~/lib/contracts/diary'
 
 type RepresentativePrismaDiary = {
   id: bigint

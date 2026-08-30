@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import type { DiaryAuthoringTransaction } from './types'
 
+export { DIARY_PAYLOAD_LIMITS } from '~/lib/contracts/diary/validation'
+import { DIARY_PAYLOAD_LIMITS } from '~/lib/contracts/diary/validation'
+
 export type LedgerInputTransaction = Pick<DiaryAuthoringTransaction, 'symbol' | 'type'> & {
   quantity: unknown
   id?: string | number | bigint
@@ -15,13 +18,6 @@ export type LedgerInputTransaction = Pick<DiaryAuthoringTransaction, 'symbol' | 
  * the agent API record precedent. Without them an oversized payload is an
  * authenticated DoS that also slows every subsequent unbounded ledger read.
  */
-export const DIARY_PAYLOAD_LIMITS = {
-  transactions: 100,
-  alerts: 50,
-  title: 500,
-  content: 500_000,
-} as const
-
 const diaryPayloadLimitsSchema = z.object({
   title: z.string().max(
     DIARY_PAYLOAD_LIMITS.title,

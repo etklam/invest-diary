@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ErrorCodes } from '~/lib/errors/codes'
+import { ErrorCodes } from '~/lib/contracts/common/error-codes'
 import { extractApiErrorCode, isAuthSessionError, isUnauthorizedStatus } from '~/lib/auth/session-error'
 
 describe('auth session error helpers', () => {

@@ -1,8 +1,8 @@
 import type { Prisma } from '@prisma/client'
 import { generateRecurringAlertsData } from '~/lib/recurring-alerts'
-import { DIARY_PAYLOAD_LIMITS } from '~/lib/diary-authoring/validation'
+import { DIARY_PAYLOAD_LIMITS } from '~/lib/contracts/diary/validation'
 import { Errors } from '~/lib/errors/factory'
-import type { AlertInput } from '~/types/diary'
+import type { AlertInput } from '~/lib/contracts/diary'
 
 export async function persistAlert(
   tx: Prisma.TransactionClient,

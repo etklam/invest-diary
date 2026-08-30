@@ -1,32 +1,13 @@
-import type { z } from 'zod'
-import { z as zod } from 'zod'
 import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
-import { REVIEW_OUTCOMES } from '~/types/diary'
+import {
+  structuredReviewInputSchema,
+  type StructuredReviewInput,
+} from '~/lib/contracts/review'
 
-const MAX_REFLECTION_LENGTH = 10_000
-
-const reflectionSchema = zod.string().max(MAX_REFLECTION_LENGTH).nullable().optional()
-
-export const structuredReviewInputSchema = zod.object({
-  reviewOutcome: zod.enum(REVIEW_OUTCOMES),
-  reviewSummary: reflectionSchema,
-  reviewLearning: reflectionSchema,
-  reviewAdjustment: reflectionSchema,
-}).strict().superRefine((value, context) => {
-  const hasReflection = [value.reviewSummary, value.reviewLearning, value.reviewAdjustment]
-    .some(reflection => Boolean(reflection?.trim()))
-
-  if (!hasReflection) {
-    context.addIssue({
-      code: 'custom',
-      path: ['reviewSummary'],
-      message: 'At least one meaningful reflection is required',
-    })
-  }
-})
-
-export type StructuredReviewInput = z.infer<typeof structuredReviewInputSchema>
+// Compatibility exports for server callers; the contract definition lives in lib/contracts.
+export { structuredReviewInputSchema }
+export type { StructuredReviewInput }
 
 const REVIEW_DETAIL_SELECT = {
   id: true,

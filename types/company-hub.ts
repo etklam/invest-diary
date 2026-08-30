@@ -1,5 +1,5 @@
 import type { CurrentInvestmentThesis, ThesisReviewRecord } from './investment-thesis'
-import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
+import type { StockTimelineSourceType } from '~/lib/contracts/stocks/timeline-source'
 
 export type CompanyHoldingState = 'held' | 'closed' | 'research_only' | 'untracked'
 

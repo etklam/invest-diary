@@ -2,7 +2,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
-import type { DiaryActivityDay } from '~/types/diary'
+import type { DiaryActivityDay } from '~/lib/contracts/diary'
 import { formatUserDateTime, formatYmdInTimezone } from '~/lib/dates'
 import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import {

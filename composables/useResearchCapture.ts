@@ -2,7 +2,7 @@ import { computed, ref, type ComputedRef, type Ref } from 'vue'
 import { useAppShell } from '~/composables/useAppShell'
 import { useAuth } from '~/composables/useAuth'
 import type { QuickDiaryContext } from '~/types/quicknote'
-import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
+import type { StockTimelineSourceType } from '~/lib/contracts/stocks/timeline-source'
 import { formatUserDateTime } from '~/lib/dates'
 import { resolveUserTimezone } from '~/lib/dates/user-tz'
 

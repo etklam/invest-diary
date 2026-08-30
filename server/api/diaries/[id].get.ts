@@ -5,7 +5,7 @@ import { findDiaryDetailForUser } from '~/server/utils/diary-read'
 import { attachDiaryMetadata } from '~/server/utils/diary-response'
 import { handleApiError } from '~/server/utils/error-handler'
 import { serialize } from '~/server/utils/serialize'
-import type { DiaryResponse } from '~/types/diary'
+import type { DiaryResponse } from '~/lib/contracts/diary'
 
 export default defineEventHandler(async (event): Promise<DiaryResponse> => {
   const log = logger.diary.withRequestId(event.context.requestId)

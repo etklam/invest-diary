@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { ErrorCodes } from '~/lib/errors/codes'
+import { ErrorCodes } from '~/lib/contracts/common/error-codes'
 
 describe('useAuthRecovery', () => {
   const user = ref<any>({ id: '1' })

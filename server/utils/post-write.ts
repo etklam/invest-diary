@@ -1,7 +1,7 @@
 import prisma from '~/lib/prisma'
 import { generateSlug } from '~/lib/blog'
 import { AppError, Errors } from '~/lib/errors/factory'
-import { ErrorCodes } from '~/lib/errors/codes'
+import { ErrorCodes } from '~/lib/contracts/common/error-codes'
 import { resolveExcerpt, type BlogPostInput } from '~/server/utils/blog-schemas'
 
 export type PostStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'

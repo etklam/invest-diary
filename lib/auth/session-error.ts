@@ -1,4 +1,4 @@
-import { ErrorCodes } from '~/lib/errors/codes'
+import { ErrorCodes } from '~/lib/contracts/common/error-codes'
 
 const authSessionErrorCodes = new Set<string>([
   ErrorCodes.AUTH_UNAUTHORIZED,

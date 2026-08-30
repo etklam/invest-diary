@@ -4,7 +4,7 @@ import { getUtcDayRange, isValidYyyyMmDd } from '~/lib/dates/normalize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { requireUser } from '~/server/utils/auth'
 import { serialize } from '~/server/utils/serialize'
-import type { DiariesApiResponse } from '~/types/diary'
+import type { DiariesApiResponse } from '~/lib/contracts/diary'
 import {
   listDiariesForUser,
   type DiaryListFilters,

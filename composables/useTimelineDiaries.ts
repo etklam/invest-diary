@@ -7,7 +7,7 @@ import type {
   DiaryGroup,
   PaginationResponse,
   DiariesApiResponse
-} from '~/types/diary'
+} from '~/lib/contracts/diary'
 
 /**
  * Id-deduplicated merge for paginated diary lists.

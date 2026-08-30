@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ErrorCodes } from '~/lib/errors/codes'
+import { ErrorCodes } from '~/lib/contracts/common/error-codes'
 import { ALL_ERROR_CODES, errorCodeToI18nKey } from '~/lib/errors/i18n-mapping'
 
 // ponytail: parity of codes → locale keys is enforced by i18n-parity.test.ts.

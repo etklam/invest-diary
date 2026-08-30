@@ -4,7 +4,7 @@ import {
   STOCK_TIMELINE_SOURCE_TYPES,
   agentAllowedSourceTypeSchema,
   stockTimelineSourceTypeSchema,
-} from '~/lib/stocks/timeline-source'
+} from '~/lib/contracts/stocks/timeline-source'
 
 describe('stock timeline source types', () => {
   it('keeps agent source types as an explicit six-value subset policy', () => {

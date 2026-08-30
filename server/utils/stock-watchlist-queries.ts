@@ -1,6 +1,6 @@
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
-import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
+import type { StockTimelineSourceType } from '~/lib/contracts/stocks/timeline-source'
 
 type StockWatchStatus = 'WATCHING' | 'ARCHIVED'
 

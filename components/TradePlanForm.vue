@@ -98,7 +98,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { TRADE_PLAN_STATUSES, type TradePlanFormValue } from '~/types/trade-plan'
-import type { DiaryResponse } from '~/types/diary'
+import type { DiaryResponse } from '~/lib/contracts/diary'
 
 const props = withDefaults(defineProps<{
   initial?: Partial<TradePlanFormValue>

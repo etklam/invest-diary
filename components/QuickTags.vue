@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
-import { DEFAULT_TAGS, type TagKey } from '~/types/diary'
+import { DEFAULT_TAGS, type TagKey } from '~/lib/contracts/diary'
 
 const TAGS_KEY = 'quick-note-tags'
 const MAX_HISTORY = 30

@@ -1,4 +1,4 @@
-import { ErrorCodes } from './codes'
+import { ErrorCodes } from '~/lib/contracts/common/error-codes'
 
 /**
  * 將 ErrorCode 轉換為對應的 i18n key

@@ -1,10 +1,11 @@
 import type { SerializedId } from './common'
+import { REVIEW_OUTCOMES, type ReviewOutcome } from '~/lib/contracts/review'
 
 export const INVESTMENT_THESIS_STATUSES = ['DRAFT', 'ACTIVE', 'ARCHIVED'] as const
 export type InvestmentThesisStatus = typeof INVESTMENT_THESIS_STATUSES[number]
 
-export const THESIS_REVIEW_OUTCOMES = ['INTACT', 'PARTIAL', 'INVALIDATED', 'UNCLEAR'] as const
-export type ThesisReviewOutcome = typeof THESIS_REVIEW_OUTCOMES[number]
+export const THESIS_REVIEW_OUTCOMES = REVIEW_OUTCOMES
+export type ThesisReviewOutcome = ReviewOutcome
 
 export const THESIS_PORTFOLIO_DECISIONS = ['HOLD', 'ADD', 'REDUCE', 'EXIT', 'CONTINUE_WATCHING'] as const
 export type ThesisPortfolioDecision = typeof THESIS_PORTFOLIO_DECISIONS[number]

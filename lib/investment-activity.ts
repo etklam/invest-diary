@@ -5,7 +5,7 @@
  * infer symbols from prose, create events, or mutate any source record.
  */
 
-import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
+import type { StockTimelineSourceType } from '~/lib/contracts/stocks/timeline-source'
 
 export type ActivityKind = 'diary' | 'thesis_review' | 'stock_timeline' | 'thesis'
 

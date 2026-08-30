@@ -226,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DiariesApiResponse } from '~/types/diary'
+import type { DiariesApiResponse } from '~/lib/contracts/diary'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useAppShell } from '~/composables/useAppShell'
 import { mergeDiariesById } from '~/composables/useTimelineDiaries'

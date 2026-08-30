@@ -1,4 +1,4 @@
-import type { CreateDiaryRequest } from '~/types/diary'
+import type { CreateDiaryRequest } from '~/lib/contracts/diary'
 
 export type AuthoringTransactionType = 'BUY' | 'SELL'
 

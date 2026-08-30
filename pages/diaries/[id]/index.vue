@@ -286,7 +286,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DiaryResponse, TransactionResponse } from '~/types/diary'
+import type { DiaryResponse, TransactionResponse } from '~/lib/contracts/diary'
 import type { TradePlan } from '~/types/trade-plan'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'

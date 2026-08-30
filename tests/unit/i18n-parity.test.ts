@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { ErrorCodes } from '~/lib/errors/codes'
+import { ErrorCodes } from '~/lib/contracts/common/error-codes'
 import { errorCodeToI18nKey } from '~/lib/errors/i18n-mapping'
 
 // ponytail: locale parity is the cheapest invariant that catches key drift.
