@@ -404,7 +404,7 @@ describe('discipline-queries', () => {
       expect(result).toHaveLength(3)
     })
 
-    it('throws forbidden when not all IDs belong to user', async () => {
+    it('throws disciplineNotFound when not all IDs belong to user', async () => {
       const orders = [
         { id: 42, order: 0 },
         { id: 99, order: 1 }, // not owned
@@ -412,9 +412,13 @@ describe('discipline-queries', () => {
 
       mockDisciplineFindMany.mockResolvedValue([{ id: 42n }])
 
-      await expect(
-        reorderDisciplines(USER_ID, orders),
-      ).rejects.toThrow()
+      try {
+        await reorderDisciplines(USER_ID, orders)
+        expect.fail('Should have thrown')
+      } catch (error: any) {
+        expect(error.statusCode).toBe(404)
+        expect(error.data.code).toBe('DISCIPLINE_NOT_FOUND')
+      }
 
       expect(mockPrismaTransaction).not.toHaveBeenCalled()
     })

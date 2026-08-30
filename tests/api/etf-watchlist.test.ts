@@ -248,7 +248,7 @@ describe('ETF watchlist routes', () => {
   describe('DELETE /api/etf/watchlist/:id', () => {
     it('deletes watchlist item owned by the authenticated user', async () => {
       mockParsePositiveBigIntParam.mockReturnValue(100n)
-      mockEtfWatchlistFindUnique.mockResolvedValue({ id: 100n, userId: 1n })
+      mockEtfWatchlistFindFirst.mockResolvedValue({ id: 100n, userId: 1n })
       mockEtfWatchlistDelete.mockResolvedValue({ id: 100n })
 
       const { default: handler } = await import('~/server/api/etf/watchlist/[id].delete')
@@ -261,20 +261,20 @@ describe('ETF watchlist routes', () => {
 
     it('returns 404 when watchlist item does not exist', async () => {
       mockParsePositiveBigIntParam.mockReturnValue(999n)
-      mockEtfWatchlistFindUnique.mockResolvedValue(null)
+      mockEtfWatchlistFindFirst.mockResolvedValue(null)
 
       const { default: handler } = await import('~/server/api/etf/watchlist/[id].delete')
       await expect(handler({ context: { user: { id: '1' }, requestId: 'req-2' } } as any))
         .rejects.toMatchObject({ statusCode: 404 })
     })
 
-    it('returns 403 when watchlist item belongs to another user', async () => {
+    it('returns 404 when watchlist item belongs to another user', async () => {
       mockParsePositiveBigIntParam.mockReturnValue(100n)
-      mockEtfWatchlistFindUnique.mockResolvedValue({ id: 100n, userId: 2n })
+      mockEtfWatchlistFindFirst.mockResolvedValue(null)
 
       const { default: handler } = await import('~/server/api/etf/watchlist/[id].delete')
       await expect(handler({ context: { user: { id: '1' }, requestId: 'req-3' } } as any))
-        .rejects.toMatchObject({ statusCode: 403 })
+        .rejects.toMatchObject({ statusCode: 404 })
     })
 
     it('rejects unauthenticated access with 401', async () => {

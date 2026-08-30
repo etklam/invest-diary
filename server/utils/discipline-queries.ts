@@ -199,7 +199,7 @@ export async function reorderDisciplines(
   })
 
   if (existingDisciplines.length !== orders.length) {
-    throw Errors.forbidden('One or more disciplines not found or access denied').toH3Error()
+    throw Errors.disciplineNotFound().toH3Error()
   }
 
   await prisma.$transaction(

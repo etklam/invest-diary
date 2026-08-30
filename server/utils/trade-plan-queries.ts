@@ -24,7 +24,7 @@ export async function assertDiaryBelongsToUser(diaryId: bigint | null | undefine
   })
 
   if (!diary) {
-    throw Errors.diaryAccessDenied()
+    throw Errors.diaryNotFound(String(diaryId)).toH3Error()
   }
 }
 

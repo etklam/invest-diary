@@ -251,21 +251,22 @@ describe('etf-watchlist-queries', () => {
       mockEtfWatchlistFindUnique.mockResolvedValue({ id: 100n, userId: 1n, etfId: 10n })
       mockEtfWatchlistDelete.mockResolvedValue({ id: 100n })
 
+      mockEtfWatchlistFindFirst.mockResolvedValue({ id: 100n, userId: 1n, etfId: 10n })
       await removeEtfFromWatchlist(100n, '1')
 
-      expect(mockEtfWatchlistFindUnique).toHaveBeenCalledWith({ where: { id: 100n } })
+      expect(mockEtfWatchlistFindFirst).toHaveBeenCalledWith({ where: { id: 100n, userId: 1n } })
       expect(mockEtfWatchlistDelete).toHaveBeenCalledWith({ where: { id: 100n } })
     })
 
     it('throws AppError when watchlist item not found', async () => {
-      mockEtfWatchlistFindUnique.mockResolvedValue(null)
+      mockEtfWatchlistFindFirst.mockResolvedValue(null)
 
       await expect(removeEtfFromWatchlist(999n, '1'))
         .rejects.toThrow('Resource not found')
     })
 
     it('throws AppError with statusCode 404 when not found', async () => {
-      mockEtfWatchlistFindUnique.mockResolvedValue(null)
+      mockEtfWatchlistFindFirst.mockResolvedValue(null)
 
       try {
         await removeEtfFromWatchlist(999n, '1')
@@ -276,27 +277,17 @@ describe('etf-watchlist-queries', () => {
       }
     })
 
-    it('throws AppError when item belongs to another user', async () => {
-      mockEtfWatchlistFindUnique.mockResolvedValue({ id: 100n, userId: 2n, etfId: 10n })
+    it('returns the same 404 for another user item as for a missing item', async () => {
+      mockEtfWatchlistFindFirst.mockResolvedValue(null)
 
-      await expect(removeEtfFromWatchlist(100n, '1'))
-        .rejects.toThrow('Forbidden')
-    })
-
-    it('throws AppError with statusCode 403 on ownership mismatch', async () => {
-      mockEtfWatchlistFindUnique.mockResolvedValue({ id: 100n, userId: 2n, etfId: 10n })
-
-      try {
-        await removeEtfFromWatchlist(100n, '1')
-        expect.fail('Should have thrown')
-      } catch (error: any) {
-        expect(error.statusCode).toBe(403)
-        expect(error.code).toBe('AUTH_FORBIDDEN')
-      }
+      await expect(removeEtfFromWatchlist(100n, '1')).rejects.toMatchObject({
+        statusCode: 404,
+        code: 'SYS_NOT_FOUND',
+      })
     })
 
     it('accepts string userId and compares correctly with BigInt ownerId', async () => {
-      mockEtfWatchlistFindUnique.mockResolvedValue({ id: 100n, userId: 1n, etfId: 10n })
+      mockEtfWatchlistFindFirst.mockResolvedValue({ id: 100n, userId: 1n, etfId: 10n })
       mockEtfWatchlistDelete.mockResolvedValue({ id: 100n })
 
       // Should not throw — string '1' should match BigInt 1n
@@ -305,7 +296,7 @@ describe('etf-watchlist-queries', () => {
     })
 
     it('does not call delete when ownership check fails', async () => {
-      mockEtfWatchlistFindUnique.mockResolvedValue({ id: 100n, userId: 2n, etfId: 10n })
+      mockEtfWatchlistFindFirst.mockResolvedValue(null)
 
       await expect(removeEtfFromWatchlist(100n, '1')).rejects.toThrow()
       expect(mockEtfWatchlistDelete).not.toHaveBeenCalled()

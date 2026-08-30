@@ -158,6 +158,15 @@ describe('Trade Plan API Routes', () => {
     expect(mockDiaryFindFirst).not.toHaveBeenCalled()
   })
 
+  it('returns 404 for User B reading User A Trade Plan', async () => {
+    mockTradePlanFindFirst.mockResolvedValue(null)
+
+    const { default: handler } = await import('~/server/api/trade-plans/[id].get')
+
+    await expect(handler({ context: { user: { id: '7' }, requestId: 'req-cross-user-get' } } as any))
+      .rejects.toMatchObject({ statusCode: 404 })
+  })
+
   it('creates a manual trade plan and validates linked diary ownership', async () => {
     mockReadBody.mockResolvedValue({
       diaryId: '2',
@@ -206,7 +215,7 @@ describe('Trade Plan API Routes', () => {
     const { default: handler } = await import('~/server/api/trade-plans/index.post')
 
     await expect(handler({ context: { user: { id: '7' }, requestId: 'req-denied-plan' } } as any))
-      .rejects.toMatchObject({ statusCode: 403 })
+      .rejects.toMatchObject({ statusCode: 404, statusMessage: 'Diary 2 not found' })
   })
 
   it('does not distinguish a foreign diary from a nonexistent diary', async () => {
@@ -216,7 +225,7 @@ describe('Trade Plan API Routes', () => {
     const { default: handler } = await import('~/server/api/trade-plans/index.post')
 
     await expect(handler({ context: { user: { id: '7' }, requestId: 'req-missing-plan' } } as any))
-      .rejects.toMatchObject({ statusCode: 403, statusMessage: 'Diary access denied' })
+      .rejects.toMatchObject({ statusCode: 404, statusMessage: 'Diary 404 not found' })
   })
 
   it('creates another linked plan without replacing existing plans', async () => {
@@ -269,6 +278,16 @@ describe('Trade Plan API Routes', () => {
     expect(result.status).toBe('active')
   })
 
+  it('returns 404 for User B updating User A Trade Plan', async () => {
+    mockReadBody.mockResolvedValue({ status: 'active' })
+    mockTradePlanFindFirst.mockResolvedValue(null)
+
+    const { default: handler } = await import('~/server/api/trade-plans/[id].put')
+
+    await expect(handler({ context: { user: { id: '7' }, requestId: 'req-cross-user-put' } } as any))
+      .rejects.toMatchObject({ statusCode: 404 })
+  })
+
   it('rejects linking an update to a foreign or nonexistent diary identically', async () => {
     mockReadBody.mockResolvedValue({ diaryId: '404' })
     mockTradePlanFindFirst.mockResolvedValue(samplePlan)
@@ -277,7 +296,7 @@ describe('Trade Plan API Routes', () => {
     const { default: handler } = await import('~/server/api/trade-plans/[id].put')
 
     await expect(handler({ context: { user: { id: '7' }, requestId: 'req-denied-update' } } as any))
-      .rejects.toMatchObject({ statusCode: 403, statusMessage: 'Diary access denied' })
+      .rejects.toMatchObject({ statusCode: 404, statusMessage: 'Diary 404 not found' })
     expect(mockTradePlanUpdate).not.toHaveBeenCalled()
   })
 
@@ -290,5 +309,15 @@ describe('Trade Plan API Routes', () => {
 
     expect(mockTradePlanDelete).toHaveBeenCalledWith({ where: { id: 9n } })
     expect(result).toEqual({ success: true })
+  })
+
+  it('returns 404 for User B deleting User A Trade Plan', async () => {
+    mockTradePlanFindFirst.mockResolvedValue(null)
+
+    const { default: handler } = await import('~/server/api/trade-plans/[id].delete')
+
+    await expect(handler({ context: { user: { id: '7' }, requestId: 'req-cross-user-delete' } } as any))
+      .rejects.toMatchObject({ statusCode: 404 })
+    expect(mockTradePlanDelete).not.toHaveBeenCalled()
   })
 })

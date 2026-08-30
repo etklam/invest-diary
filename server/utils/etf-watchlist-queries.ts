@@ -81,16 +81,12 @@ export async function addEtfToWatchlist(userIdInput: string | bigint, symbolRaw:
 export async function removeEtfFromWatchlist(watchlistId: bigint, userIdInput: string | bigint) {
   const userId = BigInt(userIdInput)
 
-  const item = await prisma.etfWatchlist.findUnique({
-    where: { id: watchlistId },
+  const item = await prisma.etfWatchlist.findFirst({
+    where: { id: watchlistId, userId },
   })
 
   if (!item) {
     throw Errors.notFound()
-  }
-
-  if (String(item.userId) !== String(userId)) {
-    throw Errors.forbidden()
   }
 
   await prisma.etfWatchlist.delete({

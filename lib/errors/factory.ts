@@ -112,12 +112,6 @@ export const Errors = {
     message: `Diary ${id} not found`,
   }),
 
-  diaryAccessDenied: () => new AppError({
-    statusCode: 403,
-    code: ErrorCodes.DIARY_ACCESS_DENIED,
-    message: 'Diary access denied',
-  }),
-
   diaryAlreadyExists: (date: string) => new AppError({
     statusCode: 409,
     code: ErrorCodes.DIARY_ALREADY_EXISTS,

@@ -936,7 +936,6 @@
       "auth_api_key_revoked": "API key has been revoked",
       "auth_api_key_scope_denied": "Insufficient API key permissions",
       "diary_not_found": "Diary not found",
-      "diary_access_denied": "Access denied to this diary",
       "diary_already_exists": "A diary already exists for this date",
       "partner_link_not_found": "Partner link not found",
       "partner_link_access_denied": "Access denied to this partnership",

@@ -109,7 +109,7 @@ export async function dismissAlert(alertId: bigint | string, userId: bigint) {
  *
  * - Validates input via Zod (CreateAlertSchema).
  * - Verifies diary ownership via findDiaryForUser (throws diaryNotFound /
- *   diaryAccessDenied on failure — surfaced through handleApiError).
+ *   diaryNotFound on failure — surfaced through handleApiError).
  * - Delegates recurring / single persistence to persistAlert inside a
  *   transaction.
  *
@@ -122,7 +122,7 @@ export async function createAlertForDiary(
   const validated = CreateAlertSchema.parse(input)
   const diaryId = BigInt(validated.diary_id)
 
-  // Throws diaryNotFound / diaryAccessDenied if not owned.
+  // Throws diaryNotFound if not owned.
   await findDiaryForUser(diaryId, userId)
 
   const timezone = await getUserTimezone(userId)
