@@ -16,6 +16,7 @@
     "test:coverage": "vitest run --coverage",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
+    "test:diary-reconciliation:mysql": "bash scripts/test-diary-reconciliation-mysql.sh",
     "test:e2e": "playwright test",
     "test:ci": "vitest run --coverage --reporter=json",
     "coverage:gate": "vitest run --coverage --reporter=text && vitest run --coverage --reporter=json --reporter=lcovonly",

@@ -15,6 +15,7 @@ npm run test:ui             # vitest --ui — browser dashboard
 npm run test:coverage       # vitest run --coverage — text + json + html
 npm run test:unit           # vitest run tests/unit — only the unit/ tree
 npm run test:integration    # vitest run tests/integration — only integration/ tree
+npm run test:diary-reconciliation:mysql # disposable MariaDB reconciliation + unique-index verification
 npm run test:e2e            # playwright test — E2E suite (separate config)
 npm run test:ci             # vitest run --coverage --reporter=json — CI reporter
 npm run coverage:gate       # runs coverage twice (text + json + lcovonly) — gate script
@@ -127,10 +128,11 @@ Files: `useArticleMarkdown`, `useAuthRecovery`, `useDiscipline`, `useGestures`, 
 - `lint-typecheck.test.ts` — actually runs `npm run lint` and `npm run typecheck` via `execFileSync`. Skipped when `SKIP_LINT_GUARD=1`. Replaces the old `lint-config.test.ts` which inspected ESLint config shape but never executed lint.
 - `no-legacy-branding.test.ts` — walks the source tree and asserts the legacy product name (constructed from fragments to avoid self-tripping) never appears outside `prisma/migrations/`.
 
-**`tests/integration/`** — 5 files. Cross-module workflows that exercise multiple handlers or full Vue component trees.
+**`tests/integration/`** — Cross-module workflows that exercise multiple handlers, full Vue component trees, or an explicitly isolated database.
 
 - `article-markdown-ssr.test.ts` — mounts the real `pages/articles/[slug].vue` inside `<Suspense>` and asserts parsed markdown body is rendered (regression guard for fire-and-forget SSR bug).
 - `auth-flow.test.ts`, `diary-workflow.test.ts`, `agent-stock-timeline.test.ts`.
+- `diary-reconciliation.mysql.test.ts` — skipped by the generic Vitest command; `npm run test:diary-reconciliation:mysql` starts a disposable MariaDB container and verifies both current and pre-0900 schemas, real duplicate reconciliation, structured review preservation, child reparenting, `DiaryStock` union semantics, transaction rollback, and the final unique index.
 
 **`tests/lib/`** — 16 files (plus 2 subdirs: `dates/`, `quicknote/`). Pure-function tests for library modules. No mocks, no Vue, no Prisma.
 

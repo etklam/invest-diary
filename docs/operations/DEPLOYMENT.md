@@ -422,6 +422,98 @@ docker run -d \
   diary-vue:latest
 ```
 
+### Diary 日期唯一性：legacy reconciliation 維護流程
+
+目前正式環境已完成 `diaries(user_id, date)` 唯一性 migration；以下流程只供仍停在
+`20260807080000_add_diary_reconciliation_audit` 之前的 legacy 環境，或從該時點的
+備份重建時使用。不要在已經完成 migration 的環境重跑 reconciliation。
+
+普通 `npx prisma migrate deploy` 不會停在 audit-table migration 與 uniqueness
+migration 之間。若 legacy 資料有同一使用者、同一 civil date 的 Diary，它會直接在
+unique index migration 失敗。因此必須使用以下受控 maintenance sequence：
+
+1. **停止所有寫入。** 將 app deployment scale 至 0，停止 workers、API-key clients
+   與任何會建立或更新 Diary 的 job。維護映像必須使用 `RUN_MIGRATIONS=false`，避免
+   container entrypoint 偷跑完整 migration。
+2. **建立可還原備份。** 使用本文件的 MySQL backup 流程，並在隔離資料庫驗證備份
+   可以還原。reconciliation 會搬移關聯並刪除 merged Diary；完整 rollback 依賴備份。
+3. **執行 final read-only audit，保存於受控位置。** Audit 可能包含 user ID 與 Diary
+   title，不可提交 repository：
+
+   ```bash
+   npm run diary:duplicates:audit > /secure/path/diary-duplicates-before.json
+   ```
+
+4. **只套用 audit table migration，並登記為 applied。** 不可先執行普通 deploy：
+
+   ```bash
+   npx prisma db execute --file prisma/migrations/20260807080000_add_diary_reconciliation_audit/migration.sql
+   npx prisma migrate resolve --applied 20260807080000_add_diary_reconciliation_audit
+   ```
+
+   若 `prisma migrate status` 已顯示該 migration applied，跳過這一步；不可重建 audit
+   table。
+5. **預覽並由 maintainer 核准具名 policy。** 預覽不寫資料：
+
+   ```bash
+   npm run diary:duplicates:reconcile -- --migration-id=<approved-change-id>
+   ```
+
+   輸出會列明 canonical 選擇、content/review fields、tags、固定 child relations，並按
+   schema capability 說明是否處理 `DiaryStock`。若政策或 duplicate group 數量與 audit
+   不符，停止操作。
+6. **在 maintenance window 內執行 reconciliation，再做第二次 audit：**
+
+   ```bash
+   npm run diary:duplicates:reconcile -- --apply --migration-id=<approved-change-id>
+   npm run diary:duplicates:audit > /secure/path/diary-duplicates-after.json
+   ```
+
+   第二次 audit 必須為 0 duplicate groups。任何錯誤都應停止流程並保留 maintenance
+   mode；不可靠手改資料「頂住先」。
+
+   Reconciliation 以每個 duplicate group 為一個 transaction：單組內的 content、child
+   relations、audit row 與 merged Diary delete 會一起 commit 或 rollback；若多組之間
+   中途失敗，較早完成的組別會保留。修正失敗原因後可用相同 migration ID 重跑，已無
+   duplicate 的完成組別不會再被處理。重跑前仍須再次 audit，且不可恢復 writers。
+7. **套用餘下 migrations 並驗證：**
+
+   ```bash
+   npx prisma migrate deploy
+   npx prisma migrate status
+   ```
+
+   若 uniqueness migration 曾因 duplicate key 失敗，先在完成 reconciliation 後執行：
+
+   ```bash
+   npx prisma migrate resolve --rolled-back 20260807090000_enforce_diary_user_date
+   npx prisma migrate deploy
+   ```
+
+8. **直接驗證資料 invariant 與 index，全部通過後才恢復 app writers：**
+
+   ```sql
+   SELECT user_id, DATE(date) AS diary_date, COUNT(*) AS diary_count
+   FROM diaries
+   GROUP BY user_id, DATE(date)
+   HAVING COUNT(*) > 1;
+
+   SELECT COUNT(*) AS non_normalized_dates
+   FROM diaries
+   WHERE TIME(date) <> '12:00:00';
+
+   SHOW INDEX FROM diaries WHERE Key_name = 'diaries_user_date_key';
+   ```
+
+   第一個查詢必須回傳 0 rows，第二個 count 必須為 0；index 必須為 unique，欄位順序
+   必須是 `user_id`、`date`。
+
+Repository 提供一次性 MariaDB 驗證命令，會啟動並自動移除 disposable container：
+
+```bash
+npm run test:diary-reconciliation:mysql
+```
+
 ### 退役舊聊天整合（一次性操作）
 
 這次版本會移除舊聊天機器人的 runtime、路由與四張專用資料表；歷史日記的
