@@ -149,7 +149,8 @@ const emit = defineEmits<{
   (event: 'review', value: CompleteThesisReviewInput): void
 }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatLocaleDate } = useTimezone()
 const editing = ref(false)
 const reviewing = ref(false)
 const inputClass = 'mt-1 block min-h-11 w-full rounded-dt-sm border border-dt-border bg-dt-surface-strong p-3 text-sm font-normal text-dt-text outline-none focus:border-dt-primary focus:ring-2 focus:ring-dt-primary/20'
@@ -215,7 +216,7 @@ function submitReview() {
   })
   reviewing.value = false
 }
-function formatDate(value: string) { return new Intl.DateTimeFormat(locale.value || 'zh-TW', { dateStyle: 'medium' }).format(new Date(value)) }
+function formatDate(value: string) { return formatLocaleDate(value, { dateStyle: 'medium' }) }
 
 watch(() => props.thesis, hydrate, { immediate: true })
 </script>

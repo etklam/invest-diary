@@ -217,7 +217,8 @@ definePageMeta({
 })
 
 const route = useRoute()
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatLocaleDate } = useTimezone()
 const config = useRuntimeConfig()
 const { isAdmin } = useAuth()
 const copied = ref(false)
@@ -321,12 +322,11 @@ const articleAuthorLabel = computed(() => {
 })
 const publishedDateLabel = computed(() => {
   if (!post.value?.publishedAt) return ''
-  return new Intl.DateTimeFormat(locale.value === 'zh-TW' ? 'zh-TW' : 'en', {
+  return formatLocaleDate(post.value.publishedAt, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    timeZone: 'UTC'
-  }).format(new Date(post.value.publishedAt))
+  })
 })
 
 const categoryKey = computed(() => {

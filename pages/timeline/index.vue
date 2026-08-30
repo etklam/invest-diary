@@ -362,7 +362,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatShortDate, getDateTimeFormat } from '~/lib/dates'
+import { formatShortDate, formatUserDateTime } from '~/lib/dates'
 import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import { stripDiaryMarkdown } from '~/lib/diary-excerpt'
 import { formatCurrency } from '~/lib/format'
@@ -426,18 +426,19 @@ const upcomingReviewItems = computed(() => [
   ...reviewGroups.value.unscheduled,
 ].slice(0, 4))
 const upcomingReviewCount = computed(() => reviewGroups.value.upcoming.length + reviewGroups.value.unscheduled.length)
-const formatOverviewDate = (value: string) => new Intl.DateTimeFormat(locale.value || 'zh-TW', {
-  dateStyle: 'medium',
-  timeZone: resolveUserTimezone(user.value),
-}).format(new Date(value))
-
 const timelineTimezone = computed(() => resolveUserTimezone(user.value))
+const formatOverviewDate = (value: string) => formatUserDateTime(value, {
+  timezone: timelineTimezone.value,
+  locale: locale.value || 'zh-TW',
+  format: { dateStyle: 'medium' },
+})
 
 const formatTimelinePart = (date: Date | string, options: Intl.DateTimeFormatOptions) => {
-  return getDateTimeFormat(locale.value || 'zh-TW', {
-    ...options,
-    timeZone: timelineTimezone.value,
-  }).format(new Date(date))
+  return formatUserDateTime(date, {
+    timezone: timelineTimezone.value,
+    locale: locale.value || 'zh-TW',
+    format: options,
+  })
 }
 
 const formatTimelineDay = (date: Date | string) => formatTimelinePart(date, { day: '2-digit' }).replace(/\D/g, '')

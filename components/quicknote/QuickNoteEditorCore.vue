@@ -311,7 +311,7 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useI18n()
-const { getTodayDateString } = useTimezone()
+const { getTodayDateString, formatLocaleDateTime } = useTimezone()
 const controller = props.controller
 const contentInput = ref<HTMLTextAreaElement | null>(null)
 const pickerPanel = ref<HTMLElement | null>(null)
@@ -350,7 +350,7 @@ const reminderLabel = computed(() => {
   const value = reminders.value.reminder1
   if (!value) return t('quickDiary.editor.unset')
   const parsed = new Date(value)
-  return Number.isFinite(parsed.getTime()) ? parsed.toLocaleString() : t('quickDiary.editor.unset')
+  return Number.isFinite(parsed.getTime()) ? formatLocaleDateTime(parsed) : t('quickDiary.editor.unset')
 })
 const selectedTagSummary = computed(() => tags.value.length ? tags.value.map(tag => `#${tag}`).join(' · ') : t('quickDiary.editor.unset'))
 const saveDestinationLabel = computed(() => {

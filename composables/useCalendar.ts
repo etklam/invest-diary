@@ -3,7 +3,7 @@ import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import type { DiaryActivityDay } from '~/types/diary'
-import { formatYmdInTimezone } from '~/lib/dates/format'
+import { formatUserDateTime, formatYmdInTimezone } from '~/lib/dates'
 import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import {
   buildHolidaySet,
@@ -24,16 +24,10 @@ export const useCalendar = () => {
   // Get current date in user timezone
   const getNowInTimezone = () => {
     const tz = userTimezone.value
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: tz,
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric'
-    })
-    const parts = formatter.formatToParts(new Date())
-    const year = parseInt(parts.find(p => p.type === 'year')?.value || '0')
-    const month = parseInt(parts.find(p => p.type === 'month')?.value || '0') - 1
-    const day = parseInt(parts.find(p => p.type === 'day')?.value || '0')
+    const [yearString, monthString, dayString] = formatYmdInTimezone(new Date(), tz).split('-')
+    const year = Number(yearString)
+    const month = Number(monthString) - 1
+    const day = Number(dayString)
     return { year, month, day }
   }
 
@@ -49,12 +43,12 @@ export const useCalendar = () => {
   // Weekday labels follow the active locale (index 0 = Sunday, matching
   // firstDayOfWeek). 2023-01-01 is a Sunday; UTC keeps it stable across tz.
   const weekDays = computed(() => {
-    const formatter = new Intl.DateTimeFormat(locale.value || 'en', {
-      weekday: 'short',
-      timeZone: 'UTC'
-    })
     return Array.from({ length: 7 }, (_, i) => (
-      formatter.format(new Date(Date.UTC(2023, 0, 1 + i)))
+      formatUserDateTime(new Date(Date.UTC(2023, 0, 1 + i)), {
+        timezone: 'UTC',
+        locale: locale.value || 'en',
+        format: { weekday: 'short' },
+      })
     ))
   })
 

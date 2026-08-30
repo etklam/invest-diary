@@ -60,15 +60,14 @@ defineEmits<{
   delete: [note: StockNoteView]
 }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatLocaleDateTime } = useTimezone()
 
-const formatDate = (value: string) => {
-  return new Date(value).toLocaleString(locale.value === 'zh-TW' ? 'zh-TW' : locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', {
+const formatDate = (value: string) => formatLocaleDateTime(value, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
   })
-}
 </script>

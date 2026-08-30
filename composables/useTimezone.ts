@@ -1,9 +1,13 @@
 /**
  * Timezone composable for managing user timezone preferences
  */
-import { getUserTodayYmd } from '~/lib/dates/user-tz'
+import { formatUserDateTime, getDateTimeFormat, formatYmdInTimezone } from '~/lib/dates'
+import { getUserTodayYmd, resolveUserTimezone } from '~/lib/dates/user-tz'
 
 export const useTimezone = () => {
+  const { user } = useAuth()
+  const { locale } = useI18n()
+
   // Common timezones for stock market users
   const commonTimezones = [
     { value: 'Asia/Taipei', label: '台北 (UTC+8)', offset: '+08:00' },
@@ -28,16 +32,12 @@ export const useTimezone = () => {
     return Intl.DateTimeFormat().resolvedOptions().timeZone
   }
 
-  // Get timezone from localStorage or use detected/local timezone
+  // Resolve the canonical profile timezone for all date/time display.
   const getTimezone = (): string => {
-    if (process.client) {
-      const stored = localStorage.getItem('user_timezone')
-      if (stored) return stored
-      // For users without stored timezone (not logged in or not set), use browser's detected timezone
-      return detectLocalTimezone()
-    }
-    return 'Asia/Taipei' // Default for server-side
+    return resolveUserTimezone(user.value)
   }
+
+  const getLocale = (): string => locale.value || 'zh-TW'
 
   // Set timezone and persist to localStorage
   const setTimezone = (timezone: string) => {
@@ -54,25 +54,20 @@ export const useTimezone = () => {
   ): string => {
     const userTimezone = timezone || getTimezone()
     const dateObj = typeof date === 'string' ? new Date(date) : date
-
-    const formatOptions: Intl.DateTimeFormatOptions = {
-      timeZone: userTimezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }
-
-    if (format === 'full') {
-      formatOptions.hour = '2-digit'
-      formatOptions.minute = '2-digit'
-    }
-
-    const formatted = new Intl.DateTimeFormat('zh-TW', formatOptions).format(dateObj)
+    const formatted = formatUserDateTime(dateObj, {
+      timezone: userTimezone,
+      locale: 'zh-TW',
+      format: format === 'full'
+        ? { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }
+        : { year: 'numeric', month: '2-digit', day: '2-digit' },
+    })
 
     // Add weekday for 'weekday' format
     if (format === 'weekday') {
-      const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-      const weekday = weekdays[dateObj.getDay()]
+      const ymd = formatYmdInTimezone(dateObj, userTimezone)
+      const weekday = ['日', '一', '二', '三', '四', '五', '六'][
+        new Date(`${ymd}T00:00:00Z`).getUTCDay()
+      ]
       const [datePart] = formatted.split(' ')
       return `${datePart} (${weekday})`
     }
@@ -93,7 +88,7 @@ export const useTimezone = () => {
     const userTimezone = getTimezone()
 
     // Create a date string in the user's timezone
-    const dateFormatter = new Intl.DateTimeFormat('en-US', {
+    const dateFormatter = getDateTimeFormat('en-US', {
       timeZone: userTimezone,
       year: 'numeric',
       month: 'numeric',
@@ -129,13 +124,14 @@ export const useTimezone = () => {
     const dateObj = typeof date === 'string' ? new Date(date) : date
     const userTimezone = getTimezone()
 
-    return new Intl.DateTimeFormat(undefined, {
-      timeZone: userTimezone,
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      ...options
-    }).format(dateObj)
+    return formatUserDateTime(dateObj, {
+      timezone: userTimezone,
+      locale: getLocale(),
+      format: {
+        ...(options?.dateStyle || options?.timeStyle ? {} : { year: 'numeric', month: 'long', day: 'numeric' }),
+        ...options,
+      },
+    })
   }
 
   // Format date and time using user's locale and timezone
@@ -146,15 +142,20 @@ export const useTimezone = () => {
     const dateObj = typeof date === 'string' ? new Date(date) : date
     const userTimezone = getTimezone()
 
-    return new Intl.DateTimeFormat(undefined, {
-      timeZone: userTimezone,
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      ...options
-    }).format(dateObj)
+    return formatUserDateTime(dateObj, {
+      timezone: userTimezone,
+      locale: getLocale(),
+      format: {
+        ...(options?.dateStyle || options?.timeStyle ? {} : {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        ...options,
+      },
+    })
   }
 
   // Format time only using user's locale and timezone
@@ -165,12 +166,11 @@ export const useTimezone = () => {
     const dateObj = typeof date === 'string' ? new Date(date) : date
     const userTimezone = getTimezone()
 
-    return new Intl.DateTimeFormat(undefined, {
-      timeZone: userTimezone,
-      hour: '2-digit',
-      minute: '2-digit',
-      ...options
-    }).format(dateObj)
+    return formatUserDateTime(dateObj, {
+      timezone: userTimezone,
+      locale: getLocale(),
+      format: { hour: '2-digit', minute: '2-digit', ...options },
+    })
   }
 
   return {

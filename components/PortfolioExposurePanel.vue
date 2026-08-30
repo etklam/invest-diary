@@ -18,6 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useI18n()
+const { formatLocaleDateTime } = useTimezone()
 
 // Current allocation bars (mapped from PortfolioExposure)
 const currentBars = computed(() => {
@@ -66,12 +67,12 @@ const showOverweightWarning = computed(() =>
 
 const lastUpdatedLabel = computed(() => {
   if (!props.lastUpdated) return '--'
-  return new Intl.DateTimeFormat('zh-Hant-TW', {
+  return formatLocaleDateTime(props.lastUpdated, {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(props.lastUpdated)
+  })
 })
 
 function roundPct(value: number): number {

@@ -655,7 +655,8 @@ import {
   type StocksSortKey
 } from '~/lib/stocks-view'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatLocaleDate, formatLocaleDateTime } = useTimezone()
 
 definePageMeta({
   middleware: 'auth'
@@ -758,10 +759,10 @@ const {
 // Formatting
 const formatQuantity = (qty: number) => formatHoldingQuantity(qty)
 const formatPercentage = (cost: number) => formatHoldingShare(cost, totalCost.value)
-const formatQuoteTime = (value: string) => new Intl.DateTimeFormat(undefined, {
+const formatQuoteTime = (value: string) => formatLocaleDateTime(value, {
   dateStyle: 'medium',
   timeStyle: 'short',
-}).format(new Date(value))
+})
 
 // Chart data
 const donutSlices = computed(() => buildHoldingChartSegments(baseHoldings.value, {
@@ -891,7 +892,7 @@ const { data: perfData, pending: perfPending, refresh: refreshPerf } = await use
 watch(selectedPeriod, () => refreshPerf())
 
 function formatTradeDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString(locale.value, { month: '2-digit', day: '2-digit' })
+  return formatLocaleDate(date, { month: '2-digit', day: '2-digit' })
 }
 
 // Chart.js Bar Chart 資料

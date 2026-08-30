@@ -310,7 +310,8 @@
 import type { PartnerLinkSummary, PartnerLinksResponse, ApiKeyCreateResponse, ApiKeysResponse, ApiKeySummary } from '~/types/partner'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatLocaleDateTime } = useTimezone()
 const toast = useToast()
 
 definePageMeta({
@@ -465,7 +466,7 @@ const loadKeys = async () => {
 
 onMounted(loadKeys)
 
-const formatDate = (value: string) => new Date(value).toLocaleString(locale.value)
+const formatDate = (value: string) => formatLocaleDateTime(value)
 
 const createKey = async () => {
   if (!label.value.trim()) return

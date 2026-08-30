@@ -119,7 +119,8 @@ const props = defineProps<{
 }>()
 
 const { isAdmin } = useAuth()
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatLocaleDate } = useTimezone()
 const toast = useToast()
 
 const readingTime = computed(() =>
@@ -134,12 +135,11 @@ const authorLabel = computed(() => {
 
 const publishedAtLabel = computed(() => {
   if (!props.post.publishedAt) return ''
-  return new Intl.DateTimeFormat(locale.value === 'zh-TW' ? 'zh-TW' : 'en', {
+  return formatLocaleDate(props.post.publishedAt, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-    timeZone: 'UTC'
-  }).format(new Date(props.post.publishedAt))
+  })
 })
 
 const handleDelete = async () => {

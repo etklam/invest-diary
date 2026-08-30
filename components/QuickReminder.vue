@@ -49,6 +49,7 @@
 import { computed, reactive, watch } from 'vue'
 
 const { t } = useI18n()
+const { formatLocaleDateTime } = useTimezone()
 
 const props = defineProps<{
   reminders: {
@@ -92,7 +93,7 @@ const reminderPreview = computed(() => {
   if (!value) return ''
   const parsed = new Date(value)
   if (!Number.isFinite(parsed.getTime())) return ''
-  return parsed.toLocaleString()
+  return formatLocaleDateTime(parsed)
 })
 
 const apply = () => {

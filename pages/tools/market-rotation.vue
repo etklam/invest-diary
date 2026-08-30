@@ -22,7 +22,8 @@ const noData = ref(false)
 const selectedRow = ref<MarketRotationMonitorRow | null>(null)
 const lastRefreshAt = ref<Date | null>(null)
 const toast = useToast()
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatLocaleDate, formatLocaleDateTime } = useTimezone()
 
 const scopeOptions = computed<Array<{ key: RankScope; label: string; icon: string }>>(() => [
   { key: 'sectors', label: t('marketRotation.scopes.sectors'), icon: 'heroicons:squares-2x2' },
@@ -133,21 +134,21 @@ function formatRatio(ratio: number | null | undefined): string {
 
 function formatDateTime(value: Date | null): string {
   if (!value) return '--'
-  return new Intl.DateTimeFormat(locale.value || 'zh-TW', {
+  return formatLocaleDateTime(value, {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(value)
+  })
 }
 
 function formatDate(value: string | null | undefined): string {
   if (!value) return '--'
-  return new Intl.DateTimeFormat(locale.value || 'zh-TW', {
+  return formatLocaleDate(value, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).format(new Date(value))
+  })
 }
 
 function deltaClass(value: number | null | undefined): string {

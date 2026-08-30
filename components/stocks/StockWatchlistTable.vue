@@ -77,10 +77,10 @@ defineEmits<{
   archive: [id: string]
 }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatLocaleDate } = useTimezone()
 
-const formatAt = (value: string) =>
-  new Date(value).toLocaleString(locale.value === 'zh-TW' ? 'zh-TW' : locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', {
+const formatAt = (value: string) => formatLocaleDate(value, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'

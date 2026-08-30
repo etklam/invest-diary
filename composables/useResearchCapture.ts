@@ -3,6 +3,8 @@ import { useAppShell } from '~/composables/useAppShell'
 import { useAuth } from '~/composables/useAuth'
 import type { QuickDiaryContext } from '~/types/quicknote'
 import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
+import { formatUserDateTime } from '~/lib/dates'
+import { resolveUserTimezone } from '~/lib/dates/user-tz'
 
 export type ResearchCaptureSourceType = StockTimelineSourceType
 
@@ -45,22 +47,21 @@ function createIdempotencyKey(): string {
   return `research-${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
-function formatContextDate(value: string): string | null {
+function formatContextDate(value: string, timezone: string, locale: string): string | null {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return null
 
-  return new Intl.DateTimeFormat(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  }).format(date)
+  return formatUserDateTime(date, {
+    timezone,
+    locale,
+    format: { year: 'numeric', month: 'short', day: 'numeric' },
+  })
 }
 
 export const useResearchCapture = (): ResearchCaptureController => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const { openQuickDiary } = useAppShell()
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const toast = useToast()
 
   const isOpen = ref(false)
@@ -95,7 +96,11 @@ export const useResearchCapture = (): ResearchCaptureController => {
   const buildQuickDiaryContent = (insight: string, currentContext: ResearchCaptureContext): string => {
     const lines = [`${t('researchCapture.context.source')}: ${currentContext.sourceLabel}`]
     const title = currentContext.metadata.sourceTitle
-    const asOf = formatContextDate(currentContext.metadata.occurredAt)
+    const asOf = formatContextDate(
+      currentContext.metadata.occurredAt,
+      resolveUserTimezone(user.value),
+      locale.value || 'en',
+    )
 
     if (title && title !== currentContext.sourceLabel) {
       lines.push(`${t('researchCapture.context.title')}: ${title}`)

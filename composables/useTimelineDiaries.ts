@@ -1,5 +1,5 @@
 import { computed, onMounted, ref, watch } from 'vue'
-import { formatDateWithWeekday, formatYmdInTimezone } from '~/lib/dates'
+import { formatDateWithWeekday, formatUserDateTime, formatYmdInTimezone } from '~/lib/dates'
 import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import type {
@@ -147,10 +147,11 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
       const month = Number(monthStr)
       const period = `${year}-${String(month).padStart(2, '0')}`
       // Localized month name — avoid bare "{year} {month}" numbers on EN
-      const periodLabel = new Intl.DateTimeFormat(locale.value || 'en', {
-        year: 'numeric',
-        month: 'long',
-      }).format(new Date(year, month - 1, 1))
+      const periodLabel = formatUserDateTime(new Date(Date.UTC(year, month - 1, 1, 12)), {
+        timezone: userTimezone.value,
+        locale: locale.value || 'en',
+        format: { year: 'numeric', month: 'long' },
+      })
 
       if (!groups.has(period)) {
         groups.set(period, {

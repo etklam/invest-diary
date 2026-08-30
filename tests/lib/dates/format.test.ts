@@ -1,11 +1,34 @@
 import { describe, it, expect } from 'vitest'
 import {
   formatDate,
+  formatUserDateTime,
   formatShortDate,
   formatDateWithWeekday,
   formatYmdInTimezone,
   formatYearMonth,
 } from '~/lib/dates/format'
+
+describe('formatUserDateTime', () => {
+  it('uses the supplied user timezone and locale', () => {
+    const result = formatUserDateTime('2024-01-15T23:30:00Z', {
+      timezone: 'Asia/Taipei',
+      locale: 'en-US',
+    })
+
+    expect(result).toContain('01/16/2024')
+    expect(result).toContain('07:30')
+  })
+
+  it('supports date-only display while retaining the shared cache', () => {
+    const result = formatUserDateTime('2024-01-15T23:30:00Z', {
+      timezone: 'America/Los_Angeles',
+      locale: 'en-US',
+      format: { year: 'numeric', month: 'short', day: 'numeric' },
+    })
+
+    expect(result).toBe('Jan 15, 2024')
+  })
+})
 
 // ─── formatDate (canonical) ────────────────────────────────────────────────────
 

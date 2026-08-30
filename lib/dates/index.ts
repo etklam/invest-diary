@@ -9,13 +9,14 @@
 // ─── 格式化 ────────────────────────────────────────────────────────────────────
 export {
   formatDate,
+  formatUserDateTime,
   formatShortDate,
   formatDateWithWeekday,
   formatYmdInTimezone,
   formatYearMonth,
   getDateTimeFormat,
 } from './format'
-export type { DateFormatOptions } from './format'
+export type { DateFormatOptions, UserDateTimeFormatOptions } from './format'
 
 // ─── 正規化 ────────────────────────────────────────────────────────────────────
 export { toUtcNoonDate, getUtcDayRange, toDateTimeLocalValue } from './normalize'

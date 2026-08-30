@@ -124,6 +124,7 @@ definePageMeta({ middleware: 'auth' })
 
 const route = useRoute()
 const { t, locale } = useI18n()
+const { formatLocaleDate } = useTimezone()
 const toast = useToast()
 const displaySymbol = computed(() => String(route.params.symbol).toUpperCase())
 const showNoteEditor = ref(false)
@@ -144,7 +145,7 @@ const formatMoney = (value: number | null) => {
   return formatter.format(value)
 }
 const formatNumber = (value: number) => new Intl.NumberFormat(locale.value || 'zh-TW', { maximumFractionDigits: 4 }).format(value)
-const formatDate = (value: string) => new Intl.DateTimeFormat(locale.value || 'zh-TW', { dateStyle: 'medium' }).format(new Date(value))
+const formatDate = (value: string) => formatLocaleDate(value, { dateStyle: 'medium' })
 
 const positionMetrics = computed(() => hub.value ? [
   { label: t('companyHub.position.quantity'), value: formatNumber(hub.value.position.quantity) },

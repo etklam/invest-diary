@@ -17,6 +17,15 @@ export interface DateFormatOptions {
   locale?: string
 }
 
+export interface UserDateTimeFormatOptions {
+  /** User profile 的 IANA 時區 */
+  timezone: string
+  /** 目前 UI 使用的 BCP 47 locale */
+  locale: string
+  /** 顯示形態；省略時為完整日期與時間 */
+  format?: Intl.DateTimeFormatOptions
+}
+
 // ─── 內部輔助 ──────────────────────────────────────────────────────────────────
 
 function toDateInstance(input: DateInput): Date {
@@ -39,6 +48,30 @@ export function getDateTimeFormat(locale: string, options: Intl.DateTimeFormatOp
   return formatter
 }
 
+/**
+ * User profile timezone 的唯一日期/時間顯示入口。
+ *
+ * `format` 只控制顯示欄位；timezone 強制由此 semantic API 的參數提供，
+ * Web caller 應以 resolveUserTimezone(user) 取得它。React Native 可保留同一
+ * semantic contract，改用自己的 rendering implementation。
+ */
+export function formatUserDateTime(
+  input: DateInput,
+  { timezone, locale, format }: UserDateTimeFormatOptions,
+): string {
+  const date = toDateInstance(input)
+  return getDateTimeFormat(locale, {
+    ...(format ?? {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    timeZone: timezone,
+  }).format(date)
+}
+
 // ─── 核心函數 ──────────────────────────────────────────────────────────────────
 
 /**
@@ -50,18 +83,10 @@ export function getDateTimeFormat(locale: string, options: Intl.DateTimeFormatOp
  *   // → "2024/01/15 10:30"
  */
 export function formatDate(input: DateInput, options?: DateFormatOptions): string {
-  const date = toDateInstance(input)
   const tz = options?.timezone || 'Asia/Taipei'
   const locale = options?.locale || 'zh-TW'
 
-  return getDateTimeFormat(locale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: tz,
-  }).format(date)
+  return formatUserDateTime(input, { timezone: tz, locale })
 }
 
 // ─── 衍生函數 ──────────────────────────────────────────────────────────────────
@@ -74,15 +99,13 @@ export function formatDate(input: DateInput, options?: DateFormatOptions): strin
  *   // → "2024/01/15"
  */
 export function formatShortDate(input: DateInput, timezone?: string): string {
-  const date = toDateInstance(input)
   const tz = timezone || 'Asia/Taipei'
 
-  return getDateTimeFormat('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    timeZone: tz,
-  }).format(date)
+  return formatUserDateTime(input, {
+    timezone: tz,
+    locale: 'zh-TW',
+    format: { year: 'numeric', month: '2-digit', day: '2-digit' },
+  })
 }
 
 /**
@@ -147,9 +170,9 @@ export function formatYmdInTimezone(input: DateInput, timeZone: string): string 
  *   // → "2024年1月"
  */
 export function formatYearMonth(date: DateInput, locale: string = 'zh-TW'): string {
-  const d = toDateInstance(date)
-  return getDateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'long',
-  }).format(d)
+  return formatUserDateTime(date, {
+    timezone: 'Asia/Taipei',
+    locale,
+    format: { year: 'numeric', month: 'long' },
+  })
 }

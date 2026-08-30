@@ -189,12 +189,15 @@ import { useCalendar } from '~/composables/useCalendar'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useAppShell } from '~/composables/useAppShell'
 import { useI18n } from '#imports'
+import { formatUserDateTime } from '~/lib/dates'
+import { resolveUserTimezone } from '~/lib/dates/user-tz'
 
 definePageMeta({
   middleware: 'auth'
 })
 
 const { t, locale } = useI18n()
+const { user } = useAuth()
 
 const {
   currentYear,
@@ -216,10 +219,11 @@ const {
 } = useCalendar()
 
 const monthTitle = computed(() =>
-  new Intl.DateTimeFormat(locale.value || 'en', {
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(currentYear.value, currentMonth.value, 1)),
+  formatUserDateTime(new Date(Date.UTC(currentYear.value, currentMonth.value, 1, 12)), {
+    timezone: resolveUserTimezone(user.value),
+    locale: locale.value || 'en',
+    format: { month: 'long', year: 'numeric' },
+  }),
 )
 
 const { openQuickDiary: openGlobalQuickDiary } = useAppShell()

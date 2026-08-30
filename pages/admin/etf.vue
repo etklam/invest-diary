@@ -23,6 +23,7 @@ interface ApiErrorLike {
 }
 
 const { t } = useI18n()
+const { formatLocaleDate } = useTimezone()
 const toast = useToast()
 
 // State
@@ -333,7 +334,7 @@ definePageMeta({
                 {{ etf.priceCount }}
               </td>
               <td class="px-4 py-3 text-dt-text-muted">
-                {{ new Date(etf.createdAt).toLocaleDateString() }}
+                {{ formatLocaleDate(etf.createdAt) }}
               </td>
               <td class="px-4 py-3">
                 <div class="flex gap-2">

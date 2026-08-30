@@ -33,6 +33,7 @@ ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, CategoryScale
 const { t, locale } = useI18n()
 const toast = useToast()
 const researchCapture = useResearchCapture()
+const { formatLocaleDate, formatLocaleDateTime } = useTimezone()
 
 // Primary stock (主股票)
 const primarySymbol = ref<string>('')
@@ -55,7 +56,7 @@ const relativeHistoricalData = ref<HistoricalQuote[]>([])
 const historicalLoading = ref(false)
 
 function formatHistoricalLabel(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString(locale.value, {
+  return formatLocaleDate(new Date(timestamp * 1000), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -424,7 +425,7 @@ const generateMarkdown = (): string => {
 
   lines.push('')
   lines.push(`> ${t('tools.relativeValue.markdown.generatedBy')}`)
-  lines.push(`> ${t('tools.relativeValue.markdown.lastUpdate')}: ${new Date().toLocaleString()}`)
+  lines.push(`> ${t('tools.relativeValue.markdown.lastUpdate')}: ${formatLocaleDateTime(new Date())}`)
 
   return lines.join('\n')
 }

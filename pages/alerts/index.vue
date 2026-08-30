@@ -64,14 +64,14 @@
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-dt-text-muted">
                   <span class="inline-flex items-center gap-1 font-data">
                     <Icon name="heroicons:clock" class="h-3.5 w-3.5 text-dt-text-soft" />
-                    {{ t('alert.triggerTime') }}：{{ formatDate(alert.triggerAt, { timezone: userTimezone }) }}
+                    {{ t('alert.triggerTime') }}：{{ formatDate(alert.triggerAt) }}
                   </span>
                   <StatusBadge v-if="alert.recurringMode" tone="accent">
                     {{ getRecurringLabel(alert.recurringMode) }} · #{{ alert.instanceNumber }}
                   </StatusBadge>
                 </div>
                 <p class="font-data text-xs text-dt-text-soft">
-                  {{ t('alert.createdAt') }}：{{ formatShortDate(alert.createdAt, userTimezone) }}
+                  {{ t('alert.createdAt') }}：{{ formatShortDate(alert.createdAt) }}
                 </p>
               </div>
             </div>
@@ -93,12 +93,10 @@
 <script setup lang="ts">
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
-import { formatDate, formatShortDate } from '~/lib/dates'
-import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import type { AlertApiResponse } from '~/types/alert'
 
 const { t } = useI18n()
-const { user } = useAuth()
+const { formatLocaleDateTime, formatLocaleDate } = useTimezone()
 const { runWithAuthRecovery } = useAuthRecovery()
 
 definePageMeta({
@@ -110,8 +108,18 @@ const { data: alerts, pending, error, refresh } = await useLazyFetch<AlertApiRes
 
 const toast = useToast()
 
-// Get user's timezone
-const userTimezone = computed(() => resolveUserTimezone(user.value))
+const formatDate = (value: string) => formatLocaleDateTime(value, {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+const formatShortDate = (value: string) => formatLocaleDate(value, {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
 
 const dismissAlert = async (id: AlertApiResponse['id']) => {
   try {
