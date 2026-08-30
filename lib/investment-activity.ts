@@ -5,6 +5,8 @@
  * infer symbols from prose, create events, or mutate any source record.
  */
 
+import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
+
 export type ActivityKind = 'diary' | 'thesis_review' | 'stock_timeline' | 'thesis'
 
 export interface ActivitySourceLabel {
@@ -55,7 +57,7 @@ export interface StockTimelineActivityInput {
   occurredAt: string
   symbol: string
   summary: string
-  sourceType: string
+  sourceType: StockTimelineSourceType
   sourceTitle?: string | null
   sourceUrl?: string | null
   sourceDiaryId?: string | null

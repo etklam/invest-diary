@@ -1,5 +1,6 @@
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
 import { mergeInvestmentActivity, type InvestmentActivityOptions, type InvestmentActivitySources } from '~/lib/investment-activity'
 
 const ACTIVITY_LIMIT = 50
@@ -18,7 +19,7 @@ type ReviewRow = {
   thesis: { stock: { symbol: string } }
 }
 type TimelineRow = {
-  id: bigint; occurredAt: Date; summary: string; sourceType: string; sourceTitle: string | null; sourceUrl: string | null
+  id: bigint; occurredAt: Date; summary: string; sourceType: StockTimelineSourceType; sourceTitle: string | null; sourceUrl: string | null
   sourceDiaryId: bigint | null; createdVia: string; createdByLabel: string | null; stock: { symbol: string }
 }
 type ThesisRow = {

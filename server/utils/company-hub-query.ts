@@ -1,5 +1,6 @@
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
 import { concentration } from '~/lib/stocks-view'
 import { getCachedQuote } from '~/lib/market-data/quote'
 import { listSharingPartners } from '~/server/utils/partner'
@@ -198,7 +199,7 @@ export async function getCompanyHub(userId: bigint, symbolRaw: string): Promise<
       sourceName: note.userId === userId ? null : (sourceNameByUserId.get(note.userId.toString()) ?? null),
     })),
     evidence: evidence.map((record: {
-      id: bigint; summary: string; sourceType: string; sourceTitle: string | null
+      id: bigint; summary: string; sourceType: StockTimelineSourceType; sourceTitle: string | null
       sourceUrl: string | null; occurredAt: Date; createdByLabel: string | null
     }) => ({
       id: record.id.toString(),

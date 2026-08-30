@@ -5,11 +5,12 @@ import { requireApiKey } from '~/server/utils/api-key'
 import { createStockTimelineRecordsFromAgent } from '~/server/utils/stock-timeline-queries'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { serialize } from '~/server/utils/serialize'
+import { agentAllowedSourceTypeSchema } from '~/lib/stocks/timeline-source'
 
 const timelineRecordSchema = z.object({
   symbol: z.string().min(1).max(32).transform(normalizeStockSymbol),
   summary: z.string().min(1),
-  sourceType: z.enum(['TRADE_BASIC_DIARY', 'VIDEO_TRANSCRIBE_SUMMARIZE', 'DIARY', 'ARTICLE', 'MANUAL', 'SYSTEM']),
+  sourceType: agentAllowedSourceTypeSchema,
   sourceTitle: z.string().max(255).optional(),
   sourceUrl: z.string().url().max(1000).optional(),
   sourceDiaryId: z.string().regex(/^[1-9]\d*$/).optional(),

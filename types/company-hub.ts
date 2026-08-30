@@ -1,4 +1,5 @@
 import type { CurrentInvestmentThesis, ThesisReviewRecord } from './investment-thesis'
+import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
 
 export type CompanyHoldingState = 'held' | 'closed' | 'research_only' | 'untracked'
 
@@ -47,7 +48,7 @@ export interface CompanyHubResponse {
   evidence: Array<{
     id: string
     summary: string
-    sourceType: string
+    sourceType: StockTimelineSourceType
     sourceTitle: string | null
     sourceUrl: string | null
     occurredAt: string

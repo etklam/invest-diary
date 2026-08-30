@@ -1,20 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
 import { isUniqueConstraintError } from '~/server/utils/diary-write'
 import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 
-type StockTimelineSourceType =
-  | 'TRADE_BASIC_DIARY'
-  | 'VIDEO_TRANSCRIBE_SUMMARIZE'
-  | 'DIARY'
-  | 'ARTICLE'
-  | 'MANUAL'
-  | 'SYSTEM'
-  | 'MARKET_ROTATION'
-  | 'SEC_FILING'
-  | 'RELATIVE_VALUE'
-  | 'SEASONALITY'
 type StockTimelineCreatedVia = 'API_KEY' | 'WEB' | 'SYSTEM'
 
 export interface AgentTimelineRecordInput {

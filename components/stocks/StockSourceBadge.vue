@@ -5,8 +5,10 @@
 </template>
 
 <script setup lang="ts">
+import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
+
 const props = defineProps<{
-  sourceType: string
+  sourceType: StockTimelineSourceType
 }>()
 
 const { t } = useI18n()

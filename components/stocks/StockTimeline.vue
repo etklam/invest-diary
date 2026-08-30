@@ -5,11 +5,13 @@
 </template>
 
 <script setup lang="ts">
+import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
+
 interface StockTimelineRecord {
   id: string
   summary: string
   occurredAt: string
-  sourceType: string
+  sourceType: StockTimelineSourceType
   sourceTitle?: string | null
   sourceUrl?: string | null
   sourceDiaryId?: string | null

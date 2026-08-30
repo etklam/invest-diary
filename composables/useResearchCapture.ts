@@ -2,12 +2,9 @@ import { computed, ref, type ComputedRef, type Ref } from 'vue'
 import { useAppShell } from '~/composables/useAppShell'
 import { useAuth } from '~/composables/useAuth'
 import type { QuickDiaryContext } from '~/types/quicknote'
+import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
 
-export type ResearchCaptureSourceType =
-  | 'MARKET_ROTATION'
-  | 'SEC_FILING'
-  | 'RELATIVE_VALUE'
-  | 'SEASONALITY'
+export type ResearchCaptureSourceType = StockTimelineSourceType
 
 export interface ResearchCaptureMetadata {
   sourceType: ResearchCaptureSourceType

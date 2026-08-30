@@ -1,5 +1,6 @@
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import type { StockTimelineSourceType } from '~/lib/stocks/timeline-source'
 
 type StockWatchStatus = 'WATCHING' | 'ARCHIVED'
 
@@ -62,18 +63,6 @@ export async function listUserWatchlist(userIdInput: string | bigint) {
     status: item.status,
   }))
 }
-
-type StockTimelineSourceType =
-  | 'TRADE_BASIC_DIARY'
-  | 'VIDEO_TRANSCRIBE_SUMMARIZE'
-  | 'DIARY'
-  | 'ARTICLE'
-  | 'MANUAL'
-  | 'SYSTEM'
-  | 'MARKET_ROTATION'
-  | 'SEC_FILING'
-  | 'RELATIVE_VALUE'
-  | 'SEASONALITY'
 
 export async function listUserWatchlistItems(userIdInput: string | bigint) {
   const userId = BigInt(userIdInput)

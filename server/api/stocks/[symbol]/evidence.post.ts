@@ -5,23 +5,13 @@ import { createStockTimelineRecordFromWeb, toTimelineResponseItem } from '~/serv
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
+import { stockTimelineSourceTypeSchema } from '~/lib/stocks/timeline-source'
 
 const SYMBOL_REGEX = /^[A-Za-z0-9.]{1,10}$/
 
 const requestSchema = z.object({
   summary: z.string().min(1).max(10000),
-  sourceType: z.enum([
-    'TRADE_BASIC_DIARY',
-    'VIDEO_TRANSCRIBE_SUMMARIZE',
-    'DIARY',
-    'ARTICLE',
-    'MANUAL',
-    'SYSTEM',
-    'MARKET_ROTATION',
-    'SEC_FILING',
-    'RELATIVE_VALUE',
-    'SEASONALITY',
-  ]),
+  sourceType: stockTimelineSourceTypeSchema,
   sourceTitle: z.string().max(255).optional(),
   sourceUrl: z.string().url().max(1000)
     .refine(value => value.startsWith('http://') || value.startsWith('https://'), {
