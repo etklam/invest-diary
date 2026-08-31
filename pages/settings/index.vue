@@ -1,8 +1,9 @@
 <template>
-  <div class="settings-page max-w-4xl mx-auto px-4 py-8 sm:py-10">
-    <h1 class="settings-h1 text-2xl font-semibold mb-8 sm:text-3xl">
-      {{ t('settings.title') }}
-    </h1>
+  <PageContainer width="app" class="settings-page py-8 sm:py-10">
+    <div class="mx-auto w-full max-w-4xl">
+      <h1 class="settings-h1 text-2xl font-semibold mb-8 sm:text-3xl">
+        {{ t('settings.title') }}
+      </h1>
 
     <div class="space-y-6">
       <!-- Profile + Display + Trading sections stay non-editable until user settings load,
@@ -238,7 +239,8 @@
       </div>
 
     </div>
-  </div>
+    </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

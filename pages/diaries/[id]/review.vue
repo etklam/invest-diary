@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto w-full max-w-[1040px] space-y-6 pb-16">
+  <PageContainer width="app" class="space-y-6 pb-16">
     <div v-if="pending" class="rounded-dt-md border border-dt-border bg-dt-surface p-8 text-center shadow-dt-sm">
       <Icon name="svg-spinners:180-ring-with-bg" class="mx-auto h-8 w-8 text-dt-primary" />
       <p class="mt-3 text-sm text-dt-text-muted">{{ t('common.loading') }}</p>
@@ -146,7 +146,7 @@
         </LedgerCard>
       </div>
     </template>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

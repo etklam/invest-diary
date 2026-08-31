@@ -9,8 +9,8 @@ useHead(() => ({ title: `${t('secFilings.title')} - ${t('nav.tools')}`, meta: [{
 definePageMeta({ requiresAuth: false })
 </script>
 <template>
-  <div class="min-h-screen bg-dt-bg px-4 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl space-y-6">
+  <div class="min-h-screen bg-dt-bg">
+    <PageContainer width="wide" class="space-y-6 py-6">
       <LedgerCard class="!p-6 sm:!p-8"><div class="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center"><div><p class="text-xs font-bold uppercase tracking-[0.15em] text-dt-secondary">{{ t('secFilings.kicker') }}</p><h1 class="mt-3 font-display text-3xl font-semibold text-dt-text sm:text-4xl">{{ t('secFilings.title') }}</h1><p class="mt-3 max-w-2xl text-dt-text-muted">{{ t('secFilings.subtitle') }}</p></div><SecCompanySearch :results="tool.companies.value" :loading="tool.loading.value" @search="tool.searchCompanies" @select="tool.selectCompany" /></div></LedgerCard>
 
       <div v-if="tool.stale.value" class="rounded-dt-md border border-dt-warning/40 bg-dt-warning/10 p-4 text-sm text-dt-warning">{{ t('secFilings.stale') }}</div>
@@ -25,7 +25,7 @@ definePageMeta({ requiresAuth: false })
         <LedgerCard v-else class="py-16 text-center"><Icon name="heroicons:document-magnifying-glass" class="mx-auto h-12 w-12 text-dt-text-muted" /><p class="mt-4 text-dt-text-muted">{{ t('secFilings.emptyFilings') }}</p></LedgerCard>
       </template>
       <LedgerCard v-else class="py-16 text-center"><Icon name="heroicons:building-office-2" class="mx-auto h-12 w-12 text-dt-text-muted" /><p class="mt-4 text-dt-text-muted">{{ t('secFilings.initial') }}</p></LedgerCard>
-    </div>
+    </PageContainer>
     <ResearchCaptureModal :capture="researchCapture" />
   </div>
 </template>

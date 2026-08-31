@@ -92,6 +92,8 @@
   - tablet: 8 columns
   - desktop: 12 columns
 - **Max content width:** 1200px for app, 1280px for public/editorial
+- **Horizontal layout contract:** authenticated pages and data-heavy tools use `PageContainer`; `app` is 1200px, `wide` is 1280px, and `reading` is 800px. Its only outer gutter is 16px below 768px, 24px from 768px, and 32px from 1024px. The default shell owns vertical spacing only.
+- **Navigation breakpoint:** the shell uses the Tailwind `xl` breakpoint (1280px) for desktop navigation. `layouts/mobile.vue` and `useMobileDetection` remain legacy compatibility code and are not the active shell contract.
 - **Border radius:**
   - input-sm: 12px
   - card-md: 16px

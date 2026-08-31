@@ -1,5 +1,5 @@
 <template>
-  <div class="timeline-page mx-auto w-full max-w-[1180px] space-y-6 pb-20">
+  <PageContainer width="app" class="timeline-page space-y-6 pb-20">
     <!-- Header -->
     <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div class="min-w-0">
@@ -358,7 +358,7 @@
       </div>
     </div>
 
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

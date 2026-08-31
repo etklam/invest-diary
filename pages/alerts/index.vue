@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 pb-4">
+  <PageContainer width="app" class="space-y-6 pb-4">
     <header class="flex items-center justify-between gap-3">
       <h1 class="font-display text-2xl font-semibold tracking-tight text-dt-text sm:text-3xl">
         {{ t('alert.title') }}
@@ -87,7 +87,7 @@
         </li>
       </ul>
     </section>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

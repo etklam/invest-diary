@@ -162,7 +162,7 @@ definePageMeta({
 
 <template>
   <div class="min-h-screen bg-dt-bg font-body">
-    <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <PageContainer width="wide" class="py-6">
       <LedgerCard class="p-6 sm:p-8">
         <div class="grid gap-8 lg:grid-cols-[1.25fr_0.9fr] lg:items-center">
           <div>
@@ -237,9 +237,9 @@ definePageMeta({
           </div>
         </div>
       </LedgerCard>
-    </section>
+    </PageContainer>
 
-    <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8">
+    <PageContainer width="wide" class="grid gap-6 pb-12 lg:grid-cols-[1.15fr_0.85fr]">
       <div class="space-y-6">
         <LedgerCard>
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -545,7 +545,7 @@ definePageMeta({
           </p>
         </LedgerCard>
       </div>
-    </section>
+    </PageContainer>
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto max-w-[1180px] space-y-6">
+  <PageContainer width="app" class="space-y-6">
     <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-md">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -89,7 +89,7 @@
         <BaseButton>{{ $t('strategyPerformance.recordTrade') }}</BaseButton>
       </NuxtLink>
     </section>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

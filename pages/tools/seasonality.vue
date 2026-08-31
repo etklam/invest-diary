@@ -132,7 +132,7 @@ definePageMeta({
 <template>
   <div class="min-h-screen bg-dt-bg">
     <!-- Hero section -->
-    <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <PageContainer width="wide" class="py-6">
       <LedgerCard class="!p-6 sm:!p-8">
         <div class="grid gap-8 lg:grid-cols-[1.15fr_0.95fr] lg:items-center">
           <div>
@@ -179,10 +179,10 @@ definePageMeta({
           </div>
         </div>
       </LedgerCard>
-    </section>
+    </PageContainer>
 
     <!-- Main content -->
-    <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
+    <PageContainer width="wide" class="grid gap-6 pb-12 lg:grid-cols-[1.1fr_0.9fr]">
       <div class="min-w-0 space-y-6">
         <!-- Current & Next month highlight cards -->
         <div class="grid gap-6 xl:grid-cols-2">
@@ -424,7 +424,7 @@ definePageMeta({
           {{ t('tools.seasonality.dataSource') }}
         </div>
       </div>
-    </section>
+    </PageContainer>
     <ResearchCaptureModal :capture="researchCapture" />
   </div>
 </template>

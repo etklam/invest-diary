@@ -1,4 +1,5 @@
 <template>
+  <!-- Legacy layout: default.vue is the active application shell. -->
   <div class="mobile-layout" :class="{ 'has-keyboard': keyboardVisible }">
     <!-- 主要內容區域 -->
     <main class="main-content" :style="{ paddingBottom: safeAreaBottom + navigationHeight + 'px' }">

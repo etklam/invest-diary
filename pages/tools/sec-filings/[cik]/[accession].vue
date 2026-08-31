@@ -11,7 +11,7 @@ useHead(() => ({ title: `${tool.detail.value?.filing.form ?? t('secFilings.title
 definePageMeta({ requiresAuth: false })
 </script>
 <template>
-  <div class="min-h-screen bg-dt-bg px-4 py-6 sm:px-6 lg:px-8"><div class="mx-auto max-w-6xl space-y-6">
+  <div class="min-h-screen bg-dt-bg"><PageContainer width="wide" class="space-y-6 py-6">
     <NuxtLink to="/tools/sec-filings" class="inline-flex min-h-11 items-center text-sm font-semibold text-dt-primary"><Icon name="heroicons:arrow-left" class="mr-2 h-4 w-4" />{{ t('secFilings.back') }}</NuxtLink>
     <LedgerCard v-if="tool.loading.value" class="py-16 text-center"><Icon name="heroicons:arrow-path" class="mx-auto h-8 w-8 animate-spin text-dt-primary" /></LedgerCard>
     <div v-else-if="tool.errorCode.value" class="rounded-dt-md border border-dt-danger/40 bg-dt-danger/10 p-4 text-dt-danger">{{ t(`error.code.${tool.errorCode.value.toLowerCase()}`) }}</div>
@@ -21,5 +21,5 @@ definePageMeta({ requiresAuth: false })
       <LedgerCard v-if="!tool.detail.value.hasPdf" class="!p-4"><p class="text-sm text-dt-text-muted">{{ t('secFilings.noPdf') }}</p></LedgerCard>
       <section><h2 class="mb-4 text-xl font-semibold text-dt-text">{{ t('secFilings.documents', { count: tool.detail.value.documents.length }) }}</h2><SecDocumentList :documents="tool.detail.value.documents" :cik="cik" :accession="accession" /></section>
     </template>
-  </div></div>
+  </PageContainer></div>
 </template>

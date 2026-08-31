@@ -1,5 +1,6 @@
 <template>
-  <div class="mx-auto max-w-[920px] space-y-6">
+  <PageContainer width="app">
+    <div class="mx-auto w-full max-w-4xl space-y-6">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">{{ $t('tradePlan.kicker') }}</p>
@@ -58,7 +59,8 @@
         @submit="updateTradePlan"
       />
     </template>
-  </div>
+    </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

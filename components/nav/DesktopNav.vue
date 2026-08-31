@@ -19,12 +19,12 @@ const { openQuickDiary } = useAppShell()
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-7xl">
-    <div
-      class="relative z-30 flex items-center rounded-dt-md border border-dt-border bg-dt-surface px-4 py-2.5 shadow-dt-sm sm:px-5 sm:py-3"
-    >
+  <div
+    class="relative z-30 flex items-center rounded-dt-md border border-dt-border bg-dt-surface px-4 py-2.5 shadow-dt-sm sm:px-5 sm:py-3"
+  >
       <NavLogo />
 
+      <!-- Desktop navigation follows the shell's xl (1280px) breakpoint. -->
       <ul class="hidden items-center gap-1 xl:flex">
         <template v-if="isAuthenticated">
           <li>
@@ -97,6 +97,5 @@ const { openQuickDiary } = useAppShell()
       </ul>
 
       <slot name="mobile-trigger" />
-    </div>
   </div>
 </template>

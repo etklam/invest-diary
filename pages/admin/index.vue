@@ -137,7 +137,7 @@ const roleBadgeClass = (role: string) => {
 
 <template>
   <div class="min-h-screen bg-dt-bg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <PageContainer width="wide" class="py-8">
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-dt-text">
@@ -418,6 +418,6 @@ const roleBadgeClass = (role: string) => {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto w-full max-w-[1180px] space-y-6 pb-20">
+  <PageContainer width="app" class="space-y-6 pb-20">
     <header class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <NuxtLink to="/stocks" class="inline-flex min-h-11 items-center gap-1.5 text-sm text-dt-text-muted hover:text-dt-primary">
@@ -112,7 +112,7 @@
         </details>
       </section>
     </template>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

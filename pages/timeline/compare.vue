@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+  <PageContainer width="app" class="space-y-6 py-6 sm:py-8">
     <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
       <div class="min-w-0 space-y-2">
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
@@ -213,7 +213,7 @@
         </article>
       </div>
     </div>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

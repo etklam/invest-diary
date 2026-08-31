@@ -210,7 +210,7 @@ const bulkDelete = async () => {
 
 <template>
   <div class="min-h-screen bg-dt-bg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <PageContainer width="wide" class="py-8">
       <!-- Header -->
       <div class="mb-8 flex justify-between items-center">
         <div>
@@ -538,6 +538,6 @@ const bulkDelete = async () => {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8">
+  <PageContainer width="reading" class="py-8">
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
       <i-svg-spinners-180-ring-with-bg class="h-8 w-8 text-dt-primary" />
@@ -123,7 +123,7 @@
         </div>
       </form>
     </div>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

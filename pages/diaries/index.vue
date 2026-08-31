@@ -1,5 +1,5 @@
 <template>
-  <div class="diary-page mx-auto max-w-[1280px] space-y-6">
+  <PageContainer width="app" class="diary-page space-y-6">
     <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
@@ -222,7 +222,7 @@
         </BaseButton>
       </div>
     </section>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

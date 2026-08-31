@@ -1,17 +1,17 @@
 <template>
-  <div class="min-h-screen pb-20">
-    <header class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div class="flex items-center justify-between gap-3">
-        <div>
+  <PageContainer width="app" class="min-h-screen pb-20">
+    <header class="py-6">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
           <h1 class="text-2xl font-bold text-dt-text">{{ t('stock.watchlist.title') }}</h1>
           <p class="text-sm text-dt-text-soft mt-1">{{ t('stock.watchlist.subtitle') }}</p>
         </div>
-        <div class="flex items-center gap-4">
-          <NuxtLink to="/stocks" class="inline-flex items-center gap-1.5 text-sm text-dt-text-muted hover:text-dt-text dark:hover:text-white">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <NuxtLink to="/stocks" class="inline-flex shrink-0 items-center gap-1.5 text-sm text-dt-text-muted hover:text-dt-text dark:hover:text-white">
             <Icon name="heroicons:arrow-left" class="w-4 h-4" />
             {{ t('stock.watchlist.backToDashboard') }}
           </NuxtLink>
-          <NuxtLink to="/partners" class="inline-flex items-center gap-1.5 text-sm text-dt-text-muted hover:text-dt-text dark:hover:text-white">
+          <NuxtLink to="/partners" class="inline-flex shrink-0 items-center gap-1.5 text-sm text-dt-text-muted hover:text-dt-text dark:hover:text-white">
             <Icon name="heroicons:user-group" class="w-4 h-4" />
             {{ t('nav.partners') }}
           </NuxtLink>
@@ -22,7 +22,7 @@
       </div>
     </header>
 
-    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div>
       <div v-if="pending" class="py-16 text-center text-sm text-dt-text-soft">{{ t('stock.watchlist.loading') }}</div>
       <div v-else-if="!items.length" class="py-16">
         <StockEmptyTimeline />
@@ -34,7 +34,7 @@
         @archive="archiveItem"
       />
     </div>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

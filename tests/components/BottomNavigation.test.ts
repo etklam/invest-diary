@@ -50,4 +50,19 @@ describe('BottomNavigation', () => {
     expect(shell.openMobileNavigation).toHaveBeenCalledOnce()
     expect(wrapper.find('a[href="/quick-diary"]').exists()).toBe(false)
   })
+
+  it('renders Portfolio as a link to the stocks route', async () => {
+    const { default: BottomNavigation } = await import('~/components/BottomNavigation.vue')
+    const wrapper = mount(BottomNavigation, {
+      global: {
+        stubs: {
+          NuxtLink: { props: ['to'], template: '<a :href="to"><slot /></a>' },
+          Icon: true,
+        },
+      },
+    })
+
+    const portfolioLink = wrapper.get('a[href="/stocks"]')
+    expect(portfolioLink.text()).toContain('Portfolio')
+  })
 })

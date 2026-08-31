@@ -1,7 +1,7 @@
 <template>
-  <div class="calendar-page mx-auto max-w-[1080px] space-y-6">
+  <PageContainer width="app" class="calendar-page space-y-6">
     <!-- Header -->
-    <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm sm:p-6">
+    <section class="mx-auto w-full max-w-[1080px] rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm sm:p-6">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div class="min-w-0">
           <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
@@ -180,7 +180,7 @@
       </BaseButton>
     </div>
 
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

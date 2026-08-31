@@ -1,25 +1,27 @@
 <template>
-  <div v-if="initialPreflightPending" class="mx-auto flex max-w-4xl flex-col items-center justify-center gap-3 py-16 text-dt-text-muted" data-testid="diary-initial-preflight">
+  <PageContainer v-if="initialPreflightPending" width="app" class="flex flex-col items-center justify-center gap-3 py-16 text-dt-text-muted" data-testid="diary-initial-preflight">
     <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-dt-primary" />
     <p>{{ t('common.loading') }}</p>
-  </div>
+  </PageContainer>
 
-  <div v-else class="mx-auto max-w-4xl space-y-6">
-    <DiaryAuthoringForm
-      :form="form"
-      :editing="isEditing"
-      :saving="saving"
-      :checking-date="checkingDate"
-      :pending-conflict="pendingConflict"
-      :date-lookup-error="dateLookupError"
-      cancel-to="/diaries"
-      :copy-from-latest="copyFromLatest"
-      :resolve-date-conflict="resolveDateConflict"
-      :retry-date-lookup="retryDateLookup"
-      @save="saveDiary"
-      @cancel="cancelAuthoring"
-    />
-  </div>
+  <PageContainer v-else width="app">
+    <div class="mx-auto w-full max-w-4xl space-y-6">
+      <DiaryAuthoringForm
+        :form="form"
+        :editing="isEditing"
+        :saving="saving"
+        :checking-date="checkingDate"
+        :pending-conflict="pendingConflict"
+        :date-lookup-error="dateLookupError"
+        cancel-to="/diaries"
+        :copy-from-latest="copyFromLatest"
+        :resolve-date-conflict="resolveDateConflict"
+        :retry-date-lookup="retryDateLookup"
+        @save="saveDiary"
+        @cancel="cancelAuthoring"
+      />
+    </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

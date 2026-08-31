@@ -1,5 +1,5 @@
 <template>
-  <div class="partners-page">
+  <PageContainer width="app" class="partners-page">
     <!-- Header -->
     <section class="ledger-hero">
       <div class="hero-copy">
@@ -303,7 +303,7 @@
         </article>
       </div>
     </section>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -519,9 +519,7 @@ const revokeKey = async (keyId: string) => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 2rem 1.5rem 1.5rem;
-  max-width: 75rem;
-  margin: 0 auto;
+  padding: 2rem 0 1.5rem;
 }
 
 .hero-copy {
@@ -567,9 +565,7 @@ const revokeKey = async (keyId: string) => {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
-  max-width: 75rem;
-  margin: 0 auto 1.5rem;
-  padding: 0 1.5rem;
+  margin: 0 0 1.5rem;
 }
 
 @media (max-width: 768px) {
@@ -619,8 +615,7 @@ const revokeKey = async (keyId: string) => {
 
 /* ---- Content Sections ---- */
 .content-section {
-  max-width: 75rem;
-  margin: 0 auto 1.5rem;
+  margin: 0 0 1.5rem;
   padding: 1.5rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);

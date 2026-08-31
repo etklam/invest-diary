@@ -185,7 +185,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto px-4 py-8">
+  <PageContainer width="wide" class="py-8">
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div>
@@ -370,5 +370,5 @@ definePageMeta({
         <li>• {{ t('tools.etf.admin.infoPoint3') }}</li>
       </ul>
     </div>
-  </div>
+  </PageContainer>
 </template>

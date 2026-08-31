@@ -1,31 +1,34 @@
 <template>
-  <div v-if="pending" class="mx-auto flex max-w-4xl flex-col items-center justify-center gap-3 py-16 text-dt-text-muted">
+  <PageContainer v-if="pending" width="app" class="flex flex-col items-center justify-center gap-3 py-16 text-dt-text-muted">
     <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-dt-primary" />
     <p>{{ t('common.loading') }}</p>
-  </div>
+  </PageContainer>
 
-  <ErrorState
-    v-else-if="error"
-    :title="t('diary.loadFailed')"
-    :message="error.message"
-    :retry-fn="refresh"
-  />
-
-  <div v-else class="mx-auto max-w-4xl space-y-6">
-    <DiaryAuthoringForm
-      :form="form"
-      editing
-      :saving="saving"
-      :checking-date="checkingDate"
-      :pending-conflict="pendingConflict"
-      :date-lookup-error="dateLookupError"
-      :cancel-to="`/diaries/${currentDiaryId || routeId}`"
-      :resolve-date-conflict="resolveDateConflict"
-      :retry-date-lookup="retryDateLookup"
-      @save="saveDiary"
-      @cancel="cancelEditing"
+  <PageContainer v-else-if="error" width="app">
+    <ErrorState
+      :title="t('diary.loadFailed')"
+      :message="error.message"
+      :retry-fn="refresh"
     />
-  </div>
+  </PageContainer>
+
+  <PageContainer v-else width="app">
+    <div class="mx-auto w-full max-w-4xl space-y-6">
+      <DiaryAuthoringForm
+        :form="form"
+        editing
+        :saving="saving"
+        :checking-date="checkingDate"
+        :pending-conflict="pendingConflict"
+        :date-lookup-error="dateLookupError"
+        :cancel-to="`/diaries/${currentDiaryId || routeId}`"
+        :resolve-date-conflict="resolveDateConflict"
+        :retry-date-lookup="retryDateLookup"
+        @save="saveDiary"
+        @cancel="cancelEditing"
+      />
+    </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

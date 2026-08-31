@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <PageContainer width="app" class="space-y-6">
     <header class="space-y-1 pt-1 sm:space-y-2 sm:pt-2">
       <h1 class="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl" style="color: var(--color-text); font-family: var(--font-display);">
         {{ t('quickDiary.title') }}
@@ -21,7 +21,7 @@
         </p>
       </section>
     </div>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

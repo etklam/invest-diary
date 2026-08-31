@@ -136,7 +136,8 @@ definePageMeta({
 
 <template>
   <div class="discipline-page">
-    <div class="relative max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <PageContainer width="app" class="relative py-8">
+      <div class="mx-auto w-full max-w-4xl">
       <DisciplineHeader />
 
       <DisciplineEmptyState v-if="list.length === 0" />
@@ -201,7 +202,8 @@ definePageMeta({
           {{ t('discipline.listSection.importButton') }}
         </button>
       </div>
-    </div>
+      </div>
+    </PageContainer>
 
     <DisciplineShareModal
       :show="showShareModal"

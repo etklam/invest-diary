@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8">
+  <PageContainer width="reading" class="py-8">
     <!-- Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-dt-text mb-2">
@@ -86,7 +86,7 @@
         </div>
       </div>
     </form>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

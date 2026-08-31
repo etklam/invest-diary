@@ -562,8 +562,8 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="min-h-screen bg-dt-bg px-4 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl space-y-6">
+  <div class="min-h-screen bg-dt-bg">
+    <PageContainer width="wide" class="space-y-6 py-6">
       <!-- Hero section -->
       <section class="overflow-hidden rounded-dt-lg border border-dt-border bg-dt-surface shadow-dt-md">
         <div class="grid gap-6 p-6 lg:grid-cols-[1.05fr_0.95fr] lg:p-8">
@@ -972,7 +972,7 @@ definePageMeta({
           </div>
         </section>
       </template>
-    </div>
+    </PageContainer>
 
     <!-- Detail modal -->
     <div

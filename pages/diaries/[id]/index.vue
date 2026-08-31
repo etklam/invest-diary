@@ -1,12 +1,14 @@
 <template>
-  <div v-if="pending" class="flex flex-col items-center justify-center py-16">
+  <PageContainer v-if="pending" width="app" class="flex flex-col items-center justify-center py-16">
     <Icon name="svg-spinners:180-ring-with-bg" class="h-8 w-8 text-dt-primary" />
     <p class="mt-3 text-sm text-dt-text-muted">{{ t('common.loading') }}</p>
-  </div>
+  </PageContainer>
 
-  <ErrorState v-else-if="error" :title="t('diary.loadFailed')" :message="error.message" :retry-fn="refresh" />
+  <PageContainer v-else-if="error" width="app">
+    <ErrorState :title="t('diary.loadFailed')" :message="error.message" :retry-fn="refresh" />
+  </PageContainer>
 
-  <div v-else-if="diary" class="mx-auto w-full max-w-[1040px] space-y-6 pb-16">
+  <PageContainer v-else-if="diary" width="app" class="space-y-6 pb-16">
     <header class="flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
       <div class="min-w-0">
         <p class="text-xs font-bold uppercase tracking-[0.16em] text-dt-secondary">
@@ -282,7 +284,7 @@
         </div>
       </div>
     </section>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

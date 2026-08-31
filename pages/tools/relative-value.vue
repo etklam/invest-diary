@@ -467,7 +467,7 @@ definePageMeta({
 
 <template>
   <div class="min-h-screen bg-dt-bg font-body">
-    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <PageContainer width="wide" class="py-8">
       <!-- Header -->
       <header class="mb-10 text-center sm:mb-12">
         <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-dt-secondary/20 bg-dt-surface px-4 py-2">
@@ -848,7 +848,7 @@ definePageMeta({
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
     <ResearchCaptureModal :capture="researchCapture" />
   </div>
 </template>

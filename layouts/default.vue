@@ -19,7 +19,7 @@
       <Navigation v-if="isInitialized" />
       <main
         id="main-content"
-        class="mx-auto w-full max-w-[1240px] px-4 py-8 pb-28 sm:px-6 lg:px-8 xl:pb-8"
+        class="w-full py-8 pb-28 xl:pb-8"
         :class="[
           { 'pt-24': showInstallPrompt },
           { 'max-[639px]:pt-14': showAlert },

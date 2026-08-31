@@ -329,6 +329,11 @@
 }
 
 @layer base {
+  html {
+    /* Keep route and modal transitions from changing the content viewport width. */
+    scrollbar-gutter: stable;
+  }
+
   html,
   body,
   #__nuxt {

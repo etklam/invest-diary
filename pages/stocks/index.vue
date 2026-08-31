@@ -1,9 +1,9 @@
 <template>
-  <div class="stocks-page min-h-screen pb-20">
+  <PageContainer width="wide" class="stocks-page min-h-screen pb-20">
     <!-- Header -->
-    <header class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
+    <header class="py-6">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
           <h1 class="flex items-center gap-3 font-display text-2xl font-semibold tracking-tight text-dt-text sm:text-3xl">
             <Icon name="heroicons:presentation-chart-line" class="text-dt-primary" />
             {{ t('stock.dashboard.title') }}
@@ -18,20 +18,20 @@
             </span>
           </div>
         </div>
-        <div class="flex items-center gap-3">
-          <NuxtLink to="/stocks/watchlist" class="action-btn-muted-dashboard">
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
+          <NuxtLink to="/stocks/watchlist" class="action-btn-muted-dashboard w-full sm:w-auto">
             <Icon name="heroicons:queue-list" class="w-4 h-4 mr-2" />
             {{ t('stock.watchlist.title') }}
           </NuxtLink>
           <button
             @click="fetchStockPrices"
             :disabled="isFetchingPrices || cooldownRemaining > 0 || pending"
-            class="action-btn-dashboard group"
+            class="action-btn-dashboard group w-full sm:w-auto"
           >
             <Icon :name="(isFetchingPrices || pending) ? 'svg-spinners:180-ring-with-bg' : 'heroicons:arrow-path'" class="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
             {{ (isFetchingPrices || pending) ? t('stock.fetching') : cooldownRemaining > 0 ? `${cooldownRemaining}s` : t('stock.dashboard.refresh') }}
           </button>
-          <NuxtLink to="/" class="action-btn-muted-dashboard">
+          <NuxtLink to="/" class="action-btn-muted-dashboard w-full sm:w-auto">
             <Icon name="heroicons:home" class="w-4 h-4 mr-2" />
             {{ t('stock.dashboard.home') }}
           </NuxtLink>
@@ -40,7 +40,7 @@
     </header>
 
     <!-- Main Content Grid -->
-    <section class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section>
       <!-- Top Stats Grid -->
       <ErrorState
         v-if="loadError"
@@ -406,12 +406,12 @@
 
       <!-- ── 績效儀表板 ── -->
       <section class="mt-8">
-        <div class="flex items-center justify-between mb-4">
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 class="text-lg font-bold text-dt-text flex items-center gap-2">
             <Icon name="heroicons:chart-bar-square" class="text-dt-primary" />
             {{ t('stock.performance.title') }}
           </h2>
-          <div class="flex items-center gap-2">
+          <div class="flex max-w-full flex-wrap items-center gap-2">
             <!-- 匯出按鈕 -->
             <button
               v-if="perfData && perfData.summary.totalClosedTrades > 0"
@@ -605,7 +605,7 @@
 
       </section>
     </section>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">

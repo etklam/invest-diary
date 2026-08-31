@@ -262,7 +262,7 @@ definePageMeta({
 
 <template>
   <div class="min-h-screen bg-dt-bg font-body">
-    <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <PageContainer width="wide" class="py-6">
       <div class="rounded-xl border border-dt-border bg-dt-surface shadow-dt-sm overflow-hidden p-6 sm:p-8">
         <div class="grid gap-8 lg:grid-cols-[1.2fr_0.9fr] lg:items-center">
           <div>
@@ -312,9 +312,9 @@ definePageMeta({
           </div>
         </div>
       </div>
-    </section>
+    </PageContainer>
 
-    <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
+    <PageContainer width="wide" class="grid gap-6 pb-12 lg:grid-cols-[1.05fr_0.95fr]">
       <div class="space-y-6">
         <div class="rounded-xl border border-dt-border bg-dt-surface shadow-dt-sm p-6 sm:p-7">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -533,9 +533,9 @@ definePageMeta({
           </div>
         </div>
       </div>
-    </section>
+    </PageContainer>
 
-    <section v-if="isValidInput && calculationResults.length" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+    <PageContainer v-if="isValidInput && calculationResults.length" width="wide" class="pb-12">
       <div class="rounded-xl border border-dt-border bg-dt-surface shadow-dt-sm p-6 sm:p-7">
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -595,16 +595,16 @@ definePageMeta({
           </div>
         </div>
       </div>
-    </section>
+    </PageContainer>
 
-    <section v-else class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+    <PageContainer v-else width="wide" class="pb-12">
       <div class="rounded-xl border border-dt-border bg-dt-surface shadow-dt-sm p-10 text-center">
         <Icon name="heroicons:calculator" class="mx-auto h-14 w-14 text-dt-text-muted" />
         <p class="mt-4 text-sm text-dt-text-muted">
           {{ t('tools.positionSizing.emptyState') }}
         </p>
       </div>
-    </section>
+    </PageContainer>
 
     <div v-if="showSaveToDiaryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div role="dialog" aria-modal="true" aria-labelledby="position-sizing-save-title" class="w-full max-w-lg rounded-xl border border-dt-border bg-dt-surface p-6 shadow-xl">
