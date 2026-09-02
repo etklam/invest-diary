@@ -2,38 +2,73 @@
 set -euo pipefail
 
 container_name="backend-http-test-$$"
+created_network=""
 
 cleanup() {
-  docker stop "${container_name}" >/dev/null 2>&1 || true
+  docker rm -f "${container_name}" >/dev/null 2>&1 || true
+  if [[ -n "${created_network}" ]]; then
+    docker network rm "${created_network}" >/dev/null 2>&1 || true
+  fi
 }
 trap cleanup EXIT INT TERM
 
-docker run --rm --detach \
-  --name "${container_name}" \
-  --publish 127.0.0.1::3306 \
-  --env MARIADB_ROOT_PASSWORD=test-password \
-  --env MARIADB_DATABASE=backend_http_test \
-  mariadb:11.4 >/dev/null
-
-for _attempt in $(seq 1 60); do
-  if docker exec "${container_name}" mariadb-admin ping --host=127.0.0.1 --user=root --password=test-password --silent >/dev/null 2>&1; then
-    break
+start_mariadb() {
+  local mode="$1" # "net" or "publish"
+  local args=(--rm --detach --name "${container_name}")
+  if [[ "${mode}" == "net" ]]; then
+    args+=(--network "${created_network}")
+  else
+    args+=(--publish 127.0.0.1::3306)
   fi
-  sleep 1
-done
+  args+=(--env MARIADB_ROOT_PASSWORD=test-password --env MARIADB_DATABASE=backend_http_test)
+  docker run "${args[@]}" mariadb:11.4 >/dev/null
+}
 
-if ! docker exec "${container_name}" mariadb-admin ping --host=127.0.0.1 --user=root --password=test-password --silent >/dev/null 2>&1; then
-  echo "Disposable MariaDB did not become ready" >&2
-  exit 1
+wait_ready() {
+  local _attempt
+  for _attempt in $(seq 1 60); do
+    if docker exec "${container_name}" mariadb-admin ping --host=127.0.0.1 --user=root --password=test-password --silent >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+# Under a DooD CI runner this script executes inside a sibling job container:
+# a port published on the host's loopback is unreachable from there. Try a
+# user-defined bridge network where the sibling is addressable by container
+# name; if the TCP probe fails (script on a plain host, e.g. a dev laptop),
+# fall back to the loopback publish + dynamic port mapping.
+db_host=""
+db_port=""
+
+created_network="backend-http-net-$$"
+if docker network create "${created_network}" >/dev/null 2>&1; then
+  start_mariadb net
+  if wait_ready && node -e "const net=require('node:net');const s=net.connect(3306,'${container_name}',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));setTimeout(()=>process.exit(1),5000)" 2>/dev/null; then
+    db_host="${container_name}"
+    db_port="3306"
+  else
+    docker rm -f "${container_name}" >/dev/null 2>&1 || true
+    docker network rm "${created_network}" >/dev/null 2>&1 || true
+    created_network=""
+  fi
 fi
 
-mapped_port="$(docker port "${container_name}" 3306/tcp | awk -F: 'NR == 1 { print $NF }')"
-if [[ -z "${mapped_port}" ]]; then
-  echo "Could not resolve disposable MariaDB port" >&2
-  exit 1
+if [[ -z "${db_host}" ]]; then
+  start_mariadb publish
+  wait_ready || { echo "Disposable MariaDB did not become ready" >&2; exit 1; }
+  db_host="127.0.0.1"
+  mapped_port="$(docker port "${container_name}" 3306/tcp | awk -F: 'NR == 1 { print $NF }')"
+  if [[ -z "${mapped_port}" ]]; then
+    echo "Could not resolve disposable MariaDB port" >&2
+    exit 1
+  fi
+  db_port="${mapped_port}"
 fi
 
-test_database_url="mysql://root:test-password@127.0.0.1:${mapped_port}/backend_http_test"
+test_database_url="mysql://root:test-password@${db_host}:${db_port}/backend_http_test"
 
 # Prove legacy Web rows are deterministically backfilled, the documented
 # operational rollback preserves them, and the forward migration is re-runnable.
