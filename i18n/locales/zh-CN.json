@@ -1103,7 +1103,14 @@
       "sec_unsafe_redirect": "SEC 返回了不安全的重定向",
       "sec_file_too_large": "此 SEC 文件超过下载大小限制",
       "sec_package_limit_exceeded": "此申报文件压缩包超过限制",
-      "sec_rate_limited": "SEC 申报文件请求过多，请稍后再试"
+      "sec_rate_limited": "SEC 申报文件请求过多，请稍后再试",
+      "investment_thesis_not_found": "找不到投资 Thesis",
+      "investment_thesis_not_active": "只有启用中的投资 Thesis 可以进行 Review",
+      "thesis_review_not_found": "找不到 Thesis Review",
+      "trade_plan_not_found": "找不到 Trade Plan",
+      "price_alert_not_found": "找不到价格提醒",
+      "watchlist_item_not_found": "找不到自选清单项目",
+      "invalid_cursor": "分页游标无效"
     }
   },
   "tags": {

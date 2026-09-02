@@ -64,34 +64,32 @@
 </template>
 
 <script setup lang="ts">
-import type { DiariesApiResponse } from '~/lib/contracts/diary'
+import type { DiaryListResponse } from '~/lib/contracts/diary'
 import type { TradePlan, TradePlanFormValue } from '~/types/trade-plan'
 import { isAuthSessionError } from '~/lib/auth/session-error'
+import { formatCalendarDate } from '~/lib/dates'
 
 definePageMeta({ middleware: 'auth' })
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { runWithAuthRecovery } = useAuthRecovery()
 const saving = ref(false)
 const deleting = ref(false)
 const tradePlanId = computed(() => String(route.params.id || ''))
 
 const { data: tradePlan, pending, error, refresh } = await useLazyFetch<TradePlan>(() => `/api/trade-plans/${tradePlanId.value}`)
-const { data: diariesResponse } = await useLazyFetch<DiariesApiResponse>('/api/diaries', {
+const { data: diariesResponse } = await useLazyFetch<DiaryListResponse>('/api/diaries', {
   query: { limit: '100' },
   default: () => ({ data: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } }),
 })
 
 const diaryOptions = computed(() => diariesResponse.value?.data ?? [])
-const { formatLocaleDate } = useTimezone()
-
-const formatDiaryDate = (value: string) => formatLocaleDate(value, {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
+const formatDiaryDate = (value: string) => formatCalendarDate(value, {
+  locale: locale.value,
+  format: { year: 'numeric', month: 'long', day: 'numeric' },
 })
 
 const decisionReviewLabel = computed(() => {

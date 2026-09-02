@@ -970,7 +970,14 @@
       "sec_unsafe_redirect": "SEC 回傳了不安全的重新導向",
       "sec_file_too_large": "此 SEC 文件超過下載大小限制",
       "sec_package_limit_exceeded": "此申報文件壓縮包超過限制",
-      "sec_rate_limited": "SEC 申報文件請求過多，請稍後再試"
+      "sec_rate_limited": "SEC 申報文件請求過多，請稍後再試",
+      "investment_thesis_not_found": "找不到投資 Thesis",
+      "investment_thesis_not_active": "只有啟用中的投資 Thesis 可以進行 Review",
+      "thesis_review_not_found": "找不到 Thesis Review",
+      "trade_plan_not_found": "找不到 Trade Plan",
+      "price_alert_not_found": "找不到價格提醒",
+      "watchlist_item_not_found": "找不到自選清單項目",
+      "invalid_cursor": "分頁游標無效"
     }
   },
   "tags": {

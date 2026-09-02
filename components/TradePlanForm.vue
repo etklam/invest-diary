@@ -99,6 +99,7 @@
 import { reactive, watch } from 'vue'
 import { TRADE_PLAN_STATUSES, type TradePlanFormValue } from '~/types/trade-plan'
 import type { DiaryResponse } from '~/lib/contracts/diary'
+import { formatCalendarDate } from '~/lib/dates'
 
 const props = withDefaults(defineProps<{
   initial?: Partial<TradePlanFormValue>
@@ -116,7 +117,7 @@ const emit = defineEmits<{
 }>()
 
 const statusOptions = TRADE_PLAN_STATUSES
-const { formatLocaleDate } = useTimezone()
+const { locale } = useI18n()
 
 const buildForm = (initial: Partial<TradePlanFormValue>): TradePlanFormValue => ({
   diaryId: initial.diaryId ?? '',
@@ -140,7 +141,7 @@ watch(() => props.initial, (value) => {
 }, { deep: true })
 
 const formatDate = (value: string) => {
-  return formatLocaleDate(value, { year: 'numeric', month: '2-digit', day: '2-digit' })
+  return formatCalendarDate(value, { locale: locale.value, format: { year: 'numeric', month: '2-digit', day: '2-digit' } })
 }
 
 const submit = () => {

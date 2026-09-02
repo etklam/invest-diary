@@ -226,17 +226,17 @@
 </template>
 
 <script setup lang="ts">
-import type { DiariesApiResponse } from '~/lib/contracts/diary'
+import type { DiaryListResponse } from '~/lib/contracts/diary'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
 import { useAppShell } from '~/composables/useAppShell'
 import { mergeDiariesById } from '~/composables/useTimelineDiaries'
 import { stripDiaryMarkdown } from '~/lib/diary-excerpt'
+import { formatCalendarDate } from '~/lib/dates'
 
 definePageMeta({
   middleware: 'auth'
 })
-const { formatLocaleDate } = useTimezone()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const { openQuickDiary: openGlobalQuickDiary } = useAppShell()
 const openQuickDiary = () => openGlobalQuickDiary({ source: 'diaries' })
@@ -277,7 +277,7 @@ const queryParams = computed(() => {
 
 // Use lazy fetch to avoid calling API during SSR before auth check
 // API returns { data, pagination }, so transform extracts both
-const { data: apiResponse, pending, error, refresh } = await useLazyFetch<DiariesApiResponse>('/api/diaries', {
+const { data: apiResponse, pending, error, refresh } = await useLazyFetch<DiaryListResponse>('/api/diaries', {
   query: queryParams,
 })
 
@@ -312,7 +312,7 @@ const loadMore = async () => {
   loadMoreError.value = null
 
   try {
-    const response = await $fetch<DiariesApiResponse>('/api/diaries', {
+    const response = await $fetch<DiaryListResponse>('/api/diaries', {
       query: { ...queryParams.value, page: String(nextPage) },
     })
     const nextItems = mergeDiariesById(diaryItems.value, response.data)
@@ -355,10 +355,13 @@ watch(error, (error) => {
 })
 
 const formatDiaryDate = (date: string | Date) => {
-  return formatLocaleDate(date, {
+  return formatCalendarDate(String(date), {
+    locale: locale.value,
+    format: {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
+    }
   })
 }
 

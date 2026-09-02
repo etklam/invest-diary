@@ -241,7 +241,7 @@
               {{ t('review.page.reviewedAt', { date: formatLocaleDateTime(diary.reviewedAt) }) }}
             </p>
             <p v-else-if="diary.reviewDueAt" class="mt-1 font-data text-xs text-dt-text-muted">
-              {{ t('review.fields.reviewDue') }} · {{ formatDecisionDate(diary.reviewDueAt) }}
+              {{ t('review.fields.reviewDue') }} · {{ formatLocaleDate(diary.reviewDueAt, { year: 'numeric', month: 'long', day: 'numeric' }) }}
             </p>
           </div>
           <BaseButton
@@ -289,9 +289,9 @@
 
 <script setup lang="ts">
 import type { DiaryResponse, TransactionResponse } from '~/lib/contracts/diary'
-import type { TradePlan } from '~/types/trade-plan'
 import { useAuthRecovery } from '~/composables/useAuthRecovery'
 import { isAuthSessionError } from '~/lib/auth/session-error'
+import { formatCalendarDate } from '~/lib/dates'
 
 interface DisplayField {
   label: string
@@ -303,7 +303,7 @@ definePageMeta({ middleware: 'auth' })
 const route = useRoute()
 const router = useRouter()
 const id = route.params.id
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const toast = useToast()
 const { runWithAuthRecovery } = useAuthRecovery()
 const { formatLocaleDate, formatLocaleDateTime } = useTimezone()
@@ -342,7 +342,7 @@ const reviewFields = computed<DisplayField[]>(() => [
 
 const hasValue = (value: unknown): boolean => value !== null && value !== undefined && String(value).trim() !== ''
 
-const tradePlanFields = (plan: TradePlan): DisplayField[] => {
+const tradePlanFields = (plan: NonNullable<DiaryResponse['tradePlans']>[number]): DisplayField[] => {
   const entryZone = [plan.entryZoneLow, plan.entryZoneHigh].filter(hasValue).join(' – ')
   return [
     { label: t('tradePlan.fields.setupType'), value: plan.setupType },
@@ -366,10 +366,9 @@ const transactionTotal = (transaction: TransactionResponse) => (
   Number(transaction.quantity) * Number(transaction.price)
 ).toFixed(2)
 
-const formatDecisionDate = (value: string) => formatLocaleDate(value, {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
+const formatDecisionDate = (value: string) => formatCalendarDate(value, {
+  locale: locale.value,
+  format: { year: 'numeric', month: 'long', day: 'numeric' },
 })
 
 const deleting = ref(false)

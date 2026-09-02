@@ -970,7 +970,14 @@
       "sec_unsafe_redirect": "SEC returned an unsafe redirect",
       "sec_file_too_large": "This SEC document exceeds the download limit",
       "sec_package_limit_exceeded": "This filing package exceeds the ZIP limit",
-      "sec_rate_limited": "Too many SEC filing requests. Please try again later"
+      "sec_rate_limited": "Too many SEC filing requests. Please try again later",
+      "investment_thesis_not_found": "Investment thesis not found",
+      "investment_thesis_not_active": "Only an active investment thesis can be reviewed",
+      "thesis_review_not_found": "Thesis review not found",
+      "trade_plan_not_found": "Trade plan not found",
+      "price_alert_not_found": "Price alert not found",
+      "watchlist_item_not_found": "Watchlist item not found",
+      "invalid_cursor": "Invalid pagination cursor"
     }
   },
   "tags": {

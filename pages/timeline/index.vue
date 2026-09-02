@@ -134,7 +134,7 @@
           <li v-for="item in activityItems" :key="item.id">
             <NuxtLink :to="item.destination" class="flex min-h-11 items-center justify-between gap-3 py-2 text-sm hover:text-dt-primary">
               <span class="min-w-0 truncate font-medium">{{ item.symbol ? `${item.symbol} · ` : '' }}{{ item.title }}</span>
-              <time class="shrink-0 text-xs text-dt-text-soft">{{ formatCompactDate(item.occurredAt) }}</time>
+              <time class="shrink-0 text-xs text-dt-text-soft">{{ formatActivityDate(item.occurredAt) }}</time>
             </NuxtLink>
           </li>
         </ul>
@@ -304,7 +304,7 @@
               <div class="timeline-meta mt-1.5 flex flex-wrap items-center text-[11px] leading-5 text-dt-text-soft sm:text-xs">
                 <time class="timeline-meta-item inline-flex items-center font-data text-dt-text-muted">
                   <Icon name="heroicons:calendar" class="mr-1 h-3.5 w-3.5 text-dt-text-soft" aria-hidden="true" />
-                  {{ formatCompactDate(diary.date) }}
+                  {{ formatDiaryCompactDate(diary.date) }}
                 </time>
                 <span
                   v-for="tag in (diary.tags || []).slice(0, 2)"
@@ -362,12 +362,13 @@
 </template>
 
 <script setup lang="ts">
-import { formatShortDate, formatUserDateTime } from '~/lib/dates'
+import { formatCalendarDate, formatShortDate, formatUserDateTime } from '~/lib/dates'
 import { resolveUserTimezone } from '~/lib/dates/user-tz'
 import { stripDiaryMarkdown } from '~/lib/diary-excerpt'
 import { formatCurrency } from '~/lib/format'
 import { computePortfolioAggregations, type PortfolioValuationResponse } from '~/lib/stocks-view'
-import type { InvestmentActivityItem, InvestmentActivityPage } from '~/lib/investment-activity'
+import type { InvestmentActivityItem } from '~/lib/investment-activity'
+import type { InvestmentActivityResponse } from '~/lib/contracts/activity'
 import type { PortfolioAttentionResponse } from '~/types/portfolio-attention'
 import { emptyReviewGroups, type ReviewGroups } from '~/types/reviews'
 import { useDiaryMutation } from '~/composables/useDiaryMutation'
@@ -407,9 +408,12 @@ const {
   data: activityProjection,
   pending: activityPending,
   error: activityError,
-} = await useLazyFetch<InvestmentActivityPage>('/api/investment-activity', {
+} = await useLazyFetch<InvestmentActivityResponse>('/api/investment-activity', {
   query: { limit: 5 },
-  default: () => ({ items: [], nextCursor: null, asOf: new Date().toISOString() }),
+  default: (): InvestmentActivityResponse => ({
+    data: [],
+    pagination: { nextCursor: null, hasMore: false, asOf: new Date().toISOString() },
+  }),
 })
 
 const {
@@ -433,18 +437,18 @@ const formatOverviewDate = (value: string) => formatUserDateTime(value, {
   format: { dateStyle: 'medium' },
 })
 
-const formatTimelinePart = (date: Date | string, options: Intl.DateTimeFormatOptions) => {
-  return formatUserDateTime(date, {
-    timezone: timelineTimezone.value,
-    locale: locale.value || 'zh-TW',
-    format: options,
-  })
-}
-
-const formatTimelineDay = (date: Date | string) => formatTimelinePart(date, { day: '2-digit' }).replace(/\D/g, '')
-const formatTimelineMonth = (date: Date | string) => formatTimelinePart(date, { month: 'short' })
-const formatTimelineWeekday = (date: Date | string) => formatTimelinePart(date, { weekday: 'short' })
+const formatDiaryPart = (date: string, options: Intl.DateTimeFormatOptions) => formatCalendarDate(date, {
+  locale: locale.value || 'zh-TW',
+  format: options,
+})
+const formatTimelineDay = (date: string) => formatDiaryPart(date, { day: '2-digit' }).replace(/\D/g, '')
+const formatTimelineMonth = (date: string) => formatDiaryPart(date, { month: 'short' })
+const formatTimelineWeekday = (date: string) => formatDiaryPart(date, { weekday: 'short' })
 const formatCompactDate = (date: Date | string) => formatShortDate(date, timelineTimezone.value)
+const formatDiaryCompactDate = (date: string) => formatDiaryPart(date, { year: 'numeric', month: '2-digit', day: '2-digit' })
+const formatActivityDate = (date: string) => /^\d{4}-\d{2}-\d{2}$/.test(date)
+  ? formatDiaryCompactDate(date)
+  : formatCompactDate(date)
 const reviewSignal = (outcome?: string | null) => outcome
   ? `${t('review.statusReviewed')} · ${t(`review.outcomes.${outcome}`)}`
   : t('review.statusReviewed')
@@ -473,7 +477,7 @@ const {
 
 const recentDiaries = computed(() => diaries.value.slice(0, 5))
 const activityItems = computed(() => activityProjection.value
-  ? activityProjection.value.items
+  ? activityProjection.value.data
   : recentDiaries.value.map(diary => ({
       id: `diary:${diary.id}`,
       title: diary.title,

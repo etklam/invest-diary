@@ -1,12 +1,12 @@
 import { computed, onMounted, ref, watch } from 'vue'
-import { formatDateWithWeekday, formatUserDateTime, formatYmdInTimezone } from '~/lib/dates'
-import { resolveUserTimezone } from '~/lib/dates/user-tz'
+import { formatCalendarDate } from '~/lib/dates'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
+import { api } from '~/lib/api-client'
 import type {
   DiaryResponse,
   DiaryGroup,
   PaginationResponse,
-  DiariesApiResponse
+  DiaryListResponse
 } from '~/lib/contracts/diary'
 
 /**
@@ -21,12 +21,10 @@ export function mergeDiariesById<T extends { id: unknown }>(existing: T[], incom
 
 export const useTimelineDiaries = (options?: { limit?: number; timezone?: string }) => {
   const { t, locale } = useI18n()
-  const { user } = useAuth()
   const toast = useToast()
 
   // Options
   const limit = options?.limit || 20
-  const userTimezone = computed(() => options?.timezone || resolveUserTimezone(user.value))
 
   // Hydration gate - ensures server and client initial render match
   const isHydrated = ref(false)
@@ -62,7 +60,7 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
     pending,
     error,
     refresh: refreshFetch,
-  } = useLazyFetch<DiariesApiResponse>(
+  } = useLazyFetch<DiaryListResponse>(
     '/api/diaries',
     {
       query: requestQuery,
@@ -116,10 +114,9 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
     loadingMore.value = true
 
     try {
-      const response = await $fetch<DiariesApiResponse>(
-        '/api/diaries',
-        { query: { ...requestQuery.value, page: String(nextPage) } },
-      )
+      const result = await api.diaries.list({ ...requestQuery.value, page: String(nextPage) })
+      if (result.error) throw result.error
+      const response = result.data
 
       if (response?.data) {
         diaries.value = mergeDiariesById(diaries.value, response.data)
@@ -142,9 +139,7 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
   // Date filtering is server-side; sort only for presentation before grouping.
   const filteredDiaries = computed(() => {
     return [...diaries.value].sort((a, b) => {
-      const dateA = new Date(a.date).getTime()
-      const dateB = new Date(b.date).getTime()
-      return dateB - dateA
+      return b.date.localeCompare(a.date) || b.id.localeCompare(a.id)
     })
   })
 
@@ -153,14 +148,13 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
     const groups = new Map<string, DiaryGroup>()
 
     filteredDiaries.value.forEach(diary => {
-      const ymd = formatYmdInTimezone(diary.date, userTimezone.value)
+      const ymd = diary.date
       const [yearStr, monthStr] = ymd.split('-')
       const year = Number(yearStr)
       const month = Number(monthStr)
       const period = `${year}-${String(month).padStart(2, '0')}`
       // Localized month name — avoid bare "{year} {month}" numbers on EN
-      const periodLabel = formatUserDateTime(new Date(Date.UTC(year, month - 1, 1, 12)), {
-        timezone: userTimezone.value,
+      const periodLabel = formatCalendarDate(`${period}-01`, {
         locale: locale.value || 'en',
         format: { year: 'numeric', month: 'long' },
       })
@@ -181,7 +175,10 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
   })
 
   // Timezone-aware date formatter
-  const formatDate = (date: Date | string) => formatDateWithWeekday(date, userTimezone.value)
+  const formatDate = (date: string) => formatCalendarDate(date, {
+    locale: locale.value || 'zh-TW',
+    format: { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' },
+  })
 
   // Error logging
   watch(error, (err) => {

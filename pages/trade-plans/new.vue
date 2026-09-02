@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DiariesApiResponse, DiaryResponse } from '~/lib/contracts/diary'
+import type { DiaryListResponse, DiaryResponse } from '~/lib/contracts/diary'
 import type { TradePlanFormValue } from '~/types/trade-plan'
 import { isAuthSessionError } from '~/lib/auth/session-error'
 
@@ -40,7 +40,7 @@ const { runWithAuthRecovery } = useAuthRecovery()
 const saving = ref(false)
 const statePrefill = ref<Partial<TradePlanFormValue>>({})
 
-const { data: diariesResponse } = await useLazyFetch<DiariesApiResponse>('/api/diaries', {
+const { data: diariesResponse } = await useLazyFetch<DiaryListResponse>('/api/diaries', {
   query: { limit: '100' },
   default: () => ({ data: [], pagination: { page: 1, limit: 100, total: 0, totalPages: 0 } }),
 })

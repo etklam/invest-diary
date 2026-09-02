@@ -130,7 +130,10 @@ const query = computed(() => ({
 
 const { data, pending, error } = await useLazyFetch<TradePlanListResponse>('/api/trade-plans', {
   query,
-  default: () => ({ data: [] }),
+  default: () => ({
+    data: [],
+    pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+  }),
 })
 
 const tradePlans = computed(() => data.value?.data ?? [])

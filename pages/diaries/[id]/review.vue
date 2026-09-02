@@ -151,38 +151,19 @@
 
 <script setup lang="ts">
 import { isAuthSessionError } from '~/lib/auth/session-error'
-import { REVIEW_OUTCOMES, type ReviewOutcome } from '~/lib/contracts/review'
+import { REVIEW_OUTCOMES, type DiaryReviewResponse, type ReviewOutcome } from '~/lib/contracts/review'
+import { formatCalendarDate } from '~/lib/dates'
 
 definePageMeta({ middleware: 'auth' })
-
-interface ReviewDetail {
-  id: string
-  title: string
-  date: string
-  content: string | null
-  tagsString: string | null
-  thesis: string | null
-  risk: string | null
-  execution: string | null
-  reviewDueAt: string | null
-  reviewStatus: string | null
-  reviewedAt: string | null
-  reviewOutcome: ReviewOutcome | null
-  reviewSummary: string | null
-  reviewLearning: string | null
-  reviewAdjustment: string | null
-  transactions: Array<{ id: string; symbol: string; type: 'BUY' | 'SELL'; quantity: string; price: string; tradeDate: string }>
-  tradePlans: Array<{ id: string; symbol: string; setupType: string | null; invalidationCondition: string | null; status: string }>
-}
 
 type ReflectionKey = 'reviewSummary' | 'reviewLearning' | 'reviewAdjustment'
 
 const route = useRoute()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const toast = useToast()
 const { runWithAuthRecovery } = useAuthRecovery()
-const { formatLocaleDate, formatLocaleDateTime } = useTimezone()
-const { data: diary, pending, error } = await useLazyFetch<ReviewDetail>(`/api/diaries/${route.params.id}/review`)
+const { formatLocaleDateTime } = useTimezone()
+const { data: diary, pending, error } = await useLazyFetch<DiaryReviewResponse>(`/api/diaries/${route.params.id}/review`)
 
 const editing = ref(false)
 const saving = ref(false)
@@ -206,7 +187,7 @@ watch(diary, (value) => {
 const hasStructuredReview = computed(() => Boolean(diary.value?.reviewOutcome))
 const isLegacyReview = computed(() => diary.value?.reviewStatus === 'reviewed' && !diary.value.reviewOutcome)
 const hasDecisionFields = computed(() => Boolean(diary.value?.thesis || diary.value?.risk || diary.value?.execution))
-const formatDate = (value: string) => formatLocaleDate(value, { year: 'numeric', month: 'long', day: 'numeric' })
+const formatDate = (value: string) => formatCalendarDate(value, { locale: locale.value, format: { year: 'numeric', month: 'long', day: 'numeric' } })
 const reviewedDescription = computed(() => diary.value?.reviewedAt
   ? t('review.page.reviewedAt', { date: formatLocaleDateTime(diary.value.reviewedAt) })
   : t('review.page.completedDesc'))
@@ -232,7 +213,7 @@ async function saveReview() {
 
   saving.value = true
   try {
-    const result = await runWithAuthRecovery(() => $fetch<ReviewDetail>(`/api/diaries/${route.params.id}/review`, {
+    const result = await runWithAuthRecovery(() => $fetch<DiaryReviewResponse>(`/api/diaries/${route.params.id}/review`, {
       method: 'PATCH',
       body: {
         reviewOutcome: form.reviewOutcome,
