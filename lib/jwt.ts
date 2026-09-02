@@ -5,6 +5,9 @@ export const ACCESS_TOKEN_EXPIRY = '1h' // 1 hour
 export const REFRESH_TOKEN_EXPIRY = '30d' // 30 days
 export const ACCESS_TOKEN_MAX_AGE_SECONDS = 60 * 60 // 1 hour
 export const REFRESH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30 // 30 days
+export const JWT_ISSUER = 'invest-diary'
+export const JWT_AUDIENCE = 'invest-diary-api'
+export const JWT_PLACEHOLDER_SECRET = 'CHANGE_THIS_RANDOM_SECRET'
 
 export interface TokenPayload {
   userId: string
@@ -38,11 +41,16 @@ function getSecret() {
     throw new Error('JWT_SECRET is not defined')
   }
 
-  if (process.server && secret === 'CHANGE_THIS_RANDOM_SECRET') {
-    console.error('[JWT] WARNING: JWT_SECRET is still using the placeholder value!')
+  if (secret === JWT_PLACEHOLDER_SECRET) {
+    throw new Error('JWT_SECRET must not use the repository placeholder')
   }
 
   return new TextEncoder().encode(secret)
+}
+
+/** Called by the Nitro startup plugin so unsafe configuration fails before serving traffic. */
+export function assertJwtConfiguration(): void {
+  getSecret()
 }
 
 /**
@@ -56,6 +64,8 @@ export async function signAccessToken(
 ): Promise<string> {
   return await new SignJWT({ userId, email, role, tokenVersion, type: 'access' })
     .setProtectedHeader({ alg: 'HS256' })
+    .setIssuer(JWT_ISSUER)
+    .setAudience(JWT_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime(ACCESS_TOKEN_EXPIRY)
     .sign(getSecret())
@@ -73,6 +83,8 @@ export async function signRefreshToken(
 ): Promise<string> {
   return await new SignJWT({ userId, email, role, tokenVersion, type: 'refresh' })
     .setProtectedHeader({ alg: 'HS256' })
+    .setIssuer(JWT_ISSUER)
+    .setAudience(JWT_AUDIENCE)
     .setJti(sessionId)
     .setIssuedAt()
     .setExpirationTime(REFRESH_TOKEN_EXPIRY)
@@ -85,6 +97,8 @@ export async function signRefreshToken(
 export async function verifyToken(token: string): Promise<TokenPayload> {
   const { payload } = await jwtVerify(token, getSecret(), {
     algorithms: ['HS256'],
+    issuer: JWT_ISSUER,
+    audience: JWT_AUDIENCE,
   })
 
   if (

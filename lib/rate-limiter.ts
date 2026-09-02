@@ -39,6 +39,7 @@ export async function consumeRateLimit(
 
 const authRateLimits = {
   login: { points: 5, duration: 60 },
+  refresh: { points: 10, duration: 60 },
   register: { points: 3, duration: 60 },
   password: { points: 3, duration: 60 },
 }
@@ -63,6 +64,10 @@ export const rateLimiters = {
   authLoginIp: makeLimiter('auth-login-ip', authRateLimits.login),
   // Auth: login identity (email)
   authLoginIdentity: makeLimiter('auth-login-email', authRateLimits.login),
+
+  // Native refresh is bounded by both network origin and token family identity.
+  authRefreshIp: makeLimiter('auth-refresh-ip', authRateLimits.refresh),
+  authRefreshIdentity: makeLimiter('auth-refresh-family', authRateLimits.refresh),
 
   // Auth: register — 3 attempts per minute per IP
   authRegisterIp: makeLimiter('auth-register-ip', authRateLimits.register),

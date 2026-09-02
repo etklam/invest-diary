@@ -19,6 +19,9 @@ interface SessionUserRecord {
 interface RefreshTokenRecord {
   token: string
   expiresAt: Date
+  revokedAt: Date | null
+  clientType: 'WEB' | 'NATIVE'
+  familyId: string
   user: SessionUserRecord
 }
 
@@ -115,7 +118,7 @@ export async function authenticateRefreshToken(token: string): Promise<{
   }
 
   const storedToken = await findRefreshTokenRecord(token)
-  if (!storedToken || storedToken.expiresAt < new Date()) {
+  if (!storedToken || storedToken.revokedAt || storedToken.expiresAt < new Date()) {
     return null
   }
 

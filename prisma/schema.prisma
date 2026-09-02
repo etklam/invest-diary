@@ -12,6 +12,19 @@ enum UserRole {
   ADMIN
 }
 
+enum RefreshTokenClientType {
+  WEB
+  NATIVE
+}
+
+enum RefreshTokenRevocationReason {
+  ROTATED
+  LOGOUT
+  LOGOUT_ALL
+  REUSE_DETECTED
+  EXPIRED
+}
+
 enum DiaryCreatedVia {
   WEB
   API_KEY
@@ -73,6 +86,24 @@ enum ThesisPortfolioDecision {
   CONTINUE_WATCHING
 }
 
+enum DiaryReviewStatus {
+  NONE     @map("none")
+  PENDING  @map("pending")
+  REVIEWED @map("reviewed")
+}
+
+enum TradePlanStatus {
+  DRAFT     @map("draft")
+  ACTIVE    @map("active")
+  CLOSED    @map("closed")
+  CANCELLED @map("cancelled")
+}
+
+enum AlertRecurringMode {
+  WEEK
+  MONTH
+}
+
 enum PostStatus {
   DRAFT
   PUBLISHED
@@ -121,16 +152,30 @@ model User {
 }
 
 model RefreshToken {
-  id        BigInt   @id @default(autoincrement())
-  token     String   @unique @db.VarChar(500)
-  userId    BigInt   @map("user_id")
-  expiresAt DateTime @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
+  id               BigInt                        @id @default(autoincrement())
+  token            String                        @unique @db.VarChar(500)
+  userId           BigInt                        @map("user_id")
+  clientType       RefreshTokenClientType        @default(WEB) @map("client_type")
+  familyId         String                        @map("family_id") @db.VarChar(64)
+  deviceName       String?                       @map("device_name") @db.VarChar(100)
+  parentId         BigInt?                       @map("parent_id")
+  replacementId    BigInt?                       @unique(map: "refresh_tokens_replacement_id_key") @map("replacement_id")
+  revokedAt        DateTime?                     @map("revoked_at")
+  revocationReason RefreshTokenRevocationReason? @map("revocation_reason")
+  expiresAt        DateTime                      @map("expires_at")
+  createdAt        DateTime                      @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent      RefreshToken?  @relation("RefreshTokenParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children    RefreshToken[] @relation("RefreshTokenParent")
+  replacement RefreshToken?  @relation("RefreshTokenReplacement", fields: [replacementId], references: [id], onDelete: SetNull)
+  replaces    RefreshToken?  @relation("RefreshTokenReplacement")
 
   @@index([userId], map: "refresh_tokens_user_id_idx")
   @@index([token], map: "refresh_tokens_token_idx")
+  @@index([userId, clientType], map: "refresh_tokens_user_client_idx")
+  @@index([familyId, revokedAt], map: "refresh_tokens_family_revoked_idx")
+  @@index([parentId], map: "refresh_tokens_parent_id_idx")
   @@map("refresh_tokens")
 }
 
@@ -147,13 +192,13 @@ model Diary {
   updatedAt      DateTime        @updatedAt @map("updated_at")
 
   // Structured review fields
-  thesis       String?   @db.Text // Trading thesis / rationale
-  risk         String?   @db.Text // Risk assessment
-  execution    String?   @db.Text // Execution notes
-  reviewDueAt  DateTime? @map("review_due_at") // When to review this diary
-  reviewStatus String?   @default("none") @map("review_status") @db.VarChar(20) // none / pending / reviewed
-  reviewedAt   DateTime? @map("reviewed_at") // When actually reviewed
-  reviewOutcome    String? @map("review_outcome") @db.VarChar(20)
+  thesis           String?   @db.Text // Trading thesis / rationale
+  risk             String?   @db.Text // Risk assessment
+  execution        String?   @db.Text // Execution notes
+  reviewDueAt      DateTime? @map("review_due_at") // When to review this diary
+  reviewStatus     DiaryReviewStatus @default(NONE) @map("review_status")
+  reviewedAt       DateTime? @map("reviewed_at") // When actually reviewed
+  reviewOutcome    ThesisReviewOutcome? @map("review_outcome")
   reviewSummary    String? @map("review_summary") @db.Text
   reviewLearning   String? @map("review_learning") @db.Text
   reviewAdjustment String? @map("review_adjustment") @db.Text
@@ -167,6 +212,7 @@ model Diary {
 
   // Diary.date is the normalized UTC-noon representation of the user-local civil date.
   @@unique([userId, date], map: "diaries_user_date_key")
+  @@unique([id, userId], map: "diaries_id_user_id_key")
   @@index([userId], map: "diaries_user_id_fkey")
   // 複合索引：優化使用者日記列表查詢（按建立時間排序）
   @@index([userId, createdAt(sort: Desc)], map: "diaries_user_created_idx")
@@ -210,7 +256,7 @@ model TradePlan {
   maxPositionSize       Decimal? @map("max_position_size") @db.Decimal(18, 2)
   invalidationCondition String?  @map("invalidation_condition") @db.Text
   notes                 String?  @db.Text
-  status                String   @default("draft") @db.VarChar(32)
+  status                TradePlanStatus @default(DRAFT)
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
 
@@ -219,6 +265,7 @@ model TradePlan {
 
   @@index([userId, status], map: "trade_plans_user_status_idx")
   @@index([userId, symbol], map: "trade_plans_user_symbol_idx")
+  @@index([diaryId, userId], map: "trade_plans_diary_user_idx")
   @@index([diaryId], map: "trade_plans_diary_id_idx")
   @@map("trade_plans")
 }
@@ -271,15 +318,22 @@ model Alert {
   message        String   @db.VarChar(500)
   triggerAt      DateTime @map("trigger_at")
   isDismissed    Boolean  @default(false) @map("is_dismissed")
-  recurringMode  String?  @map("recurring_mode") @db.VarChar(20)
+  recurringMode  AlertRecurringMode? @map("recurring_mode")
   parentId       BigInt?  @map("parent_id")
-  instanceNumber Int?     @default(1) @map("instance_number")
+  instanceNumber Int      @default(1) @map("instance_number")
   isPaused       Boolean  @default(false) @map("is_paused")
   createdAt      DateTime @default(now()) @map("created_at")
   diary          Diary    @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  parent         Alert?   @relation("AlertSeries", fields: [parentId], references: [id], onDelete: Cascade)
+  children       Alert[]  @relation("AlertSeries")
+
+  // alerts_parent_diary_fkey is installed by the MariaDB integrity migration
+  // because Prisma cannot express the extra composite parent/Diary invariant
+  // alongside this self-relation.
 
   @@index([diaryId], map: "alerts_diary_id_fkey")
   @@index([parentId], map: "alerts_parent_id_idx")
+  @@unique([id, diaryId], map: "alerts_id_diary_key")
   @@map("alerts")
 }
 
@@ -313,9 +367,10 @@ model Transaction {
   // 情緒狀態：VARCHAR 而非 ENUM，保留未來擴展彈性
   emotion   String?         @map("emotion") @db.VarChar(20)
   createdAt DateTime        @default(now()) @map("created_at")
-  diary     Diary           @relation(fields: [diaryId], references: [id], onDelete: Cascade)
+  diary     Diary           @relation(fields: [diaryId, userId], references: [id, userId], onDelete: Cascade)
 
   @@index([diaryId], map: "transactions_diary_id_fkey")
+  @@index([diaryId, userId], map: "transactions_diary_user_idx")
   // 複合索引：優化 holdings 查詢（按交易日期排序）
   @@index([symbol, tradeDate(sort: Asc)], map: "transactions_symbol_date_idx")
   // 複合索引：優化績效儀表板查詢（直接按 userId 查，不需 JOIN diary）
@@ -546,6 +601,7 @@ model InvestmentThesis {
   reviews ThesisReview[]
 
   @@unique([userId, stockId], map: "investment_theses_user_stock_key")
+  @@unique([id, userId], map: "investment_theses_id_user_id_key")
   @@index([userId, status, reviewDueAt], map: "investment_theses_user_status_due_idx")
   @@map("investment_theses")
 }
@@ -572,10 +628,11 @@ model ThesisReview {
   snapshotReviewDueAt            DateTime?               @map("snapshot_review_due_at")
   createdAt                      DateTime                @default(now()) @map("created_at")
 
-  thesis InvestmentThesis @relation(fields: [thesisId], references: [id], onDelete: Cascade)
+  thesis InvestmentThesis @relation(fields: [thesisId, userId], references: [id, userId], onDelete: Cascade)
   user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, thesisId, reviewedAt(sort: Desc)], map: "thesis_reviews_user_thesis_time_idx")
+  @@index([thesisId, userId], map: "thesis_reviews_thesis_user_idx")
   @@map("thesis_reviews")
 }
 
@@ -586,7 +643,7 @@ model ThesisReview {
 model PriceAlert {
   id          BigInt    @id @default(autoincrement())
   userId      BigInt    @map("user_id")
-  symbol      String    @db.VarChar(20)
+  symbol      String    @db.VarChar(32)
   type        AlertType
   threshold   Decimal   @db.Decimal(10, 4)
   message     String    @db.VarChar(500)

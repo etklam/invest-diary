@@ -6,7 +6,15 @@ import { resolveAuth } from '~/server/middleware/auth'
 const CSRF_COOKIE = 'csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
 const STATE_CHANGE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
-const SKIP_PATHS = ['/api/auth']
+const PUBLIC_AUTH_PATHS = new Set([
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/refresh',
+  '/api/auth/logout',
+  '/api/auth/native/login',
+  '/api/auth/native/refresh',
+  '/api/auth/native/logout',
+])
 
 const log = logger.auth
 
@@ -23,7 +31,7 @@ function generateToken(): string {
  * 1. On GET/HEAD/OPTIONS requests: if no csrf cookie exists, generate and set one.
  * 2. On state-changing methods (POST, PUT, PATCH, DELETE):
  *    - Skip if auth was verified through bearer or API key transport
- *    - Skip for /api/auth/* paths
+ *    - Skip only public auth bootstrap/session-token paths
  *    - Verify X-CSRF-Token header matches the csrf cookie value
  */
 export default defineEventHandler(async (event) => {
@@ -57,10 +65,8 @@ export default defineEventHandler(async (event) => {
   const transport = event.context.auth?.transport
   if (transport === 'bearer' || transport === 'api-key') return
 
-  // Skip CSRF for auth routes (login, register, etc.)
-  for (const skipPath of SKIP_PATHS) {
-    if (url.pathname.startsWith(skipPath)) return
-  }
+  // Cookie-authenticated logout-all is deliberately not skipped.
+  if (PUBLIC_AUTH_PATHS.has(url.pathname)) return
 
   const cookieToken = getCookie(event, CSRF_COOKIE)
   const headerToken = getHeader(event, CSRF_HEADER)
