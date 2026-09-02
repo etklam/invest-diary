@@ -5,44 +5,30 @@
  * Returns raw Prisma results; handlers call serialize().
  */
 
-import { z } from 'zod'
 import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
 import { isSupportedPriceAlertType } from '~/server/utils/price-alert-condition'
+import {
+  PRICE_ALERT_MAX_ITEMS,
+  createPriceAlertRequestSchema,
+  priceAlertTypeSchema,
+  updatePriceAlertRequestSchema,
+  type CreatePriceAlertRequest,
+  type UpdatePriceAlertRequest,
+} from '~/lib/contracts/alerts'
 
 // ─── Zod Schemas ──────────────────────────────────────────────────────────────
 
-export const AlertTypeEnum = z.enum([
-  'PRICE_ABOVE',
-  'PRICE_BELOW',
-  'CHANGE_PERCENT',
-  'MOVING_AVG',
-])
-
-export const CreatePriceAlertSchema = z.object({
-  symbol: z.string()
-    .transform((v) => v.toUpperCase().trim())
-    .refine((v) => v.length >= 1 && v.length <= 20, {
-      message: 'Symbol must be between 1 and 20 characters',
-    }),
-  type: AlertTypeEnum.refine((v) => isSupportedPriceAlertType(v), {
-    message: 'Alert type is not supported yet',
-  }),
-  threshold: z.number('Required'),
-  message: z.string().max(500).optional(),
+export const AlertTypeEnum = priceAlertTypeSchema
+export const CreatePriceAlertSchema = createPriceAlertRequestSchema.superRefine((value, context) => {
+  if (!isSupportedPriceAlertType(value.type)) {
+    context.addIssue({ code: 'custom', path: ['type'], message: 'Alert type is not supported yet' })
+  }
 })
+export const UpdatePriceAlertSchema = updatePriceAlertRequestSchema
 
-export const UpdatePriceAlertSchema = z.object({
-  threshold: z.number().optional(),
-  message: z.string().max(500).optional(),
-  isTriggered: z.boolean().optional(),
-  triggeredAt: z.union([z.string(), z.date()]).nullable().optional(),
-}).refine((data) => Object.keys(data).length > 0, {
-  message: 'At least one field must be provided',
-})
-
-export type CreatePriceAlertInput = z.infer<typeof CreatePriceAlertSchema>
-export type UpdatePriceAlertInput = z.infer<typeof UpdatePriceAlertSchema>
+export type CreatePriceAlertInput = CreatePriceAlertRequest
+export type UpdatePriceAlertInput = UpdatePriceAlertRequest
 
 // ─── Query Functions ──────────────────────────────────────────────────────────
 
@@ -52,7 +38,8 @@ export type UpdatePriceAlertInput = z.infer<typeof UpdatePriceAlertSchema>
 export async function listPriceAlerts(userId: bigint) {
   return prisma.priceAlert.findMany({
     where: { userId },
-    orderBy: { createdAt: 'desc' },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: PRICE_ALERT_MAX_ITEMS,
   })
 }
 
@@ -69,7 +56,7 @@ export async function createPriceAlert(userId: bigint, input: unknown) {
       userId,
       symbol: validated.symbol,
       type: validated.type,
-      threshold: validated.threshold.toString(),
+      threshold: validated.threshold,
       message: validated.message || defaultMsg,
     },
   })
@@ -92,13 +79,22 @@ export async function updatePriceAlert(
   })
 
   if (!alert || String(alert.userId) !== String(userId)) {
-    throw Errors.notFound(`Price alert ${String(id)} not found`)
+    throw Errors.priceAlertNotFound(String(id)).toH3Error()
+  }
+
+  if (validated.threshold !== undefined
+    && alert.type !== 'CHANGE_PERCENT'
+    && validated.threshold.startsWith('-')) {
+    throw Errors.validationError([{
+      field: 'threshold',
+      message: 'Threshold must be non-negative for this alert type',
+    }]).toH3Error()
   }
 
   return prisma.priceAlert.update({
     where: { id },
     data: {
-      ...(validated.threshold !== undefined && { threshold: validated.threshold.toString() }),
+      ...(validated.threshold !== undefined && { threshold: validated.threshold }),
       ...(validated.message !== undefined && { message: validated.message }),
       ...(validated.isTriggered !== undefined && { isTriggered: validated.isTriggered }),
       ...(validated.triggeredAt !== undefined && {
@@ -123,7 +119,7 @@ export async function deletePriceAlert(
   })
 
   if (!alert || String(alert.userId) !== String(userId)) {
-    throw Errors.notFound(`Price alert ${String(id)} not found`)
+    throw Errors.priceAlertNotFound(String(id)).toH3Error()
   }
 
   await prisma.priceAlert.delete({

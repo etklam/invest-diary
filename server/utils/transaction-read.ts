@@ -73,7 +73,9 @@ function decimalToNumber(value: unknown): number {
 
   if (value && typeof value === 'object' && 'toNumber' in value) {
     const toNumber = (value as { toNumber: () => number }).toNumber
-    if (typeof toNumber === 'function') return Number(toNumber())
+    // Decimal.js methods depend on their receiver; calling the extracted
+    // method loses `this` and returns NaN with the MariaDB adapter.
+    if (typeof toNumber === 'function') return Number(toNumber.call(value))
   }
 
   return Number(value)

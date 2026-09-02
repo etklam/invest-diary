@@ -6,11 +6,34 @@ export const tradePlanInclude = {
   diary: {
     select: {
       id: true,
+      userId: true,
       title: true,
       date: true,
+      reviewStatus: true,
+      reviewOutcome: true,
+      _count: { select: { transactions: true } },
     },
   },
 } satisfies Prisma.TradePlanInclude
+
+type TradePlanWithDiary = {
+  diary?: ({ userId?: bigint | number | string } & Record<string, unknown>) | null
+}
+
+/**
+ * Legacy rows can predate the owner invariant migration. Never expose a
+ * linked Diary unless its owner still matches the Trade Plan owner.
+ */
+export function sanitizeTradePlanDiary<T extends TradePlanWithDiary>(tradePlan: T, userId: bigint): T {
+  if (!tradePlan.diary) return tradePlan
+
+  const { userId: diaryUserId, ...diary } = tradePlan.diary
+  if (diaryUserId !== undefined && String(diaryUserId) !== String(userId)) {
+    return { ...tradePlan, diary: null } as T
+  }
+
+  return { ...tradePlan, diary } as T
+}
 
 export async function assertDiaryBelongsToUser(diaryId: bigint | null | undefined, userId: bigint) {
   if (!diaryId) return
@@ -38,10 +61,10 @@ export async function findTradePlanForUser(id: bigint, userId: bigint) {
   })
 
   if (!tradePlan) {
-    throw Errors.notFound('Trade plan not found')
+    throw Errors.tradePlanNotFound().toH3Error()
   }
 
-  return tradePlan
+  return sanitizeTradePlanDiary(tradePlan, userId)
 }
 
 export async function findTradePlanDetailForUser(id: bigint, userId: bigint) {
@@ -49,7 +72,7 @@ export async function findTradePlanDetailForUser(id: bigint, userId: bigint) {
     where: { id, userId },
   })
 
-  if (!tradePlan) throw Errors.notFound('Trade plan not found')
+  if (!tradePlan) throw Errors.tradePlanNotFound().toH3Error()
   if (!tradePlan.diaryId) return { ...tradePlan, diary: null }
 
   const diary = await prisma.diary.findFirst({

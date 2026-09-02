@@ -10,8 +10,8 @@ export async function persistAlert(
   input: AlertInput,
   timezone: string,
 ) {
-  const triggerAt = new Date(input.trigger_at ?? input.triggerAt ?? new Date())
-  const recurringMode = input.recurring_mode ?? input.recurringMode
+  const triggerAt = new Date(input.triggerAt)
+  const recurringMode = input.recurringMode
 
   if (!recurringMode) {
     return await tx.alert.create({
@@ -20,6 +20,7 @@ export async function persistAlert(
         message: input.message,
         triggerAt,
       },
+      include: { diary: { select: { id: true, title: true } } },
     })
   }
 
@@ -40,6 +41,7 @@ export async function persistAlert(
       ...parentData,
       parentId: undefined,
     },
+    include: { diary: { select: { id: true, title: true } } },
   })
 
   await tx.alert.update({
@@ -56,7 +58,7 @@ export async function persistAlert(
     })
   }
 
-  return parent
+  return { ...parent, parentId: parent.id }
 }
 
 export async function replaceAlerts(

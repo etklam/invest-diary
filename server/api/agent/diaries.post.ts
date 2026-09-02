@@ -1,17 +1,17 @@
-import type { CreateDiaryRequest, DiaryResponse } from '~/lib/contracts/diary'
+import { createDiaryRequestSchema, type DiaryResponse } from '~/lib/contracts/diary'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireApiKey } from '~/server/utils/api-key'
 import { createDiaryForUser } from '~/server/utils/diary-write'
-import { serialize } from '~/server/utils/serialize'
+import { mapDiaryResponse } from '~/server/utils/diary-response'
 
 export default defineEventHandler(async (event): Promise<DiaryResponse> => {
   const log = logger.diary.withRequestId(event.context.requestId)
 
   try {
     const auth = await requireApiKey(event, ['DIARY_CREATE', 'AGENT_WRITE'])
-    const body = await readBody<CreateDiaryRequest & { appendToToday?: boolean }>(event)
+    const body = createDiaryRequestSchema.parse(await readBody(event))
 
     if (body?.appendToToday) {
       throw Errors.validationError([
@@ -25,6 +25,7 @@ export default defineEventHandler(async (event): Promise<DiaryResponse> => {
       createdVia: 'API_KEY',
       createdByLabel: auth.label,
     })
+    setResponseStatus(event, 201)
 
     log.info('Diary created via API key', {
       diaryId: String(diary.id),
@@ -32,7 +33,7 @@ export default defineEventHandler(async (event): Promise<DiaryResponse> => {
       apiKeyId: auth.apiKeyId,
     })
 
-    return serialize(diary) as DiaryResponse
+    return mapDiaryResponse(diary)
   } catch (error) {
     handleApiError(error, log)
   }

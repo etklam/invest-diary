@@ -1,6 +1,7 @@
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import type { StockTimelineSourceType } from '~/lib/contracts/stocks/timeline-source'
+import { STOCK_WATCHLIST_MAX_ITEMS } from '~/lib/contracts/stocks'
 
 type StockWatchStatus = 'WATCHING' | 'ARCHIVED'
 
@@ -53,6 +54,7 @@ export async function listUserWatchlist(userIdInput: string | bigint) {
     where: { userId, status: 'WATCHING' },
     include: { stock: true },
     orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+    take: STOCK_WATCHLIST_MAX_ITEMS,
   })
 
   return items.map((item: { id: bigint; stock: { symbol: string; name: string | null }; sortOrder: number; status: StockWatchStatus }) => ({
@@ -80,6 +82,7 @@ export async function listUserWatchlistItems(userIdInput: string | bigint) {
       },
     },
     orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+    take: STOCK_WATCHLIST_MAX_ITEMS,
   })
 
   const recordCounts = await prisma.stockTimelineRecord.groupBy({

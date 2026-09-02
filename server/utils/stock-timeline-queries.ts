@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import type { StockTimelineSourceType } from '~/lib/contracts/stocks/timeline-source'
+import { toStockTimelineRecordResponse } from '~/lib/contracts/stocks'
 import { isUniqueConstraintError } from '~/server/utils/diary-write'
 import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 
@@ -227,23 +228,5 @@ export function toTimelineResponseItem(item: {
   createdAt: Date
   updatedAt: Date
 }) {
-  return {
-    id: item.id.toString(),
-    symbol: item.stock.symbol,
-    summary: item.summary,
-    sourceType: item.sourceType,
-    sourceTitle: item.sourceTitle,
-    sourceUrl: item.sourceUrl,
-    sourceDiaryId: item.sourceDiaryId ? item.sourceDiaryId.toString() : null,
-    sourceExternalId: item.sourceExternalId,
-    sourceExcerpt: item.sourceExcerpt,
-    confidence: item.confidence,
-    idempotencyKey: item.idempotencyKey,
-    occurredAt: item.occurredAt.toISOString(),
-    createdVia: item.createdVia,
-    createdByLabel: item.createdByLabel,
-    metadataJson: item.metadataJson,
-    createdAt: item.createdAt.toISOString(),
-    updatedAt: item.updatedAt.toISOString(),
-  }
+  return toStockTimelineRecordResponse(item)
 }

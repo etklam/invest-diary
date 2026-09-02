@@ -21,6 +21,7 @@ import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
 import { sha256Hex } from '~/server/utils/hash'
 import { REFRESH_TOKEN_MAX_AGE_SECONDS } from '~/lib/jwt'
+import { randomUUID } from 'node:crypto'
 import {
   isValidIanaTimezone,
   normalizeInput,
@@ -178,12 +179,33 @@ export async function createRefreshToken(
 
   try {
     await prisma.refreshToken.create({
-      data: { token: tokenHash, userId, expiresAt },
+      data: {
+        token: tokenHash,
+        userId,
+        clientType: 'WEB',
+        familyId: randomUUID(),
+        expiresAt,
+      },
     })
   } catch (error) {
     // Never overwrite a row belonging to another refresh session.
     throw error
   }
+}
+
+/** Revoke every refresh family and invalidate all outstanding access JWTs. */
+export async function logoutAllSessions(userId: bigint): Promise<void> {
+  const revokedAt = new Date()
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { tokenVersion: { increment: 1 } },
+    }),
+    prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt, revocationReason: 'LOGOUT_ALL' },
+    }),
+  ])
 }
 
 /**

@@ -1,5 +1,7 @@
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { toCalendarDateWire } from '~/lib/dates'
+import { companyHubResponseSchema, type CompanyHubDiary, type CompanyHubResponse } from '~/lib/contracts/company-hub'
 import type { StockTimelineSourceType } from '~/lib/contracts/stocks/timeline-source'
 import { concentration } from '~/lib/stocks-view'
 import { getCachedQuote } from '~/lib/market-data/quote'
@@ -11,7 +13,6 @@ import {
   toCurrentInvestmentThesis,
   toThesisReviewRecord,
 } from '~/server/utils/investment-thesis-queries'
-import type { CompanyHubDiary, CompanyHubResponse } from '~/types/company-hub'
 
 const HUB_LIMIT = 10
 
@@ -55,7 +56,7 @@ async function readRelatedDiaries(
     }) => ({
       id: diary.id.toString(),
       title: diary.title,
-      date: diary.date.toISOString(),
+      date: toCalendarDateWire(diary.date),
       transactionCount: diary.transactions.length,
       relation: 'transaction',
     }))
@@ -86,9 +87,9 @@ async function readRelatedDiaries(
     stockContexts: Array<{ stockId: bigint }>
     transactions: Array<{ id: bigint }>
   }) => ({
-    id: diary.id.toString(),
-    title: diary.title,
-    date: diary.date.toISOString(),
+      id: diary.id.toString(),
+      title: diary.title,
+      date: toCalendarDateWire(diary.date),
     transactionCount: diary.transactions.length,
     relation: diary.stockContexts.length ? 'explicit_context' : 'transaction',
   }))
@@ -163,7 +164,7 @@ export async function getCompanyHub(userId: bigint, symbolRaw: string): Promise<
         : 'untracked'
   const mappedReviews = reviews.map(toThesisReviewRecord)
 
-  return {
+  const response = {
     company: {
       id: stock?.id.toString() ?? null,
       symbol,
@@ -212,4 +213,6 @@ export async function getCompanyHub(userId: bigint, symbolRaw: string): Promise<
     })),
     relatedDiaries,
   }
+
+  return companyHubResponseSchema.parse(response)
 }

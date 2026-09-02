@@ -1,30 +1,9 @@
-import { z } from 'zod'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { requireApiKey } from '~/server/utils/api-key'
 import { createStockTimelineRecordsFromAgent } from '~/server/utils/stock-timeline-queries'
-import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { serialize } from '~/server/utils/serialize'
-import { agentAllowedSourceTypeSchema } from '~/lib/contracts/stocks/timeline-source'
-
-const timelineRecordSchema = z.object({
-  symbol: z.string().min(1).max(32).transform(normalizeStockSymbol),
-  summary: z.string().min(1),
-  sourceType: agentAllowedSourceTypeSchema,
-  sourceTitle: z.string().max(255).optional(),
-  sourceUrl: z.string().url().max(1000).optional(),
-  sourceDiaryId: z.string().regex(/^[1-9]\d*$/).optional(),
-  sourceExternalId: z.string().max(255).optional(),
-  sourceExcerpt: z.string().optional(),
-  confidence: z.number().int().min(0).max(100).optional(),
-  idempotencyKey: z.string().min(1).max(128),
-  occurredAt: z.string().datetime(),
-  metadataJson: z.string().optional(),
-})
-
-const requestSchema = z.object({
-  records: z.array(timelineRecordSchema).min(1).max(100),
-})
+import { agentTimelineBatchRequestSchema } from '~/lib/contracts/stocks'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -32,7 +11,7 @@ export default defineEventHandler(async (event) => {
   try {
     const auth = await requireApiKey(event, ['AGENT_WRITE'])
     const body = await readBody(event)
-    const payload = requestSchema.parse(body)
+    const payload = agentTimelineBatchRequestSchema.parse(body)
 
     const result = await createStockTimelineRecordsFromAgent({
       userId: auth.user.id,

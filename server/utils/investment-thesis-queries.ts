@@ -2,6 +2,7 @@ import type { Prisma } from '@prisma/client'
 import prisma from '~/lib/prisma'
 import { Errors } from '~/lib/errors/factory'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { THESIS_REVIEW_MAX_ITEMS } from '~/lib/contracts/investment-thesis'
 import type {
   CompleteThesisReviewInput,
   CurrentInvestmentThesis,
@@ -10,7 +11,7 @@ import type {
   InvestmentThesisStatus,
   ThesisReviewOutcome,
   ThesisReviewRecord,
-} from '~/types/investment-thesis'
+} from '~/lib/contracts/investment-thesis'
 
 export interface CurrentThesisProjection {
   id: bigint
@@ -166,7 +167,6 @@ export async function saveCurrentThesis(input: {
     select: { id: true },
   })
   // Full-replace semantics: absent draft fields clear, absent status defaults to DRAFT.
-  // The ACTIVE thesis requires summary/whyIOwnIt rule lives solely in the PUT handler's zod schema.
   const existing = await prisma.investmentThesis.findUnique({
     where: { userId_stockId: { userId: input.userId, stockId: stock.id } },
     select: { activatedAt: true },
@@ -184,6 +184,12 @@ export async function saveCurrentThesis(input: {
     status,
     activatedAt: status === 'ACTIVE' ? (existing?.activatedAt ?? now) : existing?.activatedAt,
     archivedAt: status === 'ARCHIVED' ? now : null,
+  }
+  if (status === 'ACTIVE' && (!data.summary || !data.whyIOwnIt)) {
+    throw Errors.validationError([
+      ...(!data.summary ? [{ field: 'summary', message: 'Summary is required to activate a Thesis' }] : []),
+      ...(!data.whyIOwnIt ? [{ field: 'whyIOwnIt', message: 'Why I own it is required to activate a Thesis' }] : []),
+    ])
   }
 
   return prisma.investmentThesis.upsert({
@@ -204,7 +210,7 @@ export async function listThesisReviews(userId: bigint, thesisId: bigint, limit 
   return prisma.thesisReview.findMany({
     where: { userId, thesisId },
     orderBy: [{ reviewedAt: 'desc' }, { id: 'desc' }],
-    take: Math.min(100, Math.max(1, limit)),
+    take: Math.min(THESIS_REVIEW_MAX_ITEMS, Math.max(1, limit)),
   })
 }
 
@@ -227,7 +233,8 @@ export async function completeThesisReview(input: {
   }
 
   const thesis = await findCurrentThesisBySymbol(input.userId, input.symbol)
-  if (!thesis) throw Errors.notFound('Investment Thesis not found')
+  if (!thesis) throw Errors.investmentThesisNotFound(input.symbol)
+  if (thesis.status !== 'ACTIVE') throw Errors.investmentThesisNotActive()
   const reviewedAt = input.reviewedAt ?? new Date()
 
   return prisma.$transaction(async (tx: Prisma.TransactionClient) => {

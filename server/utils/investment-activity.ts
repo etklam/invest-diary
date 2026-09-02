@@ -1,9 +1,29 @@
+import type { Prisma } from '@prisma/client'
 import prisma from '~/lib/prisma'
 import { normalizeStockSymbol } from '~/lib/stocks/symbols'
+import { toCalendarDateWire, toUtcNoonDate } from '~/lib/dates/normalize'
+import type { ActivityCursorPayload, ActivityKind } from '~/lib/contracts/activity'
 import type { StockTimelineSourceType } from '~/lib/contracts/stocks/timeline-source'
-import { mergeInvestmentActivity, type InvestmentActivityOptions, type InvestmentActivitySources } from '~/lib/investment-activity'
+import {
+  mergeInvestmentActivity,
+  resolveInvestmentActivitySnapshot,
+  type InvestmentActivityOptions,
+  type InvestmentActivitySources,
+} from '~/lib/investment-activity'
 
 const ACTIVITY_LIMIT = 50
+const ACTIVITY_KIND_ORDER: Record<ActivityKind, number> = {
+  diary: 0,
+  thesis_review: 1,
+  stock_timeline: 2,
+  thesis: 3,
+}
+const ACTIVITY_KIND_PREFIX: Record<ActivityKind, string> = {
+  diary: 'diary:',
+  thesis_review: 'thesis-review:',
+  stock_timeline: 'stock-timeline:',
+  thesis: 'thesis:',
+}
 
 type DiaryRow = {
   id: bigint; date: Date; title: string; content: string | null
@@ -27,12 +47,17 @@ type ThesisRow = {
   stock: { symbol: string }
 }
 
-function decimalToNumber(value: unknown): number {
-  if (typeof value === 'number') return value
-  if (value && typeof value === 'object' && 'toNumber' in value && typeof (value as { toNumber?: unknown }).toNumber === 'function') {
-    return Number((value as { toNumber: () => number }).toNumber())
+function decimalToString(value: unknown): string {
+  if (typeof value === 'string') return value.trim()
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new Error('Invalid decimal value')
+    return String(value)
   }
-  return Number(value)
+  if (value && typeof value === 'object') {
+    const result = String(value).trim()
+    if (result) return result
+  }
+  throw new Error('Invalid decimal value')
 }
 
 function cleanSummary(value: string | null | undefined): string | null {
@@ -40,14 +65,81 @@ function cleanSummary(value: string | null | undefined): string | null {
   return cleaned ? cleaned.slice(0, 280) : null
 }
 
+function cursorInstant(cursor: ActivityCursorPayload): Date {
+  const raw = cursor.occurredAt.length === 10
+    ? `${cursor.occurredAt}T00:00:00.000Z`
+    : cursor.occurredAt
+  return new Date(raw)
+}
+
+/**
+ * Return the source-specific keyset predicate for the global Activity order.
+ * A source query must continue after the cursor before applying its window;
+ * fetching a fixed top-N slice and filtering in memory can silently omit old
+ * records once one source grows past that window.
+ */
+function afterActivityCursor(
+  sourceKind: ActivityKind,
+  cursor: ActivityCursorPayload | null | undefined,
+  field: 'date' | 'reviewedAt' | 'occurredAt' | 'updatedAt',
+): Record<string, unknown> | null {
+  if (!cursor) return null
+
+  const sourceOrder = ACTIVITY_KIND_ORDER[sourceKind]
+  const cursorOrder = ACTIVITY_KIND_ORDER[cursor.kind]
+  const cursorTime = cursorInstant(cursor)
+  const cursorPrefix = ACTIVITY_KIND_PREFIX[cursor.kind]
+  const cursorId = BigInt(cursor.id.slice(cursorPrefix.length))
+
+  if (sourceKind === 'diary') {
+    // Diary dates are calendar values persisted at UTC noon, while the merged
+    // presentation compares them at UTC midnight. Same-day Diaries therefore
+    // need a calendar-day predicate rather than a raw DateTime comparison.
+    const cursorDay = toUtcNoonDate(cursorTime)
+    const cursorDayStart = new Date(Date.UTC(
+      cursorDay.getUTCFullYear(),
+      cursorDay.getUTCMonth(),
+      cursorDay.getUTCDate(),
+    ))
+
+    if (cursor.kind === 'diary') {
+      return {
+        OR: [
+          { [field]: { lt: cursorDay } },
+          { [field]: { equals: cursorDay }, id: { gt: cursorId } },
+        ],
+      }
+    }
+
+    return { [field]: cursorTime.getTime() > cursorDayStart.getTime() ? { lte: cursorDay } : { lt: cursorDay } }
+  }
+
+  if (sourceOrder < cursorOrder) return { [field]: { lt: cursorTime } }
+  if (sourceOrder > cursorOrder) return { [field]: { lte: cursorTime } }
+  return {
+    OR: [
+      { [field]: { lt: cursorTime } },
+      { [field]: { equals: cursorTime }, id: { gt: cursorId } },
+    ],
+  }
+}
+
 export async function readInvestmentActivitySources(
   userId: bigint,
-  options: { symbol?: string | null; sourceLimit?: number } = {},
+  options: {
+    symbol?: string | null
+    asOf?: Date
+    cursor?: ActivityCursorPayload | null
+    sourceLimit?: number
+  } = {},
 ): Promise<InvestmentActivitySources> {
   const symbol = options.symbol?.trim() ? normalizeStockSymbol(options.symbol) : null
+  const asOf = options.asOf ?? new Date()
+  const diaryAsOf = toUtcNoonDate(asOf)
   const sourceLimit = Math.min(ACTIVITY_LIMIT * 3, Math.max(20, options.sourceLimit ?? ACTIVITY_LIMIT * 2))
   const diaryWhere = {
     userId,
+    date: { lte: diaryAsOf },
     ...(symbol ? {
       OR: [
         { stockContexts: { some: { stock: { symbol } } } },
@@ -55,12 +147,19 @@ export async function readInvestmentActivitySources(
       ],
     } : {}),
   }
+  const diaryCursorWhere = afterActivityCursor('diary', options.cursor, 'date')
+  const reviewCursorWhere = afterActivityCursor('thesis_review', options.cursor, 'reviewedAt')
+  const timelineCursorWhere = afterActivityCursor('stock_timeline', options.cursor, 'occurredAt')
+  const thesisCursorWhere = afterActivityCursor('thesis', options.cursor, 'updatedAt')
 
-  const [diaries, reviews, timeline, theses] = await Promise.all([
+  const [diaryRows, reviewRows, timelineRows, thesisRows] = await Promise.all([
     prisma.diary.findMany({
-      where: diaryWhere,
-      orderBy: [{ date: 'desc' }, { id: 'desc' }],
-      take: sourceLimit,
+      where: {
+        ...diaryWhere,
+        ...(diaryCursorWhere ? { AND: [diaryCursorWhere as Prisma.DiaryWhereInput] } : {}),
+      },
+      orderBy: [{ date: 'desc' }, { id: 'asc' }],
+      take: sourceLimit + 1,
       select: {
         id: true,
         date: true,
@@ -77,29 +176,51 @@ export async function readInvestmentActivitySources(
       },
     }),
     prisma.thesisReview.findMany({
-      where: { userId, ...(symbol ? { thesis: { stock: { symbol } } } : {}) },
-      orderBy: [{ reviewedAt: 'desc' }, { id: 'desc' }],
-      take: sourceLimit,
+      where: {
+        userId,
+        reviewedAt: { lte: asOf },
+        ...(symbol ? { thesis: { stock: { symbol } } } : {}),
+        ...(reviewCursorWhere ? { AND: [reviewCursorWhere as Prisma.ThesisReviewWhereInput] } : {}),
+      },
+      orderBy: [{ reviewedAt: 'desc' }, { id: 'asc' }],
+      take: sourceLimit + 1,
       include: { thesis: { select: { stock: { select: { symbol: true } } } } },
     }),
     prisma.stockTimelineRecord.findMany({
-      where: { userId, ...(symbol ? { stock: { symbol } } : {}) },
-      orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
-      take: sourceLimit,
+      where: {
+        userId,
+        occurredAt: { lte: asOf },
+        ...(symbol ? { stock: { symbol } } : {}),
+        ...(timelineCursorWhere ? { AND: [timelineCursorWhere as Prisma.StockTimelineRecordWhereInput] } : {}),
+      },
+      orderBy: [{ occurredAt: 'desc' }, { id: 'asc' }],
+      take: sourceLimit + 1,
       include: { stock: { select: { symbol: true } } },
     }),
     prisma.investmentThesis.findMany({
-      where: { userId, ...(symbol ? { stock: { symbol } } : {}) },
-      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
-      take: sourceLimit,
+      where: {
+        userId,
+        updatedAt: { lte: asOf },
+        ...(symbol ? { stock: { symbol } } : {}),
+        ...(thesisCursorWhere ? { AND: [thesisCursorWhere as Prisma.InvestmentThesisWhereInput] } : {}),
+      },
+      orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+      take: sourceLimit + 1,
       include: { stock: { select: { symbol: true } } },
     }),
   ]) as unknown as [DiaryRow[], ReviewRow[], TimelineRow[], ThesisRow[]]
 
+  const sourceTruncated = [diaryRows, reviewRows, timelineRows, thesisRows]
+    .some(rows => rows.length > sourceLimit)
+  const diaries = diaryRows.slice(0, sourceLimit)
+  const reviews = reviewRows.slice(0, sourceLimit)
+  const timeline = timelineRows.slice(0, sourceLimit)
+  const theses = thesisRows.slice(0, sourceLimit)
+
   return {
     diaries: diaries.map(diary => ({
       id: diary.id.toString(),
-      date: diary.date.toISOString(),
+      date: toCalendarDateWire(diary.date),
       title: diary.title,
       content: diary.content,
       createdVia: diary.createdVia,
@@ -109,8 +230,8 @@ export async function readInvestmentActivitySources(
         id: transaction.id.toString(),
         symbol: normalizeStockSymbol(transaction.symbol),
         type: transaction.type,
-        quantity: decimalToNumber(transaction.quantity),
-        price: decimalToNumber(transaction.price),
+        quantity: decimalToString(transaction.quantity),
+        price: decimalToString(transaction.price),
       })),
       reviewOutcome: diary.reviewOutcome,
       reviewStatus: diary.reviewStatus,
@@ -146,6 +267,7 @@ export async function readInvestmentActivitySources(
       summary: thesis.summary,
       latestReviewOutcome: thesis.latestReviewOutcome,
     })),
+    sourceTruncated,
   }
 }
 
@@ -153,9 +275,18 @@ export async function readInvestmentActivityPage(
   userId: bigint,
   options: InvestmentActivityOptions = {},
 ) {
-  const sources = await readInvestmentActivitySources(userId, { symbol: options.symbol })
+  // Resolve before reading any source so malformed/mismatched cursors cannot
+  // accidentally fall back to page one and every query shares one snapshot.
+  const snapshot = resolveInvestmentActivitySnapshot(options)
+  const sources = await readInvestmentActivitySources(userId, {
+    symbol: snapshot.symbol,
+    asOf: snapshot.asOf,
+    cursor: snapshot.cursor,
+  })
   return mergeInvestmentActivity(sources, {
     ...options,
+    symbol: snapshot.symbol,
+    asOf: snapshot.asOf,
     limit: Math.min(ACTIVITY_LIMIT, Math.max(1, options.limit ?? 20)),
   })
 }

@@ -1,10 +1,10 @@
 import { logger } from '~/lib/logger'
 import { requireApiKey } from '~/server/utils/api-key'
 import { createStockNote, requestSchema, toStockNoteResponse } from '~/lib/stocks/notes'
-import { normalizeStockSymbol, parseSymbolParam, symbolSchema } from '~/lib/stocks/symbols'
+import { normalizeStockSymbol, parseSymbolParam } from '~/lib/stocks/symbols'
 import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
 import type { StockNoteResponse } from '~/types/stock-note'
+import { stockSymbolSchema } from '~/lib/contracts/stocks'
 
 export default defineEventHandler(async (event): Promise<StockNoteResponse> => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event): Promise<StockNoteResponse> => {
     const auth = await requireApiKey(event, ['AGENT_WRITE'])
 
     const rawSymbol = parseSymbolParam(event)
-    const symbol = normalizeStockSymbol(symbolSchema.parse(rawSymbol))
+    const symbol = normalizeStockSymbol(stockSymbolSchema.parse(rawSymbol))
 
     const body = await readBody(event)
     const payload = requestSchema.parse(body)
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event): Promise<StockNoteResponse> => {
       noteId: String(note.id),
     })
 
-    return serialize(toStockNoteResponse(note))
+    return toStockNoteResponse(note)
   } catch (error) {
     handleApiError(error, log)
   }
