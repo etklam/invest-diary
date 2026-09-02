@@ -22,8 +22,12 @@ describe('QuickReminder', () => {
     await wrapper.get('input[type="time"]').setValue('09:45')
     await wrapper.get('button').trigger('click')
 
+    // The component interprets wall-clock input in the host timezone; derive
+    // the expected UTC instant from that same timezone so the assertion holds
+    // on any machine (CI containers run UTC, dev machines run Asia/Taipei).
+    const wallClock = new Date('2026-03-23T09:45:00')
     expect(wrapper.emitted('set')).toEqual([
-      [{ key: 'reminder1', time: '2026-03-23T01:45:00.000Z' }],
+      [{ key: 'reminder1', time: wallClock.toISOString() }],
     ])
 
     await wrapper.findAll('button')[1].trigger('click')

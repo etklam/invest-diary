@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   getUserDayRange,
@@ -19,7 +19,16 @@ describe('lib/dates/user-tz', () => {
     })
 
     it('falls back to Asia/Taipei when neither source is available', () => {
-      expect(resolveUserTimezone(undefined, undefined)).toBe('Asia/Taipei')
+      // Force the browser-detection path to yield nothing so the app default
+      // is exercised regardless of the host timezone (CI containers run UTC).
+      const spy = vi
+        .spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
+        .mockReturnValue({ timeZone: '' } as Intl.ResolvedDateTimeFormatOptions)
+      try {
+        expect(resolveUserTimezone(undefined, undefined)).toBe('Asia/Taipei')
+      } finally {
+        spy.mockRestore()
+      }
     })
   })
 
