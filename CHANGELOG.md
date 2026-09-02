@@ -4,7 +4,35 @@
 
 ## [Unreleased]
 
+### Added（2026-08）
+
+- Research Capture Loop：Quick Diary prefill pipeline、Company Evidence web 寫入路徑（4 個 research sourceTypes）、共用 Capture Insight UI、Market Rotation / SEC Filings / Relative Value / Seasonality 工具入口整合
+- Native client 認證：`Authorization: Bearer <access JWT>`；credential resolution 改 fail-closed（ADR-0006），CSRF 改 transport-aware
+- API error `data` 注入 `requestId`；error contract 正式化為 H3 wire shape + per-resource codes（ADR-0007）
+- `lib/contracts/` client-neutral 契約邊界（error codes SSOT、diary/review/stocks wire types、zod frozen diary list contract）
+- Daily breadth writer 排進既有 rotation CronJob
+- Timeline overview 壓縮（summary strip + collapsible cards）
+
+### Changed（2026-08）
+
+- 架構深化兩輪（audit 18 項 + audit r5 15 項，完整記錄見 `CONTEXT.md` 架構決策記錄區）：query layer 全覆蓋（blog 寫入、admin ETF、user、api-key、alert、trade-plan 等）、portfolio 估值組裝收斂（`loadValuedHoldings` + `valuationStatus`）、每日 OHLCV fetch/persist 收斂（`lib/market-data/daily-prices`）、rotation dashboard 組裝與 staleness policy 收斂、`listSharingPartners` 單一 sharing gate、DiaryAuthoringForm / useBlogDraft / useDialogA11y / useDiaryDateConflict 等 UI controller 收斂、composable 介面收窄、時區 / symbol / sourceType SSOT
+- Admin 守衛單一化（global middleware only，移除 20 個 in-handler guard）
+- Ownership mismatch 一律 404，刪除 `DIARY_ACCESS_DENIED` code
+- 介面樣式遷移 design tokens（`dt-*` utilities）、responsive app layout 統一（`PageContainer`）、a11y 與 localization 強化
+- 測試基礎設施：domain fixture builders（`tests/fixtures/builders.ts`）、`requireApiKey` 信任邊界直測、partners 頁面 contract tests、diary duplicate reconciliation MySQL integration tests
+
+### Fixed（2026-08）
+
+- 績效數學：Sharpe 改用月報酬率、drawdown 移除假 $100 base、seasonality 顯示真實月均、topWins/topLosses 先過濾再切片
+- Oversell 不再 throw；不完整訊號顯示 unavailable 而非全有全無
+- Timeline loadMore 去重與分頁塌陷、語音輸入重複 emit、alert watcher leak
+- 安全：rate-limit XFF 信任邊界（`TRUST_X_FORWARDED_FOR`）、public blog 不洩 author email、register P2002 → 409、payload size caps
+- Review 完成後 Timeline 仍誤報 overdue；blog re-publish 保留首次 `publishedAt`
+- BetaCockpitCard 移除（`decideBetaAllocation` policy 保留）
+
 ### 計畫中
+
+> 注：部分項目已於 2026-08 落地（CSRF 機制、requestId 鏈路、速率限制等），見上方條目；其餘維持計畫狀態。
 - **2026-05-01 改善計畫**：Phase 0 資料品質修復（Symbol 正規化、Transaction ID 穩定化、成本法註解統一）
 - **安全性加固**：Content-Security-Policy Header、管理端點速率限制、CSRF Token 機制、API Key 創建速率限制、日誌 PII 遮罩
 - **程式碼品質統一**：錯誤處理統一（27 處 console.log → 結構化 Logger）、抽取重複 enforceRateLimit、移除冗餘 jsonwebtoken 依賴、requestId 鏈路完整化

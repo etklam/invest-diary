@@ -35,7 +35,7 @@ describe('timeline date filtering contract', () => {
     const source = readFileSync(resolve(process.cwd(), 'composables/useTimelineDiaries.ts'), 'utf8')
 
     expect(source).toContain('query: requestQuery')
-    expect(source).toContain('{ query: { ...requestQuery.value, page: String(nextPage) } }')
+    expect(source).toContain('api.diaries.list({ ...requestQuery.value, page: String(nextPage) })')
     expect(source).not.toContain('return diaryYmd >= filters.dateFrom')
     expect(source).not.toContain('return diaryYmd <= filters.dateTo')
   })

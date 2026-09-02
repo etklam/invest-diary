@@ -538,3 +538,107 @@ _避免：速記、草稿_
 #### 排除項
 
 - **#9 統一資料層**：每個 composable / page 各自 `$fetch` + try/catch + toast 的樣板重複，沒有對應的散落 bug。抽象資料層會引進不必要的間接與介面，依 YAGNI 排除——除非未來出現明確痛點。
+
+### 2026-08 架構深化（審計 18 項 + Research Capture 8 項）
+
+`.scratch/architecture-audit-2026-08/` 驅動，另含前置的全量 audit findings 修復包（perf 數學改月報酬率、oversell 容忍、資料污染修復、XFF 信任邊界、i18n fallbackLocale）。
+
+#### 1. 讀取側收斂 — overdue review、diary list、quote read
+
+- `isThesisReviewOverdue` 統一 overdue-review 規則——修復 Timeline 在 review 完成後仍持續 nagging 的 bug
+- Diary list 讀取收斂：server-side timeline filtering（不再有 false empty state）、單一 dedupe + excerpt helper
+- Quote read seam：`getCachedQuote` + `fetchQuotesBounded`（attention 路徑恢復並發上限）
+
+#### 2. Blog 寫入側 query layer — `server/utils/post-write.ts`
+
+`post-queries.ts` 補上寫入對稱：`queryPostsAdmin` / `queryPostsPublic` persona 入口；re-publish 保留首次 `publishedAt`（先前會被覆蓋）。
+
+#### 3. Admin 守衛單一化
+
+全域 admin middleware 成為唯一守衛機制，移除 20 個 in-handler guard；修復 `/api/administrator` prefix 比對錯誤。
+
+#### 4. Admin ETF 現代化 — `server/utils/etf-admin-queries.ts`
+
+5 個 admin ETF handler 補上 Zod + `handleApiError` + query layer，與其他 context 對齊。
+
+#### 5. Portfolio 計算收斂
+
+`concentration(holdings, { basis })` 單一公式；attention coverage 改用 `valuationStatus`（不再 all-or-nothing）；thesis activation 改 full-replace（刪 `valueOrExisting` merge）。
+
+#### 6. Client 端清理與介面收窄
+
+刪除死模組 `useInvestmentActivity`、navigation store、router plugin（~130 行 ledger client seam 一併移除）；composable 介面收窄（FinancialFreedom 17→13、MobileDetection 19→2、Alerts 11→3）；`useDiaryDateConflict` controller 抽出（~130 行 ×2 去重、race guard 統一、+13 測試）。
+
+#### 7. 型別單一真相
+
+reviews / attention / activity 的 API payload 型別在源頭定義，刪除 `as-any` 與手動 intersection；時區解析雙側 SSOT（client `resolveUserTimezone`、server `getUserTimezone`，單一 fallback chain）。
+
+#### 8. Research Capture Loop（8 項）
+
+- RC-01 Quick Diary prefill pipeline（content / stockSymbols context，draft-protection append/keep）
+- RC-02 Company Evidence web 寫入路徑（4 個 research sourceTypes、`createdVia WEB`、auto-watchlist、idempotent double-submit）
+- RC-03 共用 **Capture Insight** UI（`useResearchCapture` + modal，a11y、三語、未登入隱藏）
+- RC-04/05/06 工具整合（Market Rotation 4 個入口、SEC filings 帶 EDGAR provenance、Relative Value pair context、Seasonality 僅 quick diary）
+- RC-07 Timeline overview 壓縮（summary strip + collapsible cards，Investment Timeline 命名保留）
+- RC-08 BetaCockpitCard 移除（payload 一併移除；`decideBetaAllocation` 保留供 Current Market Summary 使用，見 `docs/BETA_COCKPIT.md` 封存註記）
+
+### 2026-08 架構深化（audit r5：15 項）
+
+第五輪審計（`.scratch/` 同期 issues），聚焦 deep module 擁有組裝與不變量。
+
+#### 1. `lib/market-data/daily-prices.ts` seam
+
+每日 OHLCV fetch + persist 收斂：單一 Yahoo client、`fetchDailyOhlcv`、`persistDailyPrices`（upsert-only 策略）、`isYahooRateLimitError`、統一 `resolveYahooRangeStart`。batch / breadth / seed-universe 三路共用，−202 行。
+
+#### 2. `getRotationDashboardContext` 擁有 rotation 組裝 + staleness policy
+
+五步組裝從 exposure / rotation-monitor handler 收斂進 module；Sector-Breadth-from-sectors-scope 不變量移入 module 內；stale 或 coverage <90% 的 breadth 強制 Market State 為 unknown；scope 驗證 SSOT 在 `lib/market-rotation/types.ts`。
+
+#### 3. `listSharingPartners` 單一 sharing gate
+
+雙向 per-resource sharing 規則（diaries | stockNotes）在 `partner.ts` 命名一次；company-hub inline filter 與 `loadCompareContext` diary gate 委派於它。
+
+#### 4. `loadValuedHoldings` — `server/utils/portfolio-read.ts`
+
+read → `calculateHoldings` → bounded quotes → enrich → aggregate 的組裝從 5 個 call site 收斂；enrichment 欄位集單一真相；`valuationStatus`（complete / partial / unavailable）與 priced-subset 語意從註解升級為受測行為。
+
+#### 5. UI controller 收斂
+
+- `useDialogA11y` 擁有 focus trap + scroll lock + focus restore + esc——三個手抄 a11y 狀態機合一，修復 QuickDiaryModal scroll-lock leak
+- `QuickNoteEditorCore` 改收 composer controller（23×19 fan-out 收斂）；severity 參數化而非複製
+- `DiaryAuthoringForm` 抽出——new / edit 頁面降至 routing-only（463→147、426→142 行）
+- `useBlogDraft` composable——draft autosave / restore / clear 生命週期單一真相；admin blog 頁面硬編碼 zh 字串全數 i18n 化（parity test 把關）
+
+#### 6. 測試基礎設施
+
+`tests/fixtures/builders.ts` domain fixture builders（`aUser` / `aDiary` / `aTransaction` / `anAlert` / `aStockNote` / `aPost`，預設即完整 Prisma row shape 的 schema-tracking seam）；15 個測試檔遷移，淨 −180 行 fixture scaffolding。`requireApiKey` 信任邊界 10 個直測；1229 行 partners 頁面（唯一控制權限的 UI）補 contract tests。
+
+#### 7. Cleanup pack
+
+`trade-queries.ts` 刪除（自我描述的 legacy wrapper，零 production caller），transaction 讀取收斂為 `transaction-read.ts` 的 `readPortfolioTransactions`；死 partner serializer 與死 test helpers 移除；market endpoints 改用 `getRateLimitIdentifier`（安全 XFF policy）；k8s `DATABASE_URL` 移至 secretKeyRef；daily breadth writer 排進既有 rotation CronJob（`sh -ec` fail-fast，tsx 移至 dependencies——prod image prune devDeps 會讓 cron pod 失去 runner）。
+
+### 2026-08 認證與契約深化（app-ready auth + lib/contracts）
+
+#### 1. Fail-closed credential resolution + Bearer access tokens（ADR-0006）
+
+`server/middleware/auth.ts` 重寫為單一 credential resolution 演算法，產生 `event.context.auth`（verified transport + identity）：顯式 credential（`Authorization: Bearer dva_*` / `Bearer <JWT>` / `x-api-key`）驗證失敗一律 401，不 fallback cookie；多個顯式 credential 拒絕 ambiguity。Native client（Expo）可用 `Authorization: Bearer <access JWT>`。CSRF 改為 transport-aware：`cookie` → requireCsrf，`bearer` / `api-key` → 豁免（終結 pre-verification header-sniff）。Integration test 鎖定 auth middleware 先於 csrf middleware。
+
+#### 2. Error contract 正式化（ADR-0007）
+
+保留 H3 wire shape 為官方契約：machine-readable `data.code`（命名 `MODULE_ACTION_REASON`）+ `requestId` 注入 `data`（注入點是 nitro `error` hook 單處——`server/plugins/error-contract.ts`）。Ownership mismatch 一律 404、刪除 `DIARY_ACCESS_DENIED` code；register P2002 → 409。Mobile 401 採 dumb flow（任何 401 → single-flight refresh → retry 一次 → logout）。
+
+#### 3. `lib/contracts/` 邊界
+
+Client-neutral 契約集中：`common/`（error codes SSOT——自 `lib/errors/codes.ts` 遷入、`SerializedId`）、`diary/`、`review/`、`stocks/`（timeline-source）。Diary wire contract 與 request 型別分離（`types/diary.ts` honest wire shapes）；diary list contract 以 zod schema formalize（frozen contract test）。error codes 的三語 i18n mapping 與 parity test 對齊新位置。
+
+#### 4. SSOT 收尾三件
+
+`lib/stocks/timeline-source.ts`（sourceType SSOT，agent / evidence / hub / timeline 全路徑共用）、user timezone formatting 收斂至 `lib/dates/format.ts`（15+ 檔案改用）、`lib/stocks/symbols.ts`（symbol param 處理 SSOT，11 個 handler 改用）。
+
+#### 5. Diary 重複調解加固
+
+`scripts/diary-reconcile-duplicates.ts` 加固 + MySQL integration tests（`tests/integration/diary-reconciliation.mysql.test.ts`）＋ `.scratch` issue 02（enforce one diary per user per date）文檔化。`docs/operations/DEPLOYMENT.md` 補 cron / 維運段落。
+
+#### 6. 視覺與無障礙（非架構，一併記錄）
+
+介面樣式遷移至 design tokens（`dt-*` color utilities）、a11y 與 localization 改善、date formatter 快取、market rotation 鍵盤可及 row controls、responsive app layout 統一（`PageContainer` + 導覽元件重整）。

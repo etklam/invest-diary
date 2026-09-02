@@ -71,6 +71,34 @@ describe('server/utils/transaction-read', () => {
     expect(query.select).not.toHaveProperty('userId')
   })
 
+  it('keeps the Decimal receiver when calling toNumber', async () => {
+    const quantity = {
+      value: 2.5,
+      toNumber(this: { value: number }) {
+        return this.value
+      },
+    }
+    const price = {
+      value: 100,
+      toNumber(this: { value: number }) {
+        return this.value
+      },
+    }
+    mockTransactionFindMany.mockResolvedValue([{
+      id: 20n,
+      symbol: 'AAPL',
+      type: 'BUY',
+      quantity,
+      price,
+      tradeDate: new Date('2026-01-01'),
+    }])
+
+    const { readPortfolioTransactions } = await import('~/server/utils/transaction-read')
+    const rows = await readPortfolioTransactions(7n)
+
+    expect(rows[0]).toMatchObject({ quantity: 2.5, price: 100 })
+  })
+
   it('includes strategy/emotion when trade analytics attributes are requested', async () => {
     mockTransactionFindMany.mockResolvedValue([
       {

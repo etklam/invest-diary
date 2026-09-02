@@ -16,6 +16,7 @@
     "test:coverage": "vitest run --coverage",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
+    "test:backend-http:mariadb": "bash scripts/test-backend-http-mariadb.sh",
     "test:diary-reconciliation:mysql": "bash scripts/test-diary-reconciliation-mysql.sh",
     "test:e2e": "playwright test",
     "test:ci": "vitest run --coverage --reporter=json",
@@ -26,6 +27,12 @@
     "health:full": "tsx scripts/health-check.ts && npm run build",
     "health:quick": "npm test && npx prisma validate",
     "docs:check": "tsx scripts/docs-health-check.ts",
+    "openapi:generate": "node --import tsx scripts/openapi/generate.ts && npm run client:generate",
+    "openapi:check": "node --import tsx scripts/openapi/generate.ts --check && npm run client:check",
+    "openapi:breaking": "node --import tsx scripts/openapi/check-breaking.ts",
+    "client:generate": "openapi-typescript openapi/openapi.json --output lib/api-client/generated.ts --alphabetize --export-type",
+    "client:check": "openapi-typescript openapi/openapi.json --output lib/api-client/generated.ts --alphabetize --export-type --check",
+    "client:smoke": "vitest run tests/unit/api-client.test.ts tests/unit/openapi-generation.test.ts --reporter=dot",
     "market-rotation:batch": "tsx scripts/market-rotation/run-batch.ts",
     "diary:duplicates:audit": "tsx scripts/diary-duplicate-audit.ts",
     "diary:duplicates:reconcile": "tsx scripts/diary-reconcile-duplicates.ts"
@@ -51,6 +58,7 @@
     "mariadb": "^3.5.1",
     "md-editor-v3": "^5.8.4",
     "nuxt": "^4.3.1",
+    "openapi-fetch": "^0.17.0",
     "rate-limiter-flexible": "^9.1.1",
     "rehype-pretty-code": "^0.14.1",
     "rehype-slug": "^6.0.0",
@@ -79,11 +87,13 @@
     "@vue/test-utils": "^2.4.6",
     "eslint-plugin-vue": "^10.8.0",
     "happy-dom": "^20.5.0",
+    "openapi-typescript": "^7.13.0",
     "prisma": "^7.4.2",
     "sharp": "^0.34.5",
     "typescript-eslint": "^8.57.2",
     "vitest": "^4.0.18",
     "vue-eslint-parser": "^10.4.0",
-    "vue-tsc": "^3.2.5"
+    "vue-tsc": "^3.2.5",
+    "zod-openapi": "^6.0.2"
   }
 }

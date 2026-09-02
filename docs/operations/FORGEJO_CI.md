@@ -14,18 +14,28 @@ The current deployment workflow is defined in [`.forgejo/workflows/build.yml`](.
 
 | Secret | Purpose |
 | --- | --- |
-| `FORGEJO_TOKEN` | Authenticate Docker pushes to the Forgejo registry |
+| `REGISTRY_TOKEN` | Authenticate Docker pushes to the Forgejo registry |
 | `DEPLOY_SSH_KEY` | Restart and monitor the K3s deployment over SSH |
 
 ## Pipeline
 
-1. Install the pinned Docker CLI on the runner.
-2. Check out the repository.
-3. Log in to the Forgejo registry.
-4. Build the image from the repository `Dockerfile`.
-5. Push the SHA tag and `latest`.
-6. Verify that the generated Prisma client exists inside the image.
-7. Restart the K3s deployment and wait for rollout completion.
+1. Check out the repository.
+2. Install npm dependencies from `package-lock.json`.
+3. Generate Prisma and run lint, typecheck, the required test suite, docs
+   health, OpenAPI drift, generated-client drift, and client smoke checks.
+4. Install the pinned Docker CLI and run the real Nitro + MariaDB 11.4
+   migration/HTTP contract gate.
+5. Only after all checks pass, log in to the Forgejo registry and build the
+   image from the repository `Dockerfile`.
+6. Push the SHA tag and `latest`.
+7. Verify that the generated Prisma client exists inside the image.
+8. Restart the K3s deployment and wait for rollout completion.
+
+The quality gate runs before registry authentication, so secrets are not
+available to the source/test/generation steps and are never written to an
+artifact. The OpenAPI JSON and generated TypeScript file are committed
+artifacts; `npm run openapi:check` fails when either one differs from the
+canonical source.
 
 ## Operational checks
 

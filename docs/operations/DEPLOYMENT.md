@@ -1,17 +1,47 @@
 # 部署指南 | Deployment Guide
 
-本指南說明如何使用 Docker 或 CapRover 將投資日記系統部署到已有 MySQL 的伺服器上。
+本指南的 Backend Ready v1 正式支援路徑是 K3s + MariaDB 11.4；Prisma provider 名稱仍然是 `mysql`。Docker 只作為 image build/runtime 基礎，CapRover 與外部 MySQL 段落保留作 legacy migration 參考，並不屬於 v1 production support matrix。
 
-This guide explains how to deploy the Investment Diary System using Docker or CapRover to a server with an existing MySQL installation.
+The supported Backend Ready v1 path is K3s + MariaDB 11.4. Docker is the image build/runtime substrate; CapRover and external MySQL sections below are retained as legacy migration references and are not part of the v1 production support matrix.
+
+> **Backend v1 support boundary:** production migrations are verified against MariaDB 11.4. Do not treat the legacy CapRover/MySQL examples below as an alternative supported deployment until a separate pinned engine matrix is added.
 
 ## 目錄 | Table of Contents
 
 - [前置要求](#前置要求--prerequisites)
+- [支援矩陣](#支援矩陣--support-matrix)
+- [K3s + MariaDB 11.4（Backend v1）](#k3s--mariadb-114backend-v1)
 - [準備工作](#準備工作--preparation)
 - [部署步驟](#部署步驟--deployment-steps)
 - [使用外部 MySQL](#使用外部-mysql--using-external-mysql)
 - [反向代理設定](#反向代理設定--reverse-proxy)
 - [維護與更新](#維護與更新--maintenance)
+
+## 支援矩陣 | Support Matrix
+
+| Deployment/database | Status | Notes |
+| --- | --- | --- |
+| K3s + MariaDB 11.4 | Supported for Backend v1 | Source of truth: `k8s/` manifests and Forgejo release gate |
+| Docker standalone | Legacy operational aid | Useful for local/disposable runs; not the v1 production rollout contract |
+| CapRover + MySQL | Legacy / unsupported for v1 | Requires a separately pinned migration compatibility matrix |
+
+## K3s + MariaDB 11.4（Backend v1）
+
+正式 production rollout 使用 repository 內的 manifests。先建立並檢查
+`diary-vue-db-creds` 與 `diary-vue-app-secrets`，再按以下順序套用：
+
+```bash
+kubectl apply -f k8s/00-namespace.yaml
+kubectl apply -f k8s/01a-db-secret.yaml -f k8s/01b-app-secret.yaml
+kubectl apply -f k8s/02a-mariadb-pvc.yaml -f k8s/02b-mariadb-deployment.yaml -f k8s/02c-mariadb-service.yaml
+kubectl rollout status deployment/diary-vue-db -n diary-vue --timeout=120s
+kubectl apply -f k8s/03-app-deployment.yaml -f k8s/03b-app-service.yaml -f k8s/04-ingress.yaml
+kubectl rollout status deployment/diary-vue-app -n diary-vue --timeout=120s
+```
+
+MariaDB credentials、`DATABASE_URL` 與 `JWT_SECRET` 必須由 Kubernetes Secret 提供，
+不得寫入 image 或 application logs。Migration 由 release gate / controlled deployment
+執行；部署前後使用 `kubectl rollout status` 及 `/api/health` 驗證。
 
 ---
 
@@ -34,8 +64,8 @@ docker --version
 docker compose version
 ```
 
-### 外部 MySQL
-- **版本**: MySQL 8.0+
+### 外部 MySQL（Legacy；不屬於 Backend v1 production support）
+- **版本**: MySQL 8.0+（僅供舊環境 migration 參考，未納入 v1 gate）
 - **權限**: 需要能夠建立資料庫和使用者的權限
 - **連線**: 確保伺服器可以透過網路連接到 MySQL
 
@@ -43,7 +73,9 @@ docker compose version
 
 ## 準備工作 | Preparation
 
-### 1. 設定 MySQL 資料庫
+以下內容只供 legacy Docker/CapRover 環境參考，不是 Backend v1 production rollout。
+
+### 1. 設定 MariaDB/MySQL 資料庫（Legacy）
 
 在您的 MySQL 伺服器上建立資料庫和使用者：
 
@@ -102,7 +134,7 @@ openssl rand -base64 32
 
 ---
 
-## CapRover 部署
+## CapRover 部署（Legacy；不支援 Backend v1）
 
 CapRover 是一個簡單的 PaaS 平台，可以輕鬆部署 Docker 應用程式。
 
@@ -187,6 +219,9 @@ SCHEDULER_ENABLED="true"
 
 ## 部署步驟 | Deployment Steps
 
+以下 Docker standalone steps 只作 legacy operational aid；正式 production 請使用上方
+K3s + MariaDB 11.4 manifests。
+
 ### 選項 A: 使用 Docker Build（推薦）
 
 直接在伺服器上建置和執行：
@@ -241,6 +276,8 @@ docker run -d \
 ---
 
 ## 使用外部 MySQL | Using External MySQL
+
+本節是 legacy migration 參考，不支援 Backend v1 production。
 
 ### MySQL 在同一台伺服器上
 

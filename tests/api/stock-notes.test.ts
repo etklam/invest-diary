@@ -337,11 +337,11 @@ describe('Stock Notes API', () => {
           skip: 0,
         }),
       )
-      expect(result.notes).toHaveLength(2)
-      expect(result.total).toBe(2)
-      expect(result.page).toBe(1)
-      expect(result.limit).toBe(20)
-      expect(result.notes[0]).toEqual(
+      expect(result.data).toHaveLength(2)
+      expect(result.pagination.total).toBe(2)
+      expect(result.pagination.page).toBe(1)
+      expect(result.pagination.limit).toBe(20)
+      expect(result.data[0]).toEqual(
         expect.objectContaining({
           id: '1',
           title: 'Quarterly thesis update',
@@ -361,7 +361,10 @@ describe('Stock Notes API', () => {
         },
       } as any)
 
-      expect(result).toEqual({ notes: [], total: 0, page: 1, limit: 20 })
+      expect(result).toEqual({
+        data: [],
+        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+      })
     })
 
     it('returns empty list when no notes exist', async () => {
@@ -377,8 +380,8 @@ describe('Stock Notes API', () => {
         },
       } as any)
 
-      expect(result.notes).toEqual([])
-      expect(result.total).toBe(0)
+      expect(result.data).toEqual([])
+      expect(result.pagination.total).toBe(0)
     })
 
     it('filters by createdVia=USER', async () => {
@@ -508,6 +511,21 @@ describe('Stock Notes API', () => {
         } as any),
       ).rejects.toMatchObject({ statusCode: 400 })
     })
+
+    it('returns 404 when the route symbol does not own the note', async () => {
+      mockGetRouterParam.mockReturnValue('1')
+      mockStockNoteFindFirst.mockResolvedValue(aStockNote({
+        stock: { symbol: 'MSFT', name: 'Microsoft' },
+      }))
+
+      const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/[id].put')
+
+      await expect(
+        handler({
+          context: { params: { symbol: 'AAPL', id: '1' }, requestId: 'req-update-symbol-mismatch' },
+        } as any),
+      ).rejects.toMatchObject({ statusCode: 404 })
+    })
   })
 
   // ─── DELETE /api/stocks/[symbol]/notes/[id] ─────────────────────────
@@ -558,6 +576,18 @@ describe('Stock Notes API', () => {
           context: { params: { symbol: 'AAPL', id: '1' }, requestId: 'req-agent-delete' },
         } as any),
       ).rejects.toMatchObject({ statusCode: 403 })
+    })
+
+    it('rejects a non-positive note id at the route boundary', async () => {
+      mockGetRouterParam.mockReturnValue('0')
+
+      const { default: handler } = await import('~/server/api/stocks/[symbol]/notes/[id].delete')
+
+      await expect(
+        handler({
+          context: { params: { symbol: 'AAPL', id: '0' }, requestId: 'req-delete-invalid-id' },
+        } as any),
+      ).rejects.toMatchObject({ statusCode: 400 })
     })
   })
 })

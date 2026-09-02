@@ -73,7 +73,8 @@ describe('price-alert-queries', () => {
 
       expect(mockPriceAlertFindMany).toHaveBeenCalledWith({
         where: { userId: USER_ID },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: 100,
       })
       expect(result).toHaveLength(1)
       expect(result[0].id).toBe(ALERT_ID)
@@ -183,9 +184,9 @@ describe('price-alert-queries', () => {
       ).rejects.toThrow()
     })
 
-    it('throws ZodError when symbol exceeds 20 characters', async () => {
+    it('throws ZodError when symbol exceeds the canonical 32-character limit', async () => {
       await expect(
-        createPriceAlert(USER_ID, { symbol: 'A'.repeat(21), type: 'PRICE_ABOVE', threshold: 100 }),
+        createPriceAlert(USER_ID, { symbol: 'A'.repeat(33), type: 'PRICE_ABOVE', threshold: 100 }),
       ).rejects.toThrow()
     })
 
@@ -193,6 +194,16 @@ describe('price-alert-queries', () => {
       await expect(
         createPriceAlert(USER_ID, { symbol: '   ', type: 'PRICE_ABOVE', threshold: 100 }),
       ).rejects.toThrow()
+    })
+
+    it('rejects exponent notation and negative price thresholds before persistence', async () => {
+      await expect(
+        createPriceAlert(USER_ID, { symbol: 'AAPL', type: 'PRICE_ABOVE', threshold: 1e-7 }),
+      ).rejects.toThrow()
+      await expect(
+        createPriceAlert(USER_ID, { symbol: 'AAPL', type: 'PRICE_ABOVE', threshold: -1 }),
+      ).rejects.toThrow()
+      expect(mockPriceAlertCreate).not.toHaveBeenCalled()
     })
   })
 
@@ -259,21 +270,30 @@ describe('price-alert-queries', () => {
       })
     })
 
-    it('sets triggeredAt to null when null provided', async () => {
+    it('clears the triggered state when both state fields are updated together', async () => {
       mockPriceAlertFindUnique.mockResolvedValue({ ...mockAlert, isTriggered: true })
       mockPriceAlertUpdate.mockResolvedValue({
         ...mockAlert,
+        isTriggered: false,
         triggeredAt: null,
       })
 
       await updatePriceAlert(ALERT_ID, USER_ID, {
+        isTriggered: false,
         triggeredAt: null,
       })
 
       expect(mockPriceAlertUpdate).toHaveBeenCalledWith({
         where: { id: ALERT_ID },
-        data: { triggeredAt: null },
+        data: { isTriggered: false, triggeredAt: null },
       })
+    })
+
+    it('rejects a partial trigger-state update before touching the database', async () => {
+      await expect(
+        updatePriceAlert(ALERT_ID, USER_ID, { isTriggered: true }),
+      ).rejects.toThrow()
+      expect(mockPriceAlertFindUnique).not.toHaveBeenCalled()
     })
 
     it('accepts string alertId and converts to BigInt', async () => {
@@ -320,6 +340,15 @@ describe('price-alert-queries', () => {
       await expect(
         updatePriceAlert(ALERT_ID, USER_ID, {}),
       ).rejects.toThrow()
+    })
+
+    it('rejects negative thresholds for price alerts before update', async () => {
+      mockPriceAlertFindUnique.mockResolvedValue(mockAlert)
+
+      await expect(
+        updatePriceAlert(ALERT_ID, USER_ID, { threshold: -1 }),
+      ).rejects.toThrow()
+      expect(mockPriceAlertUpdate).not.toHaveBeenCalled()
     })
   })
 
@@ -436,7 +465,7 @@ describe('price-alert-queries', () => {
   describe('UpdatePriceAlertSchema', () => {
     it('accepts partial threshold update', () => {
       const result = UpdatePriceAlertSchema.parse({ threshold: 200 })
-      expect(result.threshold).toBe(200)
+      expect(result.threshold).toBe('200')
     })
 
     it('accepts partial message update', () => {

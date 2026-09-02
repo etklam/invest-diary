@@ -13,7 +13,7 @@ describe('errorCodeToI18nKey', () => {
   })
 
   it('every defined ErrorCode produces a lowercase error.code.* key', () => {
-    expect(ALL_ERROR_CODES.length, 'ErrorCodes went empty — check lib/errors/codes.ts').toBeGreaterThan(0)
+    expect(ALL_ERROR_CODES.length, 'ErrorCodes went empty — check lib/contracts/common/error-codes.ts').toBeGreaterThan(0)
     for (const code of ALL_ERROR_CODES) {
       const key = errorCodeToI18nKey(code)
       expect(key).toBe(key.toLowerCase())
@@ -26,7 +26,7 @@ describe('ALL_ERROR_CODES sanity', () => {
   // Locks the count so new ErrorCodes go through i18n-parity intentionally.
   // Update this number when adding/removing a code.
   it('contains the expected number of codes (bump intentionally when codes change)', () => {
-    expect(ALL_ERROR_CODES).toHaveLength(47)
+    expect(ALL_ERROR_CODES).toHaveLength(54)
   })
 
   it('each ErrorCodes value is unique', () => {

@@ -73,7 +73,7 @@ describe('structured diary review domain', () => {
         reviewSummary: 'Thesis broke',
         reviewLearning: null,
         reviewAdjustment: null,
-        reviewStatus: 'reviewed',
+        reviewStatus: 'REVIEWED',
         reviewedAt: new Date('2026-08-09T04:00:00.000Z'),
       },
     }))

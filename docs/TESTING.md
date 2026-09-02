@@ -1,6 +1,6 @@
 # Testing Guide
 
-This document describes the **actual** test setup for Diary Vue as of June 2026. It was rewritten from scratch after the original version drifted from reality. Where verification was not possible, the section is marked "Needs verification".
+This document describes the **actual** test setup for Diary Vue as of September 2026. It was rewritten from scratch after the original version drifted from reality. Where verification was not possible, the section is marked "Needs verification".
 
 ---
 
@@ -16,6 +16,13 @@ npm run test:coverage       # vitest run --coverage — text + json + html
 npm run test:unit           # vitest run tests/unit — only the unit/ tree
 npm run test:integration    # vitest run tests/integration — only integration/ tree
 npm run test:diary-reconciliation:mysql # disposable MariaDB reconciliation + unique-index verification
+npm run test:backend-http:mariadb # real built Nitro + MariaDB 11.4 auth/migration contracts
+npm run openapi:check       # generated OpenAPI + transport drift
+npm run openapi:breaking    # compatibility diff against OPENAPI_BASE_REF/HEAD^
+npm run client:smoke        # generated client/facade smoke
+npm run lint                # ESLint
+npm run typecheck           # vue-tsc
+npm run build               # production Nuxt build
 npm run test:e2e            # playwright test — E2E suite (separate config)
 npm run test:ci             # vitest run --coverage --reporter=json — CI reporter
 npm run coverage:gate       # runs coverage twice (text + json + lcovonly) — gate script
@@ -81,6 +88,10 @@ This file runs before every test file and installs:
 
 Tests do **not** need to re-import these globals — just `import { mockReadBody } from '../vi-setup'` to grab the mock function reference and drive it.
 
+### `tests/fixtures/builders.ts` (domain fixtures)
+
+`aUser`, `aDiary`, `aTransaction`, `anAlert`, `aStockNote`, `aPost` (and friends) build complete Prisma row shapes by default. Tests override only the values relevant to the behavior under test (`aDiary({ userId, ... })`). Fixture types are hand-written mirrors of the Prisma row shape — when you add a schema field, update the builders in the same change. Do not hand-copy full Prisma rows in new tests; build on these.
+
 ---
 
 ## 3. Test folder layout
@@ -97,6 +108,9 @@ tests/
 │   ├── auth.ts              # bcrypt + JWT factories (unused — DB-backed)
 │   ├── database.ts          # Prisma test DB helpers (unused — DB-backed)
 │   └── mock.ts              # mockPrisma(), mockH3Event(), createMockData(), etc.
+├── fixtures/
+│   ├── builders.ts          # Domain Prisma row builders (aUser/aDiary/... — see section 2)
+│   └── sec/                 # SEC Filings Downloader local fixtures (see below)
 ├── mocks/
 │   └── nuxt-imports.ts      # #imports alias target
 ├── api/                     # API handler tests (mocked Prisma)
@@ -111,17 +125,17 @@ tests/
 
 ### Subdirectory contents
 
-**`tests/api/`** — 32 files. Handler-level tests for REST endpoints. Each file imports the handler default export directly and invokes it with a fake `event`. Prisma is always mocked via `vi.mock('~/lib/prisma', ...)`.
+**`tests/api/`** — 39 files. Handler-level tests for REST endpoints. Each file imports the handler default export directly and invokes it with a fake `event`. Prisma is always mocked via `vi.mock('~/lib/prisma', ...)`.
 
 Examples: `auth.test.ts`, `diaries.test.ts`, `blog.test.ts`, `etf-watchlist.test.ts`, `stock-notes.test.ts`, `partner-stock-notes.test.ts`, `reviews.test.ts`, `trade-plans.test.ts`, `rotation-monitor.test.ts`, `market-state.test.ts`.
 
-**`tests/components/`** — 9 files. `@vue/test-utils` mount tests for interactive components. Each test stubs `NuxtLink`, `NuxtImg`, `Icon`, and `TransitionGroup` as needed.
+**`tests/components/`** — 15 files. `@vue/test-utils` mount tests for interactive components. Each test stubs `NuxtLink`, `NuxtImg`, `Icon`, and `TransitionGroup` as needed.
 
-Files: `AlertNotification`, `BlogCard`, `QuickDiaryModal`, `QuickDiaryOneLiner`, `QuickNoteEditorCore`, `QuickNoteTemplateAssistant`, `QuickReminder`, `Toast`, `TransactionInput`.
+Files: `AlertNotification`, `BlogCard`, `BottomNavigation`, `DiaryAuthoringForm`, `DiaryAuthoringPages`, `QuickDiaryModal`, `QuickDiaryOneLiner`, `QuickNoteEditorCore`, `QuickNoteTemplateAssistant`, `QuickReminder`, `ResearchCaptureModal`, `StockNoteItem`, `TimelineModeSwitch`, `Toast`, `TransactionInput`.
 
-**`tests/composables/`** — 9 files. Behavior tests for composables, using real `ref`/`computed` and (where needed) fake timers.
+**`tests/composables/`** — 13 files. Behavior tests for composables, using real `ref`/`computed` and (where needed) fake timers.
 
-Files: `useArticleMarkdown`, `useAuthRecovery`, `useDiscipline`, `useGestures`, `useMobileDetection`, `useNavigation`, `usePerformance`, `useQuickNoteComposer`, `useToast`.
+Files: `useAlerts`, `useAppShell`, `useAuthRecovery`, `useBlogDraft`, `useDialogA11y`, `useDiaryMutation`, `useDiscipline`, `useMobileDetection`, `useNavigation`, `usePerformance`, `useQuickNoteComposer`, `useResearchCapture`, `useToast`.
 
 **`tests/guards/`** — 2 files. Repo-wide source-grep or command-execution invariants.
 
@@ -133,8 +147,9 @@ Files: `useArticleMarkdown`, `useAuthRecovery`, `useDiscipline`, `useGestures`, 
 - `article-markdown-ssr.test.ts` — mounts the real `pages/articles/[slug].vue` inside `<Suspense>` and asserts parsed markdown body is rendered (regression guard for fire-and-forget SSR bug).
 - `auth-flow.test.ts`, `diary-workflow.test.ts`, `agent-stock-timeline.test.ts`.
 - `diary-reconciliation.mysql.test.ts` — skipped by the generic Vitest command; `npm run test:diary-reconciliation:mysql` starts a disposable MariaDB container and verifies both current and pre-0900 schemas, real duplicate reconciliation, structured review preservation, child reparenting, `DiaryStock` union semantics, transaction rollback, and the final unique index.
+- `http/auth.contract.test.ts` — skipped by generic Vitest; `npm run test:backend-http:mariadb` starts disposable MariaDB 11.4, verifies native-session and Diary-contract legacy backfills plus rollback/forward paths, boots a built Nitro server, then exercises auth plus real Diary CRUD/list/review ownership, validation, conflict, pagination, ID/date/instant and error wire contracts.
 
-**`tests/lib/`** — 16 files (plus 2 subdirs: `dates/`, `quicknote/`). Pure-function tests for library modules. No mocks, no Vue, no Prisma.
+**`tests/lib/`** — 14 files (plus 2 subdirs: `dates/` with 2, `quicknote/` with 5). Pure-function tests for library modules. No mocks, no Vue, no Prisma.
 
 Examples: `recurring-alerts`, `blog`, `position-state`, `format`, `utils`, `market-data`, `stocks-view`, `diary-date`, `holiday-heatmap`, `relativeValue`, `stocks-analytics`, `admin-page-helpers`, `auth-session-error`.
 
@@ -145,15 +160,15 @@ Examples: `recurring-alerts`, `blog`, `position-state`, `format`, `utils`, `mark
 | `unit/components/` | `BaseButton`, `EtfMobileCard`, `LedgerCard`, `ReviewCandidateCard`, `StatusBadge` — presentational/design-system primitive tests |
 | `unit/composables/` | `useAuth.test.ts` (older copy; the newer copy is at top-level `composables/`) |
 | `unit/lib/` | Deep lib tests: `market-rotation/` (16 files), `market-state/` (2 files), `dates/`, plus `jwt`, `logger`, `error-i18n-mapping`, `discipline-share-url`, `prisma-*`, `symbol-normalization`, `stocks-symbols`, `trade-analytics`, `yahoo-request-queue`, `market-data-cache` |
-| `unit/pages/` | 12 files. Page-level guards and contracts: admin route guards, article content rendering, discipline share/import URL handling, portfolio-risk / position-sizing / reviews / strategy-performance / trade-plans / tools-etf-profile-v2 contract tests, stocks-notes i18n |
-| `unit/server/` | Server-side query-layer and middleware tests, all Prisma-mocked: `diary-write`, `diary-read`, `diaries-query`, `discipline-queries`, `etf-watchlist-queries`, `etf-profile-api`, `etf-detail-api`, `etf-ownership-regressions`, `market-quote-api`, `market-rotation-queries`, `market-rotation-monitor-queries`, `market-rotation-batch`, `spx-session-api`, `partner-queries`, `partner-compare`, `price-alert-queries`, `transaction-read`, `serialize`, `og-discipline-svg`, `phase2-auth-contracts`, `auth.middleware`, `auth.cookies`, `admin.middleware`, `health.get`, `alert-scheduler`, `alert-persistence` |
+| `unit/pages/` | 16 files. Page-level guards and contracts: admin blog/etf route guards, article content rendering, discipline share/import URL handling, partners / portfolio-risk / position-sizing / reviews / strategy-performance / trade-plans / structured-review / decision-record / timeline-first / tools-market-rotation contract tests, stocks-notes i18n |
+| `unit/server/` | ~52 files, all Prisma-mocked. Query layers (`diary-write`, `diary-read`, `alert-queries`, `discipline-queries`, `user-queries`, `api-key-queries`, `portfolio-read`, `post-write`, `transaction-read`, `investment-thesis-queries`, `company-hub-query`, `etf-watchlist-queries`, `partner-*`, `price-alert-queries`, `market-rotation-*`); middleware (`auth.middleware`, `csrf.middleware`, `admin.middleware`); wire contracts (`diary-wire-contract`, `diary-list-contract`, `serialize-contract`, `error-contract`, `phase2-auth-contracts`); SEC EDGAR (`sec-edgar-*`, 7 files); misc (`spx-session-api`, `health.get`, `websocket-origin`, `og-discipline-svg`, `performance-stats`, `etf-initialize-ohlc`, `etf-ownership-regressions`) |
 | `unit/schedulers/` | `alert-pusher`, `price-alert-checker` — scheduler job logic |
 | `unit/websocket/` | `connectionManager`, `alertHandler` — Socket.IO server-side logic |
 | `unit/scripts/` | `market-rotation/run-batch`, `market-state/seed-universe-utils`, `market-state/update-breadth-utils` — tests for `scripts/` TypeScript entry points |
 | `unit/types/` | `common.test.ts` — shared type guards |
 | `unit/*.test.ts` (top-level) | Repo-wide regression guards: `api-logger-regression`, `auth-client-regressions`, `auth-page-hydration-regressions`, `csp-regressions`, `dockerfile-prisma-config`, `pwa-regressions`, `prisma-market-rotation-run-schema`, `typecheck-config`, `websocket-client-regressions`, `websocket-plugin-regression`, `stock-watchlist-queries`, `stock-timeline-queries`, `api-docs-content` |
 
-**`tests/e2e/`** — 7 Playwright specs + helpers. See section 9.
+**`tests/e2e/`** — 11 Playwright specs + helpers. See section 9.
 
 SEC Filings Downloader tests use only local fixtures under `tests/fixtures/sec/` and mocked server/browser routes. Never add a test that calls `sec.gov` or `data.sec.gov`; queue, retry, stale-cache, download, and ZIP behavior must be exercised through deterministic mocked responses.
 

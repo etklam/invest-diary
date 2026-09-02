@@ -80,7 +80,9 @@ describe('POST /api/stocks/alerts', () => {
       threshold: '200',
       message: 'PRICE_ABOVE alert for AAPL at 200',
       isTriggered: false,
+      triggeredAt: null,
       createdAt: new Date('2026-06-03T00:00:00.000Z'),
+      updatedAt: new Date('2026-06-03T00:00:00.000Z'),
     })
     const { default: handler } = await import('~/server/api/stocks/alerts/index.post')
 
@@ -99,7 +101,7 @@ describe('POST /api/stocks/alerts', () => {
       id: '10',
       symbol: 'AAPL',
       type: 'PRICE_ABOVE',
-      threshold: 200,
+      threshold: '200',
       isTriggered: false,
     })
   })

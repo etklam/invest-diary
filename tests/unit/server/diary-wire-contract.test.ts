@@ -1,7 +1,8 @@
 import { Prisma } from '@prisma/client'
-import { describe, expect, expectTypeOf, it } from 'vitest'
-import { serialize, type Serialized } from '~/server/utils/serialize'
+import { describe, expect, it } from 'vitest'
 import type { DiaryResponse } from '~/lib/contracts/diary'
+import { diaryResponseSchema } from '~/lib/contracts/diary'
+import { mapDiaryResponse } from '~/server/utils/diary-response'
 
 type RepresentativePrismaDiary = {
   id: bigint
@@ -71,8 +72,6 @@ function expectJsonPrimitives(value: unknown): void {
 
 describe('Diary wire contract', () => {
   it('matches the serialized Prisma shape and contains only JSON primitives', () => {
-    expectTypeOf<Serialized<RepresentativePrismaDiary>>().toMatchTypeOf<DiaryResponse>()
-
     const timestamp = new Date('2026-08-30T12:00:00.000Z')
     const rawDiary: RepresentativePrismaDiary = {
       id: 42n,
@@ -126,7 +125,7 @@ describe('Diary wire contract', () => {
       }],
     }
 
-    const wire = JSON.parse(JSON.stringify(serialize(rawDiary))) as DiaryResponse
+    const wire: DiaryResponse = mapDiaryResponse(rawDiary)
 
     expect(wire).toEqual({
       id: '42',
@@ -136,7 +135,7 @@ describe('Diary wire contract', () => {
       tagsString: 'profit',
       createdVia: 'WEB',
       createdByLabel: null,
-      date: '2026-08-30T12:00:00.000Z',
+      date: '2026-08-30',
       createdAt: '2026-08-30T12:00:00.000Z',
       updatedAt: '2026-08-30T12:00:00.000Z',
       thesis: null,
@@ -151,7 +150,6 @@ describe('Diary wire contract', () => {
       reviewAdjustment: null,
       tags: ['profit'],
       stockSymbols: ['AAPL'],
-      stockContexts: [{ stock: { symbol: 'AAPL' } }],
       transactions: [{
         id: '100',
         diaryId: '42',
@@ -179,6 +177,7 @@ describe('Diary wire contract', () => {
         createdAt: '2026-08-30T12:00:00.000Z',
       }],
     })
+    expect(diaryResponseSchema.safeParse(wire).success).toBe(true)
     expectJsonPrimitives(wire)
   })
 })

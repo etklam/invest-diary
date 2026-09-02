@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { SignJWT } from 'jose'
-import { signAccessToken, signRefreshToken, verifyToken } from '~/lib/jwt'
+import {
+  JWT_AUDIENCE,
+  JWT_ISSUER,
+  JWT_PLACEHOLDER_SECRET,
+  assertJwtConfiguration,
+  signAccessToken,
+  signRefreshToken,
+  verifyToken,
+} from '~/lib/jwt'
 
 describe('JWT Utils', () => {
   const testSecret = 'test-secret-key'
@@ -53,6 +61,11 @@ describe('JWT Utils', () => {
       
       await expect(signAccessToken(testUserId, testEmail, testRole, testTokenVersion))
         .rejects.toThrow('JWT_SECRET is not defined')
+    })
+
+    it('rejects the repository placeholder secret', () => {
+      vi.stubEnv('JWT_SECRET', JWT_PLACEHOLDER_SECRET)
+      expect(() => assertJwtConfiguration()).toThrow('repository placeholder')
     })
   })
 
@@ -160,6 +173,8 @@ describe('JWT Utils', () => {
     ])('rejects a signed token with malformed claims', async (payload) => {
       const token = await new SignJWT(payload)
         .setProtectedHeader({ alg: 'HS256' })
+        .setIssuer(JWT_ISSUER)
+        .setAudience(JWT_AUDIENCE)
         .setIssuedAt()
         .setExpirationTime('1h')
         .sign(new TextEncoder().encode(testSecret))

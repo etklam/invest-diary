@@ -10,7 +10,7 @@ describe('structured review migration', () => {
       'prisma/migrations/20260809070000_add_structured_review_v1/migration.sql',
     ), 'utf8')
 
-    expect(schema).toContain('reviewOutcome    String? @map("review_outcome") @db.VarChar(20)')
+    expect(schema).toContain('reviewOutcome    ThesisReviewOutcome? @map("review_outcome")')
     expect(schema).toContain('reviewSummary    String? @map("review_summary") @db.Text')
     expect(schema).toContain('reviewLearning   String? @map("review_learning") @db.Text')
     expect(schema).toContain('reviewAdjustment String? @map("review_adjustment") @db.Text')

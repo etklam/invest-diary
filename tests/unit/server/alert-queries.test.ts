@@ -85,6 +85,7 @@ describe('dismissAlert', () => {
     expect(mockAlertUpdate).toHaveBeenCalledWith({
       where: { id: 42n },
       data: { isDismissed: true },
+      include: { diary: { select: { id: true, title: true } } },
     })
   })
 

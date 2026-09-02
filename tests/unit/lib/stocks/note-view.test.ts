@@ -65,15 +65,13 @@ describe('stock note view projection', () => {
 
   it('maps the complete paginated response while keeping the pagination contract', () => {
     const response = {
-      notes: [makeResponse()],
-      total: 1,
-      page: 2,
-      limit: 20,
+      data: [{ ...makeResponse(), isOwnedByViewer: true }],
+      pagination: { total: 1, totalPages: 1, page: 2, limit: 20 },
     }
 
     expect(toStockNotesView(response)).toEqual({
       ...response,
-      notes: [expect.objectContaining({ ownership: 'self', authorKind: 'user' })],
+      data: [expect.objectContaining({ ownership: 'self', authorKind: 'user' })],
     })
   })
 

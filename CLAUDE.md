@@ -33,7 +33,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Diary Vue** — 個人投資日記應用。Nuxt 4 + TypeScript + MySQL 8.0 + Prisma ORM。JWT 認證，Docker 部署，PWA 支援，三語 i18n (EN/ZH-TW/ZH-CN)。
+**Diary Vue** — 個人投資日記應用。Nuxt 4 + TypeScript + MariaDB 11.4 + Prisma ORM（provider 名稱仍是 `mysql`）。JWT 認證，Docker 部署，PWA 支援，三語 i18n (EN/ZH-TW/ZH-CN)。
 
 功能：投資日誌、股票/ETF 追蹤、交易分析、合作夥伴比較、AI Agent API、教育博客。
 
@@ -68,13 +68,14 @@ npm test                 # All tests (vitest)
 npm run test:watch       # Watch mode
 npm run test:ui          # Vitest UI
 npm run test:coverage    # Coverage report
+npm run test:integration # Integration tree only
 npx vitest run tests/unit/server/serialize.test.ts  # Single test file
 npm run lint             # ESLint
 npm run typecheck        # TypeScript checking
 npm run health:full      # Health check + build
 ```
 
-**Environment**: `DATABASE_URL` (MySQL), `JWT_SECRET` (32+ chars). See `.env.example`.
+**Environment**: `DATABASE_URL` (MariaDB 11.4-compatible URL), `JWT_SECRET` (32+ chars). See `.env.example`.
 
 ---
 
@@ -97,7 +98,7 @@ Prisma 只能在 server runtime 使用。Vite 會把 Prisma 當 client dependenc
 
 ### 2. BigInt 序列化策略
 
-MySQL BigInt PK 在 Prisma 中是 `BigInt`，JSON 不原生支援。
+MariaDB/MySQL BigInt PK 在 Prisma 中是 `BigInt`，JSON 不原生支援。
 
 **統一方案：** 所有 API handler 用 `serialize()` 包裹回傳值。
 
@@ -111,7 +112,7 @@ return serialize({ data: prismaResult })
 return { id: result.id.toString() }
 ```
 
-`server/utils/serialize.ts` — 遞迴轉換 BigInt → string，保留 Date 物件。
+`server/utils/serialize.ts` — 遞迴轉換 BigInt → string，保留 Date 物件。回傳型別是 truthful 的 `Serialized<T>`（deep-map bigint/Date → string），handler 可直接標注 `Promise<Serialized<T>>`。
 `server/plugins/bigint.ts` — `BigInt.prototype.toJSON` 全域 patch，當安全網。
 **測試：** `tests/unit/server/serialize.test.ts`
 
@@ -151,31 +152,44 @@ export default defineEventHandler(async (event) => {
 
 ### 4. Query Layer 架構
 
-每個 bounded context 有獨立的 query utility，集中 Prisma 查詢：
+每個 bounded context 有獨立的 query utility，集中 Prisma 查詢（完整清單 `ls server/utils/`）：
 
 | Bounded Context | Query Utility | 內容 |
 | --------------- | ------------ | ---- |
-| Diary | `diary-write.ts` | createDiaryForUser, updateDiaryForUser |
-| Stock Watchlist | `stock-watchlist-queries.ts` | upsert, list, remove |
-| Stock Timeline | `stock-timeline-queries.ts` | createFromAgent |
+| Diary 寫入 | `diary-write.ts` | createDiaryForUser, updateDiaryForUser（web + agent 共用） |
+| Diary 讀取 | `diary-read.ts` | findDiaryForUser, listDiariesForUser, buildReviewBuckets |
+| Alert | `alert-queries.ts` | 日記回頭提醒 CRUD |
+| Trade Plan | `trade-plan-queries.ts` | 交易計畫 CRUD |
+| Transaction 讀取 | `transaction-read.ts` | readPortfolioTransactions（含 matching 準備） |
+| Portfolio | `portfolio-read.ts` | loadValuedHoldings（估值組裝 + valuationStatus） |
+| Stock Watchlist | `stock-watchlist-queries.ts` | upsertStockWatchlistItem, listUserWatchlist, updateStockWatchlistItem |
+| Stock Timeline | `stock-timeline-queries.ts` | createStockTimelineRecordFromWeb, createStockTimelineRecordsFromAgent, listUserTimeline(BySymbol) |
+| Investment Thesis | `investment-thesis-queries.ts` | thesis + reviews |
+| Company Hub | `company-hub-query.ts` | 個股入口聚合 |
 | ETF Watchlist | `etf-watchlist-queries.ts` | list, add, remove |
-| Partner Link | `partner-queries.ts` | findUserPartnerLinks, findPartnerLinkById |
-| Partner Compare | `partner-compare.ts` | buildCompareDays (純函數) |
-| Trade Analytics | `trade-queries.ts` | findUserRawTransactions, prepareTransactionsForMatching |
-| Blog | `post-queries.ts` + `blog-response.ts` | 查詢 + 序列化 |
+| ETF Admin | `etf-admin-queries.ts` | admin ETF 管理 |
+| Partner | `partner-queries.ts` + `partner.ts` + `partner-compare.ts` | links, loadCompareContext；sharing gate（`listSharingPartners`）在 `partner.ts` + 純比較函數 |
+| Discipline | `discipline-queries.ts` | CRUD + getRandomDiscipline |
+| Price Alert | `price-alert-queries.ts` | 價格警示 CRUD |
+| User / Auth | `user-queries.ts` | login, register, 密碼變更（tokenVersion++） |
+| API Key | `api-key-queries.ts` | CRUD + scope 單一真相源 |
+| Blog | `post-queries.ts` + `post-write.ts` | 讀取（Admin/Public persona）+ 寫入 |
+| Market Rotation | `market-rotation-queries.ts` / `market-rotation-monitor-queries.ts` | snapshot 查詢 + monitor 組裝 |
+| Market State | `market-state-queries.ts` | state / breadth 查詢 |
 
-**原則：** Handler 做認證/驗證/回傳塑形。Prisma 查詢和業務邏輯放 query layer。Domain serializer 只做領域變換（如 strip private fields、attach tags），BigInt 交給 `serialize()`。
+**原則：** Handler 做認證/驗證/回傳塑形（auth → Zod → query layer → serialize → return）。Prisma 查詢和業務邏輯放 query layer。Domain serializer 只做領域變換（如 strip private fields、attach tags），BigInt 交給 `serialize()`。
 
 ---
 
 ### 5. Authentication Architecture
 
-- **Access Token**: 1h, httpOnly cookie (`access-token`)
+- **Credential Resolution（ADR-0006，fail-closed）**: `server/middleware/auth.ts` 對所有 `/api/**` 跑單一演算法，產生 `event.context.auth`（verified transport + identity）；`event.context.user` 為相容層。顯式 credential（`Authorization: Bearer dva_*` API key、`Authorization: Bearer <JWT>` access token、`x-api-key`）驗證失敗一律 401，**永不 fallback cookie**；多個顯式 credential 來源 → 401 拒絕 ambiguity
+- **Access Token**: 1h, httpOnly cookie (`access-token`)；native client 也可用 `Authorization: Bearer <access JWT>`
 - **Refresh Token**: 30d, httpOnly cookie (`refresh-token`), DB stored. 刻意不輪換（refresh 僅換發 access token）— 避免 cross-tab refresh race 造成強制登出；代價是無 stolen-token 重用偵測，失效只能靠 logout / 改密碼（tokenVersion）
 - **Token Versioning**: `tokenVersion` 改密碼即失效所有 token
-- **Auth Middleware**: `server/middleware/auth.ts` 跑在所有 `/api/**` routes
-- **Agent API**: 用 API Key + Bearer token，`requireApiKey(event, scopes)`
-- **關鍵檔案**: `lib/jwt.ts`, `server/middleware/auth.ts`, `composables/useAuth.ts`, `server/utils/auth.ts`
+- **CSRF（transport-aware）**: 只根據已驗證的 auth transport 決策——`cookie` → requireCsrf；`bearer` / `api-key` → 豁免。auth middleware 必須先於 csrf middleware 執行（integration test 鎖定）
+- **Agent API**: 用 API Key（前綴 `dva_`），`requireApiKey(event, scopes)`；scope 定義在 `prisma/schema.prisma` 的 `ApiKeyScope` enum（`api-key-queries.ts` 的 `API_KEY_SCOPE_VALUES` 是 DB enum mirror）
+- **關鍵檔案**: `lib/jwt.ts`, `server/middleware/auth.ts`, `server/middleware/csrf.ts`, `composables/useAuth.ts`, `server/utils/auth.ts`, `server/utils/api-key.ts`
 
 ---
 
@@ -184,18 +198,21 @@ export default defineEventHandler(async (event) => {
 **Core Models:**
 
 - `User` — 認證 + 投資設定 (timezone, expectedMonthlyTrades, expectedProfit)
-- `Diary` — 投資日誌，markdown 內容，tagsString 欄位
+- `Diary` — 投資日誌，markdown 內容，tagsString 欄位；`createdVia` 建立來源（新資料只允許 `WEB` / `API_KEY`，歷史 `TELEGRAM_BOT` 保留可讀性）
+- `DiaryReconciliationAudit` — 日記重複調解稽核軌跡（見 `scripts/diary-reconcile-duplicates.ts`）
 - `Transaction` — 股票交易 (BUY/SELL)，關聯 Diary
+- `TradePlan` — 交易計畫（進出場規劃，獨立於已執行的 Transaction）
 - `Alert` — 時間提醒，支援 WEEK/MONTH 週期模式
 - `Discipline` — 投資原則/語錄
 - `Post` — 博客文章 (DRAFT/PUBLISHED/ARCHIVED)
-- `StockNote` / `StockTimelineRecord` — 股票研究筆記 + 時間線
+- `Stock` / `StockWatchlist` / `StockNote` / `StockTimelineRecord` / `DiaryStock` — 股票主表、觀察清單、當前觀點筆記、不可變時間線證據、日記↔股票關聯
+- `InvestmentThesis` / `ThesisReview` — 投資論點 + 定期審視（full-replace 更新，勿用 merge）
 - `PriceAlert` — 股票價格提醒 (PRICE_ABOVE/PRICE_BELOW/CHANGE_PERCENT/MOVING_AVG)
-- `StockWatchlist` / `EtfWatchlist` — 觀察清單
-- `Etf` / `EtfPrice` — ETF 追蹤
+- `EtfWatchlist` / `Etf` / `EtfPrice` — ETF 追蹤（與 Stock 系統完全分離，ADR-0002）
 - `PartnerLink` — 合作夥伴連結，雙向分享控制
 - `ApiKeyCredential` — API Key 認證
-- `Diary.createdVia` — 日記建立來源；新資料只允許 `WEB` / `API_KEY`，歷史 `TELEGRAM_BOT` 值保留可讀性
+- `RefreshToken` — DB stored refresh token
+- Market Rotation（ADR-0004）: `MarketUniverse` / `MarketDailyPrice` / `MarketRotationSnapshot` / `MarketRotationSnapshotRun` / `MarketBreadthDaily` — 持久化每日快照與批次軌跡
 
 **Key Relationships:**
 
@@ -240,7 +257,7 @@ export default defineEventHandler(async (event) => {
 | API | `tests/api/` | Server endpoint mock 測試 |
 | Integration | `tests/integration/` | 多組件 workflow |
 
-**Mock 慣例：** `tests/vi-setup.ts` 提供 `mockReadBody`, `mockGetQuery` 等。各 test file 用 `vi.mock('~/lib/prisma')` mock Prisma。
+**Mock 慣例：** `tests/vi-setup.ts` 提供 `mockReadBody`, `mockGetQuery` 等共用 mock；domain fixtures 用 `tests/fixtures/builders.ts` 的 builders（`aUser` / `aDiary` / `aTransaction` / `anAlert` / `aStockNote` / `aPost`，預設值涵蓋完整 Prisma row shape；fixture 型別為手寫，schema 加欄位時需同步更新 builders）。各 test file 用 `vi.mock('~/lib/prisma')` mock Prisma。MySQL integration tests 需要 DB（見 `docs/TESTING.md`）。
 
 ---
 
@@ -249,8 +266,9 @@ export default defineEventHandler(async (event) => {
 ```text
 server/api/          # RESTful routes: [resource].get.ts, [resource].post.ts
 server/utils/        # Query layers, auth, serialization
-server/middleware/    # Auth middleware, admin middleware
-lib/                 # Shared: prisma.ts, jwt.ts, logger, errors/factory
+server/middleware/    # Auth middleware (fail-closed), CSRF, admin middleware
+lib/                 # Shared: prisma.ts, jwt.ts, logger, market-data/, market-rotation/
+lib/contracts/       # Client-neutral API 契約: error codes SSOT, diary/review/stocks wire types
 composables/         # use[Feature].ts, auto-imported
 pages/               # File-based routing
 i18n/locales/        # Translation JSON
@@ -271,7 +289,9 @@ prisma/schema.prisma # Database schema
 
 ---
 
-### 13. Error Handling
+### 13. Error Handling（ADR-0007）
+
+錯誤契約採 H3 wire shape：machine-readable code 在 `data.code`，`requestId` 由 nitro `error` hook（`server/plugins/error-contract.ts`）注入 `data`。Error codes 單一真相源在 `lib/contracts/common/error-codes.ts`（命名 `MODULE_ACTION_REASON`，三語 i18n mapping + parity test 把關）。Ownership mismatch 一律 404（不洩漏存在性）。
 
 `lib/errors/factory.ts` 提供結構化錯誤建構器：
 
@@ -294,7 +314,7 @@ throw Errors.etfNotFound(symbol).toH3Error()
 **Pre-deployment:**
 
 1. `JWT_SECRET` 用 `openssl rand -base64 32`
-2. `DATABASE_URL` 指向 production MySQL
+2. `DATABASE_URL` 指向 production MariaDB 11.4
 3. `NUXT_PUBLIC_SITE_URL` for SEO/sitemap
 4. `npm run health:full`
 5. `npx prisma migrate deploy`
@@ -304,6 +324,8 @@ throw Errors.etfNotFound(symbol).toH3Error()
 ## Additional Documentation
 
 - **DESIGN.md** — Design system（必讀，改 UI 前先看）
+- **CONTEXT.md** — 領域語言 + 架構決策記錄（各輪深化審計的完整記錄）
+- **docs/adr/** — 架構決策（ADR-0006 credential resolution、ADR-0007 error contract 等）
 - **docs/operations/DEPLOYMENT.md** — 部署詳解
 - **docs/README.md** — 文件總索引
 - **docs/TESTING.md** — 測試指南

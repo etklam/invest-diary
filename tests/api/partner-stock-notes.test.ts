@@ -317,9 +317,9 @@ describe('Partner Stock Notes', () => {
         },
       } as any)
 
-      expect(result.notes).toHaveLength(1)
+      expect(result.data).toHaveLength(1)
       // Partner notes should be marked as not owned by viewer
-      expect(result.notes[0].isOwnedByViewer).toBe(false)
+      expect(result.data[0].isOwnedByViewer).toBe(false)
     })
 
     it('partner notes have isOwnedByViewer=false', async () => {
@@ -356,9 +356,9 @@ describe('Partner Stock Notes', () => {
         },
       } as any)
 
-      expect(result.notes).toHaveLength(2)
-      expect(result.notes[0].isOwnedByViewer).toBe(false)
-      expect(result.notes[1].isOwnedByViewer).toBe(false)
+      expect(result.data).toHaveLength(2)
+      expect(result.data[0].isOwnedByViewer).toBe(false)
+      expect(result.data[1].isOwnedByViewer).toBe(false)
     })
 
     it('own notes (no partnerId) have isOwnedByViewer=true', async () => {
@@ -377,8 +377,8 @@ describe('Partner Stock Notes', () => {
         },
       } as any)
 
-      expect(result.notes).toHaveLength(1)
-      expect(result.notes[0].isOwnedByViewer).toBe(true)
+      expect(result.data).toHaveLength(1)
+      expect(result.data[0].isOwnedByViewer).toBe(true)
     })
   })
 })

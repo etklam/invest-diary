@@ -2,7 +2,7 @@
 
 ## What it is
 
-Personal investment diary app. Nuxt 4 + TypeScript + MySQL 8 + Prisma. Tracks investment diaries, stock/ETF watchlists, market rotation, blog, alerts, partner compare, and agent API.
+Personal investment diary app. Nuxt 4 + TypeScript + MariaDB 11.4 + Prisma (the Prisma `mysql` provider). Tracks investment diaries, stock/ETF watchlists, market rotation, blog, alerts, partner compare, and agent API.
 
 ## Core workflows
 
@@ -19,7 +19,7 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for the full workflow summary.
 
 ## Tech stack
 
-Nuxt 4, Vue 3, TypeScript, MySQL 8, Prisma, Vitest, Playwright, Tailwind CSS, vue-i18n (EN / zh-TW / zh-CN), PWA.
+Nuxt 4, Vue 3, TypeScript, MariaDB 11.4, Prisma, Vitest, Playwright, Tailwind CSS, vue-i18n (EN / zh-TW / zh-CN), PWA.
 
 ## Quick start
 
@@ -47,6 +47,8 @@ Open http://localhost:3000.
 | `npm run build` | Production build |
 | `npm run health:full` | Health check + build |
 | `npm run docs:check` | Validate docs (links, placeholders, whitelist) |
+| `npm run openapi:check` | Validate generated OpenAPI/client artifacts |
+| `npm run test:backend-http:mariadb` | Real Nitro + MariaDB 11.4 release gate |
 
 ## Documentation
 
@@ -63,13 +65,13 @@ Open http://localhost:3000.
 | [DESIGN.md](DESIGN.md) | Design system |
 | [PRODUCT.md](PRODUCT.md) | Product positioning |
 
-## Beta Cockpit
+## Beta Cockpit (archived)
 
-The Market Rotation Monitor upgrade produces a Beta allocation recommendation
-from market state + breadth + rotation ranks. The current contract, cron
-schedule, exposure buckets, and limitations are documented in
-[docs/BETA_COCKPIT.md](docs/BETA_COCKPIT.md). The delivered source plan is
-archived under [docs/archive/completed/2026-06/](docs/archive/completed/2026-06/).
+The Beta Cockpit UI has been retired. The `decideBetaAllocation` policy is
+retained for the Current Market Summary. The design reference, cron schedule,
+exposure buckets, and limitations remain documented in
+[docs/BETA_COCKPIT.md](docs/BETA_COCKPIT.md) (archived). The delivered source
+plan is archived under [docs/archive/completed/2026-06/](docs/archive/completed/2026-06/).
 
 ## License
 

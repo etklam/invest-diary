@@ -121,9 +121,10 @@ describe('Investment Thesis queries', () => {
     }))
   })
 
-  it('leaves the ACTIVE-requires-summary rule to the PUT handler and persists whatever it is given', async () => {
-    await saveCurrentThesis({ userId: 7n, symbol: 'AAPL', status: 'ACTIVE', draft: {} })
-    expect(mocks.thesisUpsert).toHaveBeenCalledOnce()
+  it('rejects an ACTIVE thesis without the required conviction fields before writing', async () => {
+    await expect(saveCurrentThesis({ userId: 7n, symbol: 'AAPL', status: 'ACTIVE', draft: {} }))
+      .rejects.toMatchObject({ statusCode: 400 })
+    expect(mocks.thesisUpsert).not.toHaveBeenCalled()
   })
 
   it('preserves the original activation timestamp across re-activation', async () => {

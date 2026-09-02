@@ -4,6 +4,7 @@ import { aDiary } from '../fixtures/builders'
 import { mockLogger } from '../vi-setup'
 
 const mockTradePlanFindMany = vi.fn()
+const mockTradePlanCount = vi.fn()
 const mockTradePlanFindFirst = vi.fn()
 const mockTradePlanCreate = vi.fn()
 const mockTradePlanUpdate = vi.fn()
@@ -14,6 +15,7 @@ vi.mock('~/lib/prisma', () => ({
   default: {
     tradePlan: {
       findMany: mockTradePlanFindMany,
+      count: mockTradePlanCount,
       findFirst: mockTradePlanFindFirst,
       create: mockTradePlanCreate,
       update: mockTradePlanUpdate,
@@ -49,11 +51,12 @@ const samplePlan = {
   maxPositionSize: '12000',
   invalidationCondition: 'Close below support',
   notes: 'Wait for volume',
-  status: 'draft',
+  status: 'DRAFT',
   createdAt: new Date('2026-06-14T08:00:00.000Z'),
   updatedAt: new Date('2026-06-14T09:00:00.000Z'),
   diary: aDiary({
     id: 2n,
+    userId: 7n,
     title: 'AAPL diary',
     date: new Date('2026-06-13T12:00:00.000Z'),
   }),
@@ -65,6 +68,7 @@ describe('Trade Plan API Routes', () => {
     mockGetQuery.mockReturnValue({})
     mockReadBody.mockResolvedValue(null)
     mockParsePositiveBigIntParam.mockReturnValue(9n)
+    mockTradePlanCount.mockResolvedValue(1)
   })
 
   it('lists trade plans scoped to user with optional filters', async () => {
@@ -77,10 +81,10 @@ describe('Trade Plan API Routes', () => {
     expect(mockTradePlanFindMany).toHaveBeenCalledWith(expect.objectContaining({
       where: {
         userId: 7n,
-        status: 'active',
+        status: 'ACTIVE',
         symbol: { contains: 'AAPL' },
       },
-      orderBy: { updatedAt: 'desc' },
+        orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
     }))
     expect(result.data[0].id).toBe('9')
     expect(result.data[0].diary.id).toBe('2')
@@ -91,7 +95,7 @@ describe('Trade Plan API Routes', () => {
     mockDiaryFindFirst.mockResolvedValue({
       id: 2n,
       title: 'AAPL diary',
-      date: new Date('2026-06-13T12:00:00.000Z'),
+      date: '2026-06-13',
       reviewStatus: 'reviewed',
       reviewOutcome: 'INTACT',
       content: 'must not leak',
@@ -117,7 +121,7 @@ describe('Trade Plan API Routes', () => {
     expect(result.diary).toEqual({
       id: '2',
       title: 'AAPL diary',
-      date: new Date('2026-06-13T12:00:00.000Z'),
+      date: '2026-06-13',
       reviewStatus: 'reviewed',
       reviewOutcome: 'INTACT',
       transactionCount: 2,
@@ -198,7 +202,7 @@ describe('Trade Plan API Routes', () => {
         symbol: 'AAPL',
         entryZoneLow: '180',
         entryZoneHigh: '185',
-        status: 'draft',
+        status: 'DRAFT',
       }),
     }))
     expect(result.symbol).toBe('AAPL')
@@ -255,7 +259,7 @@ describe('Trade Plan API Routes', () => {
       ...samplePlan,
       diaryId: null,
       symbol: 'MSFT',
-      status: 'active',
+      status: 'ACTIVE',
       entryPrice: '420',
       diary: null,
     })
@@ -271,7 +275,7 @@ describe('Trade Plan API Routes', () => {
       data: expect.objectContaining({
         diaryId: null,
         symbol: 'MSFT',
-        status: 'active',
+        status: 'ACTIVE',
         entryPrice: '420',
       }),
     }))

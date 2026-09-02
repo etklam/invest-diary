@@ -38,7 +38,7 @@ describe('holiday-heatmap utilities', () => {
         userId: '1',
         title: 'A',
         content: null,
-        date: '2026-03-01T16:30:00.000Z',
+        date: '2026-03-02',
         createdAt: '2026-03-01T16:30:00.000Z',
         updatedAt: '2026-03-01T16:30:00.000Z',
         tags: [],

@@ -116,17 +116,15 @@ describe('diffTransactions', () => {
     expect(result.toCreate[0].symbol).toBe('AAPL')
   })
 
-  it('should prefer trade_date over tradeDate for dates', () => {
+  it('uses the canonical tradeDate field', () => {
     const tradeDate = new Date('2026-01-15')
-    const trade_date = new Date('2026-02-20')
     const incoming: TransactionInput[] = [
-      { symbol: 'AAPL', type: 'BUY', quantity: 1, price: 10, tradeDate, trade_date },
+      { symbol: 'AAPL', type: 'BUY', quantity: 1, price: 10, tradeDate },
     ]
 
     const result = diffTransactions(incoming)
 
-    // trade_date should win over tradeDate
-    expect(result.toCreate[0].tradeDate).toEqual(trade_date)
+    expect(result.toCreate[0].tradeDate).toEqual(tradeDate)
   })
 
   it('should use tradeDate when trade_date is not present', () => {
@@ -530,7 +528,6 @@ describe('createDiaryForUser', () => {
                 type: 'BUY',
                 quantity: 10,
                 price: 150,
-                userId: 1n,
               }),
             ]),
           },
@@ -713,6 +710,7 @@ describe('createDiaryForUser', () => {
         message: 'Check AAPL',
         triggerAt: new Date('2026-06-01T09:30:00Z'),
       },
+      include: { diary: { select: { id: true, title: true } } },
     })
     expect(mockTxDiaryCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -744,8 +742,8 @@ describe('createDiaryForUser', () => {
         content: 'Some content',
         alerts: [{
           message: 'Review trades',
-          trigger_at: '2026-06-03T09:30:00Z',
-          recurring_mode: 'WEEK',
+          triggerAt: '2026-06-03T09:30:00Z',
+          recurringMode: 'WEEK',
         }],
       },
     })
@@ -779,8 +777,8 @@ describe('createDiaryForUser', () => {
         data: expect.objectContaining({
           transactions: {
             create: expect.arrayContaining([
-              expect.objectContaining({ symbol: 'AAPL', userId: 1n }),
-              expect.objectContaining({ symbol: 'MSFT', userId: 1n }),
+              expect.objectContaining({ symbol: 'AAPL' }),
+              expect.objectContaining({ symbol: 'MSFT' }),
             ]),
           },
         }),
@@ -908,8 +906,8 @@ describe('updateDiaryForUser', () => {
     // Verify alerts were recreated
     expect(mockTxAlertDeleteMany).toHaveBeenCalledWith({ where: { diaryId: 12n } })
 
-    // Verify result has tags parsed
-    expect(result.tags).toEqual(['watch', 'mistake'])
+    // Application services return the Prisma payload; wire metadata belongs to the response mapper.
+    expect(result.tagsString).toBe('watch,mistake')
     expect(result.id).toBe(12n)
   })
 
@@ -1254,8 +1252,8 @@ describe('updateDiaryForUser', () => {
         content: 'Content',
         alerts: [{
           message: 'Review trades',
-          trigger_at: '2026-06-03T09:30:00Z',
-          recurring_mode: 'WEEK',
+          triggerAt: '2026-06-03T09:30:00Z',
+          recurringMode: 'WEEK',
         }],
       },
     })

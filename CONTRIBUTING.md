@@ -23,7 +23,7 @@
 | 軟體 | 最低版本 | 說明 |
 |------|---------|------|
 | Node.js | 18+ (建議 20 LTS) | JavaScript 執行環境 |
-| MySQL | 8.0+ | 關聯式資料庫 |
+| MariaDB | 11.4 | Backend v1 production database（Prisma `mysql` provider） |
 | npm | 9+ | 套件管理工具（隨 Node.js 安裝） |
 | Git | 2.30+ | 版本控制 |
 
@@ -39,7 +39,7 @@ npm install
 
 # 3. 設定環境變數
 cp .env.example .env
-# 編輯 .env 檔案，填入您的 MySQL 連線資訊與 JWT_SECRET
+# 編輯 .env 檔案，填入您的 MariaDB 11.4 連線資訊與 JWT_SECRET
 
 # 4. 執行資料庫遷移
 npx prisma migrate dev

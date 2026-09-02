@@ -13,7 +13,7 @@ describe('alert canonical model', () => {
       message: 'Review trades',
       triggerAt: '2026-07-14T09:00:00.000Z',
       isDismissed: false,
-      recurringMode: undefined,
+      recurringMode: null,
       instanceNumber: undefined,
       createdAt: undefined,
       diary: { id: '7', title: 'Morning notes' },

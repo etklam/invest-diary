@@ -163,24 +163,20 @@ describe('GET /api/diaries handler — filter/sort integration', () => {
     expect(call.orderBy).toEqual([{ date: 'desc' }, { id: 'desc' }])
   })
 
-  it('falls back to default sort for invalid sortBy', async () => {
+  it('rejects an invalid canonical sortBy', async () => {
     mockGetQuery.mockReturnValue({ sortBy: 'nonsense' })
     const handler = await getHandler()
 
-    await handler({ context: { user: { id: '1' }, requestId: 'req-invalid' } })
-
-    const call = mockDiaryFindMany.mock.calls[0][0]
-    expect(call.orderBy).toEqual([{ date: 'desc' }, { id: 'desc' }])
+    await expect(handler({ context: { user: { id: '1' }, requestId: 'req-invalid' } })).rejects.toMatchObject({ statusCode: 400 })
+    expect(mockDiaryFindMany).not.toHaveBeenCalled()
   })
 
-  it('ignores empty search string', async () => {
+  it('rejects an empty canonical search string', async () => {
     mockGetQuery.mockReturnValue({ search: '' })
     const handler = await getHandler()
 
-    await handler({ context: { user: { id: '1' }, requestId: 'req-empty' } })
-
-    const call = mockDiaryFindMany.mock.calls[0][0]
-    expect(call.where.OR).toBeUndefined()
+    await expect(handler({ context: { user: { id: '1' }, requestId: 'req-empty' } })).rejects.toMatchObject({ statusCode: 400 })
+    expect(mockDiaryFindMany).not.toHaveBeenCalled()
   })
 
   it('rejects invalid dateFrom', async () => {
@@ -201,17 +197,12 @@ describe('GET /api/diaries handler — filter/sort integration', () => {
     })
   })
 
-  it('preserves existing days filter alongside new filters', async () => {
+  it('rejects the removed legacy days filter', async () => {
     mockGetQuery.mockReturnValue({ days: '7', search: 'AAPL' })
     const handler = await getHandler()
 
-    await handler({ context: { user: { id: '1' }, requestId: 'req-days' } })
-
-    const call = mockDiaryFindMany.mock.calls[0][0]
-    // days filter sets createdAt gte
-    expect(call.where.createdAt).toBeDefined()
-    // search sets OR
-    expect(call.where.OR).toBeDefined()
+    await expect(handler({ context: { user: { id: '1' }, requestId: 'req-days' } })).rejects.toMatchObject({ statusCode: 400 })
+    expect(mockDiaryFindMany).not.toHaveBeenCalled()
   })
 
   it('counts with the same where clause (including filters)', async () => {

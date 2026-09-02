@@ -375,26 +375,8 @@ describe('listDiariesForUser', () => {
     expect(call.where.date).toEqual({ gte: dateFrom, lte: dateTo })
   })
 
-  it('sets createdAt gte when days filter is positive', async () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-07-10T12:00:00Z'))
-
-    await listDiariesForUser(7n, { page: 1, limit: 20, days: 7 })
-
-    const call = mockPrismaDiaryFindMany.mock.calls[0][0]
-    expect(call.where.createdAt).toBeDefined()
-    // 7 days before 2026-07-10T12:00:00Z = 2026-07-03T12:00:00Z
-    expect(call.where.createdAt.gte).toEqual(new Date('2026-07-03T12:00:00Z'))
-  })
-
-  it('does not apply days filter when days is 0 or undefined', async () => {
+  it('does not apply a hidden createdAt window', async () => {
     await listDiariesForUser(7n, { page: 1, limit: 20 })
-    expect(mockPrismaDiaryFindMany.mock.calls[0][0].where.createdAt).toBeUndefined()
-
-    vi.clearAllMocks()
-    mockPrismaDiaryFindMany.mockResolvedValue([])
-
-    await listDiariesForUser(7n, { page: 1, limit: 20, days: 0 })
     expect(mockPrismaDiaryFindMany.mock.calls[0][0].where.createdAt).toBeUndefined()
   })
 
@@ -405,7 +387,7 @@ describe('listDiariesForUser', () => {
     await listDiariesForUser(7n, { page: 1, limit: 20, reviewStatus: 'pending' })
 
     const call = mockPrismaDiaryFindMany.mock.calls[0][0]
-    expect(call.where.reviewStatus).toBe('pending')
+    expect(call.where.reviewStatus).toBe('PENDING')
     expect(call.where.reviewDueAt).toEqual({ lte: new Date('2026-07-10T12:00:00Z') })
   })
 
@@ -413,7 +395,7 @@ describe('listDiariesForUser', () => {
     await listDiariesForUser(7n, { page: 1, limit: 20, reviewStatus: 'reviewed' })
 
     const call = mockPrismaDiaryFindMany.mock.calls[0][0]
-    expect(call.where.reviewStatus).toBe('reviewed')
+    expect(call.where.reviewStatus).toBe('REVIEWED')
     expect(call.where.reviewDueAt).toBeUndefined()
   })
 
@@ -595,8 +577,8 @@ describe('buildReviewBuckets', () => {
     expect(mockPrismaDiaryFindMany.mock.calls[0][0].where).toMatchObject({
       userId: 7n,
       reviewDueAt: null,
-      reviewStatus: 'pending',
-      NOT: { reviewStatus: 'reviewed' },
+      reviewStatus: 'PENDING',
+      NOT: { reviewStatus: 'REVIEWED' },
     })
   })
 
@@ -606,7 +588,7 @@ describe('buildReviewBuckets', () => {
     await buildReviewBuckets(7n, 'Asia/Taipei')
 
     for (const idx of [1, 2, 3]) {
-      expect(mockPrismaDiaryFindMany.mock.calls[idx][0].where.NOT).toEqual({ reviewStatus: 'reviewed' })
+      expect(mockPrismaDiaryFindMany.mock.calls[idx][0].where.NOT).toEqual({ reviewStatus: 'REVIEWED' })
     }
   })
 
@@ -618,7 +600,7 @@ describe('buildReviewBuckets', () => {
     const completedCall = mockPrismaDiaryFindMany.mock.calls[4][0]
     expect(completedCall.take).toBe(50)
     expect(completedCall.orderBy).toEqual({ reviewedAt: 'desc' })
-    expect(completedCall.where).toEqual({ userId: 7n, reviewStatus: 'reviewed' })
+    expect(completedCall.where).toEqual({ userId: 7n, reviewStatus: 'REVIEWED' })
   })
 
   it('normalizes null reviewStatus to "none" on each bucket item', async () => {

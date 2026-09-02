@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { portfolioValuationResponseSchema } from '~/lib/contracts/portfolio'
 
 const mockReadPortfolioTransactions = vi.fn()
 const mockCalculateHoldings = vi.fn()
@@ -56,6 +57,7 @@ describe('GET /api/stocks/portfolio', () => {
       valuationAsOf: '2026-08-10T12:00:00.000Z',
     })
     expect(result?.quoteErrors).toEqual([])
+    expect(portfolioValuationResponseSchema.parse(result)).toEqual(result)
   })
 
   it('keeps holdings and separates unpriced cost when one quote fails', async () => {
@@ -84,6 +86,7 @@ describe('GET /api/stocks/portfolio', () => {
       unpricedCostBasis: 80,
     })
     expect(result?.quoteErrors).toEqual(['MSFT'])
+    expect(portfolioValuationResponseSchema.parse(result)).toEqual(result)
   })
 
   it('reports valuation unavailable without making persisted holdings look empty', async () => {
@@ -97,5 +100,6 @@ describe('GET /api/stocks/portfolio', () => {
     expect(result?.valuation.valuationStatus).toBe('unavailable')
     expect(result?.valuation.totalCost).toBe(280)
     expect(result?.quoteErrors).toEqual(expect.arrayContaining(['AAPL', 'MSFT']))
+    expect(portfolioValuationResponseSchema.parse(result)).toEqual(result)
   })
 })

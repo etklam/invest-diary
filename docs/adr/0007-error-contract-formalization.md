@@ -15,7 +15,7 @@ Body：
 }
 ```
 
-- Machine-readable code 位於 `data.code`，值為 `lib/errors/codes.ts` 嘅 per-resource code（命名規則 `MODULE_ACTION_REASON`）
+- Machine-readable code 位於 `data.code`，值為 `lib/contracts/common/error-codes.ts` 嘅 per-resource code（命名規則 `MODULE_ACTION_REASON`）
 - 呢輪唯一新增：`requestId` 加入 error `data`（原本只入 log）；注入點係 nitro `error` hook 一處集中處理 —— `Errors` factory 同 `handleApiError` 都攞唔到 `event`，改佢哋簽名係死路
 - Validation error 維持 **400**（`SYS_VALIDATION_ERROR`；Zod → 400 已統一）
 - 404/403 語意按 ADR-0006 同 PLAN.md Q5 原則（ownership secrecy → 404；capability/state denial → 403）
@@ -44,4 +44,4 @@ Body：
 ## 參考
 
 - `.scratch/app-ready-auth-api/PLAN.md`（Q1，2026-08-30 grill session 拍板）
-- `lib/errors/codes.ts`、`lib/errors/factory.ts`、`server/utils/error-handler.ts`
+- `lib/contracts/common/error-codes.ts`、`lib/errors/factory.ts`、`server/utils/error-handler.ts`

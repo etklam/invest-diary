@@ -49,7 +49,7 @@ describe('validateDiaryPayloadLimits', () => {
 describe('diary authoring module', () => {
   it('hydrates API scalar wrappers and both API transaction naming conventions', () => {
     const form = hydrateDiaryAuthoring({
-      date: '2026-05-18T12:00:00.000Z',
+      date: '2026-05-18',
       title: '  Morning plan ',
       content: null,
       thesis: null,
@@ -122,18 +122,18 @@ describe('diary authoring module', () => {
       execution: 'Followed the plan',
       reviewDueAt: '2026-05-25T12:00:00.000Z',
       stockSymbols: [],
-      date: '2026-05-18T12:00:00.000Z',
+      date: '2026-05-18',
       transactions: [{
         symbol: 'AAPL',
         type: 'BUY',
         quantity: 2,
         price: 101,
-        trade_date: '2026-05-18T09:30:00.000Z',
+        tradeDate: '2026-05-18T09:30:00.000Z',
       }],
       alerts: [{
         message: 'Review',
-        trigger_at: '2026-05-19T12:00:00.000Z',
-        recurring_mode: 'MONTH',
+        triggerAt: '2026-05-19T12:00:00.000Z',
+        recurringMode: 'MONTH',
       }],
     })
   })

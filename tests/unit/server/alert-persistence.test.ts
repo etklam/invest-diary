@@ -22,8 +22,8 @@ describe('persistAlert', () => {
 
     const result = await persistAlert(tx, 12n, {
       message: 'Review trades',
-      trigger_at: '2026-06-03T09:30:00Z',
-      recurring_mode: 'WEEK',
+      triggerAt: '2026-06-03T09:30:00Z',
+      recurringMode: 'WEEK',
     })
 
     expect(result.id).toBe(101n)
@@ -59,8 +59,8 @@ describe('persistAlerts', () => {
     const create = vi.fn().mockResolvedValue({ id: 1n })
     const tx = { alert: { create } } as any
     const alerts = [
-      { message: 'First', trigger_at: '2026-06-01T09:30:00Z' },
-      { message: 'Second', trigger_at: '2026-06-02T09:30:00Z' },
+      { message: 'First', triggerAt: '2026-06-01T09:30:00Z' },
+      { message: 'Second', triggerAt: '2026-06-02T09:30:00Z' },
     ]
 
     const persisted = await persistAlerts(tx, 12n, alerts as any, 'Asia/Taipei')
