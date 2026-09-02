@@ -87,7 +87,9 @@ export function hydrateDiaryAuthoring(
 ): DiaryAuthoringForm {
   const timeZone = options.timeZone ?? 'UTC'
   const date = diary.date
-    ? formatYmdInTimezone(diary.date, timeZone)
+    ? (/^\d{4}-\d{2}-\d{2}$/.test(String(diary.date))
+        ? String(diary.date)
+        : formatYmdInTimezone(diary.date, timeZone))
     : (options.fallbackDate ?? formatYmdInTimezone(new Date(), timeZone))
 
   return {

@@ -74,6 +74,12 @@ export const Errors = {
     message: 'Token not found',
   }),
 
+  tokenRevoked: () => new AppError({
+    statusCode: 401,
+    code: ErrorCodes.AUTH_TOKEN_REVOKED,
+    message: 'Token has been revoked',
+  }),
+
   rateLimited: (retryAfter?: number) => new AppError({
     statusCode: 429,
     code: ErrorCodes.AUTH_RATE_LIMITED,
@@ -194,6 +200,48 @@ export const Errors = {
     statusCode: 403,
     code: ErrorCodes.STOCK_NOTE_ACCESS_DENIED,
     message: `Cannot ${action} agent-created notes`,
+  }),
+
+  investmentThesisNotFound: (symbol?: string) => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.INVESTMENT_THESIS_NOT_FOUND,
+    message: symbol ? `Investment Thesis for ${symbol} not found` : 'Investment Thesis not found',
+  }),
+
+  investmentThesisNotActive: () => new AppError({
+    statusCode: 409,
+    code: ErrorCodes.INVESTMENT_THESIS_NOT_ACTIVE,
+    message: 'Only an active Investment Thesis can be reviewed',
+  }),
+
+  thesisReviewNotFound: (id: string) => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.THESIS_REVIEW_NOT_FOUND,
+    message: `Thesis Review ${id} not found`,
+  }),
+
+  tradePlanNotFound: (id?: string) => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.TRADE_PLAN_NOT_FOUND,
+    message: id ? `Trade plan ${id} not found` : 'Trade plan not found',
+  }),
+
+  priceAlertNotFound: (id?: string) => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.PRICE_ALERT_NOT_FOUND,
+    message: id ? `Price alert ${id} not found` : 'Price alert not found',
+  }),
+
+  watchlistItemNotFound: (id?: string) => new AppError({
+    statusCode: 404,
+    code: ErrorCodes.WATCHLIST_ITEM_NOT_FOUND,
+    message: id ? `Watchlist item ${id} not found` : 'Watchlist item not found',
+  }),
+
+  invalidCursor: () => new AppError({
+    statusCode: 400,
+    code: ErrorCodes.INVALID_CURSOR,
+    message: 'Invalid cursor',
   }),
 
   // Generic

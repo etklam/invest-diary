@@ -1,10 +1,10 @@
-import type { DiaryResponse, UpdateDiaryRequest } from '~/lib/contracts/diary'
+import { updateDiaryRequestSchema, type DiaryResponse } from '~/lib/contracts/diary'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { updateDiaryForUser } from '~/server/utils/diary-write'
 import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
+import { mapDiaryResponse } from '~/server/utils/diary-response'
 
 export default defineEventHandler(async (event): Promise<DiaryResponse> => {
   const log = logger.diary.withRequestId(event.context.requestId)
@@ -15,24 +15,8 @@ export default defineEventHandler(async (event): Promise<DiaryResponse> => {
   }
 
   const diaryId = parsePositiveBigIntParam(event, 'id')
-  const body = await readBody<UpdateDiaryRequest>(event)
-
   try {
-    const reviewOwnedFields = [
-      'reviewStatus',
-      'reviewedAt',
-      'reviewOutcome',
-      'reviewSummary',
-      'reviewLearning',
-      'reviewAdjustment',
-    ]
-    const invalidField = reviewOwnedFields.find(field => body && Object.hasOwn(body, field))
-    if (invalidField) {
-      throw Errors.validationError([{
-        field: invalidField,
-        message: 'Structured review fields must be updated through the review endpoint',
-      }])
-    }
+    const body = updateDiaryRequestSchema.parse(await readBody(event))
 
     const diary = await updateDiaryForUser({
       userId,
@@ -41,7 +25,7 @@ export default defineEventHandler(async (event): Promise<DiaryResponse> => {
     })
 
     log.info('Diary updated', { diaryId: String(diary.id), userId })
-    return serialize(diary) as DiaryResponse
+    return mapDiaryResponse(diary)
   } catch (error) {
     handleApiError(error, log)
   }

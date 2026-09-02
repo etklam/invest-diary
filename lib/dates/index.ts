@@ -9,6 +9,7 @@
 // ─── 格式化 ────────────────────────────────────────────────────────────────────
 export {
   formatDate,
+  formatCalendarDate,
   formatUserDateTime,
   formatShortDate,
   formatDateWithWeekday,
@@ -16,10 +17,10 @@ export {
   formatYearMonth,
   getDateTimeFormat,
 } from './format'
-export type { DateFormatOptions, UserDateTimeFormatOptions } from './format'
+export type { CalendarDateFormatOptions, DateFormatOptions, UserDateTimeFormatOptions } from './format'
 
 // ─── 正規化 ────────────────────────────────────────────────────────────────────
-export { toUtcNoonDate, getUtcDayRange, toDateTimeLocalValue } from './normalize'
+export { toUtcNoonDate, toCalendarDateWire, getUtcDayRange, toDateTimeLocalValue } from './normalize'
 
 // ─── 使用者時區操作（deep module）────────────────────────────────────────────
 export {

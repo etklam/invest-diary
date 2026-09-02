@@ -1,11 +1,9 @@
-import type { Prisma } from '@prisma/client'
+import type { Prisma, DiaryReviewStatus as PrismaDiaryReviewStatus } from '@prisma/client'
 import prisma from '~/lib/prisma'
-import type { DiaryRecord } from '~/types/diary'
 import type { CreateDiaryRequest, TransactionInput, UpdateDiaryRequest } from '~/lib/contracts/diary'
 import { getUtcDayRange, toUtcNoonDate } from '~/lib/dates/normalize'
 import { normalizeDiaryTags, parseDiaryTags, stringifyDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'
-import { attachDiaryMetadata } from '~/server/utils/diary-response'
 import { getUserTimezone } from '~/server/utils/user-queries'
 import {
   normalizeDiaryStockSymbols,
@@ -18,6 +16,10 @@ import {
   validateDiaryPayloadLimits,
   validateTransactionValues,
 } from '~/lib/diary-authoring/validation'
+
+function toPrismaReviewStatus(status: 'none' | 'pending' | 'reviewed'): PrismaDiaryReviewStatus {
+  return status.toUpperCase() as PrismaDiaryReviewStatus
+}
 
 /** Enforce payload size caps before any ledger math or DB read. */
 function enforceDiaryPayloadLimits(
@@ -173,7 +175,7 @@ export function mapTransactionWriteData(t: TransactionInput): TransactionWriteDa
     type: t.type,
     quantity: normalizeDecimalWrite(t.quantity, 'quantity'),
     price: normalizeDecimalWrite(t.price, 'price'),
-    tradeDate: toInputDate(t.trade_date ?? t.tradeDate ?? new Date()),
+    tradeDate: toInputDate(t.tradeDate ?? new Date()),
     notes: t.notes ?? null,
     strategy: t.strategy ?? null,
     emotion: t.emotion ?? null,
@@ -279,7 +281,7 @@ function normalizeDiaryDate(value: string | Date | undefined): Date {
   }
 }
 
-export async function createDiaryForUser(input: CreateDiaryForUserInput): Promise<DiaryRecord> {
+export async function createDiaryForUser(input: CreateDiaryForUserInput) {
   const userId = typeof input.userId === 'bigint' ? input.userId : BigInt(input.userId)
   const { body } = input
   const stockSymbols = normalizeDiaryStockSymbols(body.stockSymbols)
@@ -368,7 +370,7 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
         })
       })
 
-      return attachDiaryMetadata(updatedDiary) as unknown as DiaryRecord
+      return updatedDiary
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw Errors.diaryAlreadyExists(diaryDateLabel(diaryDate))
@@ -404,12 +406,10 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
       ...(risk !== undefined ? { risk } : {}),
       ...(execution !== undefined ? { execution } : {}),
       ...(reviewDueAt !== undefined ? { reviewDueAt: reviewDueAt ? new Date(reviewDueAt) : null } : {}),
-      ...(reviewDueAt ? { reviewStatus: 'pending' } : {}),
+      ...(reviewDueAt ? { reviewStatus: toPrismaReviewStatus('pending') } : {}),
       transactions: {
-        create: transactions?.map((tx) => ({
-          ...mapTransactionWriteData(tx),
-          userId,
-        })),
+        // Composite Diary(id,userId) relation supplies both owner keys.
+        create: transactions?.map(mapTransactionWriteData),
       },
     },
     include: {
@@ -436,11 +436,11 @@ export async function createDiaryForUser(input: CreateDiaryForUserInput): Promis
         }
       })
 
-      return attachDiaryMetadata(diary) as unknown as DiaryRecord
+      return diary
     }
 
     const diary = await prisma.diary.create(diaryCreateArgs)
-    return attachDiaryMetadata(diary) as unknown as DiaryRecord
+    return diary
   } catch (error) {
     // The database constraint is the authority for concurrent creates. The
     // application preflight above is only a fast UX path.
@@ -468,7 +468,7 @@ export interface UpdateDiaryForUserInput {
  * - Existing DB transactions not in payload → delete
  * - Alerts: delete-all + recreate (alerts don't need stable IDs yet)
  */
-export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promise<DiaryRecord> {
+export async function updateDiaryForUser(input: UpdateDiaryForUserInput) {
   const userId = typeof input.userId === 'bigint' ? input.userId : BigInt(input.userId)
   const diaryId = typeof input.diaryId === 'bigint' ? input.diaryId : BigInt(input.diaryId)
   const { body } = input
@@ -554,8 +554,8 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
           ...(risk !== undefined ? { risk } : {}),
           ...(execution !== undefined ? { execution } : {}),
           ...(reviewDueAt !== undefined ? { reviewDueAt: reviewDueAt ? new Date(reviewDueAt) : null } : {}),
-          ...(reviewDueAt !== undefined && existingDiary.reviewStatus !== 'reviewed'
-            ? { reviewStatus: reviewDueAt ? 'pending' : 'none' }
+          ...(reviewDueAt !== undefined && String(existingDiary.reviewStatus).toUpperCase() !== 'REVIEWED'
+            ? { reviewStatus: toPrismaReviewStatus(reviewDueAt ? 'pending' : 'none') }
             : {}),
         },
         include: {
@@ -566,7 +566,7 @@ export async function updateDiaryForUser(input: UpdateDiaryForUserInput): Promis
       })
     })
 
-    return attachDiaryMetadata(diary) as unknown as DiaryRecord
+    return diary
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       throw Errors.diaryAlreadyExists(diaryDateLabel(targetDiaryDate))

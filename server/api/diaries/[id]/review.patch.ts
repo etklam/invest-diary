@@ -5,7 +5,7 @@ import {
   saveStructuredReviewForUser,
 } from '~/server/utils/diary-review'
 import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
+import { mapDiaryReviewResponse } from '~/server/utils/diary-response'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
       userId: user.id,
     })
 
-    return serialize(diary)
+    return mapDiaryReviewResponse(diary)
   } catch (error) {
     handleApiError(error, log)
   }

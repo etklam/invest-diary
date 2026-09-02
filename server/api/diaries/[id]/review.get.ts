@@ -2,7 +2,7 @@ import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { findDiaryReviewForUser } from '~/server/utils/diary-review'
 import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
+import { mapDiaryReviewResponse } from '~/server/utils/diary-response'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const diaryId = parsePositiveBigIntParam(event, 'id')
 
   try {
-    return serialize(await findDiaryReviewForUser(diaryId, BigInt(user.id)))
+    return mapDiaryReviewResponse(await findDiaryReviewForUser(diaryId, BigInt(user.id)))
   } catch (error) {
     handleApiError(error, log)
   }

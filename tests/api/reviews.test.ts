@@ -77,14 +77,14 @@ describe('Review API Routes', () => {
       expect(mockDiaryFindMany.mock.calls[0]?.[0].where).toMatchObject({
         userId: 7n,
         reviewDueAt: null,
-        reviewStatus: 'pending',
-        NOT: { reviewStatus: 'reviewed' },
+        reviewStatus: 'PENDING',
+        NOT: { reviewStatus: 'REVIEWED' },
       })
       expect(mockDiaryFindMany.mock.calls[0]?.[0].select).toMatchObject({ reviewOutcome: true })
       expect(mockDiaryFindMany.mock.calls[1]?.[0].where).toMatchObject({
         userId: 7n,
         reviewDueAt: { lt: new Date('2026-06-13T16:00:00.000Z') },
-        NOT: { reviewStatus: 'reviewed' },
+        NOT: { reviewStatus: 'REVIEWED' },
       })
       expect(mockDiaryFindMany.mock.calls[2]?.[0].where).toMatchObject({
         reviewDueAt: {
@@ -138,7 +138,7 @@ describe('Review API Routes', () => {
       mockDiaryUpdate.mockResolvedValue(aDiary({
         id: 10n,
         title: 'Reviewed diary',
-        reviewStatus: 'reviewed',
+          reviewStatus: 'REVIEWED',
         reviewedAt: new Date('2026-06-14T10:00:00.000Z'),
         reviewOutcome: 'PARTIAL',
         reviewSummary: 'The setup worked, entry did not.',
@@ -157,7 +157,7 @@ describe('Review API Routes', () => {
           reviewSummary: 'The setup worked, entry did not.',
           reviewLearning: null,
           reviewAdjustment: null,
-          reviewStatus: 'reviewed',
+          reviewStatus: 'REVIEWED',
           reviewedAt: new Date('2026-06-14T10:00:00.000Z'),
         },
       }))
@@ -199,8 +199,31 @@ describe('Review API Routes', () => {
         id: 10n,
         title: 'Decision context',
         reviewStatus: 'reviewed',
-        transactions: [{ id: 20n, symbol: 'AAPL' }],
-        tradePlans: [{ id: 30n, symbol: 'AAPL' }],
+        transactions: [{
+          id: 20n,
+          symbol: 'AAPL',
+          type: 'BUY',
+          quantity: '2',
+          price: '180.25',
+          tradeDate: new Date('2026-06-01T09:30:00.000Z'),
+          notes: null,
+          strategy: null,
+          emotion: null,
+        }],
+        tradePlans: [{
+          id: 30n,
+          symbol: 'AAPL',
+          setupType: null,
+          entryPrice: null,
+          entryZoneLow: null,
+          entryZoneHigh: null,
+          stopLoss: null,
+          targetPrice: null,
+          maxPositionSize: null,
+          invalidationCondition: null,
+          notes: null,
+          status: 'active',
+        }],
       }))
 
       const { default: handler } = await import('~/server/api/diaries/[id]/review.get')

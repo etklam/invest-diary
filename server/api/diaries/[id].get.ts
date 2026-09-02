@@ -2,9 +2,8 @@ import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { findDiaryDetailForUser } from '~/server/utils/diary-read'
-import { attachDiaryMetadata } from '~/server/utils/diary-response'
+import { mapDiaryResponse } from '~/server/utils/diary-response'
 import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
 import type { DiaryResponse } from '~/lib/contracts/diary'
 
 export default defineEventHandler(async (event): Promise<DiaryResponse> => {
@@ -21,7 +20,7 @@ export default defineEventHandler(async (event): Promise<DiaryResponse> => {
     const diary = await findDiaryDetailForUser(diaryId, rawUserId)
 
     log.info('Diary fetched', { diaryId: String(diaryId) })
-    return serialize(attachDiaryMetadata(diary)) as DiaryResponse
+    return mapDiaryResponse(diary)
   } catch (error) {
     handleApiError(error, log)
   }

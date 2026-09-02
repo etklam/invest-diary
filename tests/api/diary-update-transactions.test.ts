@@ -46,7 +46,7 @@ describe('PUT /api/diaries/:id transaction diff upsert', () => {
       title: 'Updated',
       content: 'Updated content',
       tagsString: 'a,b',
-      transactions: [{ id: 100n, symbol: 'AAPL' }],
+      transactions: [],
     }))
     mockPrismaTransaction.mockImplementation(async (cb: any) => cb({
       transaction: {
@@ -66,7 +66,7 @@ describe('PUT /api/diaries/:id transaction diff upsert', () => {
       content: 'Updated content',
       tags: ['a', 'b'],
       transactions: [
-        { id: '100', symbol: 'aapl', type: 'BUY', quantity: 1, price: 10 },
+        { id: '100', symbol: 'aapl', type: 'BUY', quantity: 1, price: 10, tradeDate: '2026-05-01T12:00:00.000Z' },
       ],
       alerts: [],
     })
@@ -93,7 +93,7 @@ describe('PUT /api/diaries/:id transaction diff upsert', () => {
       content: 'Updated content',
       tags: [],
       transactions: [
-        { symbol: 'msft', type: 'BUY', quantity: 2, price: 20, tradeDate: '2026-05-01' },
+        { symbol: 'msft', type: 'BUY', quantity: 2, price: 20, tradeDate: '2026-05-01T12:00:00.000Z' },
       ],
       alerts: [],
     })
@@ -118,7 +118,7 @@ describe('PUT /api/diaries/:id transaction diff upsert', () => {
       content: 'Updated content',
       tags: [],
       transactions: [
-        { id: '999', symbol: 'msft', type: 'SELL', quantity: 2, price: 20 },
+        { id: '999', symbol: 'msft', type: 'SELL', quantity: 2, price: 20, tradeDate: '2026-05-01T12:00:00.000Z' },
       ],
       alerts: [],
     })

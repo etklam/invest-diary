@@ -20,15 +20,24 @@
  *    when absent — the handler decides whether null is an error.
  */
 
-import type { Prisma } from '@prisma/client'
+import type { Prisma, DiaryReviewStatus as PrismaDiaryReviewStatus } from '@prisma/client'
 import prisma from '~/lib/prisma'
 import { isThesisReviewOverdue } from '~/lib/portfolio-attention'
 import { getUtcDayRange } from '~/lib/dates/normalize'
 import { getUserDayRange } from '~/lib/dates/user-tz'
 import { parseDiaryTags } from '~/lib/diary-tags'
 import { Errors } from '~/lib/errors/factory'
-import type { ReviewStatus } from '~/lib/contracts/review'
-import { TRADE_PLAN_STATUSES, type TradePlanStatus } from '~/types/trade-plan'
+import { REVIEW_STATUSES, type ReviewStatus } from '~/lib/contracts/review'
+import { TRADE_PLAN_STATUSES, type TradePlanStatus } from '~/lib/contracts/trade-plan/status'
+
+function toPrismaReviewStatus(status: string): PrismaDiaryReviewStatus {
+  return status.toUpperCase() as PrismaDiaryReviewStatus
+}
+
+function toWireReviewStatus(status: string | null | undefined): ReviewStatus {
+  const normalized = String(status ?? '').toLowerCase()
+  return REVIEW_STATUSES.includes(normalized as ReviewStatus) ? normalized as ReviewStatus : 'none'
+}
 
 /**
  * Shared include fragment used by most single-diary read paths.
@@ -239,7 +248,7 @@ function summarizeTradePlans(tradePlans: Array<{ status: string }>): TradePlanSu
     statuses: TRADE_PLAN_STATUSES
       .map(status => ({
         status,
-        count: tradePlans.filter(plan => plan.status === status).length,
+        count: tradePlans.filter(plan => String(plan.status).toLowerCase() === status).length,
       }))
       .filter(({ count }) => count > 0),
   }
@@ -248,7 +257,6 @@ function summarizeTradePlans(tradePlans: Array<{ status: string }>): TradePlanSu
 export interface DiaryListFilters {
   page: number
   limit: number
-  days?: number
   search?: string
   sortBy?: string
   reviewStatus?: string
@@ -256,48 +264,16 @@ export interface DiaryListFilters {
   dateTo?: Date
 }
 
-export interface DiaryListItem {
-  id: bigint | string
-  userId: bigint
-  title: string
-  content: string
-  tagsString: string | null
-  createdVia: string
-  createdByLabel: string | null
-  date: Date
-  createdAt: Date
-  updatedAt: Date
-  thesis: string | null
-  risk: string | null
-  execution: string | null
-  reviewDueAt: Date | null
-  reviewStatus: string | null
-  reviewedAt: Date | null
-  reviewOutcome: string | null
-  alerts: Array<{
-    id: bigint
-    message: string
-    triggerAt: Date
-    isDismissed: boolean
-  }>
-  transactions: Array<{
-    id: bigint
-    symbol: string
-    type: string
-    quantity: Prisma.Decimal
-    price: Prisma.Decimal
-    tradeDate: Date
-  }>
+type DiaryListPrismaRow = Prisma.DiaryGetPayload<{ select: typeof DIARY_LIST_SELECT }>
+export type DiaryListItem = Omit<DiaryListPrismaRow, 'tradePlans' | 'stockContexts'> & {
   tradePlanSummary?: TradePlanSummary
-  // ponytail: tags is parsed from tagsString — kept on the item so handlers
-  // don't need to re-map. serialize() leaves arrays untouched.
   tags: string[]
   stockSymbols: string[]
 }
 
 /**
  * List diaries for a user with the same filters diaries.get.ts supported:
- * pagination, days-window (createdAt gte), title/content search, date range
+ * pagination, title/content search, date range
  * on the diary `date` field, reviewStatus (with the pending==overdue special
  * case), and whitelisted sort options.
  *
@@ -313,13 +289,6 @@ export async function listDiariesForUser(
     ?? DIARY_LIST_SORT_OPTIONS['date-desc']
 
   const where: Prisma.DiaryWhereInput = { userId }
-
-  // Days filter (legacy — uses createdAt)
-  if (filters.days !== undefined && filters.days > 0) {
-    const since = new Date()
-    since.setDate(since.getDate() - filters.days)
-    where.createdAt = { gte: since }
-  }
 
   // Search filter (case-insensitive contains on title + content)
   if (filters.search) {
@@ -341,10 +310,10 @@ export async function listDiariesForUser(
   if (filters.reviewStatus) {
     if (filters.reviewStatus === 'pending') {
       // "pending" means reviewStatus='pending' AND reviewDueAt <= now (overdue or due)
-      where.reviewStatus = 'pending'
+      where.reviewStatus = toPrismaReviewStatus('pending')
       where.reviewDueAt = { lte: new Date() }
     } else {
-      where.reviewStatus = filters.reviewStatus
+      where.reviewStatus = toPrismaReviewStatus(filters.reviewStatus)
     }
   }
 
@@ -361,8 +330,8 @@ export async function listDiariesForUser(
     prisma.diary.count({ where }),
   ])
 
-  const items = rawItems.map(
-    (d: Prisma.DiaryGetPayload<{ select: typeof DIARY_LIST_SELECT }>) => {
+  const items: DiaryListItem[] = rawItems.map(
+    (d: DiaryListPrismaRow) => {
       const { tradePlans, stockContexts, ...diary } = d
       return {
         ...diary,
@@ -371,7 +340,7 @@ export async function listDiariesForUser(
         tradePlanSummary: summarizeTradePlans(tradePlans ?? []),
       }
     },
-  ) as unknown as DiaryListItem[]
+  )
 
   return { items, total }
 }
@@ -444,7 +413,7 @@ export async function buildReviewBuckets(
 
   const baseOpenWhere: Prisma.DiaryWhereInput = {
     userId,
-    NOT: { reviewStatus: 'reviewed' },
+    NOT: { reviewStatus: toPrismaReviewStatus('reviewed') },
   }
 
   const [unscheduled, overdue, today, upcoming, completed] = await Promise.all([
@@ -452,7 +421,7 @@ export async function buildReviewBuckets(
       where: {
         ...baseOpenWhere,
         reviewDueAt: null,
-        reviewStatus: 'pending',
+        reviewStatus: toPrismaReviewStatus('pending'),
       },
       select: REVIEW_SELECT,
       orderBy: { date: 'desc' },
@@ -485,7 +454,7 @@ export async function buildReviewBuckets(
     prisma.diary.findMany({
       where: {
         userId,
-        reviewStatus: 'reviewed',
+        reviewStatus: toPrismaReviewStatus('reviewed'),
       },
       select: REVIEW_SELECT,
       orderBy: { reviewedAt: 'desc' },
@@ -496,7 +465,7 @@ export async function buildReviewBuckets(
   const normalize = (items: ReviewItem[]): ReviewItem[] =>
     items.map(item => ({
       ...item,
-      reviewStatus: item.reviewStatus || 'none',
+      reviewStatus: toWireReviewStatus(item.reviewStatus as unknown as string),
     }))
 
   const diaryBuckets: ReviewBuckets = {

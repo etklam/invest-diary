@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mockReadBody, mockGetQuery, mockGetRouterParam } from '../vi-setup'
+import { aDiary } from '../fixtures/builders'
 
 /**
  * Integration Tests for Diary Workflow
@@ -73,7 +74,7 @@ describe('Diary Workflow Integration', () => {
   describe('Complete Diary CRUD Flow', () => {
     it('should create, read, update, and delete a diary entry', async () => {
       const userId = 1n
-      const mockDiary = {
+      const mockDiary = aDiary({
         id: 1n,
         title: 'Test Diary',
         content: 'Test diary entry',
@@ -84,14 +85,13 @@ describe('Diary Workflow Integration', () => {
         updatedAt: new Date(),
         alerts: [],
         transactions: [],
-      }
+      })
 
       // Create
       mockDiaryCreate.mockResolvedValueOnce(mockDiary)
       mockReadBody.mockResolvedValueOnce({
         title: 'Test Diary',
         content: 'Test diary entry',
-        mood: 'HAPPY',
       })
 
       const { default: createHandler } = await import('~/server/api/diaries.post')
@@ -152,32 +152,35 @@ describe('Diary Workflow Integration', () => {
 
   describe('Diary with Transactions', () => {
     it('should create diary with associated transactions', async () => {
-      const mockDiaryWithTransactions = {
+      const mockDiaryWithTransactions = aDiary({
         id: 1n,
+        title: 'Trading Diary',
         content: 'Trading day',
-        mood: 'NEUTRAL',
         userId: 1n,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         transactions: [
           {
             id: 1n,
+            diaryId: 1n,
+            userId: 1n,
             symbol: '2330.TW',
             type: 'BUY',
             quantity: 10,
             price: 500,
-            diaryId: 1n,
+            tradeDate: new Date('2026-05-01T12:00:00.000Z'),
+            notes: null,
+            strategy: null,
+            emotion: null,
+            createdAt: new Date('2026-05-01T12:00:00.000Z'),
           },
         ],
-      }
+      })
 
       mockDiaryCreate.mockResolvedValueOnce(mockDiaryWithTransactions)
       mockReadBody.mockResolvedValueOnce({
         title: 'Trading Diary',
         content: 'Trading day',
-        mood: 'NEUTRAL',
         transactions: [
-          { symbol: '2330.TW', type: 'BUY', quantity: 10, price: 500 },
+          { symbol: '2330.TW', type: 'BUY', quantity: 10, price: 500, tradeDate: '2026-05-01T12:00:00.000Z' },
         ],
       })
 
@@ -194,7 +197,7 @@ describe('Diary Workflow Integration', () => {
         title: 'Trading Diary',
         content: 'Trading day',
         transactions: [
-          { symbol: '2330.TW', type: 'SELL', quantity: 5, price: 500 },
+          { symbol: '2330.TW', type: 'SELL', quantity: 5, price: 500, tradeDate: '2026-05-01T12:00:00.000Z' },
         ],
       })
 
@@ -252,13 +255,15 @@ describe('Diary Workflow Integration', () => {
 
   describe('Date-based Queries', () => {
     it('should fetch diary by date', async () => {
-      const mockDiary = {
+      const mockDiary = aDiary({
         id: 1n,
+        title: 'Today',
         content: 'Today entry',
-        mood: 'HAPPY',
         userId: 1n,
-        createdAt: new Date('2024-01-15'),
-      }
+        date: new Date('2024-01-15T12:00:00.000Z'),
+        createdAt: new Date('2024-01-15T12:00:00.000Z'),
+        updatedAt: new Date('2024-01-15T12:00:00.000Z'),
+      })
 
       mockDiaryFindFirst.mockResolvedValueOnce(mockDiary)
       mockGetQuery.mockReturnValueOnce({ date: '2024-01-15' })

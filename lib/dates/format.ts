@@ -26,6 +26,11 @@ export interface UserDateTimeFormatOptions {
   format?: Intl.DateTimeFormatOptions
 }
 
+export interface CalendarDateFormatOptions {
+  locale?: string
+  format?: Intl.DateTimeFormatOptions
+}
+
 // ─── 內部輔助 ──────────────────────────────────────────────────────────────────
 
 function toDateInstance(input: DateInput): Date {
@@ -69,6 +74,22 @@ export function formatUserDateTime(
       minute: '2-digit',
     }),
     timeZone: timezone,
+  }).format(date)
+}
+
+/** Format a YYYY-MM-DD business date without applying the user's timezone. */
+export function formatCalendarDate(
+  value: string,
+  options: CalendarDateFormatOptions = {},
+): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error('Invalid calendar date')
+  const date = new Date(`${value}T12:00:00.000Z`)
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+    throw new Error('Invalid calendar date')
+  }
+  return getDateTimeFormat(options.locale ?? 'zh-TW', {
+    ...(options.format ?? { year: 'numeric', month: '2-digit', day: '2-digit' }),
+    timeZone: 'UTC',
   }).format(date)
 }
 

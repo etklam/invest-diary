@@ -85,7 +85,7 @@ export async function getDiarySummaryForUser(
       select: { id: true, title: true, content: true, date: true, createdAt: true },
     }),
     prisma.diary.findMany({
-      where: { userId, reviewStatus: 'pending' },
+      where: { userId, reviewStatus: 'PENDING' },
       orderBy: [{ reviewDueAt: 'asc' }, { date: 'desc' }, { id: 'desc' }],
       take: 5,
       select: { id: true, title: true, date: true, thesis: true, risk: true, reviewStatus: true },

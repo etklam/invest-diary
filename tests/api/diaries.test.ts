@@ -111,9 +111,9 @@ describe('Diary API Routes', () => {
         title: 'New Diary',
         content: 'New content',
         tags: ['profit', 'watch'],
-        date: diaryDate.toISOString(),
-        transactions: [{ symbol: 'AAPL', type: 'BUY', quantity: 1, price: 100, tradeDate: diaryDate }],
-        alerts: [{ message: 'Reminder', triggerAt: diaryDate }],
+        date: '2026-01-02',
+        transactions: [{ symbol: 'AAPL', type: 'BUY', quantity: 1, price: 100, tradeDate: diaryDate.toISOString() }],
+        alerts: [{ message: 'Reminder', triggerAt: diaryDate.toISOString() }],
       })
       mockDiaryFindFirst.mockResolvedValue(null)
       mockDiaryCreate.mockResolvedValue(aDiary({
@@ -233,7 +233,7 @@ describe('Diary API Routes', () => {
     it('should return diary detail with parsed tags', async () => {
       const now = new Date('2026-01-03T10:00:00.000Z')
       mockGetRouterParam.mockReturnValue('9')
-      mockDiaryFindFirst.mockResolvedValue({
+      mockDiaryFindFirst.mockResolvedValue(aDiary({
         id: 9n,
         userId: 1n,
         title: 'Tagged diary',
@@ -244,7 +244,7 @@ describe('Diary API Routes', () => {
         updatedAt: now,
         transactions: [],
         alerts: [],
-      })
+      }))
 
       const { default: handler } = await import('~/server/api/diaries/[id].get')
 
@@ -265,16 +265,16 @@ describe('Diary API Routes', () => {
         content: 'Updated content',
         tags: ['watch', 'mistake'],
         // No id on transactions → should be created (not deleted + recreated)
-        transactions: [{ symbol: 'TSLA', type: 'BUY', quantity: 2, price: 300, tradeDate: new Date() }],
-        alerts: [{ message: 'Alert', triggerAt: new Date() }],
+        transactions: [{ symbol: 'TSLA', type: 'BUY', quantity: 2, price: 300, tradeDate: new Date().toISOString() }],
+        alerts: [{ message: 'Alert', triggerAt: new Date().toISOString() }],
       })
       mockDiaryFindFirst.mockResolvedValue({ id: 12n, userId: '1' })
-      mockDiaryUpdate.mockResolvedValue({
+      mockDiaryUpdate.mockResolvedValue(aDiary({
         id: 12n,
         title: 'Updated Title',
         content: 'Updated content',
         tagsString: 'watch,mistake',
-      })
+      }))
 
       const { default: handler } = await import('~/server/api/diaries/[id].put')
 
@@ -308,16 +308,16 @@ describe('Diary API Routes', () => {
         content: 'Updated content',
         tags: [],
         // Transaction with existing id → should update, not create
-        transactions: [{ id: '99', symbol: 'AAPL', type: 'BUY', quantity: 5, price: 150, tradeDate: new Date() }],
+        transactions: [{ id: '99', symbol: 'AAPL', type: 'BUY', quantity: 5, price: 150, tradeDate: new Date().toISOString() }],
         alerts: [],
       })
       mockDiaryFindFirst.mockResolvedValue({ id: 12n, userId: '1' })
-      mockDiaryUpdate.mockResolvedValue({
+      mockDiaryUpdate.mockResolvedValue(aDiary({
         id: 12n,
         title: 'Updated Title',
         content: 'Updated content',
         tagsString: '',
-      })
+      }))
 
       const { default: handler } = await import('~/server/api/diaries/[id].put')
 

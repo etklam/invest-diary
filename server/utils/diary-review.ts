@@ -87,7 +87,7 @@ export async function saveStructuredReviewForUser(
       reviewSummary: normalizeReflection(input.reviewSummary),
       reviewLearning: normalizeReflection(input.reviewLearning),
       reviewAdjustment: normalizeReflection(input.reviewAdjustment),
-      reviewStatus: 'reviewed',
+      reviewStatus: 'REVIEWED',
       reviewedAt: new Date(),
     },
     select: REVIEW_DETAIL_SELECT,

@@ -75,6 +75,15 @@ export function toUtcNoonDate(input: string | Date): Date {
 }
 
 /**
+ * Convert the repository's UTC-noon calendar-date storage value to its JSON
+ * business-date representation. This must not use the runtime timezone.
+ */
+export function toCalendarDateWire(input: string | Date): string {
+  const normalized = toUtcNoonDate(input)
+  return normalized.toISOString().slice(0, 10)
+}
+
+/**
  * 取得 UTC 日的起迄範圍。
  *
  * @example

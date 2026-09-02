@@ -24,14 +24,14 @@ export function buildDiaryAuthoringPayload(form: DiaryAuthoringForm): DiaryAutho
     execution: form.execution || undefined,
     reviewDueAt: form.reviewDueAt ? toUtcNoonDate(form.reviewDueAt).toISOString() : null,
     stockSymbols: form.stockSymbols,
-    date: toUtcNoonDate(form.date).toISOString(),
+    date: form.date,
     transactions: form.transactions.map((transaction) => ({
       ...(transaction.id ? { id: transaction.id } : {}),
       symbol: transaction.symbol.trim().toUpperCase(),
       type: transaction.type,
       quantity: finiteNumber(transaction.quantity, 'quantity'),
       price: finiteNumber(transaction.price, 'price'),
-      trade_date: apiDateTime(transaction.trade_date, 'trade_date'),
+      tradeDate: apiDateTime(transaction.trade_date, 'trade_date'),
       ...(transaction.notes ? { notes: transaction.notes } : {}),
       ...(transaction.strategy ? { strategy: transaction.strategy } : {}),
       ...(transaction.emotion ? { emotion: transaction.emotion } : {}),
@@ -39,8 +39,8 @@ export function buildDiaryAuthoringPayload(form: DiaryAuthoringForm): DiaryAutho
     alerts: form.alerts.map((alert) => ({
       ...(alert.id ? { id: alert.id } : {}),
       message: alert.message,
-      trigger_at: toUtcNoonDate(alert.trigger_at).toISOString(),
-      ...(alert.recurring_mode ? { recurring_mode: alert.recurring_mode } : {}),
+      triggerAt: toUtcNoonDate(alert.trigger_at).toISOString(),
+      ...(alert.recurring_mode ? { recurringMode: alert.recurring_mode } : {}),
     })),
   }
 }

@@ -42,7 +42,7 @@ export type DiaryAuthoringPayload = CreateDiaryRequest & {
     type: AuthoringTransactionType
     quantity: number
     price: number
-    trade_date: string
+    tradeDate: string
     notes?: string
     strategy?: string
     emotion?: string
@@ -50,7 +50,7 @@ export type DiaryAuthoringPayload = CreateDiaryRequest & {
   alerts: Array<{
     id?: string
     message: string
-    trigger_at: string
-    recurring_mode?: 'WEEK' | 'MONTH'
+    triggerAt: string
+    recurringMode?: 'WEEK' | 'MONTH'
   }>
 }
