@@ -1,6 +1,9 @@
 import { z } from 'zod'
-import type { SerializedId } from '../common/ids'
-import type { TradePlan, TradePlanStatus } from '~/types/trade-plan'
+import { calendarDateSchema, decimalStringSchema, serializedIdSchema, utcInstantSchema } from '../common/ids'
+import { REVIEW_OUTCOMES, REVIEW_STATUSES } from '../review'
+import { tradePlanStatusSchema } from '../trade-plan/status'
+import { alertDraftSchema } from '../alerts'
+import { DIARY_PAYLOAD_LIMITS } from './validation'
 
 export { DIARY_PAYLOAD_LIMITS } from './validation'
 
@@ -12,205 +15,162 @@ export const DEFAULT_TAGS = [
   { key: 'learning', labelKey: 'tags.learning', color: 'purple' },
   { key: 'mistake', labelKey: 'tags.mistake', color: 'orange' },
 ] as const
-
 export type TagKey = typeof DEFAULT_TAGS[number]['key']
 
 export const DIARY_SORT_FIELDS = ['date-desc', 'date-asc', 'title-asc', 'title-desc'] as const
 export type DiarySortField = typeof DIARY_SORT_FIELDS[number]
+export const DIARY_REVIEW_STATUSES = REVIEW_STATUSES
 
-export const DIARY_REVIEW_STATUSES = ['none', 'pending', 'reviewed'] as const
-
-const diaryListPageSchema = z.preprocess((value) => {
-  const page = Number(value)
-  return Number.isFinite(page) && page >= 1 ? Math.floor(page) : 1
-}, z.number().int().min(1).describe('Invalid values silently fall back to page 1.'))
-
-const diaryListLimitSchema = z.preprocess((value) => {
-  const limit = Number(value)
-  return Number.isFinite(limit) && limit >= 1 && limit <= 100 ? Math.floor(limit) : 20
-}, z.number().int().min(1).max(100).describe('Invalid values silently fall back to limit 20; maximum is 100.'))
-
-const diaryListSearchSchema = z.preprocess((value) => {
-  if (value === undefined || value === null) return undefined
-  const search = String(value).trim()
-  return search ? search.slice(0, 500) : undefined
-}, z.string().max(500).optional().describe('Trimmed and silently truncated to 500 characters.'))
-
-const diaryListSortSchema = z.preprocess((value) => {
-  return typeof value === 'string' && DIARY_SORT_FIELDS.includes(value as DiarySortField)
-    ? value
-    : undefined
-}, z.enum(DIARY_SORT_FIELDS).optional().describe('Whitelist; invalid values use the default date-desc ordering.'))
-
-const diaryListDateSchema = z.string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must use YYYY-MM-DD format')
-  .refine((value) => {
-    const parts = value.split('-').map(Number)
-    const year = parts[0]!
-    const month = parts[1]!
-    const day = parts[2]!
-    const date = new Date(Date.UTC(year, month - 1, day))
-    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
-  }, 'Date must be a valid calendar date')
-
-/** Canonical GET /api/diaries query contract. */
+/** Canonical GET /api/diaries query. Unknown keys, including removed `days`, are rejected. */
 export const diaryListParamsSchema = z.object({
-  page: diaryListPageSchema.optional().default(1),
-  limit: diaryListLimitSchema.optional().default(20),
-  search: diaryListSearchSchema,
-  sortBy: diaryListSortSchema,
-  dateFrom: diaryListDateSchema.optional(),
-  dateTo: diaryListDateSchema.optional(),
-  reviewStatus: z.enum(DIARY_REVIEW_STATUSES).optional().describe('Allowed vocabulary: none, pending, reviewed.'),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  search: z.string().trim().min(1).max(500).optional(),
+  sortBy: z.enum(DIARY_SORT_FIELDS).default('date-desc'),
+  dateFrom: calendarDateSchema.optional(),
+  dateTo: calendarDateSchema.optional(),
+  reviewStatus: z.enum(REVIEW_STATUSES).optional(),
+}).strict().superRefine((value, context) => {
+  if (value.dateFrom && value.dateTo && value.dateFrom > value.dateTo) {
+    context.addIssue({ code: 'custom', path: ['dateTo'], message: 'dateTo must be on or after dateFrom' })
+  }
 })
-
 export type DiaryListParams = z.infer<typeof diaryListParamsSchema>
 
-// ---- Request DTOs ----
+const nullableText = z.string().max(10_000).nullable().optional()
+const positiveDecimalInputSchema = z.union([
+  z.number().positive().finite(),
+  z.string().regex(/^\d+(?:\.\d+)?$/).refine(value => Number(value) > 0, 'Value must be greater than 0'),
+])
 
-export interface TransactionInput {
-  id?: string | number
-  symbol: string
-  type: 'BUY' | 'SELL'
-  quantity: number | string
-  price: number | string
-  tradeDate?: string
-  trade_date?: string
-  notes?: string | null
-  strategy?: string | null
-  emotion?: string | null
+export const transactionInputSchema = z.object({
+  id: serializedIdSchema.optional(),
+  symbol: z.string().trim().min(1).max(20).transform(value => value.toUpperCase()),
+  type: z.enum(['BUY', 'SELL']),
+  quantity: positiveDecimalInputSchema,
+  price: positiveDecimalInputSchema,
+  tradeDate: utcInstantSchema,
+  notes: nullableText,
+  strategy: z.string().max(100).nullable().optional(),
+  emotion: z.string().max(20).nullable().optional(),
+}).strict()
+
+export const alertInputSchema = alertDraftSchema.extend({
+  id: serializedIdSchema.optional(),
+}).strict()
+
+const diaryWriteFields = {
+  title: z.string().trim().min(1).max(DIARY_PAYLOAD_LIMITS.title),
+  content: z.string().min(1).max(DIARY_PAYLOAD_LIMITS.content),
+  tags: z.array(z.string().trim().min(1).max(100)).max(50).optional(),
+  date: calendarDateSchema.optional(),
+  transactions: z.array(transactionInputSchema).max(DIARY_PAYLOAD_LIMITS.transactions).optional(),
+  alerts: z.array(alertInputSchema).max(DIARY_PAYLOAD_LIMITS.alerts).optional(),
+  thesis: nullableText,
+  risk: nullableText,
+  execution: nullableText,
+  reviewDueAt: utcInstantSchema.nullable().optional(),
+  stockSymbols: z.array(z.string().trim().min(1).max(20).transform(value => value.toUpperCase())).max(50).optional(),
 }
 
-export interface AlertInput {
-  id?: bigint | string | number
-  message: string
-  triggerAt?: Date | string
-  trigger_at?: Date | string
-  recurringMode?: 'WEEK' | 'MONTH'
-  recurring_mode?: 'WEEK' | 'MONTH'
-}
+export const createDiaryRequestSchema = z.object({ ...diaryWriteFields, appendToToday: z.boolean().optional() }).strict()
+export const updateDiaryRequestSchema = z.object(diaryWriteFields).strict()
 
-export interface CreateDiaryRequest {
-  title: string
-  content?: string
-  tags?: string[]
-  date?: string
-  transactions?: TransactionInput[]
-  alerts?: AlertInput[]
-  thesis?: string
-  risk?: string
-  execution?: string
-  reviewDueAt?: string | null
-  stockSymbols?: string[]
-}
+export type TransactionInput = z.infer<typeof transactionInputSchema>
+export type AlertInput = z.infer<typeof alertInputSchema>
+export type CreateDiaryRequest = z.infer<typeof createDiaryRequestSchema>
+export type UpdateDiaryRequest = z.infer<typeof updateDiaryRequestSchema>
 
-export interface UpdateDiaryRequest {
-  title: string
-  content?: string
-  tags?: string[]
-  date?: string
-  transactions?: TransactionInput[]
-  alerts?: AlertInput[]
-  thesis?: string
-  risk?: string
-  execution?: string
-  reviewDueAt?: string | null
-  stockSymbols?: string[]
-}
+export const transactionResponseSchema = z.object({
+  id: serializedIdSchema,
+  diaryId: serializedIdSchema.optional(),
+  userId: serializedIdSchema.optional(),
+  symbol: z.string(),
+  type: z.enum(['BUY', 'SELL']),
+  quantity: decimalStringSchema,
+  price: decimalStringSchema,
+  tradeDate: utcInstantSchema,
+  notes: z.string().nullable().optional(),
+  strategy: z.string().nullable().optional(),
+  emotion: z.string().nullable().optional(),
+  createdAt: utcInstantSchema.optional(),
+}).strict()
 
-// ---- Wire response DTOs ----
+export const diaryAlertResponseSchema = z.object({
+  id: serializedIdSchema,
+  diaryId: serializedIdSchema.optional(),
+  message: z.string(),
+  triggerAt: utcInstantSchema,
+  isDismissed: z.boolean().optional(),
+  recurringMode: z.enum(['WEEK', 'MONTH']).nullable().optional(),
+  parentId: serializedIdSchema.nullable().optional(),
+  instanceNumber: z.number().int().nullable().optional(),
+  isPaused: z.boolean().optional(),
+  createdAt: utcInstantSchema.optional(),
+}).strict()
 
-export interface TransactionResponse {
-  id: SerializedId
-  diaryId?: SerializedId
-  userId?: SerializedId
-  symbol: string
-  type: 'BUY' | 'SELL'
-  quantity: string
-  price: string
-  tradeDate: string
-  notes?: string | null
-  strategy?: string | null
-  emotion?: string | null
-  createdAt?: string
-}
+export const linkedTradePlanResponseSchema = z.object({
+  id: serializedIdSchema,
+  symbol: z.string(),
+  setupType: z.string().nullable(),
+  entryPrice: decimalStringSchema.nullable(),
+  entryZoneLow: decimalStringSchema.nullable(),
+  entryZoneHigh: decimalStringSchema.nullable(),
+  stopLoss: decimalStringSchema.nullable(),
+  targetPrice: decimalStringSchema.nullable(),
+  maxPositionSize: decimalStringSchema.nullable(),
+  invalidationCondition: z.string().nullable(),
+  notes: z.string().nullable(),
+  status: tradePlanStatusSchema,
+}).strict()
 
-export interface DiaryAlertResponse {
-  id: SerializedId
-  diaryId?: SerializedId
-  message: string
-  triggerAt: string
-  isDismissed?: boolean
-  recurringMode?: 'WEEK' | 'MONTH' | string | null
-  parentId?: SerializedId | null
-  instanceNumber?: number | null
-  isPaused?: boolean
-  createdAt?: string
-}
+export const diaryResponseSchema = z.object({
+  id: serializedIdSchema,
+  userId: serializedIdSchema,
+  title: z.string(),
+  content: z.string().nullable(),
+  tags: z.array(z.string()),
+  tagsString: z.string().nullable(),
+  createdVia: z.enum(['WEB', 'API_KEY', 'TELEGRAM_BOT']),
+  createdByLabel: z.string().nullable(),
+  date: calendarDateSchema,
+  createdAt: utcInstantSchema,
+  updatedAt: utcInstantSchema,
+  transactions: z.array(transactionResponseSchema).optional(),
+  alerts: z.array(diaryAlertResponseSchema).optional(),
+  tradePlans: z.array(linkedTradePlanResponseSchema).optional(),
+  tradePlanSummary: z.object({
+    total: z.number().int().nonnegative(),
+    statuses: z.array(z.object({ status: tradePlanStatusSchema, count: z.number().int().positive() }).strict()),
+  }).strict().optional(),
+  thesis: z.string().nullable().optional(),
+  risk: z.string().nullable().optional(),
+  execution: z.string().nullable().optional(),
+  reviewDueAt: utcInstantSchema.nullable().optional(),
+  reviewStatus: z.enum(REVIEW_STATUSES).nullable().optional(),
+  reviewedAt: utcInstantSchema.nullable().optional(),
+  reviewOutcome: z.enum(REVIEW_OUTCOMES).nullable().optional(),
+  reviewSummary: z.string().nullable().optional(),
+  reviewLearning: z.string().nullable().optional(),
+  reviewAdjustment: z.string().nullable().optional(),
+  stockSymbols: z.array(z.string()),
+}).strict()
 
-export interface DiaryResponse {
-  id: SerializedId
-  userId: SerializedId
-  title: string
-  content: string | null
-  tags: string[]
-  tagsString: string | null
-  // TELEGRAM_BOT is retained for historical rows; new writes only use WEB/API_KEY.
-  createdVia: 'WEB' | 'API_KEY' | 'TELEGRAM_BOT'
-  createdByLabel: string | null
-  date: string
-  createdAt: string
-  updatedAt: string
-  transactions?: TransactionResponse[]
-  alerts?: DiaryAlertResponse[]
-  tradePlans?: TradePlan[]
-  tradePlanSummary?: {
-    total: number
-    statuses: Array<{ status: TradePlanStatus; count: number }>
-  }
-  thesis?: string | null
-  risk?: string | null
-  execution?: string | null
-  reviewDueAt?: string | null
-  reviewStatus?: import('../review').ReviewStatus | string | null
-  reviewedAt?: string | null
-  reviewOutcome?: import('../review').ReviewOutcome | string | null
-  reviewSummary?: string | null
-  reviewLearning?: string | null
-  reviewAdjustment?: string | null
-  stockSymbols: string[]
-  stockContexts?: Array<{ stock: { symbol: string } }>
-}
+export const diaryListResponseSchema = z.object({
+  data: z.array(diaryResponseSchema),
+  pagination: z.object({
+    page: z.number().int().min(1),
+    limit: z.number().int().min(1).max(100),
+    total: z.number().int().nonnegative(),
+    totalPages: z.number().int().nonnegative(),
+  }).strict(),
+}).strict()
 
-export interface DiaryListResponse {
-  data: DiaryResponse[]
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
-}
+export type TransactionResponse = z.infer<typeof transactionResponseSchema>
+export type DiaryAlertResponse = z.infer<typeof diaryAlertResponseSchema>
+export type DiaryResponse = z.infer<typeof diaryResponseSchema>
+export type DiaryListResponse = z.infer<typeof diaryListResponseSchema>
 
-/** @deprecated Use DiaryListResponse. */
-export type DiariesApiResponse = DiaryListResponse
-
-export interface DiaryActivityDay {
-  date: string
-  diaryId: SerializedId
-  alertCount: number
-  transactionCount: number
-}
-
-export interface PaginationResponse {
-  page: number
-  limit: number
-  total: number
-  totalPages: number
-}
-
-export interface DiaryGroup {
-  period: string
-  periodLabel: string
-  diaries: DiaryResponse[]
-}
+export interface DiaryActivityDay { date: string; diaryId: string; alertCount: number; transactionCount: number }
+export interface PaginationResponse { page: number; limit: number; total: number; totalPages: number }
+export interface DiaryGroup { period: string; periodLabel: string; diaries: DiaryResponse[] }

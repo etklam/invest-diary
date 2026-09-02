@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 /**
  * Stable error codes exposed by the API.
  *
@@ -50,6 +52,15 @@ export const ErrorCodes = {
   STOCK_NOTE_NOT_FOUND: 'STOCK_NOTE_NOT_FOUND',
   STOCK_NOTE_ACCESS_DENIED: 'STOCK_NOTE_ACCESS_DENIED',
 
+  // Investment / research resources
+  INVESTMENT_THESIS_NOT_FOUND: 'INVESTMENT_THESIS_NOT_FOUND',
+  INVESTMENT_THESIS_NOT_ACTIVE: 'INVESTMENT_THESIS_NOT_ACTIVE',
+  THESIS_REVIEW_NOT_FOUND: 'THESIS_REVIEW_NOT_FOUND',
+  TRADE_PLAN_NOT_FOUND: 'TRADE_PLAN_NOT_FOUND',
+  PRICE_ALERT_NOT_FOUND: 'PRICE_ALERT_NOT_FOUND',
+  WATCHLIST_ITEM_NOT_FOUND: 'WATCHLIST_ITEM_NOT_FOUND',
+  INVALID_CURSOR: 'INVALID_CURSOR',
+
   // Generic
   AUTH_FORBIDDEN: 'AUTH_FORBIDDEN',
   CSRF_FAILED: 'CSRF_FAILED',
@@ -98,3 +109,22 @@ export interface ApiErrorResponse {
   statusMessage: string
   data: ApiErrorData
 }
+
+/** Canonical H3 error payload used by generated clients and API docs. */
+export const apiErrorDetailSchema = z.object({
+  field: z.string().optional(),
+  message: z.string().optional(),
+  value: z.unknown().optional(),
+}).strict()
+
+export const apiErrorDataSchema = z.object({
+  code: z.enum(Object.values(ErrorCodes) as [ErrorCode, ...ErrorCode[]]),
+  details: z.array(apiErrorDetailSchema).nullable(),
+  requestId: z.string().min(1),
+}).strict()
+
+export const apiErrorResponseSchema = z.object({
+  statusCode: z.number().int().min(400).max(599),
+  statusMessage: z.string(),
+  data: apiErrorDataSchema,
+}).strict()
