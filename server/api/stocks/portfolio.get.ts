@@ -1,5 +1,8 @@
 import { logger } from '~/lib/logger'
-import type { PortfolioValuationResponse } from '~/lib/stocks-view'
+import {
+  toPortfolioValuationResponse,
+  type PortfolioValuationResponse,
+} from '~/lib/contracts/portfolio'
 import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
 import { loadValuedHoldings } from '~/server/utils/portfolio-read'
@@ -14,7 +17,7 @@ export default defineEventHandler(async (event): Promise<PortfolioValuationRespo
 
   try {
     const { holdings, valuation, quoteErrors, marketState } = await loadValuedHoldings(BigInt(user.id))
-    return { holdings, valuation, quoteErrors, marketState }
+    return toPortfolioValuationResponse({ holdings, valuation, quoteErrors, marketState })
   } catch (error) {
     handleApiError(error, log)
   }

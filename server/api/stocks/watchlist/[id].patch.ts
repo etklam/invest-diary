@@ -1,18 +1,10 @@
-import { z } from 'zod'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
 import { updateStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { Errors } from '~/lib/errors/factory'
-import { serialize } from '~/server/utils/serialize'
-
-const requestSchema = z.object({
-  status: z.enum(['WATCHING', 'ARCHIVED']).optional(),
-  sortOrder: z.number().int().min(0).max(10000).optional(),
-}).refine((value) => value.status !== undefined || value.sortOrder !== undefined, {
-  message: 'status or sortOrder is required',
-})
+import { stockWatchlistMutationResponseSchema, stockWatchlistUpdateRequestSchema } from '~/lib/contracts/stocks'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -20,7 +12,7 @@ export default defineEventHandler(async (event) => {
   try {
     const user = requireUser(event)
     const watchlistId = parsePositiveBigIntParam(event, 'id')
-    const payload = requestSchema.parse(await readBody(event))
+    const payload = stockWatchlistUpdateRequestSchema.parse(await readBody(event))
     const item = await updateStockWatchlistItem({
       userId: user.id,
       watchlistId,
@@ -29,11 +21,11 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!item) {
-      throw Errors.notFound('Watchlist item not found').toH3Error()
+      throw Errors.watchlistItemNotFound(String(watchlistId)).toH3Error()
     }
 
-    return serialize({
-      id: item.id,
+    return stockWatchlistMutationResponseSchema.parse({
+      id: String(item.id),
       symbol: item.stock.symbol,
       sortOrder: item.sortOrder,
       status: item.status,

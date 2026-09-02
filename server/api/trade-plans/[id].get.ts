@@ -1,7 +1,7 @@
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
+import { toTradePlanResponse } from '~/lib/contracts/trade-plan'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
 import { findTradePlanDetailForUser } from '~/server/utils/trade-plan-queries'
 
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     const tradePlanId = parsePositiveBigIntParam(event, 'id')
     const tradePlan = await findTradePlanDetailForUser(tradePlanId, BigInt(user.id))
 
-    return serialize(tradePlan)
+    return toTradePlanResponse(tradePlan)
   } catch (error) {
     handleApiError(error, log)
   }

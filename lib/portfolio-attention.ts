@@ -90,7 +90,7 @@ function isActiveHolding(holding: AttentionHolding): boolean {
 }
 
 function isOpenThesis(thesis: AttentionThesis): boolean {
-  return thesis.status !== 'archived'
+  return String(thesis.status ?? '').trim().toLowerCase() !== 'archived'
 }
 
 /**
@@ -141,7 +141,7 @@ export function evaluatePortfolioAttention(input: PortfolioAttentionInput): Port
     if (!symbol) continue
     const thesis = thesisBySymbol.get(symbol)
 
-    if (!thesis || thesis.status === 'draft') {
+    if (!thesis || String(thesis.status ?? '').trim().toLowerCase() === 'draft') {
       addItem(items, {
         id: `stock:${symbol}:missing_thesis`,
         reason: 'missing_thesis',
@@ -172,7 +172,7 @@ export function evaluatePortfolioAttention(input: PortfolioAttentionInput): Port
         })
       }
 
-      if (isOpenThesis(thesis) && thesis.latestOutcome === 'INVALIDATED') {
+      if (isOpenThesis(thesis) && String(thesis.latestOutcome ?? '').trim().toUpperCase() === 'INVALIDATED') {
         addItem(items, {
           id: `stock:${symbol}:invalidated_thesis_while_held`,
           reason: 'invalidated_thesis_while_held',
@@ -204,7 +204,7 @@ export function evaluatePortfolioAttention(input: PortfolioAttentionInput): Port
   }
 
   for (const review of input.diaryReviews ?? []) {
-    if (review.reviewStatus === 'reviewed') continue
+    if (String(review.reviewStatus ?? '').trim().toLowerCase() === 'reviewed') continue
     const dueAt = parseDate(review.reviewDueAt)
     if (!dueAt || dueAt.getTime() >= asOf.getTime()) continue
 

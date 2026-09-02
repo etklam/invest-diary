@@ -1,14 +1,8 @@
-import { z } from 'zod'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
-import { normalizeStockSymbol } from '~/lib/stocks/symbols'
 import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
-
-const requestSchema = z.object({
-  symbol: z.string().min(1).max(32).transform(normalizeStockSymbol),
-})
+import { stockWatchlistMutationResponseSchema, stockWatchlistCreateRequestSchema } from '~/lib/contracts/stocks'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
@@ -16,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const body = await readBody(event)
-    const payload = requestSchema.parse(body)
+    const payload = stockWatchlistCreateRequestSchema.parse(body)
 
     const item = await upsertStockWatchlistItem({
       userId: user.id,
@@ -24,8 +18,8 @@ export default defineEventHandler(async (event) => {
       status: 'WATCHING',
     })
 
-    return serialize({
-      id: item.id,
+    return stockWatchlistMutationResponseSchema.parse({
+      id: String(item.id),
       symbol: item.stock.symbol,
       sortOrder: item.sortOrder,
       status: item.status,

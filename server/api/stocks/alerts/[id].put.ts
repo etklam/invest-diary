@@ -1,27 +1,22 @@
+/**
+ * Update an owned stock price alert.
+ */
+
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { handleApiError } from '~/server/utils/error-handler'
-import { updateStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
 import { parsePositiveBigIntParam } from '~/server/utils/validation'
-import { Errors } from '~/lib/errors/factory'
+import { toPriceAlertResponse } from '~/lib/contracts/alerts'
+import { updatePriceAlert } from '~/server/utils/price-alert-queries'
 
 export default defineEventHandler(async (event) => {
   const log = logger.stocks.withRequestId(event.context.requestId)
 
   try {
     const user = requireUser(event)
-    const watchlistId = parsePositiveBigIntParam(event, 'id')
-    const item = await updateStockWatchlistItem({
-      userId: user.id,
-      watchlistId,
-      status: 'ARCHIVED',
-    })
-
-    if (!item) {
-      throw Errors.watchlistItemNotFound(String(watchlistId)).toH3Error()
-    }
-
-    return { success: true }
+    const alertId = parsePositiveBigIntParam(event, 'id')
+    const updated = await updatePriceAlert(alertId, BigInt(user.id), await readBody(event))
+    return toPriceAlertResponse(updated)
   } catch (error) {
     handleApiError(error, log)
   }

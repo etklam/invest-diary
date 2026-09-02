@@ -1,16 +1,12 @@
-import { z } from 'zod'
 import { requireUser } from '~/server/utils/auth'
 import { listUserTimeline, toTimelineResponseItem } from '~/server/utils/stock-timeline-queries'
-
-const querySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(200).default(100),
-})
+import { stockTimelineListResponseSchema, stockTimelineQuerySchema } from '~/lib/contracts/stocks'
 
 export default defineEventHandler(async (event) => {
   const user = requireUser(event)
-  const query = querySchema.parse(getQuery(event))
+  const query = stockTimelineQuerySchema.parse(getQuery(event))
   const records = await listUserTimeline(user.id, query.limit)
-  return {
+  return stockTimelineListResponseSchema.parse({
     records: records.map(toTimelineResponseItem),
-  }
+  })
 })

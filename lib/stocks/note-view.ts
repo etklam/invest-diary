@@ -3,6 +3,7 @@ import type {
 } from '~/types/partner'
 import type {
   StockNoteResponse,
+  StockNoteListItem,
   StockNoteView,
   StockNotesResponse,
   StockNotesViewResponse,
@@ -12,8 +13,8 @@ import type {
  * Converts the backwards-compatible API response into the one client contract
  * consumed by stock-note UI components.
  */
-export function toStockNoteView(note: StockNoteResponse): StockNoteView {
-  const ownership = note.isOwnedByViewer === false ? 'partner' : 'self'
+export function toStockNoteView(note: StockNoteResponse | StockNoteListItem): StockNoteView {
+  const ownership = ('isOwnedByViewer' in note && note.isOwnedByViewer === false) ? 'partner' : 'self'
   const authorKind = note.createdVia === 'AGENT' ? 'agent' : 'user'
 
   return {
@@ -35,7 +36,7 @@ export function toStockNoteView(note: StockNoteResponse): StockNoteView {
 export function toStockNotesView(response: StockNotesResponse): StockNotesViewResponse {
   return {
     ...response,
-    notes: response.notes.map(toStockNoteView),
+    data: response.data.map(toStockNoteView),
   }
 }
 

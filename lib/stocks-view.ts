@@ -1,13 +1,11 @@
-export interface HoldingViewInput {
-  symbol: string
-  quantity: number
-  avgCost: number
-  totalCost: number
-  price?: number
-  dayChange?: number
-  dayChangePercent?: number
-  quoteAsOf?: string
-}
+import type {
+  PortfolioAggregations,
+  PortfolioHolding,
+} from '~/lib/contracts/portfolio'
+
+export type { PortfolioAggregations, PortfolioValuationResponse } from '~/lib/contracts/portfolio'
+
+export type HoldingViewInput = PortfolioHolding
 
 export interface HoldingView extends HoldingViewInput {
   marketValue: number | null
@@ -20,36 +18,7 @@ export interface HoldingView extends HoldingViewInput {
 /**
  * Portfolio-level aggregations computed from holdings
  */
-export interface PortfolioAggregations {
-  totalHoldings: number
-  totalCost: number
-  currentMarketValue: number | null
-  unrealizedAmount: number | null
-  unrealizedPct: number | null
-  totalDayChange: number | null
-  totalDayChangePercent: number | null
-  largestPositionPct: number | null
-  top3ConcentrationPct: number | null
-  activePositionCount: number
-  concentrationWarning: boolean
-  largestPositionSymbol: string | null
-  pricedPositionCount: number
-  unpricedPositionCount: number
-  pricedCostBasis: number
-  unpricedCostBasis: number
-  quoteCoveragePct: number
-  valuationAsOf: string | null
-  staleQuoteCount: number
-  valuationStatus: 'empty' | 'complete' | 'partial' | 'unavailable'
-  unsupportedMetrics: readonly ['ytdReturn', 'realCashPercentage', 'sectorConcentration']
-}
-
-export interface PortfolioValuationResponse {
-  holdings: HoldingViewInput[]
-  valuation: PortfolioAggregations
-  quoteErrors: string[]
-  marketState: string | null
-}
+export type { PortfolioHolding }
 
 export const hasFiniteQuote = (holding: HoldingViewInput) =>
   typeof holding.price === 'number' && Number.isFinite(holding.price) && holding.price >= 0

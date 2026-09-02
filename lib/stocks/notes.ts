@@ -1,7 +1,11 @@
 import prisma from '~/lib/prisma'
 import { upsertStockWatchlistItem } from '~/server/utils/stock-watchlist-queries'
-import type { StockNoteCreatedVia, StockNoteResponse } from '~/types/stock-note'
-import { z } from 'zod'
+import {
+  stockNoteCreateRequestSchema,
+  toStockNoteContractResponse,
+  type StockNoteResponse,
+} from '~/lib/contracts/stocks'
+import type { StockNoteCreatedVia } from '~/types/stock-note'
 
 export interface CreateStockNoteInput {
   symbol: string
@@ -24,11 +28,7 @@ export interface UpdateStockNoteInput {
   date?: string
 }
 
-export const requestSchema = z.object({
-  title: z.string().min(1).max(255),
-  content: z.string().min(1).max(50000),
-  date: z.string().datetime().optional(),
-})
+export const requestSchema = stockNoteCreateRequestSchema
 
 export async function createStockNote(userId: bigint, input: CreateStockNoteInput) {
   const { stock } = await upsertStockWatchlistItem({
@@ -144,16 +144,5 @@ export function toStockNoteResponse(item: {
   updatedAt: Date
   stock: { symbol: string; name: string | null }
 }): Omit<StockNoteResponse, 'isOwnedByViewer'> {
-  return {
-    id: item.id.toString(),
-    symbol: item.stock.symbol,
-    name: item.stock.name,
-    title: item.title,
-    content: item.content,
-    date: item.date.toISOString(),
-    createdVia: item.createdVia,
-    createdByLabel: item.createdByLabel,
-    createdAt: item.createdAt.toISOString(),
-    updatedAt: item.updatedAt.toISOString(),
-  }
+  return toStockNoteContractResponse(item)
 }

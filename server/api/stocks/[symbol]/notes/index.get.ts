@@ -5,26 +5,24 @@ import { listStockNotes, toStockNoteResponse } from '~/lib/stocks/notes'
 import { normalizeStockSymbol, parseSymbolParam } from '~/lib/stocks/symbols'
 import { handleApiError } from '~/server/utils/error-handler'
 import { resolveSharedStockNotesOwner } from '~/server/utils/partner'
-import { serialize } from '~/server/utils/serialize'
 import type { StockNotesResponse } from '~/types/stock-note'
+import { stockNoteListResponseSchema, stockNoteListParamsSchema, stockSymbolSchema } from '~/lib/contracts/stocks'
 
 export default defineEventHandler(async (event): Promise<StockNotesResponse> => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   try {
-    const symbol = normalizeStockSymbol(parseSymbolParam(event) ?? '')
-    const query = getQuery(event)
-    const page = Math.max(1, parseInt(String(query.page || '1'), 10) || 1)
-    const limit = Math.min(100, Math.max(1, parseInt(String(query.limit || '20'), 10) || 20))
-    const partnerId = query.partnerId ? String(query.partnerId) : undefined
-    const createdVia = !partnerId && (query.createdVia === 'USER' || query.createdVia === 'AGENT')
-      ? query.createdVia as 'USER' | 'AGENT'
-      : undefined
+    const symbol = normalizeStockSymbol(stockSymbolSchema.parse(parseSymbolParam(event) ?? ''))
+    const query = stockNoteListParamsSchema.parse(getQuery(event))
+    const { page, limit, partnerId, createdVia } = query
 
     const stock = await prisma.stock.findUnique({ where: { symbol }, select: { id: true } })
     if (!stock) {
-      return serialize({ notes: [], total: 0, page, limit })
+      return stockNoteListResponseSchema.parse({
+        data: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      })
     }
 
     let targetUserId = BigInt(user.id)
@@ -36,14 +34,17 @@ export default defineEventHandler(async (event): Promise<StockNotesResponse> => 
     }
 
     const result = await listStockNotes(targetUserId, BigInt(stock.id), { page, limit, createdVia })
-    return serialize({
-      notes: result.notes.map((n: Parameters<typeof toStockNoteResponse>[0]) => ({
+    return stockNoteListResponseSchema.parse({
+      data: result.notes.map((n: Parameters<typeof toStockNoteResponse>[0]) => ({
         ...toStockNoteResponse(n),
         isOwnedByViewer,
       })),
-      total: result.total,
-      page: result.page,
-      limit: result.limit,
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.total === 0 ? 0 : Math.ceil(result.total / result.limit),
+      },
     })
   } catch (error) {
     handleApiError(error, log)

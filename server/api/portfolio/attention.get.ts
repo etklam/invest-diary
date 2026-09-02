@@ -1,4 +1,9 @@
 import prisma from '~/lib/prisma'
+import {
+  portfolioAttentionQuerySchema,
+  toPortfolioAttentionResponse,
+  type PortfolioAttentionResponse,
+} from '~/lib/contracts/portfolio'
 import { evaluatePortfolioAttention } from '~/lib/portfolio-attention'
 import { concentration } from '~/lib/stocks-view'
 import { requireUser } from '~/server/utils/auth'
@@ -7,7 +12,6 @@ import { logger } from '~/lib/logger'
 import { loadValuedHoldings } from '~/server/utils/portfolio-read'
 import { listCurrentThesisProjections } from '~/server/utils/investment-thesis-queries'
 import { serialize } from '~/server/utils/serialize'
-import type { PortfolioAttentionResponse } from '~/types/portfolio-attention'
 
 const MAX_ITEMS = 50
 type AttentionDiaryRow = {
@@ -22,6 +26,7 @@ export default defineEventHandler(async (event): Promise<PortfolioAttentionRespo
   const log = logger.stocks.withRequestId(event.context.requestId)
   try {
     const user = requireUser(event)
+    portfolioAttentionQuerySchema.parse(getQuery(event) ?? {})
     const userId = BigInt(user.id)
     const asOf = new Date()
     const { holdings, pricedHoldings, valuation } = await loadValuedHoldings(userId)
@@ -30,7 +35,7 @@ export default defineEventHandler(async (event): Promise<PortfolioAttentionRespo
     const concentrationBySymbol = concentration(pricedHoldings, { basis: 'market_value' })
 
     const diaryReviews = await prisma.diary.findMany({
-      where: { userId, reviewStatus: { not: 'reviewed' }, reviewDueAt: { not: null } },
+      where: { userId, reviewStatus: { not: 'REVIEWED' }, reviewDueAt: { not: null } },
       orderBy: [{ reviewDueAt: 'asc' }, { id: 'asc' }],
       take: 100,
       select: {
@@ -61,11 +66,11 @@ export default defineEventHandler(async (event): Promise<PortfolioAttentionRespo
         id: String(review.id),
         title: review.title,
         reviewDueAt: review.reviewDueAt,
-        reviewStatus: review.reviewStatus,
+        reviewStatus: String(review.reviewStatus ?? '').toLowerCase(),
         symbol: review.stockContexts[0]?.stock.symbol ?? null,
       })),
     })
-    return serialize({
+    return toPortfolioAttentionResponse(serialize({
       items,
       asOf: asOf.toISOString(),
       coverage: {
@@ -74,7 +79,7 @@ export default defineEventHandler(async (event): Promise<PortfolioAttentionRespo
         priced: valuation.pricedPositionCount,
         total: valuation.totalHoldings,
       },
-    })
+    }))
   } catch (error) {
     handleApiError(error, log)
   }

@@ -1,28 +1,24 @@
-import { z } from 'zod'
 import { logger } from '~/lib/logger'
 import { requireUser } from '~/server/utils/auth'
 import { getStockNoteById, updateStockNote, toStockNoteResponse } from '~/lib/stocks/notes'
 import { Errors } from '~/lib/errors/factory'
 import { handleApiError } from '~/server/utils/error-handler'
-import { serialize } from '~/server/utils/serialize'
+import { stockNoteUpdateRequestSchema, stockSymbolSchema } from '~/lib/contracts/stocks'
 import type { StockNoteResponse } from '~/types/stock-note'
-
-const requestSchema = z.object({
-  title: z.string().min(1).max(255).optional(),
-  content: z.string().min(1).max(50000).optional(),
-  date: z.string().datetime().optional(),
-})
+import { parsePositiveBigIntParam } from '~/server/utils/validation'
+import { parseSymbolParam } from '~/lib/stocks/symbols'
 
 export default defineEventHandler(async (event): Promise<StockNoteResponse> => {
   const log = logger.stocks.withRequestId(event.context.requestId)
   const user = requireUser(event)
 
   try {
-    const noteId = BigInt(String(event.context.params?.id ?? '0'))
+    const noteId = parsePositiveBigIntParam(event, 'id')
+    const symbol = stockSymbolSchema.parse(parseSymbolParam(event) ?? '')
 
     // Verify ownership and type
     const existing = await getStockNoteById(noteId, BigInt(user.id))
-    if (!existing) {
+    if (!existing || stockSymbolSchema.parse(existing.stock.symbol) !== symbol) {
       throw Errors.stockNoteNotFound().toH3Error()
     }
     if (existing.createdVia !== 'USER') {
@@ -30,14 +26,14 @@ export default defineEventHandler(async (event): Promise<StockNoteResponse> => {
     }
 
     const body = await readBody(event)
-    const payload = requestSchema.parse(body)
+    const payload = stockNoteUpdateRequestSchema.parse(body)
 
     const updated = await updateStockNote(noteId, BigInt(user.id), payload)
     if (!updated) {
       throw Errors.stockNoteNotFound().toH3Error()
     }
 
-    return serialize(toStockNoteResponse(updated))
+    return toStockNoteResponse(updated)
   } catch (error) {
     handleApiError(error, log)
   }

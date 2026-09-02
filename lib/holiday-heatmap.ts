@@ -12,11 +12,10 @@ export const toDateKeyInTimezone = (date: Date | string, timezone: string): stri
   return getUserYmdInTimezone(date, timezone)
 }
 
-export const buildDailyActivityMap = (diaries: DiaryResponse[], timezone: string): Set<string> => {
+export const buildDailyActivityMap = (diaries: DiaryResponse[], _timezone: string): Set<string> => {
   const activeDays = new Set<string>()
   diaries.forEach((diary) => {
-    const key = toDateKeyInTimezone(diary.date, timezone)
-    activeDays.add(key)
+    activeDays.add(diary.date)
   })
   return activeDays
 }

@@ -14,36 +14,30 @@
  */
 
 import prisma from '~/lib/prisma'
+import {
+  marketRotationMonitorQuerySchema,
+  toMarketRotationMonitorResponse,
+} from '~/lib/contracts/market'
 import { Errors } from '~/lib/errors/factory'
 import { serialize } from '~/server/utils/serialize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
-import { isRankScope, rankScopes } from '~/lib/market-rotation/types'
 import { getRotationDashboardContext } from '~/server/utils/market-rotation-monitor-queries'
-
-const DEFAULT_SCOPE = 'sectors'
 
 export default defineEventHandler(async (event) => {
   const log = logger.api.withRequestId(event.context.requestId)
 
   try {
-    const query = getQuery(event) || {}
-    const scopeRaw = String(query.scope ?? DEFAULT_SCOPE)
+    const { scope } = marketRotationMonitorQuerySchema.parse(getQuery(event) ?? {})
 
-    if (!isRankScope(scopeRaw)) {
-      throw Errors.validationError([
-        { field: 'scope', message: `Must be one of: ${rankScopes.join(', ')}` },
-      ]).toH3Error()
-    }
-
-    const context = await getRotationDashboardContext(prisma, { scope: scopeRaw })
+    const context = await getRotationDashboardContext(prisma, { scope })
 
     if (!context.payload) {
-      log.warn('No rotation snapshots found', { scope: scopeRaw })
-      throw Errors.notFound(`No rotation snapshots found for scope "${scopeRaw}". Run the batch job first.`).toH3Error()
+      log.warn('No rotation snapshots found', { scope })
+      throw Errors.notFound(`No rotation snapshots found for scope "${scope}". Run the batch job first.`).toH3Error()
     }
 
-    return serialize(context.payload)
+    return toMarketRotationMonitorResponse(serialize(context.payload))
   }
   catch (error) {
     handleApiError(error, log)
