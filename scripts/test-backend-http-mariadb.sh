@@ -2,27 +2,11 @@
 set -euo pipefail
 
 container_name="backend-http-test-$$"
-created_network=""
 
 cleanup() {
   docker rm -f "${container_name}" >/dev/null 2>&1 || true
-  if [[ -n "${created_network}" ]]; then
-    docker network rm "${created_network}" >/dev/null 2>&1 || true
-  fi
 }
 trap cleanup EXIT INT TERM
-
-start_mariadb() {
-  local mode="$1" # "net" or "publish"
-  local args=(--rm --detach --name "${container_name}")
-  if [[ "${mode}" == "net" ]]; then
-    args+=(--network "${created_network}")
-  else
-    args+=(--publish 127.0.0.1::3306)
-  fi
-  args+=(--env MARIADB_ROOT_PASSWORD=test-password --env MARIADB_DATABASE=backend_http_test)
-  docker run "${args[@]}" mariadb:11.4 >/dev/null
-}
 
 wait_ready() {
   local _attempt
@@ -36,28 +20,37 @@ wait_ready() {
 }
 
 # Under a DooD CI runner this script executes inside a sibling job container:
-# a port published on the host's loopback is unreachable from there. Try a
-# user-defined bridge network where the sibling is addressable by container
-# name; if the TCP probe fails (script on a plain host, e.g. a dev laptop),
-# fall back to the loopback publish + dynamic port mapping.
+# a port published on the host's loopback is unreachable from there, and a
+# user-defined network is unreachable too because the job container itself is
+# not attached to it. Sharing the job container's network namespace
+# (--network container:<id>) makes 127.0.0.1:3306 work directly. If that is
+# not possible (script on a plain host, e.g. a dev laptop), fall back to the
+# loopback publish + dynamic port mapping.
 db_host=""
 db_port=""
 
-created_network="backend-http-net-$$"
-if docker network create "${created_network}" >/dev/null 2>&1; then
-  start_mariadb net
-  if wait_ready && node -e "const net=require('node:net');const s=net.connect(3306,'${container_name}',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));setTimeout(()=>process.exit(1),5000)" 2>/dev/null; then
-    db_host="${container_name}"
+job_container_id="$(hostname)"
+if docker inspect "${job_container_id}" >/dev/null 2>&1; then
+  docker run --rm --detach --name "${container_name}" \
+    --network "container:${job_container_id}" \
+    --env MARIADB_ROOT_PASSWORD=test-password \
+    --env MARIADB_DATABASE=backend_http_test \
+    mariadb:11.4 >/dev/null
+  if wait_ready && node -e "const net=require('node:net');const s=net.connect(3306,'127.0.0.1',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));setTimeout(()=>process.exit(1),5000)" 2>/dev/null; then
+    db_host="127.0.0.1"
     db_port="3306"
   else
     docker rm -f "${container_name}" >/dev/null 2>&1 || true
-    docker network rm "${created_network}" >/dev/null 2>&1 || true
-    created_network=""
   fi
 fi
 
 if [[ -z "${db_host}" ]]; then
-  start_mariadb publish
+  docker run --rm --detach \
+    --name "${container_name}" \
+    --publish 127.0.0.1::3306 \
+    --env MARIADB_ROOT_PASSWORD=test-password \
+    --env MARIADB_DATABASE=backend_http_test \
+    mariadb:11.4 >/dev/null
   wait_ready || { echo "Disposable MariaDB did not become ready" >&2; exit 1; }
   db_host="127.0.0.1"
   mapped_port="$(docker port "${container_name}" 3306/tcp | awk -F: 'NR == 1 { print $NF }')"
