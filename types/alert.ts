@@ -1,4 +1,5 @@
 import type { SerializedId } from './common'
+import type { AlertResponse, AlertRecurringMode } from '~/lib/contracts/alerts'
 
 export interface AlertDiaryReference {
   id: SerializedId
@@ -11,16 +12,14 @@ export interface AlertItem {
   message: string
   triggerAt: string
   isDismissed: boolean
-  recurringMode?: string | null
+  recurringMode?: AlertRecurringMode | null
   instanceNumber?: number | null
   createdAt?: string
   diary?: AlertDiaryReference
 }
 
 /** HTTP alerts include the persisted creation timestamp. */
-export interface AlertApiResponse extends Omit<AlertItem, 'createdAt'> {
-  createdAt: string
-}
+export type AlertApiResponse = AlertResponse
 
 /** WebSocket notifications contain the subset needed to display an alert. */
 export type AlertPayload = Pick<AlertItem, 'id' | 'message' | 'triggerAt' | 'diary'>
@@ -38,7 +37,7 @@ interface AlertResponseLike {
   instance_number?: number | null
   createdAt?: string | Date
   created_at?: string | Date
-  diary?: AlertDiaryReference
+  diary?: AlertDiaryReference | null
 }
 
 const toIsoString = (value: string | Date | undefined): string | undefined => {
@@ -62,7 +61,9 @@ export function normalizeAlert(alert: AlertResponseLike): AlertItem {
     message: alert.message,
     triggerAt,
     isDismissed: alert.isDismissed ?? alert.is_dismissed ?? false,
-    recurringMode: alert.recurringMode ?? alert.recurring_mode,
+    recurringMode: [alert.recurringMode ?? alert.recurring_mode].find(
+      value => value === 'WEEK' || value === 'MONTH',
+    ) as AlertItem['recurringMode'] ?? null,
     instanceNumber: alert.instanceNumber ?? alert.instance_number,
     createdAt: toIsoString(alert.createdAt ?? alert.created_at),
     diary: alert.diary
