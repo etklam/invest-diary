@@ -20,13 +20,13 @@ describe('server/utils/auth cookies', () => {
       event,
       'access-token',
       'access-token-value',
-      expect.objectContaining({ maxAge: 60 * 60 })
+      expect.objectContaining({ httpOnly: true, sameSite: 'strict', maxAge: 60 * 60, path: '/' })
     )
     expect(mockSetCookie).toHaveBeenCalledWith(
       event,
       'refresh-token',
       'refresh-token-value',
-      expect.objectContaining({ maxAge: 60 * 60 * 24 * 30 })
+      expect.objectContaining({ httpOnly: true, sameSite: 'strict', maxAge: 60 * 60 * 24 * 30, path: '/' })
     )
   })
 

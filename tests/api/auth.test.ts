@@ -171,6 +171,62 @@ describe('Auth API', () => {
       expect(mockRateLimitersAuthLoginIdentity).toHaveBeenCalledWith('test@example.com')
     })
 
+    it('keeps the login cookie session authenticated across a hard refresh request', async () => {
+      const mockUser = {
+        id: 1n,
+        email: 'hard-refresh@example.com',
+        password: 'hashed-password',
+        name: 'Hard Refresh User',
+        role: 'USER',
+        tokenVersion: 0,
+        expectedMonthlyTrades: 10,
+        expectedProfit: 1000,
+        expectedAvgHolding: 5,
+        timezone: 'Asia/Taipei',
+      }
+      const browserCookies: Record<string, string> = {}
+
+      mockUserFindUnique.mockResolvedValue(mockUser)
+      mockBcryptCompare.mockResolvedValue(true)
+      mockReadBody.mockResolvedValue({
+        email: mockUser.email,
+        password: 'correctPassword',
+      })
+      mockSignAccessToken.mockResolvedValue('login-access-token')
+      mockSignRefreshToken.mockResolvedValue('login-refresh-token')
+      mockSetCookie.mockImplementation((_event, name: string, value: string) => {
+        browserCookies[name] = value
+      })
+
+      const { default: login } = await import('~/server/api/auth/login.post')
+      await login({ context: {} } as any)
+
+      expect(browserCookies).toEqual({
+        'access-token': 'login-access-token',
+        'refresh-token': 'login-refresh-token',
+      })
+
+      mockGetCookie.mockImplementation((_event, name: string) => browserCookies[name] ?? null)
+      mockVerifyToken.mockResolvedValue({
+        userId: '1',
+        email: mockUser.email,
+        role: mockUser.role,
+        tokenVersion: 0,
+        type: 'access',
+      })
+      ;(global.getRequestURL as any).mockReturnValue({ pathname: '/api/auth/me' })
+
+      const { default: authMiddleware } = await import('~/server/middleware/auth')
+      const hardRefreshRequest = { context: {} } as any
+      await authMiddleware(hardRefreshRequest)
+
+      expect(hardRefreshRequest.context.user).toEqual({
+        id: '1',
+        email: mockUser.email,
+        role: mockUser.role,
+      })
+    })
+
     it('should reject invalid email format', async () => {
       mockReadBody.mockResolvedValue({
         email: 'invalid-email',
@@ -536,6 +592,9 @@ describe('Auth API', () => {
       mockRefreshTokenFindUnique.mockResolvedValue({
         token: sha256Hex('valid-refresh-token'),
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        revokedAt: null,
+        clientType: 'WEB',
+        familyId: 'web-family-1',
         user: {
           id: 1n,
           email: 'test@example.com',
@@ -562,6 +621,35 @@ describe('Auth API', () => {
         'new-access-token',
         expect.objectContaining({ maxAge: 60 * 60 })
       )
+    })
+
+    it('does not restore a browser session after logout revokes its refresh token', async () => {
+      const { default: logout } = await import('~/server/api/auth/logout.post')
+      mockGetCookie.mockReturnValueOnce('logout-refresh-token')
+
+      await logout({
+        context: {
+          auth: { transport: 'cookie' },
+          user: { id: '1', email: 'test@example.com', role: 'USER' },
+        },
+      } as any)
+
+      expect(mockDeleteStoredRefreshToken).toHaveBeenCalledWith('logout-refresh-token', 1n)
+
+      mockGetCookie.mockReturnValueOnce('logout-refresh-token')
+      mockVerifyToken.mockResolvedValueOnce({
+        userId: '1',
+        email: 'test@example.com',
+        role: 'USER',
+        tokenVersion: 0,
+        type: 'refresh',
+      })
+      // The row removed by logout is no longer available to refresh.
+      mockRefreshTokenFindUnique.mockResolvedValueOnce(null)
+
+      const { default: refresh } = await import('~/server/api/auth/refresh.post')
+      await expect(refresh({ context: {} } as any)).rejects.toMatchObject({ statusCode: 401 })
+      expect(mockSetCookie).not.toHaveBeenCalled()
     })
   })
 })

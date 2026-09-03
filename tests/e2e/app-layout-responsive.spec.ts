@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { authenticate } from './helpers/auth'
 
-const viewports = [320, 375, 390, 768, 1024, 1279, 1280, 1440]
+const viewports = [320, 375, 390, 393, 430, 768, 1024, 1279, 1280, 1440]
 const routes = [
   { path: '/timeline', width: 'app' },
   { path: '/diaries', width: 'app' },

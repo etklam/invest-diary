@@ -337,6 +337,8 @@
   html,
   body,
   #__nuxt {
+    max-width: 100%;
+    min-width: 0;
     background-color: var(--color-background);
     color: var(--color-text);
     font-family: var(--font-body);

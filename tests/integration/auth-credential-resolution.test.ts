@@ -242,6 +242,21 @@ describe('fail-closed credential resolution', () => {
     expect(result).toMatchObject({ ok: true })
     expect(result.data.email).toBe(bearerUser.email)
   })
+
+  it('does not let the refresh endpoint fall back to a browser cookie beside an explicit credential', async () => {
+    setPath('/api/auth/refresh')
+    setHeaders({ authorization: 'Bearer bearer-access-token' })
+    mockAccessAuth.mockResolvedValueOnce(bearerUser)
+    mockGetCookie.mockReturnValueOnce('cookie-access').mockReturnValueOnce('cookie-refresh')
+
+    const { default: auth } = await import('~/server/middleware/auth')
+    const request = event()
+    await auth(request)
+
+    const { default: refresh } = await import('~/server/api/auth/refresh.post')
+    await expect(refresh(request)).rejects.toMatchObject({ statusCode: 401 })
+    expect(mockRefreshAuth).not.toHaveBeenCalled()
+  })
 })
 
 describe('auth and csrf middleware ordering', () => {

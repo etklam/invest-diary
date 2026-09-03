@@ -4,11 +4,15 @@ import { logger } from '~/lib/logger'
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
-  // Get the refresh token from cookie
-  const refreshToken = getCookie(event, 'refresh-token')
+  const transport = event.context.auth?.transport
+  // An explicit Bearer/API-key request must not mutate a browser session that
+  // happened to be sent alongside it. Direct handler calls without middleware
+  // context retain the legacy cookie logout behavior.
+  const isCookieSession = transport === undefined || transport === 'cookie'
+  const refreshToken = isCookieSession ? getCookie(event, 'refresh-token') : undefined
 
   // Delete refresh token from database if it exists
-  if (refreshToken && event.context.user) {
+  if (isCookieSession && refreshToken && event.context.user) {
     try {
       await deleteStoredRefreshToken(refreshToken, BigInt(event.context.user.id))
     } catch (error) {
@@ -20,8 +24,9 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Clear all auth cookies (both old and new)
-  clearAuthCookies(event)
+  // Clear browser cookies only for cookie/anonymous logout. Explicit clients
+  // own their bearer credentials and must not clear another session's jar.
+  if (isCookieSession) clearAuthCookies(event)
 
   return {
     ok: true

@@ -4,14 +4,12 @@ import { ErrorCodes } from '~/lib/contracts/common/error-codes'
 
 describe('useAuthRecovery', () => {
   const user = ref<any>({ id: '1' })
-  const refreshAccessToken = vi.fn()
 
   beforeEach(() => {
     vi.resetModules()
     const push = vi.fn()
     vi.stubGlobal('useAuth', () => ({
       user,
-      refreshAccessToken,
     }))
     vi.stubGlobal('useRoute', () => ({
       meta: {
@@ -22,7 +20,6 @@ describe('useAuthRecovery', () => {
     vi.stubGlobal('navigateTo', vi.fn())
 
     user.value = { id: '1' }
-    refreshAccessToken.mockReset()
   })
 
   afterEach(() => {
@@ -30,9 +27,7 @@ describe('useAuthRecovery', () => {
     vi.clearAllMocks()
   })
 
-  it('retries once after refreshing a recoverable auth session error', async () => {
-    refreshAccessToken.mockResolvedValue(true)
-
+  it('treats a server-resolved auth session error as terminal', async () => {
     const operation = vi.fn()
       .mockRejectedValueOnce({
         statusCode: 401,
@@ -45,14 +40,13 @@ describe('useAuthRecovery', () => {
     const { useAuthRecovery } = await import('~/composables/useAuthRecovery')
     const { runWithAuthRecovery } = useAuthRecovery()
 
-    await expect(runWithAuthRecovery(operation)).resolves.toBe('ok')
-    expect(refreshAccessToken).toHaveBeenCalledTimes(1)
-    expect(operation).toHaveBeenCalledTimes(2)
-    expect(globalThis.navigateTo).not.toHaveBeenCalled()
+    await expect(runWithAuthRecovery(operation)).rejects.toMatchObject({ statusCode: 401 })
+    expect(operation).toHaveBeenCalledTimes(1)
+    expect(user.value).toBeNull()
+    expect(globalThis.useRouter().push).toHaveBeenCalledWith('/auth/login')
   })
 
-  it('clears auth state and redirects when session recovery fails', async () => {
-    refreshAccessToken.mockResolvedValue(false)
+  it('treats every auth session error as terminal', async () => {
     const error = {
       statusCode: 401,
       data: {
@@ -82,7 +76,6 @@ describe('useAuthRecovery', () => {
     const { runWithAuthRecovery } = useAuthRecovery()
 
     await expect(runWithAuthRecovery(operation)).rejects.toBe(error)
-    expect(refreshAccessToken).not.toHaveBeenCalled()
     expect(user.value).toEqual({ id: '1' })
     expect(globalThis.navigateTo).not.toHaveBeenCalled()
   })
@@ -94,7 +87,6 @@ describe('useAuthRecovery', () => {
       },
     }
     const useRouteMock = vi.fn(() => route)
-    refreshAccessToken.mockResolvedValue(false)
 
     vi.stubGlobal('useRoute', useRouteMock)
 

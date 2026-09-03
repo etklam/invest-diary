@@ -45,7 +45,7 @@ watch(() => route.path, () => {
 <template>
   <div
     v-if="isOpen"
-    class="fixed bottom-0 left-0 top-0 z-50 w-[82%] sm:max-w-xs lg:w-80"
+    class="fixed bottom-0 left-0 top-0 z-50 w-[min(82%,20rem)] max-w-full"
   >
     <!-- Backdrop -->
     <div
@@ -57,7 +57,7 @@ watch(() => route.path, () => {
     <!-- Mobile Nav Content -->
     <nav
       ref="panelRef"
-      class="relative flex h-full w-full flex-col overflow-y-auto border-r border-dt-border bg-dt-surface pb-8 pt-5 shadow-dt-lg sm:pt-6"
+      class="mobile-nav-panel relative flex h-full w-full max-w-full flex-col overflow-y-auto border-r border-dt-border bg-dt-surface shadow-dt-lg"
       role="dialog"
       aria-modal="true"
       aria-labelledby="mobile-more-title"
@@ -96,8 +96,8 @@ watch(() => route.path, () => {
                 :aria-current="isGroupItemActive(group.items, item.to) ? 'page' : undefined"
                 @click="emit('close')"
               >
-                <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
-                <span>{{ item.label }}</span>
+                <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5 shrink-0" />
+                <span class="min-w-0 break-words">{{ item.label }}</span>
               </NuxtLink>
             </li>
           </ul>
@@ -115,8 +115,8 @@ watch(() => route.path, () => {
                 :aria-current="isActive(item.to) ? 'page' : undefined"
                 @click="emit('close')"
               >
-                <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5" />
-                <span>{{ item.label }}</span>
+                <Icon :name="getIconName(item.icon)" class="mr-3 h-5 w-5 shrink-0" />
+                <span class="min-w-0 break-words">{{ item.label }}</span>
               </NuxtLink>
             </li>
           </ul>
@@ -136,7 +136,7 @@ watch(() => route.path, () => {
             <div class="px-3 py-2 text-sm text-dt-text-muted">
               {{ t('auth.loggedInAs') }}
             </div>
-            <div class="px-3 py-2 text-sm text-dt-text font-medium">
+            <div class="min-w-0 break-words px-3 py-2 text-sm font-medium text-dt-text">
               {{ user?.name || user?.email }}
             </div>
             <button
@@ -170,3 +170,10 @@ watch(() => route.path, () => {
     </nav>
   </div>
 </template>
+
+<style scoped>
+.mobile-nav-panel {
+  padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+}
+</style>

@@ -1,7 +1,7 @@
 import { isAuthSessionError } from '~/lib/auth/session-error'
 
 export const useAuthRecovery = () => {
-  const { user, refreshAccessToken } = useAuth()
+  const { user } = useAuth()
   const route = useRoute()
   const router = useRouter()
 
@@ -12,19 +12,15 @@ export const useAuthRecovery = () => {
 
   const runWithAuthRecovery = async <T>(
     operation: () => Promise<T>,
-    hasRetried = false,
   ): Promise<T> => {
     try {
       return await operation()
     } catch (error) {
       if (isAuthSessionError(error)) {
-        if (!hasRetried) {
-          const refreshed = await refreshAccessToken()
-          if (refreshed) {
-            return runWithAuthRecovery(operation, true)
-          }
-        }
-
+        // Every `/api/**` request is resolved by the server middleware. A
+        // session error here means that both access and refresh credentials
+        // were rejected; another client refresh/retry would only race the
+        // canonical resolver.
         user.value = null
         await redirectToLogin()
       }

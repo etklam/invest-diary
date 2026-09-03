@@ -8,6 +8,14 @@ import { authenticateRefreshToken, deleteStoredRefreshToken } from '~/server/uti
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
+
+  // `/api/auth/refresh` is a browser-cookie endpoint. If auth middleware
+  // resolved an explicit Bearer/API-key credential, never let this handler
+  // switch identity sources and refresh an ambient browser cookie instead.
+  if (event.context.auth && event.context.auth.transport !== 'cookie') {
+    throw Errors.tokenInvalid().toH3Error()
+  }
+
   const refreshToken = getCookie(event, 'refresh-token')
 
   if (!refreshToken) {
@@ -15,7 +23,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const refreshSession = await authenticateRefreshToken(refreshToken)
+    const refreshSession = await authenticateRefreshToken(refreshToken, 'WEB')
     if (!refreshSession) {
       throw Errors.tokenNotFound().toH3Error()
     }

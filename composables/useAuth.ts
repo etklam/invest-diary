@@ -21,11 +21,18 @@ interface AuthApiResponse<T> {
 
 interface AuthErrorShape {
   statusCode?: number
+}
+
+type ResponseCookieHeaderValue = string | string[] | undefined
+
+interface ResponseHeadersLike {
+  getSetCookie?: () => string[]
+  get?: (name: string) => string | null
+}
+
+interface FetchResponseContextLike {
   response?: {
-    status?: number
-  }
-  data?: {
-    statusMessage?: string
+    headers?: ResponseHeadersLike
   }
 }
 
@@ -50,8 +57,53 @@ const devLog = (...args: unknown[]) => {
 
 let refreshPipeline: Promise<boolean> | null = null
 
-function isAuthError(error: AuthErrorShape): boolean {
-  return error.statusCode === 401 || error.response?.status === 401
+/**
+ * `Headers.get('set-cookie')` may combine multiple cookies into one value.
+ * Cookie Expires dates also contain commas, so split only at the beginning of
+ * the next cookie pair. Node's `getSetCookie()` is preferred when available.
+ */
+function splitSetCookieHeader(value: string): string[] {
+  return value
+    .split(/,(?=\s*[^;,=\s]+=[^;,]*)/)
+    .map(cookie => cookie.trim())
+    .filter(Boolean)
+}
+
+function readResponseCookies(context: unknown): string[] {
+  const headers = (context as FetchResponseContextLike | null)?.response?.headers
+  if (!headers) return []
+
+  const separateCookies = headers.getSetCookie?.()
+  if (separateCookies?.length) return separateCookies
+
+  const combinedCookies = headers.get?.('set-cookie')
+  return combinedCookies ? splitSetCookieHeader(combinedCookies) : []
+}
+
+function responseCookieKey(cookie: string): string {
+  const name = /^([^=;\s]+)=/.exec(cookie)?.[1]
+  if (!name) return cookie
+
+  const path = /;\s*path=([^;]+)/i.exec(cookie)?.[1]?.trim().toLowerCase() ?? '/'
+  return `${name.toLowerCase()};${path}`
+}
+
+function mergeResponseCookies(
+  existing: ResponseCookieHeaderValue,
+  incoming: string[],
+): string[] {
+  const merged = typeof existing === 'string'
+    ? splitSetCookieHeader(existing)
+    : [...(existing ?? [])]
+
+  for (const cookie of incoming) {
+    const key = responseCookieKey(cookie)
+    const existingIndex = merged.findIndex(value => responseCookieKey(value) === key)
+    if (existingIndex === -1) merged.push(cookie)
+    else merged[existingIndex] = cookie
+  }
+
+  return merged
 }
 
 export const useAuth = () => {
@@ -71,11 +123,16 @@ export const useAuth = () => {
   const serverCookieHeader = process.server
     ? (useRequestHeaders(['cookie']).cookie ?? '')
     : ''
+  // A nested SSR `$fetch` creates its own H3 event. Cookies set by the nested
+  // auth middleware must be copied to the outer HTML response or the browser
+  // will not retain the renewed access session after hydration.
+  const serverResponseCookies = process.server && typeof useResponseHeader === 'function'
+    ? useResponseHeader('set-cookie')
+    : null
 
   const authFetch = <T>(url: string, options?: Record<string, unknown>) => {
     const headers = (options?.headers as Record<string, string> | undefined) ?? {}
-
-    return $fetch<T>(url, {
+    const requestOptions: Record<string, unknown> = {
       ...options,
       headers: process.server && serverCookieHeader
         ? {
@@ -83,7 +140,27 @@ export const useAuth = () => {
             cookie: headers.cookie ?? serverCookieHeader
           }
         : headers
-    })
+    }
+
+    if (serverResponseCookies) {
+      const originalOnResponse = options?.onResponse as
+        | ((context: unknown) => unknown)
+        | undefined
+
+      requestOptions.onResponse = (context: unknown) => {
+        const responseCookies = readResponseCookies(context)
+        if (responseCookies.length) {
+          serverResponseCookies.value = mergeResponseCookies(
+            serverResponseCookies.value as ResponseCookieHeaderValue,
+            responseCookies,
+          )
+        }
+
+        return originalOnResponse?.(context)
+      }
+    }
+
+    return $fetch<T>(url, requestOptions)
   }
 
   const syncTimezone = (timezone?: string) => {
@@ -200,27 +277,7 @@ export const useAuth = () => {
       }
     } catch (error) {
       const authError = error as AuthErrorShape
-      devLog('[Auth] fetchMe error', { isAuthError: isAuthError(authError), statusCode: authError.statusCode })
-
-      if (isAuthError(authError)) {
-        devLog('[Auth] Attempting token refresh...')
-        const refreshed = await refreshAccessToken()
-        devLog('[Auth] Token refresh result', { refreshed })
-        if (refreshed) {
-          try {
-            const retryResponse = await authFetch<AuthApiResponse<AuthUser>>('/api/auth/me')
-            devLog('[Auth] Retry fetchMe after refresh', { ok: retryResponse.ok })
-            if (retryResponse.ok && retryResponse.data) {
-              user.value = retryResponse.data
-              syncTimezone(retryResponse.data.timezone)
-              return
-            }
-          } catch {
-            // fall through to unauthenticated state
-          }
-        }
-      }
-
+      devLog('[Auth] fetchMe error', { statusCode: authError.statusCode })
       user.value = null
     } finally {
       isLoading.value = false

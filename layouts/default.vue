@@ -1,5 +1,5 @@
 <template>
-  <div class="default-shell min-h-screen">
+  <div class="default-shell min-h-screen min-w-0">
     <!-- Skip to main content (accessibility) -->
     <a
       href="#main-content"
@@ -19,7 +19,7 @@
       <Navigation v-if="isInitialized" />
       <main
         id="main-content"
-        class="w-full py-8 pb-28 xl:pb-8"
+        class="min-w-0 w-full py-8 pb-28 xl:pb-8"
         :class="[
           { 'pt-24': showInstallPrompt },
           { 'max-[639px]:pt-14': showAlert },
@@ -95,6 +95,7 @@ onUnmounted(() => {
 
 <style scoped>
 .default-shell {
+  min-width: 0;
   background: var(--color-background);
 }
 </style>

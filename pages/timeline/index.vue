@@ -1,5 +1,5 @@
 <template>
-  <PageContainer width="app" class="timeline-page space-y-6 pb-20">
+  <PageContainer width="app" class="timeline-page min-w-0 space-y-6 pb-20">
     <!-- Header -->
     <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div class="min-w-0">
@@ -24,7 +24,7 @@
 
     <details class="timeline-overview rounded-dt-md border border-dt-border bg-dt-surface shadow-dt-sm" :aria-label="t('timeline.overview.summary.label')">
       <summary class="cursor-pointer rounded-dt-md p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30 sm:p-5">
-        <div class="grid grid-cols-3 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center">
+        <div class="timeline-summary-grid grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center">
           <div class="min-w-0">
             <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
               {{ t('timeline.overview.summary.portfolioValue') }}
@@ -49,7 +49,7 @@
               {{ reviewsPending || reviewsError ? '—' : upcomingReviewCount }}
             </p>
           </div>
-          <span class="col-span-3 inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-dt-primary sm:col-span-1 sm:justify-self-end">
+          <span class="col-span-full inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-dt-primary sm:col-span-1 sm:justify-self-end">
             {{ t('timeline.overview.summary.viewOverview') }}
             <Icon name="heroicons:chevron-down" class="timeline-overview-toggle-icon h-4 w-4" aria-hidden="true" />
           </span>
@@ -57,11 +57,11 @@
       </summary>
 
       <div class="border-t border-dt-border p-3 sm:p-4">
-        <div class="grid gap-4 lg:grid-cols-2">
-      <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-portfolio-title">
-        <div class="flex items-center justify-between gap-3">
-          <h2 id="overview-portfolio-title" class="font-display text-xl text-dt-text">{{ t('timeline.overview.portfolio.title') }}</h2>
-          <NuxtLink to="/stocks" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.viewPortfolio') }}</NuxtLink>
+        <div class="grid min-w-0 gap-4 lg:grid-cols-2">
+      <section class="min-w-0 rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-portfolio-title">
+        <div class="flex min-w-0 flex-wrap items-center justify-between gap-3">
+          <h2 id="overview-portfolio-title" class="font-display min-w-0 flex-1 text-xl text-dt-text timeline-breakable">{{ t('timeline.overview.portfolio.title') }}</h2>
+          <NuxtLink to="/stocks" class="shrink-0 text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.viewPortfolio') }}</NuxtLink>
         </div>
         <AppSkeleton v-if="holdingsPending" class="mt-4" variant="card" :count="1" />
         <div v-else-if="holdingsError" class="mt-4 rounded-dt-sm border border-dt-danger/30 p-4" role="alert">
@@ -76,25 +76,25 @@
           </div>
         </div>
         <div v-else class="mt-4">
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div>
+          <div class="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="min-w-0">
               <p class="text-xs text-dt-text-soft">{{ t('timeline.overview.portfolio.pricedValue') }}</p>
-              <p class="font-data mt-1 text-lg font-bold text-dt-text">{{ portfolioStats.currentMarketValue === null ? '—' : formatCurrency(portfolioStats.currentMarketValue) }}</p>
+              <p class="font-data timeline-breakable mt-1 min-w-0 max-w-full truncate text-lg font-bold text-dt-text">{{ portfolioStats.currentMarketValue === null ? '—' : formatCurrency(portfolioStats.currentMarketValue) }}</p>
             </div>
-            <div>
+            <div class="min-w-0">
               <p class="text-xs text-dt-text-soft">{{ t('stock.dashboard.totalInvested') }}</p>
-              <p class="font-data mt-1 text-lg font-bold text-dt-text">{{ formatCurrency(portfolioStats.totalCost) }}</p>
+              <p class="font-data timeline-breakable mt-1 min-w-0 max-w-full truncate text-lg font-bold text-dt-text">{{ formatCurrency(portfolioStats.totalCost) }}</p>
             </div>
-            <div>
+            <div class="min-w-0">
               <p class="text-xs text-dt-text-soft">{{ t('stock.riskSummary.largestPosition') }}</p>
-              <p class="font-data mt-1 text-lg font-bold text-dt-text">{{ portfolioStats.largestPositionPct === null ? '—' : `${portfolioStats.largestPositionPct.toFixed(1)}%` }}</p>
+              <p class="font-data timeline-breakable mt-1 min-w-0 max-w-full truncate text-lg font-bold text-dt-text">{{ portfolioStats.largestPositionPct === null ? '—' : `${portfolioStats.largestPositionPct.toFixed(1)}%` }}</p>
             </div>
-            <div>
+            <div class="min-w-0">
               <p class="text-xs text-dt-text-soft">{{ t('stock.riskSummary.top3Concentration') }}</p>
-              <p class="font-data mt-1 text-lg font-bold text-dt-text">{{ portfolioStats.top3ConcentrationPct === null ? '—' : `${portfolioStats.top3ConcentrationPct.toFixed(1)}%` }}</p>
+              <p class="font-data timeline-breakable mt-1 min-w-0 max-w-full truncate text-lg font-bold text-dt-text">{{ portfolioStats.top3ConcentrationPct === null ? '—' : `${portfolioStats.top3ConcentrationPct.toFixed(1)}%` }}</p>
             </div>
           </div>
-          <p class="mt-3 text-xs text-dt-text-muted" role="status">
+          <p class="timeline-breakable mt-3 min-w-0 max-w-full text-xs text-dt-text-muted" role="status">
             {{ t(`stock.dataQuality.status.${portfolioStats.valuationStatus}`, { priced: portfolioStats.pricedPositionCount, total: portfolioStats.totalHoldings, cost: formatCurrency(portfolioStats.unpricedCostBasis) }) }}
             <template v-if="portfolioStats.valuationAsOf"> · {{ t('stock.dataQuality.asOf', { time: formatOverviewDate(portfolioStats.valuationAsOf) }) }}</template>
           </p>
@@ -102,10 +102,10 @@
         </div>
       </section>
 
-      <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-attention-title">
-        <div class="flex items-center justify-between gap-3">
-          <h2 id="overview-attention-title" class="font-display text-xl text-dt-text">{{ t('timeline.overview.attention.title') }}</h2>
-          <NuxtLink to="/reviews" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.viewReviews') }}</NuxtLink>
+      <section class="min-w-0 rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-attention-title">
+        <div class="flex min-w-0 flex-wrap items-center justify-between gap-3">
+          <h2 id="overview-attention-title" class="font-display min-w-0 flex-1 text-xl text-dt-text timeline-breakable">{{ t('timeline.overview.attention.title') }}</h2>
+          <NuxtLink to="/reviews" class="shrink-0 text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.viewReviews') }}</NuxtLink>
         </div>
         <AppSkeleton v-if="reviewsPending || attentionPending" class="mt-4" variant="card" :count="1" />
         <div v-else-if="attentionError && reviewsError && holdingsError" class="mt-4" role="alert">
@@ -113,9 +113,9 @@
         </div>
         <ul v-else-if="needsReviewItems.length" class="mt-4 space-y-2">
           <li v-for="item in needsReviewItems" :key="item.id">
-            <NuxtLink :to="item.to" class="flex min-h-11 items-center justify-between rounded-dt-sm border border-dt-border px-3 py-2 text-sm hover:bg-dt-surface-strong">
-              <span class="font-medium text-dt-text">{{ item.label }}</span>
-              <span class="text-xs text-dt-danger">{{ item.reason }}</span>
+            <NuxtLink :to="item.to" class="flex min-h-11 min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-dt-sm border border-dt-border px-3 py-2 text-sm hover:bg-dt-surface-strong">
+              <span class="timeline-breakable min-w-0 max-w-full flex-1 font-medium text-dt-text">{{ item.label }}</span>
+              <span class="timeline-breakable max-w-full shrink-0 text-right text-xs text-dt-danger">{{ item.reason }}</span>
             </NuxtLink>
           </li>
         </ul>
@@ -123,16 +123,16 @@
         <p v-if="attentionError || attentionPartial || reviewsError || holdingsError" class="mt-3 text-xs text-dt-warning" role="status">{{ t('timeline.overview.partialData') }}</p>
       </section>
 
-      <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-activity-title">
-        <div class="flex items-center justify-between gap-3">
-          <h2 id="overview-activity-title" class="font-display text-xl text-dt-text">{{ t('timeline.overview.activity.title') }}</h2>
-          <a href="#diary-timeline" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.activity.fullHistory') }}</a>
+      <section class="min-w-0 rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-activity-title">
+        <div class="flex min-w-0 flex-wrap items-center justify-between gap-3">
+          <h2 id="overview-activity-title" class="font-display min-w-0 flex-1 text-xl text-dt-text timeline-breakable">{{ t('timeline.overview.activity.title') }}</h2>
+          <a href="#diary-timeline" class="shrink-0 text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.activity.fullHistory') }}</a>
         </div>
         <AppSkeleton v-if="activityPending" class="mt-4" variant="card" :count="1" />
         <p v-else-if="activityError" class="mt-4 text-sm text-dt-danger" role="alert">{{ t('timeline.overview.activity.loadFailed') }}</p>
         <ul v-else-if="activityItems.length" class="mt-4 divide-y divide-dt-border">
           <li v-for="item in activityItems" :key="item.id">
-            <NuxtLink :to="item.destination" class="flex min-h-11 items-center justify-between gap-3 py-2 text-sm hover:text-dt-primary">
+            <NuxtLink :to="item.destination" class="flex min-h-11 min-w-0 items-center justify-between gap-3 py-2 text-sm hover:text-dt-primary">
               <span class="min-w-0 truncate font-medium">{{ item.symbol ? `${item.symbol} · ` : '' }}{{ item.title }}</span>
               <time class="shrink-0 text-xs text-dt-text-soft">{{ formatActivityDate(item.occurredAt) }}</time>
             </NuxtLink>
@@ -141,10 +141,10 @@
         <p v-else class="mt-4 text-sm text-dt-text-muted">{{ t('timeline.overview.activity.empty') }}</p>
       </section>
 
-      <section class="rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-upcoming-title">
-        <div class="flex items-center justify-between gap-3">
-          <h2 id="overview-upcoming-title" class="font-display text-xl text-dt-text">{{ t('timeline.overview.upcoming.title') }}</h2>
-          <NuxtLink to="/reviews" class="text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.viewReviews') }}</NuxtLink>
+      <section class="min-w-0 rounded-dt-md border border-dt-border bg-dt-surface p-5 shadow-dt-sm" aria-labelledby="overview-upcoming-title">
+        <div class="flex min-w-0 flex-wrap items-center justify-between gap-3">
+          <h2 id="overview-upcoming-title" class="font-display min-w-0 flex-1 text-xl text-dt-text timeline-breakable">{{ t('timeline.overview.upcoming.title') }}</h2>
+          <NuxtLink to="/reviews" class="shrink-0 text-sm font-semibold text-dt-primary hover:underline">{{ t('timeline.overview.viewReviews') }}</NuxtLink>
         </div>
         <AppSkeleton v-if="reviewsPending" class="mt-4" variant="card" :count="1" />
         <div v-else-if="reviewsError" class="mt-4" role="alert">
@@ -153,7 +153,7 @@
         </div>
         <ul v-else-if="upcomingReviewItems.length" class="mt-4 divide-y divide-dt-border">
           <li v-for="review in upcomingReviewItems" :key="String(review.id)">
-            <NuxtLink :to="review.targetType === 'thesis' ? `/stocks/${encodeURIComponent(review.symbol || '')}?tab=thesis&review=${review.thesisId || review.id}` : `/diaries/${review.id}/review`" class="flex min-h-11 items-center justify-between gap-3 py-2 text-sm hover:text-dt-primary">
+            <NuxtLink :to="review.targetType === 'thesis' ? `/stocks/${encodeURIComponent(review.symbol || '')}?tab=thesis&review=${review.thesisId || review.id}` : `/diaries/${review.id}/review`" class="flex min-h-11 min-w-0 items-center justify-between gap-3 py-2 text-sm hover:text-dt-primary">
               <span class="min-w-0 truncate font-medium">{{ review.targetType === 'thesis' && review.symbol ? `${review.symbol} · ` : '' }}{{ review.title }}</span>
               <span class="shrink-0 text-xs text-dt-text-soft">{{ review.reviewDueAt ? formatOverviewDate(review.reviewDueAt) : t('review.queue.sections.unscheduled') }}</span>
             </NuxtLink>
@@ -174,7 +174,7 @@
       <summary class="cursor-pointer text-sm font-semibold text-dt-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/30">
         {{ t('desk.filter.title') }}
       </summary>
-      <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto]">
+      <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
         <label class="block">
           <span class="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.12em] text-dt-text-soft">
             {{ t('diary.dateFrom') }}
@@ -254,11 +254,11 @@
         class="timeline-month"
         :class="{ 'timeline-month--spaced': groupIndex > 0 }"
       >
-        <div class="timeline-month-heading flex items-center justify-between border-b border-dt-border pb-2">
-          <h2 class="text-sm font-semibold tracking-wide text-dt-text">
+        <div class="timeline-month-heading flex min-w-0 flex-wrap items-center justify-between gap-3 border-b border-dt-border pb-2">
+          <h2 class="timeline-breakable min-w-0 text-sm font-semibold tracking-wide text-dt-text">
             {{ group.periodLabel }}
           </h2>
-          <span class="font-data text-xs text-dt-text-muted">
+          <span class="font-data shrink-0 text-xs text-dt-text-muted">
             {{ t('timeline.entriesCount', { count: group.diaries.length }) }}
           </span>
         </div>
@@ -267,7 +267,7 @@
           <div
             v-for="diary in group.diaries"
             :key="String(diary.id)"
-            class="timeline-entry group relative grid grid-cols-[24px_minmax(0,1fr)] items-stretch gap-x-3 lg:grid-cols-[112px_32px_minmax(0,1fr)]"
+            class="timeline-entry group relative grid min-w-0 grid-cols-[24px_minmax(0,1fr)] items-stretch gap-x-3 lg:grid-cols-[112px_32px_minmax(0,1fr)]"
           >
             <time
               class="timeline-date hidden flex-col items-center text-center lg:flex"
@@ -278,7 +278,7 @@
               <span class="timeline-date-weekday">{{ formatTimelineWeekday(diary.date) }}</span>
             </time>
 
-            <div class="timeline-rail-cell relative flex min-h-full justify-center" aria-hidden="true">
+            <div class="timeline-rail-cell relative flex min-h-full min-w-0 justify-center" aria-hidden="true">
               <span
                 class="timeline-node relative z-10 mt-4 block h-3 w-3 shrink-0 rounded-full border-2 border-dt-surface bg-dt-border-strong transition-colors duration-150 group-hover:bg-dt-primary-solid"
                 :class="{ '!bg-dt-warning': diary.alerts?.length }"
@@ -288,7 +288,7 @@
 
             <NuxtLink
               :to="`/diaries/${diary.id}`"
-              class="timeline-entry-card block w-full max-w-[920px] rounded-dt-md border border-dt-border bg-dt-surface px-4 py-4 shadow-dt-sm transition-colors duration-150 hover:border-dt-border-strong hover:bg-dt-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/40 sm:px-5 sm:py-5 lg:px-5 lg:py-[18px]"
+              class="timeline-entry-card block min-w-0 w-full max-w-[920px] rounded-dt-md border border-dt-border bg-dt-surface px-4 py-4 shadow-dt-sm transition-colors duration-150 hover:border-dt-border-strong hover:bg-dt-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dt-primary/40 sm:px-5 sm:py-5 lg:px-5 lg:py-[18px]"
             >
               <div class="flex min-w-0 items-start gap-3">
                 <h3 class="line-clamp-2 min-w-0 flex-1 text-[17px] font-semibold leading-[1.35] tracking-tight text-dt-text transition-colors duration-150 group-hover:text-dt-primary sm:text-lg">
@@ -301,7 +301,7 @@
                 />
               </div>
 
-              <div class="timeline-meta mt-1.5 flex flex-wrap items-center text-[11px] leading-5 text-dt-text-soft sm:text-xs">
+              <div class="timeline-meta mt-1.5 flex min-w-0 max-w-full flex-wrap items-center text-[11px] leading-5 text-dt-text-soft sm:text-xs">
                 <time class="timeline-meta-item inline-flex items-center font-data text-dt-text-muted">
                   <Icon name="heroicons:calendar" class="mr-1 h-3.5 w-3.5 text-dt-text-soft" aria-hidden="true" />
                   {{ formatDiaryCompactDate(diary.date) }}
@@ -309,13 +309,13 @@
                 <span
                   v-for="tag in (diary.tags || []).slice(0, 2)"
                   :key="tag"
-                  class="timeline-meta-item font-medium"
+                  class="timeline-meta-item min-w-0 max-w-full timeline-breakable font-medium"
                 >
                   #{{ tag }}
                 </span>
                 <span
                   v-if="diary.tradePlanSummary"
-                  class="timeline-meta-item inline-flex min-w-0 max-w-full items-center gap-1 text-dt-primary"
+                  class="timeline-meta-item min-w-0 max-w-full timeline-breakable inline-flex items-center gap-1 text-dt-primary"
                   :title="tradePlanSignal(diary.tradePlanSummary)"
                 >
                   <Icon name="heroicons:map" class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -335,7 +335,7 @@
                 </span>
               </div>
 
-              <p class="mt-2.5 line-clamp-2 text-sm leading-[1.55] text-dt-text-muted">
+              <p class="timeline-breakable mt-2.5 line-clamp-2 text-sm leading-[1.55] text-dt-text-muted">
                 {{ stripDiaryMarkdown(diary.content) || t('timeline.noContent') }}
               </p>
             </NuxtLink>
@@ -525,7 +525,17 @@ onDiaryMutation(() => {
 
 .timeline-month-heading {
   min-height: 2rem;
-}
+ }
+
+.timeline-breakable {
+  overflow-wrap: anywhere;
+ }
+
+@media (min-width: 24rem) and (max-width: 39.999rem) {
+  .timeline-summary-grid {
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+ }
 
 .timeline-month-entries {
   position: relative;

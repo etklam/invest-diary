@@ -4,8 +4,8 @@ import { resolve } from 'node:path'
 
 // ponytail: source-scrape only, kept deliberately. The behaviors guarded
 // here (httpOnly access-token must NOT be read via useCookie in the
-// websocket plugin, public-route skip, 401 → refresh before logout) are
-// security/correctness invariants. Behavioral tests in tests/api/auth.test.ts
+// websocket plugin, public-route skip, and terminal auth-session handling)
+// are security/correctness invariants. Behavioral tests in tests/api/auth.test.ts
 // and tests/integration/auth-flow.test.ts cover the runtime side; these
 // source checks catch the specific anti-patterns that behavioral tests
 // would not flag (e.g. cookies leaking to client JS, duplicate inline
@@ -31,11 +31,15 @@ describe('auth client regressions', () => {
     expect(source).toContain('isInitialized.value = true')
   })
 
-  it('fetchMe should attempt token refresh on 401 before clearing user', () => {
+  it('fetchMe should delegate access→refresh recovery to the server resolver', () => {
     const source = readFileSync(resolve(process.cwd(), 'composables/useAuth.ts'), 'utf-8')
     expect(source).toContain("useRequestHeaders(['cookie']).cookie ?? ''")
     expect(source).toContain('cookie: headers.cookie ?? serverCookieHeader')
-    expect(source).toContain('const refreshed = await refreshAccessToken()')
+    expect(source).toContain("useResponseHeader('set-cookie')")
+    expect(source).toContain('requestOptions.onResponse')
+    expect(source).not.toContain('const refreshed = await refreshAccessToken()')
+    expect(source).not.toContain('Attempting token refresh')
+    expect(source).not.toMatch(/localStorage\.(?:getItem|setItem)\([^)]*(?:access-token|refresh-token)/)
     expect(source).toContain("'/api/auth/me'")
   })
 

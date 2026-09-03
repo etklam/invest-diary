@@ -16,7 +16,7 @@ interface SessionUserRecord {
   tokenVersion: number
 }
 
-interface RefreshTokenRecord {
+export interface RefreshTokenRecord {
   token: string
   expiresAt: Date
   revokedAt: Date | null
@@ -106,7 +106,10 @@ export async function authenticateAccessToken(token: string): Promise<SessionUse
   return toSessionUser(user)
 }
 
-export async function authenticateRefreshToken(token: string): Promise<{
+export async function authenticateRefreshToken(
+  token: string,
+  expectedClientType: RefreshTokenRecord['clientType'] = 'WEB',
+): Promise<{
   payload: TokenPayload
   sessionUser: SessionUser
   storedToken: RefreshTokenRecord
@@ -118,7 +121,12 @@ export async function authenticateRefreshToken(token: string): Promise<{
   }
 
   const storedToken = await findRefreshTokenRecord(token)
-  if (!storedToken || storedToken.revokedAt || storedToken.expiresAt < new Date()) {
+  if (
+    !storedToken
+    || storedToken.clientType !== expectedClientType
+    || storedToken.revokedAt
+    || storedToken.expiresAt < new Date()
+  ) {
     return null
   }
 

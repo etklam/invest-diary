@@ -121,6 +121,61 @@ describe('useAuth composable', () => {
     })
   })
 
+  it('propagates cookies set during SSR session bootstrap to the outer response', async () => {
+    ;(process as any).client = false
+    ;(process as any).server = true
+    vi.stubGlobal('useRequestHeaders', () => ({
+      cookie: 'refresh-token=refresh-session',
+    }))
+
+    const outerSetCookies = ref<string | string[] | undefined>()
+    vi.stubGlobal('useResponseHeader', () => outerSetCookies)
+
+    const { useAuth } = await import('~/composables/useAuth')
+    const auth = useAuth()
+
+    const mockFetch = globalThis.$fetch as ReturnType<typeof vi.fn>
+    mockFetch.mockImplementation(async (_url: string, options?: Record<string, any>) => {
+      options?.onResponse?.({
+        response: {
+          headers: {
+            get: () => 'access-token=renewed-access; Path=/, csrf-token=csrf; Path=/',
+            getSetCookie: () => [
+              'access-token=renewed-access; Path=/',
+              'csrf-token=csrf; Path=/',
+            ],
+          },
+        },
+      })
+
+      return {
+        ok: true,
+        data: { id: '1', email: 'user@example.com', role: 'USER' },
+      }
+    })
+
+    await auth.fetchMe()
+
+    expect(auth.isAuthenticated.value).toBe(true)
+    expect(outerSetCookies.value).toEqual([
+      'access-token=renewed-access; Path=/',
+      'csrf-token=csrf; Path=/',
+    ])
+  })
+
+  it('does not start a second client refresh when session bootstrap is rejected', async () => {
+    const { useAuth } = await import('~/composables/useAuth')
+    const auth = useAuth()
+    const mockFetch = globalThis.$fetch as ReturnType<typeof vi.fn>
+    mockFetch.mockRejectedValueOnce({ statusCode: 401 })
+
+    await auth.fetchMe()
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockFetch).toHaveBeenCalledWith('/api/auth/me', expect.any(Object))
+    expect(auth.user.value).toBeNull()
+  })
+
   it('does not share the refresh pipeline across SSR requests', async () => {
     ;(process as any).client = false
     ;(process as any).server = true

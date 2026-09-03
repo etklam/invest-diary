@@ -22,8 +22,10 @@ withDefaults(defineProps<{
 <style scoped>
 .page-container {
   --page-container-max-width: 75rem;
+  box-sizing: border-box;
   width: 100%;
-  max-width: var(--page-container-max-width);
+  max-width: min(100%, var(--page-container-max-width));
+  min-width: 0;
   margin-inline: auto;
   padding-inline: 1rem;
 }

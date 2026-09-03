@@ -137,6 +137,11 @@ export async function resolveAuth(event: H3Event) {
   const apiKeyHeader = getHeader(event, 'x-api-key')
   if (await authenticateExplicitCredential(event, authHeader, apiKeyHeader, url.pathname)) return
 
+  // The refresh endpoint owns the one WEB refresh-token lookup that issues a
+  // replacement access cookie. Explicit credentials were already resolved
+  // above, so the endpoint cannot accidentally fall back to an ambient cookie.
+  if (url.pathname === '/api/auth/refresh') return
+
   const accessToken = getCookie(event, 'access-token')
   const refreshToken = getCookie(event, 'refresh-token')
 
@@ -163,7 +168,7 @@ export async function resolveAuth(event: H3Event) {
   if (!refreshToken) return
 
   try {
-    const refreshSession = await authenticateRefreshToken(refreshToken)
+    const refreshSession = await authenticateRefreshToken(refreshToken, 'WEB')
     if (!refreshSession) {
       log.warn('Refresh token validation returned null', { path: url.pathname })
       return

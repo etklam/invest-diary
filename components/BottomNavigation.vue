@@ -18,8 +18,8 @@ const runAction = (action?: 'quick-diary' | 'more') => {
 </script>
 
 <template>
-  <nav :aria-label="t('nav.mobileLabel')" class="fixed bottom-0 left-0 right-0 z-50 border-t border-dt-border bg-dt-surface pb-safe shadow-[0_-1px_0_rgba(15,23,42,0.04)]">
-    <div class="mx-auto flex h-16 max-w-md items-center justify-around px-2">
+  <nav :aria-label="t('nav.mobileLabel')" class="mobile-bottom-navigation fixed bottom-0 left-0 right-0 z-50 min-w-0 max-w-full border-t border-dt-border bg-dt-surface pb-safe shadow-[0_-1px_0_rgba(15,23,42,0.04)]">
+    <div class="mx-auto flex h-16 min-w-0 w-full max-w-md items-center justify-around px-2">
       <template v-for="item in navigationItems" :key="item.id">
         <NuxtLink
           v-if="item.to"
@@ -68,6 +68,9 @@ const runAction = (action?: 'quick-diary' | 'more') => {
 
 <style scoped>
 .pb-safe {
+  box-sizing: border-box;
   padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
 }
 </style>

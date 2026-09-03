@@ -22,7 +22,10 @@ button, a, input, textarea {
 
 /* 底部安全區域工具類 */
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: border-box;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* 動畫基準 */

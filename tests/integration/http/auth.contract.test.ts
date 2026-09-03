@@ -41,6 +41,31 @@ describeHttp('real Nitro + MariaDB native auth contract', () => {
     body: { email: 'native-http@example.com', password: 'password123', deviceName },
   })
 
+  const webLogin = async (email: string, ip: string) => {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': ip },
+      body: JSON.stringify({ email, password: 'password123' }),
+    })
+    const setCookie = response.headers.get('set-cookie') ?? ''
+    const accessToken = /(?:^|,\s*)access-token=([^;,]+)/.exec(setCookie)?.[1]
+    const refreshToken = /(?:^|,\s*)refresh-token=([^;,]+)/.exec(setCookie)?.[1]
+
+    expect(response.status).toBe(200)
+    expect(accessToken).toBeTruthy()
+    expect(refreshToken).toBeTruthy()
+
+    return {
+      accessToken: accessToken!,
+      refreshToken: refreshToken!,
+    }
+  }
+
+  const cookieHeader = (tokens: { accessToken?: string; refreshToken?: string }) => [
+    tokens.accessToken ? `access-token=${tokens.accessToken}` : null,
+    tokens.refreshToken ? `refresh-token=${tokens.refreshToken}` : null,
+  ].filter(Boolean).join('; ')
+
   const bearerHeadersFor = async (email: string) => {
     const user = await prisma.user.findUniqueOrThrow({ where: { email } })
     const token = await signAccessToken(user.id.toString(), user.email, user.role, user.tokenVersion)
@@ -195,6 +220,87 @@ describeHttp('real Nitro + MariaDB native auth contract', () => {
       },
     })
     expect(logoutAll.status).toBe(200)
+  })
+
+  it('keeps a logged-in Web session authenticated across a hard-refresh bootstrap', async () => {
+    const session = await webLogin('web-http@example.com', '10.0.0.7')
+    const cookie = cookieHeader(session)
+
+    const firstBootstrap = await fetch('/api/auth/me', { headers: { cookie } })
+    const hardRefreshBootstrap = await fetch('/api/auth/me', { headers: { cookie } })
+
+    expect(firstBootstrap.status).toBe(200)
+    expect(hardRefreshBootstrap.status).toBe(200)
+    expect((await hardRefreshBootstrap.json()).data.email).toBe('web-http@example.com')
+  })
+
+  it('recovers an expired access token from a valid Web refresh session', async () => {
+    const session = await webLogin('web-http@example.com', '10.0.0.8')
+    const response = await fetch('/api/auth/me', {
+      headers: { cookie: cookieHeader({ accessToken: 'expired-access-token', refreshToken: session.refreshToken }) },
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('set-cookie') ?? '').toMatch(/access-token=/)
+    expect((await response.json()).data.email).toBe('web-http@example.com')
+  })
+
+  it('authenticates a Web request that contains only a valid refresh token', async () => {
+    const session = await webLogin('web-http@example.com', '10.0.0.9')
+    const response = await fetch('/api/auth/me', {
+      headers: { cookie: cookieHeader({ refreshToken: session.refreshToken }) },
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('set-cookie') ?? '').toMatch(/access-token=/)
+    expect((await response.json()).data.email).toBe('web-http@example.com')
+  })
+
+  it('leaves a Web request unauthenticated when its refresh token is invalid', async () => {
+    const response = await fetch('/api/auth/me', {
+      headers: { cookie: cookieHeader({ refreshToken: 'invalid-refresh-token' }) },
+    })
+
+    expect(response.status).toBe(401)
+  })
+
+  it('does not restore a Web session after logout removes its refresh token', async () => {
+    const session = await webLogin('web-http@example.com', '10.0.0.10')
+    const cookie = cookieHeader(session)
+
+    const logout = await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { cookie },
+    })
+    const refresh = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: { cookie },
+    })
+
+    expect(logout.status).toBe(200)
+    expect(refresh.status).toBe(401)
+  })
+
+  it('keeps two independent Web browser sessions independent', async () => {
+    const browserA = await webLogin('web-http@example.com', '10.0.0.11')
+    const browserB = await webLogin('other-http@example.com', '10.0.0.12')
+
+    const logoutA = await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { cookie: cookieHeader(browserA) },
+    })
+    const browserBMe = await fetch('/api/auth/me', {
+      headers: { cookie: cookieHeader(browserB) },
+    })
+    const browserARefresh = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: { cookie: cookieHeader(browserA) },
+    })
+
+    expect(logoutA.status).toBe(200)
+    expect(browserBMe.status).toBe(200)
+    expect((await browserBMe.json()).data.email).toBe('other-http@example.com')
+    expect(browserARefresh.status).toBe(401)
   })
 
   it('returns the stable 429 contract for bounded native login attempts', async () => {

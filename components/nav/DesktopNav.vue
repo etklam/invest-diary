@@ -20,7 +20,7 @@ const { openQuickDiary } = useAppShell()
 
 <template>
   <div
-    class="relative z-30 flex items-center rounded-dt-md border border-dt-border bg-dt-surface px-4 py-2.5 shadow-dt-sm sm:px-5 sm:py-3"
+    class="relative z-30 flex min-w-0 max-w-full items-center rounded-dt-md border border-dt-border bg-dt-surface px-4 py-2.5 shadow-dt-sm sm:px-5 sm:py-3"
   >
       <NavLogo />
 
