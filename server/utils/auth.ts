@@ -1,6 +1,7 @@
 import { H3Event } from 'h3'
 import { ACCESS_TOKEN_MAX_AGE_SECONDS, REFRESH_TOKEN_MAX_AGE_SECONDS } from '~/lib/jwt'
 import { Errors } from '~/lib/errors/factory'
+import { parseRuntimeSettings } from '~/server/config/env'
 
 const ACCESS_TOKEN_COOKIE = 'access-token'
 const REFRESH_TOKEN_COOKIE = 'refresh-token'
@@ -13,10 +14,12 @@ export function setAuthCookies(
   accessToken: string,
   refreshToken: string
 ) {
+  const secure = parseRuntimeSettings().nodeEnv === 'production'
+
   // Access token - 1 hour
   setCookie(event, ACCESS_TOKEN_COOKIE, accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'strict',
     maxAge: ACCESS_TOKEN_MAX_AGE_SECONDS,
     path: '/'
@@ -25,7 +28,7 @@ export function setAuthCookies(
   // Refresh token - 30 days
   setCookie(event, REFRESH_TOKEN_COOKIE, refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'strict',
     maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,
     path: '/'
@@ -38,7 +41,7 @@ export function setAuthCookies(
 export function setAccessTokenCookie(event: H3Event, accessToken: string) {
   setCookie(event, ACCESS_TOKEN_COOKIE, accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: parseRuntimeSettings().nodeEnv === 'production',
     sameSite: 'strict',
     maxAge: ACCESS_TOKEN_MAX_AGE_SECONDS,
     path: '/'

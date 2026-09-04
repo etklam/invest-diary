@@ -1,5 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { randomUUID } from 'node:crypto'
+import { getJwtSecret } from '~/server/config/env'
+export { JWT_PLACEHOLDER_SECRET } from '~/server/config/env'
 
 export const ACCESS_TOKEN_EXPIRY = '1h' // 1 hour
 export const REFRESH_TOKEN_EXPIRY = '30d' // 30 days
@@ -7,7 +9,6 @@ export const ACCESS_TOKEN_MAX_AGE_SECONDS = 60 * 60 // 1 hour
 export const REFRESH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30 // 30 days
 export const JWT_ISSUER = 'invest-diary'
 export const JWT_AUDIENCE = 'invest-diary-api'
-export const JWT_PLACEHOLDER_SECRET = 'CHANGE_THIS_RANDOM_SECRET'
 
 export interface TokenPayload {
   userId: string
@@ -19,33 +20,7 @@ export interface TokenPayload {
 }
 
 function getSecret() {
-  // Try multiple sources for JWT_SECRET to support different Nitro environments
-  // 1. process.env (standard Node.js)
-  // 2. globalThis.process.env (some Nitro presets)
-  // 3. runtimeConfig (Nuxt's official way — also handles Docker runtime overrides)
-  let secret = process.env.JWT_SECRET
-    || globalThis.process?.env?.JWT_SECRET
-
-  // Fallback to runtimeConfig when available (inside Nitro request context)
-  if (!secret && process.server) {
-    try {
-      const config = useRuntimeConfig()
-      secret = config.jwtSecret as string | undefined
-    } catch {
-      // useRuntimeConfig() not available outside request context — ignore
-    }
-  }
-
-  if (!secret) {
-    console.error('[JWT] JWT_SECRET is not defined — checked process.env, globalThis, and runtimeConfig')
-    throw new Error('JWT_SECRET is not defined')
-  }
-
-  if (secret === JWT_PLACEHOLDER_SECRET) {
-    throw new Error('JWT_SECRET must not use the repository placeholder')
-  }
-
-  return new TextEncoder().encode(secret)
+  return new TextEncoder().encode(getJwtSecret())
 }
 
 /** Called by the Nitro startup plugin so unsafe configuration fails before serving traffic. */

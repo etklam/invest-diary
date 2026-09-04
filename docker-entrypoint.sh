@@ -7,6 +7,21 @@ set -e
 
 echo "🚀 Starting Personal Investment Diary System..."
 
+# Validate flags that affect shell-side startup before any migration runs.
+# Nitro performs the full Zod validation once it boots; these two values also
+# control this entrypoint, so invalid values must not silently become false.
+validate_runtime_flags() {
+    case "${SCHEDULER_ENABLED:-false}" in
+        true|false) ;;
+        *) echo "❌ Invalid SCHEDULER_ENABLED: expected true or false." >&2; return 1 ;;
+    esac
+
+    case "${RUN_MIGRATIONS:-false}" in
+        true|false) ;;
+        *) echo "❌ Invalid RUN_MIGRATIONS: expected true or false." >&2; return 1 ;;
+    esac
+}
+
 # Function to wait for database
 wait_for_db() {
     echo "⏳ Waiting for database connection..."
@@ -133,6 +148,8 @@ seed_database() {
 
 # Main execution
 main() {
+    validate_runtime_flags || exit 1
+
     # Wait for database if DATABASE_URL is set
     if [ -n "$DATABASE_URL" ]; then
         wait_for_db || {

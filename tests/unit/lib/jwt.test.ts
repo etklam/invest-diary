@@ -11,7 +11,7 @@ import {
 } from '~/lib/jwt'
 
 describe('JWT Utils', () => {
-  const testSecret = 'test-secret-key'
+  const testSecret = 'test-secret-key-that-is-long-enough-32'
   const testUserId = '12345'
   const testEmail = 'test@example.com'
   const testRole = 'USER'

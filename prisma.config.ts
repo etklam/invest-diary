@@ -1,7 +1,8 @@
 import 'dotenv/config'
 import { defineConfig } from 'prisma/config'
+import { getDatabaseUrl } from './server/config/env'
 
-const databaseUrl = process.env.DATABASE_URL || 'mysql://root:password@localhost:3306/test'
+const databaseUrl = getDatabaseUrl({ allowTestFallback: true })
 
 export default defineConfig({
   datasource: {

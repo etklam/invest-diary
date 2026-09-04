@@ -4,6 +4,7 @@
  */
 
 import { RateLimiterMemory } from 'rate-limiter-flexible'
+import { parseRuntimeSettings } from '~/server/config/env'
 
 const limiters = new Map<string, RateLimiterMemory>()
 
@@ -97,7 +98,7 @@ export const rateLimiters = {
  */
 export function getRateLimitIdentifier(event: { node?: { req?: { headers?: Record<string, string | string[] | undefined>, socket?: { remoteAddress?: string } } } }): string {
   const req = event.node?.req
-  if (process.env.TRUST_X_FORWARDED_FOR === 'true') {
+  if (parseRuntimeSettings().trustForwardedFor) {
     const forwarded = req?.headers?.['x-forwarded-for']
     if (typeof forwarded === 'string') {
       const last = forwarded.split(',').pop()?.trim()

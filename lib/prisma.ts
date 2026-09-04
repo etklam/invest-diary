@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module'
 import { createPrismaClientOptions } from './prisma-client-options'
+import { parseRuntimeSettings } from '~/server/config/env'
 
 const require = createRequire(import.meta.url)
 const { PrismaClient } = require('@prisma/client')
@@ -22,7 +23,7 @@ function getPrismaClient() {
   const client = globalThis.prismaGlobal ?? prismaClientSingleton()
   prismaClient = client
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (parseRuntimeSettings().nodeEnv !== 'production') {
     globalThis.prismaGlobal = client
   }
 

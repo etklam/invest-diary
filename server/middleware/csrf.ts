@@ -2,6 +2,7 @@ import crypto from 'node:crypto'
 import { logger } from '~/lib/logger'
 import { Errors } from '~/lib/errors/factory'
 import { resolveAuth } from '~/server/middleware/auth'
+import { parseRuntimeSettings } from '~/server/config/env'
 
 const CSRF_COOKIE = 'csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
@@ -52,7 +53,7 @@ export default defineEventHandler(async (event) => {
       const token = generateToken()
       setCookie(event, CSRF_COOKIE, token, {
         httpOnly: false, // Must be readable by client JS to send in header
-        secure: process.env.NODE_ENV === 'production',
+        secure: parseRuntimeSettings().nodeEnv === 'production',
         sameSite: 'strict',
         path: '/',
         maxAge: 60 * 60 * 24, // 24 hours

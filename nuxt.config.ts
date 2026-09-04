@@ -1,4 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { parseRuntimeSettings } from './server/config/env'
+
+const runtimeEnv = parseRuntimeSettings()
+
 export default defineNuxtConfig({
   components: [
     { path: '~/components', pathPrefix: false },
@@ -17,7 +21,7 @@ export default defineNuxtConfig({
           'X-Content-Type-Options': 'nosniff',
           'X-Frame-Options': 'SAMEORIGIN',
           'Referrer-Policy': 'strict-origin-when-cross-origin',
-          'Content-Security-Policy': process.env.NODE_ENV === 'production'
+          'Content-Security-Policy': runtimeEnv.nodeEnv === 'production'
             ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self' https://fonts.gstatic.com; frame-src 'self'"
             : "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self' https://fonts.gstatic.com; frame-src 'self'"
         }
@@ -205,21 +209,21 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     // Server-side only
-    databaseUrl: process.env.DATABASE_URL,
-    jwtSecret: process.env.JWT_SECRET,
-    secUserAgent: process.env.SEC_USER_AGENT || '',
+    databaseUrl: runtimeEnv.databaseUrl,
+    jwtSecret: runtimeEnv.jwtSecret,
+    secUserAgent: runtimeEnv.secUserAgent,
 
     // Public to both client and server
     public: {
-      appName: process.env.NUXT_PUBLIC_APP_NAME || '投資日記',
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://trade-basic.com',
+      appName: runtimeEnv.appName,
+      siteUrl: runtimeEnv.publicSiteUrl || 'https://trade-basic.com',
     }
   },
 
   // Sitemap configuration
   sitemap: {
     // 你的網站 URL（生產環境需要設置 NUXT_PUBLIC_SITE_URL）
-    siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://trade-basic.com',
+    siteUrl: runtimeEnv.publicSiteUrl || 'https://trade-basic.com',
     urls: [
       {
         loc: '/',
@@ -339,7 +343,7 @@ export default defineNuxtConfig({
     },
     devOptions: {
       // 開發環境預設關閉，避免 SW 影響日常開發；需要時設 NUXT_PWA_DEV=true
-      enabled: process.env.NUXT_PWA_DEV === 'true',
+      enabled: runtimeEnv.pwaDev,
       type: 'module',
       suppressWarnings: true
     },
