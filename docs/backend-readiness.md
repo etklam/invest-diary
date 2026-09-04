@@ -4,11 +4,11 @@ Audit baseline: `main@86994a7`（2026-09-01）
 
 > Backend Ready v1：任何新 client 只依賴正式 API contract，就可以完整實作 Invest Diary 核心功能，不需要知道 Nuxt、Vue 或 Prisma 內部實作，而且正常情況下不需要 breaking API redesign。
 
-本文件保留 2026-09-01 的 audit baseline，並在本文前段記錄 2026-09-02 的實作與
+本文件保留 2026-09-01 的 audit baseline，並在本文前段記錄目前的實作與
 release-gate evidence。Current release-gate section 是現況真相；後面的 baseline 章節
 是歷史判斷，不應再當成未完成 blocker。React Native/Expo UI 仍不在本批範圍。
 
-## Current release-gate evidence（2026-09-04）
+## Current release-gate evidence（2026-09-05）
 
 Status: **Backend Ready v1 implementation complete; release gate verified in this worktree.**
 
@@ -21,7 +21,7 @@ documented deprecation window or `/api/v2/**`; no duplicate `/api/v1/**` route t
 The checked-in OpenAPI 3.1 artifact and generated transport are derived from canonical Zod
 contracts under `lib/contracts/`.
 
-### Testing reliability hardening addendum（2026-09-04）
+### Testing reliability hardening addendum（2026-09-05）
 
 本批 testing hardening 已把高風險邊界拆成可重現 gate：
 
@@ -41,7 +41,8 @@ contracts under `lib/contracts/`.
   guard、migration readiness/version check 及 trap cleanup。
 - Runtime config、error hook、observability、shared `serialize()`、Cron/HTTP
   batch dispatch、Yahoo provider seam 均有 regression/contract tests；Forgejo
-  已將 quality 與 build/push/deploy 拆成依賴關係，E2E 暫不列 required。
+  對 PR 保持 fast `quality` path，push 到 `main` 則要求完整 E2E 通過後才可
+  build/push/deploy。
 
 **Typecheck baseline note:** production `npm run typecheck` 與 critical test
 allowlist 是 gate；完整 legacy tree 的未收斂 errors 主要集中於舊 Nuxt
@@ -62,8 +63,33 @@ baseline，不是本輪用 assertion 改寫掩蓋的 pass。
 | OpenAPI/client drift | `npm run openapi:check`; `npm run openapi:breaking`; `npm run client:smoke` — passed |
 | Migration + real HTTP/DB boundaries | `npm run test:backend-http:mariadb`; `npm run test:diary-reconciliation:mysql`; `npm run test:market-rotation:mysql` — disposable MariaDB 11.4 gates |
 | Real Socket.IO | `npm run test:socketio` — production server construction, handshake, rooms, events and BigInt wire contract |
+| Playwright release gate | `npm run test:e2e` — required for every push to `main`; disposable MariaDB 11.4 and Chromium |
+| Production error signal | K3s app/CronJob `LOG_FORMAT=json` → collector rule on `level == "ERROR"`; `ErrorTrackingSink` is optional secondary telemetry |
 | Worktree hygiene | `git diff --check`; `bash -n scripts/test-backend-http-mariadb.sh` — passed; no migration harness debug residue |
 | Second-pass review | Claude Code `glm-5.3[1M]` focused read-only review — `VERDICT: PASS`, `NONE` actionable findings |
+
+### Final reliability disposition（2026-09-05）
+
+本輪 final hardening 的 disposition：
+
+- **Closed**：blog `FULLTEXT` index/query contract、recurring alert dismissal
+  semantics、BigInt raw wire boundary、Cron/HTTP batch/domain divergence、
+  production structured `ERROR` signal path，以及 Playwright E2E 作為 `main`
+  push 的 deploy gate。
+- **Accepted constraints**：K3s app 維持 `replicas: 1`、`strategy: Recreate`，
+  manifest 明確啟用唯一 `SCHEDULER_ENABLED=true`；WebSocket broadcaster 與
+  market-data cache 仍為 process-local；Yahoo 維持單一 provider seam。
+- **Reviewed and intentionally unchanged**：runtime config 不做 process-level
+  cache，因 tests 會改動 `process.env`，且 Nuxt build/runtime 有不同讀取時機；
+  目前沒有 performance blocker。Recurring alert 仍只在 create-time
+  materialize children，沒有另加 lazy future path；root/child dismissal 和
+  active-list/scheduler parent guards 維持既有語義。
+- **Remaining**：只保留選定的 MariaDB integration coverage gaps。Redis、BullMQ、
+  distributed lock、leader election、microservice split 或 speculative
+  fallback provider 不在本輪，也不再以架構 hardening 為下一個工作目標。
+
+這個 disposition 是本輪停止條件：下一輪回到 product work；只有真實水平擴展需求、
+新的 runtime incident，或明確選定的 MariaDB coverage gap，才重新開啟相應設計。
 
 ### Contract and compatibility decisions
 
@@ -422,7 +448,10 @@ Phase 6先做小型 generation spike：現有 Diary query大量使用 `z.preproc
 
 Target：真實 Nitro test server + isolated MariaDB 11.4 schema；若 MySQL仍是 supported deployment，migration suite另覆蓋指定 MySQL版本。核心 domain至少測 200/201、400、401、cross-user 404、必要的403/409/429、pagination、string ID、Calendar Date、Instant、error envelope。Auth另測 Web cookie、Native pair、A→B、A replay family revoke、one/all-device logout、credential precedence與CSRF。
 
-`.forgejo/workflows/build.yml` 現時只有 image build/push、Prisma artifact檢查及 K3s deploy，沒有 lint、typecheck或 test。Backend Ready gate必須先把這些 checks放入 Forgejo CI，之後 OpenAPI/client drift check才有實際約束力。這是 P0 readiness infrastructure，但不是會迫使 RN redesign的獨立 domain blocker。
+（歷史 baseline，已由現行 release gate supersede。）當時
+`.forgejo/workflows/build.yml` 只有 image build/push、Prisma artifact 檢查及
+K3s deploy；目前已由 `quality` → `e2e` → `build-push-deploy` 的依賴鏈提供
+PR 與 `main` push 的不同 gate。
 
 ## 13. Dead Code / Migration Residue（current disposition）
 
@@ -597,6 +626,6 @@ the individual issue comments contain the narrower evidence for each vertical sl
 
 ## Recommended next task
 
-只開始一個：**Native auth protocol + refresh-session schema contract**。
-
-先把 family、rotation lineage、replay family revoke、one/all-device logout、Web/native separation寫成 ADR與 canonical Zod contracts，再做 migration/API/HTTP tests。這是唯一 RN 一開工就會立刻撞上的硬 blocker。
+不要再開新的 architecture hardening。下一輪回到 product work；若要處理
+backend readiness，只做已選定的 MariaDB integration coverage gaps。Native auth
+protocol 仍是未來產品 scope，不是本輪 release gate 的阻塞項目。

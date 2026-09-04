@@ -32,7 +32,8 @@ FROM deps AS prod-deps
 
 WORKDIR /app
 
-RUN npm prune --omit=dev --omit=optional --legacy-peer-deps
+# `tsx` runs production CronJobs and requires esbuild's platform binary.
+RUN npm prune --omit=dev --legacy-peer-deps
 
 # Runtime stage
 FROM node:22-bookworm-slim AS runtime
@@ -44,6 +45,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
+
+# The K8s Market Rotation CronJob runs the shared TypeScript batch seam
+# directly. Keep only the source directories required by that entrypoint;
+# the web server itself remains bundled in .output.
+RUN mkdir -p /app/server/config /app/server/utils /app/scripts/market-rotation /app/scripts/market-state
 
 # Set production environment
 ENV NODE_ENV=production \
@@ -60,6 +66,14 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/scripts/market-rotation/run-batch.ts ./scripts/market-rotation/run-batch.ts
+COPY --from=builder /app/scripts/market-state/update-breadth.ts ./scripts/market-state/update-breadth.ts
+COPY --from=builder /app/scripts/map-limit.ts ./scripts/map-limit.ts
+COPY --from=builder /app/scripts/tsconfig.runtime.json ./scripts/tsconfig.runtime.json
+COPY --from=builder /app/server/config ./server/config
+COPY --from=builder /app/server/utils/market-rotation-batch.ts ./server/utils/market-rotation-batch.ts
+COPY --from=builder /app/server/utils/market-rotation-queries.ts ./server/utils/market-rotation-queries.ts
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
 # Create non-root user and set permissions

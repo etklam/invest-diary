@@ -97,6 +97,35 @@ describe('logger', () => {
     expect(String(errorSpy.mock.calls[0]?.[0])).not.toContain('jwt-token-value')
   })
 
+  it('emits searchable production error fields without leaking credentials', async () => {
+    process.env.LOG_FORMAT = 'json'
+    vi.resetModules()
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { createLogger, formatErrorContext } = await import('~/lib/logger')
+
+    createLogger('Alert').error('Scheduler failure', {
+      operation: 'alert_scheduler_tick',
+      jobId: 'job-123',
+      ...formatErrorContext(new Error('failed with Bearer abc.def.ghi')),
+      token: 'must-not-escape',
+    })
+
+    const payload = JSON.parse(String(errorSpy.mock.calls[0]?.[0]))
+    expect(payload).toMatchObject({
+      level: 'ERROR',
+      prefix: 'Alert',
+      context: {
+        operation: 'alert_scheduler_tick',
+        jobId: 'job-123',
+        errorType: 'Error',
+        error: 'failed with Bearer ***',
+        token: '***',
+      },
+    })
+    expect(String(errorSpy.mock.calls[0]?.[0])).not.toContain('abc.def.ghi')
+    expect(String(errorSpy.mock.calls[0]?.[0])).not.toContain('must-not-escape')
+  })
+
   it('redacts credentials embedded in error-shaped values and messages', async () => {
     process.env.LOG_FORMAT = 'json'
     vi.resetModules()

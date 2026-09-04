@@ -77,8 +77,11 @@ The Market Rotation snapshot batch runs on US trading days after market close:
 
 - **Schedule**: `30 21 * * 0-5` (21:30 UTC, Sunday–Friday). Covers Monday–Friday
   Eastern close, with the Sunday run capturing the weekend snapshot.
-- **Command**: `npx tsx scripts/market-rotation/run-batch.ts` — accepts
-  `--scope=<sectors|indexes|core|all>`. Default scope is `all`.
+- **Command**: production CronJob uses
+  `./node_modules/.bin/tsx --tsconfig scripts/tsconfig.runtime.json` for
+  `scripts/market-rotation/run-batch.ts` and then
+  `scripts/market-state/update-breadth.ts`. The rotation entrypoint accepts
+  `--scope=<sectors|indexes|core|all>`; default scope is `all`.
 - **Scope isolation**: a failure in one rank scope does not abort the others;
   the batch reports per-scope errors and exits 0 unless the whole run throws
   (per `run-batch.ts` exit-code contract). This is the [A6] decision — core
@@ -113,15 +116,23 @@ spec:
               image: git.913555.xyz/etklam/invest-diary:latest
               imagePullPolicy: IfNotPresent
               env:
+                - name: NODE_ENV
+                  value: production
+                - name: LOG_FORMAT
+                  value: "json"
+                - name: MARKET_DATA_CONCURRENCY
+                  value: "2"
                 - name: DATABASE_URL
                   valueFrom:
                     secretKeyRef:
-                      name: diary-secrets
-                      key: database-url
+                      name: diary-vue-db-creds
+                      key: DATABASE_URL
               command:
-                - npx
-                - tsx
-                - scripts/market-rotation/run-batch.ts
+                - sh
+                - -ec
+                - |
+                  ./node_modules/.bin/tsx --tsconfig scripts/tsconfig.runtime.json scripts/market-rotation/run-batch.ts
+                  ./node_modules/.bin/tsx --tsconfig scripts/tsconfig.runtime.json scripts/market-state/update-breadth.ts
 ```
 
 > The production manifest uses a `secretKeyRef` for `DATABASE_URL`. Keep the

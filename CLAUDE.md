@@ -72,12 +72,20 @@ npm run test:integration # Integration tree only
 npx vitest run tests/unit/server/serialize.test.ts  # Single test file
 npm run lint             # ESLint
 npm run typecheck        # TypeScript checking
+npm run typecheck:tests  # Critical test/helper typechecking
+npm run test:socketio    # Real Socket.IO listener contract
+npm run test:e2e         # Playwright E2E; main push deploy gate
 npm run health:full      # Health check + build
 ```
 
 **Environment**: `server/config/env.ts` is the typed runtime configuration
 boundary. `DATABASE_URL` and `JWT_SECRET` are mandatory at Nitro startup;
-boolean flags use explicit `true`/`false` values. See `.env.example`.
+boolean flags use explicit `true`/`false` values. New server code must read
+runtime configuration through this boundary; do not add direct
+`process.env.SOMETHING` reads outside `server/config/env.ts` (test fixtures and
+explicit CLI/bootstrap plumbing are the narrow exceptions). Runtime settings
+are parsed on demand rather than cached, because tests and deployment startup
+semantics intentionally observe the current environment. See `.env.example`.
 
 ---
 
@@ -299,7 +307,12 @@ prisma/schema.prisma # Database schema
 
 `lib/errors/factory.ts` 提供結構化錯誤建構器。`lib/logger.ts` 會將
 unexpected errors 統一記錄為 error message/type/stack，並遮罩 credentials；
-request log 透過 `requestId`，scheduler/batch 透過 `jobId` 對應。
+request log 透過 `requestId`，scheduler/batch 透過 `jobId` 對應。Production
+K3s app/CronJob 設定 `LOG_FORMAT=json`；structured stdout/stderr 的
+`level == "ERROR"` 是主要告警訊號，外部 collector 應按 `operation`、
+`requestId`/`jobId`、`errorType` 和 `error` 聚合。相關 operational failure
+應先用 `formatErrorContext()` 正規化錯誤，再以 `reportError()` 送到可選的
+secondary sink；不得記錄 secret、token、cookie 或完整 credential。
 `lib/observability.ts` 保留 vendor-neutral `ErrorTrackingSink` seam；接入
 外部 tracker 必須只傳 safe error context，而且不可令 request/job failure
 處理失敗。Nitro startup 同時觀察 `uncaughtExceptionMonitor` 與
@@ -327,13 +340,27 @@ realtime/scheduler instance。`SCHEDULER_ENABLED=true` 必須只出現一次；
 WebSocket broadcaster 同 market-data cache 都係 process-local。要水平擴展
 web replicas，先要另行設計 distributed coordination（見 ADR-0010）。
 
+K3s 的 `k8s/03-app-deployment.yaml` 固定 `replicas: 1`、`strategy: Recreate`
+並明確設定 `SCHEDULER_ENABLED=true`；這是目前「恰好一個」scheduler 的
+deployment contract。`k8s/cron-market-rotation.yaml` 以同一 image 直接執行
+shared batch scripts，image 必須保留 scripts、lib、必要 server utilities
+及 `scripts/tsconfig.runtime.json`。
+
+Pull request 的 Forgejo gate 保持 fast `quality` path；push 到 `main` 必須
+再通過完整 Playwright E2E 才能 build/push/deploy。E2E 使用獨立 disposable
+MariaDB 11.4，報告與 failure artifacts 由 CI 保留 14 日。不要為了未發生的
+水平擴展預先引入 Redis、BullMQ 或 microservice split。
+
 **Pre-deployment:**
 
 1. `JWT_SECRET` 用 `openssl rand -base64 32`
 2. `DATABASE_URL` 指向 production MariaDB 11.4
 3. `NUXT_PUBLIC_SITE_URL` for SEO/sitemap
-4. `npm run health:full`
-5. `npx prisma migrate deploy`
+4. `LOG_FORMAT=json` in production so the cluster collector receives the
+   structured ERROR signal
+5. `npm run health:full`
+6. `npx prisma migrate deploy` (controlled release step; K3s app manifest keeps
+   `RUN_MIGRATIONS=false`)
 
 ---
 

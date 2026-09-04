@@ -43,6 +43,39 @@ MariaDB credentials、`DATABASE_URL` 與 `JWT_SECRET` 必須由 Kubernetes Secre
 不得寫入 image 或 application logs。Migration 由 release gate / controlled deployment
 執行；部署前後使用 `kubectl rollout status` 及 `/api/health` 驗證。
 
+### Current runtime contract
+
+`k8s/03-app-deployment.yaml` 是目前 K3s topology 的 authoritative manifest：
+
+- app 固定 `replicas: 1`、`strategy: Recreate`，避免 rollout 時短暫同時啟動兩個
+  process-local scheduler/realtime instances。
+- manifest 明確設定唯一 active app 的 `SCHEDULER_ENABLED="true"`；不要在其他
+  app replica 或額外 deployment 再開 scheduler。
+- `RUN_MIGRATIONS="false"`，migration 是受控 release step；`TRUST_X_FORWARDED_FOR`
+  只可在目前 ingress/proxy 信任邊界成立時設為 `true`。
+- production app 與 CronJob 設定 `LOG_FORMAT="json"`。JSON `ERROR` line 是主要
+  production alert signal；`lib/observability.ts` 的 `ErrorTrackingSink` 只係
+  optional secondary sink，不能取代 cluster log collector。
+
+Required runtime configuration is `DATABASE_URL`、`JWT_SECRET`、
+`NUXT_PUBLIC_SITE_URL`、`SCHEDULER_ENABLED`、`RUN_MIGRATIONS`、`LOG_FORMAT`、
+`TRUST_X_FORWARDED_FOR` 與 `MARKET_DATA_CONCURRENCY`。Secrets 只可由 Kubernetes
+Secret 注入，唔好將 connection string、JWT secret、token 或 cookie 寫入 logs。
+
+Collector alert rule 應以 `level == "ERROR"` 為條件，按
+`context.operation` 聚合，並保留 `requestId`/`context.requestId`、
+`context.jobId`、`context.errorType`、`context.error` 作 triage context。現場
+排查可以直接看 JSON stdout：
+
+```bash
+kubectl logs deployment/diary-vue-app -n diary-vue --since=1h
+kubectl get jobs -n diary-vue --sort-by=.metadata.creationTimestamp
+kubectl logs job/<market-rotation-job-name> -n diary-vue
+```
+
+`<market-rotation-job-name>` 必須先由 `kubectl get jobs` 讀出，唔好靠未驗證的
+wildcard 讀錯 job；輸出內容不得複製到 ticket、chat 或文件中的 secret。
+
 ---
 
 ## 前置要求 | Prerequisites
@@ -178,9 +211,8 @@ SCHEDULER_ENABLED="true"
 - **Scheduler**：必須恰好一個 instance 設置 `SCHEDULER_ENABLED="true"`。
 - **Process-local state**：WebSocket broadcaster 與 market-data cache 不跨
   process 共享；水平擴展 web replicas 前必須先補 distributed coordination。
-- `k8s/03-app-deployment.yaml` 目前沒有顯式設定 `SCHEDULER_ENABLED`，所以 typed
-  default 係 `false`；需要 alert scheduler 時，必須只喺指定嗰一個 instance
-  明確設置為 `true`。
+- `k8s/03-app-deployment.yaml` 已顯式設定 `SCHEDULER_ENABLED="true"`，並以
+  `replicas: 1` + `strategy: Recreate` 鎖定 single-instance rollout contract。
 
 目前 repo 內的 K8s manifests 已將 CronJob `DATABASE_URL` 放入
 `secretKeyRef`，但沒有在 CronJob manifest 內建立 dedicated ServiceAccount /
@@ -623,6 +655,13 @@ Market Rotation snapshot 與 Sector Breadth 共用 K8s CronJob，每日美東收
 - **Entry points**: `scripts/market-rotation/run-batch.ts`，接著是 `scripts/market-state/update-breadth.ts`
 - **Schedule**: `30 21 * * 0-5` (21:30 UTC, Sunday–Friday)
 - **Database access**: 兩支 script 都在 CronJob 內直接使用 `DATABASE_URL` 連線資料庫，不經 HTTP。
+- **Runtime image contract**: image 需包含 `scripts/`、`lib/`、必要的
+  `server/` batch utilities，以及 `scripts/tsconfig.runtime.json`；CronJob 以
+  `./node_modules/.bin/tsx --tsconfig scripts/tsconfig.runtime.json` 執行，唔依賴
+  Nuxt HTTP server、JWT 或 CSRF。
+- **Observability**: `LOG_FORMAT=json`；batch failure 以
+  `operation=market_rotation_batch` 或 `operation=market_state_breadth` 的
+  structured `ERROR` line 呈現，Yahoo symbol-level failure 亦帶 `jobId`。
 - **Security boundary**: CronJob 透過 namespace Secret 取得 `DATABASE_URL`；
   K8s ServiceAccount/RBAC、Secret access、network policy、image provenance
   同 DB credentials 必須由 deployment layer 管理。直接呼叫 batch function
@@ -718,6 +757,9 @@ npx prisma migrate deploy
 - [ ] 配置自動備份
 - [ ] 設定日誌輪轉
 - [ ] 配置監控和告警
+- [ ] 驗證 production logs 為 JSON，collector 會對 `level == "ERROR"` 告警
+- [ ] 驗證只有一個 app instance 設定 `SCHEDULER_ENABLED="true"`
+- [ ] 驗證 push 到 `main` 已通過 Playwright E2E 才進入 image push / rollout
 - [ ] 測試災難還原程序
 - [ ] 檢查健康檢查端點
 - [ ] 驗證所有功能正常運作

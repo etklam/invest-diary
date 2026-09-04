@@ -21,6 +21,20 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for the full workflow summary.
 
 Nuxt 4, Vue 3, TypeScript, MariaDB 11.4, Prisma, Vitest, Playwright, Tailwind CSS, vue-i18n (EN / zh-TW / zh-CN), PWA.
 
+## Runtime topology
+
+The supported production path is a modular Nuxt/Nitro monolith on K3s with
+MariaDB 11.4. The web deployment intentionally runs one active
+realtime/scheduler instance: WebSocket delivery and market-data cache are
+process-local, while Market Rotation runs in a K8s CronJob that calls the
+shared batch domain directly.
+
+Production app and batch containers emit structured JSON logs with
+`LOG_FORMAT=json`. Cluster log collection should alert on `level == "ERROR"`
+and use the operation plus `requestId`/`jobId` fields for triage. Redis,
+BullMQ, distributed locks, and a service split are outside the current
+topology; revisit them only when a real horizontal-scaling requirement exists.
+
 ## Quick start
 
 ```bash
@@ -44,11 +58,21 @@ Open http://localhost:3000.
 | `npm run test:coverage` | Coverage report |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript checking |
+| `npm run typecheck:tests` | Critical test/helper typechecking |
 | `npm run build` | Production build |
 | `npm run health:full` | Health check + build |
 | `npm run docs:check` | Validate docs (links, placeholders, whitelist) |
 | `npm run openapi:check` | Validate generated OpenAPI/client artifacts |
+| `npm run test:socketio` | Real Socket.IO listener/handshake contract |
+| `npm run test:diary-reconciliation:mysql` | MariaDB 11.4 reconciliation gate |
 | `npm run test:backend-http:mariadb` | Real Nitro + MariaDB 11.4 release gate |
+| `npm run test:market-rotation:mysql` | MariaDB 11.4 market-rotation gate |
+| `npm run test:e2e` | Playwright E2E; required on `main` push before deploy |
+
+Pull requests run the fast `quality` path. A push to `main` runs the same
+quality path, then the full Playwright E2E job, and only then builds, pushes,
+and deploys the image. E2E provisions its own disposable MariaDB 11.4
+database and must not reuse a quality-job or production-like database.
 
 ## Documentation
 

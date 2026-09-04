@@ -5,6 +5,8 @@ metadata:
   namespace: diary-vue
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: diary-vue-app
@@ -24,6 +26,16 @@ spec:
               value: production
             - name: PORT
               value: "3000"
+            - name: LOG_FORMAT
+              value: "json"
+            - name: SCHEDULER_ENABLED
+              value: "true"
+            - name: RUN_MIGRATIONS
+              value: "false"
+            - name: TRUST_X_FORWARDED_FOR
+              value: "true"
+            - name: MARKET_DATA_CONCURRENCY
+              value: "2"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

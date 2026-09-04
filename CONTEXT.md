@@ -671,11 +671,14 @@ WebSocket origin、logging、trusted proxy 同 market-data concurrency；
 critical config 缺失或 invalid 會 fail fast，secret 不會進 error message。
 `lib/logger.ts` 的 structured JSON mode 會記錄 safe error type/message/stack；
 HTTP request 用 `requestId`，scheduler/batch 用 `jobId`，WS、Yahoo fetch、
-health check failure 都保留 operation/resource context。`lib/observability.ts`
-提供 optional、vendor-neutral `ErrorTrackingSink` seam；未綁定 Sentry 或其他
-vendor，且 tracker failure 不會反向影響 request/job。Nitro startup 亦觀察
-`uncaughtExceptionMonitor` 同 `unhandledRejection`；記錄後維持 unhandled
-failure 的 fail-fast 行為。
+health check failure 都保留 operation/resource context。Production K3s app
+同 Market Rotation CronJob 設定 `LOG_FORMAT=json`，所以主要 production signal
+係 JSON stdout/stderr → cluster log collector → `level == "ERROR"` alert；
+collector 應以 operation、request/job correlation 與 error context 聚合。
+`lib/observability.ts` 提供 optional、vendor-neutral `ErrorTrackingSink` 作
+secondary sink；未綁定 Sentry 或其他 vendor，且 tracker failure 不會反向影響
+request/job。Nitro startup 亦觀察 `uncaughtExceptionMonitor` 同
+`unhandledRejection`；記錄後維持 unhandled failure 的 fail-fast 行為。
 
 #### 4. Multi-instance boundary（ADR-0010）
 
@@ -695,3 +698,29 @@ CronJob 同 admin HTTP route 共用 `server/utils/market-rotation-batch.ts`，
 CLI 直呼 domain function 係 deliberate deployment design。User +
 `ApiKeyCredential` 繼續採用「API key acting on behalf of User」，暫不抽
 Actor/Principal hierarchy。
+
+### 2026-09 Final reliability hardening disposition
+
+今輪 final reliability pass 已完成，並以以下 disposition 收口：
+
+- Closed：blog `FULLTEXT` index/query contract、recurring alert dismissal
+  semantics、BigInt raw wire boundary、Cron/HTTP batch/domain divergence、
+  production structured `ERROR` signal path，以及 Playwright E2E 作為
+  `main` push 的 deploy gate。
+- Recurring alert 只在 create-time materialize children；沒有另加 lazy future
+  path。root dismiss 係 series-wide，child/standalone dismiss 只取消自己；
+  active list、scheduler parent guards 已由 regression/contract tests 鎖定，
+  recurrence generation 本身沒有改語義。
+- Runtime config cache 已 review；由於 tests 會改動 `process.env`，而 Nuxt
+  build/runtime startup 亦有不同讀取時機，刻意保持 on-demand parse，不引入
+  cache。這不是目前的 performance blocker。
+- Accepted constraint：K3s app `replicas: 1` + `strategy: Recreate`，並由
+  manifest 明確啟用唯一 `SCHEDULER_ENABLED=true`。WebSocket broadcaster 與
+  market-data cache 仍是 process-local；Yahoo 仍是單一 provider seam。
+- Explicitly not added：Redis、BullMQ、distributed lock、leader election、
+  microservice split 或 speculative fallback provider。只有真實水平擴展需求
+  出現，才重開 ADR-0010。
+
+剩餘 debt 收斂為選定的 MariaDB integration coverage gaps；不再追加 architecture
+hardening。下一輪回到 product work，除非上述實際 runtime constraint 或真實需求
+再次觸發新的設計決策。

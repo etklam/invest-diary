@@ -1,6 +1,6 @@
 # Testing Guide
 
-This document describes the **actual** test setup for Diary Vue as of September 4, 2026. The current hardening pass re-verified the commands and contracts described below; remaining thin or intentionally unverified areas are listed under Known weak areas.
+This document describes the **actual** test setup for Diary Vue as of September 5, 2026. The final reliability pass re-verified the commands and contracts described below; remaining thin areas are listed under Known weak areas.
 
 ---
 
@@ -31,6 +31,22 @@ npm run test:ci             # vitest run --coverage --reporter=json — CI repor
 npm run coverage:gate       # vitest run --coverage with text/json/html/lcovonly output — gate script
 npm run health:quick        # npm test && npx prisma validate
 ```
+
+### Test matrix
+
+| Layer | Real infra | Purpose |
+| --- | --- | --- |
+| Unit | No | Pure/domain logic, query seams, serializers and regression guards |
+| API contract | Mostly mocked | Handler validation, ownership, errors and response contracts |
+| MariaDB integration | Yes (`mariadb:11.4`) | Migration, constraint and database behavior |
+| Socket.IO integration | Yes (loopback listener) | Realtime handshake, rooms, events and wire behavior |
+| E2E | MariaDB + Nuxt app server | Browser-level user workflows |
+
+The PR quality path runs the existing lint, typecheck, Vitest, coverage,
+OpenAPI, Socket.IO and MariaDB gates. E2E remains separate from PR latency and
+runs on every push to `main` after `quality`; `build-push-deploy` requires both
+jobs. The E2E job owns one disposable MariaDB container per invocation and does
+not reuse or duplicate a quality-job database.
 
 Single file or directory:
 
@@ -568,6 +584,11 @@ separate `webServer` command because the database URL is dynamic.
    cleanup. `global-teardown.ts` is intentionally a no-op because Playwright
    invokes the returned setup teardown after workers stop.
 
+In Forgejo, the E2E job installs Chromium, writes the HTML report to
+`playwright-report/`, keeps failure screenshots/traces under `test-results/`,
+and uploads both locations for 14 days. The list reporter keeps the failing
+spec and assertion visible in the job log.
+
 The auth helper derives email/data suffixes from project + worker + test
 identity, registers a per-test user through the public API, and adds a
 deterministic loopback `x-forwarded-for` value to login requests. This keeps
@@ -593,10 +614,10 @@ npm run test:e2e                           # all specs
 npx playwright test tests/e2e/auth-flow.spec.ts   # single spec
 ```
 
-E2E is **not** included in `npm test`. It is a separate suite and is currently
-an opt-in release-readiness job, not a required pull-request gate, until the
-full browser matrix is stable in the target runner. Run it only with the
-disposable setup above; do not run `npm run seed` against an arbitrary DB.
+E2E is **not** included in `npm test`. It is a separate suite by design: PRs
+keep the fast quality path, while a push to `main` must pass the full browser
+matrix before `build-push-deploy` can run. Run it only with the disposable
+setup above; do not run `npm run seed` against an arbitrary DB.
 
 ---
 
@@ -605,8 +626,8 @@ disposable setup above; do not run `npm run seed` against an arbitrary DB.
 ```
 Vitest:  see the latest `npm test -- --reporter=dot` output (the suite includes
          explicit environment-gated MariaDB and Socket.IO contract files)
-E2E:     separate Playwright suite; database lifecycle is deterministic, but it
-         is not a required PR gate yet (see section 9)
+E2E:     separate Playwright suite; deterministic MariaDB lifecycle and the
+         main-branch deploy gate are defined in section 9
 ```
 
 The exact pass/skip counts are intentionally not duplicated here: they change
@@ -616,4 +637,4 @@ contract command separately.
 
 ---
 
-*Last verified: 2026-09-04 in the current working tree.*
+*Last verified: 2026-09-05 in the current working tree.*

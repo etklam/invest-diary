@@ -1,6 +1,6 @@
 import { formatErrorContext, redactSensitiveText } from '~/lib/error-context'
 
-/** Vendor-neutral payload accepted by a future production error tracker. */
+/** Vendor-neutral payload accepted by an optional secondary error tracker. */
 export interface SafeErrorEvent {
   error: string
   errorType: string
@@ -42,12 +42,15 @@ function sanitizeContext(context: Record<string, unknown>): Record<string, unkno
   return sanitizeContextValue(context) as Record<string, unknown>
 }
 
-/** Configure an optional Sentry/OpenTelemetry/etc. adapter at application bootstrap. */
+/** Configure an optional vendor adapter at application bootstrap. */
 export function setErrorTrackingSink(sink: ErrorTrackingSink | undefined): void {
   errorTrackingSink = sink
 }
 
-/** Report only sanitized error data; an unavailable tracker must not break the request. */
+/**
+ * Report only sanitized error data; an unavailable tracker must not break the
+ * request. Structured logger output remains the primary production signal.
+ */
 export function reportError(error: unknown, context: Record<string, unknown> = {}): void {
   if (!errorTrackingSink) return
 

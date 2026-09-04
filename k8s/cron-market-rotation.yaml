@@ -18,6 +18,12 @@ spec:
               image: git.913555.xyz/etklam/invest-diary:latest
               imagePullPolicy: IfNotPresent
               env:
+                - name: NODE_ENV
+                  value: production
+                - name: LOG_FORMAT
+                  value: "json"
+                - name: MARKET_DATA_CONCURRENCY
+                  value: "2"
                 - name: DATABASE_URL
                   valueFrom:
                     secretKeyRef:
@@ -27,5 +33,5 @@ spec:
                 - sh
                 - -ec
                 - |
-                  ./node_modules/.bin/tsx scripts/market-rotation/run-batch.ts
-                  ./node_modules/.bin/tsx scripts/market-state/update-breadth.ts
+                  ./node_modules/.bin/tsx --tsconfig scripts/tsconfig.runtime.json scripts/market-rotation/run-batch.ts
+                  ./node_modules/.bin/tsx --tsconfig scripts/tsconfig.runtime.json scripts/market-state/update-breadth.ts

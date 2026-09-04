@@ -7,9 +7,8 @@ Companion to [`../CLAUDE.md`](../CLAUDE.md) (architecture rules) and
 [`TESTING.md`](TESTING.md).
 
 > Conventions: file paths are repo-relative. References like `path:LINE` point
-> at function definitions or key blocks. Anything marked
-> **Needs verification** could not be fully confirmed from source at the time
-> of writing.
+> at function definitions or key blocks. This document describes the current
+> source-verified behavior; historical uncertainty belongs in archived notes.
 
 ---
 
@@ -431,7 +430,7 @@ of regressions (see test files).
 - Validation: [`server/utils/blog-schemas.ts`](../server/utils/blog-schemas.ts)
 - Markdown and response helpers: [`lib/blog.ts`](../lib/blog.ts)
 - UI: [`pages/blog/`](../pages/blog), [`pages/articles/`](../pages/articles)
-  ( Needs verification: legacy alias route for older slugs)
+  (article route and legacy slug fallback)
 
 ### Related tests
 
@@ -708,12 +707,42 @@ paths (see [`vitest.config.ts`](../vitest.config.ts):14). Presentational
   dedicated files to lock the contract — review them before changing
   related runtime code.
 - E2E starts its own dev server and disposable DB; the setup teardown callback
-  owns container cleanup. E2E remains separate from the required PR gate until
-  the full browser matrix is stable on the target Forgejo runner.
+  owns container cleanup. It is intentionally separate from the PR quality
+  job, but is a required gate for every push to `main` before deployment.
 
 ---
 
-## 12. Deployment / Operations Workflow
+## 12. CI / Release Workflow
+
+The executable CI contract is
+[`.forgejo/workflows/build.yml`](../.forgejo/workflows/build.yml). The dependency chain is deliberately different
+for pull requests and the protected `main` release path:
+
+| Trigger | Required sequence |
+| --- | --- |
+| Pull request → `main` | `quality`: lint → typecheck → tests → coverage → docs/OpenAPI/client checks → Socket.IO → real MariaDB gates |
+| Push → `main` | `quality` → full Playwright E2E → build → registry push → K3s deploy |
+
+`e2e` runs only when `github.event_name == 'push'` and
+`github.ref == 'refs/heads/main'`, and has `needs: quality`. The deploy job has
+`needs: [quality, e2e]`, so an E2E failure cannot reach image push or rollout.
+The browser job installs Chromium, provisions one disposable `mariadb:11.4`
+database through Playwright global setup, and uploads its HTML report and
+failure artifacts for 14 days. It does not reuse a quality-job database.
+
+### Production error signal
+
+The production K3s app and Market Rotation CronJob set `LOG_FORMAT=json`.
+Structured `ERROR` records are written to stdout/stderr and consumed by the
+cluster logging path. An external alert rule should match `level == "ERROR"`
+and group by `context.operation`, with `requestId`/`context.requestId`,
+`context.jobId`, `context.errorType`, and `context.error` used for triage.
+`lib/observability.ts` remains an optional vendor-neutral secondary sink;
+request and batch handling do not depend on it.
+
+---
+
+## 13. Deployment / Operations Workflow
 
 Container deploy is Docker-first. The image (`Dockerfile`,
 multi-stage) runs `docker-entrypoint.sh`, which waits for MySQL, optionally
@@ -724,11 +753,13 @@ deployment, service and ingress.
 
 The **Market Rotation batch** runs as a K8s CronJob at `30 21 * * 0-5`
 (21:30 UTC, Sun–Fri) — see [`k8s/cron-market-rotation.yaml`](../k8s/cron-market-rotation.yaml).
-The container invokes `npx tsx scripts/market-rotation/run-batch.ts`
-in-process; no HTTP, no JWT, no CSRF (CONTEXT.md 2026-07 §6). Env is just
-`DATABASE_URL` for the batch domain path; the companion market-state breadth
-script also reads the typed `MARKET_DATA_CONCURRENCY` setting. No user auth
-secret is needed for this deployment-layer invocation.
+The container invokes
+`./node_modules/.bin/tsx --tsconfig scripts/tsconfig.runtime.json` for both
+`scripts/market-rotation/run-batch.ts` and
+`scripts/market-state/update-breadth.ts` in-process; no HTTP, no JWT, no CSRF.
+The batch receives `DATABASE_URL`, `NODE_ENV=production`, `LOG_FORMAT=json`, and
+the bounded `MARKET_DATA_CONCURRENCY` setting. No user auth secret is needed
+for this deployment-layer invocation.
 
 The same batch seam is available to an admin through
 `POST /api/admin/market/rotation-batch`. The API test covers validated scope
