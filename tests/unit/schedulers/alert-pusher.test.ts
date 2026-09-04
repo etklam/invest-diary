@@ -61,6 +61,10 @@ describe('createAlertPusher', () => {
             gte: now,
             lt: new Date(now.getTime() + 60000 + 5000),
           },
+          OR: [
+            { parentId: null },
+            { parent: { isDismissed: false } },
+          ],
         },
       })
     )
@@ -157,7 +161,13 @@ describe('createAlertPusher', () => {
     // Error for the second alert should be logged
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining('Failed to push alert 2'),
-      expect.any(Error)
+      expect.any(Error),
+      expect.objectContaining({
+        operation: 'alert_push',
+        alertId: '2',
+        userId: '2',
+        jobId: expect.any(String),
+      }),
     )
   })
 
@@ -171,7 +181,11 @@ describe('createAlertPusher', () => {
 
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining('Error checking alerts'),
-      expect.any(Error)
+      expect.any(Error),
+      expect.objectContaining({
+        operation: 'alert_scheduler_tick',
+        jobId: expect.any(String),
+      }),
     )
   })
 

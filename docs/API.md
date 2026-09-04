@@ -350,6 +350,9 @@ deterministically.
 ### `PUT /api/alerts/{id}/dismiss`
 
 Dismisses an owned Diary Alert. Ownership mismatches use `ALERT_NOT_FOUND`.
+For a recurring root, dismissal is series-wide and prevents all materialized
+future instances from appearing in active lists or being pushed by the
+scheduler. Dismissing a child dismisses only that instance.
 
 ### `GET|POST /api/stocks/alerts`
 

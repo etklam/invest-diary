@@ -1,16 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { mockAlertFindFirst, mockAlertUpdate } = vi.hoisted(() => ({
+const {
+  mockAlertFindFirst,
+  mockAlertFindUnique,
+  mockAlertUpdate,
+  mockAlertUpdateMany,
+  mockTransaction,
+} = vi.hoisted(() => ({
   mockAlertFindFirst: vi.fn(),
+  mockAlertFindUnique: vi.fn(),
   mockAlertUpdate: vi.fn(),
+  mockAlertUpdateMany: vi.fn(),
+  mockTransaction: vi.fn(),
 }))
 
 vi.mock('~/lib/prisma', () => ({
   default: {
     alert: {
       findFirst: mockAlertFindFirst,
+      findUnique: mockAlertFindUnique,
       update: mockAlertUpdate,
+      updateMany: mockAlertUpdateMany,
     },
+    $transaction: mockTransaction,
   },
 }))
 
@@ -53,7 +65,7 @@ describe('CreateAlertSchema', () => {
 
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('trigger_at must be a valid date')
+      expect(result.error.issues[0]?.message).toBe('trigger_at must be a valid date')
     }
   })
 
@@ -71,22 +83,88 @@ describe('CreateAlertSchema', () => {
 describe('dismissAlert', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockTransaction.mockImplementation(async (callback: (tx: unknown) => unknown) => callback({
+      alert: {
+        findFirst: mockAlertFindFirst,
+        findUnique: mockAlertFindUnique,
+        update: mockAlertUpdate,
+        updateMany: mockAlertUpdateMany,
+      },
+    }))
   })
 
   it('dismisses an alert only after finding it through the owning diary', async () => {
-    mockAlertFindFirst.mockResolvedValue({ id: 42n })
+    mockAlertFindFirst.mockResolvedValue({
+      id: 42n,
+      parentId: null,
+      recurringMode: null,
+      instanceNumber: 1,
+    })
     mockAlertUpdate.mockResolvedValue({ id: 42n, isDismissed: true })
 
     await expect(dismissAlert('42', 7n)).resolves.toEqual({ id: 42n, isDismissed: true })
 
     expect(mockAlertFindFirst).toHaveBeenCalledWith({
       where: { id: 42n, diary: { userId: 7n } },
+      select: {
+        id: true,
+        parentId: true,
+        recurringMode: true,
+        instanceNumber: true,
+      },
     })
     expect(mockAlertUpdate).toHaveBeenCalledWith({
       where: { id: 42n },
       data: { isDismissed: true },
       include: { diary: { select: { id: true, title: true } } },
     })
+  })
+
+  it('dismisses every future instance when the recurring root is dismissed', async () => {
+    mockAlertFindFirst.mockResolvedValue({
+      id: 100n,
+      parentId: 100n,
+      recurringMode: 'WEEK',
+      instanceNumber: 1,
+    })
+    mockAlertFindUnique.mockResolvedValue({ id: 100n, isDismissed: true })
+
+    await expect(dismissAlert(100n, 7n)).resolves.toEqual({ id: 100n, isDismissed: true })
+
+    expect(mockAlertUpdateMany).toHaveBeenCalledWith({
+      where: {
+        diary: { userId: 7n },
+        OR: [
+          { id: 100n },
+          { parentId: 100n },
+        ],
+      },
+      data: { isDismissed: true },
+    })
+    expect(mockAlertFindUnique).toHaveBeenCalledWith({
+      where: { id: 100n },
+      include: { diary: { select: { id: true, title: true } } },
+    })
+    expect(mockAlertUpdate).not.toHaveBeenCalled()
+  })
+
+  it('dismisses a recurring child without cancelling the whole series', async () => {
+    mockAlertFindFirst.mockResolvedValue({
+      id: 102n,
+      parentId: 100n,
+      recurringMode: 'WEEK',
+      instanceNumber: 2,
+    })
+    mockAlertUpdate.mockResolvedValue({ id: 102n, isDismissed: true })
+
+    await expect(dismissAlert(102n, 7n)).resolves.toEqual({ id: 102n, isDismissed: true })
+
+    expect(mockAlertUpdate).toHaveBeenCalledWith({
+      where: { id: 102n },
+      data: { isDismissed: true },
+      include: { diary: { select: { id: true, title: true } } },
+    })
+    expect(mockAlertUpdateMany).not.toHaveBeenCalled()
   })
 
   it('rejects an alert that is missing or owned by another user', async () => {

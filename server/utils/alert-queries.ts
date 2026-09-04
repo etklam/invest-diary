@@ -80,7 +80,16 @@ export type CreateAlertInput = z.infer<typeof CreateAlertSchema>
  */
 export async function listActiveAlerts(userId: bigint) {
   const rows = await prisma.alert.findMany({
-    where: { diary: { userId }, isDismissed: false },
+    where: {
+      diary: { userId },
+      isDismissed: false,
+      // A recurring root dismissal is series-wide. Keep the parent predicate
+      // here as a defensive guard for legacy/partially-updated rows.
+      OR: [
+        { parentId: null },
+        { parent: { isDismissed: false } },
+      ],
+    },
     include: { diary: { select: { id: true, title: true } } },
     orderBy: [{ triggerAt: 'asc' }, { id: 'asc' }],
     take: ALERT_MAX_ITEMS,
@@ -96,18 +105,48 @@ export async function listActiveAlerts(userId: bigint) {
 export async function dismissAlert(alertId: bigint | string, userId: bigint) {
   const id = typeof alertId === 'string' ? BigInt(alertId) : alertId
 
-  const existing = await prisma.alert.findFirst({
-    where: { id, diary: { userId } },
-  })
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const existing = await tx.alert.findFirst({
+      where: { id, diary: { userId } },
+      select: {
+        id: true,
+        parentId: true,
+        recurringMode: true,
+        instanceNumber: true,
+      },
+    })
 
-  if (!existing) {
-    throw Errors.alertNotFound(String(id)).toH3Error()
-  }
+    if (!existing) {
+      throw Errors.alertNotFound(String(id)).toH3Error()
+    }
 
-  return prisma.alert.update({
-    where: { id },
-    data: { isDismissed: true },
-    include: { diary: { select: { id: true, title: true } } },
+    const isRecurringRoot = existing.recurringMode !== null
+      && existing.instanceNumber === 1
+      && (existing.parentId === null || existing.parentId === existing.id)
+
+    if (isRecurringRoot) {
+      await tx.alert.updateMany({
+        where: {
+          diary: { userId },
+          OR: [
+            { id: existing.id },
+            { parentId: existing.id },
+          ],
+        },
+        data: { isDismissed: true },
+      })
+
+      return tx.alert.findUnique({
+        where: { id: existing.id },
+        include: { diary: { select: { id: true, title: true } } },
+      })
+    }
+
+    return tx.alert.update({
+      where: { id: existing.id },
+      data: { isDismissed: true },
+      include: { diary: { select: { id: true, title: true } } },
+    })
   })
 }
 

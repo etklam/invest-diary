@@ -1,4 +1,6 @@
 import type { AlertBroadcaster, AlertPayload } from '~/types/websocket'
+import { randomUUID } from 'node:crypto'
+import { reportError } from '~/lib/observability'
 
 // ─── Dependency interfaces ────────────────────────────────────────────────────
 
@@ -8,6 +10,10 @@ export interface AlertPusherPrisma {
       where: {
         isDismissed: boolean
         triggerAt: { gte: Date; lt: Date }
+        OR: Array<
+          | { parentId: null }
+          | { parent: { isDismissed: boolean } }
+        >
       }
       include: {
         diary: {
@@ -35,13 +41,15 @@ export interface AlertPusherPrisma {
 
 export interface AlertPusherLogger {
   info: (message: string) => void
-  error: (message: string, error?: unknown) => void
+  error: (message: string, error?: unknown, context?: Record<string, unknown>) => void
 }
 
 export interface AlertPusherDeps {
   prisma: AlertPusherPrisma
   broadcaster: AlertBroadcaster
   logger: AlertPusherLogger
+  /** Injectable clock keeps the scheduler window deterministic in integration tests. */
+  now?: () => Date
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -65,8 +73,9 @@ export function createAlertPusher(deps: AlertPusherDeps) {
    * 檢查並推播即將觸發的 alerts
    */
   const checkAndPushAlerts = async () => {
+    const jobId = randomUUID()
     try {
-      const now = new Date()
+      const now = deps.now?.() ?? new Date()
       // 查詢未來 1 分鐘 + 5 秒緩衝內會觸發的 alerts（防止間隔邊界漏掉）
       const oneMinuteLater = new Date(now.getTime() + CHECK_INTERVAL + BUFFER_WINDOW)
 
@@ -77,6 +86,12 @@ export function createAlertPusher(deps: AlertPusherDeps) {
             gte: now,
             lt: oneMinuteLater,
           },
+          // Dismissing a recurring root is series-wide. This predicate also
+          // protects the scheduler if a legacy row was only partially updated.
+          OR: [
+            { parentId: null },
+            { parent: { isDismissed: false } },
+          ],
         },
         include: {
           diary: {
@@ -120,11 +135,20 @@ export function createAlertPusher(deps: AlertPusherDeps) {
           }
         } catch (error) {
           // 單一 alert 推播失敗不應影響其他 alerts
-          deps.logger.error(`${TAG} Failed to push alert ${alert.id}:`, error)
+          deps.logger.error(`${TAG} Failed to push alert ${alert.id}:`, error, {
+            operation: 'alert_push',
+            jobId,
+            alertId: alert.id.toString(),
+            userId: alert.diary.userId.toString(),
+          })
         }
       }
     } catch (error) {
-      deps.logger.error(`${TAG} Error checking alerts:`, error)
+      deps.logger.error(`${TAG} Error checking alerts:`, error, {
+        operation: 'alert_scheduler_tick',
+        jobId,
+      })
+      reportError(error, { operation: 'alert_scheduler_tick', jobId })
     }
   }
 
@@ -141,5 +165,5 @@ export function createAlertPusher(deps: AlertPusherDeps) {
     }
   }
 
-  return { start, stop }
+  return { start, stop, checkAndPushAlerts }
 }
