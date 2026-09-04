@@ -1,6 +1,6 @@
 # Testing Guide
 
-This document describes the **actual** test setup for Diary Vue as of September 2026. It was rewritten from scratch after the original version drifted from reality. Where verification was not possible, the section is marked "Needs verification".
+This document describes the **actual** test setup for Diary Vue as of September 4, 2026. The current hardening pass re-verified the commands and contracts described below; remaining thin or intentionally unverified areas are listed under Known weak areas.
 
 ---
 
@@ -12,20 +12,23 @@ All commands come from `package.json`. There is no Husky pre-commit hook wired u
 npm test                    # vitest run — single-shot, all tests (default CI entry)
 npm run test:watch          # vitest watch — re-run on file change
 npm run test:ui             # vitest --ui — browser dashboard
-npm run test:coverage       # vitest run --coverage — text + json + html
+npm run test:coverage       # vitest run --coverage — text + json + html + lcovonly
 npm run test:unit           # vitest run tests/unit — only the unit/ tree
 npm run test:integration    # vitest run tests/integration — only integration/ tree
 npm run test:diary-reconciliation:mysql # disposable MariaDB reconciliation + unique-index verification
 npm run test:backend-http:mariadb # real built Nitro + MariaDB 11.4 auth/migration contracts
+npm run test:market-rotation:mysql # real Market Rotation Prisma/MariaDB boundary
+npm run test:socketio         # real Socket.IO listener/handshake/event contract
 npm run openapi:check       # generated OpenAPI + transport drift
 npm run openapi:breaking    # compatibility diff against OPENAPI_BASE_REF/HEAD^
 npm run client:smoke        # generated client/facade smoke
 npm run lint                # ESLint
 npm run typecheck           # vue-tsc
+npm run typecheck:tests     # strict typecheck for new/critical test contracts
 npm run build               # production Nuxt build
 npm run test:e2e            # playwright test — E2E suite (separate config)
 npm run test:ci             # vitest run --coverage --reporter=json — CI reporter
-npm run coverage:gate       # runs coverage twice (text + json + lcovonly) — gate script
+npm run coverage:gate       # vitest run --coverage with text/json/html/lcovonly output — gate script
 npm run health:quick        # npm test && npx prisma validate
 ```
 
@@ -42,7 +45,12 @@ Skip the slow lint+typecheck guard (see section 8) when iterating on unrelated t
 SKIP_LINT_GUARD=1 npx vitest run tests/api/auth.test.ts
 ```
 
-E2E tests are separate (see section 3). They boot a real dev server via Playwright's `webServer` config — never run them against a production database. Seed first with `npm run seed`.
+E2E tests are separate (see section 9). Their global setup starts a disposable
+MariaDB 11.4 database, applies migrations, starts the test server with that
+database, and tears the container down after the run. The auth helper creates
+an isolated identity per test. Never point E2E at a production-like
+database; externally supplied E2E URLs must pass the loopback + `diary_e2e_`
+name guard.
 
 ---
 
@@ -60,7 +68,7 @@ Config lives in `/Users/klam/Desktop/project/diary-vue/vitest.config.ts`.
 | exclude | `node_modules`, `dist`, `.nuxt`, `.output` |
 | plugins | `@vitejs/plugin-vue` |
 | coverage.provider | `v8` |
-| coverage.reporter | `text`, `json`, `html` |
+| coverage.reporter | `text`, `json`, `html`, `lcovonly` |
 
 ### Alias setup (`resolve.alias`)
 
@@ -147,7 +155,9 @@ Files: `useAlerts`, `useAppShell`, `useAuthRecovery`, `useBlogDraft`, `useDialog
 - `article-markdown-ssr.test.ts` — mounts the real `pages/articles/[slug].vue` inside `<Suspense>` and asserts parsed markdown body is rendered (regression guard for fire-and-forget SSR bug).
 - `auth-flow.test.ts`, `diary-workflow.test.ts`, `agent-stock-timeline.test.ts`.
 - `diary-reconciliation.mysql.test.ts` — skipped by the generic Vitest command; `npm run test:diary-reconciliation:mysql` starts a disposable MariaDB container and verifies both current and pre-0900 schemas, real duplicate reconciliation, structured review preservation, child reparenting, `DiaryStock` union semantics, transaction rollback, and the final unique index.
-- `http/auth.contract.test.ts` — skipped by generic Vitest; `npm run test:backend-http:mariadb` starts disposable MariaDB 11.4, verifies native-session and Diary-contract legacy backfills plus rollback/forward paths, boots a built Nitro server, then exercises auth plus real Diary CRUD/list/review ownership, validation, conflict, pagination, ID/date/instant and error wire contracts.
+- `http/auth.contract.test.ts`, `http/core.contract.test.ts` — skipped by generic Vitest; `npm run test:backend-http:mariadb` starts disposable MariaDB 11.4, verifies native-session and Diary-contract legacy backfills plus rollback/forward paths, boots a built Nitro server, then exercises auth, blog FULLTEXT search, recurring-alert dismissal/scheduler behavior, real Diary CRUD/list/review ownership, validation, conflict, pagination, ID/date/instant and error wire contracts.
+- `market-rotation.mysql.test.ts` — skipped by generic Vitest; `npm run test:market-rotation:mysql` starts disposable MariaDB 11.4 and exercises the real Prisma snapshot boundary, date qualification, canonical core universe, and a BigInt ID above `Number.MAX_SAFE_INTEGER` through `serialize()`.
+- `websocket/socket-io.contract.test.ts` — environment-gated in generic Vitest because it binds a loopback listener; `npm run test:socketio` is the required real Socket.IO gate and exercises the production `createSocketServer()` handshake, auth rejection, user room, ping/pong, alert dismissal, and large-ID wire contract.
 
 **`tests/lib/`** — 14 files (plus 2 subdirs: `dates/` with 2, `quicknote/` with 5). Pure-function tests for library modules. No mocks, no Vue, no Prisma.
 
@@ -281,7 +291,7 @@ The `vitest.config.ts` comment calls out: *"Purely presentational components are
 
 ```bash
 npm run test:coverage         # writes text table to stdout + coverage/
-npm run coverage:gate         # runs the full gate script (text + json + lcovonly)
+npm run coverage:gate         # one Vitest coverage run; config writes text/json/html/lcovonly artifacts
 ```
 
 Open `coverage/index.html` after the run for the HTML report.
@@ -294,15 +304,11 @@ The `vitest run --coverage` process exits non-zero. Locally, you see the thresho
 
 ## 7. Known weak areas
 
-These are areas where coverage is known to be thin or where tests exist but are of limited value. Items marked **"Needs verification"** were not independently confirmed during this rewrite.
-
-### Currently failing (verified June 17 2026)
-
-- `tests/unit/components/BaseButton.test.ts > has min-h-10 class for 40px touch target` — asserts the old `min-h-10` class but the component now uses `min-h-11`. **Needs fix.** The rest of the suite (1696 tests) passes.
+These are areas where coverage is known to be thin or where tests exist but are of limited value. They are not failures of the current test run unless stated explicitly.
 
 ### Explicitly fragile or narrowly scoped
 
-- **`tests/unit/components/BaseButton.test.ts`** — uses Tailwind utility class assertions (`min-h-*`, `inline-flex`). This is the exact anti-pattern section 5 warns against; the failing test is direct evidence of the brittleness. Only LedgerCard has written justification for class-token assertions.
+- **`tests/unit/components/BaseButton.test.ts`** — uses Tailwind utility class assertions (`min-h-*`, `inline-flex`). This is the exact anti-pattern section 5 warns against; keep these assertions limited to documented accessibility/interaction contracts.
 - **`tests/unit/components/LedgerCard.test.ts`** — dt-* class assertions are intentional (see DESIGN.md justification in file header), but the test still locks presentational detail.
 - **`tests/unit/api-docs-content.test.ts`** — parses `docs/API.md` with a regex (`/^### \`([A-Z]+ [^\s]+)\`\s*$/gm`). If API.md's heading format changes, the section loader silently returns empty. The file's own comment acknowledges this: "If API.md is ever regenerated from a schema, replace the parseSection() helper below with an assertion against the generated artifact."
 
@@ -310,11 +316,20 @@ These are areas where coverage is known to be thin or where tests exist but are 
 
 - **Pages (`pages/**/*.vue`)** — excluded from the coverage gate entirely. Only a handful of pages have mount-level tests (`tests/integration/article-markdown-ssr.test.ts`, `tests/unit/pages/article-content-rendering.test.ts`, `tests/unit/pages/admin-*-route-guard.test.ts`). The bulk of the authenticated app UI (`/diaries`, `/timeline`, `/alerts`, `/stocks`, `/tools/*`) has **no** Vitest component tests. E2E specs cover the happy paths only.
 - **Layouts** — no tests.
-- **Agent API (`server/api/agent/**`)** — **Needs verification.** `tests/api/agent-diaries.test.ts`, `agent-stocks-records.test.ts`, `agent-stocks-watchlist.test.ts` exist but I did not audit them against the current handler surface area.
-- **`server/utils/partner-compare.ts` and `server/utils/partner-queries.ts`** — covered, but the partner comparison algorithm has known edge cases around cross-timezone compare days. **Needs verification** that the test cases cover the edge cases.
-- **WebSocket** — `connectionManager` and `alertHandler` have unit tests, but there is **no** integration test that verifies end-to-end Socket.IO message delivery. **Needs verification.**
-- **Market rotation snapshot pipeline** — `tests/unit/lib/market-rotation/` has 16 files and is the most TDD-driven area of the codebase (see commit `3ff23b8 feat(market-rotation): add calculation utils with TDD coverage`). Still, the end-to-end pipeline (`pipeline.test.ts`, `snapshot-builder.test.ts`) operates on synthetic inputs — **needs verification** against real Yahoo Finance shape.
-- **i18n locale files** — no test verifies that all three locale files (`en.json`, `zh-TW.json`, `zh-CN.json`) have the same key set. `tests/unit/pages/article-content-rendering.test.ts` checks one specific key (`blog.contentUnavailable`) across locales but nothing systematic.
+- **Agent API (`server/api/agent/**`)** — `tests/api/agent-diaries.test.ts`, `agent-stocks-records.test.ts`, and `agent-stocks-watchlist.test.ts` exist, but their full handler-surface audit is outside this hardening pass.
+- **`server/utils/partner-compare.ts` and `server/utils/partner-queries.ts`** — covered, but the partner comparison algorithm still has useful follow-up cases around cross-timezone compare days.
+- **WebSocket** — unit coverage exists for `connectionManager` and `alertHandler`; `npm run test:socketio` now adds a real Socket.IO listener/handshake/event contract. It uses injected auth/query seams and does not connect to an external browser or production service.
+- **Market rotation snapshot pipeline** — `tests/unit/lib/market-rotation/` keeps the pure calculation contract deterministic; `tests/unit/lib/daily-prices.test.ts` and `tests/unit/lib/market-data-quote.test.ts` cover injected Yahoo provider/cache seams, while `npm run test:market-rotation:mysql` covers the real Prisma/MariaDB boundary. No test calls Yahoo Finance over the network.
+- **i18n locale files** — `tests/unit/i18n-parity.test.ts` verifies that all three locale files (`en.json`, `zh-TW.json`, `zh-CN.json`) share the same key tree and that every `ErrorCodes` mapping exists in every locale.
+
+### Transport input decision
+
+`serialize()` supports JSON-shaped objects/arrays, `Date`, Prisma Decimal, and
+converts `bigint` to decimal strings. `Map` and `Set` are not supported API or
+WebSocket inputs: the serializer rejects them explicitly instead of silently
+turning them into empty objects. The rejection contract is covered by
+`tests/unit/server/serialize.test.ts`; callers must convert these collections
+to arrays or plain objects before crossing the wire.
 
 ### Dead test infrastructure
 
@@ -534,13 +549,32 @@ Two device profiles, both Chromium:
 
 ### Server
 
-Playwright boots the dev server itself via `webServer.command = 'npm run dev'` against `http://127.0.0.1:3000`. `reuseExistingServer: false` — it always starts fresh. Timeout 120s.
+The global setup starts a fresh Nuxt dev server on `http://127.0.0.1:3000`
+after the disposable database environment is ready. Playwright does not use a
+separate `webServer` command because the database URL is dynamic.
 
 ### Global setup / teardown
 
-`tests/e2e/global-setup.ts` and `global-teardown.ts` are currently console-log stubs. The setup file's comment says: "Database seeding should be done manually before running E2E tests. Run: `npm run seed`."
+`tests/e2e/global-setup.ts` owns the complete disposable database lifecycle:
 
-**Needs verification:** it is unclear whether E2E specs actually pass in CI today. The `auth-flow.spec.ts` uses a real login form submit against `test@example.com / password123`, which requires the seeded user to exist.
+1. Generate a run ID and start `mariadb:11.4` on a dynamically mapped
+   loopback port.
+2. Verify the container is ready, verify the MariaDB minor version, validate
+   the database URL with `scripts/test-database-guard.ts`, and apply migrations.
+3. Export `E2E_RUN_ID`, `DATABASE_URL`, `E2E_DATABASE_URL`, and the test auth
+   configuration before browser workers start; setup then starts the Nuxt dev
+   server with that environment.
+4. Remove the container in the setup teardown callback, including setup-failure
+   cleanup. `global-teardown.ts` is intentionally a no-op because Playwright
+   invokes the returned setup teardown after workers stop.
+
+The auth helper derives email/data suffixes from project + worker + test
+identity, registers a per-test user through the public API, and adds a
+deterministic loopback `x-forwarded-for` value to login requests. This keeps
+users, diary dates, and the process-local login rate limiter isolated without
+touching Vue/Nuxt internal state. An externally supplied
+`E2E_DATABASE_URL` is accepted only with `E2E_RUN_ID` and the `diary_e2e_`
+database prefix; otherwise setup fails closed.
 
 ### Existing specs
 
@@ -559,19 +593,27 @@ npm run test:e2e                           # all specs
 npx playwright test tests/e2e/auth-flow.spec.ts   # single spec
 ```
 
-E2E is **not** included in `npm test`. It is a separate suite.
+E2E is **not** included in `npm test`. It is a separate suite and is currently
+an opt-in release-readiness job, not a required pull-request gate, until the
+full browser matrix is stable in the target runner. Run it only with the
+disposable setup above; do not run `npm run seed` against an arbitrary DB.
 
 ---
 
-## 10. Test counts (verified June 17 2026)
+## 10. Test counts (verified September 4 2026)
 
 ```
-Vitest:  184 files, 1697 tests (1696 passing, 1 known failure in BaseButton)
-E2E:      7 specs (status uncertain — see section 9)
+Vitest:  see the latest `npm test -- --reporter=dot` output (the suite includes
+         explicit environment-gated MariaDB and Socket.IO contract files)
+E2E:     separate Playwright suite; database lifecycle is deterministic, but it
+         is not a required PR gate yet (see section 9)
 ```
 
-The 1 Vitest failure is `tests/unit/components/BaseButton.test.ts > has min-h-10 class for 40px touch target` — the component now uses `min-h-11` but the test still asserts `min-h-10`. This is a failing test, not a failing feature.
+The exact pass/skip counts are intentionally not duplicated here: they change
+as contract tests are added. CI is authoritative and runs the generic suite,
+the strict critical-test typecheck, the coverage gate, and each real DB/Socket
+contract command separately.
 
 ---
 
-*Last verified: 2026-06-17 against commit `bea93c3`.*
+*Last verified: 2026-09-04 in the current working tree.*

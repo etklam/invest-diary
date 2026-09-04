@@ -124,11 +124,9 @@ spec:
                 - scripts/market-rotation/run-batch.ts
 ```
 
-> The production manifest currently hard-codes the `DATABASE_URL` value. When
-> wiring this for the Beta Cockpit, move it to a `secretKeyRef` reference
-> (`diary-secrets` / `database-url`) — the example above shows the target
-> shape; the actual file in `k8s/` still carries the literal connection
-> string.
+> The production manifest uses a `secretKeyRef` for `DATABASE_URL`. Keep the
+> CronJob database credential in the deployment Secret; do not move it into
+> the manifest or an HTTP request payload.
 
 ### Staleness contract (Phase 0.3 / Phase 8.2)
 

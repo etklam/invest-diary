@@ -642,3 +642,56 @@ Client-neutral 契約集中：`common/`（error codes SSOT——自 `lib/errors/
 #### 6. 視覺與無障礙（非架構，一併記錄）
 
 介面樣式遷移至 design tokens（`dt-*` color utilities）、a11y 與 localization 改善、date formatter 快取、market rotation 鍵盤可及 row controls、responsive app layout 統一（`PageContainer` + 導覽元件重整）。
+
+### 2026-09 Reliability hardening
+
+#### 1. Blog full-text search contract
+
+Public blog search 由 `queryPostsPublic` 固定走 Prisma/MariaDB full-text
+`search`，欄位係 `Post.title` + `Post.excerpt`。正式 index
+`posts_title_excerpt_fulltext_idx` 已加入 `prisma/schema.prisma`，並由
+`prisma/migrations/20260904090000_add_posts_fulltext_index` 安裝；真
+MariaDB + Nitro contract test 鎖定 unique phrase 只返回正確文章。這不是
+substring search，也沒有 fallback；database full-text parser 的短字/stop
+word 限制屬正式行為。
+
+#### 2. Recurring alert dismissal contract
+
+Recurring root 的 `dismiss` 係 series-wide transaction：root 同所有已
+materialize children 一併設 `isDismissed=true`。child 或 standalone alert
+只取消自己。active-list query 同 alert scheduler 都檢查 parent state，避免
+legacy/partial row 再被列出或 WebSocket push。recurrence generation 本身
+保持不變。
+
+#### 3. Runtime configuration and observability
+
+`server/config/env.ts` 是 server runtime env 的 typed boundary。Nitro startup
+會驗證 `DATABASE_URL`、`JWT_SECRET`、`SCHEDULER_ENABLED`、`RUN_MIGRATIONS`、
+WebSocket origin、logging、trusted proxy 同 market-data concurrency；
+critical config 缺失或 invalid 會 fail fast，secret 不會進 error message。
+`lib/logger.ts` 的 structured JSON mode 會記錄 safe error type/message/stack；
+HTTP request 用 `requestId`，scheduler/batch 用 `jobId`，WS、Yahoo fetch、
+health check failure 都保留 operation/resource context。`lib/observability.ts`
+提供 optional、vendor-neutral `ErrorTrackingSink` seam；未綁定 Sentry 或其他
+vendor，且 tracker failure 不會反向影響 request/job。Nitro startup 亦觀察
+`uncaughtExceptionMonitor` 同 `unhandledRejection`；記錄後維持 unhandled
+failure 的 fail-fast 行為。
+
+#### 4. Multi-instance boundary（ADR-0010）
+
+目前 deployment invariant 係單一 active realtime/scheduler instance：
+Scheduler 恰好只開一份，WebSocket broadcaster 同 market-data cache 均為
+process-local。今輪刻意不引入 Redis、BullMQ、leader election、distributed
+lock 或 microservice split。只有當實際需求令 web replica 必須超過一個，才
+重開 ADR 設計 distributed scheduler ownership、WebSocket fan-out 同 cache
+coherence。
+
+#### 5. Boundary audits
+
+BigInt transport 仍由既有 `serialize()` → HTTP/WebSocket contract 負責，未
+引入 repository/DAO rewrite；Yahoo 呼叫已集中於 `lib/market-data` 的
+provider/cache/queue seam，未實作 speculative fallback provider；K8s
+CronJob 同 admin HTTP route 共用 `server/utils/market-rotation-batch.ts`，
+CLI 直呼 domain function 係 deliberate deployment design。User +
+`ApiKeyCredential` 繼續採用「API key acting on behalf of User」，暫不抽
+Actor/Principal hierarchy。

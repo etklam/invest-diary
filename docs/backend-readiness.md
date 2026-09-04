@@ -8,7 +8,7 @@ Audit baseline: `main@86994a7`（2026-09-01）
 release-gate evidence。Current release-gate section 是現況真相；後面的 baseline 章節
 是歷史判斷，不應再當成未完成 blocker。React Native/Expo UI 仍不在本批範圍。
 
-## Current release-gate evidence（2026-09-02）
+## Current release-gate evidence（2026-09-04）
 
 Status: **Backend Ready v1 implementation complete; release gate verified in this worktree.**
 
@@ -21,16 +21,47 @@ documented deprecation window or `/api/v2/**`; no duplicate `/api/v1/**` route t
 The checked-in OpenAPI 3.1 artifact and generated transport are derived from canonical Zod
 contracts under `lib/contracts/`.
 
+### Testing reliability hardening addendum（2026-09-04）
+
+本批 testing hardening 已把高風險邊界拆成可重現 gate：
+
+- E2E global setup 使用 `mariadb:11.4` disposable container、動態 loopback
+  port、`diary_e2e_` name guard、migration lifecycle；auth helper 以
+  per-test user 同 forwarded identity 隔離 login rate-limit。
+- `npm run typecheck:tests` 保持 inherited `strict` 與
+  `noUncheckedIndexedAccess`，只納入新增及 critical changed tests。舊 test
+  tree 仍有廣泛 fixture/mock typing baseline，沒有用數十個 `!` 或機械式
+  rewrite 假裝清零；其錯誤分類記錄於本節後方的 baseline note。
+- `npm run test:socketio` 執行真正的 `createSocketServer()` + Node listener +
+  `socket.io-client` contract；一般 `npm test` 只在未設定
+  `SOCKET_IO_INTEGRATION=1` 時跳過這個需要 bind loopback 的環境 gate。
+- `npm run test:diary-reconciliation:mysql`、
+  `npm run test:backend-http:mariadb`、
+  `npm run test:market-rotation:mysql` 均固定 MariaDB 11.4、loopback/test-name
+  guard、migration readiness/version check 及 trap cleanup。
+- Runtime config、error hook、observability、shared `serialize()`、Cron/HTTP
+  batch dispatch、Yahoo provider seam 均有 regression/contract tests；Forgejo
+  已將 quality 與 build/push/deploy 拆成依賴關係，E2E 暫不列 required。
+
+**Typecheck baseline note:** production `npm run typecheck` 與 critical test
+allowlist 是 gate；完整 legacy tree 的未收斂 errors 主要集中於舊 Nuxt
+`tests/vi-setup` globals、Prisma mocked query fixtures（diary read/write、
+admin middleware、market rotation monitor、trade analytics、recurring alerts、
+partner compare、auth/CSRF middleware）、部分 script registry 的 Zod/readonly
+型別，以及未納入本輪 critical allowlist 的測試陣列索引。這些是後續分階段
+baseline，不是本輪用 assertion 改寫掩蓋的 pass。
+
 ### Verification matrix
 
 | Gate | Evidence |
 | --- | --- |
-| Unit/API/integration suite | `npm test -- --reporter=dot` — 256 files passed, 2,197 tests passed; 3 files and 17 tests skipped by the repository configuration |
-| Lint and types | `npm run lint --silent`; `npm run typecheck --silent` — passed |
+| Unit/API/integration suite | `npm test -- --reporter=dot` — see the latest CI run for exact count; environment-gated real DB/Socket contracts run as separate commands |
+| Lint and types | `npm run lint --silent`; `npm run typecheck --silent`; `npm run typecheck:tests` — production and critical-test gates |
 | Production build | `npm run build` — passed |
 | Documentation | `npm run docs:check` — passed |
 | OpenAPI/client drift | `npm run openapi:check`; `npm run openapi:breaking`; `npm run client:smoke` — passed |
-| Migration + real HTTP | `npm run test:backend-http:mariadb` — all 36 migrations forward-applied; rollback/forward remediation passed; auth 7/7 and core 6/6 HTTP contract tests passed |
+| Migration + real HTTP/DB boundaries | `npm run test:backend-http:mariadb`; `npm run test:diary-reconciliation:mysql`; `npm run test:market-rotation:mysql` — disposable MariaDB 11.4 gates |
+| Real Socket.IO | `npm run test:socketio` — production server construction, handshake, rooms, events and BigInt wire contract |
 | Worktree hygiene | `git diff --check`; `bash -n scripts/test-backend-http-mariadb.sh` — passed; no migration harness debug residue |
 | Second-pass review | Claude Code `glm-5.3[1M]` focused read-only review — `VERDICT: PASS`, `NONE` actionable findings |
 

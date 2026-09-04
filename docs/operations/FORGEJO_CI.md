@@ -1,41 +1,62 @@
 # Forgejo CI and K3s deployment
 
-The current deployment workflow is defined in [`.forgejo/workflows/build.yml`](../../.forgejo/workflows/build.yml). This document summarizes that executable contract; the workflow remains the source of truth.
+The executable contract is [`.forgejo/workflows/build.yml`](../../.forgejo/workflows/build.yml).
+This document explains the split between source quality and deployment; the
+workflow remains the source of truth.
 
-## Trigger and runner
+## Triggers and runner
 
-- Trigger: push to `main`
-- Runner label: `hk`
-- Registry: `git.913555.xyz`
-- Image tags: seven-character commit SHA and `latest`
-- Deployment target: K3s namespace `diary-vue`, deployment `diary-vue-app`
+- `pull_request` targeting `main`: runs the complete quality/contract job.
+- Push to `main`: runs the same quality job, then allows build/push/deploy.
+- Runner label: `hk`.
+- MariaDB contract image: `mariadb:11.4`.
+- E2E is intentionally not a required PR gate yet. Its own disposable
+  database lifecycle is available through `npm run test:e2e`; promote it only
+  after the complete browser matrix is stable on the target runner.
 
 ## Required secrets
+
+Secrets are used only by the `build-push-deploy` job after `quality` succeeds:
 
 | Secret | Purpose |
 | --- | --- |
 | `REGISTRY_TOKEN` | Authenticate Docker pushes to the Forgejo registry |
 | `DEPLOY_SSH_KEY` | Restart and monitor the K3s deployment over SSH |
 
-## Pipeline
+The quality job runs before registry authentication. It does not require or
+materialize deployment credentials.
 
-1. Check out the repository.
-2. Install npm dependencies from `package-lock.json`.
-3. Generate Prisma and run lint, typecheck, the required test suite, docs
-   health, OpenAPI drift, generated-client drift, and client smoke checks.
-4. Install the pinned Docker CLI and run the real Nitro + MariaDB 11.4
-   migration/HTTP contract gate.
-5. Only after all checks pass, log in to the Forgejo registry and build the
-   image from the repository `Dockerfile`.
-6. Push the SHA tag and `latest`.
-7. Verify that the generated Prisma client exists inside the image.
-8. Restart the K3s deployment and wait for rollout completion.
+## Required quality job
 
-The quality gate runs before registry authentication, so secrets are not
-available to the source/test/generation steps and are never written to an
-artifact. The OpenAPI JSON and generated TypeScript file are committed
-artifacts; `npm run openapi:check` fails when either one differs from the
-canonical source.
+The quality job installs dependencies and generated Prisma types, then runs:
+
+1. ESLint, production `vue-tsc`, and the strict `npm run typecheck:tests`
+   allowlist for newly changed/critical contract tests.
+2. The generic Vitest suite and the enforced coverage gate.
+3. Documentation/OpenAPI drift and generated-client smoke checks.
+4. The real Socket.IO contract (`npm run test:socketio`).
+5. Disposable MariaDB 11.4 reconciliation, built Nitro HTTP, and Market
+   Rotation boundary contracts.
+
+Each database script has a loopback and test-database-name guard, checks the
+MariaDB version, applies migrations deterministically, and removes its
+container with a shell trap. The Socket.IO command explicitly enables the
+loopback listener test; generic `npm test` keeps that environment-dependent
+listener suite skipped so a restricted local sandbox cannot hide unrelated
+unit failures.
+
+## Build, push, deploy job
+
+The second job has `needs: quality` and runs only for a push to `main`:
+
+1. Install dependencies, generate Prisma client, and run `npm run build`.
+2. Install the pinned Docker CLI, authenticate to `git.913555.xyz`, and build
+   the image with the seven-character SHA and `latest` tags.
+3. Verify `.prisma/client` exists in the image.
+4. Restart `diary-vue-app` in K3s namespace `diary-vue` and wait for rollout.
+
+This separation prevents registry/deployment failures from being confused with
+quality failures and prevents a failing PR from reaching the registry.
 
 ## Operational checks
 
@@ -44,4 +65,5 @@ docker pull git.913555.xyz/etklam/invest-diary:latest
 kubectl rollout status deployment/diary-vue-app -n diary-vue --timeout=120s
 ```
 
-The K3s manifests live under [`k8s/`](../../k8s). Historical runner setup notes and resolved incidents are archived under `docs/archive/completed/` and are not current configuration.
+K3s manifests live under [`k8s/`](../../k8s). Historical runner setup notes
+and resolved incidents are archived under `docs/archive/completed/`.

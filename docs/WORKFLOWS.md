@@ -447,12 +447,13 @@ of regressions (see test files).
   navigateFallback").
 - `publishedAt` is treated as UTC; the labelling fix in commit `0f9162b`
   prevents timezone drift on the public display.
-- `searchMode: 'search'` uses Prisma's MySQL full-text search, so matching
-  depends on MySQL's full-text index configuration — currently no fulltext
-  index migration exists for `title`/`excerpt` (see comment in
-  `prisma/schema.prisma` near the `posts` model). Public search may
-  silently fall back. **Needs verification** on whether this degrades to
-  no-match or substring match on the deployed MySQL version.
+- `searchMode: 'search'` uses Prisma's MariaDB/MySQL full-text search over
+  `title` and `excerpt`. The required `posts_title_excerpt_fulltext_idx` is
+  declared in `prisma/schema.prisma` and installed by Prisma migration
+  `20260904090000_add_posts_fulltext_index`. There is deliberately no
+  substring fallback: matching is tokenized by the database full-text
+  parser, so very short/stop words may not match. The real MariaDB contract
+  test covers the user-facing unique-phrase behavior.
 
 ---
 
@@ -509,13 +510,16 @@ plugin (`server/plugins/alert-scheduler.ts`) is opt-in via
 
 ### Known gotchas
 
-- `SCHEDULER_ENABLED=true` must be set on exactly one replica in
-  multi-instance deployments; otherwise alerts fire N times.
+- `SCHEDULER_ENABLED=true` must be set on exactly one active
+  realtime/scheduler instance; otherwise alerts fire N times. The current
+  topology assumes one active realtime instance because the WebSocket
+  broadcaster and market-data cache are process-local.
 - Recurring alerts starting on Saturday/Sunday are shifted forward to Monday
   (`lib/recurring-alerts.ts`).
-- `dismiss.put.ts` only soft-sets `isDismissed`; it does not cancel pending
-  children of a recurring parent. **Needs verification** on whether children
-  continue to fire after parent dismissal.
+- Dismissing a recurring parent is series-wide: the root and all materialized
+  children are marked dismissed atomically. Pending children are excluded by
+  both the active-alert query and scheduler parent gate. Dismissing a child
+  only dismisses that instance.
 
 ---
 
@@ -651,7 +655,16 @@ Vitest is the primary runner with `happy-dom` environment and setup file
 Playwright E2E (`tests/e2e/`) is configured via
 [`playwright.config.ts`](../playwright.config.ts) and covers auth, diary
 CRUD, quick diary, stock tracking, relative-value tools, tools responsive
-layout and text containment. Run via `npm run test:e2e`.
+layout and text containment. `tests/e2e/global-setup.ts` starts a disposable
+MariaDB 11.4 database, applies migrations, and owns teardown. The auth helper
+registers per-test users and isolates process-local rate-limit identities. Run
+via `npm run test:e2e`; do not seed or reuse a production-like database.
+
+The strict `npm run typecheck:tests` gate deliberately targets new and
+critical contract tests (including E2E helpers, real DB contracts, runtime
+config, serialization, Socket.IO, and batch seams). The full historical test
+tree remains a documented legacy typing baseline; it is not mass-rewritten
+with non-null assertions just to manufacture a green signal.
 
 Coverage uses `@vitest/coverage-v8` with thresholds (lines/functions/
 statements 55%, branches 45%) gated to specific server/utils/lib/composable
@@ -667,8 +680,12 @@ paths (see [`vitest.config.ts`](../vitest.config.ts):14). Presentational
 - E2E helpers: [`tests/e2e/helpers/auth.ts`](../tests/e2e/helpers/auth.ts),
   [`tests/e2e/global-setup.ts`](../tests/e2e/global-setup.ts),
   [`tests/e2e/global-teardown.ts`](../tests/e2e/global-teardown.ts)
+- Critical test typecheck: [`tsconfig.tests.json`](../tsconfig.tests.json),
+  `npm run typecheck:tests`
 - Scripts: `npm test`, `npm run test:watch`, `npm run test:ui`,
   `npm run test:coverage`, `npm run test:unit`, `npm run test:integration`,
+  `npm run test:socketio`, `npm run test:diary-reconciliation:mysql`,
+  `npm run test:backend-http:mariadb`, `npm run test:market-rotation:mysql`,
   `npm run test:e2e`, `npm run test:ci`, `npm run coverage:gate`
 
 ### Known gotchas / weak areas
@@ -676,13 +693,23 @@ paths (see [`vitest.config.ts`](../vitest.config.ts):14). Presentational
 - Coverage thresholds are intentionally pragmatic (55/45). Adding new
   untested code in `server/utils/` will drop coverage fast — see
   [`docs/TESTING.md`](TESTING.md) for the full strategy and gaps.
-- Prisma interactions are mocked per test file via
-  `vi.mock('~/lib/prisma')`. Tests do **not** exercise a real database.
+- Unit/API tests mock Prisma per test file via `vi.mock('~/lib/prisma')`.
+  High-risk database behavior is covered separately by the disposable MariaDB
+  commands: `npm run test:diary-reconciliation:mysql`,
+  `npm run test:backend-http:mariadb`, and
+  `npm run test:market-rotation:mysql` (the HTTP gate includes blog FULLTEXT,
+  recurring-alert dismissal, and real Nitro HTTP contracts).
+- The Socket.IO gate uses the production `server/websocket/socket-server.ts`
+  construction with a real Node listener and `socket.io-client`; only the
+  auth-session and alert-query seams are mocked. Generic `npm test` skips the
+  listener when `SOCKET_IO_INTEGRATION` is not set, while CI runs
+  `npm run test:socketio` as a required contract gate.
 - A few historically flaky regression suites (CSP, websocket-plugin) have
   dedicated files to lock the contract — review them before changing
   related runtime code.
-- E2E suite requires a running dev server; global setup/teardown handle
-  lifecycle.
+- E2E starts its own dev server and disposable DB; the setup teardown callback
+  owns container cleanup. E2E remains separate from the required PR gate until
+  the full browser matrix is stable on the target Forgejo runner.
 
 ---
 
@@ -699,10 +726,29 @@ The **Market Rotation batch** runs as a K8s CronJob at `30 21 * * 0-5`
 (21:30 UTC, Sun–Fri) — see [`k8s/cron-market-rotation.yaml`](../k8s/cron-market-rotation.yaml).
 The container invokes `npx tsx scripts/market-rotation/run-batch.ts`
 in-process; no HTTP, no JWT, no CSRF (CONTEXT.md 2026-07 §6). Env is just
-`DATABASE_URL`.
+`DATABASE_URL` for the batch domain path; the companion market-state breadth
+script also reads the typed `MARKET_DATA_CONCURRENCY` setting. No user auth
+secret is needed for this deployment-layer invocation.
 
-**Alert schedulers** run inside the app process when `SCHEDULER_ENABLED=true`
-(see §7). Set this on exactly one replica.
+The same batch seam is available to an admin through
+`POST /api/admin/market/rotation-batch`. The API test covers validated scope
+and full-batch dispatch; the CronJob test verifies direct `tsx` invocation and
+direct `DATABASE_URL` usage, so neither path silently regresses to HTTP or
+auth dependencies. Yahoo requests are injected behind the existing provider
+seam and tested with deterministic fixture responses; these contract tests do
+not call Yahoo over the network.
+
+**Current deployment assumptions:**
+
+- Web app topology: single active realtime/scheduler instance.
+- Scheduler must run on exactly one instance (`SCHEDULER_ENABLED=true`).
+- WebSocket broadcaster is process-local.
+- Market-data cache is process-local.
+- Horizontal web scaling requires additional distributed coordination before
+  it is safe for realtime delivery, scheduler execution, or cache coherence.
+
+Alert schedulers run inside the app process when `SCHEDULER_ENABLED=true`
+(see §7).
 
 ### Required environment variables
 
@@ -713,6 +759,9 @@ in-process; no HTTP, no JWT, no CSRF (CONTEXT.md 2026-07 §6). Env is just
   schedulers (one replica only)
 - `RUN_MIGRATIONS` — `'true'` to run `prisma migrate deploy` at container
   start (defaults to false; CapRover uses `preDeployFunction`)
+- `LOG_FORMAT` — `json` for structured JSON lines, otherwise `text`
+- `TRUST_X_FORWARDED_FOR` — `true` only behind a trusted append-mode proxy
+- `MARKET_DATA_CONCURRENCY` — bounded batch fetch concurrency (default `2`)
 See [`.env.example`](../.env.example) for the full list.
 
 ### Main files

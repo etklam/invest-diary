@@ -26,11 +26,14 @@ Official SEC facts used by this contract:
 
 ## 2. Runtime configuration and dependencies
 
-Add server-only runtime config:
+Declare `SEC_USER_AGENT` in the centralized server runtime schema at
+`server/config/env.ts`. The Nuxt config bridge exposes the validated value as
+the server-only `runtimeConfig.secUserAgent`; SEC endpoint-level validation
+remains because this optional setting is allowed to be absent at startup.
 
 ```ts
 runtimeConfig: {
-  secUserAgent: process.env.SEC_USER_AGENT || '',
+  secUserAgent: runtimeEnv.secUserAgent,
 }
 ```
 

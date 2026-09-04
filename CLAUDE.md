@@ -75,7 +75,9 @@ npm run typecheck        # TypeScript checking
 npm run health:full      # Health check + build
 ```
 
-**Environment**: `DATABASE_URL` (MariaDB 11.4-compatible URL), `JWT_SECRET` (32+ chars). See `.env.example`.
+**Environment**: `server/config/env.ts` is the typed runtime configuration
+boundary. `DATABASE_URL` and `JWT_SECRET` are mandatory at Nitro startup;
+boolean flags use explicit `true`/`false` values. See `.env.example`.
 
 ---
 
@@ -229,6 +231,8 @@ export default defineEventHandler(async (event) => {
 - **WEEK**: start date → 同週五，跳週末
 - **MONTH**: start date → 月底，跳週末
 - 第一個 alert 是 parent (`parentId` = own `id`)
+- dismiss recurring parent 會 atomically dismiss root + materialized children；
+  scheduler/list query 亦會檢查 parent state
 - 函數在 `lib/recurring-alerts.ts`
 - 週六/日起算 → 從週一開始
 
@@ -293,7 +297,14 @@ prisma/schema.prisma # Database schema
 
 錯誤契約採 H3 wire shape：machine-readable code 在 `data.code`，`requestId` 由 nitro `error` hook（`server/plugins/error-contract.ts`）注入 `data`。Error codes 單一真相源在 `lib/contracts/common/error-codes.ts`（命名 `MODULE_ACTION_REASON`，三語 i18n mapping + parity test 把關）。Ownership mismatch 一律 404（不洩漏存在性）。
 
-`lib/errors/factory.ts` 提供結構化錯誤建構器：
+`lib/errors/factory.ts` 提供結構化錯誤建構器。`lib/logger.ts` 會將
+unexpected errors 統一記錄為 error message/type/stack，並遮罩 credentials；
+request log 透過 `requestId`，scheduler/batch 透過 `jobId` 對應。
+`lib/observability.ts` 保留 vendor-neutral `ErrorTrackingSink` seam；接入
+外部 tracker 必須只傳 safe error context，而且不可令 request/job failure
+處理失敗。Nitro startup 同時觀察 `uncaughtExceptionMonitor` 與
+`unhandledRejection`；後者會記錄後維持 Node fail-fast，避免壞 process 繼續
+假裝健康。
 
 ```typescript
 throw Errors.validationError([...]).toH3Error()
@@ -310,6 +321,11 @@ throw Errors.etfNotFound(symbol).toH3Error()
 ### 14. Deployment
 
 **Docker:** `docker-compose up -d`。Multi-stage build。`docker-entrypoint.sh` 等 DB + 跑 migrations。
+
+目前保持 modular monolith：deployment topology 假設一個 active
+realtime/scheduler instance。`SCHEDULER_ENABLED=true` 必須只出現一次；
+WebSocket broadcaster 同 market-data cache 都係 process-local。要水平擴展
+web replicas，先要另行設計 distributed coordination（見 ADR-0010）。
 
 **Pre-deployment:**
 

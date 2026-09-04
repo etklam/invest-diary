@@ -168,16 +168,35 @@ NUXT_PUBLIC_APP_NAME="投資日記"
 # Site URL（用於 SEO/Sitemap）
 NUXT_PUBLIC_SITE_URL="https://your-domain.com"
 
-# 調度器啟用狀態（重要！）
-# 只在主實例上設置為 "true"，其他實例設為 "false" 或不設置
-# 這可以防止多實例環境中的重複執行
+# 調度器啟用狀態（重要！目前只支援一個 active realtime instance）
 SCHEDULER_ENABLED="true"
 ```
 
 **⚠️ 重要說明**：
 
-- **單實例部署**：設置 `SCHEDULER_ENABLED="true"`
-- **多實例部署**：只對其中一個實例設置 `SCHEDULER_ENABLED="true"`，其他實例不設置或設置為 `"false"`
+- **目前 topology**：web app 保持一個 active realtime/scheduler instance。
+- **Scheduler**：必須恰好一個 instance 設置 `SCHEDULER_ENABLED="true"`。
+- **Process-local state**：WebSocket broadcaster 與 market-data cache 不跨
+  process 共享；水平擴展 web replicas 前必須先補 distributed coordination。
+- `k8s/03-app-deployment.yaml` 目前沒有顯式設定 `SCHEDULER_ENABLED`，所以 typed
+  default 係 `false`；需要 alert scheduler 時，必須只喺指定嗰一個 instance
+  明確設置為 `true`。
+
+目前 repo 內的 K8s manifests 已將 CronJob `DATABASE_URL` 放入
+`secretKeyRef`，但沒有在 CronJob manifest 內建立 dedicated ServiceAccount /
+RBAC policy，image 亦仍以 `:latest` tag 表示。這些係 deployment/cluster layer
+要補嘅 security/provenance controls，唔係由 CronJob 改走 HTTP auth 來解決；
+在補齊前應由 cluster policy 限制 default ServiceAccount、Secret access 同
+image admission。
+
+另外，`k8s/01a-db-secret.yaml` 同 `k8s/01b-app-secret.yaml` 係 committed
+manifest，入面嘅 credential material 只係 base64-encoded，唔係加密。若曾經
+用於 production，應按 incident/security 流程 rotate，並改用 external secret
+manager 或其他受管制嘅 cluster secret 注入；唔好將呢啲檔案當成安全 storage。
+
+所有 runtime env 由 `server/config/env.ts` 以 Zod 驗證；production 缺少
+`DATABASE_URL`、`JWT_SECRET` 或 `NUXT_PUBLIC_SITE_URL`，以及 invalid boolean
+flag，都會喺 Nitro startup fail fast。
 
 ### 3. 配置持久化
 
@@ -604,6 +623,10 @@ Market Rotation snapshot 與 Sector Breadth 共用 K8s CronJob，每日美東收
 - **Entry points**: `scripts/market-rotation/run-batch.ts`，接著是 `scripts/market-state/update-breadth.ts`
 - **Schedule**: `30 21 * * 0-5` (21:30 UTC, Sunday–Friday)
 - **Database access**: 兩支 script 都在 CronJob 內直接使用 `DATABASE_URL` 連線資料庫，不經 HTTP。
+- **Security boundary**: CronJob 透過 namespace Secret 取得 `DATABASE_URL`；
+  K8s ServiceAccount/RBAC、Secret access、network policy、image provenance
+  同 DB credentials 必須由 deployment layer 管理。直接呼叫 batch function
+  係 deliberate design，唔會繞過程式內 HTTP auth 來代替 deployment controls。
 
 若以 Docker / CapRover 部署而非 K8s，需自備 cron 或外部排程器觸發同一支 script；`docs/BETA_COCKPIT.md` 的失敗處理與 staleness 契約仍然適用。
 
@@ -649,7 +672,7 @@ curl http://localhost:3000/api/health
 docker logs diary-vue-app
 
 # 檢查容器狀態
-docker inspect diary-vue-app
+docker inspect --format '{{.State.Status}}' diary-vue-app
 ```
 
 ### 資料庫連線失敗
@@ -658,8 +681,8 @@ docker inspect diary-vue-app
 # 測試 MySQL 連線
 docker exec diary-vue-app nc -zv your-mysql-host 3306
 
-# 檢查環境變數
-docker exec diary-vue-app env | grep DATABASE_URL
+# 檢查 DATABASE_URL 是否存在（只顯示 presence，不輸出 credential）
+docker exec diary-vue-app sh -c 'if [ -n "$DATABASE_URL" ]; then echo DATABASE_URL=set; else echo DATABASE_URL=missing; fi'
 ```
 
 ### 遷移失敗
@@ -686,6 +709,9 @@ npx prisma migrate deploy
 ## 生產環境檢查清單 | Production Checklist
 
 - [ ] 修改所有預設密碼和金鑰
+- [ ] Rotate/remove committed base64 Secret material，改用 external secret manager
+- [ ] Pin production image to an immutable digest，並驗證 image provenance
+- [ ] 為 CronJob 設定 dedicated ServiceAccount、最小 RBAC 同 Secret access
 - [ ] 設定強壯的 JWT_SECRET
 - [ ] 配置 HTTPS/SSL
 - [ ] 設定防火牆規則
