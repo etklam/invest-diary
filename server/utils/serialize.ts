@@ -35,9 +35,27 @@ export type Serialized<T> =
 export function serialize<T>(obj: T, seen?: WeakMap<object, unknown>): Serialized<T> {
   if (obj === null || obj === undefined) return obj as Serialized<T>
   if (typeof obj === 'bigint') return String(obj) as Serialized<T>
-  if (Array.isArray(obj)) return obj.map((v) => serialize(v, seen)) as Serialized<T>
   if (obj instanceof Date) return obj as Serialized<T>
   if (typeof obj === 'object') {
+    if (obj instanceof Map) {
+      throw new TypeError('serialize does not support Map values at the JSON boundary')
+    }
+    if (obj instanceof Set) {
+      throw new TypeError('serialize does not support Set values at the JSON boundary')
+    }
+
+    // Arrays participate in the same cycle graph as plain objects. Register
+    // the result before descending so an accidental array↔object cycle does
+    // not recurse forever.
+    const map = seen instanceof WeakMap ? seen : new WeakMap()
+    if (map.has(obj as object)) return map.get(obj as object) as Serialized<T>
+    if (Array.isArray(obj)) {
+      const result: unknown[] = []
+      map.set(obj as object, result)
+      for (const value of obj) result.push(serialize(value, map))
+      return result as Serialized<T>
+    }
+
     // Prisma Decimal is intentionally detected structurally; importing its
     // runtime constructor would pull Prisma into client-side bundles.
     const decimal = obj as {
@@ -55,11 +73,6 @@ export function serialize<T>(obj: T, seen?: WeakMap<object, unknown>): Serialize
       return decimal.toJSON() as Serialized<T>
     }
 
-    // ponytail: guard `seen` — when serialize is used as a .map/.forEach
-    // callback, the runtime passes (value, index, array), so `seen` can arrive
-    // as a number/array. Only treat it as the cycle map when it's a WeakMap.
-    const map = seen instanceof WeakMap ? seen : new WeakMap()
-    if (map.has(obj as object)) return map.get(obj as object) as Serialized<T>
     const result: Record<string, unknown> = {}
     map.set(obj as object, result)
     for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {

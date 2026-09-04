@@ -84,8 +84,8 @@ describe('serialize', () => {
     expect(result.userId).toBe('100')
     expect(result.title).toBe('My Diary')
     expect(result.createdAt).toBeInstanceOf(Date)
-    expect(result.transactions[0].id).toBe('10')
-    expect(result.alerts[0].id).toBe('20')
+    expect(result.transactions[0]!.id).toBe('10')
+    expect(result.alerts[0]!.id).toBe('20')
   })
 
   it('handles objects with null fields', () => {
@@ -166,22 +166,23 @@ describe('serialize', () => {
     expect(result[0]).toBe(d) // identity preserved, not cloned
   })
 
-  it.skip('BUG: Map entries are silently lost (serialize drops Map internals)', () => {
-    // ponytail: KNOWN DATA-LOSS BUG, not fixed per task scope.
-    // `serialize` only walks own enumerable string keys, so Map → {} (empty).
-    // When fixed (likely `if (m instanceof Map) return m`), unskip and assert:
-    //   expect(result.m).toBeInstanceOf(Map)
-    //   expect(result.m.get('id')).toBe(1n)
+  it('rejects Map values instead of silently dropping entries', () => {
     const m = new Map<string, unknown>()
     m.set('id', 1n)
-    const result = serialize({ m }) as any
-    expect(result.m).toBeInstanceOf(Map)
+    expect(() => serialize({ m })).toThrow('serialize does not support Map')
   })
 
-  it.skip('BUG: Set entries are silently lost (serialize drops Set internals)', () => {
+  it('rejects Set values instead of silently dropping entries', () => {
     const s = new Set<unknown>([1n, 2n, 3n])
-    const result = serialize({ s }) as any
-    expect(result.s).toBeInstanceOf(Set)
+    expect(() => serialize({ s })).toThrow('serialize does not support Set')
+  })
+
+  it('survives an array cycle without stack overflow', () => {
+    const values: any[] = [1n]
+    values.push(values)
+    const result: any = serialize(values)
+    expect(result[0]).toBe('1')
+    expect(result[1]).toBe(result)
   })
 
   it('converts BigInt inside arrays nested in objects with cycles', () => {
