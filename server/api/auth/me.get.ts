@@ -3,6 +3,7 @@ import { serialize } from '~/server/utils/serialize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
 import { getUserProfile } from '~/server/utils/user-queries'
+import { authUserResponseSchema } from '~/lib/contracts/auth'
 
 export default defineEventHandler(async (event) => {
   const log = logger.auth.withRequestId(event.context.requestId)
@@ -11,7 +12,7 @@ export default defineEventHandler(async (event) => {
 
     const user = await getUserProfile(BigInt(auth.id))
 
-    return serialize({ ok: true, data: user })
+    return authUserResponseSchema.parse(serialize({ ok: true, data: user }))
   } catch (error) {
     handleApiError(error, log)
   }

@@ -9,6 +9,7 @@ This directory is the central index for current project documentation. Historica
 | [WORKFLOWS.md](WORKFLOWS.md) | Current product workflows, code ownership, tests, and known gotchas |
 | [API.md](API.md) | Hand-written core API contract |
 | [TESTING.md](TESTING.md) | Test strategy and conventions |
+| [backend-readiness.md](backend-readiness.md) | Current Backend Ready v1 and React Native/Expo readiness |
 
 ## Product and architecture
 

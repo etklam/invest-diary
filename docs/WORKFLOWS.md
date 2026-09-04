@@ -116,6 +116,22 @@ Admin routes additionally require `role === 'ADMIN'` via
 - Access-token expiry during an active session is recovered transparently by
   the middleware, not by an explicit client call.
 
+### Native client contract
+
+React Native / Expo clients use the JSON-only endpoints under
+`/api/auth/native/*`, send access JWTs as `Authorization: Bearer …`, and never
+need to emulate the browser cookie jar. The native refresh token rotates with
+no grace window, so client code must single-flight refresh per session, replace
+both tokens, retry the original request once, and clear local state after a
+second `401`. Store refresh tokens in Keychain/Keystore (for example
+`expo-secure-store`) and keep access tokens in memory where practical.
+
+On app resume, refresh when needed and refetch REST resources. REST is the
+source of truth; Socket.IO is an optional foreground freshness hint and
+background delivery is not guaranteed. The framework-neutral generated client
+proof lives in `tests/integration/native-client/` and does not import Vue,
+Nuxt, or browser storage APIs.
+
 ---
 
 ## 3. Diary Workflow

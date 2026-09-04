@@ -8,6 +8,7 @@ import { isAllowedWebSocketOrigin } from '../utils/websocket-origin'
 import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
 import { authenticateAccessToken } from '../utils/auth-session'
 import { parseRuntimeSettings } from '~/server/config/env'
+import { parseBearerToken } from '../utils/bearer'
 
 type NodeHttpServer = InstanceType<typeof HttpServer> | InstanceType<typeof HttpsServer>
 
@@ -63,10 +64,13 @@ export function createSocketServer(
   )
 
   io.use(async (socket, next) => {
-    const authToken = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '')
+    const authToken = typeof socket.handshake.auth.token === 'string'
+      ? socket.handshake.auth.token
+      : undefined
+    const headerToken = parseBearerToken(socket.handshake.headers.authorization)
     const cookieHeader = socket.handshake.headers.cookie
     const cookieToken = getCookieValue(cookieHeader, 'access-token')
-    const token = authToken || cookieToken
+    const token = authToken || headerToken || cookieToken
 
     if (!token) {
       logger.ws.warn('Connection rejected: No token provided', { socketId: socket.id })

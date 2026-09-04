@@ -76,6 +76,20 @@ kubectl logs job/<market-rotation-job-name> -n diary-vue
 `<market-rotation-job-name>` 必須先由 `kubectl get jobs` 讀出，唔好靠未驗證的
 wildcard 讀錯 job；輸出內容不得複製到 ticket、chat 或文件中的 secret。
 
+### React Native runtime boundary
+
+Native clients do not require deployment-specific browser session state. They
+call `/api/auth/native/login`, `/api/auth/native/refresh`, and
+`/api/auth/native/logout` over the same HTTPS origin, then send the access JWT
+as `Authorization: Bearer …`. Keep `NUXT_PUBLIC_SITE_URL` and ingress TLS
+configuration correct for the API origin. The native refresh token is stored by
+the client in Keychain/Keystore; it is never injected into the container or
+written to logs.
+
+Socket.IO is optional for foreground freshness. A mobile app must refetch REST
+data after resume or reconnect; background socket delivery and push
+notifications are not deployment guarantees in Backend v1.
+
 ---
 
 ## 前置要求 | Prerequisites

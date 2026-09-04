@@ -36,6 +36,7 @@
     "client:generate": "openapi-typescript openapi/openapi.json --output lib/api-client/generated.ts --alphabetize --export-type",
     "client:check": "openapi-typescript openapi/openapi.json --output lib/api-client/generated.ts --alphabetize --export-type --check",
     "client:smoke": "vitest run tests/unit/api-client.test.ts tests/unit/openapi-generation.test.ts --reporter=dot",
+    "test:native-client": "vitest run tests/integration/native-client/native-client.smoke.test.ts --reporter=dot",
     "market-rotation:batch": "tsx scripts/market-rotation/run-batch.ts",
     "diary:duplicates:audit": "tsx scripts/diary-duplicate-audit.ts",
     "diary:duplicates:reconcile": "tsx scripts/diary-reconcile-duplicates.ts"

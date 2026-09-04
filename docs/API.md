@@ -8,6 +8,10 @@ Authentication:
 
 - Browser endpoints use auth cookies set by `/api/auth/login` and refreshed by `/api/auth/refresh`.
 - Native clients may send `Authorization: Bearer <access JWT>` instead of cookies.
+- Native auth is JSON-only and does not set cookies; the rotating refresh token
+  is sent only to the native refresh/logout endpoints.
+- Native login, refresh, and logout intentionally omit `Authorization`; this
+  keeps refresh usable after access expiry and makes logout body-only.
 - Agent endpoints use `Authorization: Bearer <api-key>` (or `x-api-key`).
 - Credential resolution is fail-closed (ADR-0006): once an explicit credential (Authorization / x-api-key) is supplied, its failure is a `401` and never falls back to cookies; supplying more than one explicit credential is also a `401`.
 - Error responses are JSON objects in the H3 wire shape (ADR-0007): machine-readable `data.code` (`MODULE_ACTION_REASON` naming) plus `data.requestId` for log correlation. Common statuses are `400` for validation errors, `401` for authentication failures, `404` for missing resources or ownership mismatches, and `429` for rate limits.
@@ -131,6 +135,22 @@ Idempotently revokes the family containing the supplied native refresh token.
 
 Response: `200` even when that session is already absent or revoked.
 
+Native client lifecycle:
+
+1. Keep the access token in memory and the refresh token in iOS Keychain or
+   Android Keystore (for example, `expo-secure-store`). Do not persist a
+   plaintext refresh token in `AsyncStorage`.
+2. On any `401` caused by an expired access token, allow only one native refresh
+   request in flight per session. Other failed requests await that same promise.
+3. Replace both tokens, retry each original request once, and clear local
+   session state after a second `401` or an unrecoverable refresh failure.
+4. Attempt native logout before deleting the local refresh token. If the
+   network is unavailable, still clear local state.
+
+The backend uses no refresh-token grace window: concurrent refresh calls with
+the same old token are not a supported client strategy. A stale-token replay
+revokes only its native token family; another device family remains valid.
+
 ### `POST /api/auth/logout-all`
 
 Revokes all Web/native refresh sessions and increments `tokenVersion`, causing
@@ -169,12 +189,16 @@ schemas retain their canonical input shape. The generated
 [`lib/api-client/generated.ts`](../lib/api-client/generated.ts) file is
 runtime-free TypeScript; [`lib/api-client/index.ts`](../lib/api-client/index.ts)
 adds only named methods (`api.diaries.list/get/review`, `api.stocks.get`, auth,
-and timeline) over `openapi-fetch`.
+alerts, portfolio, trade plans, watchlist, and timeline) over `openapi-fetch`.
+The facade accepts a normal `fetch` implementation and an optional
+`getAccessToken()` provider; it has no Nuxt, Vue, cookie-jar, or DOM runtime
+dependency.
 
 All documented failures use the stable `ApiErrorResponse` envelope. Clients
 should branch on HTTP status and `data.code`, not on `statusMessage`. New
-breaking changes require a new major API version and a deprecation note; adding
-optional fields or paths is compatible. Before merging a breaking change,
+breaking changes require `/api/v2/**` or a documented deprecation window;
+adding optional fields or paths is compatible. Mobile releases may lag backend
+deploys, so a breaking v1 change must not be deployed in place. Before merging a breaking change,
 regenerate both artifacts, review the generated diff, update this reference,
 and run the Forgejo `openapi:check`/client smoke gates. No production Swagger UI
 or second DTO layer is introduced.
@@ -380,6 +404,14 @@ explicit `valuationStatus`. Quote failures do not erase persisted holdings.
 
 Returns up to 50 deterministic attention items with valuation coverage and
 `asOf`; it is owner-scoped and requires authentication.
+
+### Mobile transport note
+
+React Native may use the generated client with ordinary `fetch`. REST is the
+source of truth. Socket.IO is optional foreground freshness signaling; a
+disconnect or background suspension must be followed by REST refetch rather
+than treated as a data-loss signal. Push notifications and background socket
+delivery are outside the v1 contract.
 
 ### `GET /api/investment-activity`
 

@@ -215,6 +215,10 @@ describe('Authentication Flow Integration', () => {
         email: 'user@example.com',
         name: 'Test User',
         role: 'USER',
+        expectedMonthlyTrades: 10,
+        expectedProfit: '1000.00',
+        expectedAvgHolding: '5.00',
+        timezone: 'Asia/Taipei',
       }
 
       mockUserFindUnique.mockResolvedValueOnce(mockUser)

@@ -8,7 +8,7 @@ Personal investment diary app. Nuxt 4 + TypeScript + MariaDB 11.4 + Prisma (the 
 
 See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for the full workflow summary.
 
-- Authentication — JWT access + refresh tokens, httpOnly cookies
+- Authentication — browser httpOnly cookies or native JSON sessions with Bearer JWTs
 - Diary — markdown entries with tags, calendar view, related alerts
 - Stock tracking — watchlist, transactions, price alerts, Yahoo Finance integration
 - ETF / Market rotation — watchlist, profile aggregator, daily batch
@@ -34,6 +34,8 @@ Production app and batch containers emit structured JSON logs with
 and use the operation plus `requestId`/`jobId` fields for triage. Redis,
 BullMQ, distributed locks, and a service split are outside the current
 topology; revisit them only when a real horizontal-scaling requirement exists.
+REST is the source of truth for clients. Socket.IO is an optional foreground
+freshness hint; it is not a background delivery or consistency guarantee.
 
 ## Quick start
 
@@ -64,6 +66,7 @@ Open http://localhost:3000.
 | `npm run docs:check` | Validate docs (links, placeholders, whitelist) |
 | `npm run openapi:check` | Validate generated OpenAPI/client artifacts |
 | `npm run test:socketio` | Real Socket.IO listener/handshake contract |
+| `npm run test:native-client` | React Native/Expo-like standard-fetch client contract |
 | `npm run test:diary-reconciliation:mysql` | MariaDB 11.4 reconciliation gate |
 | `npm run test:backend-http:mariadb` | Real Nitro + MariaDB 11.4 release gate |
 | `npm run test:market-rotation:mysql` | MariaDB 11.4 market-rotation gate |
@@ -80,6 +83,7 @@ database and must not reuse a quality-job or production-like database.
 |---|---|
 | [docs/WORKFLOWS.md](docs/WORKFLOWS.md) | Current project workflow summary |
 | [docs/API.md](docs/API.md) | API reference |
+| [docs/backend-readiness.md](docs/backend-readiness.md) | Current Backend Ready / React Native readiness |
 | [docs/TESTING.md](docs/TESTING.md) | Testing strategy |
 | [docs/operations/DEPLOYMENT.md](docs/operations/DEPLOYMENT.md) | Deployment guide |
 | [docs/operations/HEALTH_CHECK.md](docs/operations/HEALTH_CHECK.md) | Health check documentation |

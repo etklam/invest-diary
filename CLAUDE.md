@@ -74,6 +74,7 @@ npm run lint             # ESLint
 npm run typecheck        # TypeScript checking
 npm run typecheck:tests  # Critical test/helper typechecking
 npm run test:socketio    # Real Socket.IO listener contract
+npm run test:native-client # React Native/Expo-like standard-fetch contract
 npm run test:e2e         # Playwright E2E; main push deploy gate
 npm run health:full      # Health check + build
 ```
@@ -194,12 +195,21 @@ export default defineEventHandler(async (event) => {
 ### 5. Authentication Architecture
 
 - **Credential Resolution（ADR-0006，fail-closed）**: `server/middleware/auth.ts` 對所有 `/api/**` 跑單一演算法，產生 `event.context.auth`（verified transport + identity）；`event.context.user` 為相容層。顯式 credential（`Authorization: Bearer dva_*` API key、`Authorization: Bearer <JWT>` access token、`x-api-key`）驗證失敗一律 401，**永不 fallback cookie**；多個顯式 credential 來源 → 401 拒絕 ambiguity
-- **Access Token**: 1h, httpOnly cookie (`access-token`)；native client 也可用 `Authorization: Bearer <access JWT>`
-- **Refresh Token**: 30d, httpOnly cookie (`refresh-token`), DB stored. 刻意不輪換（refresh 僅換發 access token）— 避免 cross-tab refresh race 造成強制登出；代價是無 stolen-token 重用偵測，失效只能靠 logout / 改密碼（tokenVersion）
+- **Web session tokens**: access 1h + refresh 30d, httpOnly cookies (`access-token`, `refresh-token`), DB stored. Web refresh remains stable to avoid cross-tab refresh races.
+- **Native session tokens**: `POST /api/auth/native/login` returns JSON access/refresh tokens; access is sent as `Authorization: Bearer <access JWT>`, refresh is rotating with token family/replay protection. Native clients must single-flight refresh, retry once, then clear session on failure. Never add a browser-cookie dependency to the native transport.
+- **Logout scope**: `/api/auth/native/logout` revokes one native family; `/api/auth/logout-all` increments `tokenVersion` and revokes all sessions.
 - **Token Versioning**: `tokenVersion` 改密碼即失效所有 token
 - **CSRF（transport-aware）**: 只根據已驗證的 auth transport 決策——`cookie` → requireCsrf；`bearer` / `api-key` → 豁免。auth middleware 必須先於 csrf middleware 執行（integration test 鎖定）
 - **Agent API**: 用 API Key（前綴 `dva_`），`requireApiKey(event, scopes)`；scope 定義在 `prisma/schema.prisma` 的 `ApiKeyScope` enum（`api-key-queries.ts` 的 `API_KEY_SCOPE_VALUES` 是 DB enum mirror）
 - **關鍵檔案**: `lib/jwt.ts`, `server/middleware/auth.ts`, `server/middleware/csrf.ts`, `composables/useAuth.ts`, `server/utils/auth.ts`, `server/utils/api-key.ts`
+
+React Native / Expo clients use only the canonical OpenAPI surface and the
+framework-neutral `lib/api-client` facade. Keep refresh tokens in Keychain /
+Keystore (for example `expo-secure-store`), keep access tokens in memory where
+practical, and refetch REST data on app resume. Socket.IO is an optional
+foreground freshness hint; it is never the source of truth. Do not introduce
+React hooks, Zustand, offline sync, push services, or a second DTO layer into
+this backend repository.
 
 ---
 

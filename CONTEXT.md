@@ -724,3 +724,26 @@ Actor/Principal hierarchy。
 剩餘 debt 收斂為選定的 MariaDB integration coverage gaps；不再追加 architecture
 hardening。下一輪回到 product work，除非上述實際 runtime constraint 或真實需求
 再次觸發新的設計決策。
+
+### 2026-09 React Native Backend Ready
+
+React Native / Expo backend readiness is now **READY**. Native clients use the
+JSON session lifecycle under `/api/auth/native/*`, send access JWTs through
+`Authorization: Bearer …`, and use `/api/auth/logout-all` when revoking every
+session. The generated OpenAPI client is runtime-neutral and has a standard
+`fetch` smoke contract; it must not acquire browser cookie, Vue, Nuxt, or DOM
+runtime dependencies.
+
+Native refresh tokens are rotating with no grace window. Client implementations
+must single-flight refresh per session, replace both tokens, retry the original
+request once, then clear local session state after a second `401`. Store the
+refresh token in platform secure storage and keep the access token in memory
+where practical. Web cookie refresh remains a separate, stable transport
+contract; do not merge the two lifecycles.
+
+REST is the canonical source of truth for mobile. App resume and foreground
+reconnect trigger refresh-if-needed plus REST refetch. Socket.IO is a
+foreground freshness hint only; background delivery, FCM/APNs/Expo Push,
+offline sync, file/media upload, and mobile-specific aggregation are Phase 2
+or outside the v1 scope. No backend architecture rewrite is required before
+Expo development begins.

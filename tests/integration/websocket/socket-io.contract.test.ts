@@ -112,6 +112,24 @@ describeSocketIntegration('real Socket.IO integration contract', () => {
     expect(mockDismissAlert).toHaveBeenCalledWith('7', 9007199254740993n)
   })
 
+  it('accepts a native Authorization Bearer handshake without cookies', async () => {
+    const headerClient = createClient(`http://127.0.0.1:${port}`, {
+      path: '/socket.io/',
+      extraHeaders: { authorization: 'Bearer header-access-token' },
+      transports: ['websocket'],
+      forceNew: true,
+    })
+    clients.push(headerClient)
+
+    await new Promise<void>((resolve, reject) => {
+      headerClient.once('connect', resolve)
+      headerClient.once('connect_error', reject)
+    })
+
+    expect(mockAuthenticateAccessToken).toHaveBeenCalledWith('header-access-token')
+    expect(headerClient.connected).toBe(true)
+  })
+
   it('delivers a broadcast only to the matching user room', async () => {
     mockAuthenticateAccessToken.mockImplementation(async (token: string) => {
       if (token === 'user-a-token') return { id: '101', email: 'a@example.test', role: 'USER' }

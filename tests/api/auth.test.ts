@@ -132,8 +132,8 @@ describe('Auth API', () => {
         name: 'Test User',
         role: 'USER',
         expectedMonthlyTrades: 10,
-        expectedProfit: 1000,
-        expectedAvgHolding: 5,
+        expectedProfit: '1000.00',
+        expectedAvgHolding: '5.00',
       }
 
       mockUserFindUnique.mockResolvedValue(mockUser)
@@ -512,8 +512,8 @@ describe('Auth API', () => {
         name: 'Test User',
         role: 'USER',
         expectedMonthlyTrades: 10,
-        expectedProfit: 1000,
-        expectedAvgHolding: 5,
+        expectedProfit: '1000.00',
+        expectedAvgHolding: '5.00',
         timezone: 'Asia/Taipei',
         favoriteTagsString: 'etf,swing',
         createdAt: new Date('2025-01-01'),

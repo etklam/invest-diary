@@ -27,19 +27,16 @@ import {
   normalizeInput,
   optionalNormalizedString,
 } from '~/server/utils/validation'
+import {
+  loginRequestSchema as canonicalLoginRequestSchema,
+  registerRequestSchema as canonicalRegisterRequestSchema,
+} from '~/lib/contracts/auth'
 
 // ─── Zod Schemas ──────────────────────────────────────────────────────────────
 
-export const loginUserSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(1, 'Password is required'),
-})
+export const loginUserSchema = canonicalLoginRequestSchema
 
-export const registerUserSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  name: z.string().optional(),
-})
+export const registerUserSchema = canonicalRegisterRequestSchema
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),

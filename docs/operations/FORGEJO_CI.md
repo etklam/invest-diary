@@ -43,14 +43,18 @@ The `quality` job installs dependencies and generated Prisma types, then runs:
 7. `npm run openapi:check`
 8. `npm run openapi:breaking`
 9. `npm run client:smoke`
-10. `npm run test:socketio`
-11. `npm run test:diary-reconciliation:mysql`
-12. `npm run test:backend-http:mariadb`
-13. `npm run test:market-rotation:mysql`
+10. `npm run test:native-client`
+11. `npm run test:socketio`
+12. `npm run test:diary-reconciliation:mysql`
+13. `npm run test:backend-http:mariadb`
+14. `npm run test:market-rotation:mysql`
 
 Each real database gate owns one disposable MariaDB lifecycle, has loopback
 and test-database-name guards, checks the MariaDB version, applies migrations
-deterministically, and removes its container with a shell trap. The Socket.IO
+deterministically, and removes its container with a shell trap. The Diary
+reconciliation and backend HTTP harnesses also handle Docker-outside-of-Docker
+job containers by sharing the job network namespace when host loopback would be
+unreachable. The Socket.IO
 command explicitly enables the loopback listener test; generic `npm test` keeps
 that environment-dependent listener suite skipped.
 

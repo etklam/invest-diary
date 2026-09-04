@@ -270,6 +270,15 @@ export const openApiDocument = createDocument({
         responses: { '200': jsonResponse(authMutationResponseSchema, 'Logged out') },
       },
     },
+    '/auth/logout-all': {
+      post: {
+        tags: ['Auth'],
+        operationId: 'authLogoutAll',
+        summary: 'Revoke all sessions for the current user',
+        security: authenticated,
+        responses: withErrors({ '200': jsonResponse(authMutationResponseSchema, 'All sessions revoked') }, ['401', '403', '500']),
+      },
+    },
     '/auth/native/login': {
       post: {
         tags: ['Auth'],
@@ -313,7 +322,7 @@ export const openApiDocument = createDocument({
         summary: 'List diaries',
         security: authenticated,
         requestParams: { query: diaryListParamsSchema },
-        responses: withErrors({ '200': jsonResponse(diaryListResponseSchema) }, ['400', '401', '500']),
+        responses: withErrors({ '200': jsonResponse(diaryListResponseSchema) }, ['400', '401', '429', '500']),
       },
       post: {
         tags: ['Diaries'],
@@ -324,7 +333,7 @@ export const openApiDocument = createDocument({
           required: true,
           content: { 'application/json': { schema: createDiaryRequestSchema } },
         },
-        responses: withErrors({ '200': jsonResponse(diaryResponseSchema, 'Diary created') }, ['400', '401', '409', '500']),
+        responses: withErrors({ '200': jsonResponse(diaryResponseSchema, 'Diary created') }, ['400', '401', '409', '429', '500']),
       },
     },
     '/diaries/{id}': {
@@ -334,7 +343,7 @@ export const openApiDocument = createDocument({
         summary: 'Get one diary',
         security: authenticated,
         requestParams: { path: z.object({ id: serializedIdSchema }).strict() },
-        responses: withErrors({ '200': jsonResponse(diaryResponseSchema) }, ['400', '401', '404', '500']),
+        responses: withErrors({ '200': jsonResponse(diaryResponseSchema) }, ['400', '401', '404', '429', '500']),
       },
       put: {
         tags: ['Diaries'],
@@ -346,7 +355,7 @@ export const openApiDocument = createDocument({
           required: true,
           content: { 'application/json': { schema: updateDiaryRequestSchema } },
         },
-        responses: withErrors({ '200': jsonResponse(diaryResponseSchema, 'Diary updated') }, ['400', '401', '404', '409', '500']),
+        responses: withErrors({ '200': jsonResponse(diaryResponseSchema, 'Diary updated') }, ['400', '401', '404', '409', '429', '500']),
       },
     },
     '/diaries/{id}/review': {
@@ -356,7 +365,7 @@ export const openApiDocument = createDocument({
         summary: 'Get a diary review',
         security: authenticated,
         requestParams: { path: z.object({ id: serializedIdSchema }).strict() },
-        responses: withErrors({ '200': jsonResponse(diaryReviewResponseSchema) }, ['400', '401', '404', '500']),
+        responses: withErrors({ '200': jsonResponse(diaryReviewResponseSchema) }, ['400', '401', '404', '429', '500']),
       },
       patch: {
         tags: ['Diaries'],
@@ -368,7 +377,7 @@ export const openApiDocument = createDocument({
           required: true,
           content: { 'application/json': { schema: structuredReviewInputSchema } },
         },
-        responses: withErrors({ '200': jsonResponse(diaryReviewResponseSchema, 'Diary review saved') }, ['400', '401', '404', '500']),
+        responses: withErrors({ '200': jsonResponse(diaryReviewResponseSchema, 'Diary review saved') }, ['400', '401', '404', '429', '500']),
       },
     },
     '/stocks/{symbol}/hub': {

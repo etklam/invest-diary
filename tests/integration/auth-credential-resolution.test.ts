@@ -51,6 +51,10 @@ vi.mock('~/server/utils/user-queries', () => ({
     email: 'bearer@example.com',
     name: 'Bearer User',
     role: 'USER',
+    expectedMonthlyTrades: 10,
+    expectedProfit: '1000.00',
+    expectedAvgHolding: '5.00',
+    timezone: 'Asia/Taipei',
   })),
 }))
 

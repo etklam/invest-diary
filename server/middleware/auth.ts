@@ -6,6 +6,7 @@ import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
 import { formatErrorContext } from '~/lib/error-context'
 import type { H3Event } from 'h3'
+import { parseBearerToken } from '~/server/utils/bearer'
 
 export type AuthTransport = 'cookie' | 'bearer' | 'api-key'
 
@@ -24,10 +25,7 @@ function hasHeader(value: string | null | undefined): value is string {
 }
 
 function parseBearerCredential(value: string): { kind: 'api-key' | 'jwt'; token: string } | null {
-  const match = /^Bearer\s+(.+)$/i.exec(value)
-  if (!match?.[1]) return null
-
-  const token = match[1].trim()
+  const token = parseBearerToken(value)
   if (!token) return null
 
   return token.startsWith(API_KEY_TOKEN_PREFIX)

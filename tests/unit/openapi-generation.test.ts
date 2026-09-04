@@ -12,6 +12,10 @@ describe('OpenAPI contract artifact', () => {
     expect(Object.keys(document.paths)).toEqual(expect.arrayContaining([
       '/auth/login',
       '/auth/me',
+      '/auth/logout-all',
+      '/auth/native/login',
+      '/auth/native/refresh',
+      '/auth/native/logout',
       '/diaries',
       '/diaries/{id}',
       '/diaries/{id}/review',
@@ -22,6 +26,39 @@ describe('OpenAPI contract artifact', () => {
       '/stocks/alerts',
       '/investment-activity',
     ]))
+  })
+
+  it('freezes native auth schemas, bearer security, and mobile error statuses', () => {
+    const paths = document.paths as Record<string, any>
+    const nativeLogin = paths['/auth/native/login'].post
+    const nativeRefresh = paths['/auth/native/refresh'].post
+    const nativeLogout = paths['/auth/native/logout'].post
+    const logoutAll = paths['/auth/logout-all'].post
+
+    expect(nativeLogin.requestBody.content['application/json'].schema).toMatchObject({
+      required: ['email', 'password'],
+      additionalProperties: false,
+    })
+    expect(nativeRefresh.requestBody.content['application/json'].schema).toMatchObject({
+      required: ['refreshToken'],
+      additionalProperties: false,
+    })
+    expect(nativeLogout.requestBody.content['application/json'].schema).toMatchObject({
+      required: ['refreshToken'],
+      additionalProperties: false,
+    })
+    expect(nativeLogin.responses).toEqual(expect.objectContaining({ '400': expect.anything(), '401': expect.anything(), '429': expect.anything() }))
+    expect(nativeRefresh.responses).toEqual(expect.objectContaining({ '400': expect.anything(), '401': expect.anything(), '429': expect.anything() }))
+    expect(nativeLogout.responses).toEqual(expect.objectContaining({ '400': expect.anything(), '401': expect.anything() }))
+    expect(logoutAll.security).toEqual([{ bearerAuth: [] }, { accessTokenCookie: [] }])
+    expect(logoutAll.responses).toEqual(expect.objectContaining({ '401': expect.anything(), '403': expect.anything(), '500': expect.anything() }))
+
+    for (const path of ['/auth/me', '/auth/logout-all']) {
+      expect(paths[path].get?.security ?? paths[path].post.security).toEqual([
+        { bearerAuth: [] },
+        { accessTokenCookie: [] },
+      ])
+    }
   })
 
   it('documents diary query values as wire strings while preserving defaults and limits', () => {

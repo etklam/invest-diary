@@ -34,11 +34,14 @@ if (databaseUrl) {
 describeHttp('real Nitro + MariaDB native auth contract', () => {
   let prisma: PrismaClient
 
-  const nativeLogin = (deviceName: string, ip: string) => $fetch<any>('/api/auth/native/login', {
+  const nativeLoginFor = (email: string, deviceName: string, ip: string) => $fetch<any>('/api/auth/native/login', {
     method: 'POST',
     headers: { 'x-forwarded-for': ip },
-    body: { email: 'native-http@example.com', password: 'password123', deviceName },
+    body: { email, password: 'password123', deviceName },
   })
+
+  const nativeLogin = (deviceName: string, ip: string) =>
+    nativeLoginFor('native-http@example.com', deviceName, ip)
 
   const webLogin = async (email: string, ip: string) => {
     const response = await fetch('/api/auth/login', {
@@ -75,7 +78,16 @@ describeHttp('real Nitro + MariaDB native auth contract', () => {
     prisma = new PrismaClient({ adapter: new PrismaMariaDb(databaseUrl!) })
     await prisma.refreshToken.deleteMany()
     await prisma.user.deleteMany({
-      where: { email: { in: ['native-http@example.com', 'web-http@example.com', 'other-http@example.com'] } },
+      where: {
+        email: {
+          in: [
+            'native-http@example.com',
+            'web-http@example.com',
+            'other-http@example.com',
+            'concurrent-http@example.com',
+          ],
+        },
+      },
     })
     const password = await bcrypt.hash('password123', 4)
     await prisma.user.createMany({
@@ -83,6 +95,7 @@ describeHttp('real Nitro + MariaDB native auth contract', () => {
         { email: 'native-http@example.com', password, name: 'Native HTTP' },
         { email: 'web-http@example.com', password, name: 'Web HTTP' },
         { email: 'other-http@example.com', password, name: 'Other HTTP' },
+        { email: 'concurrent-http@example.com', password, name: 'Concurrent HTTP' },
       ],
     })
   })
@@ -141,6 +154,43 @@ describeHttp('real Nitro + MariaDB native auth contract', () => {
     const safe = await $fetch<any>('/api/auth/native/refresh', {
       method: 'POST',
       headers: { 'x-forwarded-for': '10.0.1.4' },
+      body: { refreshToken: other.data.refreshToken },
+    })
+    expect(safe.data.refreshToken).toEqual(expect.any(String))
+  })
+
+  it('allows one concurrent native refresh winner and isolates replay revocation by family', async () => {
+    const first = await nativeLoginFor('concurrent-http@example.com', 'Phone Concurrent', '10.0.2.1')
+    const other = await nativeLoginFor('concurrent-http@example.com', 'Tablet Safe', '10.0.2.2')
+
+    const outcomes = await Promise.allSettled([
+      $fetch<any>('/api/auth/native/refresh', {
+        method: 'POST',
+        headers: { 'x-forwarded-for': '10.0.2.3' },
+        body: { refreshToken: first.data.refreshToken },
+      }),
+      $fetch<any>('/api/auth/native/refresh', {
+        method: 'POST',
+        headers: { 'x-forwarded-for': '10.0.2.4' },
+        body: { refreshToken: first.data.refreshToken },
+      }),
+    ])
+
+    expect(outcomes.filter(outcome => outcome.status === 'fulfilled')).toHaveLength(1)
+    const winner = outcomes.find((outcome): outcome is PromiseFulfilledResult<any> => outcome.status === 'fulfilled')
+    expect(winner?.value.data.refreshToken).toEqual(expect.any(String))
+    const rejected = outcomes.find((outcome): outcome is PromiseRejectedResult => outcome.status === 'rejected')
+    expect(rejected?.reason).toMatchObject({ statusCode: 401 })
+
+    await expect($fetch('/api/auth/native/refresh', {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.2.6' },
+      body: { refreshToken: winner!.value.data.refreshToken },
+    })).rejects.toMatchObject({ statusCode: 401 })
+
+    const safe = await $fetch<any>('/api/auth/native/refresh', {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.2.5' },
       body: { refreshToken: other.data.refreshToken },
     })
     expect(safe.data.refreshToken).toEqual(expect.any(String))

@@ -19,6 +19,7 @@ npm run test:diary-reconciliation:mysql # disposable MariaDB reconciliation + un
 npm run test:backend-http:mariadb # real built Nitro + MariaDB 11.4 auth/migration contracts
 npm run test:market-rotation:mysql # real Market Rotation Prisma/MariaDB boundary
 npm run test:socketio         # real Socket.IO listener/handshake/event contract
+npm run test:native-client    # node-only React Native/Expo-like standard-fetch contract
 npm run openapi:check       # generated OpenAPI + transport drift
 npm run openapi:breaking    # compatibility diff against OPENAPI_BASE_REF/HEAD^
 npm run client:smoke        # generated client/facade smoke
@@ -40,6 +41,7 @@ npm run health:quick        # npm test && npx prisma validate
 | API contract | Mostly mocked | Handler validation, ownership, errors and response contracts |
 | MariaDB integration | Yes (`mariadb:11.4`) | Migration, constraint and database behavior |
 | Socket.IO integration | Yes (loopback listener) | Realtime handshake, rooms, events and wire behavior |
+| Native client smoke | No browser/Expo runtime | Standard fetch, Bearer auth, refresh single-flight, representative resources |
 | E2E | MariaDB + Nuxt app server | Browser-level user workflows |
 
 The PR quality path runs the existing lint, typecheck, Vitest, coverage,
@@ -174,6 +176,7 @@ Files: `useAlerts`, `useAppShell`, `useAuthRecovery`, `useBlogDraft`, `useDialog
 - `http/auth.contract.test.ts`, `http/core.contract.test.ts` — skipped by generic Vitest; `npm run test:backend-http:mariadb` starts disposable MariaDB 11.4, verifies native-session and Diary-contract legacy backfills plus rollback/forward paths, boots a built Nitro server, then exercises auth, blog FULLTEXT search, recurring-alert dismissal/scheduler behavior, real Diary CRUD/list/review ownership, validation, conflict, pagination, ID/date/instant and error wire contracts.
 - `market-rotation.mysql.test.ts` — skipped by generic Vitest; `npm run test:market-rotation:mysql` starts disposable MariaDB 11.4 and exercises the real Prisma snapshot boundary, date qualification, canonical core universe, and a BigInt ID above `Number.MAX_SAFE_INTEGER` through `serialize()`.
 - `websocket/socket-io.contract.test.ts` — environment-gated in generic Vitest because it binds a loopback listener; `npm run test:socketio` is the required real Socket.IO gate and exercises the production `createSocketServer()` handshake, auth rejection, user room, ping/pong, alert dismissal, and large-ID wire contract.
+- `native-client/native-client.smoke.test.ts` — runs in Node without a DOM or browser cookie jar. It uses ordinary `fetch`, exercises native JSON login, Bearer `me`/Diary calls, four concurrent expired-token retries sharing one refresh promise, representative stock/alert/timeline/portfolio reads, and native logout.
 
 **`tests/lib/`** — 14 files (plus 2 subdirs: `dates/` with 2, `quicknote/` with 5). Pure-function tests for library modules. No mocks, no Vue, no Prisma.
 

@@ -31,6 +31,7 @@
     "tests/integration/diary-reconciliation.mysql.test.ts",
     "tests/integration/http/auth.contract.test.ts",
     "tests/integration/http/core.contract.test.ts",
+    "tests/integration/native-client/native-client.smoke.test.ts",
     "tests/integration/market-rotation.mysql.test.ts",
     "tests/integration/websocket/socket-io.contract.test.ts",
     "tests/unit/k8s/market-cron.test.ts",
