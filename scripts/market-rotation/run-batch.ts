@@ -21,6 +21,9 @@
 import 'dotenv/config'
 
 import { createRequire } from 'node:module'
+import { randomUUID } from 'node:crypto'
+import { formatErrorContext, logger } from '~/lib/logger'
+import { reportError } from '~/lib/observability'
 import { createPrismaClientOptions } from '~/lib/prisma-client-options'
 import { batchScopes, isBatchScope, type BatchScope } from '~/lib/market-rotation/types'
 import { runFullBatch, runScopeBatch, type BatchJobResult, type FullBatchResult } from '~/server/utils/market-rotation-batch'
@@ -37,6 +40,7 @@ export interface ExecuteBatchOptions {
 
 export interface BatchOutput {
   success: boolean
+  jobId: string
   scope: BatchScope
   startedAt: string
   durationMs: number
@@ -44,6 +48,8 @@ export interface BatchOutput {
   totalErrors: number
   results?: FullBatchResult['results']
   errorMessage?: string
+  errorType?: string
+  stack?: string
 }
 
 // ─── Pure functions (testable) ──────────────────────────────────────
@@ -84,6 +90,7 @@ function extractArgs(argv: string[]): string | undefined {
  */
 export async function executeBatch(options: ExecuteBatchOptions): Promise<BatchOutput> {
   const { prisma, scope } = options
+  const jobId = randomUUID()
   const startedAt = new Date().toISOString()
   const startMs = Date.now()
 
@@ -95,6 +102,7 @@ export async function executeBatch(options: ExecuteBatchOptions): Promise<BatchO
       const fullResult = await runFullBatch(prisma as Parameters<typeof runFullBatch>[0])
       return {
         success: true,
+        jobId,
         scope,
         startedAt,
         durationMs: Date.now() - startMs,
@@ -112,6 +120,7 @@ export async function executeBatch(options: ExecuteBatchOptions): Promise<BatchO
 
     return {
       success: true,
+      jobId,
       scope,
       startedAt,
       durationMs: Date.now() - startMs,
@@ -120,15 +129,19 @@ export async function executeBatch(options: ExecuteBatchOptions): Promise<BatchO
       results,
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorContext = formatErrorContext(error)
+    reportError(error, { operation: 'market_rotation_batch', jobId, scope })
     return {
       success: false,
+      jobId,
       scope,
       startedAt,
       durationMs: Date.now() - startMs,
       totalUpserted: 0,
       totalErrors: 1,
-      errorMessage,
+      errorMessage: errorContext.error,
+      errorType: errorContext.errorType,
+      ...(errorContext.stack ? { stack: errorContext.stack } : {}),
     }
   }
 }
@@ -159,14 +172,26 @@ async function main() {
     console.log(JSON.stringify(output))
 
     if (!output.success) {
-      console.error(`Batch failed: ${output.errorMessage}`)
+      logger.runtime.error('Market rotation batch failed', {
+        operation: 'market_rotation_batch',
+        jobId: output.jobId,
+        scope: output.scope,
+        error: output.errorMessage,
+        errorType: output.errorType,
+        ...(output.stack ? { stack: output.stack } : {}),
+      })
       process.exit(1)
     }
 
     // Symbol-level errors don't fail the job — only infrastructure errors do.
     // Log a warning so K8s logs surface it, but exit 0.
     if (output.totalErrors > 0) {
-      console.warn(`Batch completed with ${output.totalErrors} symbol-level errors`)
+      logger.runtime.warn('Market rotation batch completed with symbol-level errors', {
+        operation: 'market_rotation_batch',
+        jobId: output.jobId,
+        scope: output.scope,
+        totalErrors: output.totalErrors,
+      })
     }
 
     process.exit(0)
@@ -179,7 +204,10 @@ async function main() {
 const isDirectInvocation = import.meta.url === `file://${process.argv[1]}`
 if (isDirectInvocation) {
   main().catch((error) => {
-    console.error('Unhandled error in market-rotation batch:', error)
+    logger.runtime.error('Unhandled error in market rotation batch', {
+      operation: 'market_rotation_batch',
+      ...formatErrorContext(error),
+    })
     process.exit(1)
   })
 }

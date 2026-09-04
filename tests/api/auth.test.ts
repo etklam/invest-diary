@@ -320,7 +320,7 @@ describe('Auth API', () => {
       expect(mockRateLimitersAuthLoginIp).toHaveBeenCalledWith('127.0.0.1')
       expect(mockAuthLogWarn).toHaveBeenCalledWith(
         'Login rate limited',
-        expect.objectContaining({ identity: 'test@example.com' })
+        expect.objectContaining({ email: 'test@example.com' })
       )
     })
   })
@@ -386,7 +386,7 @@ describe('Auth API', () => {
       expect(mockRateLimitersAuthRegisterIp).toHaveBeenCalledWith('127.0.0.1')
       expect(mockAuthLogWarn).toHaveBeenCalledWith(
         'Registration rate limited',
-        expect.objectContaining({ identity: 'newuser@example.com' })
+        expect.objectContaining({ email: 'newuser@example.com' })
       )
     })
 

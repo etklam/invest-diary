@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     try {
       await rateLimiters.authRegisterIdentity(emailIdentity)
     } catch {
-      log.warn('Registration rate limited', { ip: ipIdentifier, identity: validatedData.email })
+      log.warn('Registration rate limited', { ip: ipIdentifier, email: validatedData.email })
       throw Errors.rateLimited(60).toH3Error()
     }
 

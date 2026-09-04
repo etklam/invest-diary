@@ -16,6 +16,7 @@ import prisma from '~/lib/prisma'
 import { serialize } from '~/server/utils/serialize'
 import { handleApiError } from '~/server/utils/error-handler'
 import { logger } from '~/lib/logger'
+import { formatErrorContext } from '~/lib/error-context'
 import { requireUser } from '~/server/utils/auth'
 import { loadPortfolioHoldings } from '~/server/utils/portfolio-read'
 import {
@@ -100,8 +101,9 @@ export default defineEventHandler(async (event) => {
     } catch (rotationError) {
       // Rotation pipeline failure must NOT block the exposure response.
       log.warn('Rotation snapshot resolution failed; falling back', {
+        operation: 'rotation_snapshot_resolution',
         userId: String(user.id),
-        error: rotationError instanceof Error ? rotationError.message : String(rotationError),
+        ...formatErrorContext(rotationError),
       })
     }
 

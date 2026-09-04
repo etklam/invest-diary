@@ -202,8 +202,10 @@ async function reconcileGroup(
     const createdAt = left.createdAt.getTime() - right.createdAt.getTime()
     return createdAt || (left.id < right.id ? -1 : 1)
   })
-  const canonicalId = ordered[0].id
-  const date = toUtcNoonDate(ordered[0].date)
+  const canonical = ordered[0]
+  if (!canonical) throw new Error('Cannot reconcile an empty duplicate group')
+  const canonicalId = canonical.id
+  const date = toUtcNoonDate(canonical.date)
   const { startOfDayUtc, endOfDayUtc } = getUtcDayRange(date)
   const select = diarySelect(capabilities)
 

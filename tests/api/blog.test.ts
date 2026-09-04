@@ -195,7 +195,7 @@ describe('Blog API', () => {
       )
     })
 
-    it('should search in title, excerpt and content', async () => {
+    it('should build the title/excerpt full-text search predicate', async () => {
       mockPostFindMany.mockResolvedValue([])
       mockPostCount.mockResolvedValue(0)
 

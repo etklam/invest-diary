@@ -13,9 +13,11 @@ import 'dotenv/config'
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { createPrismaClientOptions } from '../lib/prisma-client-options'
+import { formatErrorContext } from '../lib/error-context'
+import { getDatabaseUrl } from '../server/config/env'
 
 interface HealthCheckResult {
   name: string
@@ -26,14 +28,7 @@ interface HealthCheckResult {
 
 const describeError = (error?: unknown) => {
   if (!error) return ''
-  if (error instanceof Error) return error.message
-  if (typeof error === 'string') return error
-  try {
-    const serialized = JSON.stringify(error)
-    return serialized || String(error)
-  } catch {
-    return String(error)
-  }
+  return formatErrorContext(error).error
 }
 
 const appendErrorMessage = (error?: unknown) => {
@@ -72,10 +67,11 @@ function runCheck(
     return result
   } catch (error: any) {
     const duration = Date.now() - startTime
+    const errorContext = formatErrorContext(error)
     const result: HealthCheckResult = {
       name,
       status: 'fail',
-      message: error.message || String(error),
+      message: errorContext.error,
       duration
     }
     results.push(result)
@@ -108,15 +104,9 @@ runCheck(
       throw new Error(`.env file not found. Copy ${envExamplePath} to .env and configure.`)
     }
 
-    // Check DATABASE_URL
-    if (!process.env.DATABASE_URL) {
-      // Load .env file manually for this check
-      const envContent = readFileSync(envPath, 'utf-8')
-      const hasDbUrl = envContent.includes('DATABASE_URL')
-      if (!hasDbUrl) {
-        throw new Error('DATABASE_URL not configured in .env')
-      }
-    }
+    // Validate the same database boundary used by the application. dotenv has
+    // already loaded .env above, so this also catches malformed URLs.
+    getDatabaseUrl({ allowTestFallback: false })
   }
 )
 

@@ -1,4 +1,6 @@
 import { clearExpired, getCacheSize } from '~/lib/market-data/cache'
+import { getServerEnv, parseRuntimeSettings } from '~/server/config/env'
+import { formatErrorContext, logger } from '~/lib/logger'
 
 /**
  * ETF 快取清理器
@@ -9,8 +11,11 @@ import { clearExpired, getCacheSize } from '~/lib/market-data/cache'
  */
 export default defineNitroPlugin((nitroApp) => {
   // 檢查是否啟用排程（預防多實例重複執行）
-  if (process.env.SCHEDULER_ENABLED !== 'true') {
-    console.log('[EtfCacheCleaner] Cleaner disabled (SCHEDULER_ENABLED is not set to "true")')
+  if (!getServerEnv().schedulerEnabled) {
+    logger.etf.info('ETF cache cleaner disabled', {
+      operation: 'etf_cache_cleaner_start',
+      schedulerEnabled: false,
+    })
     return
   }
 
@@ -20,7 +25,10 @@ export default defineNitroPlugin((nitroApp) => {
     try {
       clearExpired()
     } catch (error) {
-      console.error('[EtfCacheCleaner] Failed to clear expired cache entries:', error)
+      logger.etf.error('ETF cache cleanup failed', {
+        operation: 'etf_cache_cleanup',
+        ...formatErrorContext(error),
+      })
     }
   }
 
@@ -31,7 +39,11 @@ export default defineNitroPlugin((nitroApp) => {
     clearInterval(timer)
   })
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`[EtfCacheCleaner] Started (interval=${CLEANUP_INTERVAL_MS}ms, size=${getCacheSize()})`)
+  if (parseRuntimeSettings().nodeEnv !== 'production') {
+    logger.etf.info('ETF cache cleaner started', {
+      operation: 'etf_cache_cleaner_start',
+      intervalMs: CLEANUP_INTERVAL_MS,
+      cacheSize: getCacheSize(),
+    })
   }
 })

@@ -4,6 +4,7 @@ import { authenticateAccessToken, authenticateRefreshToken } from '~/server/util
 import { API_KEY_TOKEN_PREFIX, authenticateApiKey, type ApiKeyAuthResult } from '~/server/utils/api-key'
 import { Errors } from '~/lib/errors/factory'
 import { logger } from '~/lib/logger'
+import { formatErrorContext } from '~/lib/error-context'
 import type { H3Event } from 'h3'
 
 export type AuthTransport = 'cookie' | 'bearer' | 'api-key'
@@ -125,7 +126,7 @@ async function authenticateExplicitCredential(
 /** Resolve authentication once; csrf calls this too to make ordering explicit. */
 export async function resolveAuth(event: H3Event) {
   const url = getRequestURL(event)
-  const log = logger.auth
+  const log = logger.auth.withRequestId(event.context.requestId)
 
   if (!url.pathname.startsWith('/api/')) return
   if (event.context.authResolved) return
@@ -160,7 +161,7 @@ export async function resolveAuth(event: H3Event) {
     } catch (error) {
       log.debug('Access token verification failed, falling back to refresh token', {
         path: url.pathname,
-        error: String(error),
+        ...formatErrorContext(error),
       })
     }
   }
@@ -186,7 +187,8 @@ export async function resolveAuth(event: H3Event) {
   } catch (error) {
     log.error('Refresh token recovery failed', {
       path: url.pathname,
-      error: String(error),
+      operation: 'auth_refresh_recovery',
+      ...formatErrorContext(error),
     })
   }
 }

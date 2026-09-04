@@ -236,8 +236,14 @@ describe('createPriceAlertChecker', () => {
 
     await flushAllMicrotasks()
 
-    expect(mockLoggerInfo).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to fetch quote for BADSYMBOL')
+    expect(mockLoggerError).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to fetch quote for BADSYMBOL'),
+      expect.any(Error),
+      expect.objectContaining({
+        operation: 'price_alert_quote_fetch',
+        symbol: 'BADSYMBOL',
+        jobId: expect.any(String),
+      }),
     )
     expect(mockUpdate).not.toHaveBeenCalled()
   })
@@ -267,7 +273,13 @@ describe('createPriceAlertChecker', () => {
     // Error for second alert should be logged
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining('Failed to process price alert 2'),
-      expect.any(Error)
+      expect.any(Error),
+      expect.objectContaining({
+        operation: 'price_alert_process',
+        alertId: '2',
+        symbol: expect.any(String),
+        jobId: expect.any(String),
+      }),
     )
   })
 
@@ -281,7 +293,11 @@ describe('createPriceAlertChecker', () => {
 
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining('Error checking price alerts'),
-      expect.any(Error)
+      expect.any(Error),
+      expect.objectContaining({
+        operation: 'price_alert_scheduler_tick',
+        jobId: expect.any(String),
+      }),
     )
   })
 

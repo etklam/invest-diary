@@ -2,6 +2,8 @@ import type { PriceAlert } from '@prisma/client'
 import type { AlertBroadcaster, PriceAlertPayload } from '~/types/websocket'
 import type { QuoteResponse } from '~/lib/yahoo-finance'
 import { evaluatePriceAlertCondition } from '~/server/utils/price-alert-condition'
+import { randomUUID } from 'node:crypto'
+import { reportError } from '~/lib/observability'
 
 // ─── Dependency interfaces ────────────────────────────────────────────────────
 
@@ -19,7 +21,7 @@ export interface PriceAlertCheckerPrisma {
 
 export interface PriceAlertCheckerLogger {
   info: (message: string) => void
-  error: (message: string, error?: unknown) => void
+  error: (message: string, error?: unknown, context?: Record<string, unknown>) => void
 }
 
 export interface PriceAlertCheckerDeps {
@@ -49,6 +51,7 @@ export function createPriceAlertChecker(deps: PriceAlertCheckerDeps) {
    * 檢查所有未觸發的價格警報，比對當前股價，若條件滿足則透過 WebSocket 推播
    */
   const checkPriceAlerts = async () => {
+    const jobId = randomUUID()
     try {
       const priceAlerts = await deps.prisma.priceAlert.findMany({
         where: { isTriggered: false },
@@ -69,9 +72,13 @@ export function createPriceAlertChecker(deps: PriceAlertCheckerDeps) {
         try {
           const quote = await deps.fetchQuote(sym)
           priceCache.set(sym, quote.regularMarketPrice)
-        } catch {
-          // 報價取得失敗不中斷整個流程
-          deps.logger.info(`${TAG} Failed to fetch quote for ${sym}, skipping`)
+        } catch (error) {
+          // 報價取得失敗不中斷整個流程，但要保留可定位的 failure log。
+          deps.logger.error(`${TAG} Failed to fetch quote for ${sym}, skipping`, error, {
+            operation: 'price_alert_quote_fetch',
+            jobId,
+            symbol: sym,
+          })
           priceCache.set(sym, null)
         }
       }
@@ -130,11 +137,21 @@ export function createPriceAlertChecker(deps: PriceAlertCheckerDeps) {
           }
         } catch (error) {
           // 單一 alert 失敗不影響其他
-          deps.logger.error(`${TAG} Failed to process price alert ${alert.id}:`, error)
+          deps.logger.error(`${TAG} Failed to process price alert ${alert.id}:`, error, {
+            operation: 'price_alert_process',
+            jobId,
+            alertId: alert.id.toString(),
+            userId: alert.userId.toString(),
+            symbol: alert.symbol,
+          })
         }
       }
     } catch (error) {
-      deps.logger.error(`${TAG} Error checking price alerts:`, error)
+      deps.logger.error(`${TAG} Error checking price alerts:`, error, {
+        operation: 'price_alert_scheduler_tick',
+        jobId,
+      })
+      reportError(error, { operation: 'price_alert_scheduler_tick', jobId })
     }
   }
 

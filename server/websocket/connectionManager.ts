@@ -1,5 +1,6 @@
 import type { Socket } from 'socket.io'
 import type { AlertBroadcaster, ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
+import { logger } from '~/lib/logger'
 
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
 
@@ -27,7 +28,12 @@ class ConnectionManager implements AlertBroadcaster {
     this.connections.get(userIdStr)!.add(socket)
     this.socketToUser.set(socket.id, userIdStr)
     
-    console.log(`[WS] User ${userIdStr} connected via socket ${socket.id}. Total sockets for user: ${this.connections.get(userIdStr)!.size}`)
+    logger.ws.info('WebSocket user connected', {
+      operation: 'websocket_connection_register',
+      userId: userIdStr,
+      socketId: socket.id,
+      userSocketCount: this.connections.get(userIdStr)!.size,
+    })
   }
 
   /**
@@ -37,7 +43,10 @@ class ConnectionManager implements AlertBroadcaster {
     const userId = this.socketToUser.get(socketId)
     
     if (!userId) {
-      console.warn(`[WS] Attempted to unregister unknown socket: ${socketId}`)
+      logger.ws.warn('Attempted to unregister unknown WebSocket', {
+        operation: 'websocket_connection_unregister',
+        socketId,
+      })
       return
     }
     
@@ -55,9 +64,18 @@ class ConnectionManager implements AlertBroadcaster {
       // 如果用戶沒有任何連線了，移除整個 entry
       if (userSockets.size === 0) {
         this.connections.delete(userId)
-        console.log(`[WS] User ${userId} has no more connections`)
+        logger.ws.info('WebSocket user disconnected completely', {
+          operation: 'websocket_connection_unregister',
+          userId,
+          socketId,
+        })
       } else {
-        console.log(`[WS] Socket ${socketId} removed for user ${userId}. Remaining: ${userSockets.size}`)
+        logger.ws.info('WebSocket socket disconnected', {
+          operation: 'websocket_connection_unregister',
+          userId,
+          socketId,
+          remainingSockets: userSockets.size,
+        })
       }
     }
     
@@ -84,7 +102,12 @@ class ConnectionManager implements AlertBroadcaster {
       socket.emit(event, ...args)
     })
     
-    console.log(`[WS] Emitted ${event} to user ${userIdStr} (${userSockets.size} sockets)`)
+    logger.ws.info('WebSocket event emitted to user', {
+      operation: 'websocket_emit',
+      userId: userIdStr,
+      event,
+      socketCount: userSockets.size,
+    })
     return true
   }
 
@@ -104,7 +127,11 @@ class ConnectionManager implements AlertBroadcaster {
       })
     })
     
-    console.log(`[WS] Broadcast ${event} to ${recipientCount} sockets`)
+    logger.ws.info('WebSocket event broadcast', {
+      operation: 'websocket_broadcast',
+      event,
+      recipientCount,
+    })
     return recipientCount
   }
 

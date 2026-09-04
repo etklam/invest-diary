@@ -39,7 +39,7 @@ describe('alert-scheduler plugin', () => {
     process.env.SCHEDULER_ENABLED = 'false'
 
     const plugin = (await import('~/server/plugins/alert-scheduler')).default
-    plugin()
+    plugin({} as any)
 
     expect(mockFindMany).not.toHaveBeenCalled()
   })
@@ -66,7 +66,7 @@ describe('alert-scheduler plugin', () => {
     mockEmitToUser.mockReturnValue(true)
 
     const plugin = (await import('~/server/plugins/alert-scheduler')).default
-    plugin()
+    plugin({} as any)
 
     await Promise.resolve()
 

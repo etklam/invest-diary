@@ -14,9 +14,10 @@ describe('server error contract', () => {
       hooks: {
         hook: (_name: string, callback: typeof errorHook) => {
           errorHook = callback
+          return () => {}
         },
       },
-    })
+    } as any)
   })
 
   const applyRequestId = (error: any, requestId: string) => {

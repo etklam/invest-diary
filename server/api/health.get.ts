@@ -1,4 +1,6 @@
 import prisma from '~/lib/prisma'
+import { formatErrorContext, logger } from '~/lib/logger'
+import { parseRuntimeSettings } from '~/server/config/env'
 
 interface HealthCheckResponse {
   status: 'healthy' | 'unhealthy'
@@ -18,6 +20,7 @@ interface HealthCheckResponse {
 }
 
 export default defineEventHandler(async (event) => {
+  const log = logger.api.withRequestId(event.context.requestId)
   const startTime = Date.now()
   const checks: HealthCheckResponse['checks'] = {
     database: {
@@ -26,7 +29,7 @@ export default defineEventHandler(async (event) => {
     server: {
       status: 'ok',
       uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'development'
+      environment: parseRuntimeSettings().nodeEnv,
     }
   }
 
@@ -38,11 +41,13 @@ export default defineEventHandler(async (event) => {
       responseTime: Date.now() - startTime
     }
   } catch (error) {
+    log.error('Health check database failure', {
+      operation: 'health_check',
+      ...formatErrorContext(error),
+    })
     checks.database = {
       status: 'error',
-      message: error instanceof Error && error.message
-        ? error.message
-        : 'Database connection failed'
+      message: 'Database unavailable',
     }
     setResponseStatus(event, 503, 'Service Unavailable')
 

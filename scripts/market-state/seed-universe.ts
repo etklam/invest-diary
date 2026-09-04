@@ -1,8 +1,11 @@
 #!/usr/bin/env tsx
 import 'dotenv/config'
 
+import { randomUUID } from 'node:crypto'
 import { createRequire } from 'node:module'
+import { parseRuntimeSettings } from '../../server/config/env'
 import { createPrismaClientOptions } from '../../lib/prisma-client-options'
+import { formatErrorContext, logger } from '../../lib/logger'
 import { uniqueSymbols } from '../../lib/market-state/seed-universe-utils'
 import { getYahooFinanceClient, isYahooRateLimitError } from '../../lib/market-data/daily-prices'
 import { normalizeYahooSymbol } from '../../lib/market-data/yahoo'
@@ -15,7 +18,8 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient(createPrismaClientOptions())
 
 const UNIVERSE_KEY = 'SP500_NDX'
-const CONCURRENCY_LIMIT = Number(process.env.MARKET_DATA_CONCURRENCY) || 2
+const CONCURRENCY_LIMIT = parseRuntimeSettings().marketDataConcurrency
+const JOB_ID = randomUUID()
 
 interface YahooQuoteRaw {
   symbol?: string
@@ -115,11 +119,18 @@ async function main() {
       console.log(`[${index + 1}/${symbols.length}] ${symbol} 已寫入：${item.name} (${item.exchange})`)
     } catch (error) {
       failedCount += 1
-      const message = error instanceof Error ? error.message : String(error)
+      const errorContext = formatErrorContext(error)
+      const context = {
+        operation: 'market_state_universe_symbol',
+        jobId: JOB_ID,
+        symbol,
+        progress: `${index + 1}/${symbols.length}`,
+        ...errorContext,
+      }
       if (isYahooRateLimitError(error)) {
-        console.warn(`[${index + 1}/${symbols.length}] ${symbol} Yahoo rate-limit：${message}`)
+        logger.runtime.warn('MarketState universe Yahoo rate limit', context)
       } else {
-        console.error(`[${index + 1}/${symbols.length}] ${symbol} 失敗：${message}`)
+        logger.runtime.error('MarketState universe symbol failed', context)
       }
     }
   })
@@ -130,7 +141,11 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error('MarketState universe 初始化失敗：', error)
+    logger.runtime.error('MarketState universe batch failed', {
+      operation: 'market_state_universe',
+      jobId: JOB_ID,
+      ...formatErrorContext(error),
+    })
     process.exit(1)
   })
   .finally(async () => {

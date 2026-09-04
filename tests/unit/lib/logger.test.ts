@@ -64,4 +64,80 @@ describe('logger', () => {
       ip: '10.0.***.***',
     })
   })
+
+  it('serializes errors and redacts credentials from structured context', async () => {
+    vi.resetModules()
+    const { formatErrorContext } = await import('~/lib/logger')
+
+    const context = formatErrorContext(new Error(
+      'request failed for mysql://db_user:super-secret@db.example/app with Bearer abc.def.ghi',
+    ))
+
+    expect(context.error).toContain('mysql://db_user:***@db.example/app')
+    expect(context.error).toContain('Bearer ***')
+    expect(context.error).not.toContain('super-secret')
+    expect(context.errorType).toBe('Error')
+    expect(context.stack).toBeDefined()
+  })
+
+  it('masks password and token fields instead of logging their values', async () => {
+    process.env.LOG_FORMAT = 'json'
+    vi.resetModules()
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { createLogger } = await import('~/lib/logger')
+
+    createLogger('Auth').error('Authentication failure', {
+      password: 'super-secret-password',
+      token: 'jwt-token-value',
+    })
+
+    const payload = JSON.parse(String(errorSpy.mock.calls[0]?.[0]))
+    expect(payload.context).toEqual({ password: '***', token: '***' })
+    expect(String(errorSpy.mock.calls[0]?.[0])).not.toContain('super-secret-password')
+    expect(String(errorSpy.mock.calls[0]?.[0])).not.toContain('jwt-token-value')
+  })
+
+  it('redacts credentials embedded in error-shaped values and messages', async () => {
+    process.env.LOG_FORMAT = 'json'
+    vi.resetModules()
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { createLogger, formatErrorContext } = await import('~/lib/logger')
+
+    const formatted = formatErrorContext({ password: 'object-secret', nested: { token: 'nested-secret' } })
+    createLogger('API').error('failed with PASSWORD=message-secret', formatted)
+
+    const output = String(errorSpy.mock.calls[0]?.[0])
+    expect(output).not.toContain('object-secret')
+    expect(output).not.toContain('nested-secret')
+    expect(output).not.toContain('message-secret')
+    expect(output).toContain('***')
+  })
+
+  it('serializes BigInt values in JSON log context', async () => {
+    process.env.LOG_FORMAT = 'json'
+    vi.resetModules()
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { createLogger } = await import('~/lib/logger')
+
+    createLogger('DB').error('Persistence boundary failure', {
+      userId: 9007199254740993n,
+      ids: [1n, 2n],
+    })
+
+    const payload = JSON.parse(String(errorSpy.mock.calls[0]?.[0]))
+    expect(payload.context).toEqual({ userId: '9007199254740993', ids: ['1', '2'] })
+  })
+
+  it('keeps cyclic context safe and parseable', async () => {
+    process.env.LOG_FORMAT = 'json'
+    vi.resetModules()
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { createLogger } = await import('~/lib/logger')
+    const context: Record<string, unknown> = { operation: 'cycle-test' }
+    context.self = context
+
+    expect(() => createLogger('Runtime').error('cycle', context)).not.toThrow()
+    const payload = JSON.parse(String(errorSpy.mock.calls[0]?.[0]))
+    expect(payload.context).toEqual({ operation: 'cycle-test', self: '[Circular]' })
+  })
 })

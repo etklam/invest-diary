@@ -36,4 +36,46 @@ describe('admin market rotation batch API', () => {
     expect(mockRunScopeBatch).not.toHaveBeenCalled()
     expect(mockRunFullBatch).not.toHaveBeenCalled()
   })
+
+  it('dispatches a validated scope to the shared batch seam', async () => {
+    mockReadBody.mockResolvedValue({ scope: 'sectors' })
+    mockRunScopeBatch.mockResolvedValue({
+      rankScope: 'sectors',
+      upsertedCount: 2,
+      errors: [],
+    })
+
+    const { default: handler } = await import('~/server/api/admin/market/rotation-batch.post')
+
+    await expect(handler({ context: { requestId: 'req-sectors' } } as any)).resolves.toEqual({
+      success: true,
+      result: {
+        rankScope: 'sectors',
+        upsertedCount: 2,
+        errors: [],
+      },
+    })
+    expect(mockRunScopeBatch).toHaveBeenCalledWith({}, 'sectors')
+    expect(mockRunFullBatch).not.toHaveBeenCalled()
+  })
+
+  it('dispatches an omitted scope to the full shared batch seam', async () => {
+    mockReadBody.mockResolvedValue({})
+    mockRunFullBatch.mockResolvedValue({
+      rankScope: 'all',
+      upsertedCount: 23,
+      errors: [],
+    })
+
+    const { default: handler } = await import('~/server/api/admin/market/rotation-batch.post')
+
+    await expect(handler({ context: { requestId: 'req-all' } } as any)).resolves.toEqual({
+      success: true,
+      rankScope: 'all',
+      upsertedCount: 23,
+      errors: [],
+    })
+    expect(mockRunFullBatch).toHaveBeenCalledWith({})
+    expect(mockRunScopeBatch).not.toHaveBeenCalled()
+  })
 })

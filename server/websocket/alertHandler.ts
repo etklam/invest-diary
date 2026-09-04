@@ -1,6 +1,7 @@
 import type { Socket } from 'socket.io'
 import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
 import { dismissAlert } from '~/server/utils/alert-queries'
+import { formatErrorContext, logger } from '~/lib/logger'
 
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
 
@@ -14,7 +15,11 @@ export function setupAlertHandlers(socket: TypedSocket): void {
    * 處理客戶端關閉 alert
    */
   socket.on('alert:dismiss', async (alertId: string) => {
-    console.log(`[WS] User ${userId} dismissing alert ${alertId}`)
+    logger.ws.info('WebSocket alert dismiss requested', {
+      operation: 'websocket_alert_dismiss',
+      userId,
+      alertId,
+    })
 
     try {
       await dismissAlert(alertId, BigInt(userId))
@@ -22,12 +27,21 @@ export function setupAlertHandlers(socket: TypedSocket): void {
       // 通知客戶端成功
       socket.emit('alert:dismissed', { alertId })
       
-      console.log(`[WS] Alert ${alertId} dismissed by user ${userId}`)
-    } catch (error: any) {
-      console.error(`[WS] Error dismissing alert ${alertId}:`, error)
+      logger.ws.info('WebSocket alert dismissed', {
+        operation: 'websocket_alert_dismiss',
+        userId,
+        alertId,
+      })
+    } catch (error: unknown) {
+      logger.ws.error('WebSocket alert dismiss failed', {
+        operation: 'websocket_alert_dismiss',
+        userId,
+        alertId,
+        ...formatErrorContext(error),
+      })
 
       socket.emit('alert:error', {
-        message: error?.statusCode === 404
+        message: (error as { statusCode?: unknown })?.statusCode === 404
           ? 'Alert not found or not authorized'
           : 'Failed to dismiss alert',
         alertId

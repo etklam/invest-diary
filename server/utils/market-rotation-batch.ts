@@ -30,6 +30,7 @@ import {
   type SnapshotUpsertRow,
 } from './market-rotation-queries'
 import type { DailyPrice } from '~/lib/market-rotation/snapshot-builder'
+import { formatErrorContext, logger } from '~/lib/logger'
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -117,9 +118,12 @@ export async function ensureCanonicalPrices(
       const prices = await fetchDailyOhlcv(symbol, '1y', client)
       await persistDailyPrices(prisma, prices)
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
       if (isYahooRateLimitError(error)) {
-        console.warn(`[market-rotation] ${symbol} Yahoo rate-limit：${message}`)
+        logger.runtime.warn('Market rotation Yahoo rate limit', {
+          operation: 'market_rotation_price_fetch',
+          symbol,
+          ...formatErrorContext(error),
+        })
       }
       throw error
     }
@@ -164,7 +168,13 @@ export async function runScopeBatch(
       }
     }
     catch (error) {
-      errors.push({ symbol: entry.symbol, error: String(error) })
+      const errorContext = formatErrorContext(error)
+      errors.push({
+        symbol: entry.symbol,
+        error: error instanceof Error
+          ? `${errorContext.errorType}: ${errorContext.error}`
+          : errorContext.error,
+      })
     }
   }
 

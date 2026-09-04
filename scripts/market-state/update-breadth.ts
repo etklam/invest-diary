@@ -1,7 +1,10 @@
 #!/usr/bin/env tsx
 import 'dotenv/config'
 
+import { randomUUID } from 'node:crypto'
 import { createRequire } from 'node:module'
+import { parseRuntimeSettings } from '../../server/config/env'
+import { formatErrorContext, logger } from '../../lib/logger'
 import { createPrismaClientOptions } from '../../lib/prisma-client-options'
 import {
   calculateBreadthRows,
@@ -22,7 +25,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient(createPrismaClientOptions())
 
 const UNIVERSE_KEY = 'SP500_NDX'
-const CONCURRENCY_LIMIT = Number(process.env.MARKET_DATA_CONCURRENCY) || 2
+const CONCURRENCY_LIMIT = parseRuntimeSettings().marketDataConcurrency
 const INCREMENTAL_RANGE = '1mo'
 const BACKFILL_RANGE = '1y'
 const BACKFILL_DAYS = 260
@@ -31,6 +34,7 @@ const INCREMENTAL_DAYS = 10
 const isBackfill = process.argv.includes('--backfill')
 const targetDays = isBackfill ? BACKFILL_DAYS : INCREMENTAL_DAYS
 const fetchRange = isBackfill ? BACKFILL_RANGE : INCREMENTAL_RANGE
+const JOB_ID = randomUUID()
 
 async function fetchSymbolPrices(symbol: string): Promise<DailyPriceInput[]> {
   return fetchDailyOhlcv(symbol, fetchRange)
@@ -114,11 +118,18 @@ async function main() {
       return { symbol, ok: true, prices }
     } catch (error) {
       failedCount += 1
-      const message = error instanceof Error ? error.message : String(error)
+      const errorContext = formatErrorContext(error)
+      const context = {
+        operation: 'market_state_breadth_symbol',
+        jobId: JOB_ID,
+        symbol,
+        progress: `${index + 1}/${symbols.length}`,
+        ...errorContext,
+      }
       if (isYahooRateLimitError(error)) {
-        console.warn(`[${index + 1}/${symbols.length}] ${symbol} Yahoo rate-limit：${message}`)
+        logger.runtime.warn('MarketState breadth Yahoo rate limit', context)
       } else {
-        console.error(`[${index + 1}/${symbols.length}] ${symbol} 失敗：${message}`)
+        logger.runtime.error('MarketState breadth symbol failed', context)
       }
       return { symbol, ok: false, prices: [] as DailyPriceInput[] }
     }
@@ -197,7 +208,11 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error('MarketState breadth 更新失敗：', error)
+    logger.runtime.error('MarketState breadth batch failed', {
+      operation: 'market_state_breadth',
+      jobId: JOB_ID,
+      ...formatErrorContext(error),
+    })
     process.exit(1)
   })
   .finally(async () => {

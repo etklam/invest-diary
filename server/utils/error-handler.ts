@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { AppError, Errors } from '~/lib/errors/factory'
+import { formatErrorContext } from '~/lib/error-context'
 
 export function handleApiError(error: unknown, log?: { warn: Function; error: Function }): never {
   if (error instanceof z.ZodError) {
@@ -15,6 +16,6 @@ export function handleApiError(error: unknown, log?: { warn: Function; error: Fu
   if (error && typeof error === 'object' && 'statusCode' in error) {
     throw error
   }
-  if (log) log.error('Unexpected error', { error: String(error) })
+  if (log) log.error('Unexpected error', formatErrorContext(error))
   throw Errors.internalError(error).toH3Error()
 }

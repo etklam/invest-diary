@@ -37,7 +37,7 @@ describe('server/api/health.get', () => {
     expect(mockSetResponseStatus).not.toHaveBeenCalled()
   })
 
-  it('returns 503 and includes the database error message when unhealthy', async () => {
+  it('returns 503 without exposing the raw database error when unhealthy', async () => {
     mockQueryRaw.mockRejectedValueOnce(new Error('DB unavailable'))
     const { default: handler } = await import('~/server/api/health.get')
     const event = { context: {} } as any
@@ -50,7 +50,7 @@ describe('server/api/health.get', () => {
       checks: {
         database: {
           status: 'error',
-          message: 'DB unavailable',
+          message: 'Database unavailable',
         },
         server: {
           status: 'ok',

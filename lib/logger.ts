@@ -13,16 +13,20 @@
  * shell. Kept as direct console calls; complexity ceiling: single-process.
  */
 
+import { parseRuntimeSettings } from '~/server/config/env'
+import { formatErrorContext, redactSensitiveText } from '~/lib/error-context'
+
+export { formatErrorContext, redactSensitiveText } from '~/lib/error-context'
+
 export interface LogContext {
-  userId?: string
+  userId?: string | bigint
   requestId?: string
   [key: string]: unknown
 }
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
-const isDev = process.env.NODE_ENV === 'development'
-const isJsonMode = process.env.LOG_FORMAT === 'json'
+const SENSITIVE_CONTEXT_KEY = /password|secret|token|authorization|cookie|api[-_]?key/i
 
 /**
  * Mask an email address for privacy.
@@ -62,30 +66,50 @@ export function maskIp(ip: string): string {
 }
 
 /**
- * Recursively mask PII in context. Masks values whose key matches /email/i,
- * /ip$/i, or /ipAddr/i.
+ * Recursively mask PII and credentials in context. Error instances are
+ * normalized so JSON mode never turns them into an unhelpful `{}`.
  */
-function maskContextPii(obj: Record<string, unknown>): Record<string, unknown> {
-  const result: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'string') {
-      if (/email/i.test(key)) result[key] = maskEmail(value)
-      else if (/ip$/i.test(key) || /ipAddr/i.test(key)) result[key] = maskIp(value)
-      else result[key] = value
-    } else if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      result[key] = maskContextPii(value as Record<string, unknown>)
-    } else {
-      result[key] = value
-    }
+function maskContextValue(value: unknown, key: string | undefined, active: WeakSet<object>): unknown {
+  if (typeof value === 'string') {
+    if (key && SENSITIVE_CONTEXT_KEY.test(key)) return '***'
+    if (key && /email/i.test(key)) return maskEmail(value)
+    if (key && (/ip$/i.test(key) || /ipAddr/i.test(key))) return maskIp(value)
+    return redactSensitiveText(value)
   }
+  if (typeof value === 'bigint') return value.toString()
+  if (value instanceof Error) return formatErrorContext(value)
+  if (value === null || typeof value !== 'object') return value
+  if (active.has(value)) return '[Circular]'
+
+  active.add(value)
+  const result = Array.isArray(value)
+    ? Array.from(value, item => maskContextValue(item, undefined, active))
+    : maskContextPii(value as Record<string, unknown>, active)
+  active.delete(value)
   return result
 }
 
-const consoleFn: Record<LogLevel, typeof console.info> = {
-  debug: console.debug,
-  info: console.info,
-  warn: console.warn,
-  error: console.error,
+function maskContextPii(
+  obj: Record<string, unknown>,
+  active: WeakSet<object> = new WeakSet(),
+): Record<string, unknown> {
+  const ownsActiveMarker = !active.has(obj)
+  if (ownsActiveMarker) active.add(obj)
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(obj)) {
+    result[key] = maskContextValue(value, key, active)
+  }
+  if (ownsActiveMarker) active.delete(obj)
+  return result
+}
+
+const consoleFn: Record<LogLevel, (...args: unknown[]) => void> = {
+  // Resolve console methods at call time so tests and hosting runtimes can
+  // intercept output without relying on import order.
+  debug: (...args) => console.debug(...args),
+  info: (...args) => console.info(...args),
+  warn: (...args) => console.warn(...args),
+  error: (...args) => console.error(...args),
 }
 
 class Logger {
@@ -102,16 +126,18 @@ class Logger {
   error(message: string, context?: LogContext) { this.log('error', message, context) }
 
   private log(level: LogLevel, message: string, context?: LogContext) {
-    if (level === 'debug' && !isDev) return
+    const runtime = parseRuntimeSettings()
+    if (level === 'debug' && runtime.nodeEnv !== 'development') return
     const masked = context ? maskContextPii(context) : undefined
+    const safeMessage = redactSensitiveText(message)
     const ts = new Date().toISOString()
 
-    if (isJsonMode) {
+    if (runtime.logFormat === 'json') {
       const entry: Record<string, unknown> = {
         timestamp: ts,
         level: level.toUpperCase(),
         prefix: this.prefix,
-        message,
+        message: safeMessage,
       }
       if (this.requestId) entry.requestId = this.requestId
       if (masked) entry.context = masked
@@ -121,7 +147,7 @@ class Logger {
 
     const parts = [ts, `[${this.prefix}]`, `[${level.toUpperCase()}]`]
     if (this.requestId) parts.push(`[req:${this.requestId.slice(0, 8)}]`)
-    const formatted = parts.join(' ') + ` ${message}`
+    const formatted = parts.join(' ') + ` ${safeMessage}`
     consoleFn[level](...(masked ? [formatted, masked] : [formatted]))
   }
 }
@@ -135,6 +161,7 @@ export const logger = {
   auth: createLogger('Auth'),
   db: createLogger('DB'),
   ws: createLogger('WS'),
+  runtime: createLogger('Runtime'),
   alert: createLogger('Alert'),
   blog: createLogger('Blog'),
   admin: createLogger('ADMIN'),

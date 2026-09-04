@@ -3,6 +3,7 @@ import {
 } from '~/lib/jwt'
 import { setAccessTokenCookie } from '~/server/utils/auth'
 import { logger } from '~/lib/logger'
+import { formatErrorContext } from '~/lib/error-context'
 import { Errors, AppError } from '~/lib/errors/factory'
 import { authenticateRefreshToken, deleteStoredRefreshToken } from '~/server/utils/auth-session'
 
@@ -57,7 +58,10 @@ export default defineEventHandler(async (event) => {
     if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
-    log.error('Token refresh error', { error: String(error) })
+    log.error('Token refresh error', {
+      operation: 'auth_refresh',
+      ...formatErrorContext(error),
+    })
     throw Errors.tokenInvalid().toH3Error()
   }
 })

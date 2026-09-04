@@ -8,7 +8,7 @@
  */
 
 import { fetchQuote, type QuoteResponse } from '~/lib/yahoo-finance'
-import { logger } from '~/lib/logger'
+import { formatErrorContext, logger } from '~/lib/logger'
 import {
   buildMarketQuoteCacheKey,
   getMarketDataCacheTtlSeconds,
@@ -76,7 +76,11 @@ export async function fetchQuotesBounded(symbols: string[]): Promise<QuoteBatch>
             errors.push(symbol)
           }
         } catch (error) {
-          logger.stocks.warn('Quote fetch failed', { symbol, error })
+          logger.stocks.warn('Quote fetch failed', {
+            operation: 'quote_fetch',
+            symbol,
+            ...formatErrorContext(error),
+          })
           errors.push(symbol)
         }
       }
