@@ -218,7 +218,7 @@
         >
           {{ t('common.cancel') }}
         </NuxtLink>
-        <BaseButton type="submit" :disabled="saving">
+        <BaseButton data-testid="diary-submit" type="submit" :disabled="saving">
           <Icon v-if="saving" name="svg-spinners:180-ring-with-bg" class="h-4 w-4" />
           {{ editing ? t('common.save') : t('diary.writeDiary') }}
         </BaseButton>

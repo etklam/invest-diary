@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <div v-if="transactions.length === 0" class="rounded-dt-sm border border-dashed border-dt-border bg-dt-surface-strong py-8 text-center">
       <p class="text-sm text-dt-text-muted">{{ t('diary.form.noTransactions') }}</p>
-      <BaseButton variant="secondary" class="mt-3" @click="addTransaction">
+      <BaseButton data-testid="transaction-add" variant="secondary" class="mt-3" @click="addTransaction">
         <Icon name="heroicons:plus" class="h-4 w-4" />
         {{ t('diary.form.addTransaction') }}
       </BaseButton>
@@ -79,7 +79,7 @@
               v-model.number="transaction.price"
               @input="validateTransaction(index)"
               step="0.01"
-              min="0.0001"
+              min="0.01"
               :aria-invalid="hasFieldValidationError(transaction, 'price')"
               :aria-describedby="hasFieldValidationError(transaction, 'price') ? `txn-error-${uidOf(transaction)}` : undefined"
               :class="[inputClass, hasFieldValidationError(transaction, 'price') ? 'border-dt-danger focus:border-dt-danger' : '']"
@@ -178,7 +178,7 @@
       </div>
 
       <div class="flex justify-end">
-        <BaseButton variant="secondary" @click="addTransaction">
+        <BaseButton data-testid="transaction-add" variant="secondary" @click="addTransaction">
           <Icon name="heroicons:plus" class="h-4 w-4" />
           {{ t('diary.form.addTransaction') }}
         </BaseButton>

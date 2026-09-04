@@ -86,6 +86,10 @@ test('authenticated layout stays stable across viewport and route matrix', async
       expect(metrics.rootScrollWidth, `document overflow on ${route.path} at ${viewportWidth}px: ${JSON.stringify(metrics.overflowingElements)}`).toBeLessThanOrEqual(metrics.clientWidth)
       expect(metrics.bodyScrollWidth, `body overflow on ${route.path} at ${viewportWidth}px`).toBeLessThanOrEqual(metrics.clientWidth)
 
+      if (metrics.containerWidth == null) {
+        throw new Error(`missing PageContainer on ${route.path}`)
+      }
+
       measurements.push({
         path: route.path,
         width: metrics.containerWidth,
@@ -108,8 +112,8 @@ test('client-side route changes keep the app grid aligned', async ({ page }) => 
   await authenticate(page)
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/timeline', { waitUntil: 'domcontentloaded' })
+  await page.waitForLoadState('networkidle')
   await expect(page.locator('main h1:visible').first()).toBeVisible({ timeout: 15_000 })
-  await page.waitForTimeout(250)
 
   const sequence = [
     { path: '/timeline', width: 'app' },
@@ -125,16 +129,26 @@ test('client-side route changes keep the app grid aligned', async ({ page }) => 
     if (await visibleTarget.count()) {
       await visibleTarget.click()
     } else {
-      const menuIndexByPath: Record<string, number> = {
-        '/diaries': 0,
-        '/stocks': 1,
-        '/calendar': 0,
-        '/tools/market-rotation': 2,
+      const menuLabelByPath: Record<string, string> = {
+        '/diaries': 'Journal',
+        '/stocks': 'Portfolio',
+        '/calendar': 'Journal',
+        '/tools/market-rotation': 'Research',
       }
-      const menuButton = shell.locator('button[aria-haspopup="menu"]').nth(menuIndexByPath[path] ?? -1)
-      await menuButton.click()
-      const menuTarget = shell.locator(`a[href="${path}"]:visible`).first()
-      await expect(menuTarget).toBeVisible({ timeout: 1_000 })
+      const mobileMenuButton = shell.locator('button[aria-haspopup="dialog"]:visible')
+      if (await mobileMenuButton.count()) {
+        await mobileMenuButton.click()
+      } else {
+        const menuButton = shell.locator('button[aria-haspopup="menu"]:visible').filter({ hasText: menuLabelByPath[path] })
+        await expect(menuButton).toBeVisible()
+        // Use the dropdown's supported keyboard contract. This also avoids a
+        // document-level outside-click handler racing the mouse event.
+        await menuButton.press('ArrowDown')
+        await expect(menuButton).toHaveAttribute('aria-expanded', 'true')
+      }
+
+      const menuTarget = page.locator(`a[href="${path}"]:visible`).first()
+      await expect(menuTarget).toBeVisible({ timeout: 5_000 })
       await menuTarget.click()
     }
 

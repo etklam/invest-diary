@@ -25,7 +25,9 @@ test('quick diary supports free writing and saves as a new diary by default', as
 
   await expect(page.getByRole('heading', { level: 1, name: 'Quick Diary' })).toBeVisible()
   await expect(quickInput).toBeFocused()
-  await expect(page.locator('[data-test="quick-capture-save"]:visible')).toHaveText('Save Quick Diary')
+  // The current create-mode contract calls this action "Create Note".
+  // "Save Quick Diary" is the legacy label and is no longer rendered.
+  await expect(page.locator('[data-test="quick-capture-save"]:visible')).toHaveText('Create Note')
   await expect(page.locator('#quick-note-title')).toBeHidden()
 
   const moreOptions = page.locator('[data-test="quick-note-row-more"]')

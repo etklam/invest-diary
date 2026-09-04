@@ -3,6 +3,10 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
+  // Global setup provisions one disposable database per run. Keep the worker
+  // pool bounded so the per-test identity/rate-limit isolation contract is
+  // deterministic on both laptops and Forgejo runners.
+  workers: 2,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: 'list',
@@ -28,13 +32,8 @@ export default defineConfig({
       timeout: 60_000,
     },
   ],
-  webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 3000',
-    url: 'http://127.0.0.1:3000',
-    reuseExistingServer: false,
-    timeout: 120_000,
-  },
-  // Global setup for authenticated state
+  // Global setup provisions the DB and starts the dev server after its env is
+  // ready; Playwright's webServer would start too early for a dynamic URL.
   globalSetup: './tests/e2e/global-setup.ts',
   globalTeardown: './tests/e2e/global-teardown.ts',
 })

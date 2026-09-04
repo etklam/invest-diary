@@ -1,4 +1,92 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+async function mockTimelineShell(page: Page) {
+  // Timeline is an authenticated shell with several independent projections.
+  // Auth-flow tests own the login UI seam, so keep those post-login requests at
+  // deterministic successful boundaries instead of letting a missing mocked
+  // cookie turn an unrelated 401 into a redirect back to the login page.
+  await page.route('**/api/diaries', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    })
+  })
+
+  await page.route('**/api/stocks/portfolio', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        holdings: [],
+        valuation: {
+          totalHoldings: 0,
+          totalCost: 0,
+          currentMarketValue: null,
+          unrealizedAmount: null,
+          unrealizedPct: null,
+          totalDayChange: null,
+          totalDayChangePercent: null,
+          largestPositionPct: null,
+          top3ConcentrationPct: null,
+          activePositionCount: 0,
+          concentrationWarning: false,
+          largestPositionSymbol: null,
+          pricedPositionCount: 0,
+          unpricedPositionCount: 0,
+          pricedCostBasis: 0,
+          unpricedCostBasis: 0,
+          quoteCoveragePct: 0,
+          valuationAsOf: null,
+          staleQuoteCount: 0,
+          valuationStatus: 'empty',
+          unsupportedMetrics: ['ytdReturn', 'realCashPercentage', 'sectorConcentration'],
+        },
+        quoteErrors: [],
+        marketState: null,
+      }),
+    })
+  })
+
+  await page.route('**/api/portfolio/attention', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items: [],
+        asOf: '2026-01-01T00:00:00.000Z',
+        coverage: { valuationStatus: 'empty', complete: true, priced: 0, total: 0 },
+      }),
+    })
+  })
+
+  await page.route('**/api/investment-activity', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [],
+        pagination: { nextCursor: null, hasMore: false, asOf: '2026-01-01T00:00:00.000Z' },
+      }),
+    })
+  })
+
+  await page.route('**/api/reviews', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ unscheduled: [], overdue: [], today: [], upcoming: [], completed: [] }),
+    })
+  })
+
+  await page.route('**/api/alerts', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([]),
+    })
+  })
+}
 
 test.describe.configure({ mode: 'serial' })
 
@@ -80,14 +168,7 @@ test('login with valid credentials redirects to Timeline', async ({ page }) => {
     })
   })
 
-  // Timeline loads diaries after login redirect.
-  await page.route('**/api/diaries', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ data: [] }),
-    })
-  })
+  await mockTimelineShell(page)
 
   await page.goto('/auth/login', { waitUntil: 'domcontentloaded' })
   await expect(page.locator('button.login-submit')).toBeEnabled({ timeout: 15_000 })
@@ -151,14 +232,7 @@ test('logout clears session and redirects to login page', async ({ page }) => {
     })
   })
 
-  // Mock diaries list so Timeline can load after login.
-  await page.route('**/api/diaries', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ data: [] }),
-    })
-  })
+  await mockTimelineShell(page)
 
   // Mock logout
   await page.route('**/api/auth/logout', async (route) => {

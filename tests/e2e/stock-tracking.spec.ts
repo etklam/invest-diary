@@ -39,7 +39,7 @@ test('watchlist page displays tracked stocks with record count', async ({ page }
     },
   ]
 
-  await page.route('**/api/stocks/watchlist', async (route) => {
+  await page.route('**/api/stocks/watchlist**', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -65,7 +65,7 @@ test('add stock to watchlist and verify POST body', async ({ page }) => {
   let createRequestBody: any = null
 
   // Mock watchlist GET to return empty initially (so we can add)
-  await page.route('**/api/stocks/watchlist', async (route) => {
+  await page.route('**/api/stocks/watchlist**', async (route) => {
     if (route.request().method() === 'POST') {
       createRequestBody = route.request().postDataJSON()
       await route.fulfill({
@@ -90,23 +90,19 @@ test('add stock to watchlist and verify POST body', async ({ page }) => {
 
   await authenticate(page)
   await page.goto('/stocks/watchlist', { waitUntil: 'domcontentloaded' })
-
-  // Wait for the page to be fully interactive
-  await page.waitForTimeout(1000)
+  await page.waitForLoadState('networkidle')
 
   // Fill the add stock form — use type() to ensure v-model picks up the value
   const addInput = page.getByPlaceholder(/NVDA|TSLA/i)
-  await addInput.click()
-  await addInput.type('MSFT')
+  await expect(addInput).toBeVisible({ timeout: 10_000 })
+  await addInput.fill('MSFT')
 
   // Verify the input value was set
   await expect(addInput).toHaveValue('MSFT')
 
-  // Submit the form via JS to bypass any overlay issues
-  await page.evaluate(() => {
-    const form = document.querySelector('form')
-    if (form) form.requestSubmit()
-  })
+  // Submit through the supported button contract so Vue's submit handler and
+  // the real POST request are exercised together.
+  await addInput.press('Enter')
 
   // Verify POST body contains the symbol
   await expect.poll(() => createRequestBody, { timeout: 10_000 }).not.toBeNull()
@@ -129,97 +125,112 @@ test('watchlist empty state is shown', async ({ page }) => {
   await expect(page.getByText(/no.*record|無.*資料|empty|沒有任何|no.*timeline/i)).toBeVisible({ timeout: 10_000 })
 })
 
-test.skip('single stock timeline page shows symbol, summary, and source badge', async ({ page }) => {
-  const mockTimeline = {
-    stock: { symbol: 'AAPL', name: 'Apple Inc.' },
-    records: [
+test('single stock Company Hub shows symbol, evidence, and source badge', async ({ page }) => {
+  const mockHub = {
+    company: { id: '1', symbol: 'AAPL', name: 'Apple Inc.', currency: 'USD', watchStatus: 'WATCHING' },
+    position: {
+      state: 'research_only',
+      quantity: 0,
+      averageCost: null,
+      totalCost: 0,
+      price: null,
+      marketValue: null,
+      concentrationPct: null,
+      concentrationBasis: 'unavailable',
+      quoteStatus: 'missing',
+    },
+    thesis: null,
+    latestReview: null,
+    reviews: [],
+    notes: [],
+    relatedDiaries: [],
+    evidence: [
       {
         id: '10',
-        symbol: 'AAPL',
         summary: 'Earnings beat expectations.',
         sourceType: 'DIARY',
         sourceTitle: 'Q2 Review',
         sourceUrl: null,
-        sourceDiaryId: '5',
-        sourceExternalId: null,
-        sourceExcerpt: null,
-        confidence: 85,
-        idempotencyKey: 'abc-123',
         occurredAt: '2026-04-30T12:00:00.000Z',
-        createdVia: 'WEB',
         createdByLabel: null,
-        metadataJson: null,
-        createdAt: '2026-04-30T12:00:00.000Z',
-        updatedAt: '2026-04-30T12:00:00.000Z',
       },
       {
         id: '11',
-        symbol: 'AAPL',
         summary: 'New product launch announced.',
         sourceType: 'ARTICLE',
         sourceTitle: 'Tech News',
         sourceUrl: 'https://example.com/aapl-launch',
-        sourceDiaryId: null,
-        sourceExternalId: null,
-        sourceExcerpt: 'Apple announced...',
-        confidence: 75,
-        idempotencyKey: 'article-aapl-1',
         occurredAt: '2026-04-29T00:00:00.000Z',
-        createdVia: 'API_KEY',
         createdByLabel: 'Ana',
-        metadataJson: null,
-        createdAt: '2026-04-29T00:00:00.000Z',
-        updatedAt: '2026-04-29T00:00:00.000Z',
       },
     ],
   }
 
-  await page.route('**/api/stocks/AAPL/timeline', async (route) => {
+  await page.route('**/api/stocks/AAPL/hub', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(mockTimeline),
+      body: JSON.stringify(mockHub),
     })
   })
 
   await authenticate(page)
 
-  // Navigate to single stock timeline page
-  await page.goto('/stocks/AAPL/timeline', { waitUntil: 'domcontentloaded' })
+  await page.goto('/stocks/AAPL', { waitUntil: 'domcontentloaded' })
 
   // Verify symbol is displayed
   await expect(page.getByText('AAPL')).toBeVisible({ timeout: 10_000 })
 
+  // Evidence is an intentionally collapsed disclosure on the Company Hub.
+  await page.locator('details summary').click()
+
   // Verify summary content
   await expect(page.getByText('Earnings beat expectations.')).toBeVisible()
 
-  // Verify source badge/type is shown (DIARY, ARTICLE)
-  await expect(page.getByText('DIARY').or(page.getByText('ARTICLE'))).toBeVisible()
+  // Verify source badge/type is shown (the current Company Hub contract keeps
+  // source type/title in the evidence details section).
+  await expect(page.getByText('Q2 Review', { exact: true })).toBeVisible()
 
   // Verify second record
   await expect(page.getByText('New product launch announced.')).toBeVisible()
 })
 
-test.skip('timeline page shows empty state when no records', async ({ page }) => {
-  await page.route('**/api/stocks/EMPTY/timeline', async (route) => {
+test('Company Hub shows an explicit empty evidence state', async ({ page }) => {
+  await page.route('**/api/stocks/EMPTY/hub', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        stock: { symbol: 'EMPTY', name: null },
-        records: [],
+        company: { id: null, symbol: 'EMPTY', name: null, currency: null, watchStatus: null },
+        position: {
+          state: 'untracked',
+          quantity: 0,
+          averageCost: null,
+          totalCost: 0,
+          price: null,
+          marketValue: null,
+          concentrationPct: null,
+          concentrationBasis: 'unavailable',
+          quoteStatus: 'missing',
+        },
+        thesis: null,
+        latestReview: null,
+        reviews: [],
+        notes: [],
+        relatedDiaries: [],
+        evidence: [],
       }),
     })
   })
 
   await authenticate(page)
-  await page.goto('/stocks/EMPTY/timeline', { waitUntil: 'domcontentloaded' })
+  await page.goto('/stocks/EMPTY', { waitUntil: 'domcontentloaded' })
 
-  // Should show empty data indicator
-  await expect(page.getByText(/no.*data|無.*資料|empty|no.*record/i)).toBeVisible({ timeout: 10_000 })
+  await page.locator('details summary').click()
+  await expect(page.getByText('No source evidence yet.')).toBeVisible({ timeout: 10_000 })
 })
 
-test.skip('archive stock via DELETE request', async ({ page }) => {
+test('archive stock via DELETE request', async ({ page }) => {
   let deleteCalled = false
 
   await page.route('**/api/stocks/watchlist', async (route) => {
@@ -251,7 +262,7 @@ test.skip('archive stock via DELETE request', async ({ page }) => {
     }
   })
 
-  // Also mock the DELETE for the specific watchlist item
+  // The current table contract archives a specific watchlist item.
   await page.route('**/api/stocks/watchlist/1', async (route) => {
     if (route.request().method() === 'DELETE') {
       deleteCalled = true
@@ -272,19 +283,8 @@ test.skip('archive stock via DELETE request', async ({ page }) => {
   await authenticate(page)
   await page.goto('/stocks/watchlist', { waitUntil: 'domcontentloaded' })
 
-  // Look for a delete/archive button and click it
-  const deleteButton = page.locator('button').filter({ hasText: /delete|刪除|删除/i }).first()
-  const hasDeleteButton = await deleteButton.isVisible({ timeout: 3000 }).catch(() => false)
-
-  if (hasDeleteButton) {
-    page.once('dialog', async (dialog) => {
-      await dialog.accept()
-    })
-    await deleteButton.click()
-  }
-
-  // If we have a delete flow, verify the DELETE was triggered
-  // Otherwise this is a soft-skip (the page might not have in-page archive)
-  expect(hasDeleteButton).toBe(true)
-  expect(deleteCalled).toBe(true)
+  const archiveButton = page.getByRole('button', { name: /archive/i })
+  await expect(archiveButton).toBeVisible({ timeout: 10_000 })
+  await archiveButton.click()
+  await expect.poll(() => deleteCalled).toBe(true)
 })
