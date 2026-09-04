@@ -1,25 +1,9 @@
-import { Server } from 'socket.io'
 import { Server as HttpServer } from 'node:http'
 import { Server as HttpsServer } from 'node:https'
 import type { NitroApp } from 'nitropack'
-import { logger } from '~/lib/logger'
-import { connectionManager } from '../websocket/connectionManager'
-import { setupAlertHandlers } from '../websocket/alertHandler'
-import { isAllowedWebSocketOrigin } from '../utils/websocket-origin'
-import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
-import { authenticateAccessToken } from '../utils/auth-session'
-
-function getCookieValue(cookieHeader: string | undefined, name: string): string | undefined {
-  if (!cookieHeader) return undefined
-  const key = `${name}=`
-  for (const part of cookieHeader.split(';')) {
-    const trimmed = part.trim()
-    if (trimmed.startsWith(key)) {
-      return decodeURIComponent(trimmed.slice(key.length))
-    }
-  }
-  return undefined
-}
+import type { Server } from 'socket.io'
+import type { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from '../../types/websocket'
+import { createSocketServer } from '../websocket/socket-server'
 
 declare module 'nitropack' {
   interface NitroApp {
@@ -46,106 +30,11 @@ function getPatchState(): WebSocketPatchState {
   if (!globalThis.__diaryWebSocketPatchState__) {
     globalThis.__diaryWebSocketPatchState__ = {
       patchedPrototypes: new WeakSet<object>(),
-      initializedServers: new WeakSet<NodeHttpServer>()
+      initializedServers: new WeakSet<NodeHttpServer>(),
     }
   }
 
   return globalThis.__diaryWebSocketPatchState__
-}
-
-function createSocketServer(
-  httpServer: NodeHttpServer
-): Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData> {
-  const siteUrl = process.env.NUXT_PUBLIC_SITE_URL
-  const isProduction = process.env.NODE_ENV === 'production'
-  const allowedOrigin = siteUrl || undefined
-
-  if (isProduction && !allowedOrigin) {
-    logger.ws.error('NUXT_PUBLIC_SITE_URL not set in production — WebSocket connections will be rejected')
-  }
-
-  const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
-    httpServer,
-    {
-      cors: {
-        origin: (origin, callback) => {
-          if (isAllowedWebSocketOrigin(origin, allowedOrigin, isProduction)) {
-            callback(null, true)
-            return
-          }
-
-          callback(new Error('Origin not allowed'), false)
-        },
-        credentials: true,
-        methods: ['GET', 'POST']
-      },
-      path: '/socket.io/',
-      transports: ['websocket', 'polling'],
-      pingInterval: 25000,
-      pingTimeout: 20000
-    }
-  )
-
-  io.use(async (socket, next) => {
-    const authToken = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '')
-    const cookieHeader = socket.handshake.headers.cookie
-    const cookieToken = getCookieValue(cookieHeader, 'access-token')
-    const token = authToken || cookieToken
-
-    if (!token) {
-      logger.ws.warn('Connection rejected: No token provided', { socketId: socket.id })
-      return next(new Error('Authentication required'))
-    }
-
-    try {
-      const user = await authenticateAccessToken(token)
-      if (!user) {
-        logger.ws.warn('Connection rejected: user not found or token revoked', { socketId: socket.id })
-        return next(new Error('Invalid token'))
-      }
-
-      socket.data = {
-        userId: user.id,
-        connectedAt: new Date()
-      }
-
-      logger.ws.info('User authenticated', { userId: user.id, socketId: socket.id })
-      next()
-    } catch (err: any) {
-      logger.ws.warn('Token verification failed', { error: err.message, socketId: socket.id })
-      next(new Error('Invalid token'))
-    }
-  })
-
-  io.on('connection', (socket) => {
-    const { userId } = socket.data
-
-    logger.ws.info('Client connected', { socketId: socket.id, userId })
-    connectionManager.register(userId, socket)
-    setupAlertHandlers(socket)
-    socket.join(`user:${userId}`)
-
-    socket.emit('connection:success', {
-      socketId: socket.id,
-      userId
-    })
-
-    socket.on('ping', () => {
-      socket.emit('pong')
-    })
-
-    socket.on('disconnect', (reason) => {
-      logger.ws.info('Client disconnected', { socketId: socket.id, userId, reason })
-      connectionManager.unregister(socket.id)
-      socket.leave(`user:${userId}`)
-    })
-
-    socket.on('error', (err) => {
-      logger.ws.error('Socket error', { socketId: socket.id, userId, error: err })
-    })
-  })
-
-  return io
 }
 
 function initializeSocketServer(nitroApp: NitroApp, httpServer: NodeHttpServer) {
@@ -157,7 +46,6 @@ function initializeSocketServer(nitroApp: NitroApp, httpServer: NodeHttpServer) 
 
   nitroApp.socketIo = createSocketServer(httpServer)
   patchState.initializedServers.add(httpServer)
-  logger.ws.info('Socket.io server initialized')
 }
 
 function patchServerPrototype(nitroApp: NitroApp, prototype: ServerPrototype) {
