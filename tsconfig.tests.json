@@ -1,0 +1,52 @@
+{
+  "extends": "./.nuxt/tsconfig.shared.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": false,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["node", "vitest/globals", "vite/client"],
+    "jsx": "preserve",
+    "skipLibCheck": true
+  },
+  "include": [
+    ".nuxt/nuxt.d.ts",
+    ".nuxt/types/**/*.d.ts",
+    "tests/types/nuxt-test-globals.d.ts",
+    "playwright.config.ts",
+    "scripts/test-database-guard.ts",
+    "tests/e2e/global-setup.ts",
+    "tests/e2e/global-teardown.ts",
+    "tests/e2e/helpers/auth.ts",
+    "tests/e2e/app-layout-responsive.spec.ts",
+    "tests/e2e/decision-thread.spec.ts",
+    "tests/e2e/diary-crud.spec.ts",
+    "tests/e2e/stock-tracking.spec.ts",
+    "tests/api/admin-market-rotation.test.ts",
+    "tests/unit/lib/jwt.test.ts",
+    "tests/unit/lib/prisma-runtime-contract.test.ts",
+    "tests/unit/schedulers/alert-pusher.test.ts",
+    "tests/unit/schedulers/price-alert-checker.test.ts",
+    "tests/unit/server/alert-queries.test.ts",
+    "tests/unit/server/alert-scheduler.test.ts",
+    "tests/integration/diary-reconciliation.mysql.test.ts",
+    "tests/integration/http/auth.contract.test.ts",
+    "tests/integration/http/core.contract.test.ts",
+    "tests/integration/market-rotation.mysql.test.ts",
+    "tests/integration/websocket/socket-io.contract.test.ts",
+    "tests/unit/k8s/market-cron.test.ts",
+    "tests/unit/lib/logger.test.ts",
+    "tests/unit/lib/observability.test.ts",
+    "tests/unit/scripts/test-database-guard.test.ts",
+    "tests/unit/server/config-env.test.ts",
+    "tests/unit/server/error-contract.test.ts",
+    "tests/unit/server/error-handler.test.ts",
+    "tests/unit/server/runtime-config-plugin.test.ts",
+    "tests/unit/server/serialize.test.ts"
+  ],
+  "exclude": [
+    "coverage/**/*",
+    "dist/**/*",
+    ".output/**/*",
+    "node_modules/**/*"
+  ]
+}

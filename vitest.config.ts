@@ -13,7 +13,7 @@ export default defineConfig({
     setupFiles: ['./tests/vi-setup.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcovonly'],
       include: [
         'server/api/auth/**/*.ts',
         'server/api/diaries/**/*.ts',
@@ -26,10 +26,13 @@ export default defineConfig({
         'server/utils/**/*.ts',
         'server/websocket/connectionManager.ts',
         'server/plugins/alert-scheduler.ts',
+        'server/plugins/00-runtime-config.ts',
+        'server/plugins/error-contract.ts',
         'lib/blog.ts',
         'lib/diary-date.ts',
         'lib/jwt.ts',
         'lib/logger.ts',
+        'lib/observability.ts',
         'lib/prisma.ts',
         'lib/market-data/**/*.ts',
         'lib/market-rotation/**/*.ts',

@@ -67,20 +67,25 @@ export const mockSetHeader = vi.fn()
 export const mockSendRedirect = vi.fn()
 export const mockSetResponseStatus = vi.fn()
 
+// Nuxt generates auto-import globals for the application, while Vitest runs
+// this setup file in a plain Node global. Keep the runtime mock wiring behind
+// one typed test boundary instead of weakening the entire test tsconfig.
+const testGlobal = globalThis as typeof globalThis & Record<string, any>
+
 // Mock Nuxt auto-imported functions for server APIs
-global.defineEventHandler = (handler: Function) => handler
-global.readBody = mockReadBody
-global.getQuery = mockGetQuery
-global.getRouterParam = mockGetRouterParam
-global.setCookie = mockSetCookie
-global.deleteCookie = mockDeleteCookie
-global.getCookie = mockGetCookie
-global.getHeader = mockGetHeader
-global.setHeader = mockSetHeader
-global.sendRedirect = mockSendRedirect
-global.setResponseStatus = mockSetResponseStatus
-global.getRequestURL = vi.fn(() => ({ pathname: '/api/test' }))
-global.createError = (params: { statusCode: number; statusMessage: string }) => {
+testGlobal.defineEventHandler = (handler: Function) => handler
+testGlobal.readBody = mockReadBody
+testGlobal.getQuery = mockGetQuery
+testGlobal.getRouterParam = mockGetRouterParam
+testGlobal.setCookie = mockSetCookie
+testGlobal.deleteCookie = mockDeleteCookie
+testGlobal.getCookie = mockGetCookie
+testGlobal.getHeader = mockGetHeader
+testGlobal.setHeader = mockSetHeader
+testGlobal.sendRedirect = mockSendRedirect
+testGlobal.setResponseStatus = mockSetResponseStatus
+testGlobal.getRequestURL = vi.fn(() => ({ pathname: '/api/test' }))
+testGlobal.createError = (params: { statusCode: number; statusMessage: string }) => {
   const error = new Error(params.statusMessage)
   ;(error as any).statusCode = params.statusCode
   ;(error as any).statusMessage = params.statusMessage
@@ -88,10 +93,10 @@ global.createError = (params: { statusCode: number; statusMessage: string }) => 
 }
 
 // Make useToast available as a global for auto-imported composables
-global.useToast = () => mockToast
+testGlobal.useToast = () => mockToast
 
 // Make useI18n available as a global for auto-imported composables
-global.useI18n = () => ({
+testGlobal.useI18n = () => ({
   t: (key: string) => key,
   locale: 'zh-TW',
   locales: [],
@@ -101,7 +106,7 @@ global.useI18n = () => ({
 // Make useTimezone available as a global for auto-imported composables.
 // Per-file tests can override with vi.stubGlobal('useTimezone', ...) for
 // deterministic formatted output.
-global.useTimezone = () => ({
+testGlobal.useTimezone = () => ({
   getTimezone: () => 'Asia/Taipei',
   getTodayDateString: () => '2026-01-01',
   formatLocaleDate: (d?: unknown) => (d == null ? '' : String(d)),
@@ -110,22 +115,22 @@ global.useTimezone = () => ({
 })
 
 // Mock cachedEventHandler for Nuxt caching
-global.cachedEventHandler = (handler: Function) => handler
+testGlobal.cachedEventHandler = (handler: Function) => handler
 
 // Mock event context
-global.event = {
+;(testGlobal as Record<string, any>).event = {
   context: {
     requestId: 'test-request-id',
   },
 }
 
 // Mock $fetch globally
-global.$fetch = vi.fn()
+;(testGlobal as Record<string, any>).$fetch = vi.fn()
 
 // Mock useFetch globally（供組件測試使用，預設回傳空資料）
 // 注意：必須回傳 ref() 以讓 Vue 模板正確響應
 import { ref as _ref } from 'vue'
-global.useFetch = vi.fn(() => ({
+testGlobal.useFetch = vi.fn(() => ({
   data: _ref(null),
   pending: _ref(false),
   error: _ref(null),
@@ -134,7 +139,7 @@ global.useFetch = vi.fn(() => ({
 }))
 
 // Mock useLazyFetch globally
-global.useLazyFetch = vi.fn(() => ({
+testGlobal.useLazyFetch = vi.fn(() => ({
   data: _ref(null),
   pending: _ref(false),
   error: _ref(null),
@@ -145,7 +150,7 @@ global.useLazyFetch = vi.fn(() => ({
 // Mock Nuxt composables (auto-imported)
 vi.mock('#app/composables/chrome', () => ({
   useNuxtApp: () => ({
-    $fetch: global.$fetch,
+    $fetch: testGlobal.$fetch,
   }),
 }))
 

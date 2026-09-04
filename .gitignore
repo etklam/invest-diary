@@ -37,3 +37,4 @@ screenshots
 
 # Local agent working files (issues/PRDs, planning)
 .scratch/
+.context/

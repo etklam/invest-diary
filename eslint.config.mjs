@@ -21,7 +21,9 @@ export default [
       '**/coverage/**',
       '**/dist/**',
       '**/node_modules/**',
+      '**/playwright-report/**',
       'prisma/**',
+      '**/test-results/**',
     ],
   },
   {
