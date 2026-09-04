@@ -1,5 +1,7 @@
 import { execFile as execFileCallback, spawn, type ChildProcess } from 'node:child_process'
 import { promisify } from 'node:util'
+import { connect as netConnect } from 'node:net'
+import os from 'node:os'
 import { resolve } from 'node:path'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { PrismaClient } from '@prisma/client'
@@ -38,6 +40,24 @@ async function run(command: string, args: string[], env?: NodeJS.ProcessEnv) {
 
 function delay(ms: number): Promise<void> {
   return new Promise(resolveDelay => setTimeout(resolveDelay, ms))
+}
+
+function hostname(): string {
+  return os.hostname() || process.env.HOSTNAME || 'localhost'
+}
+
+function probeLoopback3306(): Promise<boolean> {
+  return new Promise(resolveProbe => {
+    const socket = netConnect(3306, '127.0.0.1')
+    const finish = (result: boolean) => {
+      socket.removeAllListeners()
+      socket.destroy()
+      resolveProbe(result)
+    }
+    socket.once('connect', () => finish(true))
+    socket.once('error', () => finish(false))
+    setTimeout(() => finish(false), 5000).unref()
+  })
 }
 
 async function waitForMariaDb(containerName: string): Promise<void> {
@@ -152,20 +172,41 @@ async function startDisposableDatabase(runId: string): Promise<E2ERuntime> {
   const databaseName = `diary_e2e_${runId}`
   const containerName = `diary-e2e-${runId}`
 
-  await run('docker', [
-    'run', '--rm', '--detach',
-    '--name', containerName,
-    '--publish', '127.0.0.1::3306',
+  // Under a DooD CI runner this setup executes inside the job container: a
+  // port published on the host's loopback is unreachable from there. Sharing
+  // the job container's network namespace makes 127.0.0.1:3306 reachable
+  // directly. On a plain host (e.g. a dev laptop) the hostname is not a
+  // container, so retain the dynamic loopback-publish fallback.
+  const jobContainerId = (await run('docker', ['ps', '-q', '--filter', `id=${hostname()}`])).stdout.trim()
+    || (await run('docker', ['ps', '-q', '--filter', `name=${hostname()}`])).stdout.trim()
+
+  let baseDockerArgs = ['run', '--rm', '--detach', '--name', containerName]
+  if (jobContainerId) {
+    baseDockerArgs = baseDockerArgs.concat(['--network', `container:${jobContainerId}`])
+  }
+  else {
+    baseDockerArgs = baseDockerArgs.concat(['--publish', '127.0.0.1::3306'])
+  }
+  baseDockerArgs = baseDockerArgs.concat([
     '--env', `MARIADB_ROOT_PASSWORD=${ROOT_PASSWORD}`,
     '--env', `MARIADB_DATABASE=${databaseName}`,
     MARIADB_IMAGE,
   ])
 
+  await run('docker', baseDockerArgs)
+
   try {
     await waitForMariaDb(containerName)
-    const portOutput = await run('docker', ['port', containerName, '3306/tcp'])
-    const port = portOutput.stdout.match(/:(\d+)\s*$/m)?.[1]
-    if (!port) throw new Error(`Could not resolve disposable MariaDB port for ${containerName}`)
+    let port = '3306'
+    if (!jobContainerId) {
+      const portOutput = await run('docker', ['port', containerName, '3306/tcp'])
+      port = portOutput.stdout.match(/:(\d+)\s*$/m)?.[1]
+        ?? ''
+      if (!port) throw new Error(`Could not resolve disposable MariaDB port for ${containerName}`)
+    }
+    else if (!(await probeLoopback3306())) {
+      throw new Error('Shared-network disposable MariaDB is not reachable on 127.0.0.1:3306')
+    }
 
     const databaseUrl = `mysql://root:${ROOT_PASSWORD}@127.0.0.1:${port}/${databaseName}`
     assertDisposableDatabaseUrl(databaseUrl, { databasePrefix: 'diary_e2e_' })
