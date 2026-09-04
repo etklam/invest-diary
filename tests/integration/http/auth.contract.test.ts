@@ -5,17 +5,14 @@ import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 import bcrypt from 'bcryptjs'
 import { signAccessToken } from '~/lib/jwt'
 import { resolve } from 'node:path'
+import { assertDisposableDatabaseUrl } from '~/scripts/test-database-guard'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 const databaseUrl = process.env.BACKEND_HTTP_TEST_DATABASE_URL
 const describeHttp = databaseUrl ? describe.sequential : describe.skip
 
 if (databaseUrl) {
-  const parsed = new URL(databaseUrl)
-  if (!['127.0.0.1', 'localhost', '::1'].includes(parsed.hostname)
-    || parsed.pathname !== '/backend_http_test') {
-    throw new Error('Refusing to run HTTP contract tests outside disposable backend_http_test')
-  }
+  assertDisposableDatabaseUrl(databaseUrl, { databaseName: 'backend_http_test' })
 
   await setup({
     rootDir: process.cwd(),
@@ -24,8 +21,10 @@ if (databaseUrl) {
     build: true,
     setupTimeout: 180_000,
     env: {
+      NODE_ENV: 'test',
       DATABASE_URL: databaseUrl,
       JWT_SECRET: 'backend-http-contract-secret-not-placeholder',
+      NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1',
       TRUST_X_FORWARDED_FOR: 'true',
       NODE_PATH: resolve(process.cwd(), 'node_modules'),
     },
@@ -282,7 +281,11 @@ describeHttp('real Nitro + MariaDB native auth contract', () => {
   })
 
   it('keeps two independent Web browser sessions independent', async () => {
-    const browserA = await webLogin('web-http@example.com', '10.0.0.11')
+    // web-http and native-http have already consumed their five-per-minute
+    // identity budgets in the preceding session contracts. Use the otherwise
+    // fresh user for both independent browser sessions so this test does not
+    // fight its own production rate-limit contract.
+    const browserA = await webLogin('other-http@example.com', '10.0.0.11')
     const browserB = await webLogin('other-http@example.com', '10.0.0.12')
 
     const logoutA = await fetch('/api/auth/logout', {

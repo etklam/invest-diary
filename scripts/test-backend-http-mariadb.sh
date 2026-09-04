@@ -63,6 +63,21 @@ fi
 
 test_database_url="mysql://root:test-password@${db_host}:${db_port}/backend_http_test"
 
+# Never let a future refactor turn this into a shared/prod-like connection.
+case "${test_database_url}" in
+  mysql://root:test-password@127.0.0.1:*/backend_http_test) ;;
+  *)
+    echo "Refusing non-disposable backend contract database URL" >&2
+    exit 1
+    ;;
+esac
+
+mariadb_version="$(docker exec "${container_name}" mariadb --batch --skip-column-names --user=root --password=test-password --execute="SELECT VERSION()")"
+if [[ ! "${mariadb_version}" =~ ^11\.4\. ]]; then
+  echo "MariaDB version mismatch: expected 11.4.x, got ${mariadb_version}" >&2
+  exit 1
+fi
+
 # Prove legacy Web rows are deterministically backfilled, the documented
 # operational rollback preserves them, and the forward migration is re-runnable.
 docker exec "${container_name}" mariadb --user=root --password=test-password --execute="

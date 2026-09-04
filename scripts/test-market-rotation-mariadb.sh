@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-container_name="diary-reconciliation-test-$$"
+container_name="market-rotation-test-$$"
 
 cleanup() {
   docker rm -f "${container_name}" >/dev/null 2>&1 || true
@@ -12,17 +12,19 @@ docker run --rm --detach \
   --name "${container_name}" \
   --publish 127.0.0.1::3306 \
   --env MARIADB_ROOT_PASSWORD=test-password \
-  --env MARIADB_DATABASE=diary_reconciliation_test \
+  --env MARIADB_DATABASE=market_rotation_test \
   mariadb:11.4 >/dev/null
 
+ready=false
 for _attempt in $(seq 1 60); do
   if docker exec "${container_name}" mariadb-admin ping --host=127.0.0.1 --user=root --password=test-password --silent >/dev/null 2>&1; then
+    ready=true
     break
   fi
   sleep 1
 done
 
-if ! docker exec "${container_name}" mariadb-admin ping --host=127.0.0.1 --user=root --password=test-password --silent >/dev/null 2>&1; then
+if [[ "${ready}" != true ]]; then
   echo "Disposable MariaDB did not become ready" >&2
   exit 1
 fi
@@ -39,14 +41,16 @@ if [[ -z "${mapped_port}" ]]; then
   exit 1
 fi
 
-test_database_url="mysql://root:test-password@127.0.0.1:${mapped_port}/diary_reconciliation_test"
+test_database_url="mysql://root:test-password@127.0.0.1:${mapped_port}/market_rotation_test"
 case "${test_database_url}" in
-  mysql://root:test-password@127.0.0.1:*/diary_reconciliation_test) ;;
+  mysql://root:test-password@127.0.0.1:*/market_rotation_test) ;;
   *)
-    echo "Refusing non-disposable Diary reconciliation database URL" >&2
+    echo "Refusing non-disposable Market Rotation database URL" >&2
     exit 1
     ;;
 esac
 
-DIARY_RECONCILIATION_TEST_DATABASE_URL="${test_database_url}" \
-  npx vitest run tests/integration/diary-reconciliation.mysql.test.ts
+DATABASE_URL="${test_database_url}" npx prisma migrate deploy
+MARKET_ROTATION_TEST_DATABASE_URL="${test_database_url}" \
+DATABASE_URL="${test_database_url}" \
+  npx vitest run tests/integration/market-rotation.mysql.test.ts

@@ -33,16 +33,16 @@ import {
 } from '~/lib/contracts/portfolio'
 import { marketStateHistoryResponseSchema } from '~/lib/contracts/market'
 import { signAccessToken } from '~/lib/jwt'
+import type { AlertPusherPrisma } from '~/server/schedulers/alert-pusher'
+import { createAlertPusher } from '~/server/schedulers/alert-pusher'
+import type { AlertBroadcaster } from '~/types/websocket'
+import { assertDisposableDatabaseUrl } from '~/scripts/test-database-guard'
 
 const databaseUrl = process.env.BACKEND_HTTP_TEST_DATABASE_URL
 const describeHttp = databaseUrl ? describe.sequential : describe.skip
 
 if (databaseUrl) {
-  const parsed = new URL(databaseUrl)
-  if (!['127.0.0.1', 'localhost', '::1'].includes(parsed.hostname)
-    || parsed.pathname !== '/backend_http_test') {
-    throw new Error('Refusing to run HTTP contract tests outside disposable backend_http_test')
-  }
+  assertDisposableDatabaseUrl(databaseUrl, { databaseName: 'backend_http_test' })
 
   await setup({
     rootDir: process.cwd(),
@@ -51,8 +51,10 @@ if (databaseUrl) {
     build: true,
     setupTimeout: 180_000,
     env: {
+      NODE_ENV: 'test',
       DATABASE_URL: databaseUrl,
       JWT_SECRET: 'backend-http-contract-secret-not-placeholder',
+      NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1',
       TRUST_X_FORWARDED_FOR: 'true',
       NODE_PATH: resolve(process.cwd(), 'node_modules'),
     },
@@ -478,6 +480,46 @@ describeHttp('real Nitro + MariaDB canonical contracts for tickets 03–07', () 
     )
   }, 60_000)
 
+  it('searches published blog posts through the MariaDB FULLTEXT index', async () => {
+    const searchToken = 'quartzium20260904'
+
+    await prisma.post.createMany({
+      data: [
+        {
+          authorId: owner.id,
+          title: `A finding about ${searchToken}`,
+          slug: 'mariadb-fulltext-target',
+          content: 'The searchable post body is intentionally not part of the public search contract.',
+          excerpt: 'The phrase is in the title and excerpt.',
+          category: 'research',
+          status: 'PUBLISHED',
+          publishedAt: new Date('2026-09-03T12:00:00.000Z'),
+        },
+        {
+          authorId: owner.id,
+          title: 'A different market note',
+          slug: 'mariadb-fulltext-decoy',
+          content: 'This post must not match the unique search token.',
+          excerpt: 'No unique phrase here.',
+          category: 'research',
+          status: 'PUBLISHED',
+          publishedAt: new Date('2026-09-03T11:00:00.000Z'),
+        },
+      ],
+    })
+
+    const response = await requestJson(`/api/blog?search=${searchToken}`)
+    expect(response.status).toBe(200)
+
+    const body = await readJson(response)
+    expect(body.data).toHaveLength(1)
+    expect(body.data[0]).toMatchObject({
+      slug: 'mariadb-fulltext-target',
+      title: `A finding about ${searchToken}`,
+    })
+    expect(body.pagination).toMatchObject({ total: 1 })
+  }, 60_000)
+
   it('freezes Diary Alert recurrence and Price Alert trigger/list/error/ownership wire', async () => {
     const ownerHeaders = authHeaders(owner)
     const otherHeaders = authHeaders(other)
@@ -541,12 +583,47 @@ describeHttp('real Nitro + MariaDB canonical contracts for tickets 03–07', () 
     expect(activeAlerts).toHaveLength(5)
     expect(activeAlerts.every(alert => alert.id.match(/^[1-9]\d*$/) && alert.triggerAt.endsWith('Z'))).toBe(true)
 
+    const pushedAlertIds: string[] = []
+    const broadcaster = {
+      emitToUser: (_userId: string, _event: string, ...args: unknown[]) => {
+        const payload = args[0] as { id?: string } | undefined
+        if (payload?.id) pushedAlertIds.push(payload.id)
+        return true
+      },
+    } as unknown as AlertBroadcaster
+    let schedulerNow = new Date('2026-09-07T00:59:30.000Z')
+    const pusher = createAlertPusher({
+      prisma: prisma as unknown as AlertPusherPrisma,
+      broadcaster,
+      logger: { info: () => {}, error: () => {} },
+      now: () => schedulerNow,
+    })
+    await pusher.checkAndPushAlerts()
+    expect(pushedAlertIds).toEqual([parent.id])
+
     const dismissedResponse = await requestJson(`/api/alerts/${parent.id}/dismiss`, {
       method: 'PUT',
       headers: ownerHeaders,
     })
     expect(dismissedResponse.status).toBe(200)
     expect(alertResponseSchema.parse(await readJson(dismissedResponse)).isDismissed).toBe(true)
+
+    const persistedSeries = await prisma.alert.findMany({
+      where: { diaryId: BigInt(ownerDiary.id) },
+      orderBy: { instanceNumber: 'asc' },
+    })
+    expect(persistedSeries.every(alert => alert.isDismissed)).toBe(true)
+
+    const activeAfterDismissResponse = await requestJson('/api/alerts', { headers: ownerHeaders })
+    expect(activeAfterDismissResponse.status).toBe(200)
+    expect(alertListResponseSchema.parse(await readJson(activeAfterDismissResponse))).toEqual([])
+
+    // Child #2 is due at 2026-09-08T01:00Z. The dismissed parent must
+    // prevent this real scheduler tick from emitting it; the already-fired
+    // root is the only ID allowed in the broadcaster history.
+    schedulerNow = new Date('2026-09-08T00:59:30.000Z')
+    await pusher.checkAndPushAlerts()
+    expect(pushedAlertIds).toEqual([parent.id])
 
     await expectError(
       await requestJson(`/api/alerts/${parent.id}/dismiss`, {

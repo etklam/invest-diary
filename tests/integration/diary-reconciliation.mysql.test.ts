@@ -3,18 +3,15 @@ import { PrismaClient } from '@prisma/client'
 import { createConnection, type Connection } from 'mariadb'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { reconcileDuplicateDiaries } from '../../scripts/diary-reconcile-duplicates'
+import { assertDisposableDatabaseUrl, getDatabaseName } from '../../scripts/test-database-guard'
 
 const databaseUrl = process.env.DIARY_RECONCILIATION_TEST_DATABASE_URL
 const describeMysql = databaseUrl ? describe.sequential : describe.skip
 
 function assertDisposableDatabase(url: string): void {
-  const parsed = new URL(url)
-  const database = parsed.pathname.replace(/^\//, '')
-  if (!['127.0.0.1', 'localhost', '::1'].includes(parsed.hostname)) {
-    throw new Error(`Refusing to run destructive reconciliation test against non-loopback host ${parsed.hostname}`)
-  }
-  if (database !== 'diary_reconciliation_test') {
-    throw new Error(`Refusing to run reconciliation integration test against database ${database || '(empty)'}`)
+  assertDisposableDatabaseUrl(url, { databaseName: 'diary_reconciliation_test' })
+  if (getDatabaseName(url) !== 'diary_reconciliation_test') {
+    throw new Error('Refusing to run reconciliation integration test against an unexpected database')
   }
 }
 
@@ -278,9 +275,11 @@ describeMysql('Diary duplicate reconciliation on disposable MariaDB', () => {
 
     const rows = await connection.query('SELECT id, content, date FROM diaries ORDER BY id') as Array<{ id: bigint; content: string; date: Date }>
     expect(rows).toHaveLength(1)
-    expect(String(rows[0].id)).toBe('100')
-    expect(rows[0].content).toContain('Original thesis: Legacy thesis')
-    expect(rows[0].content).toContain('Merged legacy body')
+    const [row] = rows
+    if (!row) throw new Error('Expected one reconciled legacy diary row')
+    expect(String(row.id)).toBe('100')
+    expect(row.content).toContain('Original thesis: Legacy thesis')
+    expect(row.content).toContain('Merged legacy body')
 
     await connection.query('ALTER TABLE diaries ADD UNIQUE INDEX diaries_user_date_key (user_id, date)')
     await expect(connection.query(`INSERT INTO diaries (
