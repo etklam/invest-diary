@@ -37,9 +37,9 @@ test('admin card deletion uses CSRF while invalid tokens and non-admin deletion 
 
     const deleteButton = card.getByTitle('刪除')
     // SSR renders the button before async setup hydrates its click handler.
-    await expect.poll(() => deleteButton.evaluate(element => Boolean(
-      (element as HTMLElement & { __vueParentComponent?: { isMounted?: boolean } }).__vueParentComponent?.isMounted,
-    ))).toBe(true)
+    // data-hydrated flips on mount and survives production builds, unlike
+    // Vue's dev-only internal component markers.
+    await expect(card).toHaveAttribute('data-hydrated', 'true', { timeout: 15_000 })
 
     // Focus also exposes the control on touch devices without a hover state.
     await card.getByTitle('刪除').focus()

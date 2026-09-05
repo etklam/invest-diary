@@ -1,6 +1,7 @@
 <template>
   <article
     class="blog-card group flex h-full flex-col"
+    :data-hydrated="isHydrated"
     @mouseenter="prefetchDetail"
   >
     <div v-if="isAdmin" class="absolute right-3 top-3 z-30 flex gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
@@ -90,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useAuth, useI18n, useToast } from '#imports'
 import { calculateReadingTime } from '~/lib/blog'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
@@ -129,6 +130,12 @@ const readingTime = computed(() =>
   props.post.content ? calculateReadingTime(props.post.content) : null
 )
 const hasPrefetched = ref(false)
+// E2E contract: expose hydration progress through a DOM attribute that
+// survives production builds (unlike Vue's dev-only internal markers).
+const isHydrated = ref(false)
+onMounted(() => {
+  isHydrated.value = true
+})
 
 const authorLabel = computed(() => {
   const name = props.post.author?.name?.trim()

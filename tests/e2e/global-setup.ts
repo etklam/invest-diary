@@ -1,6 +1,7 @@
 import { execFile as execFileCallback, spawn, type ChildProcess } from 'node:child_process'
 import { promisify } from 'node:util'
 import { connect as netConnect } from 'node:net'
+import { existsSync } from 'node:fs'
 import os from 'node:os'
 import { resolve } from 'node:path'
 import { chromium, expect } from '@playwright/test'
@@ -104,13 +105,34 @@ async function applyMigrations(databaseUrl: string): Promise<void> {
 }
 
 async function startDevServer(): Promise<ChildProcess> {
-  const serverProcess = spawn(resolve(ROOT_DIR, 'node_modules/.bin/nuxt'), [
-    'dev', '--host', '127.0.0.1', '--port', '3000',
-  ], {
+  // Prefer the prebuilt production server when present: routes are compiled
+  // ahead of time, so slow CI runners never pay per-route on-demand compile
+  // latency (a dev server there caused multi-minute page.goto timeouts).
+  // Without a build (local iteration), fall back to the dev server.
+  const serverEntry = resolve(ROOT_DIR, '.output/server/index.mjs')
+  const useProductionBuild = existsSync(serverEntry)
+  const command = useProductionBuild
+    ? process.execPath
+    : resolve(ROOT_DIR, 'node_modules/.bin/nuxt')
+  const args = useProductionBuild
+    ? [serverEntry]
+    : ['dev', '--host', '127.0.0.1', '--port', '3000']
+
+  const serverProcess = spawn(command, args, {
     cwd: ROOT_DIR,
-    env: process.env,
+    env: {
+      ...process.env,
+      // The Nitro node-server preset binds via HOST/PORT.
+      HOST: '127.0.0.1',
+      PORT: '3000',
+      // The bundled nitro entry resolves externals like @prisma/client from a
+      // synthetic file:///_entry.js URL; NODE_PATH (same trick as the Docker
+      // runtime image) gives require() a project-relative fallback.
+      NODE_PATH: resolve(ROOT_DIR, 'node_modules'),
+    },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
+  console.log(`E2E Global Setup: server mode = ${useProductionBuild ? 'production build' : 'dev'}`)
   const output: string[] = []
   const rememberOutput = (chunk: Buffer) => {
     output.push(chunk.toString())
