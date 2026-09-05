@@ -2,6 +2,7 @@ import type { Socket } from 'socket.io'
 import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
 import { dismissAlert } from '~/server/utils/alert-queries'
 import { formatErrorContext, logger } from '~/lib/logger'
+import { authenticateAccessToken } from '~/server/utils/auth-session'
 
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
 
@@ -20,6 +21,25 @@ export function setupAlertHandlers(socket: TypedSocket): void {
       userId,
       alertId,
     })
+
+    let user
+    try {
+      user = await authenticateAccessToken(socket.data.accessToken)
+    } catch (error) {
+      logger.ws.warn('WebSocket authorization failed', {
+        operation: 'websocket_alert_authorize',
+        userId,
+        socketId: socket.id,
+        ...formatErrorContext(error),
+      })
+      socket.disconnect(true)
+      return
+    }
+
+    if (!user || user.id !== userId || !socket.connected) {
+      socket.disconnect(true)
+      return
+    }
 
     try {
       await dismissAlert(alertId, BigInt(userId))

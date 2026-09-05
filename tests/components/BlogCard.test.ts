@@ -8,24 +8,13 @@ import { normalizeCategory } from '~/types/blog'
 const mockUseAuth = vi.fn()
 const mockUseI18n = vi.fn()
 const mockUseToast = vi.fn()
-const mockRefreshNuxtData = vi.fn()
 
-// BlogCard uses native `fetch` (not `$fetch`) for the delete call, so we mock
-// the global fetch directly.
 const mockFetch = vi.fn()
-const mockFetchResponse = (ok: boolean, body: any = {}) =>
-  ({
-    ok,
-    status: ok ? 200 : 500,
-    json: async () => body,
-    text: async () => JSON.stringify(body),
-  } as any)
 
 vi.mock('#imports', () => ({
   useAuth: () => mockUseAuth(),
   useI18n: () => mockUseI18n(),
   useToast: () => mockUseToast(),
-  refreshNuxtData: () => mockRefreshNuxtData(),
 }))
 
 const postBase = {
@@ -95,10 +84,8 @@ describe('BlogCard Component', () => {
       success: vi.fn(),
       error: vi.fn(),
     })
-    mockRefreshNuxtData.mockClear()
     mockFetch.mockReset()
-    // BlogCard uses native fetch, not $fetch.
-    vi.stubGlobal('fetch', mockFetch)
+    vi.stubGlobal('$fetch', mockFetch)
     vi.stubGlobal('confirm', vi.fn(() => true))
   })
 
@@ -219,13 +206,13 @@ describe('BlogCard Component', () => {
       expect(adminDelete).toBeDefined()
     })
 
-    it('calls DELETE /api/blog/:id and refresh on successful delete', async () => {
+    it('calls DELETE /api/blog/:id and emits deleted on success', async () => {
       mockUseAuth.mockReturnValue({ isAdmin: ref(true), user: ref(null) })
       const toastSuccess = vi.fn()
       mockUseToast.mockReturnValue({ success: toastSuccess, error: vi.fn() })
 
       // Simulate a successful DELETE response.
-      mockFetch.mockResolvedValueOnce(mockFetchResponse(true))
+      mockFetch.mockResolvedValueOnce({ success: true })
 
       const wrapper = mountBlogCard({ post: { ...postBase } })
       const deleteBtn = wrapper
@@ -242,16 +229,16 @@ describe('BlogCard Component', () => {
         expect.objectContaining({ method: 'DELETE' }),
       )
       expect(toastSuccess).toHaveBeenCalled()
-      expect(mockRefreshNuxtData).toHaveBeenCalled()
+      expect(wrapper.emitted('deleted')).toEqual([[postBase.id]])
     })
 
-    it('surfaces a toast error and does not refresh when delete fails', async () => {
+    it('surfaces a toast error and does not emit deleted when delete fails', async () => {
       mockUseAuth.mockReturnValue({ isAdmin: ref(true), user: ref(null) })
       const toastError = vi.fn()
-      mockUseToast.mockReturnValue({ success: vi.fn(), error: toastError })
+      const toastSuccess = vi.fn()
+      mockUseToast.mockReturnValue({ success: toastSuccess, error: toastError })
 
-      // fetch resolves but with ok=false — BlogCard treats !response.ok as failure.
-      mockFetch.mockResolvedValueOnce(mockFetchResponse(false, { statusMessage: 'fail' }))
+      mockFetch.mockRejectedValueOnce({ statusCode: 403, statusMessage: 'CSRF validation failed' })
 
       const wrapper = mountBlogCard({ post: { ...postBase } })
       const deleteBtn = wrapper
@@ -262,7 +249,8 @@ describe('BlogCard Component', () => {
 
       expect(mockFetch).toHaveBeenCalled()
       expect(toastError).toHaveBeenCalled()
-      expect(mockRefreshNuxtData).not.toHaveBeenCalled()
+      expect(toastSuccess).not.toHaveBeenCalled()
+      expect(wrapper.emitted('deleted')).toBeUndefined()
     })
 
     it('does not call fetch when confirm dialog is cancelled', async () => {
@@ -277,6 +265,7 @@ describe('BlogCard Component', () => {
       await new Promise((r) => setTimeout(r, 0))
 
       expect(mockFetch).not.toHaveBeenCalled()
+      expect(wrapper.emitted('deleted')).toBeUndefined()
     })
   })
 

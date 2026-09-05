@@ -1,9 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockDismissAlert = vi.fn()
+const mockAuthenticateAccessToken = vi.fn()
 
 vi.mock('~/server/utils/alert-queries', () => ({
   dismissAlert: mockDismissAlert,
+}))
+
+vi.mock('~/server/utils/auth-session', () => ({
+  authenticateAccessToken: mockAuthenticateAccessToken,
 }))
 
 // ── Helpers ──────────────────────────────────────────────────────────────
@@ -11,7 +16,16 @@ function makeSocket(userId: string) {
   const handlers: Record<string, Function> = {}
   const socket = {
     id: `socket-${userId}-${Math.random().toString(36).slice(2, 6)}`,
-    data: { userId },
+    data: {
+      userId,
+      accessToken: `token-${userId}`,
+      expiresAt: new Date(Date.now() + 60_000),
+      tokenVersion: 0,
+    },
+    connected: true,
+    disconnect: vi.fn(function () {
+      this.connected = false
+    }),
     emit: vi.fn(),
     on: vi.fn((event: string, handler: Function) => {
       handlers[event] = handler
@@ -25,6 +39,11 @@ function makeSocket(userId: string) {
 describe('setupAlertHandlers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockAuthenticateAccessToken.mockImplementation(async (token: string) => ({
+      id: token.replace('token-', ''),
+      email: 'socket@example.test',
+      role: 'USER',
+    }))
   })
 
   describe('alert:dismiss', () => {
@@ -102,6 +121,45 @@ describe('setupAlertHandlers', () => {
 
       expect(mockDismissAlert).toHaveBeenCalledWith('10', BigInt('2'))
       expect(socket.emit).toHaveBeenCalledWith('alert:dismissed', { alertId: '10' })
+    })
+
+    it('disconnects a revoked socket before applying a dismiss mutation', async () => {
+      const socket = makeSocket('1')
+      const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
+      setupAlertHandlers(socket as any)
+      mockAuthenticateAccessToken.mockResolvedValueOnce(null)
+
+      await socket._handlers['alert:dismiss']('42')
+
+      expect(socket.disconnect).toHaveBeenCalledWith(true)
+      expect(mockDismissAlert).not.toHaveBeenCalled()
+      expect(socket.emit).not.toHaveBeenCalledWith('alert:dismissed', expect.anything())
+    })
+
+    it('disconnects when access-token verification throws', async () => {
+      const socket = makeSocket('1')
+      const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
+      setupAlertHandlers(socket as any)
+      mockAuthenticateAccessToken.mockRejectedValueOnce(new Error('token expired'))
+
+      await socket._handlers['alert:dismiss']('42')
+
+      expect(socket.disconnect).toHaveBeenCalledWith(true)
+      expect(mockDismissAlert).not.toHaveBeenCalled()
+    })
+
+    it('does not mutate after revocation disconnects the socket during authorization', async () => {
+      const socket = makeSocket('1')
+      const { setupAlertHandlers } = await import('~/server/websocket/alertHandler')
+      setupAlertHandlers(socket as any)
+      mockAuthenticateAccessToken.mockImplementationOnce(async () => {
+        socket.disconnect(true)
+        return { id: '1', email: 'socket@example.test', role: 'USER' }
+      })
+
+      await socket._handlers['alert:dismiss']('42')
+
+      expect(mockDismissAlert).not.toHaveBeenCalled()
     })
   })
 

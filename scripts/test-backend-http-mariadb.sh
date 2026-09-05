@@ -553,3 +553,13 @@ BACKEND_HTTP_TEST_DATABASE_URL="${test_database_url}" \
 DATABASE_URL="${test_database_url}" \
 JWT_SECRET="backend-http-contract-secret-not-placeholder" \
   npx vitest run tests/integration/http/core.contract.test.ts
+
+BACKEND_HTTP_TEST_DATABASE_URL="${test_database_url}" \
+DATABASE_URL="${test_database_url}" \
+JWT_SECRET="backend-http-contract-secret-not-placeholder" \
+  npx vitest run tests/integration/http/websocket-revocation.contract.test.ts
+
+BACKEND_HTTP_TEST_DATABASE_URL="${test_database_url}" \
+DATABASE_URL="${test_database_url}" \
+JWT_SECRET="backend-http-contract-secret-not-placeholder" \
+  npx vitest run tests/integration/alert-query.mysql.test.ts

@@ -1,5 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ensureCanonicalPrices, runScopeBatch, runFullBatch } from '~/server/utils/market-rotation-batch'
+
+beforeEach(() => { vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2099-09-18T22:00:00Z')) })
+afterEach(() => vi.useRealTimers())
+vi.mock('yahoo-finance2', () => ({ default: class { chart = vi.fn().mockResolvedValue({ quotes: [] }) } }))
 
 // ─── Mock setup ─────────────────────────────────────────────────────
 
@@ -140,7 +144,6 @@ describe('runScopeBatch', () => {
 
     // Verify pipeline was called with symbol prices
     expect(runSnapshotPipeline).toHaveBeenCalled()
-    expect(getHistoricalPrices).toHaveBeenCalledWith(prisma, 'XLK', 252)
     expect(getComparisonWindow).toHaveBeenCalledWith(prisma, 'sectors', {
       candidate: {
         date: new Date('2099-09-17'),
@@ -221,6 +224,26 @@ describe('runScopeBatch', () => {
 describe('ensureCanonicalPrices', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it.each([
+    ['2026-09-04T19:00:00Z', ['2026-09-03']], // not closed in New York
+    ['2026-09-04T21:00:00Z', ['2026-09-03', '2026-09-04']],
+    ['2026-09-06T21:00:00Z', ['2026-09-03', '2026-09-04']], // weekend
+    ['2026-09-07T21:00:00Z', ['2026-09-03', '2026-09-04']], // holiday: upstream has no bar
+    ['2026-12-04T20:30:00Z', ['2026-12-03']], // winter NY close is 21:00 UTC
+  ])('only persists provider-supplied completed weekday bars at %s', async (now, expected) => {
+    vi.mocked(getHistoricalPrices).mockResolvedValue(Array.from({ length: 252 }, () => ({
+      date: new Date('2026-09-01'), close: 100, adjustedClose: 100,
+    })))
+    const days = now.startsWith('2026-12') ? ['2026-12-03', '2026-12-04'] : ['2026-09-03', '2026-09-04', '2026-09-05']
+    const chart = vi.fn().mockResolvedValue({ quotes: days.map(day => ({
+      date: new Date(day), open: 100, high: 102, low: 99, close: 101, adjclose: 101, volume: 100,
+    })) })
+    const prisma = makePrisma()
+    await ensureCanonicalPrices(prisma, ['XLK'], { chart }, { now: new Date(now) })
+    expect(chart).toHaveBeenCalled()
+    expect(prisma.marketDailyPrice.upsert.mock.calls.map(([args]: any[]) => args.create.date.toISOString().slice(0, 10))).toEqual(expected)
   })
 
   it('backfills canonical prices for symbols missing market_daily_price before pipeline can read them', async () => {
@@ -311,13 +334,12 @@ describe('ensureCanonicalPrices', () => {
 
     await ensureCanonicalPrices(prisma, ['XLK'], yahooClient, {
       now: new Date('2026-06-13T00:00:00.000Z'),
-      staleAfterDays: 7,
     })
 
     expect(yahooClient.chart).toHaveBeenCalled()
   })
 
-  it('does not fetch when a symbol has enough fresh market_daily_price rows', async () => {
+  it('refreshes recent prices even with enough history less than seven days old', async () => {
     const prisma = makePrisma()
     vi.mocked(getHistoricalPrices).mockResolvedValue(
       Array.from({ length: 260 }, (_, i) => {
@@ -327,14 +349,14 @@ describe('ensureCanonicalPrices', () => {
       }),
     )
     const yahooClient = {
-      chart: vi.fn(),
+      chart: vi.fn().mockResolvedValue({ quotes: [] }),
     }
 
     await ensureCanonicalPrices(prisma, ['XLK'], yahooClient, {
       now: new Date('2026-06-13T00:00:00.000Z'),
     })
 
-    expect(yahooClient.chart).not.toHaveBeenCalled()
+    expect(yahooClient.chart).toHaveBeenCalled()
     expect(prisma.marketDailyPrice.upsert).not.toHaveBeenCalled()
   })
 })

@@ -42,7 +42,14 @@
     "tests/unit/server/error-contract.test.ts",
     "tests/unit/server/error-handler.test.ts",
     "tests/unit/server/runtime-config-plugin.test.ts",
-    "tests/unit/server/serialize.test.ts"
+    "tests/unit/server/serialize.test.ts",
+    "tests/e2e/blog-card-delete.spec.ts",
+    "tests/unit/websocket/runtime-dependencies.test.ts",
+    "tests/integration/websocket/malformed-cookie-process.test.ts",
+    "tests/integration/http/websocket-revocation.contract.test.ts",
+    "tests/integration/alert-query.mysql.test.ts",
+    "tests/components/ArticlesPage.test.ts",
+    "tests/unit/websocket-client-regressions.test.ts"
   ],
   "exclude": [
     "coverage/**/*",

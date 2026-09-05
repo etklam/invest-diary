@@ -31,6 +31,7 @@ import {
   loginRequestSchema as canonicalLoginRequestSchema,
   registerRequestSchema as canonicalRegisterRequestSchema,
 } from '~/lib/contracts/auth'
+import { connectionManager } from '~/server/websocket/connectionManager'
 
 // ─── Zod Schemas ──────────────────────────────────────────────────────────────
 
@@ -193,16 +194,18 @@ export async function createRefreshToken(
 /** Revoke every refresh family and invalidate all outstanding access JWTs. */
 export async function logoutAllSessions(userId: bigint): Promise<void> {
   const revokedAt = new Date()
-  await prisma.$transaction([
+  const [updatedUser] = await prisma.$transaction([
     prisma.user.update({
       where: { id: userId },
       data: { tokenVersion: { increment: 1 } },
+      select: { tokenVersion: true },
     }),
     prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt, revocationReason: 'LOGOUT_ALL' },
     }),
   ])
+  connectionManager.revokeUser(userId, updatedUser.tokenVersion)
 }
 
 /**
@@ -239,16 +242,18 @@ export async function changeUserPassword(
 
   const hashedPassword = await bcrypt.hash(validated.newPassword, 10)
 
-  await prisma.$transaction([
+  const [updatedUser] = await prisma.$transaction([
     prisma.user.update({
       where: { id: userId },
       data: {
         password: hashedPassword,
         tokenVersion: { increment: 1 },
       },
+      select: { tokenVersion: true },
     }),
     prisma.refreshToken.deleteMany({ where: { userId } }),
   ])
+  connectionManager.revokeUser(userId, updatedUser.tokenVersion)
 }
 
 // ─── Profile / Settings reads & writes ────────────────────────────────────────
@@ -375,6 +380,7 @@ export async function deleteUserAdmin(
   }
 
   await prisma.user.delete({ where: { id: userId } })
+  connectionManager.revokeUser(userId)
 
   return existingUser
 }

@@ -83,6 +83,30 @@ const attachAlertSubscribers = (currentSocket: Socket<ServerToClientEvents, Clie
   }
 }
 
+// A server disconnect disables Socket.IO's built-in reconnection. Renew the
+// cookie once, using the same bounded recovery as an authentication rejection.
+const refreshAndReconnect = async (currentSocket: Socket<ServerToClientEvents, ClientToServerEvents>) => {
+  if (refreshTried || isManualDisconnect || currentSocket !== socket) return
+  refreshTried = true
+  isConnecting = true
+  connectionStatus.value = 'reconnecting'
+  try {
+    const { refreshAccessToken } = useAuth()
+    const ok = await refreshAccessToken()
+    if (currentSocket !== socket || isManualDisconnect) return
+    if (ok) {
+      currentSocket.connect()
+      return
+    }
+  } catch (error) {
+    console.error('[WS] Token refresh threw exception', error)
+  }
+  // A logout/navigation may have replaced this socket while refresh awaited.
+  if (currentSocket === socket && !isManualDisconnect) {
+    destroySocket({ clearError: false, nextStatus: 'error' })
+  }
+}
+
 const attachSocketListeners = (currentSocket: Socket<ServerToClientEvents, ClientToServerEvents>) => {
   attachAlertSubscribers(currentSocket)
 
@@ -100,6 +124,11 @@ const attachSocketListeners = (currentSocket: Socket<ServerToClientEvents, Clien
     isConnecting = false
     // A socket death settles any in-flight dismiss so HTTP fallback can run.
     settlePendingDismisses(false)
+
+    if (!isManualDisconnect && reason === 'io server disconnect') {
+      void refreshAndReconnect(currentSocket)
+      return
+    }
 
     if (!isManualDisconnect && currentSocket.active && reason !== 'io client disconnect') {
       connectionStatus.value = 'reconnecting'
@@ -131,22 +160,7 @@ const attachSocketListeners = (currentSocket: Socket<ServerToClientEvents, Clien
     isConnecting = false
 
     if (!refreshTried && isAuthConnectError(err.message)) {
-      refreshTried = true
-      try {
-        const { refreshAccessToken } = useAuth()
-        const ok = await refreshAccessToken()
-
-        // access-token is httpOnly; reconnect after refresh to resend cookies.
-        if (ok && currentSocket === socket) {
-          connectionStatus.value = 'reconnecting'
-          currentSocket.connect()
-          return
-        }
-      } catch (e) {
-        console.error('[WS] Token refresh threw exception', e)
-      }
-
-      destroySocket({ clearError: false, nextStatus: 'error' })
+      await refreshAndReconnect(currentSocket)
       return
     }
 

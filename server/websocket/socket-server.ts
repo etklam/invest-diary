@@ -6,7 +6,7 @@ import { connectionManager } from './connectionManager'
 import { setupAlertHandlers } from './alertHandler'
 import { isAllowedWebSocketOrigin } from '../utils/websocket-origin'
 import type { ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
-import { authenticateAccessToken } from '../utils/auth-session'
+import { authenticateWebSocketAccessToken } from '../utils/auth-session'
 import { parseRuntimeSettings } from '~/server/config/env'
 import { parseBearerToken } from '../utils/bearer'
 
@@ -22,6 +22,30 @@ function getCookieValue(cookieHeader: string | undefined, name: string): string 
     }
   }
   return undefined
+}
+
+function getHandshakeToken(socket: {
+  handshake: {
+    auth: Record<string, unknown>
+    headers: { authorization?: string; cookie?: string }
+  }
+}): string | undefined {
+  const authToken = typeof socket.handshake.auth.token === 'string'
+    ? socket.handshake.auth.token
+    : undefined
+  const authorization = socket.handshake.headers.authorization
+
+  if (authToken !== undefined && authorization !== undefined) {
+    throw new Error('Ambiguous credentials')
+  }
+  if (authToken !== undefined) return authToken || undefined
+  if (authorization !== undefined) {
+    const headerToken = parseBearerToken(authorization)
+    if (!headerToken) throw new Error('Invalid authorization header')
+    return headerToken
+  }
+
+  return getCookieValue(socket.handshake.headers.cookie, 'access-token')
 }
 
 /**
@@ -64,34 +88,35 @@ export function createSocketServer(
   )
 
   io.use(async (socket, next) => {
-    const authToken = typeof socket.handshake.auth.token === 'string'
-      ? socket.handshake.auth.token
-      : undefined
-    const headerToken = parseBearerToken(socket.handshake.headers.authorization)
-    const cookieHeader = socket.handshake.headers.cookie
-    const cookieToken = getCookieValue(cookieHeader, 'access-token')
-    const token = authToken || headerToken || cookieToken
-
-    if (!token) {
-      logger.ws.warn('Connection rejected: No token provided', { socketId: socket.id })
-      next(new Error('Authentication required'))
-      return
-    }
-
     try {
-      const user = await authenticateAccessToken(token)
-      if (!user) {
+      const token = getHandshakeToken(socket)
+      if (!token) {
+        logger.ws.warn('Connection rejected: No token provided', { socketId: socket.id })
+        next(new Error('Authentication required'))
+        return
+      }
+
+      const session = await authenticateWebSocketAccessToken(token)
+      if (!session) {
         logger.ws.warn('Connection rejected: user not found or token revoked', { socketId: socket.id })
         next(new Error('Invalid token'))
         return
       }
 
       socket.data = {
-        userId: user.id,
+        userId: session.user.id,
+        accessToken: token,
+        expiresAt: session.expiresAt,
+        tokenVersion: session.tokenVersion,
         connectedAt: new Date(),
       }
 
-      logger.ws.info('User authenticated', { userId: user.id, socketId: socket.id })
+      if (!connectionManager.isSessionCurrent(session.user.id, session.tokenVersion)) {
+        next(new Error('Invalid token'))
+        return
+      }
+
+      logger.ws.info('User authenticated', { userId: session.user.id, socketId: socket.id })
       next()
     }
     catch (error: unknown) {
@@ -107,7 +132,7 @@ export function createSocketServer(
     const { userId } = socket.data
 
     logger.ws.info('Client connected', { socketId: socket.id, userId })
-    connectionManager.register(userId, socket)
+    if (!connectionManager.register(userId, socket)) return
     setupAlertHandlers(socket)
     socket.join(`user:${userId}`)
 
@@ -116,11 +141,17 @@ export function createSocketServer(
       userId,
     })
 
+    const expiryTimer = setTimeout(() => {
+      logger.ws.info('Access token expired; disconnecting WebSocket', { socketId: socket.id, userId })
+      socket.disconnect(true)
+    }, Math.max(0, socket.data.expiresAt.getTime() - Date.now()))
+
     socket.on('ping', () => {
       socket.emit('pong')
     })
 
     socket.on('disconnect', (reason) => {
+      clearTimeout(expiryTimer)
       logger.ws.info('Client disconnected', { socketId: socket.id, userId, reason })
       connectionManager.unregister(socket.id)
       socket.leave(`user:${userId}`)

@@ -35,6 +35,11 @@ const mockRefreshTokenDeleteMany = vi.fn()
 const mockTransaction = vi.fn()
 const mockBcryptCompare = vi.fn()
 const mockBcryptHash = vi.fn()
+const mockRevokeUser = vi.fn()
+
+vi.mock('~/server/websocket/connectionManager', () => ({
+  connectionManager: { revokeUser: mockRevokeUser },
+}))
 
 vi.mock('~/lib/prisma', () => ({
   default: {
@@ -90,6 +95,7 @@ describe('User Password API', () => {
         password: 'hashed-new',
         tokenVersion: { increment: 1 },
       },
+      select: { tokenVersion: true },
     })
     expect(mockRefreshTokenDeleteMany).toHaveBeenCalledWith({
       where: { userId: 1n },

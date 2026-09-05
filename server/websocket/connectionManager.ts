@@ -1,6 +1,7 @@
 import type { Socket } from 'socket.io'
 import type { AlertBroadcaster, ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData } from '../../types/websocket'
 import { logger } from '~/lib/logger'
+import { ACCESS_TOKEN_MAX_AGE_SECONDS } from '~/lib/jwt'
 
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
 
@@ -15,11 +16,21 @@ class ConnectionManager implements AlertBroadcaster {
   // socketId -> userId (反向索引，用於快速查找)
   private socketToUser: Map<string, string> = new Map()
 
+  // Guards handshakes whose DB read began before a committed revocation.
+  private minimumTokenVersions: Map<string, number> = new Map()
+
+  private revocationCleanupTimers: Map<string, ReturnType<typeof setTimeout>> = new Map()
+
   /**
    * 註冊用戶連線
    */
-  register(userId: string, socket: TypedSocket): void {
+  register(userId: string, socket: TypedSocket): boolean {
     const userIdStr = userId.toString()
+
+    if (!this.isSessionCurrent(userIdStr, socket.data.tokenVersion)) {
+      socket.disconnect(true)
+      return false
+    }
     
     if (!this.connections.has(userIdStr)) {
       this.connections.set(userIdStr, new Set())
@@ -34,6 +45,11 @@ class ConnectionManager implements AlertBroadcaster {
       socketId: socket.id,
       userSocketCount: this.connections.get(userIdStr)!.size,
     })
+    return true
+  }
+
+  isSessionCurrent(userId: string | bigint, tokenVersion: number): boolean {
+    return tokenVersion >= (this.minimumTokenVersions.get(userId.toString()) ?? 0)
   }
 
   /**
@@ -82,6 +98,45 @@ class ConnectionManager implements AlertBroadcaster {
     this.socketToUser.delete(socketId)
   }
 
+  /** Disconnect every active socket after a user's sessions are revoked. */
+  disconnectUser(userId: string | bigint): number {
+    const userIdStr = userId.toString()
+    const sockets = this.connections.get(userIdStr)
+    if (!sockets?.size) return 0
+
+    const activeSockets = [...sockets]
+    for (const socket of activeSockets) {
+      socket.disconnect(true)
+      this.socketToUser.delete(socket.id)
+    }
+    this.connections.delete(userIdStr)
+
+    logger.ws.info('Revoked user WebSockets disconnected', {
+      operation: 'websocket_user_disconnect',
+      userId: userIdStr,
+      socketCount: activeSockets.length,
+    })
+    return activeSockets.length
+  }
+
+  /** Record a committed session revocation and close every older connection. */
+  revokeUser(userId: string | bigint, minimumTokenVersion = Number.MAX_SAFE_INTEGER): number {
+    const userIdStr = userId.toString()
+    const currentMinimum = this.minimumTokenVersions.get(userIdStr) ?? 0
+    this.minimumTokenVersions.set(userIdStr, Math.max(currentMinimum, minimumTokenVersion))
+
+    const existingTimer = this.revocationCleanupTimers.get(userIdStr)
+    if (existingTimer) clearTimeout(existingTimer)
+    const cleanupTimer = setTimeout(() => {
+      this.minimumTokenVersions.delete(userIdStr)
+      this.revocationCleanupTimers.delete(userIdStr)
+    }, ACCESS_TOKEN_MAX_AGE_SECONDS * 1000)
+    cleanupTimer.unref?.()
+    this.revocationCleanupTimers.set(userIdStr, cleanupTimer)
+
+    return this.disconnectUser(userIdStr)
+  }
+
   /**
    * 推播訊息給特定用戶的所有連線
    * @returns 是否成功推播（用戶是否在線）
@@ -98,17 +153,24 @@ class ConnectionManager implements AlertBroadcaster {
       return false
     }
     
-    userSockets.forEach(socket => {
+    let emittedCount = 0
+    for (const socket of [...userSockets]) {
+      if (socket.data.expiresAt.getTime() <= Date.now()) {
+        socket.disconnect(true)
+        if (this.socketToUser.has(socket.id)) this.unregister(socket.id)
+        continue
+      }
       socket.emit(event, ...args)
-    })
+      emittedCount++
+    }
     
     logger.ws.info('WebSocket event emitted to user', {
       operation: 'websocket_emit',
       userId: userIdStr,
       event,
-      socketCount: userSockets.size,
+      socketCount: emittedCount,
     })
-    return true
+    return emittedCount > 0
   }
 
   /**

@@ -1,4 +1,7 @@
 import { createServer, type Server as HttpServer } from 'node:http'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+import { resolve } from 'node:path'
 import { io as createClient, type Socket as ClientSocket } from 'socket.io-client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Server } from 'socket.io'
@@ -6,10 +9,13 @@ import type { ClientToServerEvents, InterServerEvents, ServerToClientEvents, Soc
 import { connectionManager } from '~/server/websocket/connectionManager'
 
 const mockAuthenticateAccessToken = vi.fn()
+const mockAuthenticateWebSocketAccessToken = vi.fn()
 const mockDismissAlert = vi.fn()
+const execFileAsync = promisify(execFile)
 
 vi.mock('~/server/utils/auth-session', () => ({
   authenticateAccessToken: mockAuthenticateAccessToken,
+  authenticateWebSocketAccessToken: mockAuthenticateWebSocketAccessToken,
 }))
 
 vi.mock('~/server/utils/alert-queries', () => ({
@@ -41,6 +47,10 @@ describeSocketIntegration('real Socket.IO integration contract', () => {
     process.env.NODE_ENV = 'test'
     delete process.env.NUXT_PUBLIC_SITE_URL
     mockAuthenticateAccessToken.mockResolvedValue({ id: '9007199254740993', email: 'socket@example.test', role: 'USER' })
+    mockAuthenticateWebSocketAccessToken.mockImplementation(async (token: string) => {
+      const user = await mockAuthenticateAccessToken(token)
+      return user ? { user, expiresAt: new Date(Date.now() + 60_000), tokenVersion: 0 } : null
+    })
     mockDismissAlert.mockResolvedValue({ id: 7n })
 
     httpServer = createServer()
@@ -86,6 +96,18 @@ describeSocketIntegration('real Socket.IO integration contract', () => {
     return { client: connectedClient, success: await success }
   }
 
+  it('rejects a malformed cookie in an independent process without losing HTTP health', async () => {
+    const vitestPath = resolve(process.cwd(), 'node_modules/vitest/vitest.mjs')
+    const probePath = resolve(process.cwd(), 'tests/integration/websocket/malformed-cookie-process.test.ts')
+    const { stdout } = await execFileAsync(process.execPath, [vitestPath, 'run', probePath], {
+      cwd: process.cwd(),
+      env: { ...process.env, SOCKET_COOKIE_PROCESS_PROBE: '1' },
+      timeout: 10_000,
+    })
+
+    expect(stdout).toContain('WS_MALFORMED_COOKIE_PROBE_OK')
+  }, 30_000)
+
   it('performs authenticated handshake, registers a user room, and preserves event wire types', async () => {
     const connection = await connect('valid-access-token')
     client = connection.client
@@ -128,6 +150,101 @@ describeSocketIntegration('real Socket.IO integration contract', () => {
 
     expect(mockAuthenticateAccessToken).toHaveBeenCalledWith('header-access-token')
     expect(headerClient.connected).toBe(true)
+  })
+
+  it('uses explicit auth before ambient cookies and rejects ambiguous explicit credentials', async () => {
+    const cookieClient = createClient(`http://127.0.0.1:${port}`, {
+      path: '/socket.io/',
+      extraHeaders: { cookie: 'access-token=cookie-token' },
+      transports: ['websocket'],
+      forceNew: true,
+    })
+    clients.push(cookieClient)
+    await new Promise<void>((resolve, reject) => {
+      cookieClient.once('connect', resolve)
+      cookieClient.once('connect_error', reject)
+    })
+    expect(mockAuthenticateWebSocketAccessToken).toHaveBeenCalledWith('cookie-token')
+
+    const explicitClient = createClient(`http://127.0.0.1:${port}`, {
+      path: '/socket.io/',
+      auth: { token: 'explicit-token' },
+      extraHeaders: { cookie: 'access-token=%' },
+      transports: ['websocket'],
+      forceNew: true,
+    })
+    clients.push(explicitClient)
+    await new Promise<void>((resolve, reject) => {
+      explicitClient.once('connect', resolve)
+      explicitClient.once('connect_error', reject)
+    })
+    expect(mockAuthenticateWebSocketAccessToken).toHaveBeenCalledWith('explicit-token')
+
+    const invalidHeaderClient = createClient(`http://127.0.0.1:${port}`, {
+      path: '/socket.io/',
+      extraHeaders: {
+        authorization: 'not-a-bearer-header',
+        cookie: 'access-token=cookie-fallback-must-not-run',
+      },
+      transports: ['websocket'],
+      forceNew: true,
+      reconnection: false,
+    })
+    clients.push(invalidHeaderClient)
+    await expect(new Promise<never>((_, reject) => {
+      invalidHeaderClient.once('connect_error', reject)
+    })).rejects.toMatchObject({ message: 'Invalid token' })
+    expect(mockAuthenticateWebSocketAccessToken).not.toHaveBeenCalledWith('cookie-fallback-must-not-run')
+
+    const ambiguousClient = createClient(`http://127.0.0.1:${port}`, {
+      path: '/socket.io/',
+      auth: { token: 'auth-token' },
+      extraHeaders: { authorization: 'Bearer header-token' },
+      transports: ['websocket'],
+      forceNew: true,
+      reconnection: false,
+    })
+    clients.push(ambiguousClient)
+    await expect(new Promise<never>((_, reject) => {
+      ambiguousClient.once('connect_error', reject)
+    })).rejects.toMatchObject({ message: 'Invalid token' })
+    expect(mockAuthenticateWebSocketAccessToken).not.toHaveBeenCalledWith('auth-token')
+    expect(mockAuthenticateWebSocketAccessToken).not.toHaveBeenCalledWith('header-token')
+  })
+
+  it('disconnects revoked sockets, blocks raced writes, and permits a fresh reconnect', async () => {
+    const oldConnection = await connect('old-token')
+    const oldClient = oldConnection.client
+    const disconnected = new Promise<void>(resolve => oldClient.once('disconnect', () => resolve()))
+
+    connectionManager.disconnectUser(oldConnection.success.userId)
+    await disconnected
+    expect(connectionManager.emitToUser(oldConnection.success.userId, 'alert:triggered', {
+      id: 'private-alert',
+      message: 'private',
+      triggerAt: '2026-09-05T00:00:00.000Z',
+      diary: { id: 'private-diary', title: 'private title' },
+    })).toBe(false)
+
+    oldClient.emit('alert:dismiss', '7')
+    await new Promise(resolve => setTimeout(resolve, 25))
+    expect(mockDismissAlert).not.toHaveBeenCalled()
+
+    const freshConnection = await connect('fresh-token')
+    expect(freshConnection.client.connected).toBe(true)
+  })
+
+  it('disconnects a socket when its access-token lifetime ends', async () => {
+    mockAuthenticateWebSocketAccessToken.mockResolvedValueOnce({
+      user: { id: '303', email: 'expires@example.test', role: 'USER' },
+      expiresAt: new Date(Date.now() + 40),
+      tokenVersion: 0,
+    })
+    const expiring = await connect('short-token')
+
+    await new Promise<void>(resolve => expiring.client.once('disconnect', () => resolve()))
+
+    expect(connectionManager.isUserConnected('303')).toBe(false)
   })
 
   it('delivers a broadcast only to the matching user room', async () => {

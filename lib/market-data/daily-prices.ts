@@ -45,14 +45,15 @@ export async function fetchDailyOhlcv(
   symbol: string,
   range = '1y',
   client?: YahooFinanceChartClient,
+  now: Date = new Date(),
 ): Promise<DailyPriceInput[]> {
   const yahooFinance = client ?? await getYahooFinanceClient()
   const normalized = normalizeYahooSymbol(symbol)
   const chart = await runYahooRequest(
     `daily:${normalized}:${range}`,
     () => yahooFinance.chart(normalized, {
-      period1: resolveYahooRangeStart(range),
-      period2: new Date(),
+      period1: resolveYahooRangeStart(range, now),
+      period2: now,
       interval: '1d',
       return: 'array',
     }),

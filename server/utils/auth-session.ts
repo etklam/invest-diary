@@ -2,11 +2,18 @@ import prisma from '~/lib/prisma'
 import type { TokenPayload } from '~/lib/jwt'
 import { verifyToken } from '~/lib/jwt'
 import { sha256Hex } from '~/server/utils/hash'
+import { decodeJwt } from 'jose'
 
 export interface SessionUser {
   id: string
   email: string
   role: string
+}
+
+export interface WebSocketAccessSession {
+  user: SessionUser
+  expiresAt: Date
+  tokenVersion: number
 }
 
 interface SessionUserRecord {
@@ -91,7 +98,7 @@ async function findRefreshTokenRecord(token: string): Promise<RefreshTokenRecord
   }
 }
 
-export async function authenticateAccessToken(token: string): Promise<SessionUser | null> {
+async function resolveAccessToken(token: string) {
   const payload = await verifyToken(token)
 
   if (payload.type !== 'access') {
@@ -103,7 +110,36 @@ export async function authenticateAccessToken(token: string): Promise<SessionUse
     return null
   }
 
-  return toSessionUser(user)
+  return { payload, user }
+}
+
+export async function authenticateAccessToken(token: string): Promise<SessionUser | null> {
+  const session = await resolveAccessToken(token)
+  if (!session) return null
+
+  return toSessionUser(session.user)
+}
+
+/** Authenticate an access JWT and expose its expiry for the WebSocket lifetime. */
+export async function authenticateWebSocketAccessToken(
+  token: string,
+): Promise<WebSocketAccessSession | null> {
+  const session = await resolveAccessToken(token)
+  if (!session) return null
+
+  const expiresAtSeconds = decodeJwt(token).exp
+  if (typeof expiresAtSeconds !== 'number' || !Number.isFinite(expiresAtSeconds)) {
+    return null
+  }
+
+  const expiresAt = new Date(expiresAtSeconds * 1000)
+  if (expiresAt.getTime() <= Date.now()) return null
+
+  return {
+    user: toSessionUser(session.user),
+    expiresAt,
+    tokenVersion: session.payload.tokenVersion,
+  }
 }
 
 export async function authenticateRefreshToken(

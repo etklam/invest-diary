@@ -1,7 +1,8 @@
+import { runScopeBatch } from '~/server/utils/market-rotation-batch'
 // @vitest-environment node
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { PrismaClient } from '@prisma/client'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { getUniverseForScope } from '~/lib/market-rotation/universe'
 import { serialize } from '~/server/utils/serialize'
 import {
@@ -95,4 +96,32 @@ describeMysql('Market Rotation boundary on disposable MariaDB', () => {
     expect(window.qualifiedDatesDesc).toHaveLength(1)
     expect(window.comparisonDate).toBeNull()
   }, 30_000)
+  it('refreshes a September 1 ledger on September 4 and reruns idempotently', async () => {
+    const universe = getUniverseForScope('core')
+    await prisma.marketRotationSnapshot.deleteMany({ where: { rankScope: 'core' } })
+    await prisma.marketDailyPrice.deleteMany({ where: { symbol: { in: universe.map(u => u.symbol) } } })
+    const dates: Date[] = []
+    for (let day = new Date('2026-09-01'); dates.length < 252; day = new Date(day.getTime() - 86_400_000)) {
+      if (day.getUTCDay() !== 0 && day.getUTCDay() !== 6) dates.unshift(day)
+    }
+    await prisma.marketDailyPrice.createMany({ data: universe.flatMap(({ symbol }) => dates.map((date, index) => ({
+      symbol, date, open: 100 + index, high: 102 + index, low: 99 + index,
+      close: 101 + index, adjustedClose: 101 + index, volume: 1000n,
+    }))) })
+    const chart = vi.fn().mockResolvedValue({ quotes: ['2026-09-02', '2026-09-03', '2026-09-04'].map(date => ({
+      date: new Date(date), open: 353, high: 355, low: 352, close: 354, adjclose: 354, volume: 1000,
+    })) })
+    const options = { now: new Date('2026-09-04T21:00:00Z'), client: { chart } }
+    const batchPrisma = prisma as unknown as Parameters<typeof runScopeBatch>[0]
+    await runScopeBatch(batchPrisma, 'core', options)
+    expect(chart).toHaveBeenCalledTimes(universe.length)
+    expect(await prisma.marketDailyPrice.count()).toBe(universe.length * 255)
+    const window = await getComparisonWindow(batchPrisma, 'core')
+    expect(window.latestDate).toEqual(new Date('2026-09-04'))
+    expect(await prisma.marketRotationSnapshot.count()).toBe(universe.length)
+    await runScopeBatch(batchPrisma, 'core', options)
+    expect(await prisma.marketDailyPrice.count()).toBe(universe.length * 255)
+    expect(await prisma.marketRotationSnapshot.count()).toBe(universe.length)
+  }, 30_000)
+
 })

@@ -1,4 +1,4 @@
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { formatCalendarDate } from '~/lib/dates'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import { api } from '~/lib/api-client'
@@ -81,23 +81,22 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
     { immediate: true },
   )
 
-  watch(
-    () => [filters.dateFrom, filters.dateTo],
-    () => {
-      page.value = 1
-      diaries.value = []
-      pagination.value = null
-      void refreshFetch()
-    },
-  )
-
-  // Reset to page 1 and re-fetch (used after Quick Diary create/append)
+  // Each first-page refresh invalidates every older pagination request.
+  let generation = 0
   const refresh = async () => {
+    generation += 1
     page.value = 1
     diaries.value = []
     pagination.value = null
+    loadingMore.value = false
     await refreshFetch()
   }
+
+  watch(
+    () => [filters.dateFrom, filters.dateTo],
+    () => { void refresh() },
+    { flush: 'sync' },
+  )
 
   // Check if more data available
   const hasMore = computed(() => {
@@ -108,13 +107,15 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
   // Page advances only on success; on failure the loaded list stays intact
   // and a retry re-requests the same page.
   const loadMore = async () => {
-    if (!isHydrated.value || loadingMore.value || !hasMore.value) return
+    if (!isHydrated.value || pending.value || loadingMore.value || !hasMore.value) return
 
+    const requestGeneration = generation
     const nextPage = page.value + 1
     loadingMore.value = true
 
     try {
       const result = await api.diaries.list({ ...requestQuery.value, page: String(nextPage) })
+      if (requestGeneration !== generation) return
       if (result.error) throw result.error
       const response = result.data
 
@@ -124,9 +125,9 @@ export const useTimelineDiaries = (options?: { limit?: number; timezone?: string
       }
       page.value = nextPage
     } catch (err) {
-      toast.error(resolveErrorMessage(err, t))
+      if (requestGeneration === generation) toast.error(resolveErrorMessage(err, t))
     } finally {
-      loadingMore.value = false
+      if (requestGeneration === generation) loadingMore.value = false
     }
   }
 

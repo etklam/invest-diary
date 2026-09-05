@@ -17,6 +17,7 @@ const {
   mockRefreshTokenCreate,
   mockRefreshTokenUpdate,
   mockRefreshTokenDeleteMany,
+  mockRefreshTokenUpdateMany,
   mockPrismaTransaction,
   mockDiaryCount,
   mockDiaryFindMany,
@@ -25,6 +26,7 @@ const {
   mockBcryptCompare,
   mockBcryptHash,
   mockSha256Hex,
+  mockRevokeUser,
 } = vi.hoisted(() => ({
   mockUserFindUnique: vi.fn(),
   mockUserCreate: vi.fn(),
@@ -35,6 +37,7 @@ const {
   mockRefreshTokenCreate: vi.fn(),
   mockRefreshTokenUpdate: vi.fn(),
   mockRefreshTokenDeleteMany: vi.fn(),
+  mockRefreshTokenUpdateMany: vi.fn(),
   mockPrismaTransaction: vi.fn(),
   mockDiaryCount: vi.fn(),
   mockDiaryFindMany: vi.fn(),
@@ -43,6 +46,11 @@ const {
   mockBcryptCompare: vi.fn(),
   mockBcryptHash: vi.fn(),
   mockSha256Hex: vi.fn((v: string) => `hash(${v})`),
+  mockRevokeUser: vi.fn(),
+}))
+
+vi.mock('~/server/websocket/connectionManager', () => ({
+  connectionManager: { revokeUser: mockRevokeUser },
 }))
 
 vi.mock('~/lib/prisma', () => ({
@@ -59,6 +67,7 @@ vi.mock('~/lib/prisma', () => ({
       create: mockRefreshTokenCreate,
       update: mockRefreshTokenUpdate,
       deleteMany: mockRefreshTokenDeleteMany,
+      updateMany: mockRefreshTokenUpdateMany,
     },
     diary: {
       count: mockDiaryCount,
@@ -101,6 +110,7 @@ import {
   getSystemStatsAdmin,
   listAllDiariesAdmin,
   changePasswordSchema,
+  logoutAllSessions,
   updateUserSettingsSchema,
   updateUserRoleSchema,
 } from '~/server/utils/user-queries'
@@ -216,6 +226,7 @@ describe('user-queries', () => {
       mockUserFindUnique.mockResolvedValue({ id: USER_ID, password: 'old-hash' })
       mockBcryptCompare.mockResolvedValue(true)
       mockBcryptHash.mockResolvedValue('new-hash')
+      mockUserUpdate.mockResolvedValue({ tokenVersion: 1 })
 
       await changeUserPassword(USER_ID, {
         currentPassword: 'old',
@@ -230,11 +241,13 @@ describe('user-queries', () => {
           password: 'new-hash',
           tokenVersion: { increment: 1 },
         },
+        select: { tokenVersion: true },
       })
       expect(mockRefreshTokenDeleteMany).toHaveBeenCalledWith({
         where: { userId: USER_ID },
       })
       expect(mockPrismaTransaction).toHaveBeenCalled()
+      expect(mockRevokeUser).toHaveBeenCalledWith(USER_ID, 1)
     })
 
     it('throws userNotFound when user is missing', async () => {
@@ -415,6 +428,7 @@ describe('user-queries', () => {
       const result = await deleteUserAdmin(OTHER_USER_ID, '1')
 
       expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: OTHER_USER_ID } })
+      expect(mockRevokeUser).toHaveBeenCalledWith(OTHER_USER_ID)
       expect(result).toEqual(existing)
     })
 
@@ -432,6 +446,28 @@ describe('user-queries', () => {
         statusCode: 404,
       })
       expect(mockUserDelete).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('logoutAllSessions', () => {
+    it('disconnects active sockets only after session revocation commits', async () => {
+      mockPrismaTransaction.mockResolvedValue([{ tokenVersion: 2 }])
+
+      await logoutAllSessions(USER_ID)
+
+      expect(mockPrismaTransaction).toHaveBeenCalled()
+      expect(mockRevokeUser).toHaveBeenCalledWith(USER_ID, 2)
+      expect(mockPrismaTransaction.mock.invocationCallOrder[0]).toBeLessThan(
+        mockRevokeUser.mock.invocationCallOrder[0],
+      )
+    })
+
+    it('keeps sockets connected when session revocation fails', async () => {
+      mockPrismaTransaction.mockRejectedValueOnce(new Error('tx failed'))
+
+      await expect(logoutAllSessions(USER_ID)).rejects.toThrow('tx failed')
+
+      expect(mockRevokeUser).not.toHaveBeenCalled()
     })
   })
 

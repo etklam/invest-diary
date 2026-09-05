@@ -54,13 +54,26 @@ export interface FullBatchResult {
 }
 
 export interface EnsureCanonicalPricesOptions {
-  minLookbackDays?: number
-  staleAfterDays?: number
   now?: Date
 }
 
-const DEFAULT_MIN_LOOKBACK_DAYS = 252
-const DEFAULT_STALE_AFTER_DAYS = 7
+// All canonical symbols trade in the US. Holidays remain provider-owned:
+// never create a missing bar, and conservatively wait until 16:00 New York
+// even on early-close days before accepting the current session.
+function completedPriceFilter(now: Date): (price: { date: Date }) => boolean {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York', year: 'numeric', month: '2-digit',
+    day: '2-digit', hour: '2-digit', hourCycle: 'h23',
+  }).formatToParts(now)
+  const part = (type: string) => parts.find(p => p.type === type)!.value
+  const today = `${part('year')}-${part('month')}-${part('day')}`
+  const closed = Number(part('hour')) >= 16
+  return ({ date }) => {
+    const day = date.toISOString().slice(0, 10)
+    return date.getUTCDay() !== 0 && date.getUTCDay() !== 6
+      && (day < today || (day === today && closed))
+  }
+}
 
 function getLatestCandidateCoverage(
   symbolPrices: SymbolPrices[],
@@ -93,30 +106,13 @@ export async function ensureCanonicalPrices(
   client?: YahooFinanceChartClient,
   options: EnsureCanonicalPricesOptions = {},
 ): Promise<void> {
-  const minLookbackDays = options.minLookbackDays ?? DEFAULT_MIN_LOOKBACK_DAYS
-  const staleAfterDays = options.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS
   const now = options.now ?? new Date()
+  const isCompleted = completedPriceFilter(now)
 
   for (const symbol of symbols) {
-    let existing: Awaited<ReturnType<typeof getHistoricalPrices>>
     try {
-      existing = await getHistoricalPrices(prisma, symbol, minLookbackDays)
-    } catch {
-      continue
-    }
-
-    const latest = existing.at(-1)
-    const latestAgeMs = latest ? now.getTime() - latest.date.getTime() : Number.POSITIVE_INFINITY
-    const isFresh = latestAgeMs <= staleAfterDays * 24 * 60 * 60 * 1000
-    const hasEnoughLookback = existing.length >= minLookbackDays
-
-    if (hasEnoughLookback && isFresh) {
-      continue
-    }
-
-    try {
-      const prices = await fetchDailyOhlcv(symbol, '1y', client)
-      await persistDailyPrices(prisma, prices)
+      const prices = await fetchDailyOhlcv(symbol, '1y', client, now)
+      await persistDailyPrices(prisma, prices.filter(isCompleted))
     } catch (error) {
       if (isYahooRateLimitError(error)) {
         logger.runtime.warn('Market rotation Yahoo rate limit', {
@@ -144,18 +140,22 @@ export async function ensureCanonicalPrices(
 export async function runScopeBatch(
   prisma: PrismaClient,
   rankScope: 'sectors' | 'indexes' | 'core',
+  options: EnsureCanonicalPricesOptions & { client?: YahooFinanceChartClient } = {},
 ): Promise<BatchJobResult> {
   const universe = getUniverseForScope(rankScope)
   const symbols = universe.map(u => u.symbol)
   const errors: Array<{ symbol: string; error: string }> = []
 
-  await ensureCanonicalPrices(prisma, symbols)
+  const now = options.now ?? new Date()
+  await ensureCanonicalPrices(prisma, symbols, options.client, { ...options, now })
+  const isCompleted = completedPriceFilter(now)
 
   // Step 1: Load historical prices for all symbols
   const symbolPrices: SymbolPrices[] = []
   for (const entry of universe) {
     try {
-      const prices = await getHistoricalPrices(prisma, entry.symbol)
+      const prices = (await getHistoricalPrices(prisma, entry.symbol))
+        .filter(isCompleted)
       if (prices.length > 0) {
         symbolPrices.push({
           meta: entry,

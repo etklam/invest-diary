@@ -333,6 +333,7 @@ model Alert {
 
   @@index([diaryId], map: "alerts_diary_id_fkey")
   @@index([parentId], map: "alerts_parent_id_idx")
+  @@index([isDismissed, triggerAt], map: "alerts_active_trigger_idx")
   @@unique([id, diaryId], map: "alerts_id_diary_key")
   @@map("alerts")
 }

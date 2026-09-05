@@ -78,7 +78,7 @@ function quantityOf(value: unknown): number {
   if (typeof value === 'bigint') return Number(value)
   if (value && typeof value === 'object' && 'toNumber' in value) {
     const toNumber = (value as { toNumber?: () => number }).toNumber
-    if (typeof toNumber === 'function') return Number(toNumber())
+    if (typeof toNumber === 'function') return Number(toNumber.call(value))
   }
   const numberValue = Number(value)
   return Number.isFinite(numberValue) ? numberValue : 0
@@ -93,7 +93,7 @@ function numberOf(value: unknown): number | null {
   if (value && typeof value === 'object' && 'toNumber' in value) {
     const toNumber = (value as { toNumber?: () => number }).toNumber
     if (typeof toNumber === 'function') {
-      const numberValue = Number(toNumber())
+      const numberValue = Number(toNumber.call(value))
       return Number.isFinite(numberValue) ? numberValue : null
     }
   }

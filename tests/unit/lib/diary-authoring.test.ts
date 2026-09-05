@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import { describe, expect, it } from 'vitest'
 import {
   createEmptyDiaryAuthoringForm,
@@ -10,6 +11,16 @@ import {
   validateDiaryDraft,
   validateDiaryPayloadLimits,
 } from '~/lib/diary-authoring/validation'
+
+it('validates real Prisma Decimal prices and applies Decimal quantities without losing this', () => {
+  const trades = [
+    { symbol: 'AAPL', type: 'BUY' as const, quantity: new Prisma.Decimal('2.5'), price: new Prisma.Decimal('100.25') },
+    { symbol: 'AAPL', type: 'SELL' as const, quantity: new Prisma.Decimal('1.25'), price: new Prisma.Decimal('110.50') },
+  ]
+  expect(validateDiaryDraft(trades)).toBeNull()
+  expect(calculateLedgerHoldings(undefined, trades).get('AAPL')).toBe(1.25)
+  expect(validateDiaryDraft([{ ...trades[0]!, price: new Prisma.Decimal('NaN') }])).toMatchObject({ field: 'price' })
+})
 
 describe('validateDiaryPayloadLimits', () => {
   it('accepts payloads at the exact caps', () => {

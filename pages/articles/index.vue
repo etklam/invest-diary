@@ -143,6 +143,7 @@
                 v-for="(post, index) in posts"
                 :key="post.id"
                 :post="post"
+                @deleted="handlePostDeleted"
                 class="reveal"
                 :style="{ animationDelay: `${index * 50}ms` }"
               />
@@ -360,6 +361,7 @@ const posts = ref<Post[]>([])
 const pagination = ref<{ page: number; limit: number; total: number; totalPages: number } | null>(null)
 const prefetchCache = new Map<number, any>()
 const prefetching = new Set<number>()
+let requestGeneration = 0
 
 // Build query params
 const buildQueryParams = (page = 1) => {
@@ -403,22 +405,36 @@ const setPageData = (page: number, payload: any, append = false) => {
 }
 
 const loadInitial = async () => {
+  const generation = ++requestGeneration
+  const page = currentPage.value
+  prefetchCache.clear()
+  prefetching.clear()
+  loadingMore.value = false
   try {
     pending.value = true
     error.value = null
-    prefetchCache.clear()
-    const payload = await fetchPage(currentPage.value)
-    setPageData(currentPage.value, payload, false)
+    const payload = await fetchPage(page)
+    if (generation !== requestGeneration) return
+    setPageData(page, payload, false)
     await prefetchNextPage()
   } catch (err: any) {
-    console.error('Failed to fetch posts:', err)
-    error.value = err
+    if (generation === requestGeneration) {
+      console.error('Failed to fetch posts:', err)
+      error.value = err
+    }
   } finally {
-    pending.value = false
+    if (generation === requestGeneration) pending.value = false
   }
 }
 
 const refresh = async () => {
+  await loadInitial()
+}
+
+// Reset pagination after deletion: the old final page may no longer exist.
+const handlePostDeleted = async () => {
+  currentPage.value = 1
+  void router.replace({ query: { ...route.query, page: '1' } })
   await loadInitial()
 }
 
@@ -503,20 +519,22 @@ const prefetchNextPage = async () => {
   if (nextPage > pagination.value.totalPages) return
   if (prefetchCache.has(nextPage) || prefetching.has(nextPage)) return
 
+  const generation = requestGeneration
   prefetching.add(nextPage)
   try {
     const payload = await fetchPage(nextPage)
-    prefetchCache.set(nextPage, payload)
+    if (generation === requestGeneration) prefetchCache.set(nextPage, payload)
   } catch (err) {
     console.warn('Prefetch next page failed:', err)
   } finally {
-    prefetching.delete(nextPage)
+    if (generation === requestGeneration) prefetching.delete(nextPage)
   }
 }
 
 const loadMore = async () => {
   if (!enableInfiniteScroll.value) return
   if (loadingMore.value || pending.value || !hasMore.value) return
+  const generation = requestGeneration
   loadingMore.value = true
   const nextPage = currentPage.value + 1
 
@@ -525,13 +543,14 @@ const loadMore = async () => {
     if (!payload) {
       payload = await fetchPage(nextPage)
     }
+    if (generation !== requestGeneration) return
     setPageData(nextPage, payload, true)
     prefetchCache.delete(nextPage)
     await prefetchNextPage()
   } catch (err) {
-    toast.error(resolveErrorMessage(err, t))
+    if (generation === requestGeneration) toast.error(resolveErrorMessage(err, t))
   } finally {
-    loadingMore.value = false
+    if (generation === requestGeneration) loadingMore.value = false
   }
 }
 

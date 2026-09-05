@@ -59,6 +59,9 @@ export interface InterServerEvents {
 // Socket Data（每個連線的資料）
 export interface SocketData {
   userId: string
+  accessToken: string
+  expiresAt: Date
+  tokenVersion: number
   connectedAt: Date
 }
 

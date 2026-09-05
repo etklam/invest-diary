@@ -91,7 +91,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { refreshNuxtData, useAuth, useI18n, useToast } from '#imports'
+import { useAuth, useI18n, useToast } from '#imports'
 import { calculateReadingTime } from '~/lib/blog'
 import { resolveErrorMessage } from '~/composables/useErrorI18n'
 import { normalizeCategory } from '~/types/blog'
@@ -117,6 +117,8 @@ interface Post {
 const props = defineProps<{
   post: Post
 }>()
+
+const emit = defineEmits<{ deleted: [id: string | number] }>()
 
 const { isAdmin } = useAuth()
 const { t } = useI18n()
@@ -146,10 +148,9 @@ const handleDelete = async () => {
   if (!confirm(t('blog.confirmDelete', { title: props.post.title }))) return
 
   try {
-    const response = await fetch(`/api/blog/${props.post.id}`, { method: 'DELETE' })
-    if (!response.ok) throw new Error('Delete failed')
+    await $fetch(`/api/blog/${props.post.id}`, { method: 'DELETE' })
     toast.success(t('blog.deleteSuccess'))
-    refreshNuxtData()
+    emit('deleted', props.post.id)
   } catch (error: any) {
     console.error('Failed to delete post:', error)
     toast.error(resolveErrorMessage(error, t, t('blog.deleteFailed')))

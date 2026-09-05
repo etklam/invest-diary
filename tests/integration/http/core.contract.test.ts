@@ -520,6 +520,51 @@ describeHttp('real Nitro + MariaDB canonical contracts for tickets 03–07', () 
     expect(body.pagination).toMatchObject({ total: 1 })
   }, 60_000)
 
+  it('writes a Decimal ledger across create, append, edit and delete atomically', async () => {
+    const headers = authHeaders(owner)
+    const trade = (type: string, quantity: string, day: string) => ({
+      symbol: 'LUNA03', type, quantity, price: '100.25', tradeDate: `${day}T13:30:00.000Z`,
+    })
+    const create = async (date: string, transactions: unknown[], extra = {}) => requestJson('/api/diaries', {
+      method: 'POST', headers, body: { title: 'Decimal ledger', content: 'ledger', date, transactions, ...extra },
+    })
+    const firstResponse = await create('2026-08-01', [trade('BUY', '2.5', '2026-08-01')])
+    expect(firstResponse.status).toBe(201)
+    const first = await readJson(firstResponse)
+    const secondResponse = await create('2026-08-02', [trade('BUY', '1.25', '2026-08-02')])
+    expect(secondResponse.status).toBe(201)
+    const second = await readJson(secondResponse)
+    const append = await create('2026-08-02', [trade('SELL', '1', '2026-08-03')], { appendToToday: true })
+    expect(append.status).toBe(201)
+    const appended = await readJson(append)
+    expect(appended.id).toBe(second.id)
+    expect(appended.transactions).toHaveLength(2)
+    const before = await prisma.transaction.findMany({ where: { userId: BigInt(owner.id) }, orderBy: { id: 'asc' } })
+    expect(before[0]!.quantity.toNumber()).toBe(2.5)
+    const invalid = await create('2026-08-04', [trade('SELL', '100', '2026-08-04')])
+    expect(invalid.status).toBe(400)
+    const invalidNumber = await create('2026-08-04', [trade('BUY', 'NaN', '2026-08-04')])
+    expect(invalidNumber.status).toBe(400)
+    expect(await prisma.transaction.findMany({ where: { userId: BigInt(owner.id) }, orderBy: { id: 'asc' } })).toEqual(before)
+    expect(await prisma.diary.count({ where: { userId: BigInt(owner.id) } })).toBe(2)
+    const edited = await requestJson(`/api/diaries/${second.id}`, {
+      method: 'PUT', headers, body: { title: 'Edited ledger', content: 'edited', transactions: [trade('SELL', '1', '2026-08-03')] },
+    })
+    expect(edited.status).toBe(200)
+    const persistedEdit = await prisma.diary.findUnique({ where: { id: BigInt(second.id) }, include: { transactions: true } })
+    const invalidEdit = await requestJson(`/api/diaries/${second.id}`, {
+      method: 'PUT', headers, body: { title: 'Must roll back', content: 'invalid', transactions: [trade('SELL', '100', '2026-08-03')] },
+    })
+    expect(invalidEdit.status).toBe(400)
+    expect(await prisma.diary.findUnique({ where: { id: BigInt(second.id) }, include: { transactions: true } })).toEqual(persistedEdit)
+    const protectedDelete = await requestJson(`/api/diaries/${first.id}`, { method: 'DELETE', headers })
+    expect(protectedDelete.status).toBe(400)
+    expect(await prisma.diary.count({ where: { userId: BigInt(owner.id) } })).toBe(2)
+    expect((await requestJson(`/api/diaries/${second.id}`, { method: 'DELETE', headers })).status).toBe(200)
+    expect((await requestJson(`/api/diaries/${first.id}`, { method: 'DELETE', headers })).status).toBe(200)
+    expect(await prisma.transaction.count({ where: { userId: BigInt(owner.id) } })).toBe(0)
+  })
+
   it('freezes Diary Alert recurrence and Price Alert trigger/list/error/ownership wire', async () => {
     const ownerHeaders = authHeaders(owner)
     const otherHeaders = authHeaders(other)
