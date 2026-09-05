@@ -3,6 +3,7 @@ import { promisify } from 'node:util'
 import { connect as netConnect } from 'node:net'
 import os from 'node:os'
 import { resolve } from 'node:path'
+import { chromium, expect } from '@playwright/test'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { PrismaClient } from '@prisma/client'
 import { assertDisposableDatabaseUrl } from '../../scripts/test-database-guard'
@@ -131,7 +132,10 @@ async function startDevServer(): Promise<ChildProcess> {
       const response = await fetch('http://127.0.0.1:3000/auth/login', {
         signal: AbortSignal.timeout(2000),
       })
-      if (response.status < 500) return serverProcess
+      if (response.status < 500) {
+        await warmUpClientBundle(serverProcess, output)
+        return serverProcess
+      }
     }
     catch {
       // The Nuxt dev server can take several seconds to compile its first route.
@@ -141,6 +145,41 @@ async function startDevServer(): Promise<ChildProcess> {
 
   serverProcess.kill('SIGTERM')
   throw new Error(`E2E dev server did not become ready within 120 seconds:\n${output.join('')}`)
+}
+
+/**
+ * A fetch probe only proves the server-side render works; the client bundle
+ * may still need its first on-demand compile. On slow CI runners that compile
+ * can outlast a test's hydration timeout (the login form stays disabled), so
+ * drive a real browser once here: load the login page and wait until the
+ * submit button is interactive. This forces Vite to compile the whole client
+ * module graph before the first test starts.
+ */
+async function warmUpClientBundle(serverProcess: ChildProcess, output: string[]): Promise<void> {
+  let browser
+  try {
+    browser = await chromium.launch()
+    const page = await browser.newPage()
+    await page.goto('http://127.0.0.1:3000/auth/login', { waitUntil: 'domcontentloaded', timeout: 120_000 })
+    await page.locator('button.login-submit').waitFor({ state: 'visible', timeout: 120_000 })
+    // isEnabled() flips once onMounted() sets isHydrated — i.e. the client
+    // bundle has been fetched, evaluated, and hydrated the page.
+    await expect.poll(
+      async () => await page.locator('button.login-submit').isEnabled(),
+      { timeout: 120_000 },
+    ).toBe(true)
+  }
+  catch (error) {
+    // Never let warmup block the suite: a cold server only makes tests slow,
+    // not broken. Surface the reason in the log for diagnosis.
+    console.warn('E2E Global Setup: client bundle warmup did not complete:', (error as Error).message)
+    if (serverProcess.exitCode !== null) {
+      throw new Error(`E2E dev server exited during warmup:\n${output.join('')}`)
+    }
+  }
+  finally {
+    await browser?.close().catch(() => undefined)
+  }
 }
 
 async function stopDevServer(serverProcess: ChildProcess | undefined): Promise<void> {

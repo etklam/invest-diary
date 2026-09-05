@@ -94,8 +94,9 @@ export async function authenticate(page: Page, options?: { timeout?: number }) {
   // Go to login page first
   await page.goto('/auth/login', { waitUntil: 'domcontentloaded' })
 
-  // Wait for the login form to be ready
-  await expect(page.locator('button.login-submit')).toBeEnabled({ timeout: 15_000 })
+  // Wait for the login form to be ready. CI runners can outlast 15s on the
+  // first hydration of a freshly compiled route, so allow a generous budget.
+  await expect(page.locator('button.login-submit')).toBeEnabled({ timeout: 30_000 })
 
   // Fill in credentials
   await page.getByLabel('Email').fill(user.email)
